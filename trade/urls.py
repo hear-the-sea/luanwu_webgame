@@ -11,6 +11,8 @@ urlpatterns = [
     path("bank/exchange-gold-bar/", views.exchange_gold_bar_view, name="exchange_gold_bar"),
     path("bank/troop/deposit/", views.deposit_troop_to_bank_view, name="deposit_troop_to_bank"),
     path("bank/troop/withdraw/", views.withdraw_troop_from_bank_view, name="withdraw_troop_from_bank"),
+    path("bank/troop/deposit-all/", views.deposit_all_troops_to_bank_view, name="deposit_all_troops_to_bank"),
+    path("bank/troop/withdraw-all/", views.withdraw_all_troops_from_bank_view, name="withdraw_all_troops_from_bank"),
     # 交易行路由
     path("market/create/", views.market_create_listing_view, name="market_create_listing"),
     path("market/purchase/<int:listing_id>/", views.market_purchase_view, name="market_purchase"),

@@ -133,3 +133,51 @@ test("trade page confirms before selling all of an item", async ({ page }) => {
   await form.locator("[data-shop-sell-all]").click();
   await expect.poll(() => page.evaluate(() => window.__shopSellAll.submits)).toBe(1);
 });
+
+test("bank transfers submit once and recover controls after history restore", async ({ page }) => {
+  await page.setContent(`
+    <main data-trade-page="1">
+      <form method="post" action="/bank/deposit-all/" data-bank-transfer>
+        <input type="hidden" name="troop_category" value="dao" />
+        <button type="submit">一键存入 30 名</button>
+      </form>
+      <form method="post" action="/bank/withdraw-all/" data-bank-transfer>
+        <input type="hidden" name="troop_category" value="dao" />
+        <button type="submit">一键取出 10 名</button>
+      </form>
+      <form data-bank-transfer>
+        <button type="submit" disabled>存入</button>
+      </form>
+    </main>
+  `);
+  await page.addScriptTag({ path: staticPath("trade_core.js") });
+  await page.addScriptTag({ path: staticPath("trade.js") });
+  await page.evaluate(() => {
+    window.__bankSubmissions = [];
+    document.querySelector("[data-trade-page]").addEventListener("submit", (event) => {
+      if (!event.defaultPrevented) {
+        window.__bankSubmissions.push(Object.fromEntries(new FormData(event.target)));
+      }
+      event.preventDefault();
+    });
+  });
+
+  const deposit = page.locator('form[action="/bank/deposit-all/"]');
+  const withdraw = page.locator('form[action="/bank/withdraw-all/"]');
+  await deposit.getByRole("button").click();
+  await expect(deposit.getByRole("button")).toHaveText("处理中…");
+  await expect(deposit).toHaveAttribute("aria-busy", "true");
+  await expect(withdraw.getByRole("button")).toBeDisabled();
+  expect(await page.evaluate(() => window.__bankSubmissions)).toEqual([{ troop_category: "dao" }]);
+
+  await withdraw.evaluate((form) => form.requestSubmit());
+  expect(await page.evaluate(() => window.__bankSubmissions.length)).toBe(1);
+
+  await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true })));
+  await expect(deposit.getByRole("button")).toBeEnabled();
+  await expect(deposit.getByRole("button")).toHaveText("一键存入 30 名");
+  await expect(withdraw.getByRole("button")).toBeEnabled();
+  await expect(page.locator("form").last().getByRole("button")).toBeDisabled();
+  await withdraw.getByRole("button").click();
+  expect(await page.evaluate(() => window.__bankSubmissions.length)).toBe(2);
+});

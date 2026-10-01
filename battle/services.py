@@ -41,6 +41,7 @@ from .locking import refresh_guest_instances as _refresh_guest_instances
 from .locking import release_deployed_guests as _release_deployed_guests
 from .locking import validate_locked_guest_statuses as _validate_locked_guest_statuses
 from .models import BattleReport
+from .random_context import CURRENT_BATTLE_ENGINE_VERSION, CURRENT_RNG_VERSION
 from .setup import build_battle_options as _build_battle_options
 from .setup import resolve_attacker_guests_for_battle as _resolve_attacker_guests
 
@@ -217,8 +218,8 @@ def simulate_report(
     manor,
     battle_type: str = DEFAULT_BATTLE_TYPE,
     seed: int | None = None,
-    rng_version: int = 1,
-    battle_engine_version: str = "2",
+    rng_version: int = CURRENT_RNG_VERSION,
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
     troop_loadout: Dict[str, int] | None = None,
     fill_default_troops: bool = True,
     attacker_guests: List[Guest] | None = None,
@@ -241,6 +242,8 @@ def simulate_report(
     attacker_manor=None,
     defender_manor=None,
     validate_attacker_troop_capacity: bool = True,
+    attacker_troop_loss_rate: float | None = None,
+    defender_troop_loss_rate: float | None = None,
 ) -> BattleReport:
     """
     Top-level entry point for simulating a battle and producing reports/messages.
@@ -273,6 +276,8 @@ def simulate_report(
         attacker_manor: 攻击方科技来源庄园（可选，默认为 manor）
         defender_manor: 防守方庄园（可选，用于城防建筑）
         validate_attacker_troop_capacity: 是否校验攻击方带兵上限（默认开启）
+        attacker_troop_loss_rate: 攻击方被击败护院的阵亡概率（可选）
+        defender_troop_loss_rate: 防守方被击败护院的阵亡概率（可选）
 
     Returns:
         BattleReport: 战斗报告实例
@@ -306,6 +311,8 @@ def simulate_report(
         attacker_manor=attacker_manor,
         defender_manor=defender_manor,
         validate_attacker_troop_capacity=validate_attacker_troop_capacity,
+        attacker_troop_loss_rate=attacker_troop_loss_rate,
+        defender_troop_loss_rate=defender_troop_loss_rate,
     )
     return _execute_battle_with_optional_lock(
         manor=manor,

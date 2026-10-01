@@ -117,6 +117,27 @@
                     </div>
                 </header>
                 <dl>
+                    {% if tech.scout_intel_progress %}
+                    <div>
+                        <dt>侦察情报</dt>
+                        <dd>基础情报{% for unlock in tech.scout_intel_progress.unlocked %}、{{ unlock.name }}{% endfor %}</dd>
+                    </div>
+                    {% if tech.scout_intel_progress.next_unlock %}
+                    <div>
+                        <dt>下次解锁</dt>
+                        <dd>{{ tech.scout_intel_progress.next_unlock.level }}级 · {{ tech.scout_intel_progress.next_unlock.name }}</dd>
+                    </div>
+                    <div>
+                        <dt>探子本事</dt>
+                        <dd>{{ tech.scout_intel_progress.next_unlock.description }}</dd>
+                    </div>
+                    {% else %}
+                    <div>
+                        <dt>探子本事</dt>
+                        <dd>庄园底细已全部解锁</dd>
+                    </div>
+                    {% endif %}
+                    {% endif %}
                     {% if tech.is_upgrading %}
                     <div>
                         <dt>研究完成</dt>

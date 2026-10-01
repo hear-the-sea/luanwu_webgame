@@ -10,10 +10,11 @@ from django.db import IntegrityError
 from django.db.models import F
 from django.utils import timezone
 
-from core.exceptions import RaidStartError
+from core.exceptions import RaidStartError, TroopLoadoutError
 
 from ....models import Manor, PlayerTroop, RaidRun
 from ...manor.troop_capacity import ensure_manor_troop_capacity_locked
+from ...manor.troop_dispatch import deduct_dispatch_troops_locked
 
 # Normalization / calculation helpers from the troops sub-module.
 from .troops import (
@@ -28,30 +29,14 @@ logger = logging.getLogger(__name__)
 
 
 def _deduct_troops(manor: Manor, loadout: Dict[str, int]) -> None:
-    """从庄园批量扣除指定数量的护院"""
+    """出征时先扣庄园护院，不足部分自动扣除钱庄库存。"""
     loadout = _normalize_positive_int_mapping(loadout)
-    if not loadout:
-        return
-
-    troops = {
-        t.troop_template.key: t
-        for t in PlayerTroop.objects.select_for_update()
-        .filter(manor=manor, troop_template__key__in=loadout.keys())
-        .select_related("troop_template")
-    }
-
-    to_update = []
-    for troop_key, count in loadout.items():
-        troop = troops.get(troop_key)
-        if not troop:
-            raise RaidStartError("没有该类型的护院")
-        if troop.count < count:
-            raise RaidStartError(f"护院 {troop.troop_template.name} 数量不足")
-        troop.count -= count
-        to_update.append(troop)
-
-    if to_update:
-        PlayerTroop.objects.bulk_update(to_update, ["count", "updated_at"])
+    try:
+        deduct_dispatch_troops_locked(manor, loadout)
+    except TroopLoadoutError as exc:
+        if "troop_key" in exc.context:
+            raise RaidStartError("没有该类型的护院") from exc
+        raise RaidStartError(str(exc)) from exc
 
 
 def _bulk_create_troops_with_fallback(to_create: list[PlayerTroop], now: datetime) -> None:

@@ -1,0 +1,203 @@
+{
+  "date": "2026-10-01",
+  "status": "review_completed",
+  "deployed": false,
+  "runtime_bugs_found_in_this_review": [],
+  "test_correction": "Replace three hard-coded existing guests with guest_capacity minus one so bulk finalization still tests exactly one available slot.",
+  "validation": {
+    "full_unit_checkpoint": {
+      "path": "/tmp/capacity_review_full_unit.log",
+      "sha256": "3201c0598117cdb1e5afd6cd591d7f0a2257800808d5d6cb0706e35f3b4568b3",
+      "summary": "1 failed, 6654 passed, 10 skipped, 639 deselected, 7 subtests passed in 1069.11s (0:17:49)"
+    },
+    "corrected_recruitment_and_boundary": {
+      "path": "/tmp/capacity_review_recruitment_corrected.log",
+      "sha256": "7478ed46154cd5b3f9b871d28cbc2ea232ea546a9a2a05aba6eeef85a71fdd66",
+      "summary": "61 passed in 22.08s"
+    },
+    "mysql": {
+      "path": "/tmp/capacity_review_mysql.log",
+      "sha256": "339df34ec0c0c70e5a1e54fc5377da37ffc79ad950c7b277561bc1e83105b652",
+      "summary": "18 passed in 324.37s (0:05:24)"
+    },
+    "mysql_corrected_recruitment": {
+      "path": "/tmp/capacity_review_corrected_recruitment_mysql.log",
+      "sha256": "7f20721722339faad833bedbd918bbce72ec5ee8917b82cf8b1a09bf4e47f2f3",
+      "summary": "1 passed in 0.50s"
+    },
+    "boundary_and_upgrade": {
+      "path": "/tmp/capacity_review_boundary_upgrade.log",
+      "sha256": "1cf9a1d5c1a42e6398267629cd31cc4033ccb0ea9f204f95ce3b6c4b605c556f",
+      "summary": "9 passed in 18.86s"
+    },
+    "black": {
+      "path": "/tmp/capacity_review_black.log",
+      "sha256": "cd120100533f300b822c93080cdd1cf82d9a51f40d7f24b86b802f5dafdc0cf3",
+      "summary": "All done! ✨ 🍰 ✨\n1611 files would be left unchanged."
+    },
+    "isort": {
+      "path": "/tmp/capacity_review_isort.log",
+      "sha256": "daf37d5235389c618c1d4924d96657bf82814dc60ae0b99101314d26a66e8abf",
+      "summary": "Skipped 348 files"
+    },
+    "flake8": {
+      "path": "/tmp/capacity_review_flake8.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": ""
+    },
+    "mypy": {
+      "path": "/tmp/capacity_buildings_mypy.log",
+      "sha256": "1ffedffc914aec25920525998d03dcbd47ab45bc6254c3cb468f3c8d04733b72",
+      "summary": "sider using --check-untyped-defs  [annotation-unchecked]\naccounts/views.py:612: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]\naccounts/views.py:702: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]\nSuccess: no issues found in 784 source files"
+    }
+  },
+  "retired_tests": [
+    {
+      "path": "tests/test_virtual_player_calibration.py",
+      "functions": 19,
+      "explicit_retired_skip": true,
+      "module_retirement_skip_reasons": [
+        "static calibration evidence retired after the policy 2 cutover"
+      ]
+    },
+    {
+      "path": "tests/test_virtual_player_calibration_runtime.py",
+      "functions": 5,
+      "explicit_retired_skip": true,
+      "module_retirement_skip_reasons": [
+        "static calibration runtime retired; daily growth-control snapshots are authoritative"
+      ]
+    },
+    {
+      "path": "tests/test_virtual_player_gate_c_commands.py",
+      "functions": 11,
+      "explicit_retired_skip": true,
+      "module_retirement_skip_reasons": [
+        "Gate C multi-policy command workflow retired after the policy 2 cutover"
+      ]
+    },
+    {
+      "path": "tests/test_virtual_player_gate_c_concurrency_integration.py",
+      "functions": 6,
+      "explicit_retired_skip": true,
+      "module_retirement_skip_reasons": [
+        "Gate C multi-policy concurrency workflow retired after the policy 2 cutover"
+      ]
+    },
+    {
+      "path": "tests/test_virtual_player_gate_c_persistence.py",
+      "functions": 22,
+      "explicit_retired_skip": true,
+      "module_retirement_skip_reasons": [
+        "Gate C multi-policy persistence workflow retired after the policy 2 cutover"
+      ]
+    },
+    {
+      "path": "tests/test_virtual_player_gate_c_repairs.py",
+      "functions": 6,
+      "explicit_retired_skip": true,
+      "module_retirement_skip_reasons": [
+        "Gate C V1 enrollment and repair workflow retired after the policy 2 cutover"
+      ]
+    },
+    {
+      "path": "tests/test_virtual_player_gate_d2_acceptance_workflow.py",
+      "functions": 19,
+      "explicit_retired_skip": true,
+      "module_retirement_skip_reasons": [
+        "Gate D2 static reference activation retired after the policy 2 cutover"
+      ]
+    },
+    {
+      "path": "tests/test_virtual_player_gate_d2_joint_metrics.py",
+      "functions": 2,
+      "explicit_retired_skip": true,
+      "module_retirement_skip_reasons": [
+        "Gate D2 static reference metrics retired after the policy 2 cutover"
+      ]
+    },
+    {
+      "path": "tests/test_virtual_player_gate_d2_routing.py",
+      "functions": 7,
+      "explicit_retired_skip": true,
+      "module_retirement_skip_reasons": [
+        "Gate D2 calibration routing retired after the policy 2 cutover"
+      ]
+    },
+    {
+      "path": "tests/test_virtual_player_gate_d2_routing_concurrency_integration.py",
+      "functions": 1,
+      "explicit_retired_skip": true,
+      "module_retirement_skip_reasons": [
+        "Gate D2 calibration routing retired after the policy 2 cutover"
+      ]
+    },
+    {
+      "path": "tests/test_virtual_player_gate_exit_workflows.py",
+      "functions": 6,
+      "explicit_retired_skip": true,
+      "module_retirement_skip_reasons": [
+        "manual pre-cutover Gate D1/Gate E workflows retired after the policy 2 cutover"
+      ]
+    },
+    {
+      "path": "tests/test_virtual_player_reference_snapshot_catalog.py",
+      "functions": 9,
+      "explicit_retired_skip": true,
+      "module_retirement_skip_reasons": [
+        "static reference snapshot catalog retired after the policy 2 cutover"
+      ]
+    },
+    {
+      "path": "tests/test_virtual_player_reference_snapshots_v2.py",
+      "functions": 7,
+      "explicit_retired_skip": true,
+      "module_retirement_skip_reasons": [
+        "static human reference snapshots retired; daily growth-control snapshots are authoritative"
+      ]
+    }
+  ],
+  "existing_upgrade_formula_ast_comparison": {
+    "next_level_cost": true,
+    "next_level_duration": true,
+    "_upgrade_reference": true
+  },
+  "final_file_sha256": {
+    "core/config.py": "c5e6abec30c62c264049e11230ddfdef6102720d924d6901c13db07ea4f77edc",
+    "gameplay/constants.py": "8b08a5b370cec8abd1dd4fe85a638ecf0880707e38ff0cbb481e0e7a770b77de",
+    "gameplay/models/manor.py": "7911d3d055648ec42191cd61edce231d448f6bf9cf748981942144fa0984a094",
+    "gameplay/services/manor/provisioning.py": "29c6e39109949c02a3768bee626bfdf93f111df0543e1f5137195f8c9b222639",
+    "data/building_templates.yaml": "448fc80a95cf444e2af79fc8ce498788cc187a70efc9742f64187b981f111ad5",
+    "gameplay/templates/gameplay/guide.html": "52fe04f175923684f93d37530ab03c0c16376ca938ccc8868150026c262201a4",
+    "gameplay/migrations/0194_guest_capacity_building_descriptions.py": "9fb9fad43438e18a2b077924207d45f63db520f4194cec94c2a6ff6965dea8f1",
+    "gameplay/services/virtual_player_core/gate_evidence.py": "ead615abb34a9954e323aed88e10ac37f0a41bb5b45ecbef69fc99d317704913",
+    "tests/test_guest_capacity_buildings.py": "5c2677e91b225945c6e5d007ac4e0fc7dcdd445eca7a228460012574b6c0deae",
+    "tests/test_virtual_player_maintenance_capacity_prerequisites.py": "67b168e65efdb2c7f2526744bc3c8ffc1935088e05ee80b6996215a1b445fe05",
+    "tests/raid_combat_battle/battle_flow.py": "d78c35cadfb1e9ee4c1c4ce06e7da5db8ab6a15776c8003f75d72c456c4cc205",
+    "tests/guest_recruitment_service/finalization_refresh.py": "012622216d36aef434fc89535cad65d27c617df4b43cb6f9f2a522ddae2ac6f9"
+  },
+  "limits": [
+    "Full unit process collected before four new upgrade-timer tests and before the recruitment fixture correction; fresh nine-test boundary suite and 61-test recruitment/boundary suite cover final tests.",
+    "Capacity and evidence marker workflows excluded from full unit selection.",
+    "Real MySQL and Redis checks use isolated local test_webgame, never production.",
+    "New starter capacity is five slots; no free guest grant.",
+    "Existing player building levels and immutable virtual player startup profiles are preserved."
+  ],
+  "remaining_unit_skips": [
+    "tests/test_virtual_player_population_aggregation.py::test_population_aggregation_matches_mysql_region_collation[NORTH]",
+    "tests/test_virtual_player_population_aggregation.py::test_population_aggregation_matches_mysql_region_collation[n\\xf3rth]",
+    "tests/test_virtual_player_population_aggregation.py::test_population_aggregation_matches_mysql_region_collation[north ]",
+    "tests/test_caddy_proxy_forwarding.py::test_caddy_adapts_explicit_proxy_trust[]",
+    "tests/test_caddy_proxy_forwarding.py::test_caddy_adapts_explicit_proxy_trust[172.18.0.2/32]",
+    "tests/test_caddy_proxy_forwarding.py::test_caddy_adapts_explicit_proxy_trust[172.18.0.2/32 192.0.2.10/32]",
+    "tests/test_caddy_proxy_forwarding.py::test_caddy_preserves_only_trusted_forwarding[-203.0.113.8-127.0.0.1]",
+    "tests/test_caddy_proxy_forwarding.py::test_caddy_preserves_only_trusted_forwarding[127.0.0.1/32-203.0.113.8-203.0.113.8]",
+    "tests/test_caddy_proxy_forwarding.py::test_caddy_preserves_only_trusted_forwarding[127.0.0.1/32-198.51.100.99, 203.0.113.8-203.0.113.8]",
+    "tests/test_caddy_proxy_forwarding.py::test_caddy_preserves_only_trusted_forwarding[127.0.0.2/32-203.0.113.8-127.0.0.1]"
+  ],
+  "remaining_unit_skip_explanation": {
+    "mysql_collation_cases_on_sqlite": 3,
+    "optional_caddy_binary_or_loopback_environment_cases": 7,
+    "retired_test_skip_cases": 0
+  }
+}

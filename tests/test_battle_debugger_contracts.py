@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from copy import deepcopy
+from io import StringIO
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -9,9 +10,12 @@ import pytest
 from django.conf import settings
 from django.core.cache import cache
 from django.http import HttpResponse
+from django.template import Context, Engine
 from django.test import RequestFactory, override_settings
+from django.utils.html import strip_tags
 
 from battle_debugger.config import BattleConfig, ConfigLoader, InvalidPresetError, PartyConfig
+from battle_debugger.management.commands.battle_debug import Command as BattleDebugCommand
 from battle_debugger.simulator import BattleSimulator, patch_battle_params
 from battle_debugger.views import custom_config, result_detail, simulate, tune
 
@@ -66,6 +70,102 @@ def test_battle_debugger_guest_attack_preserves_fractional_weighted_value():
     attack = BattleSimulator(_valid_config())._calculate_attack(guest, "military")
 
     assert attack == pytest.approx(1.3)
+
+
+def test_debugger_web_report_shows_followup_attack_dodge_and_status():
+    event = {
+        "side": "attacker",
+        "actor": "箭神",
+        "kind": "troop",
+        "target": "枪兵",
+        "damage": 6000,
+        "kills": 6,
+        "additional_attacks": [
+            {"target": "盾兵", "damage": 0, "kills": 0, "is_dodge": True},
+            {
+                "target": "刀兵",
+                "damage": 5000,
+                "kills": 5,
+                "status_inflicted": ["流血"],
+                "additional_targets": [{"target": "援军", "damage": 100, "kills": 1}],
+            },
+        ],
+    }
+
+    template_engine = Engine(
+        dirs=[str(PROJECT_ROOT / "battle_debugger" / "templates"), str(PROJECT_ROOT / "battle" / "templates")],
+        libraries={"battle_report": "battle.templatetags.battle_report"},
+    )
+    html = template_engine.get_template("battle_debugger/partials/event_list.html").render(
+        Context({"round": {"events": [event]}, "side": "attacker", "side_name": "attacker"})
+    )
+    report_text = "".join(strip_tags(html).split())
+
+    assert "普通攻击：对枪兵造成伤害6000" in report_text
+    assert "普通攻击：盾兵闪避了攻击" in report_text
+    assert "普通攻击：对刀兵造成伤害5000" in report_text
+    assert "波及援军，造成伤害100，伤害人数1" in report_text
+    assert "造成状态：流血" in report_text
+    assert "盾兵造成伤害0" not in report_text
+
+
+def test_debugger_command_shows_each_troop_attack():
+    command = BattleDebugCommand()
+    output = StringIO()
+    command.stdout = output
+    command.print_combat_log(
+        [
+            {
+                "round": 1,
+                "events": [
+                    {
+                        "actor": "箭神",
+                        "kind": "troop",
+                        "target": "枪兵",
+                        "damage": 6000,
+                        "kills": 6,
+                        "additional_attacks": [
+                            {"target": "盾兵", "is_dodge": True},
+                            {"target": "刀兵", "damage": 5000, "kills": 5},
+                        ],
+                    }
+                ],
+            }
+        ]
+    )
+
+    report_text = output.getvalue()
+    assert "普通攻击：对枪兵造成伤害6000" in report_text
+    assert "普通攻击：盾兵闪避了攻击" in report_text
+    assert "普通攻击：对刀兵造成伤害5000" in report_text
+
+
+@pytest.mark.parametrize("snapshot_side", [None, "attacker", "defender"])
+def test_debugger_command_legacy_retaliation_uses_snapshot_or_neutral_side(snapshot_side):
+    event = {
+        "actor": "刀圣",
+        "target": "枪王",
+        "kind": "troop",
+        "damage": 100,
+        "counter_damage": 20,
+        "counter_kills": 1,
+        "counter_defeated": True,
+    }
+    if snapshot_side:
+        event["actor_state"] = {"side": snapshot_side}
+    command = BattleDebugCommand()
+    output = StringIO()
+    command.stdout = output
+    command.print_combat_log([{"round": 1, "events": [event]}])
+    text = "".join(output.getvalue().split())
+    if snapshot_side is None:
+        expected = "枪王爆发反戈一击，造成伤害20，伤害人数1，刀圣全军覆没"
+        assert "进攻方" not in text and "防守方" not in text
+    else:
+        source = "防守方" if snapshot_side == "attacker" else "进攻方"
+        victim = "进攻方" if snapshot_side == "attacker" else "防守方"
+        expected = f"{source}枪王爆发反戈一击，造成伤害20，伤害人数1，{victim}全军覆没"
+    assert expected in text
 
 
 @pytest.mark.django_db

@@ -96,6 +96,22 @@ def get_warehouse_grain_quantity_locked(
     依赖该行锁串行化同一庄园的并发访问，避免重复创建粮食账本行。
     """
     _require_atomic_block("get_warehouse_grain_quantity_locked")
+    quantity, _grain_item, _template = _load_warehouse_grain_ledger_locked(
+        manor,
+        grain_template=grain_template,
+        grain_template_resolved=grain_template_resolved,
+    )
+    return quantity
+
+
+def _load_warehouse_grain_ledger_locked(
+    manor: Manor,
+    *,
+    grain_template: ItemTemplate | None = None,
+    grain_template_resolved: bool = False,
+) -> tuple[int, InventoryItem | None, ItemTemplate | None]:
+    """在当前 Manor 锁内读取粮账，并返回仅供同一调用栈复用的库存行。"""
+    _require_atomic_block("_load_warehouse_grain_ledger_locked")
     template = _resolve_grain_template(
         grain_template,
         grain_template_resolved=grain_template_resolved,
@@ -133,7 +149,7 @@ def get_warehouse_grain_quantity_locked(
             quantity = max(0, int(grain_item.quantity or 0))
 
     _set_manor_grain_compatibility(manor, quantity)
-    return quantity
+    return quantity, grain_item, template
 
 
 def _set_manor_grain_compatibility(manor: Manor, quantity: int) -> None:
@@ -176,8 +192,6 @@ def set_warehouse_grain_quantity_locked(
             )
             .first()
         )
-        if grain_item is not None:
-            grain_item.delete()
     else:
         grain_item, _created = InventoryItem.objects.select_for_update().get_or_create(
             manor=manor,
@@ -185,10 +199,41 @@ def set_warehouse_grain_quantity_locked(
             storage_location=InventoryItem.StorageLocation.WAREHOUSE,
             defaults={"quantity": normalized_quantity},
         )
-        if int(grain_item.quantity or 0) != normalized_quantity:
-            InventoryItem.objects.filter(pk=grain_item.pk).update(quantity=normalized_quantity, updated_at=Now())
-            grain_item.quantity = normalized_quantity
 
+    if grain_item is not None:
+        return _set_warehouse_grain_quantity_on_locked_item(
+            manor,
+            normalized_quantity,
+            grain_item,
+            grain_template=template,
+        )
+
+    _set_manor_grain_compatibility(manor, normalized_quantity)
+    return normalized_quantity
+
+
+def _set_warehouse_grain_quantity_on_locked_item(
+    manor: Manor,
+    quantity: int,
+    grain_item: InventoryItem,
+    *,
+    grain_template: ItemTemplate,
+) -> int:
+    """复用当前事务已锁定的粮食行，保留删除与兼容字段更新规则。"""
+    _require_atomic_block("_set_warehouse_grain_quantity_on_locked_item")
+    if (
+        not grain_item.pk
+        or grain_item.manor_id != manor.pk
+        or grain_item.template_id != grain_template.pk
+        or grain_item.storage_location != InventoryItem.StorageLocation.WAREHOUSE
+    ):
+        raise AssertionError("locked grain item must belong to the manor warehouse")
+    normalized_quantity = max(0, int(quantity))
+    if normalized_quantity <= 0:
+        grain_item.delete()
+    elif int(grain_item.quantity or 0) != normalized_quantity:
+        InventoryItem.objects.filter(pk=grain_item.pk).update(quantity=normalized_quantity, updated_at=Now())
+        grain_item.quantity = normalized_quantity
     _set_manor_grain_compatibility(manor, normalized_quantity)
     return normalized_quantity
 

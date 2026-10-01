@@ -45,21 +45,21 @@ def test_build_guest_from_candidate_uses_custom_name_for_common_non_hermit():
 
 
 def test_ensure_guest_capacity_available_raises_when_full():
-    manor = SimpleNamespace(guest_capacity=3, guests=SimpleNamespace(count=lambda: 3))
+    manor = SimpleNamespace(guest_capacity=3, active_guest_count=3)
 
     with pytest.raises(GuestCapacityFullError):
         recruitment_finalize_helpers.ensure_guest_capacity_available(manor)
 
 
 def test_remaining_guest_capacity_rejects_invalid_capacity():
-    manor = SimpleNamespace(guest_capacity=-1, guests=SimpleNamespace(count=lambda: 0))
+    manor = SimpleNamespace(guest_capacity=-1, active_guest_count=0)
 
     with pytest.raises(AssertionError, match="invalid recruitment guest capacity"):
         recruitment_finalize_helpers.remaining_guest_capacity(manor)
 
 
 def test_remaining_guest_capacity_rejects_over_capacity_guest_count():
-    manor = SimpleNamespace(guest_capacity=2, guests=SimpleNamespace(count=lambda: 3))
+    manor = SimpleNamespace(guest_capacity=2, active_guest_count=3)
 
     with pytest.raises(AssertionError, match="invalid recruitment guest occupancy"):
         recruitment_finalize_helpers.remaining_guest_capacity(manor)

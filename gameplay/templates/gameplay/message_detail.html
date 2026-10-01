@@ -29,7 +29,13 @@
 
             <!-- 消息正文 -->
             {% if message.body %}
-            <div class="msg-detail-body">{{ message.body|escape }}</div>
+            <div class="msg-detail-body">{{ scout_report.body|default:message.body|escape }}</div>
+            {% for section in scout_report.defense_sections %}
+            <details class="msg-scout-details">
+                <summary>{{ section.title }}</summary>
+                <div class="msg-scout-details-body">{{ section.body|escape }}</div>
+            </details>
+            {% endfor %}
             {% endif %}
 
             <!-- 附件信息 -->

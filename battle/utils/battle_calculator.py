@@ -130,6 +130,7 @@ def calculate_team_losses(
     is_winner: bool,
     rng: random.Random,
     side: str = "attacker",
+    troop_loss_rate: float | None = None,
 ) -> Dict[str, Any]:
     """
     计算队伍的战斗损失统计。
@@ -144,6 +145,7 @@ def calculate_team_losses(
         is_winner: 是否胜利方
         rng: 随机数生成器
         side: 阵营 ("attacker" 或 "defender")
+        troop_loss_rate: 被击败护院的阵亡概率；留空时使用默认概率
 
     Returns:
         损失统计字典
@@ -153,8 +155,8 @@ def calculate_team_losses(
     lost_hp = max(0, total_hp - remaining_hp)
     hp_loss_ratio = lost_hp / total_hp
 
-    # 被击败的护院统一按80%概率判定损失，攻防双方使用同一规则。
-    defeated_troop_loss_rate = CASUALTY_BASE_PROBABILITY
+    # 未指定覆盖值时，沿用攻防双方的默认阵亡概率。
+    defeated_troop_loss_rate = CASUALTY_BASE_PROBABILITY if troop_loss_rate is None else troop_loss_rate
 
     total_troops = sum(getattr(c, "initial_troop_strength", c.troop_strength) for c in team if c.kind == "troop")
     troops_deployed = total_troops

@@ -1,0 +1,250 @@
+{
+  "date": "2026-10-01",
+  "phase": 2,
+  "deployed": false,
+  "scope": [
+    "reuse same-transaction locked grain row",
+    "dedicated arena zero/single skill prefetch"
+  ],
+  "database": {
+    "vendor": "mysql",
+    "version": "8.4",
+    "host": "127.0.0.1",
+    "port": 13306,
+    "test_database": "test_bank_bulk_release_check",
+    "production_access": false
+  },
+  "resource_benchmarks": [
+    {
+      "baseline_sha256": {
+        "inventory_core.py.txt": "33f8890db7c7d10a139f7ebda42e1dca042526de883a36dc433532aacee661a9",
+        "resources.py.txt": "ba3a2d32e8d25b46a2f8b3efea11e0295e5837cae19d1f6e3de97290b79c4f2d"
+      },
+      "benchmark": "resource_grain_locked_row_reuse",
+      "manors": 1,
+      "optimized_median_ms": 6.627,
+      "optimized_selects": 7,
+      "optimized_sql": 12,
+      "original_median_ms": 7.243,
+      "original_selects": 8,
+      "original_sql": 13,
+      "runtime_sha256": {
+        "gameplay.services.inventory.core": "7879bbe6c5400179dc24f7068444d9c6e4ebc728724e91aae0c6ff24b8f8150e",
+        "gameplay.services.resources": "c76fdf32cac54787658a68ef4ee19d58e59a06d6161edef2313e8b2d63f19cf2"
+      },
+      "transaction_chunk": 50,
+      "vendor": "mysql",
+      "warm_samples": 5
+    },
+    {
+      "baseline_sha256": {
+        "inventory_core.py.txt": "33f8890db7c7d10a139f7ebda42e1dca042526de883a36dc433532aacee661a9",
+        "resources.py.txt": "ba3a2d32e8d25b46a2f8b3efea11e0295e5837cae19d1f6e3de97290b79c4f2d"
+      },
+      "benchmark": "resource_grain_locked_row_reuse",
+      "manors": 50,
+      "optimized_median_ms": 110.005,
+      "optimized_selects": 56,
+      "optimized_sql": 208,
+      "original_median_ms": 141.173,
+      "original_selects": 106,
+      "original_sql": 258,
+      "runtime_sha256": {
+        "gameplay.services.inventory.core": "7879bbe6c5400179dc24f7068444d9c6e4ebc728724e91aae0c6ff24b8f8150e",
+        "gameplay.services.resources": "c76fdf32cac54787658a68ef4ee19d58e59a06d6161edef2313e8b2d63f19cf2"
+      },
+      "transaction_chunk": 50,
+      "vendor": "mysql",
+      "warm_samples": 5
+    },
+    {
+      "baseline_sha256": {
+        "inventory_core.py.txt": "33f8890db7c7d10a139f7ebda42e1dca042526de883a36dc433532aacee661a9",
+        "resources.py.txt": "ba3a2d32e8d25b46a2f8b3efea11e0295e5837cae19d1f6e3de97290b79c4f2d"
+      },
+      "benchmark": "resource_grain_locked_row_reuse",
+      "manors": 500,
+      "optimized_median_ms": 1152.161,
+      "optimized_selects": 560,
+      "optimized_sql": 2080,
+      "original_median_ms": 1442.077,
+      "original_selects": 1060,
+      "original_sql": 2580,
+      "runtime_sha256": {
+        "gameplay.services.inventory.core": "7879bbe6c5400179dc24f7068444d9c6e4ebc728724e91aae0c6ff24b8f8150e",
+        "gameplay.services.resources": "c76fdf32cac54787658a68ef4ee19d58e59a06d6161edef2313e8b2d63f19cf2"
+      },
+      "transaction_chunk": 50,
+      "vendor": "mysql",
+      "warm_samples": 5
+    }
+  ],
+  "arena_benchmarks": [
+    {
+      "benchmark": "arena_candidate_skill_snapshot_prefetch",
+      "current_median_ms": 5.94,
+      "current_queries": 4,
+      "database_vendor": "mysql",
+      "guests": 30,
+      "multi_skill_guests": 0,
+      "previous_median_ms": 19.585,
+      "previous_queries": 33,
+      "profiles": 5,
+      "runtime_sha256": {
+        "gameplay/services/arena/snapshots.py": "2f07a7017254bcb54cacd7a1b69ce75607d126e002b3b68d2237c84248f57ee7",
+        "gameplay/services/arena/virtual_reserve_pool.py": "ebf87a33ffea122847e3dedf40d5991bb1a0eac1cc748828d0606d7b280c5413"
+      },
+      "skill_count_pattern": [
+        0
+      ],
+      "warm_repetitions": 5
+    },
+    {
+      "benchmark": "arena_candidate_skill_snapshot_prefetch",
+      "current_median_ms": 6.039,
+      "current_queries": 4,
+      "database_vendor": "mysql",
+      "guests": 30,
+      "multi_skill_guests": 0,
+      "previous_median_ms": 19.623,
+      "previous_queries": 33,
+      "profiles": 5,
+      "runtime_sha256": {
+        "gameplay/services/arena/snapshots.py": "2f07a7017254bcb54cacd7a1b69ce75607d126e002b3b68d2237c84248f57ee7",
+        "gameplay/services/arena/virtual_reserve_pool.py": "ebf87a33ffea122847e3dedf40d5991bb1a0eac1cc748828d0606d7b280c5413"
+      },
+      "skill_count_pattern": [
+        1
+      ],
+      "warm_repetitions": 5
+    },
+    {
+      "benchmark": "arena_candidate_skill_snapshot_prefetch",
+      "current_median_ms": 20.482,
+      "current_queries": 34,
+      "database_vendor": "mysql",
+      "guests": 30,
+      "multi_skill_guests": 30,
+      "previous_median_ms": 19.476,
+      "previous_queries": 33,
+      "profiles": 5,
+      "runtime_sha256": {
+        "gameplay/services/arena/snapshots.py": "2f07a7017254bcb54cacd7a1b69ce75607d126e002b3b68d2237c84248f57ee7",
+        "gameplay/services/arena/virtual_reserve_pool.py": "ebf87a33ffea122847e3dedf40d5991bb1a0eac1cc748828d0606d7b280c5413"
+      },
+      "skill_count_pattern": [
+        3
+      ],
+      "warm_repetitions": 5
+    },
+    {
+      "benchmark": "arena_candidate_skill_snapshot_prefetch",
+      "current_median_ms": 12.81,
+      "current_queries": 18,
+      "database_vendor": "mysql",
+      "guests": 30,
+      "multi_skill_guests": 14,
+      "previous_median_ms": 19.75,
+      "previous_queries": 33,
+      "profiles": 5,
+      "runtime_sha256": {
+        "gameplay/services/arena/snapshots.py": "2f07a7017254bcb54cacd7a1b69ce75607d126e002b3b68d2237c84248f57ee7",
+        "gameplay/services/arena/virtual_reserve_pool.py": "ebf87a33ffea122847e3dedf40d5991bb1a0eac1cc748828d0606d7b280c5413"
+      },
+      "skill_count_pattern": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "warm_repetitions": 5
+    }
+  ],
+  "grain_collation_results": [
+    {
+      "column_collation": "utf8mb4_0900_ai_ci",
+      "grain_template_lookup": "GrAiN",
+      "matched": true,
+      "vendor": "mysql"
+    },
+    {
+      "column_collation": "utf8mb4_0900_ai_ci",
+      "grain_template_lookup": "gráin",
+      "matched": true,
+      "vendor": "mysql"
+    },
+    {
+      "column_collation": "utf8mb4_0900_ai_ci",
+      "grain_template_lookup": "grain ",
+      "matched": false,
+      "vendor": "mysql"
+    }
+  ],
+  "validation": [
+    {
+      "kind": "MySQL function, equivalence and real concurrency",
+      "passed": 54,
+      "seconds": 30.66,
+      "log": "/tmp/webgame_phase2_mysql.log",
+      "log_sha256": "7eaf8cf1a28650f9ad32287656375b379cd46a26d33a534c13a9b35eb274a33d"
+    },
+    {
+      "kind": "MySQL historical independent review",
+      "passed": 6,
+      "seconds": 1.91,
+      "log": "/tmp/webgame_phase2_historical_mysql.log",
+      "log_sha256": "a9a9807d033455fc64cc9b61f66c58611c221c492c15ccbba52b25a12258047d"
+    },
+    {
+      "kind": "SQLite resource and inventory regressions",
+      "passed": 118,
+      "seconds": 31.59,
+      "log": "/tmp/resource_grain_reuse_regression.log",
+      "log_sha256": "5834abca8aa090b94d2ace1d9904799c343a703924fd53cc1c7f3a62dc52b2ae"
+    },
+    {
+      "kind": "SQLite salary, training, guild and virtual player regressions",
+      "passed": 96,
+      "seconds": 29.52,
+      "log": "/tmp/webgame_phase2_extra_regression.log",
+      "log_sha256": "574743a8688013518ccfe1c3a5df9b713b90979fe42d1c2e967d48d6d257c481"
+    },
+    {
+      "kind": "SQLite arena snapshot and virtual reserve regressions",
+      "passed": 122,
+      "seconds": 54.51,
+      "log": "/tmp/webgame_arena_skill_final_sqlite.log",
+      "log_sha256": "e86c5f8c8e895793237611b871da9c1af73a11001f19496a222b3b193c550abe"
+    }
+  ],
+  "static_checks": [
+    "Black",
+    "isort",
+    "flake8",
+    "mypy four runtime files",
+    "git diff --check"
+  ],
+  "runtime_and_evidence_sha256": {
+    "gameplay/services/inventory/core.py": "7879bbe6c5400179dc24f7068444d9c6e4ebc728724e91aae0c6ff24b8f8150e",
+    "gameplay/services/resources.py": "c76fdf32cac54787658a68ef4ee19d58e59a06d6161edef2313e8b2d63f19cf2",
+    "gameplay/services/arena/snapshots.py": "2f07a7017254bcb54cacd7a1b69ce75607d126e002b3b68d2237c84248f57ee7",
+    "gameplay/services/arena/virtual_reserve_pool.py": "ebf87a33ffea122847e3dedf40d5991bb1a0eac1cc748828d0606d7b280c5413",
+    "tests/test_resource_grain_reuse.py": "471728f124dedb4c7534b4988fce0afe1c8c16b7a0524f342fc78849901c9fe0",
+    "tests/test_arena_skill_snapshot_prefetch.py": "319cb0130a4650fbaac646ac4a7479f1e2015109d3ce4e7c118fb126b2889ce7",
+    "tests/test_resource_grain_reuse_concurrency_integration.py": "cd93432cb7f707364a45f000061c9e30c3eaed04bd1299cf39d078773dd0005b",
+    "tests/fixtures/resource_grain_reuse_baseline/inventory_core.py.txt": "33f8890db7c7d10a139f7ebda42e1dca042526de883a36dc433532aacee661a9",
+    "tests/fixtures/resource_grain_reuse_baseline/resources.py.txt": "ba3a2d32e8d25b46a2f8b3efea11e0295e5837cae19d1f6e3de97290b79c4f2d",
+    "reports/performance_review_checks_20260930.py": "80d52a672cbc24ddea5fd7a31ceff327b8a585bd6b4e7ebda9a83c82cc7917f3"
+  },
+  "arena_oracle_verification": "Both old skill serializer and old candidate prefetch function bodies AST-identical to pre-change source.",
+  "known_cost": "All-multi skill candidate batches retain old per-guest ordering queries plus one prefetch per nonempty batch.",
+  "deferred": {
+    "resource_event_batching": "Preserve original per-manor auto_now_add time and insertion point.",
+    "training_batching": "Preserve per-guest commits, failure isolation and clock boundaries."
+  },
+  "limits": [
+    "Local warm paired medians, five measured repetitions; no claim about production task speed.",
+    "Synthetic population and skill distributions; no newly measured production distribution.",
+    "Historical resource probe now explicitly executes frozen pre-optimization source."
+  ]
+}

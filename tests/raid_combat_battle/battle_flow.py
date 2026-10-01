@@ -389,7 +389,7 @@ def test_execute_raid_battle_caps_and_orders_idle_defenders_and_only_applies_sel
         attacker_username="raid_defender_all_idle_a",
         defender_username="raid_defender_all_idle_d",
     )
-    monkeypatch.setattr(defender, "get_building_level", lambda _key: 0)
+    monkeypatch.setattr(type(defender), "max_squad_size", property(lambda _manor: 3))
 
     green_template = GuestTemplate.objects.create(
         key="raid_defender_limit_green_tpl",

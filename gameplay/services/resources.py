@@ -507,6 +507,8 @@ def settle_resource_production_locked(
     grain_template_resolved: bool = False,
 ) -> Dict[str, int]:
     """在 Manor 锁内结算产出，可按资源限制正向增量。"""
+    from .inventory.core import _load_warehouse_grain_ledger_locked, _set_warehouse_grain_quantity_on_locked_item
+
     _require_atomic_block("settle_resource_production_locked")
     current_time = now or timezone.now()
     normalized_limits = (
@@ -522,7 +524,7 @@ def settle_resource_production_locked(
         if unknown:
             raise AssertionError(f"invalid resource production positive limit keys: {sorted(unknown)!r}")
 
-    _load_warehouse_grain_quantity_locked(
+    _quantity, locked_grain_item, resolved_grain_template = _load_warehouse_grain_ledger_locked(
         manor,
         grain_template=grain_template,
         grain_template_resolved=grain_template_resolved,
@@ -552,12 +554,20 @@ def settle_resource_production_locked(
     update_fields = list(projected_values.keys()) + ["resource_updated_at"]
     manor.save(update_fields=update_fields)
     if int(settled.get(ResourceType.GRAIN, 0) or 0) != 0:
-        _set_warehouse_grain_quantity_locked(
-            manor,
-            int(manor.grain),
-            grain_template=grain_template,
-            grain_template_resolved=grain_template_resolved,
-        )
+        if locked_grain_item is not None and resolved_grain_template is not None:
+            _set_warehouse_grain_quantity_on_locked_item(
+                manor,
+                int(manor.grain),
+                locked_grain_item,
+                grain_template=resolved_grain_template,
+            )
+        else:
+            _set_warehouse_grain_quantity_locked(
+                manor,
+                int(manor.grain),
+                grain_template=grain_template,
+                grain_template_resolved=grain_template_resolved,
+            )
 
     if settled:
         log_resource_gain(

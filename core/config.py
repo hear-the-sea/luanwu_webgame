@@ -79,7 +79,7 @@ class ManorConfig:
     """庄园系统配置"""
 
     # 门客容量
-    GUEST_CAPACITY_BASE: int = 3
+    GUEST_CAPACITY_BASE: int = 5
     GUEST_CAPACITY_PER_LEVEL: int = 1
 
     # 家丁容量
@@ -87,9 +87,9 @@ class ManorConfig:
     RETAINER_CAPACITY_PER_LEVEL: int = 100
 
     # 出战上限
-    SQUAD_SIZE_BASE: int = 3
+    SQUAD_SIZE_BASE: int = 5
     SQUAD_SIZE_PER_LEVEL: int = 1
-    SQUAD_SIZE_MAX: int = 18
+    SQUAD_SIZE_MAX: int = 20
 
     # 训练速度
     TRAINING_SPEED_BONUS_PER_LEVEL: float = 0.03

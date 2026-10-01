@@ -7,7 +7,19 @@ def create_xiaoyao_shanzhuang(apps, schema_editor):
     Manor = apps.get_model("gameplay", "Manor")
     database = schema_editor.connection.alias
 
-    reference = BuildingType.objects.using(database).get(key="juxianzhuang")
+    reference = BuildingType.objects.using(database).filter(key="juxianzhuang").first()
+    inherited_config = {
+        "base_upgrade_time": 3107,
+        "time_growth": 1.5,
+        "upgrade_time_budget": 15552000,
+        "time_curve": 1.10,
+        "base_cost": {"grain": 3432, "silver": 17164},
+        "cost_growth": 1.7,
+        "upgrade_cost_budget": {},
+        "cost_curve": 1.0,
+    }
+    if reference is not None:
+        inherited_config = {field: getattr(reference, field) for field in inherited_config}
     building_type, _ = BuildingType.objects.using(database).update_or_create(
         key="xiaoyao_shanzhuang",
         defaults={
@@ -17,14 +29,7 @@ def create_xiaoyao_shanzhuang(apps, schema_editor):
             "resource_type": "silver",
             "base_rate_per_hour": 0,
             "rate_growth": 0.0,
-            "base_upgrade_time": reference.base_upgrade_time,
-            "time_growth": reference.time_growth,
-            "upgrade_time_budget": reference.upgrade_time_budget,
-            "time_curve": reference.time_curve,
-            "base_cost": reference.base_cost,
-            "cost_growth": reference.cost_growth,
-            "upgrade_cost_budget": reference.upgrade_cost_budget,
-            "cost_curve": reference.cost_curve,
+            **inherited_config,
             "icon": "",
         },
     )

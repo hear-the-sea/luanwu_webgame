@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+from copy import copy
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from fractions import Fraction
@@ -441,6 +442,27 @@ def apply_medicine_item_for_guest_locked(
     if not locked_guest:
         raise GuestOwnershipError(message="门客不存在或不属于您的庄园")
 
+    return _apply_medicine_to_locked_objects(
+        manor,
+        locked_guest,
+        locked_item,
+        expected_quote=expected_quote,
+        expected_heal_amount=expected_heal_amount,
+    )
+
+
+def _apply_medicine_to_locked_objects(
+    manor: Manor,
+    locked_guest: Guest,
+    locked_item: InventoryItem,
+    *,
+    expected_quote: MedicineUseQuote | None = None,
+    expected_heal_amount: int | None = None,
+) -> Dict[str, Any]:
+    """复用当前事务内已锁定的门客和库存，执行相同的单次用药规则。"""
+    if not transaction.get_connection().in_atomic_block:
+        raise RuntimeError("_apply_medicine_to_locked_objects must be called inside transaction.atomic()")
+
     quote = quote_medicine_item_for_guest(manor, locked_guest, locked_item)
     if expected_heal_amount is not None and quote.heal_amount != (
         _normalize_positive_medicine_int(expected_heal_amount)
@@ -641,10 +663,13 @@ def heal_all_guests_with_medicine(manor: Manor) -> dict[str, int]:
                 # 为单次尝试建立保存点：若库存行在重新校验时已失效，
                 # 只回滚这次尝试，不让前面成功的治疗被污染。
                 with transaction.atomic():
-                    result = apply_medicine_item_for_guest_locked(
+                    # 保存点回滚不会还原实例字段；复制已锁对象隔离失败尝试。
+                    attempted_guest = copy(guest)
+                    attempted_item = copy(stock.item)
+                    result = _apply_medicine_to_locked_objects(
                         locked_manor,
-                        int(guest.pk),
-                        int(stock.item.pk),
+                        attempted_guest,
+                        attempted_item,
                         expected_heal_amount=stock.heal_amount,
                     )
             except (GuestFullHpError, GuestItemConfigurationError, GuestItemOwnershipError, GuestNotIdleError):
@@ -660,6 +685,8 @@ def heal_all_guests_with_medicine(manor: Manor) -> dict[str, int]:
             healed = int(result["healed"])
             if healed <= 0:
                 break
+            guest = attempted_guest
+            stock.item = attempted_item
             used_for_guest = True
             consumed_item_count += 1
             healed_hp += healed

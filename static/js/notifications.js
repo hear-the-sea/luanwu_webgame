@@ -303,11 +303,6 @@
     stabilityTimer = null;
   }
 
-  function resetReconnectDelay() {
-    reconnectPolicy.markStable();
-    clearStabilityTimer();
-  }
-
   function connect() {
     const currentSocket = new WebSocket(wsUrl);
     socket = currentSocket;
@@ -331,7 +326,6 @@
       } catch (e) {
         return;
       }
-      resetReconnectDelay();
       handlePayload(payload);
     };
 

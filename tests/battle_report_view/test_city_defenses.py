@@ -194,7 +194,7 @@ def test_counterattack_against_arrow_tower_does_not_show_casualty_count():
     counter_text = document.select_one(".counter-text")
 
     assert counter_text is not None
-    assert "枪王爆发反戈一击（171伤害）" in counter_text.get_text()
+    assert "敌方枪王爆发反戈一击，造成伤害171" in counter_text.get_text()
     assert "伤害人数" not in counter_text.get_text()
     assert "箭塔被摧毁" in counter_text.get_text()
     assert "敌方全军覆没" not in counter_text.get_text()
@@ -236,7 +236,7 @@ def test_secondary_counterattack_against_arrow_tower_hides_actor_summary():
     counter_text = document.select_one(".counter-text")
 
     assert counter_text is not None
-    assert "← 枪王爆发反戈一击（17547伤害），箭塔被摧毁" in counter_text.get_text()
+    assert "敌方枪王爆发反戈一击，造成伤害17547，箭塔被摧毁" in counter_text.get_text()
     assert counter_text.select_one(".event-unit-name") is None
     assert counter_text.select_one(".battle-unit-state") is None
 

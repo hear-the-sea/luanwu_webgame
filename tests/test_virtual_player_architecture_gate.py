@@ -145,6 +145,7 @@ BOT_PROFILE_RELATION_READERS = {
     "gameplay/admin/messages.py": "exclude virtual manors from default admin message recipients",
     "gameplay/services/global_mail.py": "exclude virtual manors from global mail delivery",
     "gameplay/tasks/global_mail.py": "exclude virtual manors from global mail backfill",
+    "gameplay/services/global_announcement.py": "exclude virtual manors from global announcement delivery",
     "guests/models.py": "GuestRecruitment relation to the owning virtual profile",
     "guests/services/loyalty.py": "identify virtual-player guests before applying injury loyalty rules",
     "guests/tasks.py": "exclude virtual-player guests from daily loyalty settlement and defection",

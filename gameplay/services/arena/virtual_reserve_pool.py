@@ -62,7 +62,7 @@ from gameplay.services.virtual_player_state_policy import (
     VIRTUAL_PROFILE_ARENA_ELIGIBLE_STATES,
     is_virtual_profile_arena_eligible,
 )
-from guests.models import Guest, GuestRarity, GuestStatus, GuestTemplate
+from guests.models import Guest, GuestRarity, GuestStatus, GuestTemplate, Skill
 from guests.rarity import GUEST_RARITY_ORDER
 
 from .coop_rules import load_arena_coop_rules
@@ -392,12 +392,23 @@ class _CandidateLeaseRejected(RuntimeError):
     pass
 
 
+def _arena_snapshot_guest_queryset():
+    return (
+        Guest.objects.filter(status=GuestStatus.IDLE)
+        .select_related("template")
+        .prefetch_related(
+            Prefetch("skills", queryset=Skill.objects.only("id", "key"), to_attr="_arena_snapshot_skills")
+        )
+        .order_by("id")
+    )
+
+
 def _profile_lineup_snapshots(profile: BotProfile) -> list[dict]:
     prefetched_guests = getattr(profile.manor, "arena_idle_guests", None)
     guests = (
         list(prefetched_guests)
         if prefetched_guests is not None
-        else list(profile.manor.guests.filter(status=GuestStatus.IDLE).select_related("template").order_by("id"))
+        else list(_arena_snapshot_guest_queryset().filter(manor_id=profile.manor_id))
     )
     return [build_entry_guest_snapshot(guest) for guest in guests]
 
@@ -1553,7 +1564,7 @@ def _arena_candidate_guest_prefetches() -> tuple[Prefetch, Prefetch]:
     return (
         Prefetch(
             "manor__guests",
-            queryset=Guest.objects.filter(status=GuestStatus.IDLE).select_related("template").order_by("id"),
+            queryset=_arena_snapshot_guest_queryset(),
             to_attr="arena_idle_guests",
         ),
         Prefetch(

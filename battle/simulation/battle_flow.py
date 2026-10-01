@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Tuple
 
 from django.utils import timezone
 
+from ..random_context import CURRENT_BATTLE_ENGINE_VERSION
 from .attack_execution import perform_attack
 from .constants import MAX_ALLOWED_PRIORITY, MIN_ALLOWED_PRIORITY
 from .report_state import snapshot_round_lineups, snapshot_unit_state
@@ -102,9 +103,33 @@ def _append_attack_event(
         event["priority_phase"] = priority
         event["preemptive"] = True
     events.append(event)
+    # 分队追加攻击在主事件内展示；命中后的被动也应留在原命中之后。
+    if event.get("additional_attacks"):
+        return
     for passive_event in _pop_attack_passive_events(event, "passive_events_after"):
         passive_event["order"] = len(events) + 1
         events.append(passive_event)
+
+
+def _perform_versioned_attack(
+    actor: "Combatant",
+    attacker_team: List["Combatant"],
+    defender_team: List["Combatant"],
+    rng: random.Random,
+    *,
+    round_priority: int,
+    battle_engine_version: str,
+) -> Dict[str, Any] | None:
+    if battle_engine_version == CURRENT_BATTLE_ENGINE_VERSION:
+        return perform_attack(actor, attacker_team, defender_team, rng, round_priority=round_priority)
+    return perform_attack(
+        actor,
+        attacker_team,
+        defender_team,
+        rng,
+        round_priority=round_priority,
+        battle_engine_version=battle_engine_version,
+    )
 
 
 def _append_waiting_units(
@@ -167,6 +192,7 @@ def _resolve_standard_round(
     defender_units: List["Combatant"],
     rng: random.Random,
     round_no: int,
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
 ) -> Dict[str, Any]:
     from ..arena_coop import sync_arena_coop_combat_state, try_trigger_arena_coop_pre_action_heal
     from ..modifier_lifecycle import clear_action_modifiers
@@ -220,7 +246,17 @@ def _resolve_standard_round(
 
         _append_heal_event(events, try_trigger_arena_coop_pre_action_heal(actor))
         _append_heal_event(events, try_trigger_battle_heal_on_action(actor, rng))
-        _append_attack_event(events, perform_attack(actor, attacker_units, defender_units, rng, round_priority=0))
+        _append_attack_event(
+            events,
+            _perform_versioned_attack(
+                actor,
+                attacker_units,
+                defender_units,
+                rng,
+                round_priority=0,
+                battle_engine_version=battle_engine_version,
+            ),
+        )
         passive_events = []
         run_passives_for_timing(
             "action_end",
@@ -246,6 +282,7 @@ def resolve_priority_phases(
     attacker_team: List["Combatant"],
     defender_team: List["Combatant"],
     rng: random.Random,
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
 ) -> Tuple[List[Dict[str, Any]], int]:
     from ..arena_coop import sync_arena_coop_combat_state, try_trigger_arena_coop_pre_action_heal
     from ..modifier_lifecycle import clear_action_modifiers
@@ -313,7 +350,14 @@ def resolve_priority_phases(
             _append_heal_event(events, try_trigger_battle_heal_on_action(actor, rng))
             _append_attack_event(
                 events,
-                perform_attack(actor, attacker_team, defender_team, rng, round_priority=priority),
+                _perform_versioned_attack(
+                    actor,
+                    attacker_team,
+                    defender_team,
+                    rng,
+                    round_priority=priority,
+                    battle_engine_version=battle_engine_version,
+                ),
                 priority,
             )
             passive_events = []
@@ -347,6 +391,9 @@ def simulate_battle(
     config: dict,
     drop_table: Dict[str, Any] | None = None,
     max_rounds: int | None = None,
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
+    attacker_troop_loss_rate: float | None = None,
+    defender_troop_loss_rate: float | None = None,
 ) -> "BattleSimulationResult":
     from ..combatants_pkg.core import BattleSimulationResult
     from ..constants import MAX_ROUNDS
@@ -373,12 +420,28 @@ def simulate_battle(
             rng=rng,
         )
         _append_passive_events(battle_start_events, passive_events)
-    priority_rounds, next_round_start = resolve_priority_phases(attacker_units, defender_units, rng)
+    if battle_engine_version == CURRENT_BATTLE_ENGINE_VERSION:
+        priority_rounds, next_round_start = resolve_priority_phases(attacker_units, defender_units, rng)
+    else:
+        priority_rounds, next_round_start = resolve_priority_phases(
+            attacker_units, defender_units, rng, battle_engine_version=battle_engine_version
+        )
     rounds.extend(priority_rounds)
     round_no = next_round_start
     remaining_rounds = max(0, max_rounds - len(priority_rounds))
     while remaining_rounds > 0 and alive(attacker_units) and alive(defender_units):
-        rounds.append(_resolve_standard_round(attacker_units, defender_units, rng, round_no))
+        if battle_engine_version == CURRENT_BATTLE_ENGINE_VERSION:
+            rounds.append(_resolve_standard_round(attacker_units, defender_units, rng, round_no))
+        else:
+            rounds.append(
+                _resolve_standard_round(
+                    attacker_units,
+                    defender_units,
+                    rng,
+                    round_no,
+                    battle_engine_version=battle_engine_version,
+                )
+            )
         round_no += 1
         remaining_rounds -= 1
     if rounds:
@@ -394,7 +457,14 @@ def simulate_battle(
     winner = _resolve_winner(attacker_units, defender_units)
     starts_at, completed_at = _build_result_timestamps(travel_seconds)
 
-    losses = summarize_losses(attacker_units, defender_units, winner, rng)
+    losses = summarize_losses(
+        attacker_units,
+        defender_units,
+        winner,
+        rng,
+        attacker_troop_loss_rate=attacker_troop_loss_rate,
+        defender_troop_loss_rate=defender_troop_loss_rate,
+    )
     drops = _resolve_drops(winner, drop_table, config, rng)
 
     return BattleSimulationResult(

@@ -33,7 +33,7 @@ def test_calculate_battle_salvage_deterministic_and_uses_guest_hp_ratio():
     exp1, equip1 = calculate_battle_salvage(report)
     exp2, equip2 = calculate_battle_salvage(report)
 
-    # dao_jie: base_duration=180秒 → 10 * (180/3600) * 0.1 = 0.05
+    # dao_jie: base_duration=90秒 → 10 * (90/3600) * 0.1 = 0.025
     # defeated guest: 50 * 2.0 * (50/100) * 0.05 = 2.5 → total int(...) = 2
     assert exp1 == 2
     assert exp2 == exp1
@@ -63,8 +63,8 @@ def test_calculate_battle_salvage_counts_troop_losses_on_both_sides():
 
     exp, _equip = calculate_battle_salvage(report)
 
-    # Both sides: (200 + 200) * (180/3600) * 0.1 = 2
-    assert exp == 2
+    # Both sides: (200 + 200) * (90/3600) * 0.1 = 1
+    assert exp == 1
 
 
 def test_calculate_battle_salvage_ignores_guest_casualty_entries_in_troop_salvage():
@@ -109,7 +109,7 @@ def test_calculate_battle_salvage_can_limit_equipment_recovery_to_player_side():
     exp_attacker_only, equip_attacker_only = calculate_battle_salvage(report, equipment_casualty_side="attacker")
 
     # 经验果仍按双方阵亡计算，不受装备过滤影响
-    assert exp_attacker_only == exp_all == 2
+    assert exp_attacker_only == exp_all == 1
 
     attacker_equipment_keys = {
         "equip_dakandao",

@@ -8,6 +8,7 @@ from django.utils import timezone
 
 from ...constants import PVPConstants
 from ...models import ScoutCooldown, ScoutRecord
+from ..scout_intel_rules import SCOUT_INTEL_SCHEMA_VERSION, normalize_scout_level
 
 
 def finalize_scout_command(
@@ -17,7 +18,7 @@ def finalize_scout_command(
     scout_record_model: Any = ScoutRecord,
     scout_cooldown_model: Any = ScoutCooldown,
     random_fn: Callable[[], float],
-    gather_intel_fn: Callable[[Any], Any],
+    gather_intel_fn: Callable[..., Any],
     schedule_followup_fn: Callable[..., None],
     schedule_return_completion_fn: Callable[[Any, int], None],
 ) -> None:
@@ -38,7 +39,16 @@ def finalize_scout_command(
         locked_record.is_success = is_success
 
         if is_success:
-            locked_record.intel_data = gather_intel_fn(locked_record.defender)
+            dispatch_intel = locked_record.intel_data if isinstance(locked_record.intel_data, dict) else {}
+            if dispatch_intel.get("intel_schema_version") == SCOUT_INTEL_SCHEMA_VERSION:
+                locked_record.intel_data = gather_intel_fn(
+                    locked_record.defender,
+                    scout_level=normalize_scout_level(dispatch_intel.get("scout_level")),
+                    now=current_time,
+                )
+            else:
+                # 历史在途侦察没有出发等级，继续按原有基础情报结算。
+                locked_record.intel_data = gather_intel_fn(locked_record.defender)
         else:
             followup_action = "detected_message"
 

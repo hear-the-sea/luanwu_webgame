@@ -1,0 +1,146 @@
+{
+  "date": "2026-09-30",
+  "production_changes": false,
+  "correctness_review": {
+    "finding": "Database-collation-equivalent region spelling was lost by exact Python lookup after raw GROUP BY",
+    "status": "fixed",
+    "fix": "Canonical SQL CASE grouping preserves original WHERE collation semantics",
+    "mysql_cases": [
+      "NORTH",
+      "nórth",
+      "north "
+    ],
+    "report": "reports/performance_review_20260930.md",
+    "independent_legacy_revision": "70165a0c9cc5954f4574063b6b8bf0beca287d85"
+  },
+  "verification": {
+    "population_mysql_passed": 32,
+    "independent_oracle_and_candidate_profile_mysql_passed": 6,
+    "associated_sqlite_passed": 189,
+    "associated_websocket_passed": 78,
+    "associated_websocket_skipped": 1
+  },
+  "websocket_special_tests_passed": 17,
+  "resource_profiles": [
+    {
+      "database": "mysql",
+      "manors": 1,
+      "sql": 8,
+      "inventory_selects": 2,
+      "event_inserts": 1
+    },
+    {
+      "database": "mysql",
+      "manors": 50,
+      "sql": 253,
+      "inventory_selects": 100,
+      "event_inserts": 50
+    }
+  ],
+  "arena_skill_profile": {
+    "database": "mysql",
+    "guests": 10,
+    "skill_selects": 10,
+    "skill_selects_after_existing_prefetch": 10
+  },
+  "candidate_implementation_status": "investigated_not_implemented",
+  "population_benchmarks_after_review": [
+    {
+      "bands": 8,
+      "benchmark": "population_plan_count_queries",
+      "current_median_ms": 8.517,
+      "current_queries": 3,
+      "database_vendor": "mysql",
+      "previous_median_ms": 84.624,
+      "previous_queries": 121,
+      "regions": 5,
+      "required_engine": null,
+      "target_based": false,
+      "warm_repetitions": 5
+    },
+    {
+      "bands": 8,
+      "benchmark": "population_plan_count_queries",
+      "current_median_ms": 8.663,
+      "current_queries": 3,
+      "database_vendor": "mysql",
+      "previous_median_ms": 86.939,
+      "previous_queries": 121,
+      "regions": 5,
+      "required_engine": null,
+      "target_based": true,
+      "warm_repetitions": 5
+    },
+    {
+      "bands": 8,
+      "benchmark": "population_plan_count_queries",
+      "current_median_ms": 8.396,
+      "current_queries": 3,
+      "database_vendor": "mysql",
+      "previous_median_ms": 87.795,
+      "previous_queries": 121,
+      "regions": 5,
+      "required_engine": 1,
+      "target_based": false,
+      "warm_repetitions": 5
+    },
+    {
+      "bands": 8,
+      "benchmark": "population_plan_count_queries",
+      "current_median_ms": 8.427,
+      "current_queries": 3,
+      "database_vendor": "mysql",
+      "previous_median_ms": 89.762,
+      "previous_queries": 121,
+      "regions": 5,
+      "required_engine": 1,
+      "target_based": true,
+      "warm_repetitions": 5
+    },
+    {
+      "bands": 8,
+      "benchmark": "population_plan_count_queries",
+      "current_median_ms": 8.511,
+      "current_queries": 3,
+      "database_vendor": "mysql",
+      "previous_median_ms": 88.477,
+      "previous_queries": 121,
+      "regions": 5,
+      "required_engine": 2,
+      "target_based": false,
+      "warm_repetitions": 5
+    },
+    {
+      "bands": 8,
+      "benchmark": "population_plan_count_queries",
+      "current_median_ms": 8.832,
+      "current_queries": 3,
+      "database_vendor": "mysql",
+      "previous_median_ms": 93.265,
+      "previous_queries": 121,
+      "regions": 5,
+      "required_engine": 2,
+      "target_based": true,
+      "warm_repetitions": 5
+    }
+  ],
+  "source_sha256": {
+    "gameplay/services/virtual_player_core/population_runtime.py": "15d33f32c5c01a023e6228e3686f7ca5697044c2def72d513451b1559b197dd1",
+    "guests/services/health.py": "b1d6d077ff5b0755f1228e214280c359b766d05a566b0cdd235690b8e0f08ec1",
+    "websocket/consumers/world_chat.py": "7dde271fc6d06138c82dcacb65bbc9084936664a06c041109cd86c318d3b755c",
+    "websocket/consumers/online_stats.py": "f6094980659f063d2c5f6991abd0ae954abbfe3070bfec0bfa56ff609645c10f",
+    "static/js/online_stats.js": "1be5ce4aa1b66e34973562c39936cba76797f999368e3a0716c0452471304a4b",
+    "static/js/chat_widget_connection.js": "fbd2568e54d48b5a5c92f5bc353dd17d4ff99083e8f2c42e10f9786d0f346361",
+    "static/js/notifications.js": "8b9bb81c5e75defe1693fd753c2c01376cc02fdc2491bd39bbf44c6fd2e1af12",
+    "tests/test_virtual_player_population_aggregation.py": "7ce3639f6f3558ab938fa17c6d6c66bd959f70a1e850c1290398a9ceb9462c31",
+    "tests/test_bulk_guest_healing_query_reuse.py": "97c0ead978ed7cf7eb84464d97fdfd383d222c8e76fca45de8056dae784a4dcd",
+    "tests/test_bulk_guest_healing_concurrency_integration.py": "8ea2a7fd0cc795fc817c29dda6f9571852d143f7af8224af04cf8c5073bda2ec",
+    "tests/test_bulk_guest_healing.py": "b635445779a2b3cde9f51840862c985c242ad89943793c0afd300961b816763f",
+    "tests/test_websocket_terminal_auth.py": "13acc7e284ef261a1111404a3b45fcd003ee054454dd9f81c3116ed90802bfe1",
+    "static/js/tests/online_stats.test.js": "75d98fa5c2adb3315055bd1e6c389795fd80d0521c67ccbdf8f61b0eab224c72",
+    "static/js/tests/chat_widget_connection.test.js": "d3ef0dae8e1a5076e20b6fb8a728b8acd8674777d899e8c6c0354efbaab57c91",
+    "static/js/tests/notifications_toast.test.js": "fe44050441e64b894789dd28e126649d78a128c4ca2998a2b765135f37328e81",
+    "docs/architecture.md": "4ac7ac23ec6f9cdd42ffdd076d33aaf7aa399cc6221642ff9d8684ea85db5761",
+    "reports/performance_review_checks_20260930.py": "71775f41242992d1253d4486a7179604b980cfdd49626def38ac71e8475d6830"
+  }
+}

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import random
 from types import SimpleNamespace
-from unittest.mock import MagicMock
 
 import pytest
 
@@ -10,45 +9,81 @@ import guests.services.recruitment_queries as recruitment_query_service
 import guests.services.recruitment_shared as recruitment_shared
 import guests.services.recruitment_templates as recruitment_template_service
 import guests.utils.recruitment_utils as recruitment_utils
-from guests.models import GuestRarity
+from gameplay.services.manor.core import ensure_manor
+from guests.models import Guest, GuestRarity, GuestTemplate
 from guests.utils.recruitment_utils import HERMIT_RARITY, RARITY_DISTRIBUTION, RARITY_WEIGHTS, TOTAL_WEIGHT
 
 
-def test_get_excluded_template_ids_excludes_green_and_above():
-    manor = MagicMock()
-    manor.guests.values_list.return_value = [
-        (1, GuestRarity.GREEN, False),
-        (2, GuestRarity.BLUE, False),
-        (3, GuestRarity.GRAY, False),
+@pytest.mark.django_db
+def test_get_excluded_template_ids_excludes_green_and_above(django_user_model):
+    manor = ensure_manor(django_user_model.objects.create_user(username="excluded_rarities", password="pass"))
+    templates = [
+        GuestTemplate.objects.create(key=f"excluded_{rarity}", name=rarity, archetype="military", rarity=rarity)
+        for rarity in (GuestRarity.GREEN, GuestRarity.BLUE, GuestRarity.GRAY)
     ]
+    for template in templates:
+        Guest.objects.create(manor=manor, template=template)
 
     excluded = recruitment_query_service.get_excluded_template_ids(manor)
 
-    assert 1 in excluded
-    assert 2 in excluded
-    assert 3 not in excluded
+    assert excluded == {templates[0].id, templates[1].id}
 
 
-def test_get_excluded_template_ids_excludes_black_hermit():
-    manor = MagicMock()
-    manor.guests.values_list.return_value = [
-        (1, GuestRarity.BLACK, True),
-        (2, GuestRarity.BLACK, False),
-    ]
+@pytest.mark.django_db
+def test_get_excluded_template_ids_excludes_black_hermit(django_user_model):
+    manor = ensure_manor(django_user_model.objects.create_user(username="excluded_hermit", password="pass"))
+    hermit = GuestTemplate.objects.create(
+        key="excluded_hermit", name="隐士", archetype="civil", rarity=GuestRarity.BLACK, is_hermit=True
+    )
+    ordinary = GuestTemplate.objects.create(
+        key="excluded_black", name="普通", archetype="civil", rarity=GuestRarity.BLACK
+    )
+    Guest.objects.create(manor=manor, template=hermit)
+    Guest.objects.create(manor=manor, template=ordinary)
 
     excluded = recruitment_query_service.get_excluded_template_ids(manor)
 
-    assert 1 in excluded
-    assert 2 not in excluded
+    assert excluded == {hermit.id}
 
 
-def test_get_excluded_template_ids_empty_when_no_guests():
-    manor = MagicMock()
-    manor.guests.values_list.return_value = []
+@pytest.mark.django_db
+def test_get_excluded_template_ids_empty_when_no_guests(django_user_model):
+    manor = ensure_manor(django_user_model.objects.create_user(username="excluded_empty", password="pass"))
 
     excluded = recruitment_query_service.get_excluded_template_ids(manor)
 
     assert excluded == set()
+
+
+@pytest.mark.django_db
+def test_get_excluded_template_ids_expands_owned_upgrade_family(django_user_model):
+    manor = ensure_manor(django_user_model.objects.create_user(username="excluded_family", password="pass"))
+    family_keys = ("hist_sljnbc_0589", "hist_sljnbc_0589_blue", "hist_sljnbc_0589_purple")
+    templates = [
+        GuestTemplate.objects.create(key=key, name="邢道荣", archetype="military", rarity=rarity)
+        for key, rarity in zip(family_keys, (GuestRarity.GREEN, GuestRarity.BLUE, GuestRarity.PURPLE))
+    ]
+    Guest.objects.create(manor=manor, template=templates[2])
+
+    assert recruitment_query_service.get_excluded_template_ids(manor) == {template.id for template in templates}
+
+
+@pytest.mark.django_db
+def test_get_excluded_template_ids_expands_conversion_source(django_user_model):
+    manor = ensure_manor(django_user_model.objects.create_user(username="excluded_conversion", password="pass"))
+    source = GuestTemplate.objects.create(
+        key="excluded_source", name="升阶原身", archetype="military", rarity=GuestRarity.GREEN
+    )
+    converted = GuestTemplate.objects.create(
+        key=f"guest_rarity_conversion_purple_{source.id}",
+        name="升阶版本",
+        archetype="military",
+        rarity=GuestRarity.PURPLE,
+        recruitable=False,
+    )
+    Guest.objects.create(manor=manor, template=converted)
+
+    assert recruitment_query_service.get_excluded_template_ids(manor) == {source.id, converted.id}
 
 
 def test_non_repeatable_rarities_includes_expected():

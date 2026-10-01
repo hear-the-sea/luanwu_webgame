@@ -9908,9 +9908,14 @@ def _retire_due_v2_profiles(
     retired = 0
     retired_ids: set[int] = set()
     for profile in profiles:
-        if retire_locked_virtual_player_if_unprotected(profile, now=current_time):
-            retired += 1
-            retired_ids.add(int(profile.id))
+        # Recheck the due date under the profile lock before retiring it.
+        with transaction.atomic():
+            locked_profile = profile_store.lock_maintained_profile(int(profile.id))
+            if locked_profile is None or locked_profile.retire_at is None or locked_profile.retire_at > current_time:
+                continue
+            if retire_locked_virtual_player_if_unprotected(locked_profile, now=current_time):
+                retired += 1
+                retired_ids.add(int(profile.id))
     return retired, frozenset(retired_ids)
 
 

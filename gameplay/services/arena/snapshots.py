@@ -142,6 +142,11 @@ def serialize_guest_skill_keys(guest) -> list[str]:
     skills = getattr(guest, "skills", None)
     values_list = getattr(skills, "values_list", None)
     if callable(values_list):
+        prefetched = getattr(guest, "_arena_snapshot_skills", None)
+        # Zero or one key has a unique order. Multi-skill queries have no
+        # ORDER BY contract, so keep their original database lookup order.
+        if isinstance(prefetched, list) and len(prefetched) <= 1:
+            return [str(skill.key).strip() for skill in prefetched if str(skill.key).strip()]
         return [str(key).strip() for key in values_list("key", flat=True) if str(key).strip()]
     return [str(key).strip() for key in (getattr(guest, "_override_skills", None) or []) if str(key).strip()]
 

@@ -297,7 +297,7 @@ class WorldChatConsumerTests(SimpleTestCase):
 
         asyncio.run(consumer.connect())
 
-        consumer.close.assert_awaited_once_with()
+        consumer.close.assert_awaited_once_with(code=4403)
         consumer.accept.assert_not_awaited()
 
 

@@ -11,6 +11,8 @@ import math
 from contextlib import contextmanager
 from typing import Any, Dict, List, Optional, Tuple
 
+from core.utils import require_positive_int
+
 from .config import BattleConfig, GuestConfig, PartyConfig
 
 logger = logging.getLogger(__name__)
@@ -44,11 +46,15 @@ def _patch_attack_value(cm, params: Dict[str, Any], originals: Dict[str, Any]) -
     div_troop = params.get("troop_attack_divisor_vs_troop", 1.0)
     orig_attack = cm.effective_attack_value
 
-    def custom_attack(actor, target=None):
+    def custom_attack(actor, target=None, *, troop_attack_strength=None):
         if getattr(actor, "kind", "") != "troop":
-            return orig_attack(actor, target)
+            return orig_attack(actor, target, troop_attack_strength=troop_attack_strength)
 
-        strength = cm._current_strength(actor)
+        strength = (
+            cm._current_strength(actor)
+            if troop_attack_strength is None
+            else require_positive_int(troop_attack_strength, contract_name="battle troop attack strength")
+        )
         unit_attack = cm._unit_attack_value(actor)
         if target is not None and getattr(target, "kind", "") != "troop":
             multiplier = max(1.0, strength / div_guest)

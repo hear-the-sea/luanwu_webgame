@@ -60,6 +60,20 @@
     submitHandler = null;
   }
 
+  function resetBankTransferState(root) {
+    if (!root) return;
+    delete root.dataset.bankTransferPending;
+    root.querySelectorAll('[data-bank-transfer-pending="1"]').forEach((button) => {
+      button.disabled = false;
+      button.textContent = button.dataset.bankIdleLabel;
+      delete button.dataset.bankTransferPending;
+      delete button.dataset.bankIdleLabel;
+    });
+    root.querySelectorAll("[data-bank-transfer]").forEach((form) => {
+      form.removeAttribute("aria-busy");
+    });
+  }
+
   function updateMarketCountdowns() {
     const countdownElements = marketCountdownElements;
     if (countdownElements.length === 0) {
@@ -469,6 +483,24 @@
     };
 
     submitHandler = async (event) => {
+      const bankForm = event.target.closest("[data-bank-transfer]");
+      if (bankForm && root.contains(bankForm)) {
+        if (root.dataset.bankTransferPending === "1") {
+          event.preventDefault();
+          return;
+        }
+        root.dataset.bankTransferPending = "1";
+        bankForm.setAttribute("aria-busy", "true");
+        root.querySelectorAll('[data-bank-transfer] button[type="submit"]').forEach((button) => {
+          if (!button.disabled) {
+            button.dataset.bankTransferPending = "1";
+            button.dataset.bankIdleLabel = button.textContent;
+            button.disabled = true;
+          }
+        });
+        if (event.submitter) event.submitter.textContent = "处理中…";
+        return;
+      }
       const form = event.target.closest(".market-cancel-form");
       if (form && root.contains(form)) {
         event.preventDefault();
@@ -546,6 +578,7 @@
 
     teardownTradePage();
     activeRoot = root;
+    resetBankTransferState(root);
     bindTradeEvents(root);
     initTooltip();
     startMarketCountdowns(root);
@@ -555,4 +588,7 @@
   initTradePage();
   document.addEventListener("DOMContentLoaded", initTradePage);
   document.addEventListener("partial-nav:loaded", initTradePage);
+  window.addEventListener?.("pageshow", (event) => {
+    if (event.persisted) resetBankTransferState(activeRoot);
+  });
 })();

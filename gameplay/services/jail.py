@@ -33,8 +33,13 @@ from core.exceptions import (
     PrisonerUnavailableError,
     WorldUniqueGuestError,
 )
+from guests.constants import UPGRADE_TEMPLATE_FAMILIES
 from guests.models import Guest, GuestStatus, GuestTemplate
 from guests.services.recruitment_guests import grant_template_skills
+from guests.services.template_identity import (
+    get_non_repeatable_family_template_ids,
+    get_owned_non_repeatable_template_ids,
+)
 from guests.services.training import ensure_auto_training
 from guests.utils.recruitment_variance import apply_recruitment_variance
 from trade.services.auction.gold_bars import consume_available_gold_bars_locked
@@ -125,12 +130,7 @@ class RecruitmentResult:
 
 
 PRISONER_RECRUIT_DUPLICATE_TEMPLATE_GROUPS = {
-    "hist_sljnbc_0589": ("hist_sljnbc_0589", "hist_sljnbc_0589_blue", "hist_sljnbc_0589_purple"),
-    "hist_sljnbc_0589_blue": ("hist_sljnbc_0589", "hist_sljnbc_0589_blue", "hist_sljnbc_0589_purple"),
-    "hist_sljnbc_0589_purple": ("hist_sljnbc_0589", "hist_sljnbc_0589_blue", "hist_sljnbc_0589_purple"),
-    "hist_sljnbc_0590": ("hist_sljnbc_0590", "hist_sljnbc_0590_blue", "hist_sljnbc_0590_purple"),
-    "hist_sljnbc_0590_blue": ("hist_sljnbc_0590", "hist_sljnbc_0590_blue", "hist_sljnbc_0590_purple"),
-    "hist_sljnbc_0590_purple": ("hist_sljnbc_0590", "hist_sljnbc_0590_blue", "hist_sljnbc_0590_purple"),
+    **{key: family for family in UPGRADE_TEMPLATE_FAMILIES for key in family},
     "orig_ma_wencai": ("orig_ma_wencai",),
     "orig_liang_shanbo": ("orig_liang_shanbo",),
     "orig_zhu_yingtai": ("orig_zhu_yingtai",),
@@ -484,12 +484,12 @@ def _recruit_prisoner(
         raise WorldUniqueGuestError(message="全服唯一门客不可通过监牢收编")
     repeatable_template_keys = _get_prisoner_recruit_repeatable_keys(template.key)
     duplicate_template_keys = _get_prisoner_recruit_duplicate_keys(template.key)
-    if (
-        duplicate_template_keys
-        and not repeatable_template_keys
-        and locked_manor.guests.filter(template__key__in=duplicate_template_keys).exists()
-    ):
-        raise JailError(f"庄园已拥有门客「{template.name}」，不可重复招募")
+    if duplicate_template_keys and not repeatable_template_keys:
+        if locked_manor.guests.filter(template__key__in=duplicate_template_keys).exists() or (
+            get_owned_non_repeatable_template_ids(locked_manor.id)
+            & get_non_repeatable_family_template_ids((template.id,))
+        ):
+            raise JailError(f"庄园已拥有门客「{template.name}」，不可重复招募")
 
     usage_date = timezone.localdate()
     if JailInteractionLog.objects.filter(

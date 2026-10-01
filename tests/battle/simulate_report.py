@@ -45,6 +45,30 @@ def test_simulate_report_creates_battle(game_data, django_user_model):
 
 
 @pytest.mark.django_db
+def test_simulate_report_applies_attacker_troop_loss_rate_without_changing_defender(game_data, django_user_model):
+    user = django_user_model.objects.create_user(username="mission_guard_rate", password="pass123")
+    manor = ensure_manor(user)
+    manor.silver = 5000
+    manor.save(update_fields=["silver"])
+    recruit_frontline(manor)
+
+    report = simulate_report(
+        manor,
+        seed=2,
+        troop_loadout={"archer": 20},
+        fill_default_troops=False,
+        auto_reward=False,
+        send_message=False,
+        apply_damage=False,
+        use_lock=False,
+        attacker_troop_loss_rate=0.5,
+    )
+
+    assert report.losses["attacker"]["troop_loss_rate"] == 0.5
+    assert report.losses["defender"]["troop_loss_rate"] == 0.8
+
+
+@pytest.mark.django_db
 def test_simulate_report_attacker_victory_increases_guest_loyalty(game_data, django_user_model):
     user = django_user_model.objects.create_user(username="battle_loyalty", password="pass123")
     manor = ensure_manor(user)

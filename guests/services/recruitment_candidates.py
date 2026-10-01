@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Callable, TypedDict
 from django.db import connections, transaction
 
 from ..models import GuestRarity, GuestTemplate, RecruitmentCandidate
+from .template_identity import get_non_repeatable_family_template_ids_by_id
 
 if TYPE_CHECKING:
     from gameplay.models import Manor
@@ -86,6 +87,10 @@ def build_candidate_batch(
     non_repeatable_rarities: frozenset[str],
 ) -> list[RecruitmentCandidate]:
     candidates_to_create: list[RecruitmentCandidate] = []
+    template_ids = {entry.template_id for entry in pool_entries if entry.template_id}
+    template_ids.update(template.id for templates in templates_by_rarity.values() for template in templates)
+    template_ids.update(template.id for template in hermit_templates)
+    template_families = get_non_repeatable_family_template_ids_by_id(template_ids)
     for _ in range(resolved_draw_count):
         template = choose_template_from_entries(
             pool_entries,
@@ -111,6 +116,7 @@ def build_candidate_batch(
         )
         if should_exclude_candidate_template(template, non_repeatable_rarities=non_repeatable_rarities):
             excluded_ids.add(template.id)
+            excluded_ids.update(template_families.get(template.id, set()))
     return candidates_to_create
 
 

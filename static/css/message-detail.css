@@ -98,6 +98,36 @@
   line-height: 1.8;
   white-space: pre-wrap;
   min-height: 100px;
+  overflow-wrap: anywhere;
+}
+
+.msg-scout-details {
+  margin: 0.75rem 1.25rem;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  background: var(--bg-panel);
+}
+
+.msg-scout-details summary {
+  padding: 0.65rem 0.85rem;
+  color: var(--text-primary);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.msg-scout-details summary:focus-visible {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 2px;
+}
+
+.msg-scout-details-body {
+  padding: 0.75rem 0.85rem;
+  border-top: 1px dashed var(--border-light);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .msg-attachment-section {

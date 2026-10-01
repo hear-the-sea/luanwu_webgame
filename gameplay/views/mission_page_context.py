@@ -123,7 +123,7 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
         "world_unique_guest_status": None,
         "available_guests": available_guests,
         "troop_config": config_items,
-        "player_troops": get_player_troops(manor),
+        "player_troops": get_player_troops(manor, include_bank=True),
         "guest_labels": guest_labels,
         "guest_templates": guest_templates,
         "troop_templates_objs": troop_templates_objs,

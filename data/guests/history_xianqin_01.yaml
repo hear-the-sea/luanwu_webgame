@@ -78,6 +78,19 @@ heroes:
       intellect: 66
       defense: 16
       agility: 10
+  - key: hist_xianqin_0031
+    name: 白起
+    default_gender: male
+    archetype: military
+    flavor: （?—前257年）杀神将军，战无不胜。他是秦国的不败军神，一生征战七十余战，斩首逾百万。伊阙之战斩韩魏联军二十四万，长平之战坑杀赵军四十万——这等杀伐，震古烁今。他用兵如神，却不善自保；功高震主，终被赐死。战国四大名将之首，人屠之名，令六国闻风丧胆。白起死后，秦军再无此等战神；而他的赫赫战功，为秦统一六国铺平了道路。一代杀神，就此落幕。
+    growth_range:
+    - 7
+    - 13
+    attribute_weights:
+      force: 52
+      intellect: 12
+      defense: 22
+      agility: 14
   purple:
   - key: hist_xianqin_0022
     name: 姬寤生
@@ -339,19 +352,6 @@ heroes:
       intellect: 20
       defense: 22
       agility: 16
-  - key: hist_xianqin_0031
-    name: 白起
-    default_gender: male
-    archetype: military
-    flavor: （?—前257年）杀神将军，战无不胜。他是秦国的不败军神，一生征战七十余战，斩首逾百万。伊阙之战斩韩魏联军二十四万，长平之战坑杀赵军四十万——这等杀伐，震古烁今。他用兵如神，却不善自保；功高震主，终被赐死。战国四大名将之首，人屠之名，令六国闻风丧胆。白起死后，秦军再无此等战神；而他的赫赫战功，为秦统一六国铺平了道路。一代杀神，就此落幕。
-    growth_range:
-    - 7
-    - 12
-    attribute_weights:
-      force: 52
-      intellect: 12
-      defense: 22
-      agility: 14
   - key: hist_xianqin_0032
     name: 李牧
     default_gender: male

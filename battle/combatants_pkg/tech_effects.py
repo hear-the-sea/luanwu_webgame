@@ -6,6 +6,8 @@ from __future__ import annotations
 
 from typing import Callable, Dict
 
+from core.utils import safe_int
+
 
 def _add_effect_if_positive(effects: Dict[str, float], key: str, value: float) -> bool:
     if value <= 0:
@@ -19,6 +21,7 @@ def _build_dao_effects(bonus: Callable[[str], float], effects: Dict[str, float])
 
 
 def _build_qiang_effects(bonus: Callable[[str], float], effects: Dict[str, float]) -> None:
+    _add_effect_if_positive(effects, "siege_damage", bonus("siege_damage"))
     if _add_effect_if_positive(effects, "counter_attack_chance", bonus("counter_attack_chance")):
         effects["counter_attack_damage"] = 0.30
 
@@ -78,5 +81,10 @@ def build_tech_effects(
     builder = builders.get(troop_class)
     if builder is not None:
         builder(_bonus, effects)
+
+    if troop_class == "quan":
+        ranged_level = safe_int(tech_levels.get("quan_vs_ranged", 0), default=0)
+        if ranged_level >= 5:
+            effects["ranged_damage_reduction"] = 0.20 if ranged_level >= 10 else 0.10
 
     return effects

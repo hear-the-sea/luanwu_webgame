@@ -10,6 +10,11 @@ from gameplay.services.manor.troop_bank import (
     get_troop_bank_rows,
     get_troop_bank_used_space,
 )
+from gameplay.services.manor.troop_capacity import (
+    get_manor_troop_remaining_space,
+    get_manor_troop_used_space,
+    get_pending_troop_recruitment_space,
+)
 from trade.bank_context_builder import build_bank_trade_context
 from trade.selector_builders import build_auction_trade_context, build_market_trade_context, build_shop_trade_context
 from trade.services.auction.access import AUCTION_MIN_PRESTIGE, can_enter_auction
@@ -104,6 +109,9 @@ def _update_bank_context(params: Mapping[str, str], manor: Any, context: dict[st
         get_troop_bank_used_space=get_troop_bank_used_space,
         get_troop_bank_remaining_space=get_troop_bank_remaining_space,
         get_troop_bank_rows=get_troop_bank_rows,
+        get_manor_troop_used_space=get_manor_troop_used_space,
+        get_manor_troop_remaining_space=get_manor_troop_remaining_space,
+        get_pending_troop_recruitment_space=get_pending_troop_recruitment_space,
     )
 
 

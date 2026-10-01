@@ -12,8 +12,6 @@ from typing import TYPE_CHECKING, Dict, Optional
 from django.db.models import F
 from django.utils import timezone
 
-from core.exceptions import TroopLoadoutError
-
 if TYPE_CHECKING:
     from ...models import Manor
 
@@ -126,52 +124,10 @@ def apply_defender_troop_losses(defender: "Manor", report: object) -> None:
 
 
 def _deduct_troops_batch(manor: "Manor", loadout: Dict[str, int]) -> None:
-    """
-    批量从庄园扣除指定数量的护院（通用函数）。
+    """出征时先扣庄园护院，不足部分自动扣除钱庄库存。"""
+    from ..manor.troop_dispatch import deduct_dispatch_troops_locked
 
-    Args:
-        manor: 庄园对象
-        loadout: 要扣除的护院配置 {troop_key: count}
-
-    Raises:
-        TroopLoadoutError: 护院数量不足时抛出异常
-    """
-    if not loadout:
-        return
-
-    # 过滤掉数量为0的
-    loadout = {k: v for k, v in loadout.items() if v > 0}
-    if not loadout:
-        return
-
-    from ...models import PlayerTroop
-
-    # 1次查询获取所有需要的护院记录
-    troops = {
-        t.troop_template.key: t
-        for t in PlayerTroop.objects.select_for_update()
-        .filter(manor=manor, troop_template__key__in=loadout.keys())
-        .select_related("troop_template")
-    }
-
-    to_update = []
-    for troop_key, count in loadout.items():
-        troop = troops.get(troop_key)
-        if not troop:
-            # 护院类型不存在 - 必须抛出异常，否则会造成护院复制漏洞
-            # 场景：出征时扣除A但跳过B → 战斗结束归还会创建B → 凭空生成护院
-            raise TroopLoadoutError("护院配置包含无效类型", troop_key=troop_key)
-        if troop.count < count:
-            raise TroopLoadoutError(f"护院 {troop.troop_template.name} 数量不足")
-        troop.count -= count
-        to_update.append(troop)
-
-    # 1次批量更新
-    if to_update:
-        now = timezone.now()
-        for troop in to_update:
-            troop.updated_at = now
-        PlayerTroop.objects.bulk_update(to_update, ["count", "updated_at"])
+    deduct_dispatch_troops_locked(manor, loadout)
 
 
 def _return_surviving_troops_batch(

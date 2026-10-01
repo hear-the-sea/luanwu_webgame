@@ -136,6 +136,49 @@ def withdraw_troop_from_bank_view(request: HttpRequest) -> HttpResponse:
     )
 
 
+def _bulk_troop_bank_message(result: dict[str, Any], *, deposit: bool) -> str:
+    message = (
+        f"已一键存入 {result['quantity']} 名护院到钱庄" if deposit else f"已从钱庄一键取出 {result['quantity']} 名护院"
+    )
+    if result["remaining"]:
+        target = "钱庄" if deposit else "庄园（含募兵预留）"
+        source = "庄园" if deposit else "钱庄"
+        message += f"；{target}容量已满，剩余 {result['remaining']} 名护院仍保留在{source}"
+    return message
+
+
+@login_required
+@require_POST
+@rate_limit_redirect("bank_troop_deposit", limit=30, window_seconds=60)
+def deposit_all_troops_to_bank_view(request: HttpRequest) -> HttpResponse:
+    """一键存入当前分类的护院。"""
+    category = _parse_required_post_text(request, "troop_category") or "all"
+    return _execute_manor_trade_action_and_redirect(
+        request,
+        op="bank_troop_deposit_all",
+        action_factory=lambda manor: troop_bank_service.deposit_available_troops_to_bank(manor, category),
+        success_message=lambda result: _bulk_troop_bank_message(result, deposit=True),
+        tab="bank",
+        troop_category=category,
+    )
+
+
+@login_required
+@require_POST
+@rate_limit_redirect("bank_troop_withdraw", limit=30, window_seconds=60)
+def withdraw_all_troops_from_bank_view(request: HttpRequest) -> HttpResponse:
+    """一键取出当前分类的护院。"""
+    category = _parse_required_post_text(request, "troop_category") or "all"
+    return _execute_manor_trade_action_and_redirect(
+        request,
+        op="bank_troop_withdraw_all",
+        action_factory=lambda manor: troop_bank_service.withdraw_available_troops_from_bank(manor, category),
+        success_message=lambda result: _bulk_troop_bank_message(result, deposit=False),
+        tab="bank",
+        troop_category=category,
+    )
+
+
 @login_required
 @require_POST
 @rate_limit_redirect("market_create", limit=10, window_seconds=60)

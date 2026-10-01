@@ -140,7 +140,7 @@ def test_generate_report_task_offense_uses_enemy_guest_count_as_defender_max_squ
         mission_id=mission.id,
         run_id=None,
         guest_ids=[],
-        troop_loadout={},
+        troop_loadout={"archer": 10},
         battle_type="task",
         defender_setup={"guest_keys": mission.enemy_guests},
     )
@@ -148,3 +148,4 @@ def test_generate_report_task_offense_uses_enemy_guest_count_as_defender_max_squ
     assert result == 123
     assert captured["max_squad"] == manor.max_squad_size
     assert captured["defender_max_squad"] == 7
+    assert captured["attacker_troop_loss_rate"] == 0.5

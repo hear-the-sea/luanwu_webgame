@@ -5,7 +5,10 @@ Django Management Command: battle_debug
 """
 
 from django.core.management.base import BaseCommand, CommandError
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
+from battle.report_events import troop_phase_skill
 from battle_debugger.config import BattleDebuggerInputError, ConfigLoader
 from battle_debugger.simulator import BattleSimulator
 
@@ -293,18 +296,21 @@ class Command(BaseCommand):
                 if event.get("status") == "charging":
                     continue
 
-                actor = event.get("actor", "?")
-                target = event.get("target", "?")
-                damage = event.get("damage", 0)
-                kills = event.get("kills", 0)
-                skills = event.get("skills", [])
+                action = dict(event)
+                context = {"event": action, "round": round_data, "my_side": "attacker", "is_spectator": True}
+                if event.get("type") in ("heal", "passive") or event.get("status"):
+                    context["events"] = [dict(action, order="")]
+                    body = render_to_string("battle/partials/round_event_list.html", context)
+                    self.stdout.write(f"  [{i+1}] {''.join(strip_tags(body).split())}")
+                    continue
 
-                skill_text = f" | 技能:{skills}" if skills else ""
-                crit_text = " | 暴击" if event.get("is_crit") else ""
-
-                self.stdout.write(
-                    f"  [{i+1}] {actor} → {target} | " f"伤害:{damage} | 击杀:{kills}" f"{skill_text}{crit_text}"
-                )
+                for index, attack in enumerate([action, *(event.get("additional_attacks") or [])]):
+                    context["attack"] = attack
+                    body = render_to_string("battle/partials/attack_action_details.html", context)
+                    text = "".join(strip_tags(body).split())
+                    actor_prefix = "" if troop_phase_skill(attack, action, priority) else f"{action.get('actor', '?')} "
+                    marker = f"  [{i+1}] " if index == 0 else "      "
+                    self.stdout.write(f"{marker}{actor_prefix}{text}")
 
             if len(events) > 5:
                 self.stdout.write(f"  ... (还有{len(events)-5}个事件)")

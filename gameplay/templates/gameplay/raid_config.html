@@ -135,6 +135,7 @@
                     </p>
 
                     {% if player_troops %}
+                    <p class="tw-muted text-sm mb-4">可用数量包含钱庄护院，出征时优先携带庄园内护院。</p>
                     <div class="tw-raid-troop-list">
                         {% for troop in player_troops %}
                         <div class="tw-raid-troop-row">
@@ -148,7 +149,7 @@
                                 </div>
                                 <div class="tw-troop-details">
                                     <span class="tw-troop-name">{{ troop.name }}</span>
-                                    <span class="tw-troop-count">可用 {{ troop.count }}</span>
+                                    <span class="tw-troop-count">可用 {{ troop.count }}（庄园 {{ troop.manor_count }} / 钱庄 {{ troop.bank_count }}）</span>
                                 </div>
                             </div>
 

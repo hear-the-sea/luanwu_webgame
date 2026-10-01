@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from core.exceptions import BattlePreparationError, RaidStartError
+from core.exceptions import BattlePreparationError, RaidStartError, TroopLoadoutError
 from gameplay.services.raid.combat import runs as combat_runs
 from gameplay.services.raid.combat import troop_ops
 
@@ -115,14 +115,10 @@ def test_return_surviving_troops_ignores_invalid_loadout_shape(monkeypatch):
 
 
 def test_deduct_troops_raises_when_missing(monkeypatch):
-    class _PlayerTroop:
-        objects = SimpleNamespace(
-            select_for_update=lambda: SimpleNamespace(
-                filter=lambda **_kwargs: SimpleNamespace(select_related=lambda *_a, **_k: [])
-            )
-        )
+    def _deduct_missing_troops(_manor, _loadout):
+        raise TroopLoadoutError("护院配置包含无效类型", troop_key="inf")
 
-    monkeypatch.setattr(troop_ops, "PlayerTroop", _PlayerTroop)
+    monkeypatch.setattr(troop_ops, "deduct_dispatch_troops_locked", _deduct_missing_troops)
 
     with pytest.raises(RaidStartError, match="没有该类型的护院"):
         combat_runs._deduct_troops(SimpleNamespace(), {"inf": 1})

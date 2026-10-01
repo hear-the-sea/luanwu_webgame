@@ -137,7 +137,7 @@ def test_bulk_finalize_candidates_respects_capacity_and_grants_template_skills(d
         draw_count=1,
     )
 
-    for idx in range(3):
+    for idx in range(manor.guest_capacity - 1):
         Guest.objects.create(manor=manor, template=template, custom_name=f"已有门客{idx}")
 
     candidate_1 = RecruitmentCandidate.objects.create(

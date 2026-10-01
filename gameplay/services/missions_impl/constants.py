@@ -1,0 +1,3 @@
+"""个人任务战斗规则。"""
+
+PLAYER_MISSION_TROOP_LOSS_RATE = 0.5

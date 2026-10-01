@@ -97,6 +97,7 @@ def _apply_reflect(
     target: "Combatant",
     damage: float,
     *,
+    ranged_attack: bool,
     target_hp_before: int,
     troop_unit_hp_fn,
 ) -> _UnitDamageApplication:
@@ -104,7 +105,9 @@ def _apply_reflect(
 
     from ..arena_coop import get_arena_coop_reflect_values
 
-    reflect_ratio = target.tech_effects.get("damage_reflect", 0)
+    reflect_ratio = (
+        0 if ranged_attack and target.troop_class == "jian" else target.tech_effects.get("damage_reflect", 0)
+    )
     max_reflect = float(actor.attack)
     if reflect_ratio > 0 and target.troop_class == "jian":
         max_reflect = min(max_reflect, target_hp_before * _SWORD_REFLECT_PRE_HIT_HP_CAP_RATIO)
@@ -124,8 +127,13 @@ def _apply_counter(
     rng: random.Random,
     effective_attack_value_fn,
     troop_unit_hp_fn,
+    *,
+    ranged_attack: bool,
 ) -> _UnitDamageApplication:
     """Apply counter secondary damage without normal-attack multipliers."""
+
+    if ranged_attack and target.troop_class == "qiang":
+        return _snapshot_zero_damage(actor, troop_unit_hp_fn)
 
     counter_chance = target.tech_effects.get("counter_attack_chance", 0)
     if counter_chance <= 0 or target.hp <= 0 or rng.random() >= counter_chance:
@@ -142,11 +150,13 @@ def apply_damage_results(
     target: "Combatant",
     damage: int | float,
     rng: random.Random,
+    *,
+    ranged_attack: bool = False,
 ) -> _DamageApplication:
     """
     将伤害应用到目标，并处理命中后结算：
     - 目标 HP/兵力扣减与击杀数计算
-    - 技术效果：反伤（剑系）、反击（枪系）
+    - 技术效果：近战命中可触发反伤（剑系）、反击（枪系）
     - 检查攻击者是否被反伤/反击击败
 
     该函数会直接修改 `actor` 和 `target` 的状态（HP、兵力等）。
@@ -158,6 +168,7 @@ def apply_damage_results(
         actor,
         target,
         damage,
+        ranged_attack=ranged_attack,
         target_hp_before=target_application.hp_before,
         troop_unit_hp_fn=troop_unit_hp,
     )
@@ -167,6 +178,7 @@ def apply_damage_results(
         rng,
         effective_attack_value,
         troop_unit_hp,
+        ranged_attack=ranged_attack,
     )
 
     return _DamageApplication(

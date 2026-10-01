@@ -143,19 +143,6 @@ heroes:
       intellect: 18
       defense: 26
       agility: 18
-  - key: hist_sljnbc_0059
-    name: 黄忠
-    default_gender: male
-    archetype: military
-    flavor: （？—220年）蜀汉将领，字汉升。黄忠原为刘表部下，刘备取得荆州后归附；汉中之战中，他在定军山斩杀夏侯渊，刘备称汉中王后任命他为后将军。
-    growth_range:
-    - 6
-    - 9
-    attribute_weights:
-      force: 42
-      intellect: 10
-      defense: 20
-      agility: 28
   - key: hist_sljnbc_0060
     name: 魏延
     default_gender: male
@@ -221,19 +208,6 @@ heroes:
       intellect: 10
       defense: 20
       agility: 30
-  - key: hist_sljnbc_0068
-    name: 典韦
-    default_gender: male
-    archetype: military
-    flavor: （？—197年）东汉末曹操亲卫。典韦善使双戟，宛城之战中张绣军突袭曹营，他守住营门掩护曹操撤退；双戟被夺后仍持刀迎战，最终战死。
-    growth_range:
-    - 6
-    - 9
-    attribute_weights:
-      force: 52
-      intellect: 6
-      defense: 32
-      agility: 10
   - key: hist_sljnbc_0069
     name: 许褚
     default_gender: male
@@ -352,6 +326,32 @@ heroes:
       defense: 24
       agility: 20
   purple:
+  - key: hist_sljnbc_0059
+    name: 黄忠
+    default_gender: male
+    archetype: military
+    flavor: （？—220年）蜀汉将领，字汉升。黄忠原为刘表部下，刘备取得荆州后归附；汉中之战中，他在定军山斩杀夏侯渊，刘备称汉中王后任命他为后将军。
+    growth_range:
+    - 6
+    - 12
+    attribute_weights:
+      force: 42
+      intellect: 10
+      defense: 20
+      agility: 28
+  - key: hist_sljnbc_0068
+    name: 典韦
+    default_gender: male
+    archetype: military
+    flavor: （？—197年）东汉末曹操亲卫。典韦善使双戟，宛城之战中张绣军突袭曹营，他守住营门掩护曹操撤退；双戟被夺后仍持刀迎战，最终战死。
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 52
+      intellect: 6
+      defense: 32
+      agility: 10
   - key: hist_sljnbc_0081
     name: 黄权
     default_gender: male

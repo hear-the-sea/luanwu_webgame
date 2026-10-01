@@ -548,7 +548,7 @@ test("a connection stable for 30 seconds resets reconnect backoff", () => {
   assert.equal(harness.activeTimers()[0].delay, 2000);
 });
 
-test("a parseable message resets backoff and cancels the stability timer", () => {
+test("a parseable message renders without resetting short connection backoff", () => {
   const harness = createNotificationsHarness({ random: 0.5 });
 
   harness.sockets.at(-1).onclose({ code: SERVICE_UNAVAILABLE_CLOSE_CODE });
@@ -562,11 +562,27 @@ test("a parseable message resets backoff and cancels the stability timer", () =>
   assert.ok(stabilityTimer);
   socket.onmessage({ data: JSON.stringify({ kind: "system", title: "有效通知" }) });
 
-  assert.equal(stabilityTimer.active, false);
-  assert.ok(harness.clearedTimerIds.includes(stabilityTimer.id));
+  assert.equal(stabilityTimer.active, true);
+  assert.ok(!harness.clearedTimerIds.includes(stabilityTimer.id));
+  assert.equal(harness.toastContainer.children[0].querySelector(".toast-title").textContent, "有效通知");
   socket.onclose({ code: SERVICE_UNAVAILABLE_CLOSE_CODE });
-  const reconnectTimer = harness.activeTimers().find((timer) => timer.delay === 2000);
+  const reconnectTimer = harness.activeTimers().find((timer) => timer.delay === 8000);
   assert.ok(reconnectTimer);
+});
+
+test("short notification connections with messages exhaust the fast retry budget", () => {
+  const harness = createNotificationsHarness({ random: 0.5 });
+  const delays = [];
+  for (let attempt = 0; attempt < 7; attempt += 1) {
+    const socket = harness.sockets.at(-1);
+    socket.onopen();
+    socket.onmessage({ data: JSON.stringify({ kind: "system", title: "有效通知" }) });
+    socket.onclose({ code: 1006 });
+    const timer = harness.activeTimers().find((timer) => ![5000, 30000].includes(timer.delay));
+    delays.push(timer.delay);
+    harness.runTimer(timer);
+  }
+  assert.deepEqual(delays, [1500, 1500, 1500, 1500, 1500, 2000, 4000]);
 });
 
 test("malformed JSON does not reset backoff or clear the stability timer", () => {

@@ -7,7 +7,6 @@ from django.utils import timezone
 
 from common.utils.celery import safe_apply_async
 from core.exceptions import MessageError
-from core.utils import safe_non_negative_int
 from core.utils.imports import is_missing_target_import
 from core.utils.infrastructure import (
     DATABASE_INFRASTRUCTURE_EXCEPTIONS,
@@ -16,6 +15,7 @@ from core.utils.infrastructure import (
 )
 from core.utils.side_effects import DEFAULT_SIDE_EFFECT_EXCEPTIONS, schedule_best_effort_after_commit
 
+from ..scout_reports import build_scout_report_body
 from ..utils.messages import create_message
 from . import scout_refresh as scout_refresh_command
 
@@ -50,17 +50,7 @@ def log_scout_followup_failure(action: str, **context: Any) -> None:
 def send_scout_success_message(record: Any) -> None:
     """发送侦察成功消息。"""
     intel = _normalize_mapping(record.intel_data)
-    troop_description = str(intel.get("troop_description") or "未知")
-    guest_count = safe_non_negative_int(intel.get("guest_count", 0), 0)
-    avg_guest_level = safe_non_negative_int(intel.get("avg_guest_level", 0), 0)
-    asset_level = str(intel.get("asset_level") or "未知")
-
-    body = f"""探子已成功潜入 {record.defender.display_name}，获取到以下情报：
-
-【护院情况】{troop_description}
-【门客数量】{guest_count} 人
-【门客等级】平均 {avg_guest_level} 级
-【资产状况】{asset_level}"""
+    body = build_scout_report_body(record.defender.display_name, intel)
 
     create_message(
         manor=record.attacker,

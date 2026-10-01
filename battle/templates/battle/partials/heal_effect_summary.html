@@ -1,0 +1,1 @@
+{% if event.effect == '五气朝元' %}<span class="tech-tag heal">爆发被动技能五气朝元</span><span class="heal-text">，恢复生命{{ event.healed }}{% if event.heal_strength != None %}，恢复人数{{ event.heal_strength }}{% endif %}</span>{% else %}<span class="tech-tag heal">{{ event.effect|default:"治疗" }}</span><span class="heal-text">恢复 +{{ event.healed }} 生命</span>{% endif %}

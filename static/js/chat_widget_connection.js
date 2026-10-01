@@ -158,8 +158,6 @@
           const payload = JSON.parse(event.data);
           clearMatchingPending(payload);
           renderer.handlePayload(payload, setStatus);
-          reconnectPolicy.markStable();
-          clearStabilityTimer();
         } catch (_error) {
           // ignore malformed messages
         }

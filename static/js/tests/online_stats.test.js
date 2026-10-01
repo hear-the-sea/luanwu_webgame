@@ -191,7 +191,7 @@ test("reconnect attempts log the disconnected transition only once", () => {
   assert.equal(disconnectLogs.length, 1);
 });
 
-test("valid statistics update the DOM and reset transient backoff", () => {
+test("valid statistics update the DOM without resetting a short connection's backoff", () => {
   const harness = createOnlineStatsHarness({ random: 0.5 });
 
   harness.sockets[0].closeWith(SERVICE_UNAVAILABLE_CLOSE_CODE);
@@ -202,10 +202,38 @@ test("valid statistics update the DOM and reset transient backoff", () => {
   const socket = harness.sockets[2];
   socket.open();
   socket.message({ online_count: 7, total_count: 19 });
+  assert.ok(harness.activeTimers().some((timer) => timer.delay === 30000));
   socket.closeWith(SERVICE_UNAVAILABLE_CLOSE_CODE);
 
   assert.equal(harness.elements["online-user-count"].textContent, 7);
   assert.equal(harness.elements["total-user-count"].textContent, 19);
+  assert.equal(harness.reconnectTimers()[0].delay, 8000);
+});
+
+test("short connections with initial statistics exhaust the fast retry budget", () => {
+  const harness = createOnlineStatsHarness({ random: 0.5 });
+  const delays = [];
+  for (let attempt = 0; attempt < 7; attempt += 1) {
+    const socket = harness.sockets.at(-1);
+    socket.open();
+    socket.message({ online_count: 7, total_count: 19 });
+    socket.closeWith(1006);
+    const timer = harness.reconnectTimers()[0];
+    delays.push(timer.delay);
+    harness.runTimer(timer);
+  }
+  assert.deepEqual(delays, [1500, 1500, 1500, 1500, 1500, 2000, 4000]);
+});
+
+test("thirty stable seconds reset statistics backoff even after initial data", () => {
+  const harness = createOnlineStatsHarness({ random: 0.5 });
+  harness.sockets[0].closeWith(SERVICE_UNAVAILABLE_CLOSE_CODE);
+  harness.runTimer(harness.reconnectTimers()[0]);
+  const socket = harness.sockets[1];
+  socket.open();
+  socket.message({ online_count: 7, total_count: 19 });
+  harness.runTimer(harness.activeTimers().find((timer) => timer.delay === 30000));
+  socket.closeWith(SERVICE_UNAVAILABLE_CLOSE_CODE);
   assert.equal(harness.reconnectTimers()[0].delay, 2000);
 });
 

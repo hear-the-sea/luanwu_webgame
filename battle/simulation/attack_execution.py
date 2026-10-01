@@ -9,6 +9,8 @@ from typing import TYPE_CHECKING, Any, cast
 
 from ..passive_effects import consume_pending_extra_target_true_damage
 from ..passives import run_passives_for_timing
+from ..random_context import CURRENT_BATTLE_ENGINE_VERSION
+from .constants import TROOP_EXTRA_ATTACK_INTERVAL, TROOP_GROUP_DAMAGE_MULTIPLIER
 from .damage_application import apply_damage_results
 from .damage_calculation import calculate_attack_damage, calculate_passive_true_damage, process_status_effects
 from .report_state import snapshot_unit_state
@@ -37,7 +39,7 @@ def _finalize_attack_round(actor: "Combatant", action_logs: list[AttackLogEntry]
     """
     完成本次行动的统一结算：
     - 标记行动完成（`has_acted_this_round` / `last_round_acted`）
-    - 将本次行动的额外目标或追加命中日志挂载到主日志 `additional_targets`
+    - 将本次攻击的额外目标或追加命中日志挂载到主日志 `additional_targets`
     """
 
     actor.has_acted_this_round = True
@@ -95,6 +97,7 @@ def _apply_extra_target_true_damage(
     defender_team: list["Combatant"],
     rng: random.Random,
     round_priority: int,
+    battle_engine_version: str,
     index: int,
     fallback_to_selected_target: bool = False,
 ) -> AttackLogEntry:
@@ -125,7 +128,14 @@ def _apply_extra_target_true_damage(
         value=float(effect.get("value") or 0),
         troop_value_multiplier=float(effect.get("troop_value_multiplier") or 1.0),
     )
-    application = apply_damage_results(actor, target, damage, rng)
+    ranged_attack = is_ranged_attack(actor, round_priority)
+    application = apply_damage_results(
+        actor,
+        target,
+        damage,
+        rng,
+        ranged_attack=ranged_attack and battle_engine_version == CURRENT_BATTLE_ENGINE_VERSION,
+    )
     damage_contract = _read_damage_contract(application, target)
     reflect_applied_damage, reflect_overkill_damage = _read_secondary_damage(application, "reflect")
     counter_applied_damage, counter_overkill_damage = _read_secondary_damage(application, "counter")
@@ -201,23 +211,27 @@ def _apply_extra_target_true_damage(
             "passive_events_before": passive_events_before,
             "passive_events_after": passive_events_after,
             "current_target_bonus": fallback_to_selected_target,
-            "attack_type": "ranged" if is_ranged_attack(actor, round_priority) else "melee",
+            "attack_type": "ranged" if ranged_attack else "melee",
         },
     )
 
 
-def perform_attack(
+def _perform_single_attack(
     actor: "Combatant",
     attacker_team: list["Combatant"],
     defender_team: list["Combatant"],
     rng: random.Random,
     round_priority: int = 0,
+    *,
+    troop_attack_strength: int | None = None,
+    troop_damage_multiplier: float = 1.0,
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
 ) -> dict[str, Any] | None:
     """
-    执行一次单位攻击行动（可能包含多目标技能）。
+    执行一次攻击（可能包含多目标技能）。
 
     返回值：
-    - 返回一条主战报 `AttackLogEntry`（字典），本次行动的附加命中记录放在 `additional_targets`；
+    - 返回一条主战报 `AttackLogEntry`（字典），附加目标放在 `additional_targets`；
     - 若行动时无可攻击目标，则返回 None，但仍会标记 `has_acted_this_round` / `last_round_acted`。
 
     随机性兼容性：
@@ -297,6 +311,10 @@ def perform_attack(
             selection.skills,
             rng,
             round_priority=round_priority,
+            troop_attack_strength=troop_attack_strength,
+            troop_damage_multiplier=troop_damage_multiplier,
+            enable_ranged_damage_reduction=battle_engine_version == CURRENT_BATTLE_ENGINE_VERSION,
+            enable_siege_damage_bonus=battle_engine_version == CURRENT_BATTLE_ENGINE_VERSION,
         )
 
         damage_to_apply: int | float = damage_calc.damage
@@ -323,7 +341,14 @@ def perform_attack(
                     }
                 )
 
-        applied = apply_damage_results(actor, current_target, damage_to_apply, rng)
+        ranged_attack = is_ranged_attack(actor, round_priority)
+        applied = apply_damage_results(
+            actor,
+            current_target,
+            damage_to_apply,
+            rng,
+            ranged_attack=ranged_attack and battle_engine_version == CURRENT_BATTLE_ENGINE_VERSION,
+        )
         damage_contract = _read_damage_contract(applied, current_target)
         reflect_applied_damage, reflect_overkill_damage = _read_secondary_damage(applied, "reflect")
         counter_applied_damage, counter_overkill_damage = _read_secondary_damage(applied, "counter")
@@ -342,7 +367,7 @@ def perform_attack(
             rng=rng,
         )
 
-        attack_type: AttackType = "ranged" if is_ranged_attack(actor, round_priority) else "melee"
+        attack_type: AttackType = "ranged" if ranged_attack else "melee"
         entry: AttackLogEntry = {
             "actor": actor.name,
             "target": current_target.name,
@@ -446,6 +471,7 @@ def perform_attack(
                 defender_team=defender_team,
                 rng=rng,
                 round_priority=round_priority,
+                battle_engine_version=battle_engine_version,
                 index=len(action_logs),
                 fallback_to_selected_target=fallback_to_selected_target,
             )
@@ -455,3 +481,63 @@ def perform_attack(
                 break
 
     return cast(dict[str, Any] | None, _finalize_attack_round(actor, action_logs))
+
+
+def perform_attack(
+    actor: "Combatant",
+    attacker_team: list["Combatant"],
+    defender_team: list["Combatant"],
+    rng: random.Random,
+    round_priority: int = 0,
+    *,
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
+) -> dict[str, Any] | None:
+    """执行一次行动；达到人数门槛的护院依次完成分队攻击。"""
+
+    if (
+        battle_engine_version != CURRENT_BATTLE_ENGINE_VERSION
+        or actor.kind != "troop"
+        or actor.troop_strength < TROOP_EXTRA_ATTACK_INTERVAL
+    ):
+        return _perform_single_attack(
+            actor,
+            attacker_team,
+            defender_team,
+            rng,
+            round_priority,
+            battle_engine_version=battle_engine_version,
+        )
+
+    strength_at_action_start = actor.troop_strength
+    attack_count = 1 + strength_at_action_start // TROOP_EXTRA_ATTACK_INTERVAL
+    group_size, remainder = divmod(strength_at_action_start, attack_count)
+    attacks: list[dict[str, Any]] = []
+
+    for index in range(attack_count):
+        if actor.hp <= 0 or actor.troop_strength <= 0:
+            break
+        # 反伤或反击造成的减员不能让后续分队使用已阵亡的护院。
+        current_group_size = min(group_size + int(index < remainder), actor.troop_strength)
+        attack = _perform_single_attack(
+            actor,
+            attacker_team,
+            defender_team,
+            rng,
+            round_priority,
+            troop_attack_strength=current_group_size,
+            troop_damage_multiplier=(
+                TROOP_GROUP_DAMAGE_MULTIPLIER if actor.troop_strength >= TROOP_EXTRA_ATTACK_INTERVAL else 1.0
+            ),
+            battle_engine_version=battle_engine_version,
+        )
+        if attack is None:
+            break
+        attacks.append(attack)
+
+    if not attacks:
+        return None
+    primary = attacks[0]
+    primary["additional_attacks"] = attacks[1:]
+    primary["actor_state"] = attacks[-1]["actor_state"]
+    primary["actor_defeated"] = any(attack.get("actor_defeated", False) for attack in attacks)
+    return primary

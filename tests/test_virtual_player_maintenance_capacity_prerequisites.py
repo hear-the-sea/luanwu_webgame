@@ -31,7 +31,7 @@ def _set_capacity_scenario(
     silver_capacity: int,
     grain_capacity: int,
 ) -> None:
-    BotProfile.objects.filter(pk=profile.pk).update(guest_count_target=5)
+    BotProfile.objects.filter(pk=profile.pk).update(guest_count_target=7)
     Building.objects.filter(
         manor_id=profile.manor_id,
         building_type__key__in=(BuildingKeys.JUXIAN_ZHUANG, BuildingKeys.SILVER_VAULT, BuildingKeys.GRANARY),
@@ -51,7 +51,7 @@ def _set_capacity_scenario(
     profile.refresh_from_db()
     profile.manor.refresh_from_db()
     profile.manor.invalidate_building_cache()
-    assert profile.manor.guest_capacity == 4
+    assert profile.manor.guest_capacity == 6
 
 
 def _capacity_plan(profile: BotProfile, candidate_exclusions: tuple[str, ...]):
@@ -59,7 +59,7 @@ def _capacity_plan(profile: BotProfile, candidate_exclusions: tuple[str, ...]):
         profile.id,
         trigger=MaintenanceTrigger.SCHEDULED,
         now=FIXED_NOW,
-        _cycle_guest_count_target=5,
+        _cycle_guest_count_target=7,
         _cycle_guest_count_target_frozen=True,
         _candidate_exclusions=candidate_exclusions,
     )
@@ -98,7 +98,7 @@ def test_roster_capacity_expansion_first_upgrades_storage_that_cannot_hold_its_c
 
     plan = _capacity_plan(active_v2_profile, candidate_exclusions)
 
-    assert plan.ordinary_guest_count_target == 5
+    assert plan.ordinary_guest_count_target == 7
     assert isinstance(plan.action_spec, BuildingUpgradeActionSpec)
     assert plan.action_spec.building_key == expected_building
     assert plan.selected_candidate_assessment is not None

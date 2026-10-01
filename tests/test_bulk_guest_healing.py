@@ -12,7 +12,7 @@ from guests.services.health import heal_all_guests_with_medicine
 
 
 def _guest_template(*, base_hp: int = 1_000) -> GuestTemplate:
-    suffix = uuid4().hex
+    suffix = uuid4().hex[:16]
     return GuestTemplate.objects.create(
         key=f"bulk_healing_guest_{suffix}",
         name=f"批量疗伤门客{suffix[:6]}",
@@ -23,7 +23,7 @@ def _guest_template(*, base_hp: int = 1_000) -> GuestTemplate:
 
 
 def _medicine(manor, *, heal_amount: int, quantity: int) -> InventoryItem:
-    suffix = uuid4().hex
+    suffix = uuid4().hex[:16]
     template = ItemTemplate.objects.create(
         key=f"bulk_healing_medicine_{suffix}",
         name="批量疗伤药",

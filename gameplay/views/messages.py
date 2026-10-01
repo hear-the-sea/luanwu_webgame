@@ -28,6 +28,7 @@ from gameplay.models import ResourceType
 from gameplay.models.items import normalize_message_attachment_buckets
 from gameplay.services.manor.core import get_manor
 from gameplay.services.resources import project_resource_production_for_read
+from gameplay.services.scout_reports import split_scout_report_details
 from gameplay.services.utils.messages import (
     MessageDeleteResult,
     claim_message_attachments,
@@ -314,6 +315,7 @@ def view_message(request: HttpRequest, pk: int) -> HttpResponse:
     context = {
         "message": message,
         "attachment_details": attachment_details,
+        "scout_report": split_scout_report_details(kind=message.kind, title=message.title, body=message.body),
     }
 
     return render(request, "gameplay/message_detail.html", context)

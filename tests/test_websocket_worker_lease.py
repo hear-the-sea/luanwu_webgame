@@ -273,7 +273,8 @@ def _run_base_settings_import(**overrides: str) -> subprocess.CompletedProcess[s
             sys.executable,
             "-c",
             (
-                "from config.settings import base; "
+                # Keep child settings imports in test mode, including local dotenv handling.
+                "import pytest; from config.settings import base; "
                 "print(base.WEBSOCKET_MAX_CONNECTIONS_PER_USER, "
                 "base.WEBSOCKET_CONNECTION_SLOT_TTL_SECONDS, "
                 "base.WEBSOCKET_WORKER_LEASE_TTL_SECONDS, "

@@ -78,9 +78,7 @@
                     const data = JSON.parse(event.data);
                     if (!data || typeof data !== 'object') return;
                     updateOnlineStats(data);
-                    reconnectPolicy.markStable();
                     disconnected = false;
-                    clearStabilityTimer();
                 } catch (error) {
                     console.error('解析在线统计数据失败:', error);
                 }

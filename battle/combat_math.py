@@ -148,7 +148,7 @@ def calculate_slaughter_multiplier(attacker: Any, target: Any) -> float:
     return SLAUGHTER_MULTIPLIER
 
 
-def effective_attack_value(actor: Any, target: Any | None = None) -> float:
+def effective_attack_value(actor: Any, target: Any | None = None, *, troop_attack_strength: int | None = None) -> float:
     """
     计算有效攻击值，小兵攻击时根据当前兵力数量和目标类型使用不同的倍率。
 
@@ -165,7 +165,11 @@ def effective_attack_value(actor: Any, target: Any | None = None) -> float:
     """
     if getattr(actor, "kind", "") != "troop":
         return float(getattr(actor, "attack", 0) or 0)
-    strength = _current_strength(actor)  # 使用当前兵力而非初始兵力
+    strength = (
+        _current_strength(actor)
+        if troop_attack_strength is None
+        else require_positive_int(troop_attack_strength, contract_name="battle troop attack strength")
+    )
     unit_attack = _unit_attack_value(actor)
     target_kind = getattr(target, "kind", "") if target is not None else "troop"
     if target_kind == "guest":

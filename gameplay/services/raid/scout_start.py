@@ -9,6 +9,7 @@ from django.utils import timezone
 from core.exceptions import ScoutStartError
 
 from ...models import PlayerTroop, ScoutCooldown, ScoutRecord
+from ..scout_intel_rules import SCOUT_INTEL_SCHEMA_VERSION, normalize_scout_level
 
 
 def format_scout_cooldown_message(remaining_seconds: int | None) -> str:
@@ -27,6 +28,7 @@ def start_scout_command(
     get_scout_count_fn: Callable[[Any], int],
     lock_manor_pair_fn: Callable[[int, int], tuple[Any, Any]],
     calculate_success_rate_fn: Callable[[Any, Any], float],
+    get_scout_level_fn: Callable[[Any], int],
     calculate_travel_time_fn: Callable[[Any, Any], int],
     schedule_completion_fn: Callable[[Any, int], None],
     now_fn: Callable[[], datetime] = timezone.now,
@@ -95,6 +97,10 @@ def start_scout_command(
             success_rate=success_rate,
             travel_time=travel_time,
             complete_at=current_time + timedelta(seconds=travel_time),
+            intel_data={
+                "intel_schema_version": SCOUT_INTEL_SCHEMA_VERSION,
+                "scout_level": normalize_scout_level(get_scout_level_fn(attacker_locked)),
+            },
         )
         schedule_completion_fn(record, travel_time)
 

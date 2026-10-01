@@ -239,7 +239,7 @@ buildings:
   - key: juxianzhuang
     name: 聚贤庄
     category: personnel
-    description: 天下英雄，入我彀中。广纳贤才，礼贤下士，方能成就一番霸业。升级可提升门客容纳上限。
+    description: 天下英雄，入我彀中。广纳贤才，礼贤下士，方能成就一番霸业。初始0级可容纳5位门客，每升一级增加1位，满级15级可容纳20位。
     resource_type: silver
     base_rate_per_hour: 0
     rate_growth: 0.0
@@ -332,7 +332,7 @@ buildings:
   - key: youxibaota
     name: 悠嘻宝塔
     category: special
-    description: 登高望远，运筹帷幄。立于塔顶，可观四方风云，调兵遣将，决胜千里。升级可提升同时出征门客上限。
+    description: 登高望远，运筹帷幄。立于塔顶，可观四方风云，调兵遣将，决胜千里。初始0级可派出5位门客，每升一级增加1位，满级15级可同时派出20位。
     resource_type: grain
     base_rate_per_hour: 0
     rate_growth: 0.0

@@ -14,7 +14,7 @@ from typing import Any, Iterator
 from uuid import UUID, uuid4
 
 from django.db import DatabaseError, connection, transaction
-from django.db.models import Case, F, IntegerField, Q, When
+from django.db.models import Case, CharField, Count, F, IntegerField, Q, Value, When
 from django.utils import timezone
 
 from core.utils.cache_lock import acquire_best_effort_lock, release_best_effort_lock, renew_best_effort_lock
@@ -777,7 +777,7 @@ def _build_population_plan(
         maintained = maintained.filter(engine_version=int(required_engine_version))
         if int(required_engine_version) == 2:
             maintained = maintained.filter(policy_version=2)
-    attackable = maintained.filter(
+    attackable_filter = (
         Q(manor__newbie_protection_until__isnull=True) | Q(manor__newbie_protection_until__lte=now),
         Q(manor__peace_shield_until__isnull=True) | Q(manor__peace_shield_until__lte=now),
     )
@@ -798,11 +798,68 @@ def _build_population_plan(
         ready_handoff_allowed=runtime_assessment.ready_handoff_allowed,
         training_admission_allowed=runtime_assessment.training_admission_allowed,
     )
+    regions = _regions()
+    bands = tuple(_prestige_bands(config).items())
+    real_annotations: dict[str, Count] = {}
+    bot_annotations: dict[str, Count] = {}
+    for index, (band_name, (low, high)) in enumerate(bands):
+        real_annotations[f"real_{index}"] = Count("pk", filter=Q(**_band_filter_kwargs(low, high)))
+        bot_annotations[f"maintained_{index}"] = Count(
+            "pk",
+            filter=_population_cell_membership_filter(band_name, config=config, target_based=target_based),
+        )
+        bot_annotations[f"attackable_{index}"] = Count(
+            "pk",
+            filter=Q(*attackable_filter, **_band_filter_kwargs(low, high, prefix="manor__")),
+        )
+    # Conditional counts preserve independent (possibly overlapping) bands.
+    # Canonical CASE keys retain the old WHERE comparisons under database
+    # collations that equate different spellings, accents or trailing spaces.
+    real_counts_by_region = {
+        row["population_region"]: row
+        for row in (
+            Manor.objects.filter(
+                bot_profile__isnull=True,
+                user__is_staff=False,
+                user__is_superuser=False,
+                region__in=regions,
+                last_active_at__gte=active_after,
+            )
+            .annotate(
+                population_region=Case(
+                    *(When(region=region, then=Value(region)) for region in regions),
+                    output_field=CharField(),
+                )
+            )
+            .order_by()
+            .values("population_region")
+            .annotate(**real_annotations)
+            if bands and regions
+            else ()
+        )
+    }
+    bot_counts_by_region = {
+        row["population_region"]: row
+        for row in (
+            maintained.filter(manor__region__in=regions)
+            .annotate(
+                population_region=Case(
+                    *(When(manor__region=region, then=Value(region)) for region in regions),
+                    output_field=CharField(),
+                )
+            )
+            .order_by()
+            .values("population_region")
+            .annotate(**bot_annotations)
+            if bands and regions
+            else ()
+        )
+    }
     cells: list[PopulationCell] = []
-    for region in _regions():
-        for band_name, (low, high) in _prestige_bands(config).items():
-            band_filter = _band_filter_kwargs(low, high, prefix="manor__")
-            real_filter = _band_filter_kwargs(low, high)
+    for region in regions:
+        real_counts = real_counts_by_region.get(region, {})
+        bot_counts = bot_counts_by_region.get(region, {})
+        for index, (band_name, (_low, _high)) in enumerate(bands):
             arena_required_handoff = max(0, int(arena_demands.get((region, band_name), 0) or 0))
             handoff_supply = arena_handoff_supply.get((region, band_name), ArenaHandoffSupply())
             arena_materialization_additional = arena_materialization_deficit(
@@ -813,24 +870,9 @@ def _build_population_plan(
                 PopulationCell(
                     region=region,
                     prestige_band=band_name,
-                    active_real=Manor.objects.filter(
-                        bot_profile__isnull=True,
-                        user__is_staff=False,
-                        user__is_superuser=False,
-                        region=region,
-                        last_active_at__gte=active_after,
-                        **real_filter,
-                    ).count(),
-                    maintained_supply=maintained.filter(manor__region=region)
-                    .filter(
-                        _population_cell_membership_filter(
-                            band_name,
-                            config=config,
-                            target_based=target_based,
-                        )
-                    )
-                    .count(),
-                    attackable_supply=attackable.filter(manor__region=region, **band_filter).count(),
+                    active_real=int(real_counts.get(f"real_{index}", 0)),
+                    maintained_supply=int(bot_counts.get(f"maintained_{index}", 0)),
+                    attackable_supply=int(bot_counts.get(f"attackable_{index}", 0)),
                     search_demand=max(0, demands.get((region, band_name), 0)),
                     arena_handoff_supply=handoff_supply.available,
                     arena_materialization_additional=arena_materialization_additional,

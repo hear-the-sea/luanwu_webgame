@@ -119,6 +119,8 @@ def build_battle_options(
     attacker_manor,
     defender_manor,
     validate_attacker_troop_capacity: bool,
+    attacker_troop_loss_rate: float | None = None,
+    defender_troop_loss_rate: float | None = None,
 ) -> BattleOptions:
     return BattleOptions(
         battle_type=battle_type,
@@ -145,4 +147,6 @@ def build_battle_options(
         attacker_manor=attacker_manor,
         defender_manor=defender_manor,
         validate_attacker_troop_capacity=validate_attacker_troop_capacity,
+        attacker_troop_loss_rate=attacker_troop_loss_rate,
+        defender_troop_loss_rate=defender_troop_loss_rate,
     )

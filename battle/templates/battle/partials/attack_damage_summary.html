@@ -1,14 +1,24 @@
+{% load battle_report %}
+{% troop_phase_skill attack event round.priority as phase_skill %}
 <div class="event-target-summary event-damage-summary">
     <span class="event-target-arrow" aria-hidden="true">→</span>
     <span class="event-target-detail">
-        {% if attack.current_target_bonus %}
-            对当前目标<strong class="event-target-name">{{ attack.target }}</strong>追加真实伤害<strong class="event-damage-value">{{ attack.damage|default:0 }}</strong>，伤害人数<strong class="event-kill-count">{{ attack.kills|default:0 }}</strong>{% if attack.target_defeated %}{% if attack.target_state.kind == 'city_defense' %}，{{ attack.target }}被摧毁{% else %}，敌方全军覆没{% endif %}{% endif %}
+        {% if attack.is_dodge %}
+            {% if phase_skill %}{{ attack.actor|default:event.actor }}爆发{{ phase_skill }}：{% else %}普通攻击：{% endif %}<strong class="event-target-name">{{ attack.target }}</strong>闪避了攻击
+        {% elif attack.current_target_bonus %}
+            对当前目标<strong class="event-target-name">{{ attack.target }}</strong>追加真实伤害<strong class="event-damage-value">{{ attack.damage|default:0 }}</strong>，伤害人数<strong class="event-kill-count">{{ attack.kills|default:0 }}</strong>{% include "battle/partials/target_defeat_summary.html" %}
+        {% elif phase_skill %}
+            <span class="tech-tag {% if phase_skill == '凤舞九天' %}ranged{% else %}preempt{% endif %}">{{ attack.actor|default:event.actor }}爆发{{ phase_skill }}</span>，对<strong class="event-target-name">{{ attack.target }}</strong>{% if phase_skill == '凤舞九天' %}造成远程{% else %}造成{% endif %}{% if attack.is_crit %}暴击，伤害{% else %}伤害{% endif %}<strong class="event-damage-value">{{ attack.damage|default:0 }}</strong>，伤害人数<strong class="event-kill-count">{{ attack.kills|default:0 }}</strong>{% include "battle/partials/target_defeat_summary.html" %}
+        {% elif attack.is_double_strike %}
+            <span class="tech-tag double">爆发狂狼必杀：</span>对<strong class="event-target-name">{{ attack.target }}</strong>{% if attack.is_crit %}造成暴击，伤害{% else %}造成伤害{% endif %}<strong class="event-damage-value">{{ attack.damage|default:0 }}</strong>，伤害人数<strong class="event-kill-count">{{ attack.kills|default:0 }}</strong>{% include "battle/partials/target_defeat_summary.html" %}
+        {% elif attack.is_crit %}
+            {% if attack.skills and not is_secondary %}<span class="event-active-skill">爆发技能：{{ attack.skills|join:"、" }}</span>，{% endif %}对<strong class="event-target-name">{{ attack.target }}</strong>造成暴击，伤害<strong class="event-damage-value">{{ attack.damage|default:0 }}</strong>，伤害人数<strong class="event-kill-count">{{ attack.kills|default:0 }}</strong>{% include "battle/partials/target_defeat_summary.html" %}
         {% elif is_secondary and attack.kind != 'city_defense' %}
-            波及<strong class="event-target-name">{{ attack.target }}</strong>，造成伤害<strong class="event-damage-value">{{ attack.damage|default:0 }}</strong>，伤害人数<strong class="event-kill-count">{{ attack.kills|default:0 }}</strong>{% if attack.target_defeated %}{% if attack.target_state.kind == 'city_defense' %}，{{ attack.target }}被摧毁{% else %}，敌方全军覆没{% endif %}{% endif %}
+            波及<strong class="event-target-name">{{ attack.target }}</strong>，造成伤害<strong class="event-damage-value">{{ attack.damage|default:0 }}</strong>，伤害人数<strong class="event-kill-count">{{ attack.kills|default:0 }}</strong>{% include "battle/partials/target_defeat_summary.html" %}
         {% elif attack.skills %}
-            <span class="event-active-skill">爆发技能：{{ attack.skills|join:"、" }}</span>，对<strong class="event-target-name">{{ attack.target }}</strong>造成伤害<strong class="event-damage-value">{{ attack.damage|default:0 }}</strong>，伤害人数<strong class="event-kill-count">{{ attack.kills|default:0 }}</strong>{% if attack.target_defeated %}{% if attack.target_state.kind == 'city_defense' %}，{{ attack.target }}被摧毁{% else %}，敌方全军覆没{% endif %}{% endif %}
+            <span class="event-active-skill">爆发技能：{{ attack.skills|join:"、" }}</span>，对<strong class="event-target-name">{{ attack.target }}</strong>造成伤害<strong class="event-damage-value">{{ attack.damage|default:0 }}</strong>，伤害人数<strong class="event-kill-count">{{ attack.kills|default:0 }}</strong>{% include "battle/partials/target_defeat_summary.html" %}
         {% else %}
-            普通攻击：对<strong class="event-target-name">{{ attack.target }}</strong>造成伤害<strong class="event-damage-value">{{ attack.damage|default:0 }}</strong>，伤害人数<strong class="event-kill-count">{{ attack.kills|default:0 }}</strong>{% if attack.target_defeated %}{% if attack.target_state.kind == 'city_defense' %}，{{ attack.target }}被摧毁{% else %}，敌方全军覆没{% endif %}{% endif %}
+            普通攻击：对<strong class="event-target-name">{{ attack.target }}</strong>造成伤害<strong class="event-damage-value">{{ attack.damage|default:0 }}</strong>，伤害人数<strong class="event-kill-count">{{ attack.kills|default:0 }}</strong>{% include "battle/partials/target_defeat_summary.html" %}
         {% endif %}
     </span>
 </div>

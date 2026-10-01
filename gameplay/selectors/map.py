@@ -35,7 +35,7 @@ def get_map_context(manor, selected_region: str, search_query: str) -> dict:
         "active_scouts": get_active_scouts(manor),
         "incoming_raids": get_incoming_raids(manor),
         "scout_count": get_scout_count(manor),
-        "player_troops": get_player_troops(manor),
+        "player_troops": get_player_troops(manor, include_bank=True),
     }
 
 
@@ -52,7 +52,7 @@ def get_raid_config_context(manor, target_manor) -> dict:
         "can_attack": can_attack,
         "attack_reason": attack_reason,
         "available_guests": available_guests,
-        "player_troops": get_player_troops(manor),
+        "player_troops": get_player_troops(manor, include_bank=True),
         "scout_count": get_scout_count(manor),
         "max_squad_size": manor.max_squad_size,
         "pvp_time_scale_multiplier": get_time_scale().multiplier,

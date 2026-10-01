@@ -68,6 +68,9 @@ DEVICE_TROOP_BONUS_DESIGN = {
         troop_class: {"attack_pct": 0.005, "defense_pct": 0.005, "hp_pct": 0.005}
         for troop_class in ALL_DEVICE_TROOP_CLASSES
     },
+    "equip_qingtongzhijiaodoushi": {"quan": {"attack_pct": 0.005}},
+    "equip_baiyinzhijiaodoushi": {"quan": {"attack_pct": 0.01}},
+    "equip_huangjinzhijiaodoushi": {"quan": {"attack_pct": 0.01, "defense_pct": 0.005}},
 }
 
 EQUIPMENT_STORAGE_BY_RARITY = {"black": 50, "green": 75, "blue": 100, "purple": 150, "orange": 200}
@@ -223,7 +226,13 @@ def test_device_troop_bonuses_match_approved_design_and_never_grant_agility():
         assert bonus_by_class is not None
         for stat_bonus in bonus_by_class.values():
             affected_stats = {key.removesuffix("_pct").removesuffix("_flat") for key in stat_bonus}
-            assert affected_stats in ({"attack"}, {"defense"}, {"hp"}, {"attack", "defense", "hp"})
+            assert affected_stats in (
+                {"attack"},
+                {"defense"},
+                {"hp"},
+                {"attack", "defense"},
+                {"attack", "defense", "hp"},
+            )
             assert "agility" not in affected_stats
 
 

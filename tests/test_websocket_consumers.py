@@ -508,7 +508,7 @@ class WorldChatSessionValidationTests(SimpleTestCase):
 
             invalid = self._build_consumer(WebSocketSessionValidationResult.INVALID)
             await invalid.connect()
-            invalid.close.assert_awaited_once_with()
+            invalid.close.assert_awaited_once_with(code=4403)
             invalid.accept.assert_not_awaited()
 
             valid = self._build_consumer(WebSocketSessionValidationResult.VALID)
@@ -530,7 +530,7 @@ class WorldChatSessionValidationTests(SimpleTestCase):
             invalid = self._build_consumer(WebSocketSessionValidationResult.INVALID)
             invalid._process_send_message = AsyncMock()
             await invalid.receive_json({"type": "send", "text": "hello"})
-            invalid.close.assert_awaited_once_with()
+            invalid.close.assert_awaited_once_with(code=4403)
             invalid._process_send_message.assert_not_awaited()
 
             valid = self._build_consumer(WebSocketSessionValidationResult.VALID)
@@ -617,7 +617,7 @@ class OnlineStatsConsumerTests(SimpleTestCase):
 
         asyncio.run(consumer.connect())
 
-        consumer.close.assert_awaited_once()
+        consumer.close.assert_awaited_once_with(code=4401)
         consumer.accept.assert_not_awaited()
 
     def test_connect_sends_stats_and_broadcasts(self):
@@ -659,7 +659,7 @@ class OnlineStatsConsumerTests(SimpleTestCase):
 
         asyncio.run(consumer.connect())
 
-        consumer.close.assert_awaited_once_with()
+        consumer.close.assert_awaited_once_with(code=4403)
         consumer.accept.assert_not_awaited()
 
     def test_connect_closes_with_service_unavailable_code_when_session_validation_is_unavailable(self):

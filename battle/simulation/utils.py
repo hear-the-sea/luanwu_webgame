@@ -75,10 +75,16 @@ def summarize_losses(
     defender_team: List["Combatant"],
     winner: str,
     rng: random.Random,
+    attacker_troop_loss_rate: float | None = None,
+    defender_troop_loss_rate: float | None = None,
 ) -> Dict[str, dict]:
     from ..utils.battle_calculator import calculate_team_losses
 
     return {
-        "attacker": calculate_team_losses(attacker_team, winner == "attacker", rng, side="attacker"),
-        "defender": calculate_team_losses(defender_team, winner == "defender", rng, side="defender"),
+        "attacker": calculate_team_losses(
+            attacker_team, winner == "attacker", rng, side="attacker", troop_loss_rate=attacker_troop_loss_rate
+        ),
+        "defender": calculate_team_losses(
+            defender_team, winner == "defender", rng, side="defender", troop_loss_rate=defender_troop_loss_rate
+        ),
     }

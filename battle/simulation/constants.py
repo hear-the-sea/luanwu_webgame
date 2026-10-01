@@ -10,6 +10,10 @@ from typing import Dict
 # 这个权重经过平衡性考虑：既能遏制炮灰策略，又保留足够的不确定性
 PRIORITY_TARGET_WEIGHT = 0.60
 
+# 同一种护院每满 1000 名，当前行动增加一次分队攻击。
+TROOP_EXTRA_ATTACK_INTERVAL = 1000
+TROOP_GROUP_DAMAGE_MULTIPLIER = 1.2
+
 # ============ 五行相克配置 ============
 
 # 五行相克关系：护院攻击时优先选择克制兵种

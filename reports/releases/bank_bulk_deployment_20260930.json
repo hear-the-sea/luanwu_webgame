@@ -1,0 +1,44 @@
+{
+  "release": "bank-bulk-20260930T113629Z",
+  "image": "webgame:bank-bulk-20260930T113629Z",
+  "server_dir": "/root/code/releases/bank-bulk-20260930T113629Z",
+  "base_image": "webgame:prod-20260930-troop-bank-9b304e448db7",
+  "base_image_id": "sha256:129a3bdc2f30553c8fbde49994832fc6271cbc101da15321774d0a08a3154e6c",
+  "files": {
+    "trade/bank_context_builder.py": "7dcd516f0e4a6a703413027f7d5ddf547305005630daddc5b0c88108a079d1eb",
+    "trade/urls.py": "cba877c906cea569ff0c7d82407c03a90f6d77bec47081b8213c96ec316e0e40",
+    "trade/selectors.py": "e91be94a1e85f729133ece0e2c6a5f9b7d71946b6e3e610a025a84c2261cf2ed",
+    "trade/views.py": "149a0e597693f9006fc0b9f7d43f5b15beafccd74581e8d8e93425088055e651",
+    "static/js/trade.js": "842e4f865de696687adaa6f65870c443fc19ea799b12a98769c8c12b10a374e1",
+    "gameplay/services/manor/troop_bank.py": "4397ce3ee2839e63d2ff5cac45824974a20f11fff31eb5fba32abce3bc27382b",
+    "trade/templates/trade/partials/_bank.html": "12124a9da56d848c3fe7a86afe700d421666f51eb6e151d4824a6c63cde1a14d"
+  },
+  "archive": "/tmp/bank-bulk-20260930T113629Z.zip",
+  "archive_sha256": "09fe13fe98df35e97bb893ba0b1af91554634db317eb7e6e7a17b918266509e3",
+  "base_files": {
+    "trade/bank_context_builder.py": "41716dc8706429874ed25cda7ed3b5997baa8d28d5b6d57c94d3356e23f52191",
+    "trade/urls.py": "c1fbf996da561b198f66aea6a7c6af0e664e0fef93d1b82daf3014bc352f1ccb",
+    "trade/selectors.py": "bc24fbb48f11e9226391c8ae288d5626251777259b4f6ec170a461b4ac178d65",
+    "trade/views.py": "5a6a6515689c64982e0cee6d4e1d695fc277b57736decb7928643bbd6cec8313",
+    "static/js/trade.js": "cb2dbd9c5f23df276f056b4559df14ecffc7e54e1ebbfb4054bd78aef4cc118a",
+    "gameplay/services/manor/troop_bank.py": "774c6c07f11116a1bd0ee87eb23a72c29ef92f49b58ec61549f31777616008c4",
+    "trade/templates/trade/partials/_bank.html": "64a26b14da9d97b5a8113b2dc05c9dcbc7004f0f41575a1d7bf88306df151aeb"
+  },
+  "deployment": {
+    "status": "deployed",
+    "verified_at_utc": "2026-09-30T11:51:49Z",
+    "image_id": "sha256:0bac4bb3d5c63a230f108daf44465f5837b9946ceaf9e52cbcc6290f7dfdd0f9",
+    "host": "154.201.68.231",
+    "project_dir": "/root/code",
+    "backup_dir": "/root/code/releases/bank-bulk-20260930T113629Z/backup",
+    "web_health": "healthy",
+    "worker_ping_count": 6,
+    "public_liveness": 200,
+    "static_url": "/static/js/trade.e54dcca1e724.js",
+    "routing_revision": 475,
+    "routing_mode": "v2_active",
+    "routing_pause_reason": "",
+    "runtime_hashes": "all_7_match",
+    "new_container_log_errors": 0
+  }
+}

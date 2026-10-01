@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from ...models import Manor, MissionTemplate
+from .constants import PLAYER_MISSION_TROOP_LOSS_RATE
 from .enemy_guest_configs import EnemyGuestConfig, normalize_enemy_guest_configs
 
 
@@ -169,6 +170,7 @@ def generate_sync_battle_report(
             attacker_guest_skills=attacker_guest_skills,
             attacker_manor=None,
             validate_attacker_troop_capacity=False,
+            defender_troop_loss_rate=PLAYER_MISSION_TROOP_LOSS_RATE if normalized_loadout else None,
         )
 
     return simulate_report(
@@ -191,4 +193,5 @@ def generate_sync_battle_report(
         max_squad=getattr(manor, "max_squad_size", None),
         apply_damage=False,
         use_lock=False,
+        attacker_troop_loss_rate=PLAYER_MISSION_TROOP_LOSS_RATE if normalized_loadout else None,
     )

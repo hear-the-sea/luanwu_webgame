@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any, Callable
 
+from gameplay.services.manor.troop_capacity import MANOR_TROOP_CAPACITY
 from gameplay.services.technology import get_troop_class_for_key
 from trade.selector_builders import _safe_call, record_trade_issue
 
@@ -43,6 +44,9 @@ def build_bank_trade_context(
     get_troop_bank_used_space: Callable[..., Any],
     get_troop_bank_remaining_space: Callable[..., Any],
     get_troop_bank_rows: Callable[..., Any],
+    get_manor_troop_used_space: Callable[..., Any],
+    get_manor_troop_remaining_space: Callable[..., Any],
+    get_pending_troop_recruitment_space: Callable[..., Any],
 ) -> None:
     selected_troop_category = (params.get("troop_category") or "all").strip() or "all"
     manor_id = getattr(manor, "id", None)
@@ -93,6 +97,16 @@ def build_bank_trade_context(
         default=[],
         log_message=f"load troop bank rows failed: manor_id={manor_id}",
     )
+    context["manor_troop_capacity"] = MANOR_TROOP_CAPACITY
+    context["manor_troop_used"], context["manor_troop_reserved"], context["manor_troop_remaining"] = _safe_call(
+        lambda: (
+            get_manor_troop_used_space(manor),
+            get_pending_troop_recruitment_space(manor),
+            get_manor_troop_remaining_space(manor),
+        ),
+        default=(0, 0, 0),
+        log_message=f"load manor troop capacity failed: manor_id={manor_id}",
+    )
 
     available_classes: set[str] = set()
     for row in troop_bank_rows:
@@ -107,6 +121,19 @@ def build_bank_trade_context(
         selected_troop_category = "all"
     if selected_troop_category != "all":
         troop_bank_rows = [row for row in troop_bank_rows if row.get("troop_class") == selected_troop_category]
+
+    for row in troop_bank_rows:
+        row["deposit_max"] = min(row["player_count"], context["troop_bank_remaining"])
+        row["withdraw_max"] = min(row["bank_count"], context["manor_troop_remaining"])
+    context["troop_bank_deposit_max"] = min(
+        sum(row["player_count"] for row in troop_bank_rows), context["troop_bank_remaining"]
+    )
+    context["troop_bank_withdraw_max"] = min(
+        sum(row["bank_count"] for row in troop_bank_rows), context["manor_troop_remaining"]
+    )
+    context["troop_bank_category_name"] = next(
+        item["name"] for item in troop_bank_categories if item["key"] == selected_troop_category
+    )
 
     context["troop_bank_rows"] = troop_bank_rows
     context["troop_bank_categories"] = troop_bank_categories

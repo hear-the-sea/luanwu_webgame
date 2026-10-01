@@ -26,7 +26,6 @@ heroes:
       intellect: 28
       defense: 22
       agility: 12
-  purple:
   - key: hist_suitang_0003_wuzhao
     name: 武曌
     default_gender: female
@@ -34,12 +33,13 @@ heroes:
     flavor: （624年-705年）唐高宗后、武周皇帝，亦是中国历史上唯一自立称帝的女性。她由才人入宫，凭政治手腕掌控中枢，690年改国号周。其治下扩大科举取士、重用能臣以整饬吏治，同时倚重酷吏与严刑以压制反对，朝局锋利而高效。她既能用狄仁杰等人稳住国本，也以强势改写宗室与外戚格局；无字碑不言褒贬，正合其功过并陈的身后名。
     growth_range:
     - 8
-    - 11
+    - 13
     attribute_weights:
       force: 12
       intellect: 54
       defense: 22
       agility: 12
+  purple:
   - key: hist_suitang_0004_libai
     name: 李白
     default_gender: male

@@ -171,6 +171,12 @@
                             <div class="round-action-cell defender" aria-label="防守方行动记录">
                                 {% include "battle/partials/round_event_list.html" with events=round.defender_events event_list_class="defender" %}
                             </div>
+                            {% if round.unassigned_events %}
+                                <div class="round-action-cell unassigned" aria-label="阵营未记录的行动">
+                                    <span class="round-row-label">阵营未记录</span>
+                                    {% include "battle/partials/round_event_list.html" with events=round.unassigned_events my_side="" is_spectator=True %}
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                 </article>
@@ -226,6 +232,8 @@
                             <span>{% for loss in loss_items %}{{ loss.label }}{% if loss.amount %} -{{ loss.amount }}{% endif %}{% if not forloop.last %}、{% endif %}{% endfor %}</span>
                         {% elif is_spectator %}
                             <span>本场无额外掉落记录。</span>
+                        {% elif report.winner == 'draw' or not report.winner %}
+                            <span>本次交手不分胜负，无额外掉落记录。</span>
                         {% elif player_won %}
                             <span>胜利但补给匮乏，本次未获得额外战利品。</span>
                         {% else %}

@@ -37,6 +37,7 @@ class AttackLogEntry(TypedDict):
     target_defeated: bool
 
     additional_targets: NotRequired[List["AttackLogEntry"]]
+    additional_attacks: NotRequired[List["AttackLogEntry"]]
     passive_events_before: NotRequired[List[PassiveLogEntry]]
     passive_events_after: NotRequired[List[PassiveLogEntry]]
     current_target_bonus: NotRequired[bool]

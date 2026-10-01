@@ -165,7 +165,7 @@ def test_generate_sync_battle_report_defense_passes_enemy_label_override_to_ai_g
         manor=manor,
         mission=mission,
         guests=[],
-        loadout={},
+        loadout={"archer": 12},
         defender_setup={},
         travel_seconds=0,
         seed=1,
@@ -174,6 +174,7 @@ def test_generate_sync_battle_report_defense_passes_enemy_label_override_to_ai_g
     attacker_guests = captured["attacker_guests"]
     assert len(attacker_guests) == 1
     assert getattr(attacker_guests[0], "_display_name_override", None) == "任务别名"
+    assert captured["defender_troop_loss_rate"] == 0.5
 
 
 def test_generate_sync_battle_report_defense_rejects_invalid_enemy_troops(monkeypatch):

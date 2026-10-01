@@ -11,6 +11,8 @@ from core.game_data.troop_device_bonus_display import format_aggregated_troop_de
 from gameplay.utils.template_loader import get_item_templates_by_keys
 from guests.models import Guest, GuestTemplate, SkillBook
 
+from .report_events import report_event_side
+
 if TYPE_CHECKING:
     from .models import BattleReport
 
@@ -153,6 +155,14 @@ def resolve_report_runtime_context(report: "BattleReport", *, manor_id: int) -> 
             else:
                 player_side = "attacker"
         return {"player_side": player_side, "raid_run": guild_raid_run}
+
+    # Raid and arena reports belong to the attacker; historical guest ownership
+    # may have changed through capture since the battle took place.
+    if getattr(report, "battle_type", "") in {"raid", "arena"}:
+        if report.manor_id == manor_id:
+            return {"player_side": "attacker", "raid_run": None}
+        if report.messages.filter(manor_id=manor_id).exists():
+            return {"player_side": "defender", "raid_run": None}
 
     inferred_side = infer_side_from_guest_ownership(report, manor_id)
     if inferred_side:
@@ -391,8 +401,9 @@ def build_rounds_display(rounds: Iterable[dict[str, Any]], avatar_map: dict[str,
                     "attacker": _normalize_round_lineup_side(lineups.get("attacker"), avatar_map),
                     "defender": _normalize_round_lineup_side(lineups.get("defender"), avatar_map),
                 },
-                "attacker_events": [event for event in events if event.get("side") == "attacker"],
-                "defender_events": [event for event in events if event.get("side") == "defender"],
+                "attacker_events": [event for event in events if report_event_side(event) == "attacker"],
+                "defender_events": [event for event in events if report_event_side(event) == "defender"],
+                "unassigned_events": [event for event in events if not report_event_side(event)],
             }
         )
     return display_rounds

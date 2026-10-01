@@ -1,0 +1,960 @@
+{
+  "date": "2026-10-01",
+  "completed_at": "2026-10-01T10:00:30.508497+08:00",
+  "status": "reviewed_and_corrected",
+  "deployed": false,
+  "committed": false,
+  "reviewed_workspace_files": 157,
+  "fixes": [
+    {
+      "area": "battle_debugger",
+      "problem": "Attack divisor override did not accept troop_attack_strength.",
+      "resolution": "Accept and validate current attack chunk strength; retain old-engine behavior."
+    },
+    {
+      "area": "recruitment_identity",
+      "problem": "Same-batch upgrade-family candidates could be duplicated; existing exact ownership could be lost after candidate/template rarity divergence.",
+      "resolution": "Batch family expansion and immediate family exclusion; preserve existing exact template IDs in finalization and candidate snapshot rarity rules."
+    },
+    {
+      "area": "guest_training",
+      "problem": "MySQL joined FOR UPDATE locked shared templates and deadlocked overlapping single/batch training.",
+      "resolution": "Use backend-supported FOR UPDATE OF self; retain ordered guest locks, timers and post-commit dispatch."
+    }
+  ],
+  "minor_corrections": [
+    "Bank transfer local label variable avoids a false player-facing AST gate violation.",
+    "Worker lease settings-import child explicitly stays in pytest test mode; production dotenv permission checks unchanged.",
+    "Normalize mixed line endings in already modified files; split an overlong scout report string without changing output."
+  ],
+  "validation": {
+    "unit_first": {
+      "log": "/tmp/webgame_workspace_unit_review.log",
+      "sha256": "c1b3cf3a143fcdd54592472b4cb153330e9a4e6e2c251753e7eb002c7c9d47ec",
+      "summary": "3 failed, 6627 passed, 244 skipped, 651 deselected, 7 subtests passed in 1174.57s (0:19:34)"
+    },
+    "unit_full": {
+      "log": "/tmp/webgame_workspace_unit_final.log",
+      "sha256": "d669df6351e7083bf60c89cb1d990f26e95b96c4aa0202869494ed6b56e45b10",
+      "summary": "6646 passed, 244 skipped, 651 deselected, 7 subtests passed in 1088.68s (0:18:08)"
+    },
+    "corrected_contracts_and_bank": {
+      "log": "/tmp/webgame_workspace_corrected_gate.log",
+      "sha256": "336199682d103239f525142d2d2d2aea01253af4f3e70f7b21b8623d10634783",
+      "summary": "99 passed in 25.28s"
+    },
+    "mysql_first_full": {
+      "log": "/tmp/webgame_workspace_mysql_review.log",
+      "sha256": "a6ef273cb659ee479e2f39636f683af9575d914d9df3148160a0556c1dc033be",
+      "summary": "1 failed, 146 passed, 7 skipped, 7385 deselected in 2702.21s (0:45:02)"
+    },
+    "mysql_training_and_related": {
+      "log": "/tmp/webgame_workspace_training_fix_mysql.log",
+      "sha256": "75c6d6afce28ca691c9dad7f90d6817f22fbd5fd10e2ce1ffda363addb684b62",
+      "summary": "42 passed, 3 skipped in 360.67s (0:06:00)"
+    },
+    "mysql_training_repeat": {
+      "log": "/tmp/webgame_workspace_training_repeat_mysql.log",
+      "sha256": "4bfb2923fbdf7cff06e4909469a3a23e98e6ffdd72dbe2ce9cc478b29812dc60",
+      "summary": "6 passed in 6.51s"
+    },
+    "mysql_final_recruitment": {
+      "log": "/tmp/webgame_workspace_final_recruitment_mysql.log",
+      "sha256": "bbf92b565b78a9026e07bd7c8bb9eb19eff169c5ecd7aaf1fcb16ee7ab150ca5",
+      "summary": "16 passed in 236.56s (0:03:56)"
+    },
+    "mysql_final_health_and_training": {
+      "log": "/tmp/webgame_workspace_final_health_training_mysql.log",
+      "sha256": "f5dbc3bbaeb8bc04a1221eb7dbb9516f89809a6de43b41b1bc024ca955b2e067",
+      "summary": "5 passed in 4.17s"
+    },
+    "final_recruitment_unit": {
+      "log": "/tmp/workspace_owned_exact_rarity_fix.log",
+      "sha256": "8eb4924cf0a47810c0856d653b1e164abef4bae25890996c8ec5e241e70fe325",
+      "summary": "97 passed in 20.82s"
+    },
+    "battle_independent_previous_engine": {
+      "log": "/tmp/workspace_battle_previous_engine_oracle.log",
+      "sha256": "81b08dbeb747eda681ac1408520bc07055ae5f9796094f6b5e046a8cd86cc2e8",
+      "summary": "135 passed in 0.18s"
+    },
+    "wuzhao_migration_boundaries": {
+      "log": "/tmp/workspace_wuzhao_migration_review.log",
+      "sha256": "f86e83830f1a392b9ac4887dde9deed5e2c6b5b24dbe489e52b14a37d7752622",
+      "summary": "12 passed in 17.08s"
+    },
+    "javascript": {
+      "log": "/tmp/webgame_workspace_js_tests.log",
+      "sha256": "6e9a3a445041ba41ed1f1d473f9144b7cbca7dce3915beeffdafd86532fa7805",
+      "summary": "TOTAL: 206 passed in 38 files"
+    },
+    "browser": {
+      "log": "/tmp/webgame_workspace_browser.log",
+      "sha256": "55ee17036d5aec5994f979f0390e420a5ef95196e141a30b2d58fc3b2dba9af5",
+      "summary": "at 375px\n[3/6] tests/browser/trade_page.spec.js:137:1 › bank transfers submit once and recover controls after history restore\n[4/6] tests/browser/trade_page.spec.js:6:1 › trade page delegates mode and listing interactions in a real browser\n[5/6] tests/browser/item_tooltip.spec.js:7:3 › mission tooltip supports keyboard and stays in the viewport at 1280px\n[6/6] tests/browser/item_tooltip.spec.js:38:1 › hybrid touch compatibility mouseover does not cancel the first tooltip click\n  6 passed (1.0s)"
+    },
+    "mypy": {
+      "log": "/tmp/webgame_workspace_mypy_final_verified.log",
+      "sha256": "1ffedffc914aec25920525998d03dcbd47ab45bc6254c3cb468f3c8d04733b72",
+      "summary": "hecked]\naccounts/views.py:494: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]\naccounts/views.py:612: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]\naccounts/views.py:702: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]\nSuccess: no issues found in 784 source files"
+    },
+    "black": {
+      "log": "/tmp/webgame_workspace_black_after_training.log",
+      "sha256": "0809f54a6200ff555c23bf6f83d95971a3fc38ff78e5568dc300e55ac3d05614",
+      "summary": "All done! ✨ 🍰 ✨\n1623 files would be left unchanged."
+    },
+    "isort": {
+      "log": "/tmp/webgame_workspace_isort_after_training.log",
+      "sha256": "ce8f44cdce3951c368037feb14ca069786a2e13b6f6716c6d669d2d7880d7e7f",
+      "summary": "Skipped 347 files"
+    },
+    "flake8": {
+      "log": "/tmp/webgame_workspace_flake8_after_training.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": ""
+    },
+    "artifacts": {
+      "log": "/tmp/webgame_workspace_artifacts_final.log",
+      "sha256": "0f72b0def98af82b969356a46f0086909d514ccdb72c4f418d7e74d0e0a1c582",
+      "summary": "{\"equipment_records\": 265, \"source_key_and_fields_match\": true, \"formula_cache_M2\": 19.85185185185185}\n{\"mission_records\": 35, \"full_source_definitions_match\": true}\n{\"release_zip_integrity\": \"passed\", \"entries\": 15}\nAll phase 2 runtime and evidence hashes still match."
+    },
+    "django_check": {
+      "log": "/tmp/webgame_workspace_django_check.log",
+      "sha256": "1e3e63f221bde88816c4a4ef7367691607b20cc1d194028a02ec9ae0586cf9b1",
+      "summary": "System check identified no issues (0 silenced)."
+    },
+    "migration_check": {
+      "log": "/tmp/webgame_workspace_migration_check.log",
+      "sha256": "a2bfa7b376c38062f77ce2b1e703876aaa04662f96355cdf5dc9d0d075302b05",
+      "summary": "No changes detected"
+    },
+    "yaml_check": {
+      "log": "/tmp/webgame_workspace_yaml_check.log",
+      "sha256": "790b8e256eec0e7f201ef5031a38839a574352be8db6bb422beecbde10a3dd9e",
+      "summary": "Dry-run mode: validating configs without side effects.\nValidated 28 supported YAML config file(s)."
+    }
+  },
+  "mysql_isolation": {
+    "host": "127.0.0.1",
+    "port": 13306,
+    "main_database": "test_webgame",
+    "probe_database": "test_bank_bulk_release_check",
+    "redis_port": 16379,
+    "main_redis_databases": [
+      13,
+      14,
+      15
+    ],
+    "probe_redis_databases": [
+      10,
+      11,
+      12
+    ],
+    "same_database_processes_run_serially": true
+  },
+  "boundaries": [
+    "No production API, database, deployment or service restart.",
+    "capacity and evidence marker suites excluded from full default review.",
+    "Full unit checkpoint precedes the final existing-GRAY-template/GREEN-candidate snapshot correction; final 97-test unit subset and MySQL recruitment suite cover the final correction.",
+    "Initial full integration process had imported pre-fix training; its sole failure is closed by fresh training tests, deterministic shared-template-lock regression and three repeat rounds.",
+    "Three health/salary cases skipped on the probe database are checked without that name guard skip on test_webgame.",
+    "Seven integration skips are explicitly retired Gate C and Gate D2 tests.",
+    "Stage-2 all-multiskill arena prefetch overhead remains documented; no new online performance measurements."
+  ],
+  "artifact_validation": {
+    "equipment_records": 265,
+    "mission_records": 35,
+    "source_definitions_match": true,
+    "cached_equipment_formula_present": true,
+    "release_zip_integrity": true,
+    "phase2_runtime_and_evidence_hashes_still_match": true
+  },
+  "workspace_manifest_excludes_this_report_pair_to_avoid_self_hash_recursion": true,
+  "workspace_manifest": [
+    {
+      "path": ".env.example",
+      "bytes": 8173,
+      "sha256": "74ddf73570989f0367c701318e9e0879b32e43f0421ac840813d10ec84aeed42"
+    },
+    {
+      "path": "battle/combat_math.py",
+      "bytes": 9078,
+      "sha256": "9eb3edaf6668a9c8a89e11b89fc25bda90addc9b2bff65ddfba4d6c8f2dd516a"
+    },
+    {
+      "path": "battle/combatants_pkg/tech_effects.py",
+      "bytes": 2927,
+      "sha256": "b1683e0b0d20570e05f92eaac0a4e19a6519f0049e24838ee95bad9243a74ec5"
+    },
+    {
+      "path": "battle/execution.py",
+      "bytes": 18676,
+      "sha256": "e6dd43b0827fa3c171723d4c89efd4d39f49fbae95fbef0a24898d17996b7212"
+    },
+    {
+      "path": "battle/random_context.py",
+      "bytes": 3892,
+      "sha256": "8fdbe91896e11fb28742ef4c6428b0ef1437c1d0ed01c0a16218ed0f59ba5166"
+    },
+    {
+      "path": "battle/report_events.py",
+      "bytes": 2934,
+      "sha256": "9f79f90e9e7f503ffc88675daf35ffde8444dcd0e7aeb4eb2ca951a1fcab34be"
+    },
+    {
+      "path": "battle/services.py",
+      "bytes": 13133,
+      "sha256": "64aa1eea82422ebcc886a7cecfcd16352079fa5edf6f1df4cd0de67d885f9316"
+    },
+    {
+      "path": "battle/setup.py",
+      "bytes": 5789,
+      "sha256": "3cc1d383c08eae88f302e858b1d8c1bf61d26b50984d036f6dd4eaaa9b9a364c"
+    },
+    {
+      "path": "battle/simulation/attack_execution.py",
+      "bytes": 22589,
+      "sha256": "828232782fa9f09a0713d3a973246196306bd2b13f0e6924f2a401c1df5bf81f"
+    },
+    {
+      "path": "battle/simulation/battle_flow.py",
+      "bytes": 17605,
+      "sha256": "88650734631ed09eeb8c9cdaec59f3f60f2d76de1a210c5de3595fcad1059d37"
+    },
+    {
+      "path": "battle/simulation/constants.py",
+      "bytes": 3945,
+      "sha256": "9758fbb691d27335efe5a44f8e5c7f66770ca1284145bc6b518cc2776602d7e6"
+    },
+    {
+      "path": "battle/simulation/damage_application.py",
+      "bytes": 6302,
+      "sha256": "4fb8fbaa5404c02a0a609b52588a45f2ac049f71702eb1ee900c1ea60b7eec7e"
+    },
+    {
+      "path": "battle/simulation/damage_calculation.py",
+      "bytes": 14776,
+      "sha256": "a87d128d25747847d589ee2b58e265c4a1b8a63b345d27d0f6f86c5d74e6997e"
+    },
+    {
+      "path": "battle/simulation/types.py",
+      "bytes": 4494,
+      "sha256": "13c386d1a7ac60735e66d9117d454784498164bd7814b3342fa2eb614b96746d"
+    },
+    {
+      "path": "battle/simulation/utils.py",
+      "bytes": 2450,
+      "sha256": "dfe01787e974dca7339f1897e334eaff602cd5fadd00828fe63756adff19f965"
+    },
+    {
+      "path": "battle/tasks.py",
+      "bytes": 16195,
+      "sha256": "f3bc9d025fa82ff245de0e9ece8d46ddf6b3b4f0835306e1d3c7cb4794c3eea5"
+    },
+    {
+      "path": "battle/templates/battle/partials/attack_action_details.html",
+      "bytes": 3113,
+      "sha256": "a40416c9bf644adc65c15c5701c055ac22aec3fa3373f995169902ba7e7d36ee"
+    },
+    {
+      "path": "battle/templates/battle/partials/attack_damage_summary.html",
+      "bytes": 3649,
+      "sha256": "18eff867149f2e7d2700070ac28e8cb2d2e777063f4cf4c5d8b32739d02907c4"
+    },
+    {
+      "path": "battle/templates/battle/partials/heal_effect_summary.html",
+      "bytes": 411,
+      "sha256": "1a3cbe5afdb741f9e1b26651f3c8c67ea6678bdd0d4ae621853df01273333e55"
+    },
+    {
+      "path": "battle/templates/battle/partials/report_detail_styles.html",
+      "bytes": 10505,
+      "sha256": "3504dbb394e3ca4f06cd8811454d99ae9e93f1b8fa7688daf9cc2c45d10567ef"
+    },
+    {
+      "path": "battle/templates/battle/partials/retaliation_damage_summary.html",
+      "bytes": 597,
+      "sha256": "06040ef64d67bbf8f7f457da253e240e3c6543e1b3d9e1728ba951aa620f83c1"
+    },
+    {
+      "path": "battle/templates/battle/partials/round_event_list.html",
+      "bytes": 3467,
+      "sha256": "dcdaba149a8cace0912e31a0b6d3c7813ca9a2c6a738ddf5fc6bac38c9b87a70"
+    },
+    {
+      "path": "battle/templates/battle/partials/target_defeat_summary.html",
+      "bytes": 501,
+      "sha256": "78fddb71058c6655adb0e8712e1bd1033eae83ee3e40e2edd58b20d8715b9ebc"
+    },
+    {
+      "path": "battle/templates/battle/report_detail.html",
+      "bytes": 16108,
+      "sha256": "2b3275b55fc86d6a7f42d2bb6ffe2d413c0926ded5f844881ce1f0efbedcecbb"
+    },
+    {
+      "path": "battle/templatetags/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "battle/templatetags/battle_report.py",
+      "bytes": 758,
+      "sha256": "bad08beb9ccf920541993e0239e19737c443827d384696026f4cb377e133c91a"
+    },
+    {
+      "path": "battle/utils/battle_calculator.py",
+      "bytes": 6347,
+      "sha256": "f9bdc124951b525b699bdb1465d72b9d7d5111d40e43e1faf00551971d9a9ff9"
+    },
+    {
+      "path": "battle/view_helpers.py",
+      "bytes": 29798,
+      "sha256": "65f01b045035192b41a57004044400cb5bd8d527d56377df9ac6688cb9405f1d"
+    },
+    {
+      "path": "battle_debugger/management/commands/battle_debug.py",
+      "bytes": 13649,
+      "sha256": "4a4e428a611d8e01a2ac01bdea3996d9d52dfd93a72ff08be4c8a16813bad4dd"
+    },
+    {
+      "path": "battle_debugger/simulator.py",
+      "bytes": 14674,
+      "sha256": "17d3f504600ce95c39d02c0de351b3e3c9d186d3d8785803db0f71c07f047d45"
+    },
+    {
+      "path": "battle_debugger/templates/battle_debugger/partials/event_list.html",
+      "bytes": 2680,
+      "sha256": "aeca7a33e5d07550f8d02832cdbeaceb05d1e7b5817615e689f86e8ec9bf35bf"
+    },
+    {
+      "path": "config/settings/base.py",
+      "bytes": 17685,
+      "sha256": "c29a36bda8a4ac55b995478a490cc64654743c591806caf5e97b25a0fb2c0cc2"
+    },
+    {
+      "path": "data/guests/history_sljnbc_02.yaml",
+      "bytes": 31608,
+      "sha256": "7e7f7bd7bf69488e61d4f0b7281fb0ae233c36b2d588404490fe2b7563165989"
+    },
+    {
+      "path": "data/guests/history_suitang_01.yaml",
+      "bytes": 29165,
+      "sha256": "3af4cd094d7da3536d4f7d8aaf689932c4448ea48b9c6207db0e541b1e43f63f"
+    },
+    {
+      "path": "data/guests/history_xianqin_01.yaml",
+      "bytes": 28074,
+      "sha256": "f14919f7d4048b9202895f4b4be58830c2a48dd405a51c905339bd8d40700ba8"
+    },
+    {
+      "path": "data/technology_templates.yaml",
+      "bytes": 14823,
+      "sha256": "1a76132b1206c91477aeb9822f0fbf45ea50f2775cbfad6f43ac964860d34c8c"
+    },
+    {
+      "path": "docs/architecture.md",
+      "bytes": 11121,
+      "sha256": "4ac7ac23ec6f9cdd42ffdd076d33aaf7aa399cc6221642ff9d8684ea85db5761"
+    },
+    {
+      "path": "docs/门客数据库-历史人物-三国两晋南北朝.md",
+      "bytes": 231355,
+      "sha256": "0118831879b54ec32e3159f0f5c8b69f035bc352b4dd8dde1678868e36a0f7c3"
+    },
+    {
+      "path": "docs/门客数据库-历史人物-先秦.md",
+      "bytes": 221701,
+      "sha256": "d14fbf136cdfaa715432b9ace8c1dcf8ddf52baac93ad96cf4080377ca01049b"
+    },
+    {
+      "path": "docs/门客数据库-历史人物-隋唐五代.md",
+      "bytes": 248818,
+      "sha256": "0c86261674d1fbf40fb38d4644dbeb70e51824ac27099096ed91906501eafc0d"
+    },
+    {
+      "path": "gameplay/constants.py",
+      "bytes": 10656,
+      "sha256": "45f850de36a8f3c8738a47453b64a0f317493cb0155860afff73b4f3ad5a39ba"
+    },
+    {
+      "path": "gameplay/migrations/0193_xiaoyao_shanzhuang.py",
+      "bytes": 1936,
+      "sha256": "307a00237b9ef997706b9895c7699f5c1df2162e5fe4fc4222571785d1997d87"
+    },
+    {
+      "path": "gameplay/selectors/map.py",
+      "bytes": 2177,
+      "sha256": "f0182be7ed60e170876216b24004828c9eff67bde822bc1e637d2dfb6f71191b"
+    },
+    {
+      "path": "gameplay/services/arena/snapshots.py",
+      "bytes": 7760,
+      "sha256": "2f07a7017254bcb54cacd7a1b69ce75607d126e002b3b68d2237c84248f57ee7"
+    },
+    {
+      "path": "gameplay/services/arena/virtual_reserve_pool.py",
+      "bytes": 153800,
+      "sha256": "ebf87a33ffea122847e3dedf40d5991bb1a0eac1cc748828d0606d7b280c5413"
+    },
+    {
+      "path": "gameplay/services/inventory/core.py",
+      "bytes": 24744,
+      "sha256": "7879bbe6c5400179dc24f7068444d9c6e4ebc728724e91aae0c6ff24b8f8150e"
+    },
+    {
+      "path": "gameplay/services/inventory/use.py",
+      "bytes": 36063,
+      "sha256": "e38ed7316183ab3c7b77007195e158f687b264494dbda54106b3672d29b93e0d"
+    },
+    {
+      "path": "gameplay/services/jail.py",
+      "bytes": 21104,
+      "sha256": "7dc9369e687aa0525b7e6994260af20795ff680236b76c70056910258152df9a"
+    },
+    {
+      "path": "gameplay/services/manor/troop_bank.py",
+      "bytes": 14040,
+      "sha256": "000386e7cbde778964b7210968676f4c16b66647e66209d98b894eb872b352aa"
+    },
+    {
+      "path": "gameplay/services/manor/troop_dispatch.py",
+      "bytes": 2574,
+      "sha256": "d1f2d8185fe39c6a3707f924c99556ed455e9778ca55837b22a71a9e1609592f"
+    },
+    {
+      "path": "gameplay/services/missions_impl/constants.py",
+      "bytes": 72,
+      "sha256": "b70ba1c45ca8f5b553bfc4bb7627a691d8d5dc676f4c1a4907d7bf3c9703b1ed"
+    },
+    {
+      "path": "gameplay/services/missions_impl/sync_report.py",
+      "bytes": 7673,
+      "sha256": "91e7b41f247b5aeb01f33595bd0624c6ef55f4545904fecc89643d93eddc3782"
+    },
+    {
+      "path": "gameplay/services/raid/combat/capture.py",
+      "bytes": 10660,
+      "sha256": "59948a1ed147635e8dc1c2cb33d5a24b403497ab2be119771acc314ae0a61117"
+    },
+    {
+      "path": "gameplay/services/raid/combat/troop_ops.py",
+      "bytes": 4399,
+      "sha256": "796f99ded195b04c67d758c85cc64f28723c57d7de1d2cb599d99ea2da3bde77"
+    },
+    {
+      "path": "gameplay/services/raid/scout.py",
+      "bytes": 10920,
+      "sha256": "8a898bc7c6ecd7560d668c101510515ded5a71df669e8b999dc207e6bb2967f6"
+    },
+    {
+      "path": "gameplay/services/raid/scout_finalize.py",
+      "bytes": 2943,
+      "sha256": "67a7e9c58bf5f3f4ebf5bf5e99ab3fc419516ac295c1940f7c4156e14922086c"
+    },
+    {
+      "path": "gameplay/services/raid/scout_followups.py",
+      "bytes": 7389,
+      "sha256": "5a530357fa0ac69c05ea72914949cd8ef6bb0effd0cbf06b0189f9cd724e7209"
+    },
+    {
+      "path": "gameplay/services/raid/scout_intel.py",
+      "bytes": 5798,
+      "sha256": "1ec227521715fffbba6a3acad8f6445419e68680b1d7c5c1b494e28b6205dfe3"
+    },
+    {
+      "path": "gameplay/services/raid/scout_start.py",
+      "bytes": 3937,
+      "sha256": "73d613dc046c4bc9e7b46a2fc184ac09878fc7faa34f7775e96999876c69e256"
+    },
+    {
+      "path": "gameplay/services/recruitment/queries.py",
+      "bytes": 3229,
+      "sha256": "3e4b3c07dafa487d898ded6f8ea1e762409e31aff52f91477f0a45ddcd7ebd1e"
+    },
+    {
+      "path": "gameplay/services/recruitment/troops.py",
+      "bytes": 8156,
+      "sha256": "1b508921426367d4421d279ef10e9a6abe9da1590381c1cf81f21a3c4d623b9a"
+    },
+    {
+      "path": "gameplay/services/resources.py",
+      "bytes": 34365,
+      "sha256": "c76fdf32cac54787658a68ef4ee19d58e59a06d6161edef2313e8b2d63f19cf2"
+    },
+    {
+      "path": "gameplay/services/scout_intel_rules.py",
+      "bytes": 1171,
+      "sha256": "f08b3deb04b0f2ba562c0b5b7e7affadab493ba88da11637dc67269a3b76ba92"
+    },
+    {
+      "path": "gameplay/services/scout_reports.py",
+      "bytes": 7662,
+      "sha256": "506255ea8fffc20da00557c866e93725e833f86b09725d4ee4d947798294b71b"
+    },
+    {
+      "path": "gameplay/services/technology_helpers.py",
+      "bytes": 6572,
+      "sha256": "18fbc41f0fc11aa4e0f6c65306e33d45ecc9ca6dfe64f303fc0bb6c88eb6aafd"
+    },
+    {
+      "path": "gameplay/services/virtual_player_core/maintenance.py",
+      "bytes": 459690,
+      "sha256": "48852ab4bbada5b04adc6c11fe022f86f22da3e7ac31655a5bb35d559fd62d5b"
+    },
+    {
+      "path": "gameplay/services/virtual_player_core/population_runtime.py",
+      "bytes": 87668,
+      "sha256": "15d33f32c5c01a023e6228e3686f7ca5697044c2def72d513451b1559b197dd1"
+    },
+    {
+      "path": "gameplay/services/virtual_player_core/recruitment.py",
+      "bytes": 74868,
+      "sha256": "809a97cb804b5965ae9c9355c5b4a63190807b26c29feec3f19f39249b105778"
+    },
+    {
+      "path": "gameplay/templates/gameplay/message_detail.html",
+      "bytes": 5028,
+      "sha256": "25977e499da55e8af9c0686f05dd925a0b4686e97a5e04b33820eefa75f515e6"
+    },
+    {
+      "path": "gameplay/templates/gameplay/raid_config.html",
+      "bytes": 12966,
+      "sha256": "472608b7fd3d449ad7dac1d965e4fe471a399c68c0f76cb2039e9e5d60ee0379"
+    },
+    {
+      "path": "gameplay/templates/gameplay/tasks.html",
+      "bytes": 28792,
+      "sha256": "19bade1c8a4ceb65843f126727b4ea29de3983761041fc17e85bbbd575f988c0"
+    },
+    {
+      "path": "gameplay/templates/gameplay/technology.html",
+      "bytes": 9603,
+      "sha256": "e92052451b3a3c821772c18e50412aa61b3bda2dcecab6a7dea865e94ffbbe59"
+    },
+    {
+      "path": "gameplay/views/messages.py",
+      "bytes": 14869,
+      "sha256": "d7797ad4bdaf945542c00b93e0bd32a58f89ec18bf1e9fb52e391f59ae905eaf"
+    },
+    {
+      "path": "gameplay/views/mission_page_context.py",
+      "bytes": 6618,
+      "sha256": "16e902a59ca255f3cf98053cfad38c7cbfb36d2049fb03e439e02e5403c1ff88"
+    },
+    {
+      "path": "guests/constants.py",
+      "bytes": 1282,
+      "sha256": "d209afb48839412dfd8010e6ce370f2afbc23adc6d859c76a358fb41c9ca9593"
+    },
+    {
+      "path": "guests/migrations/0078_promote_dianwei_baiqi.py",
+      "bytes": 8030,
+      "sha256": "286294e815219ba3b14e04dc6256af711fa52d8cc5066d70410a9aff0b05cdec"
+    },
+    {
+      "path": "guests/migrations/0079_promote_huangzhong.py",
+      "bytes": 6731,
+      "sha256": "04921eca11fd67b3cbf5646d26ba67783465c525a6e1cdbf9f1141a603192991"
+    },
+    {
+      "path": "guests/migrations/0080_promote_wuzhao.py",
+      "bytes": 4984,
+      "sha256": "2bd0ee7174025e354ea2f15983a363b257cdd6d246a027e8aaaca9a85bcc7ffb"
+    },
+    {
+      "path": "guests/services/health.py",
+      "bytes": 27049,
+      "sha256": "b1d6d077ff5b0755f1228e214280c359b766d05a566b0cdd235690b8e0f08ec1"
+    },
+    {
+      "path": "guests/services/recruitment_candidates.py",
+      "bytes": 6320,
+      "sha256": "04a0b9bf8ff10dd878c72b5a2c37524ebaf3eaf05549ff6bece6c6df08e78a17"
+    },
+    {
+      "path": "guests/services/recruitment_finalize_helpers.py",
+      "bytes": 7687,
+      "sha256": "5c8dc9d399b2186d225732e3e4f092b6342a7ae113fcc5c47c54dda112fee722"
+    },
+    {
+      "path": "guests/services/recruitment_queries.py",
+      "bytes": 6104,
+      "sha256": "3cfb1cb289a5cab025a1c6c46c038391cc63ed204690a909855069a2526b752f"
+    },
+    {
+      "path": "guests/services/template_identity.py",
+      "bytes": 4035,
+      "sha256": "1a65859e1452c7a6469637e2a96164072d57f45bb7aa2feedfaa6dadea7befec"
+    },
+    {
+      "path": "guests/services/training.py",
+      "bytes": 30127,
+      "sha256": "ba42411a2d88dbd4f4f137ece6a42a48aa3fad7eabd37c27393e5b3d0d2ff5b7"
+    },
+    {
+      "path": "reports/equipment_catalog.xlsx",
+      "bytes": 148218,
+      "sha256": "1d81786dc48e8b9ddf6f96b7228e109d74c9058dd7cdc76d5e32a49ccc691a52"
+    },
+    {
+      "path": "reports/mission_catalog.xlsx",
+      "bytes": 148489,
+      "sha256": "75635b4f7184bab224b314fa0d2fc842cc29c376435bb586d0bddf7a855173a5"
+    },
+    {
+      "path": "reports/performance_hotspots_20260930.json",
+      "bytes": 83472,
+      "sha256": "bb202575ab900f6c03302a5784adf2d2763791c41a044917a8bb2c0b8b009f7c"
+    },
+    {
+      "path": "reports/performance_hotspots_20260930.md",
+      "bytes": 6867,
+      "sha256": "20dd05c30d5ea2de93a5d026e48e85fb79420c0a7c7ca918fbfb71d907d1240c"
+    },
+    {
+      "path": "reports/performance_optimization_20260930.json",
+      "bytes": 11635,
+      "sha256": "2e3017d25b56729fa19e2017e6d5eb0e677c3ab678f61b540c64709e64c8234e"
+    },
+    {
+      "path": "reports/performance_optimization_20260930.md",
+      "bytes": 6446,
+      "sha256": "d647fc51d73586e0e66502e31257555189269714dd5ae0fcfa63b0077205e56c"
+    },
+    {
+      "path": "reports/performance_optimization_phase2_20261001.json",
+      "bytes": 9638,
+      "sha256": "fcc5e379fd44e1c90ab757dc7eecc147c65f038ac6134cd4092404206d056d8a"
+    },
+    {
+      "path": "reports/performance_optimization_phase2_20261001.md",
+      "bytes": 7028,
+      "sha256": "b2a68d351d86280d1fdddf25df05986081ade9e1e1456ea0ad8f5d5c6a1ff95a"
+    },
+    {
+      "path": "reports/performance_review_20260930.json",
+      "bytes": 5432,
+      "sha256": "39e12069c63c4a01da01cd7e41ca2095c840e7caed12d77c792bed84d4efc500"
+    },
+    {
+      "path": "reports/performance_review_20260930.md",
+      "bytes": 7586,
+      "sha256": "9cd72f6f6ff95780f7cb1c54384520e91a685f4e5473805dc4acde6e5a3895dd"
+    },
+    {
+      "path": "reports/performance_review_checks_20260930.py",
+      "bytes": 7973,
+      "sha256": "80d52a672cbc24ddea5fd7a31ceff327b8a585bd6b4e7ebda9a83c82cc7917f3"
+    },
+    {
+      "path": "reports/releases/bank_bulk_deployment_20260930.json",
+      "bytes": 2532,
+      "sha256": "fd8a77d62007ed9f4924019a6b27bde91f861df9392fd71574f549bf6b508825"
+    },
+    {
+      "path": "reports/releases/bank_bulk_release_20260930.zip",
+      "bytes": 34436,
+      "sha256": "e9cfdab1a2c940fada6c8949ef552b92cd76e3df7d4b7ee9c6696ea07ca20add"
+    },
+    {
+      "path": "static/css/message-detail.css",
+      "bytes": 6269,
+      "sha256": "fb364daf00b7eca27fe5ab391ece921b4e6ce379ba5e410720b1341519ef4506"
+    },
+    {
+      "path": "static/css/style.css",
+      "bytes": 78670,
+      "sha256": "81662db84a0f575daffb07af1b80a7f24fcdeea877e7c2606ddccc53c2122247"
+    },
+    {
+      "path": "static/js/chat_widget_connection.js",
+      "bytes": 7604,
+      "sha256": "fbd2568e54d48b5a5c92f5bc353dd17d4ff99083e8f2c42e10f9786d0f346361"
+    },
+    {
+      "path": "static/js/notifications.js",
+      "bytes": 11651,
+      "sha256": "8b9bb81c5e75defe1693fd753c2c01376cc02fdc2491bd39bbf44c6fd2e1af12"
+    },
+    {
+      "path": "static/js/online_stats.js",
+      "bytes": 5551,
+      "sha256": "1be5ce4aa1b66e34973562c39936cba76797f999368e3a0716c0452471304a4b"
+    },
+    {
+      "path": "static/js/tests/chat_widget_connection.test.js",
+      "bytes": 18002,
+      "sha256": "d3ef0dae8e1a5076e20b6fb8a728b8acd8674777d899e8c6c0354efbaab57c91"
+    },
+    {
+      "path": "static/js/tests/notifications_toast.test.js",
+      "bytes": 20448,
+      "sha256": "fe44050441e64b894789dd28e126649d78a128c4ca2998a2b765135f37328e81"
+    },
+    {
+      "path": "static/js/tests/online_stats.test.js",
+      "bytes": 7686,
+      "sha256": "75d98fa5c2adb3315055bd1e6c389795fd80d0521c67ccbdf8f61b0eab224c72"
+    },
+    {
+      "path": "static/js/trade.js",
+      "bytes": 19128,
+      "sha256": "842e4f865de696687adaa6f65870c443fc19ea799b12a98769c8c12b10a374e1"
+    },
+    {
+      "path": "tests/battle/simulate_report.py",
+      "bytes": 12067,
+      "sha256": "5db058cddb9c607a07b3e8ac7ea0d96b50d89671ebea94d28a723e0174d0f341"
+    },
+    {
+      "path": "tests/battle/test_casualty_rates.py",
+      "bytes": 2352,
+      "sha256": "246aecf1b542e6bd3b3e1d4a819abb141e224143ca1381760c07ada8c5fb974b"
+    },
+    {
+      "path": "tests/battle_report_view/test_city_defenses.py",
+      "bytes": 10853,
+      "sha256": "4bb51e85941f7e0c6f0d352bab3937d7dfe970ca2a7592f79c4939a0c8742bb7"
+    },
+    {
+      "path": "tests/battle_tasks_generate_report_task/defense_inputs.py",
+      "bytes": 8242,
+      "sha256": "abc6a6c3c9914aab67282aeaf5ff7610a660e01c887e295c4027eb4f8ca7a45c"
+    },
+    {
+      "path": "tests/battle_tasks_generate_report_task/offense_inputs.py",
+      "bytes": 4822,
+      "sha256": "bb3017731757adfc09e62bd44170e037e822b0aebccc13626073ff356b260235"
+    },
+    {
+      "path": "tests/browser/trade_page.spec.js",
+      "bytes": 8223,
+      "sha256": "79e25c185cf1312fadf41d68de34da70fbd563a6d2d0b8b7c2685c732260221a"
+    },
+    {
+      "path": "tests/fixtures/resource_grain_reuse_baseline/inventory_core.py.txt",
+      "bytes": 23137,
+      "sha256": "33f8890db7c7d10a139f7ebda42e1dca042526de883a36dc433532aacee661a9"
+    },
+    {
+      "path": "tests/fixtures/resource_grain_reuse_baseline/resources.py.txt",
+      "bytes": 33856,
+      "sha256": "ba3a2d32e8d25b46a2f8b3efea11e0295e5837cae19d1f6e3de97290b79c4f2d"
+    },
+    {
+      "path": "tests/guest_recruitment_service/template_selection.py",
+      "bytes": 10240,
+      "sha256": "cad962ca0d0c97c69269ebc921dffdd0d89394c0ceb7fb2dcb98540a5fbe1639"
+    },
+    {
+      "path": "tests/mission_sync_report/defense_validation.py",
+      "bytes": 16716,
+      "sha256": "91b59d07102dbe8e4c4d4f25d4c3db342ce3c64de6dff54c940407e3f90a4886"
+    },
+    {
+      "path": "tests/mission_sync_report/offense_drop_table.py",
+      "bytes": 3928,
+      "sha256": "482caae74ce66a7de47dabfab27251218331fbbf643818e1439303c3512646d4"
+    },
+    {
+      "path": "tests/raid_combat_runs/loadout_helpers.py",
+      "bytes": 5256,
+      "sha256": "1818f980791503a1e30025c4679edb28d524cbebeec48a273d6eecaab6056fd7"
+    },
+    {
+      "path": "tests/test_arena_skill_snapshot_prefetch.py",
+      "bytes": 13772,
+      "sha256": "319cb0130a4650fbaac646ac4a7479f1e2015109d3ce4e7c118fb126b2889ce7"
+    },
+    {
+      "path": "tests/test_battle_debugger_attack_overrides.py",
+      "bytes": 3844,
+      "sha256": "09a54d2e190c3ee2e74aeb2250f8fbfcda86fb457a86f6f194632f55b9c6bc4f"
+    },
+    {
+      "path": "tests/test_battle_debugger_contracts.py",
+      "bytes": 16964,
+      "sha256": "e11bb3f4254bd512a0285bea6acd5ef207f872f8d3314d2c48130bca6e5ff2bd"
+    },
+    {
+      "path": "tests/test_battle_grouped_passive_order.py",
+      "bytes": 3450,
+      "sha256": "454b2e4612b71622645f196ab9ada83dc516742242d638b57597176e9bc10aed"
+    },
+    {
+      "path": "tests/test_battle_report_css.py",
+      "bytes": 7078,
+      "sha256": "d5bc93bb9a3e8c2f307ba7abaa1aa1dbc5288b75b27a2ffcbd1f4af5791d7839"
+    },
+    {
+      "path": "tests/test_battle_report_perspectives.py",
+      "bytes": 13211,
+      "sha256": "a955711bfaaf945b42fb1af2efa7746f4fccc3b6516d58f186d4cf69437e72ae"
+    },
+    {
+      "path": "tests/test_battle_salvage.py",
+      "bytes": 8852,
+      "sha256": "05db70629f28b071fd30e378fc593a39466045d40940af344602a9bd7c6932a9"
+    },
+    {
+      "path": "tests/test_battle_troop_multi_attack.py",
+      "bytes": 8578,
+      "sha256": "c60f127de6cd5c83dc26b515aa93402772d9d4905f3a9880b3047e48f6b2448a"
+    },
+    {
+      "path": "tests/test_bulk_guest_healing.py",
+      "bytes": 6813,
+      "sha256": "b635445779a2b3cde9f51840862c985c242ad89943793c0afd300961b816763f"
+    },
+    {
+      "path": "tests/test_bulk_guest_healing_concurrency_integration.py",
+      "bytes": 6471,
+      "sha256": "8ea2a7fd0cc795fc817c29dda6f9571852d143f7af8224af04cf8c5073bda2ec"
+    },
+    {
+      "path": "tests/test_bulk_guest_healing_query_reuse.py",
+      "bytes": 9959,
+      "sha256": "97c0ead978ed7cf7eb84464d97fdfd383d222c8e76fca45de8056dae784a4dcd"
+    },
+    {
+      "path": "tests/test_guest_promotion_migration.py",
+      "bytes": 5817,
+      "sha256": "866a2713eb1fd46fcdc3a0346bfcf27fea7cffb8782e97c4ff420c8c3fadec3f"
+    },
+    {
+      "path": "tests/test_guest_recruitment_finalize_helpers.py",
+      "bytes": 2884,
+      "sha256": "dc539ad0e0c72cf79365e35b4a80509400a66787db9a070885e3ed730c6b08ea"
+    },
+    {
+      "path": "tests/test_guest_training_template_lock_concurrency_integration.py",
+      "bytes": 3401,
+      "sha256": "d7a1dae7c1d1d4e32df603f6c0700a243e69de50e34a840b1b68ffffe88c690a"
+    },
+    {
+      "path": "tests/test_huangzhong_promotion_migration.py",
+      "bytes": 8443,
+      "sha256": "98b057ef47f672ba68cb62f72b790bb543ba816c2898116417901bd62520ad3d"
+    },
+    {
+      "path": "tests/test_item_template_equipment_balance.py",
+      "bytes": 25069,
+      "sha256": "4c2048f8a72d30c90cd3ba1a87eed40732cb40921b614979032852ef2ed6d254"
+    },
+    {
+      "path": "tests/test_jail_service.py",
+      "bytes": 23278,
+      "sha256": "f2de700ce27559cb965544bce52c5215974536c9ac5f8f5d898df019c45a0842"
+    },
+    {
+      "path": "tests/test_recruitment_template_identity_batches.py",
+      "bytes": 8644,
+      "sha256": "b74e7d705157a0281339c4da23ebd6b249ac2e4075c17c9f299f560553fd0f26"
+    },
+    {
+      "path": "tests/test_resource_grain_reuse.py",
+      "bytes": 16505,
+      "sha256": "471728f124dedb4c7534b4988fce0afe1c8c16b7a0524f342fc78849901c9fe0"
+    },
+    {
+      "path": "tests/test_resource_grain_reuse_concurrency_integration.py",
+      "bytes": 10907,
+      "sha256": "cd93432cb7f707364a45f000061c9e30c3eaed04bd1299cf39d078773dd0005b"
+    },
+    {
+      "path": "tests/test_scout_intel.py",
+      "bytes": 15154,
+      "sha256": "48a603fe5329b232b223f043c0ddc711a0360bbb8f5ad34a55887fa7e81fb7e0"
+    },
+    {
+      "path": "tests/test_troop_bank_bulk_concurrency_integration.py",
+      "bytes": 6055,
+      "sha256": "845922cd4ce3f8705cd94670a424ec5257625ab5e051392663a31c2a9e3670f3"
+    },
+    {
+      "path": "tests/test_troop_bank_bulk_service.py",
+      "bytes": 8700,
+      "sha256": "5a819e10c9f181793df2c517636e48dfd30bf17a2c7af896badbc0f0d3838733"
+    },
+    {
+      "path": "tests/test_troop_dispatch_bank.py",
+      "bytes": 9670,
+      "sha256": "afff8c6b325af8d5de52262b9fd94b03df948cbfe0e2cab405ed630dad3fdb53"
+    },
+    {
+      "path": "tests/test_troop_dispatch_concurrency_integration.py",
+      "bytes": 6720,
+      "sha256": "3403395c446016dc2325cfdbdbffb7e2e2e789ffc47bda31e8b7522532777eb9"
+    },
+    {
+      "path": "tests/test_virtual_player_architecture_gate.py",
+      "bytes": 36757,
+      "sha256": "c074a6a56c92f654fec4f29a26c87edcbd9ba8b716a7e8e1235c6464666c1c23"
+    },
+    {
+      "path": "tests/test_virtual_player_population_aggregation.py",
+      "bytes": 18581,
+      "sha256": "7ce3639f6f3558ab938fa17c6d6c66bd959f70a1e850c1290398a9ceb9462c31"
+    },
+    {
+      "path": "tests/test_websocket_consumers.py",
+      "bytes": 34485,
+      "sha256": "1f6e93414a93c1ac13e5a07dcf9f7d1ae6f5fa6648660bfe2e60cce494dd5e10"
+    },
+    {
+      "path": "tests/test_websocket_terminal_auth.py",
+      "bytes": 10028,
+      "sha256": "13acc7e284ef261a1111404a3b45fcd003ee054454dd9f81c3116ed90802bfe1"
+    },
+    {
+      "path": "tests/test_websocket_worker_lease.py",
+      "bytes": 10405,
+      "sha256": "5b15f26212f3a5972c6de054c95f35d539d3675e3a3ce908a976f84de1ac5d8a"
+    },
+    {
+      "path": "tests/test_world_chat_consumer.py",
+      "bytes": 17344,
+      "sha256": "c75ecde962f9ed1ce7ed72049f8942e133dec93f4bdbf9985682ac1a26366529"
+    },
+    {
+      "path": "tests/trade/test_trade_bank_bulk.py",
+      "bytes": 8794,
+      "sha256": "8269c10f51ff8fe131fdd971d80b436053eaad6e0d66c2a846d5ea0e33979df7"
+    },
+    {
+      "path": "trade/bank_context_builder.py",
+      "bytes": 5582,
+      "sha256": "7dcd516f0e4a6a703413027f7d5ddf547305005630daddc5b0c88108a079d1eb"
+    },
+    {
+      "path": "trade/selectors.py",
+      "bytes": 5202,
+      "sha256": "e91be94a1e85f729133ece0e2c6a5f9b7d71946b6e3e610a025a84c2261cf2ed"
+    },
+    {
+      "path": "trade/templates/trade/partials/_bank.html",
+      "bytes": 10658,
+      "sha256": "12124a9da56d848c3fe7a86afe700d421666f51eb6e151d4824a6c63cde1a14d"
+    },
+    {
+      "path": "trade/urls.py",
+      "bytes": 1208,
+      "sha256": "cba877c906cea569ff0c7d82407c03a90f6d77bec47081b8213c96ec316e0e40"
+    },
+    {
+      "path": "trade/views.py",
+      "bytes": 11063,
+      "sha256": "149a0e597693f9006fc0b9f7d43f5b15beafccd74581e8d8e93425088055e651"
+    },
+    {
+      "path": "websocket/consumers/online_stats.py",
+      "bytes": 12615,
+      "sha256": "f6094980659f063d2c5f6991abd0ae954abbfe3070bfec0bfa56ff609645c10f"
+    },
+    {
+      "path": "websocket/consumers/world_chat.py",
+      "bytes": 13120,
+      "sha256": "7dde271fc6d06138c82dcacb65bbc9084936664a06c041109cd86c318d3b755c"
+    }
+  ]
+}

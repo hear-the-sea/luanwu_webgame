@@ -1273,6 +1273,26 @@ table.table tbody tr+tr {
   font-weight: 600;
 }
 
+.event-heal-summary {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.event-heal-summary > .tech-tag {
+  display: inline;
+  padding: 0;
+  margin: 0;
+  font-size: inherit;
+  background: transparent;
+}
+
+.event-heal-summary > .battle-unit-state {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 0.35rem;
+}
+
 .loss-text {
   color: #c0392b;
   font-weight: 600;

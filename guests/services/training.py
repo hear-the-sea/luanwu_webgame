@@ -386,13 +386,17 @@ def ensure_auto_training_batch(guests: Sequence[Guest], now: datetime | None = N
 
     virtual_owner = virtual_guest_owner_expression()
     with transaction.atomic():
-        locked_guests = list(
-            Guest.objects.select_for_update()
-            .select_related("template")
+        locked_guests_qs = (
+            Guest.objects.select_related("template")
             .annotate(_virtual_timer_owner=virtual_owner)
             .filter(pk__in=guest_ids)
             .order_by("pk")
         )
+        if connection.features.has_select_for_update_of:
+            locked_guests_qs = locked_guests_qs.select_for_update(of=("self",))
+        else:
+            locked_guests_qs = locked_guests_qs.select_for_update()
+        locked_guests = list(locked_guests_qs)
         if len(locked_guests) != len(guest_ids):
             raise Guest.DoesNotExist("One or more guests no longer exist")
 

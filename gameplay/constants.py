@@ -13,11 +13,18 @@ from core.config import BUILDING_KEYS
 # 为了向后兼容，重新导出 BuildingKeys
 BuildingKeys = BUILDING_KEYS
 
+# 新建或补建时的特殊初始等级；其他建筑仍从1级开始。
+BUILDING_INITIAL_LEVELS = {
+    BuildingKeys.JUXIAN_ZHUANG: 0,
+    BuildingKeys.YOUXIA_BAOTA: 0,
+    BuildingKeys.XIAOYAO_SHANZHUANG: 0,
+}
+
 # 建筑最高等级限制（未配置则无限制）
 BUILDING_MAX_LEVELS = {
     # 特殊建筑
     BuildingKeys.CITANG: 5,  # 祠堂：避免缩时达到100%
-    BuildingKeys.YOUXIA_BAOTA: 15,  # 悠嘻宝塔：出战上限在15级封顶（SQUAD_SIZE_MAX=18）
+    BuildingKeys.YOUXIA_BAOTA: 15,  # 悠嘻宝塔：出战上限在15级封顶（SQUAD_SIZE_MAX=20）
     BuildingKeys.TREASURY: 20,  # 藏宝阁：容量函数按20级封顶（平衡时间消耗）
     BuildingKeys.JAIL: 5,  # 监牢：满级5人
     BuildingKeys.OATH_GROVE: 5,  # 结义林：满级5人
@@ -34,7 +41,7 @@ BUILDING_MAX_LEVELS = {
     "farm": 50,  # 农田：满级50级
     "tax_office": 30,  # 税务司：满级30级
     # 人员管理建筑
-    BuildingKeys.JUXIAN_ZHUANG: 15,  # 聚贤庄：满级容量18位门客
+    BuildingKeys.JUXIAN_ZHUANG: 15,  # 聚贤庄：满级容量20位门客
     BuildingKeys.JIADING_FANG: 30,  # 家丁房：满级容量3050个位置
     BuildingKeys.LIANGGONG_CHANG: 10,  # 练功场：满级护院训练速度提升30%
     # 生产加工建筑
@@ -121,7 +128,7 @@ class PVPConstants:
     RAID_REPEAT_DEFENSE_WINDOW_SECONDS = 6 * 60 * 60  # 6小时内第2场起开战前回满防守血量
 
     # 俘获/监牢
-    RAID_ATTACKER_DEFEAT_CAPTURE_RATE = 0.2  # 进攻失败时被防守方俘获的概率（单场最多1名）
+    RAID_ATTACKER_DEFEAT_CAPTURE_RATE = 0.1  # 进攻失败时被防守方俘获的概率（单场最多1名）
     RAID_DEFENDER_DEFEAT_CAPTURE_RATE = 0.1  # 防守失败时被进攻方俘获的概率（单场最多1名）
     # 兼容未区分失败方的旧调用，默认沿用防守失败概率。
     RAID_CAPTURE_GUEST_RATE = RAID_DEFENDER_DEFEAT_CAPTURE_RATE
@@ -147,7 +154,7 @@ class PVPConstants:
     LOOT_RESOURCE_MAX_PERCENT = 0.30  # 最高掠夺30%
     LOOT_RESOURCE_MAX_PER_TYPE = 2_000_000  # 单次每种资源最高掠夺量
     LOOT_ITEM_CAPACITY_MAX = 30000  # 单次物品战利品最高携带容量
-    LOOT_FULL_GUEST_COUNT = 18  # 满编出征门客数
+    LOOT_FULL_GUEST_COUNT = 18  # 掠夺收益满额人数阈值
     LOOT_FULL_TROOP_COUNT = 3600  # 满编出征护院数
     LOOT_MIN_CAP_RATIO = 0.08  # 低配出征最低搬运上限比例
     LOOT_SURVIVAL_BASE_RATIO = 0.35  # 战损后最低可带回比例

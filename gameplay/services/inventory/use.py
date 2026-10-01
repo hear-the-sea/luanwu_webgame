@@ -461,6 +461,7 @@ def _apply_guest_summon(item: InventoryItem) -> Dict[str, Any]:
 
     from guests.models import GuestTemplate
     from guests.services.recruitment_guests import build_recruitment_custom_name, create_guest_from_template
+    from guests.services.template_identity import get_owned_non_repeatable_template_ids
     from guests.services.training import ensure_auto_training
     from guests.services.world_unique import (
         WORLD_UNIQUE_LUBU_SCROLL_ITEM_KEY,
@@ -485,8 +486,14 @@ def _apply_guest_summon(item: InventoryItem) -> Dict[str, Any]:
             exclusive_template_keys_raw,
             field_name="exclusive_template_keys",
         )
-        if normalized_exclusive_keys and manor.guests.filter(template__key__in=normalized_exclusive_keys).exists():
-            raise GuestAlreadyOwnedError(template)
+        if normalized_exclusive_keys:
+            exclusive_template_ids = set(
+                GuestTemplate.objects.filter(key__in=normalized_exclusive_keys).values_list("id", flat=True)
+            )
+            if manor.guests.filter(
+                template__key__in=normalized_exclusive_keys
+            ).exists() or exclusive_template_ids & get_owned_non_repeatable_template_ids(manor.id):
+                raise GuestAlreadyOwnedError(template)
 
     _consume_required_items_locked(manor, payload)
 
@@ -524,13 +531,14 @@ def _apply_super_guest_summon(item: InventoryItem) -> Dict[str, Any]:
     from guests.models import GuestRarity
     from guests.services.recruitment_guests import build_recruitment_custom_name, create_guest_from_template
     from guests.services.recruitment_templates import _get_recruitable_templates_by_rarity
+    from guests.services.template_identity import get_owned_non_repeatable_template_ids
     from guests.services.training import ensure_auto_training
 
     manor = item.manor
     _ensure_guest_capacity(manor)
 
     recruitable_orange_templates = _get_recruitable_templates_by_rarity().get(GuestRarity.ORANGE, [])
-    owned_template_ids = set(manor.guests.values_list("template_id", flat=True))
+    owned_template_ids = get_owned_non_repeatable_template_ids(manor.id)
     available_templates = [
         template for template in recruitable_orange_templates if template.id not in owned_template_ids
     ]

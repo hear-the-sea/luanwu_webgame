@@ -1,4 +1,4 @@
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:1.5rem;align-items:start;">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:1.5rem;align-items:start;">
     <div class="tw-bank-section">
         <h3>金条兑换</h3>
         <div class="tw-bank-info">
@@ -77,9 +77,19 @@
 
     <div class="tw-bank-section">
         <h3>护院存取</h3>
-        <p class="text-sm text-text-muted mb-3">
-            已存放 <strong>{{ troop_bank_used }}</strong> / {{ troop_bank_capacity }}，剩余可存 <strong>{{ troop_bank_remaining }}</strong>
-        </p>
+        <div class="tw-bank-info mb-3">
+            <div class="tw-info-row">
+                <span class="tw-info-label">钱庄护院</span>
+                <span class="tw-info-value">{{ troop_bank_used }} / {{ troop_bank_capacity }}，可存 {{ troop_bank_remaining }} 名</span>
+            </div>
+            <div class="tw-info-row">
+                <span class="tw-info-label">庄园护院</span>
+                <span class="tw-info-value">{{ manor_troop_used }} / {{ manor_troop_capacity }}，可取 {{ manor_troop_remaining }} 名</span>
+            </div>
+            {% if manor_troop_reserved %}
+            <p class="text-sm text-text-muted">正在招募的 {{ manor_troop_reserved }} 名护院已预留位置。</p>
+            {% endif %}
+        </div>
         {% if troop_bank_categories|length > 1 %}
         <div class="tw-category-tabs mb-4">
             {% for category in troop_bank_categories %}
@@ -89,6 +99,34 @@
             </a>
             {% endfor %}
         </div>
+        {% endif %}
+
+        <div class="flex gap-2 flex-wrap mb-3">
+            <form method="post" action="{% url 'trade:deposit_all_troops_to_bank' %}" data-bank-transfer>
+                {% csrf_token %}
+                <input type="hidden" name="troop_category" value="{{ troop_bank_current_category|default:'all' }}">
+                <button type="submit" class="tw-btn-secondary"
+                        {% if not troop_bank_deposit_max %}disabled title="{% if not troop_bank_remaining %}钱庄已满{% else %}当前分类暂无可存入护院{% endif %}"{% endif %}>
+                    一键存入{% if troop_bank_deposit_max %} {{ troop_bank_deposit_max }} 名{% endif %}
+                </button>
+            </form>
+            <form method="post" action="{% url 'trade:withdraw_all_troops_from_bank' %}" data-bank-transfer>
+                {% csrf_token %}
+                <input type="hidden" name="troop_category" value="{{ troop_bank_current_category|default:'all' }}">
+                <button type="submit" class="tw-btn-primary"
+                        {% if not troop_bank_withdraw_max %}disabled title="{% if not manor_troop_remaining %}庄园已满（含募兵预留）{% else %}当前分类暂无可取出护院{% endif %}"{% endif %}>
+                    一键取出{% if troop_bank_withdraw_max %} {{ troop_bank_withdraw_max }} 名{% endif %}
+                </button>
+            </form>
+        </div>
+        <p class="text-sm text-text-muted mb-3">
+            操作范围：{{ troop_bank_category_name|default:'全部' }}。空间不足时按下方列表顺序转移，其余护院留在原处。
+        </p>
+        {% if not troop_bank_remaining %}
+        <p class="text-sm text-text-muted mb-3" role="status">钱庄已满，可先取出护院再存入。</p>
+        {% endif %}
+        {% if not manor_troop_remaining %}
+        <p class="text-sm text-text-muted mb-3" role="status">庄园可用位置已满（含募兵预留），可先存入护院或派遣出征，再从钱庄取出。</p>
         {% endif %}
 
         {% if troop_bank_rows %}
@@ -102,23 +140,25 @@
                             <p class="text-sm text-text-muted">庄园: {{ troop.player_count }} | 钱庄: {{ troop.bank_count }}</p>
                         </div>
                         <div class="flex gap-2 flex-wrap">
-                            <form method="post" action="{% url 'trade:deposit_troop_to_bank' %}" class="flex items-center gap-2">
+                            <form method="post" action="{% url 'trade:deposit_troop_to_bank' %}" class="flex items-center gap-2 flex-wrap" data-bank-transfer>
                                 {% csrf_token %}
                                 <input type="hidden" name="troop_category" value="{{ troop_bank_current_category|default:'all' }}">
                                 <input type="hidden" name="troop_key" value="{{ troop.key }}">
-                                <input type="number" name="quantity" value="1" min="1" max="{{ troop.player_count }}" class="tw-input" style="width: 90px;">
-                                {% if troop.player_count > 0 and troop_bank_remaining > 0 %}
+                                <input type="number" name="quantity" value="{% if troop.deposit_max %}1{% else %}0{% endif %}" min="1" max="{{ troop.deposit_max }}"
+                                       aria-label="{{ troop.name }}存入数量" class="tw-input" style="width: 90px;" required {% if not troop.deposit_max %}disabled{% endif %}>
+                                {% if troop.deposit_max > 0 %}
                                     <button type="submit" class="tw-btn-secondary">存入</button>
                                 {% else %}
                                     <button type="button" class="tw-btn-secondary opacity-60" disabled>存入</button>
                                 {% endif %}
                             </form>
-                            <form method="post" action="{% url 'trade:withdraw_troop_from_bank' %}" class="flex items-center gap-2">
+                            <form method="post" action="{% url 'trade:withdraw_troop_from_bank' %}" class="flex items-center gap-2 flex-wrap" data-bank-transfer>
                                 {% csrf_token %}
                                 <input type="hidden" name="troop_category" value="{{ troop_bank_current_category|default:'all' }}">
                                 <input type="hidden" name="troop_key" value="{{ troop.key }}">
-                                <input type="number" name="quantity" value="1" min="1" max="{{ troop.bank_count }}" class="tw-input" style="width: 90px;">
-                                {% if troop.bank_count > 0 %}
+                                <input type="number" name="quantity" value="{% if troop.withdraw_max %}1{% else %}0{% endif %}" min="1" max="{{ troop.withdraw_max }}"
+                                       aria-label="{{ troop.name }}取出数量" class="tw-input" style="width: 90px;" required {% if not troop.withdraw_max %}disabled{% endif %}>
+                                {% if troop.withdraw_max > 0 %}
                                     <button type="submit" class="tw-btn-primary">取出</button>
                                 {% else %}
                                     <button type="button" class="tw-btn-secondary opacity-60" disabled>取出</button>

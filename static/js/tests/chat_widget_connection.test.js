@@ -541,7 +541,7 @@ test("opening a chat socket does not reset transient backoff", () => {
   assert.equal(harness.reconnectTimers()[0].delay, 4000);
 });
 
-test("valid chat messages reset transient backoff", () => {
+test("valid chat messages do not reset a short connection's backoff", () => {
   const harness = createLifecycleHarness();
   harness.controller.connect();
   harness.sockets[0].emitClose(SERVICE_UNAVAILABLE_CLOSE_CODE);
@@ -552,9 +552,27 @@ test("valid chat messages reset transient backoff", () => {
   const socket = harness.sockets[2];
   socket.open();
   socket.emitMessage({ type: "message", id: "valid" });
+  assert.ok(harness.activeTimeouts().some((timer) => timer.delay === 30000));
   socket.emitClose(SERVICE_UNAVAILABLE_CLOSE_CODE);
 
-  assert.equal(harness.reconnectTimers()[0].delay, 2000);
+  assert.equal(harness.reconnectTimers()[0].delay, 8000);
+});
+
+test("short chat connections with history exhaust the fast retry budget", () => {
+  const harness = createLifecycleHarness();
+  harness.controller.connect();
+  const delays = [];
+  for (let attempt = 0; attempt < 7; attempt += 1) {
+    const socket = harness.sockets.at(-1);
+    socket.open();
+    socket.emitMessage({ type: "history", messages: [] });
+    socket.emitMessage({ type: "status", status: "connected" });
+    socket.emitClose(1006);
+    const timer = harness.reconnectTimers()[0];
+    delays.push(timer.delay);
+    harness.runTimer(timer);
+  }
+  assert.deepEqual(delays, [1500, 1500, 1500, 1500, 1500, 2000, 4000]);
 });
 
 test("thirty stable seconds reset chat transient backoff", () => {
@@ -565,6 +583,7 @@ test("thirty stable seconds reset chat transient backoff", () => {
 
   const socket = harness.sockets[1];
   socket.open();
+  socket.emitMessage({ type: "history", messages: [] });
   const stabilityTimer = harness.activeTimeouts().find((timer) => timer.delay === 30000);
   harness.runTimer(stabilityTimer);
   socket.emitClose(SERVICE_UNAVAILABLE_CLOSE_CODE);

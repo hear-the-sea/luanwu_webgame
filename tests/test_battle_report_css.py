@@ -3,9 +3,29 @@ from pathlib import Path
 
 
 def _rule_body(css: str, selector: str) -> str:
-    match = re.search(rf"{re.escape(selector)}\s*\{{([^}}]*)\}}", css)
+    match = re.search(rf"^[ \t]*{re.escape(selector)}\s*\{{([^}}]*)\}}", css, re.MULTILINE)
     assert match is not None, f"missing CSS rule for {selector}"
     return match.group(1)
+
+
+def test_css_rule_lookup_matches_the_complete_selector():
+    css = ".event-heal-summary > .battle-unit-state { display: inline-block; }\n.battle-unit-state { display: block; }"
+    assert _rule_body(css, ".battle-unit-state").strip() == "display: block;"
+
+
+def test_fist_heal_uses_inline_skill_text_and_trailing_state_bar():
+    css = Path("static/css/style.css").read_text(encoding="utf-8")
+    summary_rule = _rule_body(css, ".event-heal-summary")
+    assert "min-width: 0" in summary_rule
+    assert "overflow-wrap: anywhere" in summary_rule
+    assert "display: grid" not in summary_rule
+    skill_rule = _rule_body(css, ".event-heal-summary > .tech-tag")
+    assert "display: inline" in skill_rule
+    assert "padding: 0" in skill_rule
+    assert "margin: 0" in skill_rule
+    state_rule = _rule_body(css, ".event-heal-summary > .battle-unit-state")
+    assert "display: inline-block" in state_rule
+    assert "vertical-align: middle" in state_rule
 
 
 def test_battle_report_state_bar_and_skills_use_non_overlapping_grid():

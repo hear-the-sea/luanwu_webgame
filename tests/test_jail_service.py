@@ -292,7 +292,7 @@ def test_recruit_prisoner_raises_when_guest_capacity_full(mock_manor_model):
     # Create a real Mock that can handle property access
     manor = MagicMock()
     manor.guest_capacity = 10
-    manor.guests.count.return_value = 10  # At capacity
+    manor.active_guest_count = 10  # At capacity
     mock_manor_model.objects.select_for_update.return_value.get.return_value = manor
 
     prisoner = MagicMock()
@@ -312,15 +312,16 @@ def test_recruit_prisoner_raises_when_guest_capacity_full(mock_manor_model):
 def test_recruit_prisoner_raises_when_gold_insufficient(mock_manor_model):
     """Test that JailError is raised when gold bars are insufficient."""
     manor = MagicMock()
+    manor.id = 1
     manor.guest_capacity = 10
-    manor.guests.count.return_value = 5
+    manor.active_guest_count = 5
     manor.guests.filter.return_value.exists.return_value = False
     mock_manor_model.objects.select_for_update.return_value.get.return_value = manor
 
     prisoner = MagicMock()
     prisoner.status = jail_service.JailPrisoner.Status.HELD
     prisoner.loyalty = 20
-    prisoner.guest_template = SimpleNamespace(key="hist_sljnbc_0013", name="吕布")
+    prisoner.guest_template = SimpleNamespace(id=2, key="hist_sljnbc_0013", name="吕布")
 
     with patch.object(jail_service.JailPrisoner, "objects") as mock_qs:
         mock_qs.select_for_update.return_value.select_related.return_value.filter.return_value.first.return_value = (
@@ -343,7 +344,7 @@ def test_recruit_prisoner_raises_when_gold_insufficient(mock_manor_model):
 def test_recruit_prisoner_rejects_duplicate_standard_guest(mock_manor_model):
     manor = MagicMock()
     manor.guest_capacity = 10
-    manor.guests.count.return_value = 2
+    manor.active_guest_count = 2
     manor.guests.filter.return_value.exists.return_value = True
     mock_manor_model.objects.select_for_update.return_value.get.return_value = manor
 
@@ -393,7 +394,7 @@ def test_recruit_prisoner_rejects_duplicate_standard_guest(mock_manor_model):
 def test_recruit_prisoner_allows_duplicate_repeatable_standard_guest(mock_manor_model, monkeypatch):
     manor = MagicMock()
     manor.guest_capacity = 10
-    manor.guests.count.return_value = 2
+    manor.active_guest_count = 2
     manor.guests.filter.return_value.exists.return_value = True
     mock_manor_model.objects.select_for_update.return_value.get.return_value = manor
     monkeypatch.setattr(
@@ -474,7 +475,7 @@ def test_recruit_prisoner_allows_duplicate_configured_repeatable_guest(
 ):
     manor = MagicMock()
     manor.guest_capacity = 10
-    manor.guests.count.return_value = 2
+    manor.active_guest_count = 2
     manor.guests.filter.return_value.exists.return_value = True
     mock_manor_model.objects.select_for_update.return_value.get.return_value = manor
 
@@ -540,7 +541,7 @@ def test_recruit_prisoner_allows_duplicate_configured_repeatable_guest(
 def test_recruit_prisoner_rejects_duplicate_unique_original_guest(mock_manor_model):
     manor = MagicMock()
     manor.guest_capacity = 10
-    manor.guests.count.return_value = 2
+    manor.active_guest_count = 2
     manor.guests.filter.return_value.exists.return_value = True
     mock_manor_model.objects.select_for_update.return_value.get.return_value = manor
 
@@ -565,7 +566,7 @@ def test_recruit_prisoner_rejects_duplicate_unique_original_guest(mock_manor_mod
 def test_recruit_prisoner_rejects_duplicate_panfeng_variant(mock_manor_model):
     manor = MagicMock()
     manor.guest_capacity = 10
-    manor.guests.count.return_value = 2
+    manor.active_guest_count = 2
     manor.guests.filter.return_value.exists.return_value = True
     mock_manor_model.objects.select_for_update.return_value.get.return_value = manor
 

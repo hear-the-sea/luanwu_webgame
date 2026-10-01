@@ -76,6 +76,15 @@ def _apply_attack_and_defense_tech_effects(
     return attack_value, defense_value
 
 
+def _apply_ranged_damage_reduction(
+    actor: "Combatant", target: "Combatant", round_priority: int, damage: float
+) -> float:
+    if not is_ranged_attack(actor, round_priority):
+        return damage
+    reduction = target.tech_effects.get("ranged_damage_reduction", 0)
+    return damage * (1 - reduction) if reduction > 0 else damage
+
+
 def _apply_troop_counter_bonus(actor: "Combatant", target: "Combatant", attack_value: float) -> float:
     countered_class = TROOP_COUNTERS.get(actor.troop_class)
     if countered_class and target.troop_class == countered_class:
@@ -120,12 +129,15 @@ def _calculate_base_damage(
     return base_damage
 
 
-def _city_defense_damage_multiplier(actor: "Combatant", target: "Combatant") -> float:
+def _city_defense_damage_multiplier(
+    actor: "Combatant", target: "Combatant", *, enable_siege_damage_bonus: bool = True
+) -> float:
     from core.config import BUILDING_KEYS
 
     if target.kind == "city_defense":
         if actor.kind == "troop":
-            return TROOP_VS_CITY_DEFENSE_DAMAGE_MULTIPLIER
+            siege_bonus = actor.tech_effects.get("siege_damage", 0) if enable_siege_damage_bonus else 0
+            return TROOP_VS_CITY_DEFENSE_DAMAGE_MULTIPLIER * (1 + siege_bonus)
 
     if actor.kind == "city_defense" and actor.template_key == BUILDING_KEYS.ARROW_TOWER:
         if target.kind == "guest":
@@ -318,6 +330,10 @@ def calculate_attack_damage(
     rng: random.Random,
     *,
     round_priority: int,
+    troop_attack_strength: int | None = None,
+    troop_damage_multiplier: float = 1.0,
+    enable_ranged_damage_reduction: bool = True,
+    enable_siege_damage_bonus: bool = True,
 ) -> _DamageCalculation:
     """
     计算本次命中对目标造成的最终伤害。
@@ -325,7 +341,7 @@ def calculate_attack_damage(
     覆盖内容（与历史实现保持一致的顺序）：
     1) 计算有效攻击
     2) 计算目标防御（按小兵/门客、攻击者类型区分）
-    3) 应用武艺技术影响（远程防御、弓近战加成）
+    3) 应用武艺技术影响（远程防御值、弓近战加成）
     4) 应用五行相克固定倍率
     5) 按战斗双方类型计算防御减伤（含软/硬上限）
     6) 伤害随机波动
@@ -335,14 +351,15 @@ def calculate_attack_damage(
     10) 双倍打击
     11) 状态惩罚（伤害降低）
     12) 门客对小兵/门客的最终倍率：普攻倍率 + 技能伤害独立倍率
-    13) 非门客来源的城防相关最终伤害倍率
+    13) 非门客来源的城防相关最终伤害倍率与攻坚科技加成
+    14) 远程直接减伤（不影响附加真伤）
 
     该函数不直接修改 actor/target 的血量或兵力，专注于"伤害数值"的计算。
     """
     from ..combat_math import calculate_slaughter_multiplier, effective_attack_value, effective_defense_value
     from ..skills import skill_damage_bonus
 
-    attack_value: float = effective_attack_value(actor, target)
+    attack_value: float = effective_attack_value(actor, target, troop_attack_strength=troop_attack_strength)
 
     defense_value = _calculate_defense_value(actor, target, effective_defense_value)
     attack_value, defense_value = _apply_attack_and_defense_tech_effects(
@@ -399,13 +416,20 @@ def calculate_attack_damage(
     else:
         damage = _apply_slaughter_multiplier(actor, target, total_damage_value, calculate_slaughter_multiplier)
 
-    city_defense_multiplier = _city_defense_damage_multiplier(actor, target)
+    city_defense_multiplier = _city_defense_damage_multiplier(
+        actor, target, enable_siege_damage_bonus=enable_siege_damage_bonus
+    )
     if city_defense_multiplier != 1.0:
         damage = damage * city_defense_multiplier
+
+    if actor.kind == "troop":
+        damage *= troop_damage_multiplier
 
     from ..arena_coop import adjust_arena_coop_damage
 
     damage = adjust_arena_coop_damage(actor, target, damage)
+    if enable_ranged_damage_reduction:
+        damage = _apply_ranged_damage_reduction(actor, target, round_priority, damage)
     damage = _apply_passive_true_damage(actor, target, damage)
     damage = _finalize_damage(damage)
 

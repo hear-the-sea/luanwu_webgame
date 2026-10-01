@@ -130,3 +130,4 @@ def test_generate_sync_battle_report_offense_uses_enemy_guest_count_as_defender_
     assert result == {"ok": True}
     assert captured["max_squad"] == 6
     assert captured["defender_max_squad"] == 7
+    assert captured["attacker_troop_loss_rate"] == 0.5

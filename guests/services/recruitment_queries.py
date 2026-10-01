@@ -9,9 +9,10 @@ from django.utils import timezone
 from core.config import RECRUITMENT
 from core.utils.time_scale import scale_duration
 
-from ..models import Guest, GuestRarity, GuestRecruitment, GuestStatus, RecruitmentCandidate, RecruitmentPool
+from ..models import Guest, GuestRecruitment, GuestStatus, RecruitmentCandidate, RecruitmentPool
 from ..query_utils import guest_template_rarity_rank_case
-from .recruitment_shared import CORE_POOL_TIERS, NON_REPEATABLE_RARITIES
+from .recruitment_shared import CORE_POOL_TIERS
+from .template_identity import get_owned_non_repeatable_template_ids
 
 if TYPE_CHECKING:
     from gameplay.models import Manor
@@ -19,16 +20,7 @@ if TYPE_CHECKING:
 
 def get_excluded_template_ids(manor: Manor) -> set[int]:
     """获取玩家不能再招募的门客模板ID。"""
-    owned_templates = manor.guests.values_list("template_id", "template__rarity", "template__is_hermit")
-
-    excluded = set()
-    for template_id, rarity, is_hermit in owned_templates:
-        if rarity in NON_REPEATABLE_RARITIES:
-            excluded.add(template_id)
-        elif rarity == GuestRarity.BLACK and is_hermit:
-            excluded.add(template_id)
-
-    return excluded
+    return get_owned_non_repeatable_template_ids(manor.id)
 
 
 def list_pools(core_only: bool = False, *, include_entries: bool = True) -> Iterable[RecruitmentPool]:

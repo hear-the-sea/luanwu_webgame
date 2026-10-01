@@ -9,6 +9,7 @@ from django.db import transaction
 
 from core.exceptions import GameError
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
+from gameplay.services.missions_impl.constants import PLAYER_MISSION_TROOP_LOSS_RATE
 from gameplay.services.missions_impl.enemy_guest_configs import EnemyGuestConfig, normalize_enemy_guest_configs
 from guests.models import Guest
 
@@ -320,6 +321,7 @@ def generate_report_task(
                 attacker_guest_skills=attacker_guest_skills,
                 attacker_manor=None,
                 validate_attacker_troop_capacity=False,
+                defender_troop_loss_rate=PLAYER_MISSION_TROOP_LOSS_RATE if normalized_troop_loadout else None,
             )
         else:
             report = simulate_report(
@@ -342,6 +344,9 @@ def generate_report_task(
                 max_squad=getattr(manor, "max_squad_size", None),
                 apply_damage=False,
                 use_lock=False,  # 修复：门客已DEPLOYED，不需要锁校验
+                attacker_troop_loss_rate=(
+                    PLAYER_MISSION_TROOP_LOSS_RATE if mission and normalized_troop_loadout else None
+                ),
             )
 
         if normalized_run_id is not None:

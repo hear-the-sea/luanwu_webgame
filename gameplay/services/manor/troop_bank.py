@@ -5,7 +5,9 @@
 from __future__ import annotations
 
 import logging
+from collections import Counter, defaultdict
 from collections.abc import Callable
+from random import sample
 from typing import Any
 
 from django.db import DatabaseError, transaction
@@ -73,17 +75,35 @@ def _normalize_returning_troops(troops: Any) -> dict[str, int]:
 
 
 def _take_troops_up_to_capacity(troops: dict[str, int], capacity: int) -> tuple[dict[str, int], dict[str, int]]:
+    """优先安置高阶返程护院，同阶按人数均匀随机抽取，避免兵种顺序偏置。"""
+    from ..recruitment.templates import get_recruit_config
+
     remaining_capacity = max(0, int(capacity))
+    if sum(troops.values()) <= remaining_capacity:
+        return dict(troops), {}
+    if not remaining_capacity:
+        return {}, dict(troops)
+
+    by_level: dict[int, dict[str, int]] = defaultdict(dict)
+    for key, count in troops.items():
+        recruit = get_recruit_config(key) or {}
+        by_level[int(recruit.get("tech_level", 0))][key] = count
+
     accepted: dict[str, int] = {}
-    overflow: dict[str, int] = {}
-    for key in sorted(troops):
-        count = troops[key]
-        accepted_count = min(count, remaining_capacity)
-        if accepted_count:
-            accepted[key] = accepted_count
-            remaining_capacity -= accepted_count
-        if accepted_count < count:
-            overflow[key] = count - accepted_count
+    for level in sorted(by_level, reverse=True):
+        group = by_level[level]
+        group_count = sum(group.values())
+        if group_count <= remaining_capacity:
+            accepted.update(group)
+            remaining_capacity -= group_count
+        else:
+            # counts 参数按每一名护院抽样，只分配容量大小的列表。
+            accepted.update(Counter(sample(list(group), remaining_capacity, counts=list(group.values()))))
+            remaining_capacity = 0
+        if not remaining_capacity:
+            break
+
+    overflow = {key: count - accepted.get(key, 0) for key, count in troops.items() if count > accepted.get(key, 0)}
     return accepted, overflow
 
 
@@ -119,7 +139,8 @@ def return_troops_to_manor_or_bank_locked(
     """归还出征护院，庄园容量不足时优先存入钱庄。
 
     调用方需处于 ``transaction.atomic()`` 并已锁定庄园。存活护院已属于玩家；
-    若庄园和钱庄均满，丢弃溢出的护院，不阻断结算。
+    若庄园和钱庄均满，优先丢弃本次返程中的低阶护院，同阶随机丢弃，
+    不影响已存放库存，也不阻断结算。
     """
 
     normalized = _normalize_returning_troops(troops)
@@ -215,7 +236,7 @@ def deposit_troops_to_bank(manor: Manor, troop_key: str, quantity: int) -> dict[
     locked_manor = _lock_manor(manor)
 
     player_troop = (
-        PlayerTroop.objects.select_for_update()
+        PlayerTroop.objects.select_for_update(of=("self",))
         .filter(manor=locked_manor, troop_template__key=troop_key)
         .select_related("troop_template")
         .first()
@@ -255,7 +276,7 @@ def withdraw_troops_from_bank(manor: Manor, troop_key: str, quantity: int) -> di
     locked_manor = _lock_manor(manor)
 
     bank_troop = (
-        TroopBankStorage.objects.select_for_update()
+        TroopBankStorage.objects.select_for_update(of=("self",))
         .filter(manor=locked_manor, troop_template__key=troop_key)
         .select_related("troop_template")
         .first()
@@ -294,3 +315,64 @@ def withdraw_troops_from_bank(manor: Manor, troop_key: str, quantity: int) -> di
         "manor_used": get_manor_troop_used_space(locked_manor),
         "manor_capacity": MANOR_TROOP_CAPACITY,
     }
+
+
+@transaction.atomic
+def _transfer_available_troops(manor: Manor, *, category: str, deposit: bool) -> dict[str, Any]:
+    """在庄园锁内按页面顺序转移当前分类，空间不足时保留来源库存。"""
+    from ..technology import get_troop_class_for_key
+
+    category = (category or "all").strip() or "all"
+    if category not in {"all", "dao", "qiang", "jian", "quan", "gong", "scout", "other"}:
+        raise TradeValidationError("请选择有效的护院分类")
+
+    locked_manor = _lock_manor(manor)
+    source_model: type[PlayerTroop] | type[TroopBankStorage] = PlayerTroop if deposit else TroopBankStorage
+    source_rows: list[PlayerTroop | TroopBankStorage] = list(
+        source_model.objects.select_for_update(of=("self",))
+        .filter(manor=locked_manor, count__gt=0)
+        .select_related("troop_template")
+        .order_by("troop_template__priority", "troop_template__key")
+    )
+    if category != "all":
+        source_rows = [
+            row for row in source_rows if (get_troop_class_for_key(row.troop_template.key) or "other") == category
+        ]
+    available = sum(row.count for row in source_rows)
+    if not available:
+        transfer_label = "存入" if deposit else "取出"
+        raise TradeValidationError(f"当前分类暂无可{transfer_label}的护院")
+
+    if deposit:
+        # 写入路径不能使用页面容错的默认容量，查询失败必须回滚整个批次。
+        used = TroopBankStorage.objects.filter(manor=locked_manor).aggregate(total=Sum("count"))["total"] or 0
+        remaining_space = max(0, TROOP_BANK_CAPACITY - used)
+    else:
+        remaining_space = get_manor_troop_remaining_space(locked_manor)
+    if not remaining_space:
+        message = "钱庄护院已满，暂时无法存入" if deposit else "庄园护院容量已满（含募兵预留），暂时无法取出"
+        raise TradeValidationError(message)
+
+    transfer = deposit_troops_to_bank if deposit else withdraw_troops_from_bank
+    moved = 0
+    for row in source_rows:
+        quantity = min(row.count, remaining_space - moved)
+        if not quantity:
+            break
+        transfer(locked_manor, row.troop_template.key, quantity)
+        moved += quantity
+    return {
+        "quantity": moved,
+        "remaining": available - moved,
+        "target_remaining": remaining_space - moved,
+    }
+
+
+def deposit_available_troops_to_bank(manor: Manor, category: str = "all") -> dict[str, Any]:
+    """一键存入当前分类，最多填满钱庄。"""
+    return _transfer_available_troops(manor, category=category, deposit=True)
+
+
+def withdraw_available_troops_from_bank(manor: Manor, category: str = "all") -> dict[str, Any]:
+    """一键取出当前分类，保留庄园募兵预留空间。"""
+    return _transfer_available_troops(manor, category=category, deposit=False)

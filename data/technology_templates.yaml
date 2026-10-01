@@ -29,7 +29,7 @@ technologies:
   - key: scout_art
     name: 侦查术
     category: basic
-    description: 探子眼神更毒辣，敌人想偷窥你？门都没有！升级提升侦察和反侦察能力
+    description: 探子眼神更毒辣，打听消息更有一套。升级提升侦察和反侦察能力，每达到50级，还能多摸清一层庄园底细
     effect_type: scout_bonus
     effect_per_level: 0.05
     max_level: 200
@@ -300,7 +300,7 @@ technologies:
     troop_class: quan
     description: 拳头硬邦邦，一拳一个小朋友。升级提升攻击力
     effect_type: troop_attack
-    effect_per_level: 0.10
+    effect_per_level: 0.15
     max_level: 10
     base_cost: 8000
 
@@ -330,7 +330,7 @@ technologies:
     troop_class: quan
     description: 气血两旺，能吃能打能扛揍。升级提升生命值
     effect_type: troop_hp
-    effect_per_level: 0.10
+    effect_per_level: 0.15
     max_level: 10
     base_cost: 8000
 
@@ -338,7 +338,7 @@ technologies:
     name: 万宗归流
     category: martial
     troop_class: quan
-    description: 箭射过来？用手接住扔回去！升级提升远程防御
+    description: 每级提升10%远程防御值；达到5级时额外减少10%受到的远程伤害，达到10级时累计减少20%
     effect_type: ranged_defense
     effect_per_level: 0.10
     max_level: 10

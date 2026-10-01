@@ -362,7 +362,7 @@ MARKET_STATS_CACHE_LOCK_WAIT_SECONDS = max(
 # Cache TTL for defender 24h raid-received counter in attack checks
 RAID_RECENT_ATTACKS_CACHE_TTL_SECONDS = int(env("DJANGO_RAID_RECENT_ATTACKS_CACHE_TTL_SECONDS", "5"))
 # Raid capture rates (0.0 ~ 1.0, clamped in gameplay.constants.get_raid_capture_guest_rate)
-RAID_ATTACKER_DEFEAT_CAPTURE_RATE = env_float("DJANGO_RAID_ATTACKER_DEFEAT_CAPTURE_RATE", 0.2)
+RAID_ATTACKER_DEFEAT_CAPTURE_RATE = env_float("DJANGO_RAID_ATTACKER_DEFEAT_CAPTURE_RATE", 0.1)
 RAID_DEFENDER_DEFEAT_CAPTURE_RATE = env_float("DJANGO_RAID_DEFENDER_DEFEAT_CAPTURE_RATE", 0.1)
 # Legacy setting retained for older UI/read paths that do not identify the losing side.
 RAID_CAPTURE_GUEST_RATE = env_float("DJANGO_RAID_CAPTURE_GUEST_RATE", 0.1)

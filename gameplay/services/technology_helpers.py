@@ -11,6 +11,7 @@ from core.utils.infrastructure import (
     combine_infrastructure_exceptions,
 )
 
+from .scout_intel_rules import get_scout_intel_progress
 from .technology_rules import calculate_upgrade_duration
 
 MARTIAL_TECH_GROUP_ORDER = ("dao", "qiang", "jian", "quan", "gong")
@@ -49,7 +50,7 @@ def build_technology_display_entry(
     current_effect = level * effect_per_level * 100
     next_effect = (level + 1) * effect_per_level * 100 if level < max_level else None
 
-    return {
+    entry = {
         "key": tech_key,
         "name": tech["name"],
         "description": tech.get("description", ""),
@@ -68,6 +69,9 @@ def build_technology_display_entry(
         "upgrade_complete_at": upgrade_complete_at,
         "time_remaining": time_remaining,
     }
+    if tech_key == "scout_art":
+        entry["scout_intel_progress"] = get_scout_intel_progress(level)
+    return entry
 
 
 def group_martial_technology_entries(

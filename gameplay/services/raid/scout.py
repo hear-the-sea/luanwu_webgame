@@ -23,11 +23,11 @@ from ...models import Manor, PlayerTroop, ScoutCooldown, ScoutRecord
 from ..manor.troop_capacity import ensure_manor_troop_capacity_locked
 from ..technology import get_player_technology_level
 from . import scout_finalize as scout_finalize_command
-from . import scout_followups
+from . import scout_followups, scout_intel
 from . import scout_refresh as scout_refresh_command
 from . import scout_return as scout_return_command
 from . import scout_start as scout_start_command
-from .utils import calculate_distance, can_attack_target, get_asset_level, get_troop_description
+from .utils import calculate_distance, can_attack_target
 
 logger = logging.getLogger(__name__)
 
@@ -168,6 +168,7 @@ def start_scout(attacker: Manor, defender: Manor) -> ScoutRecord:
         get_scout_count_fn=get_scout_count,
         lock_manor_pair_fn=_lock_manor_pair,
         calculate_success_rate_fn=calculate_scout_success_rate,
+        get_scout_level_fn=get_scout_tech_level,
         calculate_travel_time_fn=calculate_scout_travel_time,
         schedule_completion_fn=scout_followups.schedule_scout_completion,
         now_fn=timezone.now,
@@ -222,29 +223,9 @@ def finalize_scout_return(record: ScoutRecord, now: Optional[datetime] = None) -
     )
 
 
-def _gather_scout_intel(defender: Manor) -> Dict[str, Any]:
-    """收集目标庄园的情报"""
-    # 护院数量（模糊）
-    total_troops = PlayerTroop.objects.filter(manor=defender).aggregate(total=models.Sum("count"))["total"] or 0
-
-    # 门客数量和平均等级
-    guests = defender.guests.all()
-    guest_count = guests.count()
-    avg_guest_level = 0
-    if guest_count > 0:
-        total_level = sum(g.level for g in guests)
-        avg_guest_level = round(total_level / guest_count)
-
-    # 资产等级
-    asset_level, _ = get_asset_level(defender)
-
-    return {
-        "troop_description": get_troop_description(total_troops),
-        "guest_count": guest_count,
-        "avg_guest_level": avg_guest_level,
-        "asset_level": asset_level,
-        "scouted_at": timezone.now().isoformat(),
-    }
+def _gather_scout_intel(defender: Manor, scout_level: int = 0, *, now: datetime | None = None) -> Dict[str, Any]:
+    """按出发时确定的情报档位采集目标当前信息。"""
+    return scout_intel.gather_scout_intel(defender, scout_level, now=now)
 
 
 def refresh_scout_records(manor: Manor, *, prefer_async: bool = False) -> int:

@@ -8,23 +8,24 @@ from django.db import models
 from django.utils import timezone
 
 from common.constants.resources import ResourceType
+from core.config import MANOR
 
-from ..constants import BUILDING_MAX_LEVELS, BuildingKeys
+from ..constants import BUILDING_INITIAL_LEVELS, BUILDING_MAX_LEVELS, BuildingKeys
 
 # ============ 庄园容量常量 ============
 
-# 门客容量：基础值 + 等级 × 每级增量（0级基础容量3，满级15级共18位）
-GUEST_CAPACITY_BASE = 3
-GUEST_CAPACITY_PER_LEVEL = 1
+# 门客容量：基础值 + 等级 × 每级增量（0级基础容量5，满级15级共20位）
+GUEST_CAPACITY_BASE = MANOR.GUEST_CAPACITY_BASE
+GUEST_CAPACITY_PER_LEVEL = MANOR.GUEST_CAPACITY_PER_LEVEL
 
 # 家丁容量：基础值 + 等级 × 每级增量（0级就有基础容量）
 RETAINER_CAPACITY_BASE = 50
 RETAINER_CAPACITY_PER_LEVEL = 100
 
 # 出战上限：基础值 + 等级 × 每级增量，封顶值
-SQUAD_SIZE_BASE = 3
-SQUAD_SIZE_PER_LEVEL = 1
-SQUAD_SIZE_MAX = 18
+SQUAD_SIZE_BASE = MANOR.SQUAD_SIZE_BASE
+SQUAD_SIZE_PER_LEVEL = MANOR.SQUAD_SIZE_PER_LEVEL
+SQUAD_SIZE_MAX = MANOR.SQUAD_SIZE_MAX
 
 # 训练速度：10级满级提升30%，每级约3.33%
 TRAINING_SPEED_BONUS_PER_LEVEL = 0.0333
@@ -247,7 +248,7 @@ class Manor(models.Model):
     def get_building_level(self, building_key: str) -> int:
         """获取指定建筑的等级，使用缓存"""
         cache = self._get_building_levels_cache()
-        return cache.get(building_key, 0 if building_key == BuildingKeys.XIAOYAO_SHANZHUANG else 1)
+        return cache.get(building_key, BUILDING_INITIAL_LEVELS.get(building_key, 1))
 
     @property
     def active_guest_count(self) -> int:
@@ -263,8 +264,10 @@ class Manor(models.Model):
 
     @property
     def guest_capacity(self) -> int:
-        """门客容量：基础值 + 聚贤庄等级 × 每级增量（0级3位，满级15级18位）"""
-        level = self.get_building_level(BuildingKeys.JUXIAN_ZHUANG)
+        """门客容量：基础值 + 聚贤庄等级 × 每级增量（0级5位，满级15级20位）"""
+        level = max(
+            0, min(BUILDING_MAX_LEVELS[BuildingKeys.JUXIAN_ZHUANG], self.get_building_level(BuildingKeys.JUXIAN_ZHUANG))
+        )
         return GUEST_CAPACITY_BASE + level * GUEST_CAPACITY_PER_LEVEL
 
     @property
@@ -277,7 +280,7 @@ class Manor(models.Model):
     def max_squad_size(self) -> int:
         """
         出战上限：基础值 + 游侠宝塔等级 × 每级增量，封顶 SQUAD_SIZE_MAX。
-        0级3人，每级+1人，15级满级18人。
+        0级5人，每级+1人，15级满级20人。
         """
         level = self.get_building_level(BuildingKeys.YOUXIA_BAOTA)
         return min(SQUAD_SIZE_MAX, SQUAD_SIZE_BASE + level * SQUAD_SIZE_PER_LEVEL)

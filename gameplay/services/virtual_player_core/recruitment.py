@@ -69,6 +69,7 @@ from guests.services.recruitment_templates import (
     _get_recruitable_templates_by_rarity,
     choose_template_from_entries,
 )
+from guests.services.template_identity import get_owned_non_repeatable_template_ids
 from guests.services.training import ensure_auto_training
 from guests.utils.recruitment_utils import HERMIT_RARITY, get_recruitment_rarity_distribution
 
@@ -822,18 +823,7 @@ def _draw_virtual_candidates(
     rng = random.Random(int(seed))
     excluded_ids = excluded_template_ids
     if excluded_ids is None:
-        excluded_ids = {
-            int(template_id)
-            for template_id in Guest.objects.filter(manor_id=manor.id)
-            .filter(template__rarity__in=NON_REPEATABLE_RARITIES)
-            .values_list("template_id", flat=True)
-        }
-        excluded_ids.update(
-            int(template_id)
-            for template_id in Guest.objects.filter(
-                manor_id=manor.id, template__rarity=GuestRarity.BLACK, template__is_hermit=True
-            ).values_list("template_id", flat=True)
-        )
+        excluded_ids = get_owned_non_repeatable_template_ids(manor.id)
 
     drawn: list[_DrawnGuest] = []
     for _index in range(draw_count):
@@ -976,21 +966,7 @@ def _eligible_profile_queryset(*, now: datetime):
 
 
 def _current_non_repeatable_template_ids(*, manor_id: int) -> set[int]:
-    excluded_ids = {
-        int(template_id)
-        for template_id in Guest.objects.filter(manor_id=manor_id)
-        .filter(template__rarity__in=NON_REPEATABLE_RARITIES)
-        .values_list("template_id", flat=True)
-    }
-    excluded_ids.update(
-        int(template_id)
-        for template_id in Guest.objects.filter(
-            manor_id=manor_id,
-            template__rarity=GuestRarity.BLACK,
-            template__is_hermit=True,
-        ).values_list("template_id", flat=True)
-    )
-    return excluded_ids
+    return get_owned_non_repeatable_template_ids(manor_id)
 
 
 def _virtual_seed(*, profile: BotProfile, operation_id: str) -> int:

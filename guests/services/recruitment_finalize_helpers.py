@@ -12,6 +12,7 @@ from core.exceptions import (
 )
 
 from .recruitment_shared import NON_REPEATABLE_RARITIES
+from .template_identity import get_non_repeatable_family_template_ids, get_non_repeatable_family_template_ids_by_id
 
 if TYPE_CHECKING:
     from gameplay.models import Manor
@@ -55,10 +56,15 @@ def ensure_guest_capacity_available(manor: Manor) -> int:
     return remaining
 
 
+def _get_owned_template_ids_for_finalization(manor: Manor) -> set[int]:
+    owned_template_ids = set(manor.guests.values_list("template_id", flat=True))
+    return owned_template_ids | get_non_repeatable_family_template_ids(owned_template_ids)
+
+
 def ensure_candidate_template_available(manor: Manor, candidate: RecruitmentCandidate) -> None:
     if candidate.rarity not in NON_REPEATABLE_RARITIES:
         return
-    if manor.guests.filter(template_id=candidate.template_id).exists():
+    if candidate.template_id in _get_owned_template_ids_for_finalization(manor):
         raise GuestAlreadyOwnedError(candidate.template)
 
 
@@ -66,7 +72,10 @@ def partition_non_repeatable_candidates(
     manor: Manor,
     candidates: list[RecruitmentCandidate],
 ) -> tuple[list[RecruitmentCandidate], list[RecruitmentCandidate]]:
-    owned_template_ids = set(manor.guests.values_list("template_id", flat=True))
+    owned_template_ids = _get_owned_template_ids_for_finalization(manor)
+    candidate_families = get_non_repeatable_family_template_ids_by_id(
+        candidate.template_id for candidate in candidates if candidate.rarity in NON_REPEATABLE_RARITIES
+    )
     accepted: list[RecruitmentCandidate] = []
     rejected: list[RecruitmentCandidate] = []
     for candidate in candidates:
@@ -77,6 +86,7 @@ def partition_non_repeatable_candidates(
         accepted.append(candidate)
         if is_non_repeatable:
             owned_template_ids.add(candidate.template_id)
+            owned_template_ids.update(candidate_families[candidate.template_id])
     return accepted, rejected
 
 

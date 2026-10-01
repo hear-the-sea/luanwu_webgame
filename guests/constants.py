@@ -6,6 +6,12 @@ from common.constants.time import TimeConstants  # noqa: F401
 
 RARITY_CONVERSION_TEMPLATE_KEY_PREFIX = "guest_rarity_conversion_"
 
+# 这些升阶模板代表同一名门客；招募和收编时应按人物判重。
+UPGRADE_TEMPLATE_FAMILIES = (
+    ("hist_sljnbc_0589", "hist_sljnbc_0589_blue", "hist_sljnbc_0589_purple"),
+    ("hist_sljnbc_0590", "hist_sljnbc_0590_blue", "hist_sljnbc_0590_purple"),
+)
+
 # 超级门客易容卡的效果配置。头像覆盖只允许使用受控的逻辑 key，避免把任意文件路径写入门客数据。
 SUPER_GUEST_DISGUISE_ACTION = "disguise_guest"
 SUPER_GUEST_DISGUISE_AVATAR_KEY = "lvbu_monkey"

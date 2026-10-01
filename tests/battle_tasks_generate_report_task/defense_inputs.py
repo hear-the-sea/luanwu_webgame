@@ -191,6 +191,7 @@ def test_generate_report_task_defense_passes_player_technology_to_defender_setup
         "technology": {"levels": {"gong_attack": 7, "gong_hp": 5}},
     }
     assert captured["defender_manor"] == manor
+    assert captured["defender_troop_loss_rate"] == 0.5
 
 
 @pytest.mark.django_db
@@ -231,6 +232,8 @@ def test_generate_report_task_defense_records_each_round_starting_lineup(
 
     report = BattleReport.objects.get(pk=report_id)
     assert report.rounds
+    assert report.losses["attacker"]["troop_loss_rate"] == 0.8
+    assert report.losses["defender"]["troop_loss_rate"] == 0.5
     for battle_round in report.rounds:
         assert set(battle_round["lineups"]) == {"attacker", "defender"}
         assert set(battle_round["lineups"]["attacker"]) == {"guests", "city_defenses", "troops"}

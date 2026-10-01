@@ -73,6 +73,8 @@ class BattleOptions:
     attacker_manor: Any | None = None
     defender_manor: Any | None = None
     validate_attacker_troop_capacity: bool = True
+    attacker_troop_loss_rate: float | None = None
+    defender_troop_loss_rate: float | None = None
 
 
 def _normalize_optional_mapping(raw: Any, *, contract_name: str) -> Dict[str, Any]:
@@ -289,6 +291,9 @@ def _execute_simulation(
         travel_seconds=options.travel_seconds,
         config=config,
         drop_table=options.drop_table,
+        battle_engine_version=options.battle_engine_version,
+        attacker_troop_loss_rate=options.attacker_troop_loss_rate,
+        defender_troop_loss_rate=options.defender_troop_loss_rate,
     )
     return simulation, opponent_label
 
