@@ -1,0 +1,313 @@
+# ilrock 人物资料补充（2026-10-02）；身份对照见 reports/guest_expansion_ilrock_20261002.json
+
+heroes:
+  blue:
+  - key: hero_ilrock_03867
+    name: 了空
+    default_gender: male
+    archetype: military
+    flavor: 法号了空的高僧执掌净念禅院，见于黄易小说《大唐双龙传》。他长年修持闭口禅，以沉静举止统摄僧众，深厚内功与佛门武学令人不敢轻视。和氏璧藏在禅院时，各方目光也随之投来；寇仲、徐子陵等人夺璧之后，他亲自追索应战，并打破多年不语的修持。庄严寺院由此与争夺天下的风波紧紧相连。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 15
+      defense: 25
+      agility: 20
+  - key: hero_ilrock_03877
+    name: 尤楚红
+    default_gender: female
+    archetype: military
+    flavor: 独孤阀中辈分极高的老妇人，黄易小说《大唐双龙传》里的尤楚红，虽满头白发、时受喘疾困扰，仍能执碧玉杖迎战强敌。她深知门阀兴衰与朝局相系，对家中后辈要求严厉，也始终护着独孤家的利益。江湖人物登门交锋时，她不会只让晚辈挡在前头；病中一声咳嗽尚未停歇，手中杖影便已带着劲风压来。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 15
+      defense: 25
+      agility: 20
+  - key: hero_ilrock_03878
+    name: 赵德言
+    default_gender: male
+    archetype: civil
+    flavor: 号称魔帅的魔门高手，黄易小说《大唐双龙传》中魔相派的重要人物，又是突厥方面的谋士。赵德言熟知武林各派纠葛，也擅长借军势和权谋干预中原。他与寇仲、徐子陵周旋时，往往把刀兵威胁、门派利益与暗中交易一并用上，既要夺取眼前优势，也要替背后的势力争得先机，是乱世中武功与谋略兼具的劲敌。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 15
+      intellect: 45
+      defense: 15
+      agility: 25
+  - key: hero_ilrock_03879
+    name: 席应
+    default_gender: male
+    archetype: military
+    flavor: 天君席应出身灭情道，见于黄易小说《大唐双龙传》。当年受宋缺威势所逼，他远走西域，潜心修炼紫气天罗，待功法有成再回中原，欲洗去旧日耻辱。与人交锋时，他将内劲织成无形罗网，层层缠住对手的行动。重返成都的锋芒却未能如愿施展，最终遭遇假扮岳山的徐子陵，在自己布下的争斗中败亡。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 15
+      defense: 25
+      agility: 20
+  - key: hero_ilrock_03880
+    name: 安隆
+    default_gender: male
+    archetype: civil
+    flavor: 天莲宗宗主藏身商贾行列，是黄易小说《大唐双龙传》中的魔门巨头。安隆身形肥胖，脸上常带和气笑容，谈生意时圆滑熟练，动起手来却绝不笨重。他与石之轩来往密切，也借财力、人脉和商路经营自身势力。诸派争权时，他既要衡量旧日盟约，也要防着对方翻脸，许多凶险交易便在一番亲热寒暄中谈成。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 15
+      intellect: 45
+      defense: 15
+      agility: 25
+  - key: hero_ilrock_03899
+    name: 石青璇
+    default_gender: female
+    archetype: civil
+    flavor: 幽林小筑里箫声清远，住在那里的是石之轩与碧秀心的女儿石青璇。黄易小说《大唐双龙传》中，她继承父母的才情与武学，却不愿随父亲卷进魔门争权。她能独自应付来犯者，也不因旁人的追逐失去主张。与徐子陵相知之后，林间相伴的片刻安宁，逐渐让她从父母留下的伤痛里重新接近自己的生活。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 15
+      intellect: 45
+      defense: 15
+      agility: 25
+  - key: hero_ilrock_03900
+    name: 碧秀心
+    default_gender: female
+    archetype: civil
+    flavor: 慈航静斋出身的碧秀心，在黄易小说《大唐双龙传》中与邪王石之轩相恋，并生下石青璇。她曾希望凭深情与信念改变这位魔门奇才，与他共同生活，也面对他复杂多变的心性。她虽已离世，幽林小筑却仍留着女儿的思念。石之轩谈及旧事时的痛苦与失常，也使这段往昔情缘不断牵动眼前的江湖争斗。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 15
+      intellect: 45
+      defense: 15
+      agility: 25
+  - key: hero_ilrock_03901
+    name: 尚秀芳
+    default_gender: female
+    archetype: civil
+    flavor: 歌声与琴艺名动天下，尚秀芳是黄易小说《大唐双龙传》中备受推重的才女。她往来于各地宴席与名流之间，举止从容，言谈自有见识，并非只听任权贵安排的歌者。战乱中与寇仲相识，使她看见少年主帅豪迈之外的孤独，也生出难以抹去的情意。席间曲终，宾客仍在议论天下，她却有自己要去的远方与牵挂。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 15
+      intellect: 45
+      defense: 15
+      agility: 25
+  - key: hero_ilrock_03902
+    name: 虚行之
+    default_gender: male
+    archetype: civil
+    flavor: 少帅军的政务与谋划，少不了虚行之的手笔。黄易小说《大唐双龙传》中，他追随寇仲，整顿组织、处理人事，为逐渐扩大的势力建立可运转的章法。主帅擅长战阵与临机决断，他则把目光放在钱粮、任用与长远形势上。城池攻下之后如何守住，群雄之间如何取舍，往往都要由这位谋士仔细筹算，再交出切实可行的办法。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 15
+      intellect: 45
+      defense: 15
+      agility: 25
+  - key: hero_ilrock_03974
+    name: 傅君瑜
+    default_gender: female
+    archetype: military
+    flavor: 傅采林门下的第二位女弟子，傅君婥的师妹，见于黄易小说《大唐双龙传》。傅君瑜身负奕剑之术来到中原，既要追索师姐之事，也带着高丽师门的立场与责任。初与双龙相遇，她清冷严厉，对两人的言行多有戒备；与跋锋寒的相处，又显出难以轻易割舍的情意。中原行路间，师门恩怨与个人感情时常同时逼近剑锋。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 15
+      defense: 25
+      agility: 20
+  - key: hero_ilrock_03975
+    name: 傅君嫱
+    default_gender: female
+    archetype: military
+    flavor: 高丽奕剑大师傅采林的第三位女弟子，在黄易小说《大唐双龙传》中与两位师姐同承奕剑之学。傅君嫱年纪较轻，性情活泼，自信于师门剑术，来到中原后对江湖人物并不轻易服气。她关注傅君婥身后的恩怨，也与寇仲、徐子陵所牵连的纷争相遇。伶俐言语常先于剑锋到来，认真交手时，却仍有名师门下的精妙章法。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 15
+      defense: 25
+      agility: 20
+  - key: hero_ilrock_03962
+    name: 雷九指
+    default_gender: male
+    archetype: civil
+    flavor: 赌坛人称北雷的高手，雷九指是黄易小说《大唐双龙传》中鲁妙子的旧识。他精于赌术，熟悉赌场暗手，也善用易容与江湖经验辨识人物。结交寇仲、徐子陵后，他传授赌技，协助二人应付香家等势力，还参与对付人口贩卖的谋划。骰子在掌中一转，输赢之外的门道也随之显露；谈笑随和，办起正事却十分可靠。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 15
+      intellect: 45
+      defense: 15
+      agility: 25
+  - key: hero_ilrock_03994
+    name: 乾罗
+    default_gender: male
+    archetype: military
+    flavor: 毒手乾罗坐镇乾罗山城，以矛法与狠辣手段扬名，是黄易小说《覆雨翻云》中的黑榜高手。他曾与怒蛟帮争锋，败于浪翻云后，才逐渐改变敌对立场，与中原群侠合作。他又收戚长征为义子，对年轻后辈颇为照拂。昔日枭雄并未磨去锋芒，只是在庞斑与蒙古势力逼近时，把武功、声望和山城的力量投向了新的战局。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 15
+      defense: 25
+      agility: 20
+  - key: hero_ilrock_03995
+    name: 戚长征
+    default_gender: male
+    archetype: military
+    flavor: 怒蛟帮中长成的豪爽青年，黄易小说《覆雨翻云》里的戚长征，以快刀与一身胆气闯入高手林立的江湖。他得到封寒传授刀法，又受赠宝刀天兵，乾罗也将他收为义子。与韩柏、风行烈等人并肩时，他既敢迎向强敌，也愿护住身后的朋友。豪饮谈笑之后，刀锋一扬便投入恶战，帮中年轻一辈的声势也随他渐渐壮大。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 15
+      defense: 25
+      agility: 20
+  - key: hero_ilrock_03996
+    name: 封寒
+    default_gender: male
+    archetype: military
+    flavor: 左手刀封寒是黄易小说《覆雨翻云》中久负盛名的黑榜高手，宝刀天兵随他历经交锋。他曾与浪翻云较量，虽败而生敬意，此后成为相知的朋友。见戚长征资质与胆识不凡，他传下刀法，又把天兵交给后辈。冷峻的刀客不多说温情之语，危局中却愿亲自挡住追敌，直至为掩护戚长征而战死。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 15
+      defense: 25
+      agility: 20
+  - key: hero_ilrock_04000
+    name: 方夜羽
+    default_gender: male
+    archetype: civil
+    flavor: 小魔师方夜羽师承庞斑，是黄易小说《覆雨翻云》中蒙古势力布局中原的年轻首领。他不只仰赖师父威名，也善于调度高手、联结势力，把帮派恩怨和各方欲求纳入自己的谋划。与怒蛟帮及中原群侠交锋时，他常先布置数条进退之路，再令对手入局。庞斑追索武道之际，这位弟子则忙于将蒙古复兴的野心化为行动。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 15
+      intellect: 45
+      defense: 15
+      agility: 25
+  purple:
+  - key: hero_ilrock_03860
+    name: 宋缺
+    default_gender: male
+    archetype: military
+    flavor: 岭南宋阀阀主，以天刀之名威震武林，见于黄易小说《大唐双龙传》。宋缺兼长兵法与刀道，坐镇岭南仍密切注视中原局势，并以自身力量支持寇仲争雄。磨刀堂中，他把劲敌之名刻在磨刀石上，静待值得一战的对手。家族前途、天下归属与和梵清惠的旧情，都未使他放下那份孤高，反而随刀锋一并愈发鲜明。
+    recruitable: true
+    growth_range:
+    - 7
+    - 12
+    attribute_weights:
+      force: 40
+      intellect: 15
+      defense: 25
+      agility: 20
+  - key: hero_ilrock_03865
+    name: 梵清惠
+    default_gender: female
+    archetype: military
+    flavor: 执掌慈航静斋的梵清惠，是黄易小说《大唐双龙传》中师妃暄的师父。她以门派声望与自身修为影响武林，又派弟子入世，为动荡天下寻觅可托付的明主。年轻时与宋缺互有情意，最终却因所持立场不同各走一途。岭南的天刀仍记着旧人，静斋的掌门则继续面对群雄；昔日牵挂与今日抉择，在重逢时都难以轻轻揭过。
+    recruitable: true
+    growth_range:
+    - 7
+    - 12
+    attribute_weights:
+      force: 40
+      intellect: 15
+      defense: 25
+      agility: 20
+  - key: hero_ilrock_03868
+    name: 鲁妙子
+    default_gender: male
+    archetype: civil
+    flavor: 飞马牧场后山隐居着天下第一全才鲁妙子，见于黄易小说《大唐双龙传》。机关、建筑、易容、园艺等技艺，他皆有深厚造诣，杨公宝库也出自他的设计。与寇仲、徐子陵相识后，他传授所学，为二人日后闯荡留下助力。说到女儿商秀珣与过去的情事，这位谈笑自如的奇人又会显出黯然，许多心愿只能托付给后辈。
+    recruitable: true
+    growth_range:
+    - 7
+    - 12
+    attribute_weights:
+      force: 15
+      intellect: 45
+      defense: 15
+      agility: 25
+  - key: hero_ilrock_03987
+    name: 蒙赤行
+    default_gender: male
+    archetype: military
+    flavor: 魔宗蒙赤行是黄易小说《破碎虚空》中的蒙古武学宗师，以惊人的精神修为与深厚武功立于群雄之上。他身处蒙古权力核心，却更专注于武道求索，后来亦成为庞斑的师父。与传鹰相遇，二人在长街展开激烈决战，招式、内劲与心神彼此冲击。喧嚣世局在那场交锋外渐渐远去，留下两个顶尖武者步步逼近的身影。
+    recruitable: true
+    growth_range:
+    - 7
+    - 12
+    attribute_weights:
+      force: 40
+      intellect: 15
+      defense: 25
+      agility: 20
+  - key: hero_ilrock_03993
+    name: 赤尊信
+    default_gender: male
+    archetype: military
+    flavor: 盗霸赤尊信创立尊信门，遍习各路兵器，是黄易小说《覆雨翻云》中曾经威压一方的豪雄。他与怒蛟帮交锋，也在庞斑崛起后遭遇难以抗衡的强敌。落入困境时，他与韩柏相遇，将道心种魔的传承寄托在这个年轻人身上，以生命完成惊人的授功。昔日首领不再能亲手迎战，留下的魔种却伴韩柏走入了新的武林风暴。
+    recruitable: true
+    growth_range:
+    - 7
+    - 12
+    attribute_weights:
+      force: 40
+      intellect: 15
+      defense: 25
+      agility: 20
+  - key: hero_ilrock_04003
+    name: 言静庵
+    default_gender: female
+    archetype: military
+    flavor: 慈航静斋的前代宗师，黄易小说《覆雨翻云》中秦梦瑶与靳冰云的师父。言静庵武学高深，与魔师庞斑之间既有正邪对峙，也有难以割断的情感。她曾与庞斑立约，令他退出江湖二十年，为中原武林争得一段喘息。她离世之后，弟子各自走向不同道路，庞斑重返江湖，也仍带着那段约定与故人留下的牵挂。
+    recruitable: true
+    growth_range:
+    - 7
+    - 12
+    attribute_weights:
+      force: 40
+      intellect: 15
+      defense: 25
+      agility: 20

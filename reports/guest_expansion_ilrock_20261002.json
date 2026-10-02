@@ -1,0 +1,4867 @@
+{
+  "batch_date": "2026-10-02",
+  "source_file": "reports/ilrock_luanwu_chunqiu_guests.json",
+  "source_sha256": "2b9eb28fc74b2d673916cc677f1b99ea68fbb9da61ec87762489cb9c3a095d1f",
+  "source_record_count": 28014,
+  "baseline_template_count": 3518,
+  "added_count": 200,
+  "added_by_rarity": {
+    "purple": 33,
+    "blue": 104,
+    "green": 62,
+    "orange": 1
+  },
+  "non_task_counts_before": {
+    "black": 25,
+    "gray": 2,
+    "red": 1,
+    "green": 1769,
+    "blue": 1172,
+    "purple": 421,
+    "orange": 37
+  },
+  "non_task_counts_after": {
+    "black": 25,
+    "gray": 2,
+    "red": 1,
+    "green": 1831,
+    "blue": 1276,
+    "purple": 454,
+    "orange": 38
+  },
+  "added_by_domain": {
+    "风云": 28,
+    "昆仑": 12,
+    "古龙": 18,
+    "黄易": 22,
+    "医生": 36,
+    "春秋战国": 1,
+    "唐朝": 1,
+    "宋朝": 3,
+    "水浒传": 79
+  },
+  "selected": [
+    {
+      "source_id": 1451,
+      "source_name": "李冰",
+      "source_domain": "春秋战国",
+      "source_color": "蓝文",
+      "roster_domain": "春秋战国",
+      "name": "李冰",
+      "aliases": [],
+      "template_key": "hist_ilrock_01451",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "purple",
+      "archetype": "civil",
+      "source_alias_ids": [
+        1451
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《史记》河渠书。《史记》蜀守冰记载，具体生卒不可由后世传说推断。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 3154,
+      "source_name": "百晓生",
+      "source_domain": "古龙",
+      "source_color": "绿文",
+      "roster_domain": "古龙",
+      "name": "百晓生",
+      "aliases": [],
+      "template_key": "hero_ilrock_03154",
+      "roster_file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        3154
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3155,
+      "source_name": "龙小云",
+      "source_domain": "古龙",
+      "source_color": "绿武",
+      "roster_domain": "古龙",
+      "name": "龙小云",
+      "aliases": [],
+      "template_key": "hero_ilrock_03155",
+      "roster_file": "gulong_ilrock_01.yaml",
+      "rarity": "green",
+      "archetype": "civil",
+      "source_alias_ids": [
+        3155
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3158,
+      "source_name": "吕凤先",
+      "source_domain": "古龙",
+      "source_color": "绿色",
+      "roster_domain": "古龙",
+      "name": "吕凤先",
+      "aliases": [
+        "吕凤仙",
+        "银戟温侯"
+      ],
+      "template_key": "hero_ilrock_03158",
+      "roster_file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        3158
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3159,
+      "source_name": "西门柔",
+      "source_domain": "古龙",
+      "source_color": "绿武",
+      "roster_domain": "古龙",
+      "name": "西门柔",
+      "aliases": [
+        "神鞭"
+      ],
+      "template_key": "hero_ilrock_03159",
+      "roster_file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        3159
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3160,
+      "source_name": "诸葛刚",
+      "source_domain": "古龙",
+      "source_color": "绿色",
+      "roster_domain": "古龙",
+      "name": "诸葛刚",
+      "aliases": [
+        "横扫千军"
+      ],
+      "template_key": "hero_ilrock_03160",
+      "roster_file": "gulong_ilrock_01.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        3160
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3161,
+      "source_name": "伊哭",
+      "source_domain": "古龙",
+      "source_color": "绿色",
+      "roster_domain": "古龙",
+      "name": "伊哭",
+      "aliases": [
+        "青魔手"
+      ],
+      "template_key": "hero_ilrock_03161",
+      "roster_file": "gulong_ilrock_01.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        3161
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3165,
+      "source_name": "林诗音",
+      "source_domain": "古龙",
+      "source_color": "绿文",
+      "roster_domain": "古龙",
+      "name": "林诗音",
+      "aliases": [],
+      "template_key": "hero_ilrock_03165",
+      "roster_file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        3165
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3185,
+      "source_name": "游龙生",
+      "source_domain": "古龙",
+      "source_color": "绿色",
+      "roster_domain": "古龙",
+      "name": "游龙生",
+      "aliases": [],
+      "template_key": "hero_ilrock_03185",
+      "roster_file": "gulong_ilrock_01.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        3185
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3199,
+      "source_name": "南宫灵",
+      "source_domain": "古龙",
+      "source_color": "蓝色",
+      "roster_domain": "古龙",
+      "name": "南宫灵",
+      "aliases": [],
+      "template_key": "hero_ilrock_03199",
+      "roster_file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        3199
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3200,
+      "source_name": "任慈",
+      "source_domain": "古龙",
+      "source_color": "绿色",
+      "roster_domain": "古龙",
+      "name": "任慈",
+      "aliases": [],
+      "template_key": "hero_ilrock_03200",
+      "roster_file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        3200
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3211,
+      "source_name": "高亚男",
+      "source_domain": "古龙",
+      "source_color": "绿色",
+      "roster_domain": "古龙",
+      "name": "高亚男",
+      "aliases": [
+        "清风女剑客"
+      ],
+      "template_key": "hero_ilrock_03211",
+      "roster_file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        3211
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3228,
+      "source_name": "秋灵素",
+      "source_domain": "古龙",
+      "source_color": "绿色",
+      "roster_domain": "古龙",
+      "name": "秋灵素",
+      "aliases": [
+        "任夫人",
+        "秋林素"
+      ],
+      "template_key": "hero_ilrock_03228",
+      "roster_file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        3228
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3246,
+      "source_name": "柳无眉",
+      "source_domain": "古龙",
+      "source_color": "绿武",
+      "roster_domain": "古龙",
+      "name": "柳无眉",
+      "aliases": [
+        "李夫人",
+        "画眉鸟"
+      ],
+      "template_key": "hero_ilrock_03246",
+      "roster_file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        3246
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3349,
+      "source_name": "张菁",
+      "source_domain": "古龙",
+      "source_color": "绿色",
+      "roster_domain": "古龙",
+      "name": "张菁",
+      "aliases": [
+        "小仙女"
+      ],
+      "template_key": "hero_ilrock_03349",
+      "roster_file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        3349
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3354,
+      "source_name": "江别鹤",
+      "source_domain": "古龙",
+      "source_color": "蓝武",
+      "roster_domain": "古龙",
+      "name": "江琴",
+      "aliases": [
+        "江别鹤",
+        "江南大侠"
+      ],
+      "template_key": "hero_ilrock_03354",
+      "roster_file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        3354
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3356,
+      "source_name": "江玉郎",
+      "source_domain": "古龙",
+      "source_color": "绿色",
+      "roster_domain": "古龙",
+      "name": "江玉郎",
+      "aliases": [],
+      "template_key": "hero_ilrock_03356",
+      "roster_file": "gulong_ilrock_01.yaml",
+      "rarity": "green",
+      "archetype": "civil",
+      "source_alias_ids": [
+        3356
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3376,
+      "source_name": "魏无牙",
+      "source_domain": "古龙",
+      "source_color": "绿色",
+      "roster_domain": "古龙",
+      "name": "魏无牙",
+      "aliases": [],
+      "template_key": "hero_ilrock_03376",
+      "roster_file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        3376
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3384,
+      "source_name": "顾人玉",
+      "source_domain": "古龙",
+      "source_color": "绿武",
+      "roster_domain": "古龙",
+      "name": "顾人玉",
+      "aliases": [
+        "玉面神拳",
+        "顾二公子",
+        "顾小妹"
+      ],
+      "template_key": "hero_ilrock_03384",
+      "roster_file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        3384
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3860,
+      "source_name": "宋缺",
+      "source_domain": "黄易",
+      "source_color": "紫色",
+      "roster_domain": "黄易",
+      "name": "宋缺",
+      "aliases": [
+        "天刀"
+      ],
+      "template_key": "hero_ilrock_03860",
+      "roster_file": "huangyi_ilrock_01.yaml",
+      "rarity": "purple",
+      "archetype": "military",
+      "source_alias_ids": [
+        3860
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3865,
+      "source_name": "梵清惠",
+      "source_domain": "黄易",
+      "source_color": "蓝色",
+      "roster_domain": "黄易",
+      "name": "梵清惠",
+      "aliases": [],
+      "template_key": "hero_ilrock_03865",
+      "roster_file": "huangyi_ilrock_01.yaml",
+      "rarity": "purple",
+      "archetype": "military",
+      "source_alias_ids": [
+        3865
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3867,
+      "source_name": "了空",
+      "source_domain": "黄易",
+      "source_color": "蓝色",
+      "roster_domain": "黄易",
+      "name": "了空",
+      "aliases": [],
+      "template_key": "hero_ilrock_03867",
+      "roster_file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        3867
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3868,
+      "source_name": "鲁妙子",
+      "source_domain": "黄易",
+      "source_color": "蓝色",
+      "roster_domain": "黄易",
+      "name": "鲁妙子",
+      "aliases": [
+        "天下第一全才",
+        "鲁公"
+      ],
+      "template_key": "hero_ilrock_03868",
+      "roster_file": "huangyi_ilrock_01.yaml",
+      "rarity": "purple",
+      "archetype": "civil",
+      "source_alias_ids": [
+        3868
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3877,
+      "source_name": "尤楚红",
+      "source_domain": "黄易",
+      "source_color": "绿色",
+      "roster_domain": "黄易",
+      "name": "尤楚红",
+      "aliases": [],
+      "template_key": "hero_ilrock_03877",
+      "roster_file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        3877
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3878,
+      "source_name": "赵德言",
+      "source_domain": "黄易",
+      "source_color": "绿色",
+      "roster_domain": "黄易",
+      "name": "赵德言",
+      "aliases": [
+        "魔帅"
+      ],
+      "template_key": "hero_ilrock_03878",
+      "roster_file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        3878
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3879,
+      "source_name": "席应",
+      "source_domain": "黄易",
+      "source_color": "绿色",
+      "roster_domain": "黄易",
+      "name": "席应",
+      "aliases": [
+        "天君"
+      ],
+      "template_key": "hero_ilrock_03879",
+      "roster_file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        3879
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3880,
+      "source_name": "安隆",
+      "source_domain": "黄易",
+      "source_color": "绿色",
+      "roster_domain": "黄易",
+      "name": "安隆",
+      "aliases": [
+        "胖贾"
+      ],
+      "template_key": "hero_ilrock_03880",
+      "roster_file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        3880
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3899,
+      "source_name": "石清璇",
+      "source_domain": "黄易",
+      "source_color": "绿色",
+      "roster_domain": "黄易",
+      "name": "石青璇",
+      "aliases": [
+        "石清璇"
+      ],
+      "template_key": "hero_ilrock_03899",
+      "roster_file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        3899
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3900,
+      "source_name": "碧秀心",
+      "source_domain": "黄易",
+      "source_color": "绿色",
+      "roster_domain": "黄易",
+      "name": "碧秀心",
+      "aliases": [],
+      "template_key": "hero_ilrock_03900",
+      "roster_file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        3900
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3901,
+      "source_name": "尚秀芳",
+      "source_domain": "黄易",
+      "source_color": "绿色",
+      "roster_domain": "黄易",
+      "name": "尚秀芳",
+      "aliases": [
+        "尚大家"
+      ],
+      "template_key": "hero_ilrock_03901",
+      "roster_file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        3901
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3902,
+      "source_name": "虚行之",
+      "source_domain": "黄易",
+      "source_color": "绿色",
+      "roster_domain": "黄易",
+      "name": "虚行之",
+      "aliases": [],
+      "template_key": "hero_ilrock_03902",
+      "roster_file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        3902
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3962,
+      "source_name": "雷九指",
+      "source_domain": "黄易",
+      "source_color": "绿色",
+      "roster_domain": "黄易",
+      "name": "雷九指",
+      "aliases": [
+        "九指",
+        "北雷"
+      ],
+      "template_key": "hero_ilrock_03962",
+      "roster_file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        3962
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3974,
+      "source_name": "傅君瑜",
+      "source_domain": "黄易",
+      "source_color": "绿色",
+      "roster_domain": "黄易",
+      "name": "傅君瑜",
+      "aliases": [],
+      "template_key": "hero_ilrock_03974",
+      "roster_file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        3974
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3975,
+      "source_name": "傅君嫱",
+      "source_domain": "黄易",
+      "source_color": "绿色",
+      "roster_domain": "黄易",
+      "name": "傅君嫱",
+      "aliases": [],
+      "template_key": "hero_ilrock_03975",
+      "roster_file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        3975
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3987,
+      "source_name": "蒙赤行",
+      "source_domain": "黄易",
+      "source_color": "绿武",
+      "roster_domain": "黄易",
+      "name": "蒙赤行",
+      "aliases": [
+        "魔宗"
+      ],
+      "template_key": "hero_ilrock_03987",
+      "roster_file": "huangyi_ilrock_01.yaml",
+      "rarity": "purple",
+      "archetype": "military",
+      "source_alias_ids": [
+        3987
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3993,
+      "source_name": "赤尊信",
+      "source_domain": "黄易",
+      "source_color": "绿武",
+      "roster_domain": "黄易",
+      "name": "赤尊信",
+      "aliases": [
+        "盗霸"
+      ],
+      "template_key": "hero_ilrock_03993",
+      "roster_file": "huangyi_ilrock_01.yaml",
+      "rarity": "purple",
+      "archetype": "military",
+      "source_alias_ids": [
+        3993
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3994,
+      "source_name": "乾罗",
+      "source_domain": "黄易",
+      "source_color": "绿武",
+      "roster_domain": "黄易",
+      "name": "乾罗",
+      "aliases": [
+        "干罗",
+        "毒手"
+      ],
+      "template_key": "hero_ilrock_03994",
+      "roster_file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        3994
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3995,
+      "source_name": "戚长征",
+      "source_domain": "黄易",
+      "source_color": "绿武",
+      "roster_domain": "黄易",
+      "name": "戚长征",
+      "aliases": [
+        "快刀"
+      ],
+      "template_key": "hero_ilrock_03995",
+      "roster_file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        3995
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 3996,
+      "source_name": "封寒",
+      "source_domain": "黄易",
+      "source_color": "绿色",
+      "roster_domain": "黄易",
+      "name": "封寒",
+      "aliases": [
+        "左手刀"
+      ],
+      "template_key": "hero_ilrock_03996",
+      "roster_file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        3996
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4000,
+      "source_name": "方夜雨",
+      "source_domain": "黄易",
+      "source_color": "绿色",
+      "roster_domain": "黄易",
+      "name": "方夜羽",
+      "aliases": [
+        "小魔师",
+        "方夜雨"
+      ],
+      "template_key": "hero_ilrock_04000",
+      "roster_file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4000
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4003,
+      "source_name": "言静庵",
+      "source_domain": "黄易",
+      "source_color": "绿武",
+      "roster_domain": "黄易",
+      "name": "言静庵",
+      "aliases": [],
+      "template_key": "hero_ilrock_04003",
+      "roster_file": "huangyi_ilrock_01.yaml",
+      "rarity": "purple",
+      "archetype": "military",
+      "source_alias_ids": [
+        4003
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4230,
+      "source_name": "梁萧",
+      "source_domain": "昆仑",
+      "source_color": "紫武",
+      "roster_domain": "昆仑",
+      "name": "梁萧",
+      "aliases": [],
+      "template_key": "hero_ilrock_04230",
+      "roster_file": "kunlun.yaml",
+      "rarity": "purple",
+      "archetype": "military",
+      "source_alias_ids": [
+        4230
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4231,
+      "source_name": "公羊羽",
+      "source_domain": "昆仑",
+      "source_color": "蓝武",
+      "roster_domain": "昆仑",
+      "name": "公羊羽",
+      "aliases": [
+        "万古云霄",
+        "凌空一羽",
+        "凤翔先生",
+        "穷儒"
+      ],
+      "template_key": "hero_ilrock_04231",
+      "roster_file": "kunlun.yaml",
+      "rarity": "purple",
+      "archetype": "military",
+      "source_alias_ids": [
+        4231
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4232,
+      "source_name": "萧千绝",
+      "source_domain": "昆仑",
+      "source_color": "蓝武",
+      "roster_domain": "昆仑",
+      "name": "萧千绝",
+      "aliases": [
+        "荡尽天下",
+        "黑水滔滔"
+      ],
+      "template_key": "hero_ilrock_04232",
+      "roster_file": "kunlun.yaml",
+      "rarity": "purple",
+      "archetype": "military",
+      "source_alias_ids": [
+        4232
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4233,
+      "source_name": "九如",
+      "source_domain": "昆仑",
+      "source_color": "蓝武",
+      "roster_domain": "昆仑",
+      "name": "九如",
+      "aliases": [
+        "九如上人",
+        "九如和尚"
+      ],
+      "template_key": "hero_ilrock_04233",
+      "roster_file": "kunlun.yaml",
+      "rarity": "purple",
+      "archetype": "military",
+      "source_alias_ids": [
+        4233
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4234,
+      "source_name": "释天风",
+      "source_domain": "昆仑",
+      "source_color": "绿武",
+      "roster_domain": "昆仑",
+      "name": "释天风",
+      "aliases": [
+        "东海一尊",
+        "灵鳌武库"
+      ],
+      "template_key": "hero_ilrock_04234",
+      "roster_file": "kunlun.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4234
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4239,
+      "source_name": "云殊",
+      "source_domain": "昆仑",
+      "source_color": "绿色",
+      "roster_domain": "昆仑",
+      "name": "云殊",
+      "aliases": [],
+      "template_key": "hero_ilrock_04239",
+      "roster_file": "kunlun.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4239
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4241,
+      "source_name": "花生",
+      "source_domain": "昆仑",
+      "source_color": "绿武",
+      "roster_domain": "昆仑",
+      "name": "花生",
+      "aliases": [
+        "花生和尚",
+        "花生大士"
+      ],
+      "template_key": "hero_ilrock_04241",
+      "roster_file": "kunlun.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4241
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4242,
+      "source_name": "花清渊",
+      "source_domain": "昆仑",
+      "source_color": "绿色",
+      "roster_domain": "昆仑",
+      "name": "花清渊",
+      "aliases": [],
+      "template_key": "hero_ilrock_04242",
+      "roster_file": "kunlun.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4242
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4243,
+      "source_name": "花无媸",
+      "source_domain": "昆仑",
+      "source_color": "绿武",
+      "roster_domain": "昆仑",
+      "name": "花无媸",
+      "aliases": [],
+      "template_key": "hero_ilrock_04243",
+      "roster_file": "kunlun.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4243
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4244,
+      "source_name": "梁文靖",
+      "source_domain": "昆仑",
+      "source_color": "绿色",
+      "roster_domain": "昆仑",
+      "name": "梁文靖",
+      "aliases": [
+        "淮安王"
+      ],
+      "template_key": "hero_ilrock_04244",
+      "roster_file": "kunlun.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4244
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4245,
+      "source_name": "萧玉翎",
+      "source_domain": "昆仑",
+      "source_color": "绿色",
+      "roster_domain": "昆仑",
+      "name": "萧玉翎",
+      "aliases": [],
+      "template_key": "hero_ilrock_04245",
+      "roster_file": "kunlun.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4245
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4279,
+      "source_name": "花晓霜",
+      "source_domain": "昆仑",
+      "source_color": "绿色",
+      "roster_domain": "昆仑",
+      "name": "花晓霜",
+      "aliases": [
+        "素心神医"
+      ],
+      "template_key": "hero_ilrock_04279",
+      "roster_file": "kunlun.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4279
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4574,
+      "source_name": "聂风",
+      "source_domain": "风云",
+      "source_color": "紫武",
+      "roster_domain": "风云",
+      "name": "聂风",
+      "aliases": [
+        "仁者聂风",
+        "小马",
+        "风中之神"
+      ],
+      "template_key": "hero_ilrock_04574",
+      "roster_file": "fengyun.yaml",
+      "rarity": "purple",
+      "archetype": "military",
+      "source_alias_ids": [
+        4574
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4575,
+      "source_name": "步惊云",
+      "source_domain": "风云",
+      "source_color": "紫武",
+      "roster_domain": "风云",
+      "name": "步惊云",
+      "aliases": [
+        "不哭死神",
+        "卓山",
+        "阿铁",
+        "霍惊觉"
+      ],
+      "template_key": "hero_ilrock_04575",
+      "roster_file": "fengyun.yaml",
+      "rarity": "purple",
+      "archetype": "military",
+      "source_alias_ids": [
+        4575
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4576,
+      "source_name": "无名",
+      "source_domain": "风云",
+      "source_color": "紫色",
+      "roster_domain": "风云",
+      "name": "韦英雄",
+      "aliases": [
+        "南无名",
+        "天剑",
+        "天剑无名",
+        "慕英名",
+        "无名",
+        "武林神话"
+      ],
+      "template_key": "hero_ilrock_04576",
+      "roster_file": "fengyun.yaml",
+      "rarity": "orange",
+      "archetype": "military",
+      "source_alias_ids": [
+        4576
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4577,
+      "source_name": "雄霸",
+      "source_domain": "风云",
+      "source_color": "紫文",
+      "roster_domain": "风云",
+      "name": "雄霸",
+      "aliases": [],
+      "template_key": "hero_ilrock_04577",
+      "roster_file": "fengyun.yaml",
+      "rarity": "purple",
+      "archetype": "military",
+      "source_alias_ids": [
+        4577
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4578,
+      "source_name": "断浪",
+      "source_domain": "风云",
+      "source_color": "蓝武",
+      "roster_domain": "风云",
+      "name": "断浪",
+      "aliases": [],
+      "template_key": "hero_ilrock_04578",
+      "roster_file": "fengyun.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4578
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4579,
+      "source_name": "破军",
+      "source_domain": "风云",
+      "source_color": "蓝武",
+      "roster_domain": "风云",
+      "name": "破军",
+      "aliases": [],
+      "template_key": "hero_ilrock_04579",
+      "roster_file": "fengyun.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4579
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4580,
+      "source_name": "绝无神",
+      "source_domain": "风云",
+      "source_color": "蓝武",
+      "roster_domain": "风云",
+      "name": "绝之介",
+      "aliases": [
+        "绝无神"
+      ],
+      "template_key": "hero_ilrock_04580",
+      "roster_file": "fengyun.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4580
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4581,
+      "source_name": "第二梦",
+      "source_domain": "风云",
+      "source_color": "蓝武",
+      "roster_domain": "风云",
+      "name": "第二梦",
+      "aliases": [],
+      "template_key": "hero_ilrock_04581",
+      "roster_file": "fengyun.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4581
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4583,
+      "source_name": "邪皇",
+      "source_domain": "风云",
+      "source_color": "蓝武",
+      "roster_domain": "风云",
+      "name": "第一邪皇",
+      "aliases": [
+        "邪皇"
+      ],
+      "template_key": "hero_ilrock_04583",
+      "roster_file": "fengyun.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4583
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4584,
+      "source_name": "刀皇",
+      "source_domain": "风云",
+      "source_color": "蓝武",
+      "roster_domain": "风云",
+      "name": "第二刀皇",
+      "aliases": [
+        "刀皇"
+      ],
+      "template_key": "hero_ilrock_04584",
+      "roster_file": "fengyun.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4584
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4585,
+      "source_name": "猪皇",
+      "source_domain": "风云",
+      "source_color": "蓝色",
+      "roster_domain": "风云",
+      "name": "第三猪皇",
+      "aliases": [
+        "猪皇"
+      ],
+      "template_key": "hero_ilrock_04585",
+      "roster_file": "fengyun.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4585
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4586,
+      "source_name": "拳道神",
+      "source_domain": "风云",
+      "source_color": "蓝武",
+      "roster_domain": "风云",
+      "name": "拳道神",
+      "aliases": [],
+      "template_key": "hero_ilrock_04586",
+      "roster_file": "fengyun.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4586
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4587,
+      "source_name": "剑圣",
+      "source_domain": "风云",
+      "source_color": "蓝武",
+      "roster_domain": "风云",
+      "name": "独孤剑",
+      "aliases": [
+        "剑圣",
+        "北剑圣"
+      ],
+      "template_key": "hero_ilrock_04587",
+      "roster_file": "fengyun.yaml",
+      "rarity": "purple",
+      "archetype": "military",
+      "source_alias_ids": [
+        4587
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4588,
+      "source_name": "剑晨",
+      "source_domain": "风云",
+      "source_color": "蓝武!",
+      "roster_domain": "风云",
+      "name": "剑晨",
+      "aliases": [],
+      "template_key": "hero_ilrock_04588",
+      "roster_file": "fengyun.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4588
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4589,
+      "source_name": "聂人王",
+      "source_domain": "风云",
+      "source_color": "蓝武",
+      "roster_domain": "风云",
+      "name": "聂人王",
+      "aliases": [
+        "北饮狂刀",
+        "老刀王"
+      ],
+      "template_key": "hero_ilrock_04589",
+      "roster_file": "fengyun.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4589
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4590,
+      "source_name": "段帅",
+      "source_domain": "风云",
+      "source_color": "蓝武",
+      "roster_domain": "风云",
+      "name": "断帅",
+      "aliases": [
+        "南麟剑首",
+        "段帅",
+        "老剑王"
+      ],
+      "template_key": "hero_ilrock_04590",
+      "roster_file": "fengyun.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4590
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4592,
+      "source_name": "泥菩萨",
+      "source_domain": "风云",
+      "source_color": "蓝文",
+      "roster_domain": "风云",
+      "name": "泥菩萨",
+      "aliases": [],
+      "template_key": "hero_ilrock_04592",
+      "roster_file": "fengyun.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4592
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4594,
+      "source_name": "文丑丑",
+      "source_domain": "风云",
+      "source_color": "绿色",
+      "roster_domain": "风云",
+      "name": "文丑丑",
+      "aliases": [],
+      "template_key": "hero_ilrock_04594",
+      "roster_file": "fengyun.yaml",
+      "rarity": "green",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4594
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4616,
+      "source_name": "独孤一方",
+      "source_domain": "风云",
+      "source_color": "绿色",
+      "roster_domain": "风云",
+      "name": "独孤一方",
+      "aliases": [],
+      "template_key": "hero_ilrock_04616",
+      "roster_file": "fengyun.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4616
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4621,
+      "source_name": "绝心",
+      "source_domain": "风云",
+      "source_color": "绿武",
+      "roster_domain": "风云",
+      "name": "绝心",
+      "aliases": [],
+      "template_key": "hero_ilrock_04621",
+      "roster_file": "fengyun.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4621
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4622,
+      "source_name": "霍步天",
+      "source_domain": "风云",
+      "source_color": "绿色",
+      "roster_domain": "风云",
+      "name": "霍步天",
+      "aliases": [],
+      "template_key": "hero_ilrock_04622",
+      "roster_file": "fengyun.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4622
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4629,
+      "source_name": "秦霜",
+      "source_domain": "风云",
+      "source_color": "绿武",
+      "roster_domain": "风云",
+      "name": "秦霜",
+      "aliases": [],
+      "template_key": "hero_ilrock_04629",
+      "roster_file": "fengyun.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4629
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4632,
+      "source_name": "孔慈",
+      "source_domain": "风云",
+      "source_color": "绿武",
+      "roster_domain": "风云",
+      "name": "孔慈",
+      "aliases": [],
+      "template_key": "hero_ilrock_04632",
+      "roster_file": "fengyun.yaml",
+      "rarity": "green",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4632
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4639,
+      "source_name": "颜盈",
+      "source_domain": "风云",
+      "source_color": "绿武",
+      "roster_domain": "风云",
+      "name": "颜盈",
+      "aliases": [],
+      "template_key": "hero_ilrock_04639",
+      "roster_file": "fengyun.yaml",
+      "rarity": "green",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4639
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4646,
+      "source_name": "独孤铭",
+      "source_domain": "风云",
+      "source_color": "绿色",
+      "roster_domain": "风云",
+      "name": "独孤鸣",
+      "aliases": [
+        "独孤铭"
+      ],
+      "template_key": "hero_ilrock_04646",
+      "roster_file": "fengyun.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4646
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4653,
+      "source_name": "幽弱",
+      "source_domain": "风云",
+      "source_color": "绿色",
+      "roster_domain": "风云",
+      "name": "幽若",
+      "aliases": [
+        "剑舞",
+        "幽弱"
+      ],
+      "template_key": "hero_ilrock_04653",
+      "roster_file": "fengyun.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4653
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4666,
+      "source_name": "于岳",
+      "source_domain": "风云",
+      "source_color": "绿色",
+      "roster_domain": "风云",
+      "name": "于岳",
+      "aliases": [
+        "于嶽",
+        "麒麟臂"
+      ],
+      "template_key": "hero_ilrock_04666",
+      "roster_file": "fengyun.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4666
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4667,
+      "source_name": "于楚楚",
+      "source_domain": "风云",
+      "source_color": "绿文",
+      "roster_domain": "风云",
+      "name": "于楚楚",
+      "aliases": [
+        "楚楚"
+      ],
+      "template_key": "hero_ilrock_04667",
+      "roster_file": "fengyun.yaml",
+      "rarity": "green",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4667
+      ],
+      "reference": "",
+      "references": []
+    },
+    {
+      "source_id": 4817,
+      "source_name": "公孙胜",
+      "source_domain": "水浒传",
+      "source_color": "蓝文",
+      "roster_domain": "水浒传",
+      "name": "公孙胜",
+      "aliases": [
+        "一清先生",
+        "一清道人",
+        "入云龙",
+        "公孙一清"
+      ],
+      "template_key": "hero_ilrock_04817",
+      "roster_file": "shuihu.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4817
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4818,
+      "source_name": "鲁智深",
+      "source_domain": "水浒传",
+      "source_color": "紫色",
+      "roster_domain": "水浒传",
+      "name": "鲁达",
+      "aliases": [
+        "智深",
+        "花和尚",
+        "鲁提辖",
+        "鲁智深"
+      ],
+      "template_key": "hero_ilrock_04818",
+      "roster_file": "shuihu.yaml",
+      "rarity": "purple",
+      "archetype": "military",
+      "source_alias_ids": [
+        4818
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4819,
+      "source_name": "武松",
+      "source_domain": "水浒传",
+      "source_color": "紫色",
+      "roster_domain": "水浒传",
+      "name": "武松",
+      "aliases": [
+        "武二郎",
+        "武行者",
+        "武都头",
+        "行者"
+      ],
+      "template_key": "hero_ilrock_04819",
+      "roster_file": "shuihu.yaml",
+      "rarity": "purple",
+      "archetype": "military",
+      "source_alias_ids": [
+        4819
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4820,
+      "source_name": "林冲",
+      "source_domain": "水浒传",
+      "source_color": "紫色",
+      "roster_domain": "水浒传",
+      "name": "林冲",
+      "aliases": [
+        "豹子头"
+      ],
+      "template_key": "hero_ilrock_04820",
+      "roster_file": "shuihu.yaml",
+      "rarity": "purple",
+      "archetype": "military",
+      "source_alias_ids": [
+        4820
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4821,
+      "source_name": "关胜",
+      "source_domain": "水浒传",
+      "source_color": "紫武",
+      "roster_domain": "水浒传",
+      "name": "关胜",
+      "aliases": [
+        "大刀"
+      ],
+      "template_key": "hero_ilrock_04821",
+      "roster_file": "shuihu.yaml",
+      "rarity": "purple",
+      "archetype": "military",
+      "source_alias_ids": [
+        4821
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4822,
+      "source_name": "吴用",
+      "source_domain": "水浒传",
+      "source_color": "蓝文",
+      "roster_domain": "水浒传",
+      "name": "吴用",
+      "aliases": [
+        "加亮先生",
+        "吴学究",
+        "学究",
+        "智多星"
+      ],
+      "template_key": "hero_ilrock_04822",
+      "roster_file": "shuihu.yaml",
+      "rarity": "purple",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4822
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4823,
+      "source_name": "卢俊义",
+      "source_domain": "水浒传",
+      "source_color": "蓝武",
+      "roster_domain": "水浒传",
+      "name": "卢俊义",
+      "aliases": [
+        "卢员外",
+        "玉麒麟"
+      ],
+      "template_key": "hero_ilrock_04823",
+      "roster_file": "shuihu.yaml",
+      "rarity": "purple",
+      "archetype": "military",
+      "source_alias_ids": [
+        4823
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4824,
+      "source_name": "呼延灼",
+      "source_domain": "水浒传",
+      "source_color": "蓝武",
+      "roster_domain": "水浒传",
+      "name": "呼延灼",
+      "aliases": [
+        "双鞭"
+      ],
+      "template_key": "hero_ilrock_04824",
+      "roster_file": "shuihu.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4824
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4825,
+      "source_name": "花荣",
+      "source_domain": "水浒传",
+      "source_color": "蓝武",
+      "roster_domain": "水浒传",
+      "name": "花荣",
+      "aliases": [
+        "小李广"
+      ],
+      "template_key": "hero_ilrock_04825",
+      "roster_file": "shuihu.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4825
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4826,
+      "source_name": "柴进",
+      "source_domain": "水浒传",
+      "source_color": "蓝武",
+      "roster_domain": "水浒传",
+      "name": "柴进",
+      "aliases": [
+        "小旋风",
+        "柴大官人"
+      ],
+      "template_key": "hero_ilrock_04826",
+      "roster_file": "shuihu.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4826
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4827,
+      "source_name": "李应",
+      "source_domain": "水浒传",
+      "source_color": "蓝武",
+      "roster_domain": "水浒传",
+      "name": "李应",
+      "aliases": [
+        "扑天雕"
+      ],
+      "template_key": "hero_ilrock_04827",
+      "roster_file": "shuihu.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4827
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4828,
+      "source_name": "朱仝",
+      "source_domain": "水浒传",
+      "source_color": "蓝武",
+      "roster_domain": "水浒传",
+      "name": "朱仝",
+      "aliases": [
+        "美髯公"
+      ],
+      "template_key": "hero_ilrock_04828",
+      "roster_file": "shuihu.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4828
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4829,
+      "source_name": "董平",
+      "source_domain": "水浒传",
+      "source_color": "蓝武",
+      "roster_domain": "水浒传",
+      "name": "董平",
+      "aliases": [
+        "双枪将"
+      ],
+      "template_key": "hero_ilrock_04829",
+      "roster_file": "shuihu.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4829
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4830,
+      "source_name": "张清",
+      "source_domain": "水浒传",
+      "source_color": "蓝武",
+      "roster_domain": "水浒传",
+      "name": "张清",
+      "aliases": [
+        "无羽箭",
+        "没羽箭",
+        "没羽箭张清"
+      ],
+      "template_key": "hero_ilrock_04830",
+      "roster_file": "shuihu.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4830
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4831,
+      "source_name": "杨志",
+      "source_domain": "水浒传",
+      "source_color": "蓝武",
+      "roster_domain": "水浒传",
+      "name": "杨志",
+      "aliases": [
+        "杨制使",
+        "青面兽"
+      ],
+      "template_key": "hero_ilrock_04831",
+      "roster_file": "shuihu.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4831
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4832,
+      "source_name": "徐宁",
+      "source_domain": "水浒传",
+      "source_color": "蓝武",
+      "roster_domain": "水浒传",
+      "name": "徐宁",
+      "aliases": [
+        "金枪手"
+      ],
+      "template_key": "hero_ilrock_04832",
+      "roster_file": "shuihu.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4832
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4833,
+      "source_name": "索超",
+      "source_domain": "水浒传",
+      "source_color": "蓝武",
+      "roster_domain": "水浒传",
+      "name": "索超",
+      "aliases": [
+        "急先锋"
+      ],
+      "template_key": "hero_ilrock_04833",
+      "roster_file": "shuihu.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4833
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4834,
+      "source_name": "戴宗",
+      "source_domain": "水浒传",
+      "source_color": "蓝武",
+      "roster_domain": "水浒传",
+      "name": "戴宗",
+      "aliases": [
+        "戴院长",
+        "神行太保"
+      ],
+      "template_key": "hero_ilrock_04834",
+      "roster_file": "shuihu.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4834
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4835,
+      "source_name": "刘唐",
+      "source_domain": "水浒传",
+      "source_color": "蓝武",
+      "roster_domain": "水浒传",
+      "name": "刘唐",
+      "aliases": [
+        "赤发鬼"
+      ],
+      "template_key": "hero_ilrock_04835",
+      "roster_file": "shuihu.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4835
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4836,
+      "source_name": "李逵",
+      "source_domain": "水浒传",
+      "source_color": "蓝色",
+      "roster_domain": "水浒传",
+      "name": "李逵",
+      "aliases": [
+        "李铁牛",
+        "铁牛",
+        "黑旋风"
+      ],
+      "template_key": "hero_ilrock_04836",
+      "roster_file": "shuihu.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4836
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4837,
+      "source_name": "史进",
+      "source_domain": "水浒传",
+      "source_color": "蓝武",
+      "roster_domain": "水浒传",
+      "name": "史进",
+      "aliases": [
+        "九纹龙",
+        "史大郎"
+      ],
+      "template_key": "hero_ilrock_04837",
+      "roster_file": "shuihu.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4837
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4838,
+      "source_name": "穆弘",
+      "source_domain": "水浒传",
+      "source_color": "绿武",
+      "roster_domain": "水浒传",
+      "name": "穆弘",
+      "aliases": [
+        "没遮拦"
+      ],
+      "template_key": "hero_ilrock_04838",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4838
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4839,
+      "source_name": "雷横",
+      "source_domain": "水浒传",
+      "source_color": "蓝色",
+      "roster_domain": "水浒传",
+      "name": "雷横",
+      "aliases": [
+        "插翅虎"
+      ],
+      "template_key": "hero_ilrock_04839",
+      "roster_file": "shuihu.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4839
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4840,
+      "source_name": "李俊",
+      "source_domain": "水浒传",
+      "source_color": "蓝武",
+      "roster_domain": "水浒传",
+      "name": "李俊",
+      "aliases": [
+        "混江龙"
+      ],
+      "template_key": "hero_ilrock_04840",
+      "roster_file": "shuihu.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4840
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4841,
+      "source_name": "阮小二",
+      "source_domain": "水浒传",
+      "source_color": "蓝武",
+      "roster_domain": "水浒传",
+      "name": "阮小二",
+      "aliases": [
+        "立地太岁"
+      ],
+      "template_key": "hero_ilrock_04841",
+      "roster_file": "shuihu.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4841
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4842,
+      "source_name": "张横",
+      "source_domain": "水浒传",
+      "source_color": "绿武",
+      "roster_domain": "水浒传",
+      "name": "张横",
+      "aliases": [
+        "船火儿"
+      ],
+      "template_key": "hero_ilrock_04842",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4842
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4843,
+      "source_name": "阮小五",
+      "source_domain": "水浒传",
+      "source_color": "蓝武",
+      "roster_domain": "水浒传",
+      "name": "阮小五",
+      "aliases": [
+        "短命二郎"
+      ],
+      "template_key": "hero_ilrock_04843",
+      "roster_file": "shuihu.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4843
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4844,
+      "source_name": "张顺",
+      "source_domain": "水浒传",
+      "source_color": "绿武",
+      "roster_domain": "水浒传",
+      "name": "张顺",
+      "aliases": [
+        "浪里白条",
+        "浪里白跳"
+      ],
+      "template_key": "hero_ilrock_04844",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4844
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4845,
+      "source_name": "阮小七",
+      "source_domain": "水浒传",
+      "source_color": "蓝武",
+      "roster_domain": "水浒传",
+      "name": "阮小七",
+      "aliases": [
+        "活阎罗"
+      ],
+      "template_key": "hero_ilrock_04845",
+      "roster_file": "shuihu.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4845
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4846,
+      "source_name": "杨雄",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "杨雄",
+      "aliases": [
+        "病关索"
+      ],
+      "template_key": "hero_ilrock_04846",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4846
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4847,
+      "source_name": "石秀",
+      "source_domain": "水浒传",
+      "source_color": "绿武",
+      "roster_domain": "水浒传",
+      "name": "石秀",
+      "aliases": [
+        "拼命三郎"
+      ],
+      "template_key": "hero_ilrock_04847",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4847
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4848,
+      "source_name": "解珍",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "解珍",
+      "aliases": [
+        "两头蛇"
+      ],
+      "template_key": "hero_ilrock_04848",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4848
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4849,
+      "source_name": "解宝",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "解宝",
+      "aliases": [
+        "双尾蝎"
+      ],
+      "template_key": "hero_ilrock_04849",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4849
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4850,
+      "source_name": "燕青",
+      "source_domain": "水浒传",
+      "source_color": "蓝武",
+      "roster_domain": "水浒传",
+      "name": "燕青",
+      "aliases": [
+        "小乙",
+        "浪子",
+        "燕小乙"
+      ],
+      "template_key": "hero_ilrock_04850",
+      "roster_file": "shuihu.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4850
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4851,
+      "source_name": "朱武",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "朱武",
+      "aliases": [
+        "神机军师"
+      ],
+      "template_key": "hero_ilrock_04851",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4851
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4852,
+      "source_name": "黄信",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "黄信",
+      "aliases": [
+        "镇三山"
+      ],
+      "template_key": "hero_ilrock_04852",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4852
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4853,
+      "source_name": "孙立",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "孙立",
+      "aliases": [
+        "病尉迟"
+      ],
+      "template_key": "hero_ilrock_04853",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4853
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4854,
+      "source_name": "宣赞",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "宣赞",
+      "aliases": [
+        "丑郡马"
+      ],
+      "template_key": "hero_ilrock_04854",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4854
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4855,
+      "source_name": "郝思文",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "郝思文",
+      "aliases": [
+        "井木犴"
+      ],
+      "template_key": "hero_ilrock_04855",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4855
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4856,
+      "source_name": "韩滔",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "韩滔",
+      "aliases": [
+        "百胜将"
+      ],
+      "template_key": "hero_ilrock_04856",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4856
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4858,
+      "source_name": "单廷桂",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "单廷珪",
+      "aliases": [
+        "单廷桂",
+        "圣水将"
+      ],
+      "template_key": "hero_ilrock_04858",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4858,
+        4926
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4859,
+      "source_name": "魏定国",
+      "source_domain": "水浒传",
+      "source_color": "绿武",
+      "roster_domain": "水浒传",
+      "name": "魏定国",
+      "aliases": [
+        "神火将"
+      ],
+      "template_key": "hero_ilrock_04859",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4859
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4860,
+      "source_name": "萧让",
+      "source_domain": "水浒传",
+      "source_color": "绿文",
+      "roster_domain": "水浒传",
+      "name": "萧让",
+      "aliases": [
+        "圣手书生"
+      ],
+      "template_key": "hero_ilrock_04860",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4860
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4861,
+      "source_name": "裴宣",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "裴宣",
+      "aliases": [
+        "铁面孔目"
+      ],
+      "template_key": "hero_ilrock_04861",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4861
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4862,
+      "source_name": "欧鹏",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "欧鹏",
+      "aliases": [
+        "摩云金翅"
+      ],
+      "template_key": "hero_ilrock_04862",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4862
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4863,
+      "source_name": "邓飞",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "邓飞",
+      "aliases": [
+        "火眼狻猊"
+      ],
+      "template_key": "hero_ilrock_04863",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4863
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4864,
+      "source_name": "燕顺",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "燕顺",
+      "aliases": [
+        "锦毛虎"
+      ],
+      "template_key": "hero_ilrock_04864",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4864
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4865,
+      "source_name": "凌振",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "凌振",
+      "aliases": [
+        "轰天雷"
+      ],
+      "template_key": "hero_ilrock_04865",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4865
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4866,
+      "source_name": "蒋敬",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "蒋敬",
+      "aliases": [
+        "神算子"
+      ],
+      "template_key": "hero_ilrock_04866",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4866
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4867,
+      "source_name": "吕方",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "吕方",
+      "aliases": [
+        "小温侯"
+      ],
+      "template_key": "hero_ilrock_04867",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4867
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4868,
+      "source_name": "郭盛",
+      "source_domain": "水浒传",
+      "source_color": "蓝色！",
+      "roster_domain": "水浒传",
+      "name": "郭盛",
+      "aliases": [
+        "赛仁贵"
+      ],
+      "template_key": "hero_ilrock_04868",
+      "roster_file": "shuihu.yaml",
+      "rarity": "blue",
+      "archetype": "military",
+      "source_alias_ids": [
+        4868
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4869,
+      "source_name": "安道全",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "安道全",
+      "aliases": [
+        "神医"
+      ],
+      "template_key": "hero_ilrock_04869",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4869
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4870,
+      "source_name": "皇甫端",
+      "source_domain": "水浒传",
+      "source_color": "绿文",
+      "roster_domain": "水浒传",
+      "name": "皇甫端",
+      "aliases": [
+        "紫髯伯"
+      ],
+      "template_key": "hero_ilrock_04870",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4870
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4871,
+      "source_name": "扈三娘",
+      "source_domain": "水浒传",
+      "source_color": "绿武",
+      "roster_domain": "水浒传",
+      "name": "扈三娘",
+      "aliases": [
+        "一丈青",
+        "扈三娘子"
+      ],
+      "template_key": "hero_ilrock_04871",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4871
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4872,
+      "source_name": "鲍旭",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "鲍旭",
+      "aliases": [
+        "丧门神"
+      ],
+      "template_key": "hero_ilrock_04872",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4872
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4873,
+      "source_name": "时迁",
+      "source_domain": "水浒传",
+      "source_color": "绿武",
+      "roster_domain": "水浒传",
+      "name": "时迁",
+      "aliases": [
+        "鼓上蚤"
+      ],
+      "template_key": "hero_ilrock_04873",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4873
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4874,
+      "source_name": "樊瑞",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "樊瑞",
+      "aliases": [
+        "混世魔王"
+      ],
+      "template_key": "hero_ilrock_04874",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4874
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4875,
+      "source_name": "孔明",
+      "source_domain": "水浒传",
+      "source_color": "绿武",
+      "roster_domain": "水浒传",
+      "name": "孔明",
+      "aliases": [
+        "毛头星"
+      ],
+      "template_key": "hero_ilrock_04875",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4875
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4876,
+      "source_name": "孔亮",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "孔亮",
+      "aliases": [
+        "独火星"
+      ],
+      "template_key": "hero_ilrock_04876",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4876
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4877,
+      "source_name": "项充",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "项充",
+      "aliases": [
+        "八臂哪吒",
+        "八臂哪咤",
+        "八臂那吒",
+        "八臂那咤"
+      ],
+      "template_key": "hero_ilrock_04877",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4877
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4878,
+      "source_name": "李衮",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "李衮",
+      "aliases": [
+        "飞天大圣"
+      ],
+      "template_key": "hero_ilrock_04878",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4878
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4879,
+      "source_name": "金大坚",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "金大坚",
+      "aliases": [
+        "玉臂匠"
+      ],
+      "template_key": "hero_ilrock_04879",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4879
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4880,
+      "source_name": "童威",
+      "source_domain": "水浒传",
+      "source_color": "绿武",
+      "roster_domain": "水浒传",
+      "name": "童威",
+      "aliases": [
+        "出洞蛟"
+      ],
+      "template_key": "hero_ilrock_04880",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4880
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4881,
+      "source_name": "童猛",
+      "source_domain": "水浒传",
+      "source_color": "绿武",
+      "roster_domain": "水浒传",
+      "name": "童猛",
+      "aliases": [
+        "翻江蜃"
+      ],
+      "template_key": "hero_ilrock_04881",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4881
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4882,
+      "source_name": "孟康",
+      "source_domain": "水浒传",
+      "source_color": "绿武",
+      "roster_domain": "水浒传",
+      "name": "孟康",
+      "aliases": [
+        "玉幡竿"
+      ],
+      "template_key": "hero_ilrock_04882",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4882
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4883,
+      "source_name": "侯健",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "侯健",
+      "aliases": [
+        "通臂猿"
+      ],
+      "template_key": "hero_ilrock_04883",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4883
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4884,
+      "source_name": "陈达",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "陈达",
+      "aliases": [
+        "跳涧虎"
+      ],
+      "template_key": "hero_ilrock_04884",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4884
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4885,
+      "source_name": "杨春",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "杨春",
+      "aliases": [
+        "白花蛇"
+      ],
+      "template_key": "hero_ilrock_04885",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4885
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4886,
+      "source_name": "郑天寿",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "郑天寿",
+      "aliases": [
+        "白面郎君"
+      ],
+      "template_key": "hero_ilrock_04886",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4886
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4887,
+      "source_name": "陶宗旺",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "陶宗旺",
+      "aliases": [
+        "九尾龟"
+      ],
+      "template_key": "hero_ilrock_04887",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4887
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4888,
+      "source_name": "宋清",
+      "source_domain": "水浒传",
+      "source_color": "绿文",
+      "roster_domain": "水浒传",
+      "name": "宋清",
+      "aliases": [
+        "铁扇子"
+      ],
+      "template_key": "hero_ilrock_04888",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4888
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4889,
+      "source_name": "乐和",
+      "source_domain": "水浒传",
+      "source_color": "绿文",
+      "roster_domain": "水浒传",
+      "name": "乐和",
+      "aliases": [
+        "铁叫子"
+      ],
+      "template_key": "hero_ilrock_04889",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "civil",
+      "source_alias_ids": [
+        4889
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4890,
+      "source_name": "龚旺",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "龚旺",
+      "aliases": [
+        "花项虎"
+      ],
+      "template_key": "hero_ilrock_04890",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4890
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4891,
+      "source_name": "丁得孙",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "丁得孙",
+      "aliases": [
+        "中箭虎"
+      ],
+      "template_key": "hero_ilrock_04891",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4891
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4892,
+      "source_name": "穆春",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "穆春",
+      "aliases": [
+        "小遮拦"
+      ],
+      "template_key": "hero_ilrock_04892",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4892
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4893,
+      "source_name": "曹正",
+      "source_domain": "水浒传",
+      "source_color": "绿武",
+      "roster_domain": "水浒传",
+      "name": "曹正",
+      "aliases": [
+        "操刀鬼"
+      ],
+      "template_key": "hero_ilrock_04893",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4893
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4894,
+      "source_name": "宋万",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "宋万",
+      "aliases": [
+        "云里金刚"
+      ],
+      "template_key": "hero_ilrock_04894",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4894
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 4895,
+      "source_name": "杜迁",
+      "source_domain": "水浒传",
+      "source_color": "绿色",
+      "roster_domain": "水浒传",
+      "name": "杜迁",
+      "aliases": [
+        "摸着天"
+      ],
+      "template_key": "hero_ilrock_04895",
+      "roster_file": "shuihu.yaml",
+      "rarity": "green",
+      "archetype": "military",
+      "source_alias_ids": [
+        4895
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 8659,
+      "source_name": "李延寿",
+      "source_domain": "唐朝",
+      "source_color": "绿文",
+      "roster_domain": "唐朝",
+      "name": "李延寿",
+      "aliases": [
+        "李遐龄"
+      ],
+      "template_key": "hist_ilrock_08659",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        8659
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《南史》《北史》及《旧唐书》史官相关记载。可靠日期未录。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 11683,
+      "source_name": "宋江",
+      "source_domain": "宋朝",
+      "source_color": "蓝武",
+      "roster_domain": "水浒传",
+      "name": "宋江",
+      "aliases": [
+        "公明",
+        "及时雨",
+        "呼保义",
+        "孝义黑三郎",
+        "宋三郎",
+        "宋公明",
+        "宋押司",
+        "黑三郎",
+        "黑宋江"
+      ],
+      "template_key": "hero_ilrock_11683",
+      "roster_file": "shuihu.yaml",
+      "rarity": "purple",
+      "archetype": "civil",
+      "source_alias_ids": [
+        11683
+      ],
+      "reference": "https://ctext.org/wiki.pl?chapter=128297&if=en",
+      "references": []
+    },
+    {
+      "source_id": 11710,
+      "source_name": "胡三省",
+      "source_domain": "宋朝",
+      "source_color": "绿色",
+      "roster_domain": "宋朝",
+      "name": "胡三省",
+      "aliases": [
+        "梅涧",
+        "胡景参",
+        "胡梅涧",
+        "胡满孙",
+        "胡身之"
+      ],
+      "template_key": "hist_ilrock_11710",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        11710
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《资治通鉴音注》。1230—1302 常见记载，本轮未独立原始资料验证。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 11805,
+      "source_name": "李诫",
+      "source_domain": "宋朝",
+      "source_color": "绿色",
+      "roster_domain": "宋朝",
+      "name": "李诫",
+      "aliases": [
+        "李明仲"
+      ],
+      "template_key": "hist_ilrock_11805",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "purple",
+      "archetype": "civil",
+      "source_alias_ids": [
+        11805
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "普林斯顿大学：营造法式研究",
+          "url": "https://eap.princeton.edu/sites/g/files/toruqf1436/files/media/haycollaborative.pdf",
+          "checked": true
+        },
+        {
+          "title": "普林斯顿大学网站研究文章记载1065—1110、《营造法式》1103完成。其他来源出生年份存在1060～1065的差异，建议写约1065—1110。https://eap.princeton.edu/sites/g/files/toruqf1436/files/media/haycollaborative.pdf",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 11840,
+      "source_name": "郑樵",
+      "source_domain": "宋朝",
+      "source_color": "绿色",
+      "roster_domain": "宋朝",
+      "name": "郑樵",
+      "aliases": [
+        "夹漈",
+        "夹漈先生",
+        "郑渔仲"
+      ],
+      "template_key": "hist_ilrock_11840",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "purple",
+      "archetype": "civil",
+      "source_alias_ids": [
+        11840
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《通志》《夹漈遗稿》及《宋史》本传。1104—1162 常见记载，本轮未独立原始资料验证。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27653,
+      "source_name": "刘完素",
+      "source_domain": "医生",
+      "source_color": "蓝文",
+      "roster_domain": "医生",
+      "name": "刘完素",
+      "aliases": [
+        "刘守真",
+        "刘河间",
+        "守真子",
+        "通玄处士"
+      ],
+      "template_key": "hist_ilrock_27653",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "purple",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27653
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "安徽中医药大学：金元四大家",
+          "url": "https://gjjk.ahtcm.edu.cn/info/3640/3470.htm",
+          "checked": true
+        },
+        {
+          "title": "《素问玄机原病式》《宣明论方》。出生有不同说法，候选已写“约1120年”。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27654,
+      "source_name": "张从正",
+      "source_domain": "医生",
+      "source_color": "蓝文!",
+      "roster_domain": "医生",
+      "name": "张从正",
+      "aliases": [
+        "张子和",
+        "戴人"
+      ],
+      "template_key": "hist_ilrock_27654",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "purple",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27654,
+        27704
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "安徽中医药大学：金元四大家",
+          "url": "https://gjjk.ahtcm.edu.cn/info/3640/3470.htm",
+          "checked": true
+        },
+        {
+          "title": "医药信息平台：张从正",
+          "url": "https://www.dayi.org.cn/ancient_physicians/1122942",
+          "checked": true
+        },
+        {
+          "title": "医药信息平台记载字子和、1156—1228。https://www.dayi.org.cn/ancient_physicians/1122942",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27655,
+      "source_name": "李杲",
+      "source_domain": "医生",
+      "source_color": "蓝文",
+      "roster_domain": "医生",
+      "name": "李杲",
+      "aliases": [
+        "李东垣",
+        "李明之"
+      ],
+      "template_key": "hist_ilrock_27655",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "purple",
+      "archetype": "civil",
+      "source_alias_ids": [
+        14226,
+        27655
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "安徽中医药大学：金元四大家",
+          "url": "https://gjjk.ahtcm.edu.cn/info/3640/3470.htm",
+          "checked": true
+        },
+        {
+          "title": "《脾胃论》《内外伤辨惑论》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27656,
+      "source_name": "朱震亨",
+      "source_domain": "医生",
+      "source_color": "蓝文",
+      "roster_domain": "医生",
+      "name": "朱震亨",
+      "aliases": [
+        "朱丹溪"
+      ],
+      "template_key": "hist_ilrock_27656",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "purple",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27656
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "安徽中医药大学：金元四大家",
+          "url": "https://gjjk.ahtcm.edu.cn/info/3640/3470.htm",
+          "checked": true
+        },
+        {
+          "title": "《格致余论》《局方发挥》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27657,
+      "source_name": "张志聪",
+      "source_domain": "医生",
+      "source_color": "蓝文",
+      "roster_domain": "医生",
+      "name": "张志聪",
+      "aliases": [
+        "张隐庵",
+        "隐庵"
+      ],
+      "template_key": "hist_ilrock_27657",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27657
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《黄帝内经素问集注》《黄帝内经灵枢集注》《侣山堂类辩》。生卒二手资料有不同记载，本轮已删除年份。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27658,
+      "source_name": "余霖",
+      "source_domain": "医生",
+      "source_color": "绿文",
+      "roster_domain": "医生",
+      "name": "余霖",
+      "aliases": [
+        "余师愚",
+        "师愚"
+      ],
+      "template_key": "hist_ilrock_27658",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27658
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《疫疹一得》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27659,
+      "source_name": "孙一奎",
+      "source_domain": "医生",
+      "source_color": "蓝文",
+      "roster_domain": "医生",
+      "name": "孙一奎",
+      "aliases": [
+        "孙东宿",
+        "孙文垣",
+        "生生子"
+      ],
+      "template_key": "hist_ilrock_27659",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27659
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "医砭名医录：孙一奎",
+          "url": "https://yibian.hopto.org/tw/db/?dno=136",
+          "checked": true
+        },
+        {
+          "title": "名医资料记载1522—1619、字文垣、号东宿，著《赤水玄珠》。二手资料。https://yibian.hopto.org/tw/db/?dno=136",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27660,
+      "source_name": "滑寿",
+      "source_domain": "医生",
+      "source_color": "绿文",
+      "roster_domain": "医生",
+      "name": "滑寿",
+      "aliases": [
+        "撄宁生",
+        "滑伯仁"
+      ],
+      "template_key": "hist_ilrock_27660",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "purple",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27660
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "北京旅游转载中国中医药报：滑寿",
+          "url": "https://www.visitbeijing.com.cn/article/47Qku3L54xk",
+          "checked": true
+        },
+        {
+          "title": "北京旅游网站转载《中国中医药报》资料，记载约1304—1386、字伯仁、号撄宁生。https://www.visitbeijing.com.cn/article/47Qku3L54xk",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27663,
+      "source_name": "朱肱",
+      "source_domain": "医生",
+      "source_color": "绿文",
+      "roster_domain": "医生",
+      "name": "朱肱",
+      "aliases": [
+        "大隐翁",
+        "无求子",
+        "朱奉议",
+        "朱翼中"
+      ],
+      "template_key": "hist_ilrock_27663",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27663
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《类证活人书》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27666,
+      "source_name": "曾懿",
+      "source_domain": "医生",
+      "source_color": "绿文",
+      "roster_domain": "医生",
+      "name": "曾懿",
+      "aliases": [
+        "华阳女士",
+        "曾伯渊",
+        "曾朗秋"
+      ],
+      "template_key": "hist_ilrock_27666",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27666
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "香港浸会大学论文",
+          "url": "https://scholars.hkbu.edu.hk/files/55006077/OA-0433.pdf",
+          "checked": true
+        },
+        {
+          "title": "中国作家网：曾懿",
+          "url": "https://www.chinawriter.com.cn/n1/2022/0318/c419926-32377891.html",
+          "checked": true
+        },
+        {
+          "title": "香港浸会大学论文提及字伯渊、又名朗秋、相关著述，1852—1927；其他二手资料有1853，候选未写年份。https://scholars.hkbu.edu.hk/files/55006077/OA-0433.pdf",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27668,
+      "source_name": "吴谦",
+      "source_domain": "医生",
+      "source_color": "绿文",
+      "roster_domain": "医生",
+      "name": "吴谦",
+      "aliases": [
+        "吴六吉"
+      ],
+      "template_key": "hist_ilrock_27668",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27668
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "国立国会图书馆：医宗金鉴书目",
+          "url": "https://ndlsearch.ndl.go.jp/books/R100000002-IaS199606881",
+          "checked": true
+        },
+        {
+          "title": "《医宗金鉴》国立国会图书馆书目确认吴谦等纂。https://ndlsearch.ndl.go.jp/books/R100000002-IaS199606881",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27669,
+      "source_name": "王惟一",
+      "source_domain": "医生",
+      "source_color": "绿文",
+      "roster_domain": "医生",
+      "name": "王惟一",
+      "aliases": [
+        "王唯一",
+        "王惟德"
+      ],
+      "template_key": "hist_ilrock_27669",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "purple",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27669
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "维基百科：王惟一及原书文献引用",
+          "url": "https://zh.wikipedia.org/wiki/王惟一_(医学家)",
+          "checked": true
+        },
+        {
+          "title": "《铜人腧穴针灸图经》及夏竦《新铸铜人腧穴针灸图经序》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27676,
+      "source_name": "郭玉",
+      "source_domain": "医生",
+      "source_color": "绿色",
+      "roster_domain": "医生",
+      "name": "郭玉",
+      "aliases": [],
+      "template_key": "hist_ilrock_27676",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27676
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《后汉书》方术列传下郭玉传。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27690,
+      "source_name": "唐慎微",
+      "source_domain": "医生",
+      "source_color": "绿文",
+      "roster_domain": "医生",
+      "name": "唐慎微",
+      "aliases": [
+        "唐审元"
+      ],
+      "template_key": "hist_ilrock_27690",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "purple",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27690
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《经史证类备急本草》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27693,
+      "source_name": "许叔微",
+      "source_domain": "医生",
+      "source_color": "绿文",
+      "roster_domain": "医生",
+      "name": "许叔微",
+      "aliases": [
+        "许知可"
+      ],
+      "template_key": "hist_ilrock_27693",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27693
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《普济本事方》《伤寒九十论》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27694,
+      "source_name": "成无己",
+      "source_domain": "医生",
+      "source_color": "绿文",
+      "roster_domain": "医生",
+      "name": "成无己",
+      "aliases": [],
+      "template_key": "hist_ilrock_27694",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "purple",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27694
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《注解伤寒论》《伤寒明理论》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27695,
+      "source_name": "王履",
+      "source_domain": "医生",
+      "source_color": "绿色",
+      "roster_domain": "医生",
+      "name": "王履",
+      "aliases": [
+        "抱独老人",
+        "王安道",
+        "畸叟"
+      ],
+      "template_key": "hist_ilrock_27695",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27695
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《医经溯洄集》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27697,
+      "source_name": "危亦林",
+      "source_domain": "医生",
+      "source_color": "绿文",
+      "roster_domain": "医生",
+      "name": "危亦林",
+      "aliases": [
+        "危达斋"
+      ],
+      "template_key": "hist_ilrock_27697",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27697
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《世医得效方》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27698,
+      "source_name": "忽思慧",
+      "source_domain": "医生",
+      "source_color": "绿色",
+      "roster_domain": "医生",
+      "name": "忽思慧",
+      "aliases": [
+        "和斯辉"
+      ],
+      "template_key": "hist_ilrock_27698",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27698
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《饮膳正要》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27699,
+      "source_name": "王好古",
+      "source_domain": "医生",
+      "source_color": "蓝文",
+      "roster_domain": "医生",
+      "name": "王好古",
+      "aliases": [
+        "海藏老人",
+        "王海藏",
+        "王进之"
+      ],
+      "template_key": "hist_ilrock_27699",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        6281,
+        27699
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《汤液本草》《阴证略例》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27700,
+      "source_name": "罗天益",
+      "source_domain": "医生",
+      "source_color": "绿色",
+      "roster_domain": "医生",
+      "name": "罗天益",
+      "aliases": [
+        "罗谦甫"
+      ],
+      "template_key": "hist_ilrock_27700",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27700
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《卫生宝鉴》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27702,
+      "source_name": "张元素",
+      "source_domain": "医生",
+      "source_color": "绿文",
+      "roster_domain": "医生",
+      "name": "张元素",
+      "aliases": [
+        "张洁古"
+      ],
+      "template_key": "hist_ilrock_27702",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "purple",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27702
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《医学启源》、易水学派相关史料。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27703,
+      "source_name": "陈自明",
+      "source_domain": "医生",
+      "source_color": "绿文",
+      "roster_domain": "医生",
+      "name": "陈自明",
+      "aliases": [
+        "陈良甫"
+      ],
+      "template_key": "hist_ilrock_27703",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27703
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《妇人大全良方》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27706,
+      "source_name": "薛己",
+      "source_domain": "医生",
+      "source_color": "绿文",
+      "roster_domain": "医生",
+      "name": "薛己",
+      "aliases": [
+        "新甫",
+        "立斋",
+        "薛新甫",
+        "薛立斋"
+      ],
+      "template_key": "hist_ilrock_27706",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27706
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《内科摘要》《外科发挥》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27708,
+      "source_name": "高武",
+      "source_domain": "医生",
+      "source_color": "绿色",
+      "roster_domain": "医生",
+      "name": "高武",
+      "aliases": [
+        "高梅孤"
+      ],
+      "template_key": "hist_ilrock_27708",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27708
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《针灸聚英》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27711,
+      "source_name": "方有执",
+      "source_domain": "医生",
+      "source_color": "绿色",
+      "roster_domain": "医生",
+      "name": "方有执",
+      "aliases": [
+        "九龙山人",
+        "方中行"
+      ],
+      "template_key": "hist_ilrock_27711",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27711
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《伤寒论条辨》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27714,
+      "source_name": "吴昆",
+      "source_domain": "医生",
+      "source_color": "绿色",
+      "roster_domain": "医生",
+      "name": "吴昆",
+      "aliases": [
+        "参黄子",
+        "参黄生",
+        "吴山甫",
+        "吴鹤皋",
+        "山甫",
+        "鹤皋山人"
+      ],
+      "template_key": "hist_ilrock_27714",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27714
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《医方考》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27717,
+      "source_name": "尤怡",
+      "source_domain": "医生",
+      "source_color": "绿色",
+      "roster_domain": "医生",
+      "name": "尤怡",
+      "aliases": [
+        "尤在泾"
+      ],
+      "template_key": "hist_ilrock_27717",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27717
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《金匮要略心典》《伤寒贯珠集》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27718,
+      "source_name": "薛雪",
+      "source_domain": "医生",
+      "source_color": "绿文",
+      "roster_domain": "医生",
+      "name": "薛雪",
+      "aliases": [
+        "薛生白"
+      ],
+      "template_key": "hist_ilrock_27718",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27718
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《湿热病篇》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27719,
+      "source_name": "徐大椿",
+      "source_domain": "医生",
+      "source_color": "紫文",
+      "roster_domain": "医生",
+      "name": "徐大椿",
+      "aliases": [
+        "徐灵胎",
+        "洄溪老人",
+        "灵胎"
+      ],
+      "template_key": "hist_ilrock_27719",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27719
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《医学源流论》《兰台轨范》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27723,
+      "source_name": "施今墨",
+      "source_domain": "医生",
+      "source_color": "绿文",
+      "roster_domain": "医生",
+      "name": "施毓黔",
+      "aliases": [
+        "施今墨",
+        "施奖生"
+      ],
+      "template_key": "hist_ilrock_27723",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27723
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "北京中医药大学博物馆：施今墨原名施毓黔1881—1969",
+          "url": "https://bowuguan.bucm.edu.cn/kpzl/ysmt/10962.htm",
+          "checked": true
+        },
+        {
+          "title": "中国大百科全书：施今墨原名毓黔",
+          "url": "https://www.zgbk.com/ecph/words?ID=77294&SiteID=1&Type=bkzyb",
+          "checked": true
+        },
+        {
+          "title": "北京中医药大学中医药博物馆人物资料。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27724,
+      "source_name": "唐宗海",
+      "source_domain": "医生",
+      "source_color": "绿文",
+      "roster_domain": "医生",
+      "name": "唐宗海",
+      "aliases": [
+        "唐容川",
+        "容川"
+      ],
+      "template_key": "hist_ilrock_27724",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27724
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "南京中医药大学学报：唐宗海1846—1897字容川",
+          "url": "https://xb.njucm.edu.cn/cn/article/pdf/preview/10.14148/j.issn.1672-0482.2021.0352.pdf",
+          "checked": true
+        },
+        {
+          "title": "南京中医药大学学报论文记载1846—1897、字容川、血证论及中西汇通。https://xb.njucm.edu.cn/cn/article/pdf/preview/10.14148/j.issn.1672-0482.2021.0352.pdf",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27727,
+      "source_name": "王士雄",
+      "source_domain": "医生",
+      "source_color": "绿色",
+      "roster_domain": "医生",
+      "name": "王士雄",
+      "aliases": [
+        "梦隐",
+        "潜斋",
+        "王孟英",
+        "王梦隐"
+      ],
+      "template_key": "hist_ilrock_27727",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27727
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《温热经纬》《随息居重订霍乱论》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27728,
+      "source_name": "喻昌",
+      "source_domain": "医生",
+      "source_color": "绿色",
+      "roster_domain": "医生",
+      "name": "喻昌",
+      "aliases": [
+        "喻嘉言",
+        "西昌老人"
+      ],
+      "template_key": "hist_ilrock_27728",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27728
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《医门法律》《尚论篇》《寓意草》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27729,
+      "source_name": "张璐",
+      "source_domain": "医生",
+      "source_color": "绿文",
+      "roster_domain": "医生",
+      "name": "张璐",
+      "aliases": [
+        "张路玉",
+        "石顽",
+        "石顽老人"
+      ],
+      "template_key": "hist_ilrock_27729",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27729
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《张氏医通》《本经逢原》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    },
+    {
+      "source_id": 27732,
+      "source_name": "赵献可",
+      "source_domain": "医生",
+      "source_color": "绿色",
+      "roster_domain": "医生",
+      "name": "赵献可",
+      "aliases": [
+        "赵养葵"
+      ],
+      "template_key": "hist_ilrock_27732",
+      "roster_file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "archetype": "civil",
+      "source_alias_ids": [
+        27732
+      ],
+      "reference": "",
+      "references": [
+        {
+          "title": "《医贯》。",
+          "checked": false,
+          "note": "史籍／著作追溯线索；本轮未逐页查阅原书，见 /tmp/guest_history_sources.md"
+        }
+      ]
+    }
+  ],
+  "excluded_examples": [
+    {
+      "source_id": 4914,
+      "source_name": "张青",
+      "existing_template_key": "task_shizipo_zhang_qing",
+      "reason": "现有任务专用模板已收录十字坡菜园子张青，不因模板为任务专用而新增同一人物。"
+    },
+    {
+      "source_id": 4915,
+      "source_name": "孙二娘",
+      "existing_template_key": "task_shizipo_sun_erniang",
+      "reason": "现有任务专用模板已收录十字坡母夜叉孙二娘，不新增普通模板。"
+    },
+    {
+      "source_id": 27651,
+      "source_name": "杨继业",
+      "existing_template_key": "hist_songliaojinyuan_0059",
+      "reason": "杨继业即杨业，现有模板已收录杨家将始祖。"
+    },
+    {
+      "source_id": 27626,
+      "source_name": "萧燕燕",
+      "existing_template_key": "hist_songliaojinyuan_0093",
+      "reason": "萧燕燕即萧绰/萧太后，现有简介明确杨家将对手身份。"
+    },
+    {
+      "source_id": 27644,
+      "source_name": "潘仁美",
+      "existing_template_key": "hist_songliaojinyuan_0180",
+      "reason": "小说潘仁美的历史原型为潘美，按用户要求排除同一原型另起名字。"
+    },
+    {
+      "source_id": 8490,
+      "source_name": "苏定芳",
+      "existing_template_key": "hist_suitang_0176_sudingfang",
+      "reason": "源名苏定芳是苏定方的异写，已有苏定方模板。"
+    },
+    {
+      "source_id": 8480,
+      "source_name": "徐世绩",
+      "existing_template_key": "hist_suitang_0023_liji",
+      "reason": "徐世绩/徐世勣为李勣原名异写，现有李勣简介明确原名徐世勣及赐姓李。"
+    },
+    {
+      "source_id": 8500,
+      "source_name": "高颖",
+      "existing_template_key": "hist_sljnbc_0034",
+      "reason": "源名高颖对应高颎，现有隋朝宰相高颎模板。"
+    },
+    {
+      "source_id": 8534,
+      "source_name": "来护尔",
+      "existing_template_key": "hist_suitang_0152_laihuer",
+      "reason": "源名来护尔对应来护儿，现有隋朝将领来护儿模板。"
+    },
+    {
+      "source_id": 1972,
+      "source_name": "陈近南",
+      "domain": "金庸",
+      "existing_template_key": "hero_chen_yonghua",
+      "existing_name": "陈永华",
+      "reason": "源姓名为“陈永华”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 1988,
+      "source_name": "洪教主",
+      "domain": "金庸",
+      "existing_template_key": "hero_hong_antong",
+      "existing_name": "洪安通",
+      "reason": "源姓名为“洪安通”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 2077,
+      "source_name": "温青青",
+      "domain": "金庸",
+      "existing_template_key": "hero_jinyong_0189",
+      "existing_name": "夏青青",
+      "reason": "源姓名为“夏青青”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 2080,
+      "source_name": "阿九",
+      "domain": "金庸",
+      "existing_template_key": "hero_zhu_chuo",
+      "existing_name": "朱媺娖",
+      "reason": "源姓名为“朱媺娖”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 2295,
+      "source_name": "欧阳峰",
+      "domain": "金庸",
+      "existing_template_key": "hero_ouyang_feng",
+      "existing_name": "欧阳锋",
+      "reason": "源姓名为“欧阳锋”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 2297,
+      "source_name": "王重阳",
+      "domain": "金庸",
+      "existing_template_key": "hero_wang_chongyang",
+      "existing_name": "王喆",
+      "reason": "源姓名为“王喆”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 2299,
+      "source_name": "洪七公",
+      "domain": "金庸",
+      "existing_template_key": "hero_hong_qi",
+      "existing_name": "洪七",
+      "reason": "源姓名为“洪七”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 2301,
+      "source_name": "一灯大师",
+      "domain": "金庸",
+      "existing_template_key": "hero_duan_zhixing",
+      "existing_name": "段智兴",
+      "reason": "源姓名为“段智兴”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 2585,
+      "source_name": "无名老僧",
+      "domain": "金庸",
+      "existing_template_key": "hero_sao_di_seng",
+      "existing_name": "扫地僧",
+      "reason": "源姓名为“扫地僧”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 2586,
+      "source_name": "萧峰",
+      "domain": "金庸",
+      "existing_template_key": "hero_xiao_feng",
+      "existing_name": "乔峰",
+      "reason": "源姓名为“乔峰”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 2968,
+      "source_name": "圆真",
+      "domain": "金庸",
+      "existing_template_key": "hero_cheng_kun",
+      "existing_name": "成昆",
+      "reason": "源姓名为“成昆”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 3003,
+      "source_name": "金花婆婆",
+      "domain": "金庸",
+      "existing_template_key": "hero_dai_qisi",
+      "existing_name": "黛绮丝",
+      "reason": "源姓名为“黛绮丝”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 3150,
+      "source_name": "天机老人",
+      "domain": "古龙",
+      "existing_template_key": "hero_tianji_laoren",
+      "existing_name": "孙白发",
+      "reason": "源姓名为“孙白发”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 3197,
+      "source_name": "李琦",
+      "domain": "古龙",
+      "existing_template_key": "hero_shi_guanyin",
+      "existing_name": "石观音",
+      "reason": "源姓名为“石观音”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 3357,
+      "source_name": "月奴",
+      "domain": "古龙",
+      "existing_template_key": "hero_hua_yuenu",
+      "existing_name": "花月奴",
+      "reason": "源姓名为“花月奴”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 3443,
+      "source_name": "西门吹血",
+      "domain": "古龙",
+      "existing_template_key": "hero_ximen_chuixue",
+      "existing_name": "西门吹雪",
+      "reason": "源姓名为“西门吹雪”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 3862,
+      "source_name": "祝玉研",
+      "domain": "黄易",
+      "existing_template_key": "hero_zhu_yuzhen",
+      "existing_name": "祝玉妍",
+      "reason": "源姓名为“祝玉妍”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 3864,
+      "source_name": "绾绾",
+      "domain": "黄易",
+      "existing_template_key": "hero_wan_wan",
+      "existing_name": "婠婠",
+      "reason": "源姓名为“婠婠”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 25367,
+      "source_name": "诸葛神候",
+      "domain": "温瑞安",
+      "existing_template_key": "hero_zhuge_zhengwo",
+      "existing_name": "诸葛正我",
+      "reason": "源姓名为“诸葛正我”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 25375,
+      "source_name": "铁游夏",
+      "domain": "温瑞安",
+      "existing_template_key": "hero_tieshou",
+      "existing_name": "铁手",
+      "reason": "源姓名为“铁手”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 25376,
+      "source_name": "崔略商",
+      "domain": "温瑞安",
+      "existing_template_key": "hero_zhuiming",
+      "existing_name": "追命",
+      "reason": "源姓名为“追命”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 25378,
+      "source_name": "冷凌弃",
+      "domain": "温瑞安",
+      "existing_template_key": "hero_lengxue",
+      "existing_name": "冷血",
+      "reason": "源姓名为“冷血”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 25379,
+      "source_name": "成崖余",
+      "domain": "温瑞安",
+      "existing_template_key": "hero_wuqing",
+      "existing_name": "无情",
+      "reason": "源姓名为“无情”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 25380,
+      "source_name": "盛崖余",
+      "domain": "温瑞安",
+      "existing_template_key": "hero_wuqing",
+      "existing_name": "无情",
+      "reason": "源姓名为“无情”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 25381,
+      "source_name": "诸葛小花",
+      "domain": "温瑞安",
+      "existing_template_key": "hero_zhuge_zhengwo",
+      "existing_name": "诸葛正我",
+      "reason": "源姓名为“诸葛正我”的别名、本名、称号或误写，已有同一人物模板；基于现有名字和简介核对。"
+    },
+    {
+      "source_id": 1426,
+      "source_name": "介子推",
+      "existing_template_key": "hist_xianqin_0140",
+      "reason": "与现有介之推为同一人（本名／别名／常见误字）；现有文件data/guests/history_xianqin_03.yaml。"
+    },
+    {
+      "source_id": 11863,
+      "source_name": "苏东坡",
+      "existing_template_key": "hist_songliaojinyuan_0010",
+      "reason": "与现有苏轼为同一人（本名／别名／常见误字）；现有文件data/guests/history_songliaojinyuan_01.yaml。"
+    },
+    {
+      "source_id": 21352,
+      "source_name": "陆放翁",
+      "existing_template_key": "hist_songliaojinyuan_0077",
+      "reason": "与现有陆游为同一人（本名／别名／常见误字）；现有文件data/guests/history_songliaojinyuan_02.yaml。"
+    },
+    {
+      "source_id": 21412,
+      "source_name": "陶潜",
+      "existing_template_key": "hero_tao_yuanming",
+      "reason": "与现有陶渊明为同一人（本名／别名／常见误字）；现有文件data/guests/hermits.yaml。"
+    },
+    {
+      "source_id": 21429,
+      "source_name": "屈平",
+      "existing_template_key": "hist_xianqin_0017",
+      "reason": "与现有屈原为同一人（本名／别名／常见误字）；现有文件data/guests/history_xianqin_01.yaml。"
+    },
+    {
+      "source_id": 21594,
+      "source_name": "吴梅村",
+      "existing_template_key": "hist_mingqing_0284",
+      "reason": "与现有吴伟业为同一人（本名／别名／常见误字）；现有文件data/guests/history_mingqing_07.yaml。"
+    },
+    {
+      "source_id": 27712,
+      "source_name": "杨济时",
+      "existing_template_key": "hist_mingqing_0110",
+      "reason": "与现有杨继洲为同一人（本名／别名／常见误字）；现有文件data/guests/history_mingqing_04.yaml。"
+    },
+    {
+      "source_id": 3198,
+      "source_name": "水母阴姬",
+      "existing_template_key": "hero_yin_ji",
+      "reason": "水母为称号，阴姬为姓名；水母阴姬与已有阴姬同属古龙楚留香系列神水宫宫主，不能另建人物。"
+    }
+  ],
+  "contextual_aliases": [
+    {
+      "selected_template_key": "hero_ilrock_04574",
+      "name": "聂风",
+      "alias": "小马",
+      "scope": "风云凤溪村隐居时期",
+      "existing_different_person_key": "hero_xiao_ma",
+      "existing_source": "古龙《愤怒的小马》",
+      "reason": "同名异人，按作品和身份区分，不将古龙小马误认作聂风。",
+      "reference": "https://zh.wikipedia.org/wiki/風雲角色列表"
+    },
+    {
+      "selected_template_key": "hero_ilrock_03246",
+      "name": "柳无眉",
+      "alias": "李夫人",
+      "scope": "古龙楚留香系列，李玉函之妻",
+      "existing_different_person_key": "hist_qinhan_0167",
+      "existing_source": "西汉汉武帝宠妃、李延年之妹",
+      "reason": "因不同丈夫而来的夫人称呼；亲属、时代和作品不同，不是同一人物。",
+      "reference": "https://zh.wikipedia.org/wiki/孝武李夫人"
+    }
+  ],
+  "identity_review_notes": [
+    "只新增200名人物，不另建已有门客的本名、别名、改名或升阶版本。",
+    "本名不详的武侠人物采用通称或法号，简介明确说明。",
+    "宋江原表领域为宋朝，本批采用《水浒传》人物设定，仅建一个身份模板，不同时另建历史原型。",
+    "孔明（毛头星）不是诸葛亮；杨雄（病关索）不是扬雄或隋朝杨雄，共享名字或称号须结合出处判定。",
+    "资料颜色为参考；按本项目综合影响与能力分级，未将源表未知人物批量抬高稀有度。",
+    "称号拼接也检查姓名包含关系：水母阴姬对应已有阴姬，已排除并补入诸葛刚；其它字符包含关系逐项记录不同人物证据。",
+    "本轮全面复审规范方夜雨→方夜羽、绝无神→原名绝之介，保留源姓名作为同一人物异写或改名；诸葛刚交锋对象改为郭嵩阳。模板编号保持不变。",
+    "全面复审逐人保留477个身份检索名称；聂风的小马与柳无眉的李夫人明确保留别名并记录不同人物证据，不再通过省略真实别名绕过碰撞。",
+    "江别鹤规范为原名江琴，原显示名保留为同一身份别名；模板key不变。"
+  ],
+  "reference_links": [
+    {
+      "title": "水浒传原文",
+      "url": "https://ctext.org/wiki.pl?chapter=128297&if=en"
+    },
+    {
+      "title": "风云角色列表",
+      "url": "https://zh.wikipedia.org/wiki/風雲角色列表"
+    },
+    {
+      "title": "昆仑小说人物",
+      "url": "https://zh.wikipedia.org/wiki/昆仑_(小说)"
+    },
+    {
+      "title": "大唐双龙传",
+      "url": "https://zh.wikipedia.org/wiki/大唐雙龍傳"
+    },
+    {
+      "title": "无名本名（授权游戏资料）",
+      "url": "https://www.9game.cn/fy/424781.html"
+    },
+    {
+      "title": "施今墨／施毓黔（北京中医药大学博物馆）",
+      "url": "https://bowuguan.bucm.edu.cn/kpzl/ysmt/10962.htm"
+    }
+  ],
+  "validation": {
+    "data_and_recruitment_regression": {
+      "passed": 32,
+      "elapsed_seconds": 21.47,
+      "files": [
+        "tests/test_ilrock_guest_expansion.py",
+        "tests/test_recruitment_template_identity_batches.py",
+        "tests/test_validate_yaml_configs_command.py",
+        "tests/test_guest_recruitment_finalize_helpers.py"
+      ]
+    },
+    "static_checks": [
+      "Black",
+      "isort",
+      "flake8",
+      "git diff --check"
+    ],
+    "baseline_templates_preserved": 3518,
+    "new_unique_templates": 200,
+    "test_database": "isolated SQLite",
+    "runtime_database_imported": false,
+    "note": "最终32项包含9项名单专项，覆盖逐人身份证据、姓名无括号、玩家简介备注及重复句门禁，以及招募判重、收录和YAML关联回归。隔离SQLite默认导入，200份新增模板均进入可招募集合。",
+    "status": "passed after identity and player biography review",
+    "identity_audit": {
+      "people": 200,
+      "known_identity_names": 477,
+      "candidate_matches_reviewed": 225,
+      "confirmed_remaining_duplicates": 0,
+      "unresolved_matches": 0,
+      "file": "reports/guest_identity_audit_ilrock_20261002.json"
+    }
+  },
+  "compound_name_reviews": [
+    {
+      "selected_template_key": "hero_ilrock_04594",
+      "existing_template_key": "hist_sljnbc_0552",
+      "reason": "文丑丑是风云天下会总管，文丑是三国袁绍部将，姓名包含相同字但人物不同。"
+    },
+    {
+      "selected_template_key": "hero_ilrock_04818",
+      "existing_template_key": "hero_wuhua_heshang",
+      "reason": "鲁达／花和尚来自水浒传，无花和尚来自古龙楚留香，称号包含相同字但人物不同。"
+    },
+    {
+      "selected_template_key": "hero_ilrock_03899",
+      "existing_template_key": "hero_jinyong_0258",
+      "reason": "石青璇（源错字石清璇）是黄易大唐双龙传人物，石清是金庸侠客行人物。"
+    },
+    {
+      "selected_template_key": "hero_ilrock_04825",
+      "existing_template_key": "hist_qinhan_0039",
+      "reason": "小李广是梁山花荣的绰号，不是汉代李广；作品与人物身份不同。"
+    },
+    {
+      "selected_template_key": "hero_ilrock_04840",
+      "existing_template_key": "hist_songliaojinyuan_0374",
+      "reason": "李俊是梁山水军头领，李俊民是金代文人；并非本名与别名关系。"
+    },
+    {
+      "selected_template_key": "hero_ilrock_04877",
+      "existing_template_key": "task_wanxian_nezha",
+      "reason": "八臂哪吒是梁山项充的绰号，与封神人物哪吒不同。"
+    },
+    {
+      "selected_template_key": "hero_ilrock_03159",
+      "existing_template_key": "task_wanxian_dashenbian",
+      "reason": "神鞭为古龙西门柔的武器称号，任务打神鞭是万仙阵的法宝敌方模板，不能仅因字串包含而合并。"
+    },
+    {
+      "selected_template_key": "hero_ilrock_03246",
+      "existing_template_key": "hist_qinhan_0167",
+      "reason": "柳无眉称李夫人是因嫁李玉函，旧李夫人是西汉汉武帝妃，不是同人。"
+    },
+    {
+      "selected_template_key": "hero_ilrock_04574",
+      "existing_template_key": "hero_xiao_ma",
+      "reason": "聂风隐居时化名小马，旧小马是古龙七种武器的主角，不是同一人物。"
+    }
+  ],
+  "identity_audit_file": "reports/guest_identity_audit_ilrock_20261002.json",
+  "copy_review": {
+    "scope": "本批200位新增门客",
+    "name_policy": "姓名字段仅保留规范人物名；别名在简介正文自然交代，不以括号附在姓名后。",
+    "biography_policy": "面向玩家介绍身份、经历、性格及贡献；去除编辑考据、重复句和模板化评价。",
+    "review_status": "passed",
+    "people_reviewed": 200,
+    "biographies_rewritten": 200,
+    "name_annotations": 0,
+    "baseline_templates_preserved": 3518,
+    "non_biography_fields_preserved": true,
+    "length_min": 123,
+    "length_max": 148,
+    "length_mean": 137.4,
+    "review_method": "200条逐条重写并通读；复核角色关系、故事细节、历史贡献及玩家可读性。"
+  }
+}
