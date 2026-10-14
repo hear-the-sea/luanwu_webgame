@@ -4,7 +4,7 @@ from itertools import count
 
 import pytest
 
-from core.exceptions import GuestNotFoundError, GuestNotIdleError
+from core.exceptions import EquipmentError, GuestNotFoundError, GuestNotIdleError, ItemNotFoundError
 from gameplay.models import InventoryItem, ItemTemplate, Manor
 from gameplay.services.manor.core import ensure_manor
 from guests.models import (
@@ -37,10 +37,12 @@ def _create_guest(manor, *, status: str = GuestStatus.IDLE) -> Guest:
 
 
 @pytest.mark.django_db
-def test_dismiss_guest_allows_injured_guest_and_returns_equipment(django_user_model):
+@pytest.mark.parametrize("status", [GuestStatus.IDLE, GuestStatus.INJURED, GuestStatus.VACATION])
+@pytest.mark.parametrize("is_bound", [False, True])
+def test_dismiss_guest_allows_resting_guest_and_returns_equipment(django_user_model, status, is_bound):
     user = django_user_model.objects.create_user(username=_unique("roster_service_user"), password="pass123")
     manor = ensure_manor(user)
-    guest = _create_guest(manor, status=GuestStatus.INJURED)
+    guest = _create_guest(manor, status=status)
 
     gear_template = GearTemplate.objects.create(
         key=_unique("roster_service_gear_tpl"),
@@ -55,7 +57,7 @@ def test_dismiss_guest_allows_injured_guest_and_returns_equipment(django_user_mo
         effect_payload={},
         is_usable=True,
     )
-    GearItem.objects.create(manor=manor, template=gear_template, guest=guest)
+    gear = GearItem.objects.create(manor=manor, template=gear_template, guest=guest, is_bound=is_bound)
 
     result = dismiss_guest(guest)
 
@@ -68,6 +70,11 @@ def test_dismiss_guest_allows_injured_guest_and_returns_equipment(django_user_mo
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
     assert returned_item.quantity == 1
+    assert returned_item.bound_quantity == int(is_bound)
+    gear.refresh_from_db()
+    assert gear.guest_id is None
+    assert gear.inventory_backed is True
+    assert gear.is_bound == is_bound
 
 
 @pytest.mark.django_db
@@ -101,15 +108,57 @@ def test_dismiss_guest_locks_manor_before_guest(django_user_model, monkeypatch):
 
 
 @pytest.mark.django_db
-def test_dismiss_guest_rejects_busy_guest(django_user_model):
+@pytest.mark.parametrize("status", [GuestStatus.WORKING, GuestStatus.DEPLOYED, GuestStatus.ARENA])
+def test_dismiss_guest_rejects_busy_guest(django_user_model, status):
     user = django_user_model.objects.create_user(username=_unique("roster_service_busy_user"), password="pass123")
     manor = ensure_manor(user)
-    guest = _create_guest(manor, status=GuestStatus.WORKING)
+    guest = _create_guest(manor, status=status)
 
-    with pytest.raises(GuestNotIdleError, match="打工中"):
+    with pytest.raises(GuestNotIdleError, match=guest.get_status_display()):
         dismiss_guest(guest)
 
     assert Guest.objects.filter(pk=guest.pk).exists()
+
+
+@pytest.mark.django_db
+def test_dismiss_vacation_guest_rolls_back_equipment_when_item_template_is_missing(django_user_model):
+    user = django_user_model.objects.create_user(username=_unique("vacation_dismiss_rollback"))
+    manor = ensure_manor(user)
+    guest = _create_guest(manor, status=GuestStatus.VACATION)
+    gears = []
+    for index in range(2):
+        template = GearTemplate.objects.create(
+            key=_unique("vacation_rollback_gear"),
+            name=f"归闲装备{index}",
+            slot=GearSlot.WEAPON,
+        )
+        gears.append(GearItem.objects.create(manor=manor, template=template, guest=guest, is_bound=True))
+        if index == 0:
+            ItemTemplate.objects.create(key=template.key, name=template.name)
+    with pytest.raises(ItemNotFoundError):
+        dismiss_guest(guest)
+    guest.refresh_from_db()
+    assert guest.status == GuestStatus.VACATION
+    assert not InventoryItem.objects.filter(manor=manor, template__key=gears[0].template.key).exists()
+    for gear in gears:
+        gear.refresh_from_db()
+        assert gear.guest_id == guest.pk
+
+
+@pytest.mark.django_db
+def test_dismiss_guest_rejects_inconsistent_equipment_ownership(django_user_model):
+    owner = django_user_model.objects.create_user(username=_unique("dismiss_gear_owner"))
+    other = django_user_model.objects.create_user(username=_unique("dismiss_gear_other"))
+    guest = _create_guest(owner.manor, status=GuestStatus.VACATION)
+    template = GearTemplate.objects.create(key=_unique("foreign_dismiss_gear"), name="异主装备", slot=GearSlot.WEAPON)
+    ItemTemplate.objects.create(key=template.key, name=template.name)
+    gear = GearItem.objects.create(manor=other.manor, template=template, guest=guest)
+    with pytest.raises(EquipmentError, match="其他庄园"):
+        dismiss_guest(guest)
+    assert Guest.objects.filter(pk=guest.pk).exists()
+    gear.refresh_from_db()
+    assert gear.guest_id == guest.pk
+    assert not InventoryItem.objects.filter(template__key=template.key).exists()
 
 
 @pytest.mark.django_db

@@ -1,4 +1,4 @@
-"""重建个人任务奖励v2；保留任务结构与历史武林箱，可重复执行。"""
+"""重建当前个人任务宝箱；保留旧版奖励与战斗经验果直发规则，可重复执行。"""
 
 from __future__ import annotations
 
@@ -17,6 +17,48 @@ COLLECTION = {
     "huashan_lunjian_advanced": ("huashan_sword_fragment", "华山重剑心得", "equip_xuantiechongjian", 40),
     "hulao_qunying_zhan_lvbu": ("hulao_halberd_fragment", "虎牢画戟战魂", "equip_fangtianhuaji", 40),
     "baimenlou_mingyun_jueze": ("baimenlou_dragon_fragment", "白门楼盘龙战魂", "equip_panlonggun", 40),
+}
+COLLECTION_DESCRIPTIONS = {
+    "zhuxian_sword_intent": "仙剑余威未散，攒够便能请它出山。",
+    "xuanyuan_sword_intent": "一缕轩辕剑意，离神剑又近一步。",
+    "guandu_emperor_fragment": "官渡一战的功勋，攒够换顶威风的盔。",
+    "huashan_sword_fragment": "重剑无锋，高手的心得也得慢慢攒。",
+    "hulao_halberd_fragment": "虎牢关的战意未散，画戟正等着新主人。",
+    "baimenlou_dragon_fragment": "龙吟藏在战魂里，攒够便能唤出盘龙棍。",
+}
+CHEST_DESCRIPTIONS = {
+    "mid_autumn_moon_palace_trial": "月宫打包的小惊喜，嫦娥说别偷吃。",
+    "kasukabe_daisakusen": "小新的神秘收藏，打开前先喊一声：动感光波！",
+    "huashan_lunjian": "嘴上论贱，手里论宝。打开看看谁更有料！",
+    "wagangzhai_nixi": "守住了庄园，也守住了这箱好东西。",
+    "jingyanggang": "打虎归来，喝口酒，开个箱！",
+    "wulongshan": "山贼攒了半年的家当，今天归你开箱。",
+    "wagangzhai": "瓦岗好汉的私房宝贝，别告诉程咬金。",
+    "fugui_shanzhuang": "富贵人家的小收藏，连箱子都透着阔气。",
+    "shizipo_heidian": "掌柜说这是贵客专享，开箱时记得留个心眼。",
+    "shanhaiguan": "守关将士的压箱底，够硬气，也够惊喜。",
+    "shiren_daochang": "十个人的考验，一箱子的修行心得。",
+    "jiguanshou_chuxian": "咔哒咔哒，机关师的小秘密都在里面。",
+    "biwu_zhaoqin": "擂台赢了，宝箱拿了。姻缘嘛，再说！",
+    "tianpeng_dijiao_1": "天蓬偷偷藏的家底，轻点开，别惊动他。",
+    "tianpeng_dijiao_2": "藏得越深，越舍不得给人看。嘘，快开！",
+    "jiguan_chuniao": "小机关，大梦想。开箱给你的巧手添点灵感！",
+    "dongtian_fudi": "洞里一天，箱里惊喜。修行也要偶尔拆个礼物。",
+    "jiufeng_feihuan": "翻过九座山，总得带点好东西回去。",
+    "taozi_fenban": "桃子分你一半，快乐可不止一半！",
+    "simian_chuge": "楚歌唱得响，霸王的家底藏得深。",
+    "manzu_ruqin": "来时气势汹汹，走时留下满箱战利品。",
+    "zhuiji_manzu": "追得够快，宝贝就来不及被带走！",
+    "liangshanbo_zhuyingtai": "一箱情意，几分缘分。好人也有好礼收！",
+    "biyou_candeng": "灯还没灭，仙家藏的好东西先归你瞧瞧。",
+    "shier_xianyin": "十二道仙印封着的小秘密，轮到你揭开了。",
+    "fengbang_tianmen": "天门已开，仙家宝库也该分你一份！",
+    "zhuolu_zhongyuan": "逐鹿归来，开箱看看上古英雄的收藏。",
+    "guandu_zhizhan": "曹军的压箱底，这回不用借东风也能拿。",
+    "huashan_lunjian_advanced": "论剑论到最后，高手们把私藏也交出来了。",
+    "sishui_huaxiong_chengwei": "华雄守关没守住，倒替你看好了这箱宝贝。",
+    "hulao_qunying_zhan_lvbu": "打过虎牢关，开箱也得有点英雄气！",
+    "baimenlou_mingyun_jueze": "故事到了白门楼，箱里的缘分还没结束。",
 }
 
 
@@ -39,12 +81,15 @@ def main():
     original = path.read_text()
     items = {x["key"]: x for x in yaml.safe_load(original)["items"]}
     missions = {x["key"]: x for x in yaml.safe_load((ROOT / "data/mission_templates.yaml").read_text())["missions"]}
+    active_chest_keys = {
+        key for mission in missions.values() for key in mission["drop_table"] if key.startswith("mission_chest_v3_")
+    }
     recipes = {
         x["blueprint_key"]: x for x in yaml.safe_load((ROOT / "data/forge_blueprints.yaml").read_text())["recipes"]
     }
     changed = {}
     for key, source in items.items():
-        if not key.startswith("mission_chest_"):
+        if key not in active_chest_keys:
             continue
         box = deepcopy(source)
         payload = box["effect_payload"]
@@ -54,10 +99,20 @@ def main():
         fixed_rewards = [
             x
             for x in payload["item_rewards"]
-            if x["item_key"] not in {"tong", "xi", "tie", "zhixuesan", "buxuedan", *(v[0] for v in COLLECTION.values())}
+            if x["item_key"]
+            not in {
+                "experience_fruit",
+                "tong",
+                "xi",
+                "tie",
+                "zhixuesan",
+                "buxuedan",
+                *(v[0] for v in COLLECTION.values()),
+            }
         ]
         groups = payload["random_item_groups"]
-        payload["reward_balance_version"] = 2
+        payload["reward_balance_version"] = 3
+        payload["experience_fruit_source"] = "battle_salvage"
         tier = mission["difficulty"]
         medicine, amount = ("zhixuesan", 2) if tier == "junior" else ("buxuedan", 2 if tier == "intermediate" else 4)
         fixed_rewards.append(fixed(medicine, amount))
@@ -152,7 +207,9 @@ def main():
             changed[token] = {
                 "key": token,
                 "name": name,
-                "description": f"每次开启{box['name']}必得1个；集齐{threshold}个后在仓库使用，消耗{threshold}个兑换{items[target]['name']}×1。不可交易。",
+                "description": (
+                    f"{COLLECTION_DESCRIPTIONS[token]}" f"集齐{threshold}个，在仓库使用可兑换{items[target]['name']}。"
+                ),
                 "effect_type": "tool",
                 "rarity": "orange",
                 "tradeable": False,
@@ -181,15 +238,7 @@ def main():
         }
         payload["blueprint_material_support"] = support
         payload["blueprint_forging_requirements"] = {bp: recipes[bp]["required_forging"] for bp in support}
-        box["description"] = (
-            payload["reward_theme"] + "。必得基础经验与补给，其他奖励按独立组抽取；在仓库使用开启，不可交易，占仓容5。"
-        )
-        if mk in {"biyou_candeng", "shier_xianyin", "sishui_huaxiong_chengwei", "hulao_qunying_zhan_lvbu"}:
-            box["description"] += "下一关凭证必得1，开箱后即可用于挑战。"
-        if support:
-            box["description"] += "器械只出图纸，命中时附带配方各材料一半（向下取整）；剩余材料与锻造等级仍需满足。"
-        if mk in COLLECTION:
-            box["description"] += f"必得{name}×1，{threshold}个可在仓库兑换{items[target]['name']}。"
+        box["description"] = CHEST_DESCRIPTIONS[mk]
         changed[key] = box
     blocks = re.split(r"(?=^  - key: )", original, flags=re.M)
     written = set()
@@ -212,11 +261,17 @@ def main():
     path.write_text(text.rstrip() + "\n")
     report = ROOT / "reports/mission_reward_design_20261001.json"
     plan = json.loads(report.read_text())
-    plan["reward_balance_version"] = 2
+    plan["reward_balance_version"] = 3
+    plan["xp_assumption"] = "经验果按实际战报回收量直接发放；宝箱保留经验桃、菠萝、西瓜；旧版宝箱奖励不变"
     for row in plan["missions"]:
+        row["chest_key"] = next(key for key in missions[row["mission_key"]]["drop_table"] if key in active_chest_keys)
         row["theme"] = changed[row["chest_key"]]["effect_payload"]["reward_theme"]
+        row["experience_fruit_source"] = "battle_salvage"
+        row["legacy_fixed_experience_fruit"] = row.pop(
+            "fixed_experience_fruit", row.get("legacy_fixed_experience_fruit", 0)
+        )
     report.write_text(json.dumps(plan, ensure_ascii=False, indent=2) + "\n")
-    print("32任务v2奖励更新，6种累计兑换碎片；历史箱保持")
+    print("32任务当前宝箱更新，经验果由实际战斗直接结算；历史箱保持")
 
 
 if __name__ == "__main__":

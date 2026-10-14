@@ -214,6 +214,7 @@ def test_shop_tooltips_render_direct_stats_and_multi_tier_set_bonuses():
     )
     sell_item = SimpleNamespace(
         inventory_item=SimpleNamespace(template=sell_template, quantity=1),
+        quantity=1,
         sell_price=50,
     )
     request = RequestFactory().get("/trade")

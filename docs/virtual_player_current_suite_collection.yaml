@@ -1,0 +1,100 @@
+schema_version: 1
+record_type: current_collection_only
+tests_executed: false
+historical_gate_evidence_updated: false
+production_certification: false
+runtime_activation_authorized: false
+source_file_sha256:
+  Makefile: d092ef1548ddc524f786c60f05c644ad11e3988f29bbe620808b46a77b5e3050
+  tests/arena_services/test_virtual_reserve.py: 543f07b274306d56d176ac691689df1db5789210a40dffac5eb4d6a1135604c9
+  tests/raid_concurrency_integration/h01_cross_races.py: 18512f4e4ef844e9d3a6808725b9efeda239ce675ccc21f2519cc1e1b807d028
+  tests/test_arena_schedule.py: de467f51b43bd593cccb3fe4a9e67b15a5a0c75b964bca1c8db03df6c972e577
+  tests/test_arena_tasks.py: 3e75a6d2a073e21bfd22e2534650cb5616b761eef762c437f70cfbad07db1495
+  tests/test_arena_virtual_population_concurrency_integration.py: 1a6f7c842e6464d7ee3e4b28593119633989784483fd8dda65a4fa2a7dd8bf5f
+  tests/test_pytest_configuration.py: 53821cbe44b31bf8ee996969f8b8ff8ed412b7b4d84d3981cf937c5612dc2c0c
+  tests/test_virtual_player_archetype_pacing.py: 7d1824ce3171793f57a33d1fc009aa6c383d96771db262c954ec7ef403a43a7e
+  tests/test_virtual_player_architecture_gate.py: d542eef4f937528fcfb2878b9f03f69dee809f2954ca9f3b73d291419df67d52
+  tests/test_virtual_player_baseline_audit.py: a0bc692cec3624096e71625e9020a49d658b462109405060761349dda1e431ed
+  tests/test_virtual_player_bootstrap_routing.py: 26e9ac8b81ed351ed7e2e8325a2c8cf0bf68246ef9f6514601baeb7bd7fcfe33
+  tests/test_virtual_player_bootstrap_v2.py: 67c97206db4dd732b509f48742143e0d9ec2bd6c564f32586461d67d35f83de6
+  tests/test_virtual_player_business_metrics.py: 4aa0a0dec1463a5c6cff1ea830b5c2ec1330459306a3ecca25be4b5810fdb8ec
+  tests/test_virtual_player_config.py: 091fbbe6946b47e4cc9a47e6a03cf6ddf456b0cf14854d81f9bf284a1ae42a23
+  tests/test_virtual_player_economy.py: 1f400b48065c86767190bf890254bb60b56605213df6b515078928078acff1f6
+  tests/test_virtual_player_evidence_recorder.py: 6515488911141e4f13ce3d9d473a07ec200902d4ddd2368cb011d1302ed0bbe3
+  tests/test_virtual_player_gate_acceptance_config.py: ddf20c3d6d114f1e5db03b6fa5475eb3e37ff700fbbfdc90a3045ba09fb5913c
+  tests/test_virtual_player_gate_d1_automation.py: 6a278e50c2ca02150c2a0fef5fb2432363b24746e5b559b1f21be16ecc57db51
+  tests/test_virtual_player_gate_d1_concurrency_integration.py: ffcb366f01f80b33620493db261a9cd9963c1083e4f3778dca3b7a752dcc8903
+  tests/test_virtual_player_gate_e_automation.py: 3e79eb1fd32ad0a51c49b493b1b97561d32768197ae38ca076478b55cfb1312b
+  tests/test_virtual_player_health.py: fe53289d9a76051c113abad71ccb9c00e36d0c4b605d5227e06b28caed655a1d
+  tests/test_virtual_player_health_mysql_integration.py: 7cc5cb20c6a6fa2c01f73d78c7de7019e94579ea22603dcd918a1c5a8dbf156e
+  tests/test_virtual_player_maintenance_contracts.py: faae700b2ecbfc7d757c7af28e1d3e87e7c0a6bf49cdde2b21299503a3cd7be9
+  tests/test_virtual_player_maintenance_cycle.py: dd732995f38bcbc9e3dd5095b93b9aec2e61831c2ef9f821306b2221a2c06c64
+  tests/test_virtual_player_maintenance_rules.py: 3538d7335b570332f565d74a03999818fa5269bc21997b5d99cf74c4b9ed161c
+  tests/test_virtual_player_population_consumer.py: af5955b245357790865c55e0d25e4c8797048ad8d1b12f930597186b3732bd52
+  tests/test_virtual_player_population_demand.py: 73a52d38289c8f680973a63385cfeb0467a24a90cdcbc88ced8e074731c5d0d4
+  tests/test_virtual_player_prestige_transitions.py: f0b87b045c0fc2f415b01668bcb74bb629d49261c16f3f34236c706b11fd7e17
+  tests/test_virtual_player_projection.py: 26bef894e9846bc9dde41d020798bdce808316c91d1fa260feb4f65e1c549e76
+  tests/test_virtual_player_random_context.py: 9d26d1cd8a00622e36eee876bff089703d64b2a35cc0ed85fc9ad3b3feff4931
+  tests/test_virtual_player_recruitment.py: 3e2cc23beff23e780bfc77d88a957eb6e8e35c96e88497dfccb965ef7da89b6d
+  tests/test_virtual_player_registration_population.py: 10173ea89b474d9be547456007110ae565bdc8c7c61099f095ae7fab87415baa
+  tests/test_virtual_player_strength_budget.py: 56f593c6886d7b953d1d7b8e37f60768eb574f7eb02a18853e188d361e30db32
+checksum_algorithm: sha256
+checksum_input: sorted_pytest_nodeids_joined_with_lf_and_terminal_lf
+encoding: utf-8
+suites:
+  d1_contract:
+    expected_nodeid_count: 415
+    nodeid_checksum: 32e06e92e22b9c216421b2e6eb1833170baf808925fb38350954fe284cb03f89
+    files:
+    - tests/test_virtual_player_bootstrap_v2.py
+    - tests/test_virtual_player_bootstrap_routing.py
+    - tests/test_virtual_player_population_consumer.py
+    - tests/test_virtual_player_population_demand.py
+    - tests/test_virtual_player_registration_population.py
+    - tests/test_virtual_player_prestige_transitions.py
+    - tests/test_virtual_player_projection.py
+    - tests/test_virtual_player_strength_budget.py
+    - tests/test_virtual_player_economy.py
+    - tests/test_virtual_player_config.py
+    - tests/test_virtual_player_archetype_pacing.py
+    - tests/test_virtual_player_business_metrics.py
+    - tests/test_virtual_player_maintenance_cycle.py
+    - tests/test_virtual_player_recruitment.py
+    - tests/test_virtual_player_maintenance_rules.py
+    - tests/arena_services/test_virtual_reserve.py
+    - tests/test_arena_schedule.py
+    - tests/test_arena_tasks.py
+    - tests/test_virtual_player_health.py
+    - tests/test_virtual_player_gate_d1_automation.py
+    - tests/test_virtual_player_gate_e_automation.py
+    collected_at_utc: '2026-10-14T04:35:39Z'
+    real_services_configured: false
+  d1_core_real_service:
+    expected_nodeid_count: 10
+    nodeid_checksum: c4f15df272593d34687f5e33aaa2360ab398b9b4d6c06f7cfefe68deb4576801
+    files:
+    - tests/test_virtual_player_gate_d1_concurrency_integration.py
+    - tests/test_virtual_player_health_mysql_integration.py
+    collected_at_utc: '2026-10-14T04:35:40Z'
+    real_services_configured: true
+  d1_adjacent_real_service:
+    expected_nodeid_count: 5
+    nodeid_checksum: 1a90e5c1cbeba46f0bb2cb71f78e174df038c7c1b51ab58ff871793f1d6318c2
+    files:
+    - tests/test_arena_virtual_population_concurrency_integration.py
+    collected_at_utc: '2026-10-14T04:35:41Z'
+    real_services_configured: true
+  gate_a_union:
+    expected_nodeid_count: 190
+    nodeid_checksum: 66531bf4fcd15de5f72d0f98e35422738d86529dba7600edd0c6520387a6ff08
+    files:
+    - tests/test_virtual_player_architecture_gate.py
+    - tests/test_virtual_player_gate_acceptance_config.py
+    - tests/test_virtual_player_evidence_recorder.py
+    - tests/test_virtual_player_maintenance_contracts.py
+    - tests/test_virtual_player_random_context.py
+    - tests/test_pytest_configuration.py
+    - tests/test_virtual_player_baseline_audit.py
+    - tests/raid_concurrency_integration/h01_cross_races.py
+    collected_at_utc: '2026-10-14T04:35:42Z'
+    real_services_configured: true

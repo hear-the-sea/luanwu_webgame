@@ -1,296 +1,328 @@
 {
   "version": 1,
   "scope": "32个人任务；3帮会任务公共资源机制保留",
-  "xp_assumption": "固定基础经验参考敌军全败、护院80%阵亡，不计玩家自身损失；并保留原配置经验道具预算",
+  "xp_assumption": "经验果按实际战报回收量直接发放；宝箱保留经验桃、菠萝、西瓜；旧版宝箱奖励不变",
   "missions": [
     {
       "mission_key": "mid_autumn_moon_palace_trial",
-      "chest_key": "mission_chest_mid_autumn_moon_palace_trial",
+      "chest_key": "mission_chest_v3_mid_autumn_moon_palace_trial",
       "theme": "节日收集：月饼兑换与月宫门客",
-      "fixed_experience_fruit": 20,
       "old_configured_xp_hours": 0,
       "enemy_salvage_reference_hours": 20.666666666666668,
-      "silver": 40000
+      "silver": 40000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 20
     },
     {
       "mission_key": "kasukabe_daisakusen",
-      "chest_key": "mission_chest_kasukabe_daisakusen",
+      "chest_key": "mission_chest_v3_kasukabe_daisakusen",
       "theme": "活动收集：蜡笔兑换与动感超人专属装备",
-      "fixed_experience_fruit": 77,
       "old_configured_xp_hours": 17.999999999999996,
       "enemy_salvage_reference_hours": 77.06666666666666,
-      "silver": 40000
+      "silver": 40000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 77
     },
     {
       "mission_key": "huashan_lunjian",
-      "chest_key": "mission_chest_huashan_lunjian",
+      "chest_key": "mission_chest_v3_huashan_lunjian",
       "theme": "新手文武入门：折扇、轻盔与驭雷术",
-      "fixed_experience_fruit": 2,
       "old_configured_xp_hours": 0,
       "enemy_salvage_reference_hours": 2.4000000000000004,
-      "silver": 8000
+      "silver": 8000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 2
     },
     {
       "mission_key": "wagangzhai_nixi",
-      "chest_key": "mission_chest_wagangzhai_nixi",
+      "chest_key": "mission_chest_v3_wagangzhai_nixi",
       "theme": "庄园防守：重甲、军阵饰品与玄甲战驹",
-      "fixed_experience_fruit": 81,
       "old_configured_xp_hours": 24.0,
       "enemy_salvage_reference_hours": 81.0,
-      "silver": 40000
+      "silver": 40000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 81
     },
     {
       "mission_key": "jingyanggang",
-      "chest_key": "mission_chest_jingyanggang",
+      "chest_key": "mission_chest_v3_jingyanggang",
       "theme": "新手猎虎：虎皮靴与虎纹盔",
-      "fixed_experience_fruit": 1,
       "old_configured_xp_hours": 0,
       "enemy_salvage_reference_hours": 0.75,
-      "silver": 7000
+      "silver": 7000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 1
     },
     {
       "mission_key": "wulongshan",
-      "chest_key": "mission_chest_wulongshan",
+      "chest_key": "mission_chest_v3_wulongshan",
       "theme": "初期武客：棍、盔、靴与入门坐骑",
-      "fixed_experience_fruit": 4,
       "old_configured_xp_hours": 0,
       "enemy_salvage_reference_hours": 4.266666666666667,
-      "silver": 15000
+      "silver": 15000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 4
     },
     {
       "mission_key": "wagangzhai",
-      "chest_key": "mission_chest_wagangzhai",
+      "chest_key": "mission_chest_v3_wagangzhai",
       "theme": "初期军阵：甲胄、长兵与军用饰品",
-      "fixed_experience_fruit": 7,
       "old_configured_xp_hours": 0,
       "enemy_salvage_reference_hours": 7.8,
-      "silver": 20000
+      "silver": 20000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 7
     },
     {
       "mission_key": "fugui_shanzhuang",
-      "chest_key": "mission_chest_fugui_shanzhuang",
+      "chest_key": "mission_chest_v3_fugui_shanzhuang",
       "theme": "初期文客：文房、玉佩与筹谋秘术",
-      "fixed_experience_fruit": 2,
       "old_configured_xp_hours": 0,
       "enemy_salvage_reference_hours": 2.0,
-      "silver": 14000
+      "silver": 14000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 2
     },
     {
       "mission_key": "shizipo_heidian",
-      "chest_key": "mission_chest_shizipo_heidian",
+      "chest_key": "mission_chest_v3_shizipo_heidian",
       "theme": "中期奇袭：鞭、刀、阴招秘术",
-      "fixed_experience_fruit": 16,
       "old_configured_xp_hours": 0,
       "enemy_salvage_reference_hours": 16.333333333333332,
-      "silver": 30000
+      "silver": 30000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 16
     },
     {
       "mission_key": "shanhaiguan",
-      "chest_key": "mission_chest_shanhaiguan",
+      "chest_key": "mission_chest_v3_shanhaiguan",
       "theme": "中期守关：军备图纸、坐骑与守御秘术",
-      "fixed_experience_fruit": 20,
       "old_configured_xp_hours": 0,
       "enemy_salvage_reference_hours": 20.666666666666668,
-      "silver": 40000
+      "silver": 40000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 20
     },
     {
       "mission_key": "shiren_daochang",
-      "chest_key": "mission_chest_shiren_daochang",
+      "chest_key": "mission_chest_v3_shiren_daochang",
       "theme": "中期经验试炼：法衣、法器与群体秘术",
-      "fixed_experience_fruit": 38,
       "old_configured_xp_hours": 72,
       "enemy_salvage_reference_hours": 38.5,
-      "silver": 20000
+      "silver": 20000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 38
     },
     {
       "mission_key": "jiguanshou_chuxian",
-      "chest_key": "mission_chest_jiguanshou_chuxian",
+      "chest_key": "mission_chest_v3_jiguanshou_chuxian",
       "theme": "机关入门：绿蓝器械图纸与算筹",
-      "fixed_experience_fruit": 28,
       "old_configured_xp_hours": 0,
       "enemy_salvage_reference_hours": 28.0,
-      "silver": 24000
+      "silver": 24000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 28
     },
     {
       "mission_key": "biwu_zhaoqin",
-      "chest_key": "mission_chest_biwu_zhaoqin",
+      "chest_key": "mission_chest_v3_biwu_zhaoqin",
       "theme": "初中期武学：护甲、礼器与稀有机关熊图纸",
-      "fixed_experience_fruit": 2,
       "old_configured_xp_hours": 0,
       "enemy_salvage_reference_hours": 2.75,
-      "silver": 20000
+      "silver": 20000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 2
     },
     {
       "mission_key": "tianpeng_dijiao_1",
-      "chest_key": "mission_chest_tianpeng_dijiao_1",
+      "chest_key": "mission_chest_v3_tianpeng_dijiao_1",
       "theme": "中期经验主本：大量经验、文武兼用装备",
-      "fixed_experience_fruit": 60,
       "old_configured_xp_hours": 240,
       "enemy_salvage_reference_hours": 60.0,
-      "silver": 50000
+      "silver": 50000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 60
     },
     {
       "mission_key": "tianpeng_dijiao_2",
-      "chest_key": "mission_chest_tianpeng_dijiao_2",
+      "chest_key": "mission_chest_v3_tianpeng_dijiao_2",
       "theme": "后期经验主本：大量经验、狐仙套图纸与玄术饰品",
-      "fixed_experience_fruit": 96,
       "old_configured_xp_hours": 316.8,
       "enemy_salvage_reference_hours": 96.0,
-      "silver": 0
+      "silver": 0,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 96
     },
     {
       "mission_key": "jiguan_chuniao",
-      "chest_key": "mission_chest_jiguan_chuniao",
+      "chest_key": "mission_chest_v3_jiguan_chuniao",
       "theme": "中期机关养成：雏鸟图纸与随图纸发放的锻造材料",
-      "fixed_experience_fruit": 28,
       "old_configured_xp_hours": 0,
       "enemy_salvage_reference_hours": 28.0,
-      "silver": 30000
+      "silver": 30000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 28
     },
     {
       "mission_key": "dongtian_fudi",
-      "chest_key": "mission_chest_dongtian_fudi",
+      "chest_key": "mission_chest_v3_dongtian_fudi",
       "theme": "后期修炼重塑：洗点洗髓、破军军备与洞天灵物",
-      "fixed_experience_fruit": 30,
       "old_configured_xp_hours": 120,
       "enemy_salvage_reference_hours": 30.666666666666664,
-      "silver": 50000
+      "silver": 50000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 30
     },
     {
       "mission_key": "jiufeng_feihuan",
-      "chest_key": "mission_chest_jiufeng_feihuan",
+      "chest_key": "mission_chest_v3_jiufeng_feihuan",
       "theme": "中期机动救援：必得凌波鞋、坐骑与木牛流马图纸",
-      "fixed_experience_fruit": 21,
       "old_configured_xp_hours": 0,
       "enemy_salvage_reference_hours": 21.400000000000002,
-      "silver": 20000
+      "silver": 20000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 21
     },
     {
       "mission_key": "taozi_fenban",
-      "chest_key": "mission_chest_taozi_fenban",
+      "chest_key": "mission_chest_v3_taozi_fenban",
       "theme": "每日经验福利：大量经验桃与竹藤绿装",
-      "fixed_experience_fruit": 16,
       "old_configured_xp_hours": 120,
       "enemy_salvage_reference_hours": 16.0,
-      "silver": 0
+      "silver": 0,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 16
     },
     {
       "mission_key": "simian_chuge",
-      "chest_key": "mission_chest_simian_chuge",
+      "chest_key": "mission_chest_v3_simian_chuge",
       "theme": "后期霸王绝境：乌骓、霸王枪盔与被动秘术",
-      "fixed_experience_fruit": 51,
       "old_configured_xp_hours": 48,
       "enemy_salvage_reference_hours": 51.66666666666667,
-      "silver": 50000
+      "silver": 50000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 51
     },
     {
       "mission_key": "manzu_ruqin",
-      "chest_key": "mission_chest_manzu_ruqin",
+      "chest_key": "mission_chest_v3_manzu_ruqin",
       "theme": "后期守庄与文客招募：文系秘术、蒲巴乙召唤卡",
-      "fixed_experience_fruit": 35,
       "old_configured_xp_hours": 0,
       "enemy_salvage_reference_hours": 35.0,
-      "silver": 50000
+      "silver": 50000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 35
     },
     {
       "mission_key": "zhuiji_manzu",
-      "chest_key": "mission_chest_zhuiji_manzu",
+      "chest_key": "mission_chest_v3_zhuiji_manzu",
       "theme": "后期追击：玄武军备与塞外名器",
-      "fixed_experience_fruit": 31,
       "old_configured_xp_hours": 128.0,
       "enemy_salvage_reference_hours": 31.666666666666668,
-      "silver": 40000
+      "silver": 40000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 31
     },
     {
       "mission_key": "liangshanbo_zhuyingtai",
-      "chest_key": "mission_chest_liangshanbo_zhuyingtai",
+      "chest_key": "mission_chest_v3_liangshanbo_zhuyingtai",
       "theme": "中期情缘收集：必得好人卡与霓裳套",
-      "fixed_experience_fruit": 7,
       "old_configured_xp_hours": 0,
       "enemy_salvage_reference_hours": 7.0,
-      "silver": 10000
+      "silver": 10000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 7
     },
     {
       "mission_key": "biyou_candeng",
-      "chest_key": "mission_chest_biyou_candeng",
+      "chest_key": "mission_chest_v3_biyou_candeng",
       "theme": "封神入口：必得阵旗碎片，有机会获得校尉军备与狐仙图纸",
-      "fixed_experience_fruit": 144,
       "old_configured_xp_hours": 83.2,
       "enemy_salvage_reference_hours": 144.33333333333334,
-      "silver": 60000
+      "silver": 60000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 144
     },
     {
       "mission_key": "shier_xianyin",
-      "chest_key": "mission_chest_shier_xianyin",
+      "chest_key": "mission_chest_v3_shier_xianyin",
       "theme": "封神中层：必得玉虚残印，有机会获得阵法秘术与太清玉册",
-      "fixed_experience_fruit": 207,
       "old_configured_xp_hours": 134.39999999999998,
       "enemy_salvage_reference_hours": 207.33333333333334,
-      "silver": 80000
+      "silver": 80000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 207
     },
     {
       "mission_key": "fengbang_tianmen",
-      "chest_key": "mission_chest_fengbang_tianmen",
+      "chest_key": "mission_chest_v3_fengbang_tianmen",
       "theme": "封神终局：诛仙名器、封神法宝与高阶锻造图纸",
-      "fixed_experience_fruit": 180,
       "old_configured_xp_hours": 192.0,
       "enemy_salvage_reference_hours": 180.0,
-      "silver": 100000
+      "silver": 100000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 180
     },
     {
       "mission_key": "zhuolu_zhongyuan",
-      "chest_key": "mission_chest_zhuolu_zhongyuan",
+      "chest_key": "mission_chest_v3_zhuolu_zhongyuan",
       "theme": "上古帝王终局：轩辕、龙冠、玉玺与麒麟青鸾",
-      "fixed_experience_fruit": 182,
       "old_configured_xp_hours": 67.19999999999999,
       "enemy_salvage_reference_hours": 182.0,
-      "silver": 100000
+      "silver": 100000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 182
     },
     {
       "mission_key": "guandu_zhizhan",
-      "chest_key": "mission_chest_guandu_zhizhan",
+      "chest_key": "mission_chest_v3_guandu_zhizhan",
       "theme": "三国军备终局：帝王盔甲、神弓与曹氏名驹",
-      "fixed_experience_fruit": 66,
       "old_configured_xp_hours": 90.0,
       "enemy_salvage_reference_hours": 66.33333333333334,
-      "silver": 120000
+      "silver": 120000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 66
     },
     {
       "mission_key": "huashan_lunjian_advanced",
-      "chest_key": "mission_chest_huashan_lunjian_advanced",
+      "chest_key": "mission_chest_v3_huashan_lunjian_advanced",
       "theme": "武林收藏终局：必得一件名器或饕餮鼎图纸",
-      "fixed_experience_fruit": 185,
       "old_configured_xp_hours": 0,
       "enemy_salvage_reference_hours": 185.0,
-      "silver": 120000
+      "silver": 120000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 185
     },
     {
       "mission_key": "sishui_huaxiong_chengwei",
-      "chest_key": "mission_chest_sishui_huaxiong_chengwei",
+      "chest_key": "mission_chest_v3_sishui_huaxiong_chengwei",
       "theme": "飞将入口：必得汜水战报，有机会获得军阵兵器",
-      "fixed_experience_fruit": 44,
       "old_configured_xp_hours": 102.0,
       "enemy_salvage_reference_hours": 44.33333333333333,
-      "silver": 90000
+      "silver": 90000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 44
     },
     {
       "mission_key": "hulao_qunying_zhan_lvbu",
-      "chest_key": "mission_chest_hulao_qunying_zhan_lvbu",
+      "chest_key": "mission_chest_v3_hulao_qunying_zhan_lvbu",
       "theme": "飞将中层：必得虎牢战旗，有机会获得吕布专属名器",
-      "fixed_experience_fruit": 69,
       "old_configured_xp_hours": 90.0,
       "enemy_salvage_reference_hours": 69.0,
-      "silver": 110000
+      "silver": 110000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 69
     },
     {
       "mission_key": "baimenlou_mingyun_jueze",
-      "chest_key": "mission_chest_baimenlou_mingyun_jueze",
+      "chest_key": "mission_chest_v3_baimenlou_mingyun_jueze",
       "theme": "飞将招募终局：吕布貂蝉召唤、易容与破军军备",
-      "fixed_experience_fruit": 177,
       "old_configured_xp_hours": 172.8,
       "enemy_salvage_reference_hours": 177.0,
-      "silver": 180000
+      "silver": 180000,
+      "experience_fruit_source": "battle_salvage",
+      "legacy_fixed_experience_fruit": 177
     }
   ],
-  "reward_balance_version": 2
+  "reward_balance_version": 3
 }

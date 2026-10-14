@@ -28,6 +28,37 @@ from ..models import (
     BotVirtualPlayerHealth,
 )
 
+SAFETY_POLICY_MODE_LABELS = {"legacy": "旧版策略", "shadow": "影子评估", "scoped": "按作用域评估"}
+SAFETY_OPERATION_LABELS = {"monitor": "安全监测", "recovery": "恢复运行"}
+ROUTING_MODE_LABELS = {
+    "legacy_before_gate": "切换前旧版运行",
+    "v2_cutover": "第二版切换中",
+    "v2_active": "第二版已启用",
+    "v2_paused": "第二版已暂停",
+}
+
+
+class SafetyPolicyModeFilter(admin.SimpleListFilter):
+    title = "策略模式"
+    parameter_name = "policy_mode"
+
+    def lookups(self, request, model_admin):
+        return tuple(SAFETY_POLICY_MODE_LABELS.items())
+
+    def queryset(self, request, queryset):
+        return queryset.filter(policy_mode=self.value()) if self.value() else queryset
+
+
+class SafetyOperationFilter(admin.SimpleListFilter):
+    title = "操作"
+    parameter_name = "operation"
+
+    def lookups(self, request, model_admin):
+        return tuple(SAFETY_OPERATION_LABELS.items())
+
+    def queryset(self, request, queryset):
+        return queryset.filter(operation=self.value()) if self.value() else queryset
+
 
 @admin.register(BotSafetyDecisionAudit)
 class BotSafetyDecisionAuditAdmin(admin.ModelAdmin):
@@ -41,8 +72,14 @@ class BotSafetyDecisionAuditAdmin(admin.ModelAdmin):
         "resulting_mode_label",
         "resulting_revision_label",
     )
-    list_filter = ("policy_mode", "operation", "effective_pause")
+    list_filter = (SafetyPolicyModeFilter, SafetyOperationFilter, "effective_pause")
     search_fields = ("window_id", "previous_reason", "resulting_reason")
+    exclude = ("policy_mode", "operation", "previous_mode", "resulting_mode")
+    readonly_fields = tuple(
+        field.name
+        for field in BotSafetyDecisionAudit._meta.fields
+        if field.name not in {"policy_mode", "operation", "previous_mode", "resulting_mode"}
+    ) + ("policy_mode_label", "operation_label", "previous_mode_label", "resulting_mode_label")
 
     def has_add_permission(self, request):
         return False
@@ -63,11 +100,15 @@ class BotSafetyDecisionAuditAdmin(admin.ModelAdmin):
 
     @admin.display(ordering="policy_mode", description="策略模式")
     def policy_mode_label(self, obj: BotSafetyDecisionAudit) -> str:
-        return obj.policy_mode
+        return SAFETY_POLICY_MODE_LABELS.get(obj.policy_mode, obj.policy_mode)
 
     @admin.display(ordering="operation", description="操作")
     def operation_label(self, obj: BotSafetyDecisionAudit) -> str:
-        return obj.operation
+        return SAFETY_OPERATION_LABELS.get(obj.operation, obj.operation)
+
+    @admin.display(description="此前模式", ordering="previous_mode")
+    def previous_mode_label(self, obj: BotSafetyDecisionAudit) -> str:
+        return ROUTING_MODE_LABELS.get(obj.previous_mode, obj.previous_mode)
 
     @admin.display(ordering="effective_pause", description="当前策略暂停决定", boolean=True)
     def effective_pause_label(self, obj: BotSafetyDecisionAudit) -> bool:
@@ -79,7 +120,7 @@ class BotSafetyDecisionAuditAdmin(admin.ModelAdmin):
 
     @admin.display(ordering="resulting_mode", description="最终模式")
     def resulting_mode_label(self, obj: BotSafetyDecisionAudit) -> str:
-        return obj.resulting_mode
+        return ROUTING_MODE_LABELS.get(obj.resulting_mode, obj.resulting_mode)
 
     @admin.display(ordering="resulting_revision", description="最终版本号")
     def resulting_revision_label(self, obj: BotSafetyDecisionAudit) -> int:
@@ -458,11 +499,16 @@ class BotRuntimeRoutingStateAdmin(_ReadOnlyAdmin):
         "last_pause_window_identifier",
         "safety_clean_window_streak",
         "safety_clean_window_kind",
-        "paused_from_maintenance_mode",
+        "paused_from_mode_label",
         "pause_reason",
         "updated_at",
     )
-    readonly_fields = tuple(field.name for field in BotRuntimeRoutingState._meta.fields)
+    exclude = ("bootstrap_mode", "maintenance_mode", "paused_from_maintenance_mode")
+    readonly_fields = tuple(
+        field.name
+        for field in BotRuntimeRoutingState._meta.fields
+        if field.name not in {"bootstrap_mode", "maintenance_mode", "paused_from_maintenance_mode"}
+    ) + ("bootstrap_mode_label", "maintenance_mode_label", "paused_from_mode_label")
 
     @admin.display(description="路由键", ordering="key")
     def routing_key(self, obj: BotRuntimeRoutingState) -> str:
@@ -470,11 +516,15 @@ class BotRuntimeRoutingStateAdmin(_ReadOnlyAdmin):
 
     @admin.display(description="启动模式", ordering="bootstrap_mode")
     def bootstrap_mode_label(self, obj: BotRuntimeRoutingState) -> str:
-        return obj.get_bootstrap_mode_display()
+        return ROUTING_MODE_LABELS.get(obj.bootstrap_mode, obj.get_bootstrap_mode_display())
 
     @admin.display(description="维护模式", ordering="maintenance_mode")
     def maintenance_mode_label(self, obj: BotRuntimeRoutingState) -> str:
-        return obj.get_maintenance_mode_display()
+        return ROUTING_MODE_LABELS.get(obj.maintenance_mode, obj.get_maintenance_mode_display())
+
+    @admin.display(description="暂停前运行模式", ordering="paused_from_maintenance_mode")
+    def paused_from_mode_label(self, obj: BotRuntimeRoutingState) -> str:
+        return ROUTING_MODE_LABELS.get(obj.paused_from_maintenance_mode, obj.paused_from_maintenance_mode or "未暂停")
 
     @admin.display(description="最近暂停窗口编号", ordering="last_pause_window_id")
     def last_pause_window_identifier(self, obj: BotRuntimeRoutingState) -> str:

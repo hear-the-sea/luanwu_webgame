@@ -1,0 +1,7 @@
+# 在现有生产配置与镜像覆盖文件之后加载，发布时先验证配置。
+# 本文件是供审阅的配置建议，不会自动改变现有服务器。
+services:
+  web:
+    mem_limit: 768m
+    environment:
+      DJANGO_WEBSOCKET_MAX_CONNECTIONS_PER_IP: "60"

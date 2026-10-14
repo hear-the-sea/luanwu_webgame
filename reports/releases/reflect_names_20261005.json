@@ -1,0 +1,71 @@
+{
+  "web": {
+    "source": "圣火狂势",
+    "reflect_damage": 1284,
+    "asgiref": "3.12.1",
+    "render": true
+  },
+  "worker_battle": {
+    "source": "圣火狂势",
+    "reflect_damage": 1284,
+    "asgiref": "3.12.1"
+  },
+  "services": {
+    "web": {
+      "image": "webgame:reflect-names-20261005-g0",
+      "state": "running",
+      "health": "healthy",
+      "restarts": 0
+    },
+    "worker": {
+      "image": "webgame:reflect-names-20261005-g1",
+      "state": "running",
+      "health": null,
+      "restarts": 0
+    },
+    "worker_battle": {
+      "image": "webgame:reflect-names-20261005-g1",
+      "state": "running",
+      "health": null,
+      "restarts": 0
+    },
+    "worker_timer": {
+      "image": "webgame:reflect-names-20261005-g1",
+      "state": "running",
+      "health": null,
+      "restarts": 0
+    },
+    "worker_timer_scan": {
+      "image": "webgame:reflect-names-20261005-g1",
+      "state": "running",
+      "health": null,
+      "restarts": 0
+    },
+    "worker_timer_safety": {
+      "image": "webgame:reflect-names-20261005-g1",
+      "state": "running",
+      "health": null,
+      "restarts": 0
+    },
+    "worker_timer_maintenance": {
+      "image": "webgame:reflect-names-20261005-g1",
+      "state": "running",
+      "health": null,
+      "restarts": 0
+    },
+    "beat": {
+      "image": "webgame:reflect-names-20261005-g1",
+      "state": "running",
+      "health": null,
+      "restarts": 0
+    }
+  },
+  "readiness": true,
+  "http": {
+    "/": 200,
+    "/accounts/login/": 200,
+    "/health/live": 200
+  },
+  "tests_passed": 257,
+  "release": "/root/code/releases/reflect-names-20261005"
+}

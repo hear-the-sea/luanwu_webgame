@@ -158,13 +158,14 @@ def start_equipment_forging(
         if active_queue_count >= queue_capacity:
             raise ForgeOperationError(f"铁匠铺锻造队列已满，当前最多同时锻造{queue_capacity}项")
 
-        consume_forging_materials_locked(
+        output_bound_quantity = consume_forging_materials_locked(
             inventory_item_model=InventoryItem,
             locked_manor=locked_manor,
             total_costs=total_costs,
             material_name_map=material_name_map,
             material_name_fallback_map=material_name_fallback_map,
             consume_inventory_item_locked=consume_inventory_item_locked,
+            quantity=quantity,
         )
 
         unit_duration = calculate_forging_duration(config["base_duration"], locked_manor)
@@ -179,6 +180,7 @@ def start_equipment_forging(
             base_duration=config["base_duration"],
             actual_duration=actual_duration,
             current_time=timezone.now(),
+            output_bound_quantity=output_bound_quantity,
         )
         schedule_forging_completion(production, actual_duration)
 

@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import random
 
+import pytest
+
+from battle.combat_math import effective_attack_value
 from battle.combatants_pkg.core import Combatant
 from battle.simulation.damage_application import apply_damage_results
 
@@ -168,3 +171,36 @@ def test_every_damage_transition_keeps_hp_and_strength_within_bounds():
         assert 0 <= target.hp <= target.max_hp
         expected_strength = 0 if target.hp == 0 else min(10, (target.hp + target.unit_hp - 1) // target.unit_hp)
         assert target.troop_strength == expected_strength
+
+
+@pytest.mark.parametrize("target_kind", ["guest", "troop", "city_defense"])
+@pytest.mark.parametrize("count", [800, 1000, 1001, 4000])
+def test_spear_counter_caps_current_survivors_at_1000(count, target_kind):
+    actor = _make_guest(name="攻击者", side="attacker", hp=1_000_000)
+    if target_kind == "troop":
+        actor = _make_troop(name="攻击者", side="attacker", count=10_000)
+    actor.kind = target_kind
+    target = _make_troop(name="枪王", side="defender", count=4000)
+    target.troop_class = "qiang"
+    target.tech_effects = {"counter_attack_chance": 1.0, "counter_attack_damage": 0.30}
+
+    # The incoming hit leaves count survivors; counter uses this post-hit count.
+    application = apply_damage_results(actor, target, (4000 - count) * 100, random.Random(1))
+
+    divisor = 1.5 if target_kind == "city_defense" else 1.0
+    expected_damage = (
+        (6400 if count == 800 else 7999) if target_kind == "city_defense" else (9600 if count == 800 else 12000)
+    )
+    assert application.counter.raw_damage == expected_damage
+    assert target.troop_strength == count
+    assert effective_attack_value(target, actor) == pytest.approx(40 * count / divisor)
+
+
+@pytest.mark.parametrize("ranged,damage", [(True, 0), (False, 400_000)])
+def test_spear_counter_still_skips_ranged_hits_and_defeated_troops(ranged, damage):
+    actor = _make_guest(name="攻击者", side="attacker", hp=1_000_000)
+    target = _make_troop(name="枪王", side="defender", count=4000)
+    target.troop_class = "qiang"
+    target.tech_effects = {"counter_attack_chance": 1.0, "counter_attack_damage": 0.30}
+    application = apply_damage_results(actor, target, damage, random.Random(1), ranged_attack=ranged)
+    assert application.counter.raw_damage == 0

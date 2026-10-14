@@ -1,0 +1,31 @@
+{
+  "release": "battle-passive-actions-20261004T024343Z",
+  "image": "webgame:battle-passive-actions-20261004T024343Z",
+  "base_image": "webgame:battle-mobile-effects-20261004T023303Z",
+  "base_image_id": "sha256:eb55bc9e1d6d40dfd1b22dcc215ed91ab7a4f0cf0dc8ead963a7f84a54dba7cc",
+  "files": {
+    "battle/templates/battle/partials/retaliation_damage_summary.html": "fa09a43b6ba389d0d7c7c6eb3dbb44fa39bb4bc1a9b59a9a0e559c553e6ee6f8",
+    "battle/templates/battle/partials/attack_action_details.html": "49eb23d63a93932d2fb0e962d1312560b86fdf5e6157c152c013db3fa131f6ed",
+    "battle/report_events.py": "f2badce0eb9333db0819613606546fb41eb220b6a79fdad7749cc100a8509545"
+  },
+  "base_files": {
+    "battle/templates/battle/partials/retaliation_damage_summary.html": "6cabf7a21007da0f0e16069b3294f8a664e9ed690759e4530dc50e073461acd7",
+    "battle/templates/battle/partials/attack_action_details.html": "62774353d20591982d71aa64fa37e06b1ad9ac2277209b227278013ed1ffb6bb",
+    "battle/report_events.py": "5ea3b525b51449f590491a592fd3ba8870cafc67e129aa606c32591b99ae68c6"
+  },
+  "database_changes": false,
+  "services": [
+    "web"
+  ],
+  "status": "deployed_verified",
+  "image_id": "sha256:0bfa1c53972b736b2c47345b4c6e479548b2e4e16c892a93bc8a39de0b76d751",
+  "health": "healthy",
+  "backup_dir": "/root/code/releases/battle-passive-actions-20261004T024343Z/backup",
+  "workers_restarted": false,
+  "live_render_verified": true,
+  "public_health_status": 200,
+  "tests": {
+    "backend": 170,
+    "browser": 12
+  }
+}

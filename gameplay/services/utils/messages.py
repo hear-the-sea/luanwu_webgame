@@ -14,19 +14,28 @@ from threading import Lock
 from typing import Callable, Dict
 
 from django.core.cache import cache
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import QuerySet
 from django.db.models.deletion import ProtectedError
 from django.utils import timezone
 
 from core.config import MESSAGE
-from core.exceptions import AttachmentAlreadyClaimedError, MessageNotFoundError, NoAttachmentError
+from core.exceptions import (
+    AttachmentAlreadyClaimedError,
+    GameError,
+    ItemNotFoundError,
+    MessageNotFoundError,
+    NoAttachmentError,
+)
 from gameplay.services.utils.cache_exceptions import CACHE_INFRASTRUCTURE_EXCEPTIONS
 
 from ...models import ItemTemplate, Manor, Message, ResourceEvent
 from ...models.items import (
     _allow_prevalidated_message_deletions,
+    _validate_attachment_bucket,
     message_has_protected_attachments,
+    normalize_bound_message_items,
     normalize_message_attachment_buckets,
 )
 from ..inventory.core import add_item_to_inventory_locked
@@ -138,7 +147,7 @@ def create_message(
         body: 消息内容
         battle_report: 关联的战报��象（可选）
         is_read: 是否已读
-        attachments: 附件数据，格式：{"resources": {"grain": 100}, "items": {"item_key": 5}}
+        attachments: 附件数据，resources 为资源，items 为非绑定道具，bound_items 为绑定道具
 
     Returns:
         创建的消息对象
@@ -408,7 +417,7 @@ def mark_messages_read(manor: Manor, message_ids):
         manor: 庄园对象
         message_ids: 消息ID列表
     """
-    manor.messages.filter(id__in=message_ids).update(is_read=True)
+    manor.messages.filter(id__in=message_ids, is_read=False).update(is_read=True)
 
     # 清除未读消息数缓存
     _invalidate_unread_count_cache(manor.id)
@@ -486,6 +495,20 @@ def claim_message_attachments(message: Message) -> Dict:
     attachments = dict(locked_message.attachments or {})
     claimed_summary = {}
     resources, items = normalize_message_attachment_buckets(attachments)
+    # 管理表单以外的脚本也可写入邮件；领取前必须校验，避免截断数量或丢失绑定奖励。
+    try:
+        _validate_attachment_bucket(attachments.get("bound_items", {}), "bound_items")
+    except ValidationError as exc:
+        raise GameError("绑定附件配置无效，请联系管理员") from exc
+    bound_items = {key: int(amount) for key, amount in normalize_bound_message_items(attachments).items()}
+    item_templates_map = (
+        {tpl.key: tpl for tpl in ItemTemplate.objects.filter(key__in=items.keys() | bound_items.keys())}
+        if items or bound_items
+        else {}
+    )
+    missing_bound_keys = set(bound_items) - set(item_templates_map)
+    if missing_bound_keys:
+        raise ItemNotFoundError("绑定附件物品不存在，请联系管理员", item_key=sorted(missing_bound_keys)[0])
 
     # 发放资源
     claimed_resources, _overflow = grant_resources_locked(
@@ -499,11 +522,8 @@ def claim_message_attachments(message: Message) -> Dict:
 
     # 发放道具
     claimed_items: Dict[str, int] = {}
-    if items:
-        # 批量预加载物品模板，避免N+1查询
-        item_keys = list(items.keys())
-        item_templates_map = {tpl.key: tpl for tpl in ItemTemplate.objects.filter(key__in=item_keys)}
-
+    claimed_bound_items: Dict[str, int] = {}
+    if items or bound_items:
         for item_key, quantity in items.items():
             if quantity <= 0:
                 continue
@@ -518,10 +538,25 @@ def claim_message_attachments(message: Message) -> Dict:
                 item_key,
                 quantity,
                 template=item_template,
+                is_bound=False,
             )
 
             claimed_summary[f"item_{item_key}"] = quantity
             claimed_items[item_key] = quantity
+
+        for item_key, quantity in bound_items.items():
+            item_template = item_templates_map.get(item_key)
+            if not item_template:
+                continue
+            add_item_to_inventory_locked(
+                manor,
+                item_key,
+                quantity,
+                template=item_template,
+                is_bound=True,
+            )
+            claimed_summary[f"bound_item_{item_key}"] = quantity
+            claimed_bound_items[item_key] = quantity
 
     # 标记为已领取
     locked_message.is_claimed = True
@@ -531,6 +566,8 @@ def claim_message_attachments(message: Message) -> Dict:
         "resources": claimed_resources,
         "items": claimed_items,
     }
+    if bound_items:
+        attachments["claimed"]["bound_items"] = claimed_bound_items
     locked_message.attachments = attachments
     locked_message.save(update_fields=["is_claimed", "is_deletion_protected", "is_read", "attachments"])
     _invalidate_unread_count_cache(manor.id)

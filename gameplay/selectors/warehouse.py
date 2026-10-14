@@ -1,13 +1,22 @@
 from __future__ import annotations
 
+from copy import copy
+
 from django.core.paginator import Paginator
+from django.db.models import Q
 
 from guests.avatar import get_guest_disguise_avatar_options
 from guests.models import GuestStatus
 from guests.services.world_unique import WORLD_UNIQUE_LUBU_SCROLL_ITEM_KEY, get_world_unique_guest_status
 
 from ..models import InventoryItem, ItemTemplate
-from ..models.items import LEGACY_TOOL_EFFECT_TYPES, get_item_effect_type_label
+from ..models.items import (
+    LEGACY_MISSION_CHEST_KEYS,
+    LEGACY_TOOL_EFFECT_TYPES,
+    MISSION_CHEST_CATEGORY_KEY,
+    MISSION_CHEST_KEY_PREFIX,
+    get_item_effect_type_label,
+)
 from ..services.inventory.core import get_warehouse_grain_quantity
 from ..services.inventory.guest_item_selector import build_guest_item_selection_context
 from ..services.manor.treasury import get_treasury_capacity, get_treasury_deposit_block_reason, get_treasury_used_space
@@ -26,6 +35,7 @@ WAREHOUSE_CATEGORY_ORDER = (
     ItemTemplate.EffectType.MEDICINE,
     ItemTemplate.EffectType.EXPERIENCE_ITEM,
     ItemTemplate.EffectType.SKILL_BOOK,
+    MISSION_CHEST_CATEGORY_KEY,
     "tool",
     ItemTemplate.EffectType.RESOURCE,
     "other",
@@ -101,6 +111,25 @@ def _annotate_world_unique_scroll_use_status(items: list) -> None:
         item.world_unique_use_status_summary = status["summary"]
 
 
+def _split_inventory_display_rows(items: list, *, frozen_gold: int) -> list:
+    """按绑定状态投影仓库行，保留同一库存 ID，不修改库存账本。"""
+    rows = []
+    for item in items:
+        for binding_mode, quantity in (("bound", item.bound_quantity), ("unbound", item.unbound_quantity)):
+            if quantity <= 0:
+                continue
+            row = copy(item)
+            row.binding_mode = binding_mode
+            row.display_is_bound = binding_mode == "bound"
+            row.display_quantity = quantity
+            row.transferable_quantity = 0 if row.display_is_bound else quantity
+            if item.template.key == "gold_bar" and not row.display_is_bound:
+                row.display_quantity = max(0, quantity - frozen_gold)
+                row.transferable_quantity = row.display_quantity
+            rows.append(row)
+    return rows
+
+
 def get_warehouse_context(manor, current_tab: str, selected_category: str, page: int = 1) -> dict:
     # Get frozen gold bars for display adjustment
     from trade.services.auction_service import get_frozen_gold_bars
@@ -167,18 +196,24 @@ def get_warehouse_context(manor, current_tab: str, selected_category: str, page:
         )
 
     all_items = items
+    mission_chest_filter = Q(template__effect_type=ItemTemplate.EffectType.LOOT_BOX) & (
+        Q(template__key__startswith=MISSION_CHEST_KEY_PREFIX) | Q(template__key__in=LEGACY_MISSION_CHEST_KEYS)
+    )
     if selected_category != "all":
-        if selected_category in tool_effect_types:
+        if selected_category == MISSION_CHEST_CATEGORY_KEY:
+            items = items.filter(mission_chest_filter)
+        elif selected_category in tool_effect_types:
             selected_category = tool_category_key
-            items = items.filter(template__effect_type__in=tool_effect_types)
+            items = items.filter(template__effect_type__in=tool_effect_types).exclude(mission_chest_filter)
         else:
             items = items.filter(template__effect_type=selected_category)
 
     # 使用 values + distinct 只查询 effect_type，避免加载全部对象
     # 并清除既有排序，避免 PostgreSQL 下 DISTINCT + 非选择列 ORDER BY 的兼容性问题。
-    effect_types = _distinct_effect_types(all_items)
+    effect_types = _distinct_effect_types(all_items.exclude(mission_chest_filter))
 
-    categories = []
+    # 始终保留任务宝箱入口，空分类也能维持所选筛选项。
+    categories = [{"key": MISSION_CHEST_CATEGORY_KEY, "label": get_item_effect_type_label(MISSION_CHEST_CATEGORY_KEY)}]
     has_tools = False
     for effect_type in effect_types:
         key = effect_type or "other"
@@ -221,15 +256,10 @@ def get_warehouse_context(manor, current_tab: str, selected_category: str, page:
         )
     )
 
-    paginator = Paginator(warehouse_items, WAREHOUSE_PAGE_SIZE)
+    warehouse_rows = _split_inventory_display_rows(warehouse_items, frozen_gold=frozen_gold)
+    paginator = Paginator(warehouse_rows, WAREHOUSE_PAGE_SIZE)
     page_obj = paginator.get_page(page)
     items_list = list(page_obj)
-
-    for item in items_list:
-        if item.template.key == "gold_bar" and frozen_gold > 0:
-            setattr(item, "display_quantity", max(0, item.quantity - frozen_gold))
-        else:
-            item.display_quantity = item.quantity
 
     context["inventory_items"] = items_list
     context["warehouse_grain_quantity"] = get_warehouse_grain_quantity(manor)

@@ -5,6 +5,7 @@ from typing import Any
 from django.db.models import Q
 from django.utils import timezone
 
+from core.game_data.technology import troop_display_sort_key
 from core.utils.time_scale import get_time_scale
 from gameplay.constants import REGION_CHOICES
 
@@ -68,6 +69,7 @@ def get_guild_pvp_page_context(member: GuildMember, *, now=None) -> dict[str, An
         .select_related("troop_template")
         .order_by("troop_template__priority", "troop_template__id")
     )
+    troop_storages.sort(key=lambda storage: troop_display_sort_key(storage.troop_template.key))
     target_guilds = list(
         Guild.objects.filter(is_active=True)
         .exclude(pk=guild.pk)

@@ -25,7 +25,6 @@ from core.utils.time_scale import scale_duration
 
 from ...constants import BuildingKeys
 from ...models import Manor, TroopRecruitment
-from ..inventory.core import get_item_quantity
 from ..manor.troop_capacity import ensure_manor_troop_capacity_locked, get_manor_troop_remaining_space
 from ..technology import get_player_technology_level, get_technology_template
 from .lifecycle import apply_troop_recruitment_result_locked, finalize_troop_recruitment
@@ -258,9 +257,10 @@ def check_recruitment_requirements(
 
     item_templates = {t.key: t for t in ItemTemplate.objects.filter(key__in=equipment_list)}
 
+    equipment_quantities = _batch_get_item_quantities(manor, set(equipment_list))
     for item_key in equipment_list:
         required = quantity
-        have = get_item_quantity(manor, item_key)
+        have = equipment_quantities.get(item_key, 0)
         satisfied = have >= required
 
         result["equipment_status"][item_key] = {
@@ -444,7 +444,7 @@ def get_recruitment_options(manor: Manor) -> List[Dict[str, Any]]:
 
 def _batch_get_item_quantities(manor: Manor, item_keys: set[str]) -> Dict[str, int]:
     """
-    批量获取玩家物品数量。
+    批量获取可用于募兵的非绑定装备数量。
 
     Args:
         manor: 庄园实例
@@ -467,7 +467,7 @@ def _batch_get_item_quantities(manor: Manor, item_keys: set[str]) -> Dict[str, i
     result: Dict[str, int] = {}
     for item in items:
         key = item.template.key
-        result[key] = result.get(key, 0) + item.quantity
+        result[key] = result.get(key, 0) + item.unbound_quantity
 
     return result
 
@@ -612,9 +612,8 @@ def _consume_equipment_costs_for_recruitment(
 
     for item_key, required in equipment_costs.items():
         item = locked_items.get(item_key)
-        if not item or item.quantity < required:
-            raise TroopRecruitmentError("所需装备不足", item_key=item_key)
-
+        if not item or item.unbound_quantity < required:
+            raise TroopRecruitmentError("所需装备不足（绑定装备不可用于募兵）", item_key=item_key)
         item.quantity -= required
         if item.quantity <= 0:
             delete_ids.append(item.id)

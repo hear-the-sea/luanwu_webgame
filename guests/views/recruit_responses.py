@@ -102,12 +102,14 @@ def recruitment_hall_response(
     *,
     is_ajax: bool,
     status: int = 200,
+    refresh_state: bool = False,
     message_level: str = "success",
     use_cache: bool = True,
 ) -> HttpResponse:
     if is_ajax:
         if status >= 400:
-            return json_error(message, status=status)
+            payload = build_recruitment_hall_ajax_payload(request, manor, use_cache=False) if refresh_state else {}
+            return json_error(message, status=status, **payload)
         return json_recruitment_hall_success(
             request,
             manor,

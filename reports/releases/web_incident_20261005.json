@@ -1,0 +1,22 @@
+{
+  "checks": {
+    "/health/live": {
+      "status": 200,
+      "seconds": 0.056
+    },
+    "/": {
+      "status": 200,
+      "seconds": 0.023
+    },
+    "/accounts/login/": {
+      "status": 200,
+      "seconds": 0.029
+    }
+  },
+  "internal_ready": true,
+  "web_health": "healthy",
+  "image": "webgame:spear-counter-20261005-g0",
+  "counter_cap_verified": true,
+  "root_trigger": "not yet confirmed",
+  "recovery": "restart only the unresponsive web container"
+}

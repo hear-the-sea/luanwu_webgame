@@ -1,0 +1,33 @@
+{
+  "release": "battle-mobile-effects-20261004T023303Z",
+  "image": "webgame:battle-mobile-effects-20261004T023303Z",
+  "base_image": "webgame:battle-display-review-final-20261003T234008Z",
+  "base_image_id": "sha256:0c447963f7896ef652200369b33a24b80616448cd9fea46bae42c7a1dbc8de97",
+  "files": {
+    "static/css/style.css": "ff0b7f4e13ccdb626f6222a4c03994e25f2a9280b65ab7c296f33e80e84f8304",
+    "battle/templates/battle/partials/heal_effect_summary.html": "09de00a94c43777740569477893e439596fc6f7430d8ff37f86493977a13fc9e",
+    "battle/templates/battle/partials/retaliation_damage_summary.html": "6cabf7a21007da0f0e16069b3294f8a664e9ed690759e4530dc50e073461acd7",
+    "battle/templates/battle/partials/attack_action_details.html": "62774353d20591982d71aa64fa37e06b1ad9ac2277209b227278013ed1ffb6bb"
+  },
+  "base_files": {
+    "static/css/style.css": "0bd212c1f4b2ed600d968c656fb04ecd725ae862824f6af60dd2df15c216ef2e",
+    "battle/templates/battle/partials/heal_effect_summary.html": "1a3cbe5afdb741f9e1b26651f3c8c67ea6678bdd0d4ae621853df01273333e55",
+    "battle/templates/battle/partials/retaliation_damage_summary.html": "d04851bc285de6ac2a4241b2b389a34bf3f6e745e4036117cd97f5a31b382ea6",
+    "battle/templates/battle/partials/attack_action_details.html": "8b824f3395434e3d9cd29e49551be4c09495ee39e0cb5692180dc3aae577726a"
+  },
+  "database_changes": false,
+  "services": [
+    "web"
+  ],
+  "status": "deployed_verified",
+  "image_id": "sha256:eb55bc9e1d6d40dfd1b22dcc215ed91ab7a4f0cf0dc8ead963a7f84a54dba7cc",
+  "health": "healthy",
+  "backup_dir": "/root/code/releases/battle-mobile-effects-20261004T023303Z/backup",
+  "workers_restarted": false,
+  "public_css_verified": true,
+  "public_health_status": 200,
+  "tests": {
+    "backend": 15,
+    "browser": 12
+  }
+}

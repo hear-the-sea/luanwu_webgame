@@ -5,7 +5,6 @@ import re
 from typing import Any
 
 from django.db import IntegrityError, transaction
-from django.db.models import F
 
 from core.exceptions import GameError, MessageError
 from core.utils.infrastructure import (
@@ -133,11 +132,9 @@ def rename_manor(manor: Manor, new_name: str, consume_item: bool = True) -> None
         if not inventory_item:
             raise ManorRenameItemError("您没有庄园命名卡")
 
-        updated = InventoryItem.objects.filter(pk=inventory_item.pk, quantity__gte=1).update(quantity=F("quantity") - 1)
-        if not updated:
-            raise ManorRenameItemError("道具消耗失败，请重试")
+        from gameplay.services.inventory.core import consume_inventory_item_locked
 
-        InventoryItem.objects.filter(pk=inventory_item.pk, quantity__lte=0).delete()
+        consume_inventory_item_locked(inventory_item, 1)
 
     old_name = manor.name or manor.display_name
     manor.name = new_name

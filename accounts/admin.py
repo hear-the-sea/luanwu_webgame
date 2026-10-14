@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from typing import Any
 
 from django.contrib import admin, messages
@@ -5,12 +6,15 @@ from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
+from django.db import DEFAULT_DB_ALIAS, transaction
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
 from django.views.decorators.http import require_http_methods
 
+from core.admin_cascade import account_message_cascade_scope
 from core.admin_i18n import apply_common_field_labels
+from core.admin_records import OperationLogAdmin  # noqa: F401
 from core.utils.infrastructure import CACHE_INFRASTRUCTURE_EXCEPTIONS
 
 from .admin_login import ClearLoginRestrictionsForm, LoginRestrictionsClearError, clear_login_restrictions
@@ -42,6 +46,52 @@ class UserAdmin(DjangoUserAdmin):
     )
     list_filter = (*DjangoUserAdmin.list_filter, "email_verified")
     search_fields = ("username", "email", "title")
+
+    def get_deleted_objects(self, objs, request):
+        objects = list(objs)
+        if not all(
+            (obj._state.db or DEFAULT_DB_ALIAS) == DEFAULT_DB_ALIAS and self.has_delete_permission(request, obj)
+            for obj in objects
+        ):
+            return super().get_deleted_objects(objects, request)
+        from gameplay.models import Manor
+
+        manor_ids = (
+            Manor.objects.using(DEFAULT_DB_ALIAS)
+            .filter(user_id__in=[obj.pk for obj in objects])
+            .values_list("pk", flat=True)
+        )
+        with account_message_cascade_scope(request, manor_ids):
+            return super().get_deleted_objects(objects, request)
+
+    def _delete_accounts(self, request, objects, delete: Callable[[], None]) -> None:
+        from gameplay.models import Message
+        from gameplay.models.items import _allow_prevalidated_message_deletions
+
+        if not all(
+            (obj._state.db or DEFAULT_DB_ALIAS) == DEFAULT_DB_ALIAS and self.has_delete_permission(request, obj)
+            for obj in objects
+        ):
+            raise PermissionDenied
+        with transaction.atomic(using=DEFAULT_DB_ALIAS):
+            _deleted, _counts, permissions_needed, protected = self.get_deleted_objects(objects, request)
+            if permissions_needed or protected:
+                raise PermissionDenied
+            message_ids = (
+                Message.objects.using(DEFAULT_DB_ALIAS)
+                .filter(manor__user_id__in=[obj.pk for obj in objects])
+                .values_list("pk", flat=True)
+            )
+            with _allow_prevalidated_message_deletions(DEFAULT_DB_ALIAS, message_ids):
+                delete()
+
+    def delete_model(self, request, obj):
+        self._delete_accounts(request, [obj], lambda: super(UserAdmin, self).delete_model(request, obj))
+
+    def delete_queryset(self, request, queryset):
+        objects = list(queryset)
+        selected = queryset.filter(pk__in=[obj.pk for obj in objects])
+        self._delete_accounts(request, objects, lambda: super(UserAdmin, self).delete_queryset(request, selected))
 
     def changelist_view(self, request, extra_context=None):
         return super().changelist_view(

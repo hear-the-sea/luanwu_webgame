@@ -4,8 +4,10 @@ import asyncio
 import logging
 import time
 from enum import Enum
+from typing import Any
 
 from asgiref.sync import sync_to_async
+from autobahn.exception import Disconnected
 from channels.db import database_sync_to_async
 from django.conf import settings
 from django_redis import get_redis_connection
@@ -99,6 +101,28 @@ class SingleSessionWebSocketMixin:
     _connection_slot_heartbeat_task: asyncio.Task | None = None
     _connection_slot_worker_id: str | None = None
     _connection_capacity_state: WebSocketIPCapacityState | None = None
+    _websocket_closing: bool = False
+
+    async def close(self, code: int | None = None, reason: str | None = None) -> None:
+        if self._websocket_closing:
+            return
+        self._websocket_closing = True
+        await super().close(code=code, reason=reason)  # type: ignore[misc]
+
+    async def send(self, text_data: str | None = None, bytes_data: bytes | None = None, close: bool = False) -> None:
+        if self._websocket_closing:
+            return
+        try:
+            await super().send(text_data=text_data, bytes_data=bytes_data, close=close)  # type: ignore[misc]
+        except Disconnected:
+            # 客户端关闭可能早于 disconnect 消息；只处理协议已断开的竞争。
+            self._websocket_closing = True
+
+    async def send_json(self, content: Any, close: bool = False) -> None:
+        if self._websocket_closing:
+            return
+        # Channels 的 send_json 直接调用基类 send；显式复用本层的协议保护。
+        await self.send(text_data=await self.encode_json(content), close=close)  # type: ignore[attr-defined]
 
     def _session_validation_now(self) -> float:
         return time.monotonic()
@@ -110,9 +134,13 @@ class SingleSessionWebSocketMixin:
         self._single_session_valid_until = self._session_validation_now() + float(self.SESSION_VALIDATION_CACHE_SECONDS)
 
     async def dispatch(self, message):
+        message_type = str(message.get("type", ""))
+        if self._websocket_closing and message_type != "websocket.disconnect":
+            return
+        if message_type == "websocket.disconnect":
+            self._websocket_closing = True
         if not await self._guard_single_session(message):
             return
-        message_type = str(message.get("type", ""))
         if message_type == "websocket.connect" and not await self._guard_connection_capacity():
             return
         self._single_session_checked_by_dispatch = True
@@ -210,7 +238,9 @@ class SingleSessionWebSocketMixin:
 
         if not decision.allowed:
             logger.info(
-                "WebSocket connection capacity rejected",
+                "WebSocket connection capacity rejected: active_slots=%s limit=%s",
+                decision.active_count,
+                settings.WEBSOCKET_MAX_CONNECTIONS_PER_USER,
                 extra={
                     "user_id": user_id,
                     "path": self.scope.get("path"),  # type: ignore[attr-defined]

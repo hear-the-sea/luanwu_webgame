@@ -5,6 +5,7 @@ from typing import Any
 from django.db.models import Count, Q
 from django.utils import timezone
 
+from core.game_data.technology import troop_display_sort_key
 from gameplay.utils.template_loader import get_troop_templates_by_keys
 from guests.models import GuestTemplate
 
@@ -100,6 +101,7 @@ def get_guild_mission_page_context(
         .select_related("troop_template")
         .order_by("troop_template__priority", "troop_template__id")
     )
+    troop_storages.sort(key=lambda storage: troop_display_sort_key(storage.troop_template.key))
 
     mission_groups = {
         "junior": [mission for mission in mission_templates if mission.difficulty == "junior"],

@@ -108,6 +108,15 @@ def test_waiting_bulk_heal_sees_inventory_after_failed_transaction_rolls_back(dj
     from gameplay.services.inventory import core as inventory_core
 
     manor, guest, item = _create_patient(django_user_model, quantity=3)
+    item.quantity = 1
+    item.save(update_fields=["quantity"])
+    extra_template = ItemTemplate.objects.create(
+        key=f"healing_race_extra_{uuid4().hex[:16]}",
+        name="并发疗伤药",
+        effect_type=ItemTemplate.EffectType.MEDICINE,
+        effect_payload={"hp": 300},
+    )
+    extra_item = InventoryItem.objects.create(manor=manor, template=extra_template, quantity=2)
     failing_transaction_ready = threading.Event()
     waiter_started = threading.Event()
     original_consume = inventory_core.consume_inventory_item_locked
@@ -158,3 +167,54 @@ def test_waiting_bulk_heal_sees_inventory_after_failed_transaction_rolls_back(dj
     guest.refresh_from_db()
     assert guest.current_hp == guest.max_hp == 1_000
     assert not InventoryItem.objects.filter(pk=item.pk).exists()
+    assert not InventoryItem.objects.filter(pk=extra_item.pk).exists()
+
+
+def test_different_manors_sharing_templates_do_not_block_each_other(django_user_model, monkeypatch):
+    from gameplay.services.inventory import core as inventory_core
+
+    first, first_guest, first_item = _create_patient(django_user_model, quantity=1)
+    second, second_guest, second_item = _create_patient(django_user_model, quantity=1)
+    second_guest.template = first_guest.template
+    second_guest.save(update_fields=["template"])
+    second_item.template = first_item.template
+    second_item.save(update_fields=["template"])
+    first_holds_locks = threading.Event()
+    second_finished = threading.Event()
+    consume = inventory_core.consume_inventory_item_locked
+    errors = []
+
+    def hold_first_transaction(item, amount, **kwargs):
+        if item.manor_id == first.pk:
+            first_holds_locks.set()
+            assert second_finished.wait(timeout=10), "different manor blocked by shared template lock"
+        return consume(item, amount, **kwargs)
+
+    monkeypatch.setattr(inventory_core, "consume_inventory_item_locked", hold_first_transaction)
+
+    def run(manor, *, wait_for_first=False):
+        close_old_connections()
+        try:
+            if wait_for_first:
+                assert first_holds_locks.wait(timeout=10)
+            health.heal_all_guests_with_medicine(Manor(pk=manor.pk))
+        except Exception as exc:
+            errors.append(exc)
+        finally:
+            if wait_for_first:
+                second_finished.set()
+            connection.close()
+
+    threads = [
+        threading.Thread(target=run, args=(first,), daemon=True),
+        threading.Thread(target=run, args=(second,), kwargs={"wait_for_first": True}, daemon=True),
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=20)
+    assert all(not thread.is_alive() for thread in threads)
+    assert not errors
+    first_guest.refresh_from_db()
+    second_guest.refresh_from_db()
+    assert first_guest.current_hp == second_guest.current_hp == 400

@@ -931,7 +931,7 @@ skills:
               log_name: 招锋引敌
               message: 受击概率↑
             - type: modify_target_weight
-              value: 5.0
+              value: 10.0
               target_scope: self
 
   - key: comrade_command

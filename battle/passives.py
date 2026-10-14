@@ -49,6 +49,7 @@ def run_passives_for_timing(
             continue
         config = skill.get("passive_config") or {}
         context["skill_key"] = str(skill.get("key") or "").strip() or "__direct__"
+        context["skill_name"] = str(skill.get("name") or "").strip()
         for trigger in config.get("triggers") or []:
             if str(trigger.get("timing") or "") != timing:
                 continue

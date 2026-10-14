@@ -6,7 +6,7 @@ from typing import Any
 
 from django.http import HttpRequest, HttpResponse
 
-from core.exceptions import GameError
+from core.exceptions import GameError, RecruitmentAlreadyInProgressError, RecruitmentDailyLimitExceededError
 from core.utils import sanitize_error_message
 from core.utils.locked_actions import (
     ActionLockSpec,
@@ -66,6 +66,7 @@ def run_locked_recruit_action(
             manor,
             sanitize_error_message(exc),
             is_ajax=is_ajax,
+            refresh_state=isinstance(exc, (RecruitmentAlreadyInProgressError, RecruitmentDailyLimitExceededError)),
             status=400,
             message_level="error",
         )

@@ -1,0 +1,23 @@
+<div class="space-y-3">
+    <div>
+        <p class="font-semibold mb-2">上阵门客</p>
+        <div class="tw-arena-guest-grid">
+            {% for guest in lineup.guests %}
+            <div class="p-3 rounded-md border border-border-light bg-bg-hover">
+                <p class="font-semibold">{{ guest.display_name }} · 等级 {{ guest.level }}</p>
+                <p class="text-xs text-text-muted mt-1">攻击 {{ guest.attack }} / 防御 {{ guest.defense }} / 气血 {{ guest.max_hp }}</p>
+                <p class="text-xs text-text-muted">带兵 {{ guest.troop_capacity }} · 敏捷 {{ guest.agility }}</p>
+                {% if guest.skill_names %}<p class="text-xs text-text-muted mt-1">技能：{{ guest.skill_names|join:'、' }}</p>{% endif %}
+            </div>
+            {% empty %}<p class="text-text-muted">暂无门客。</p>{% endfor %}
+        </div>
+    </div>
+    <div>
+        <p class="font-semibold mb-2">护院阵容</p>
+        <div class="flex flex-wrap gap-2">
+            {% for troop in lineup.troops %}
+            <span class="tw-pill">{{ troop.name }} × {{ troop.count }}</span>
+            {% empty %}<span class="text-text-muted">未配置护院。</span>{% endfor %}
+        </div>
+    </div>
+</div>

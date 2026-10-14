@@ -117,6 +117,9 @@ def get_home_context(manor, *, production_basis: ResourceProductionBasis | None 
     player_troops = list(
         manor.troops.select_related("troop_template").filter(count__gt=0).order_by("troop_template__priority")
     )
+    from core.game_data.technology import troop_display_sort_key
+
+    player_troops.sort(key=lambda troop: troop_display_sort_key(troop.troop_template.key))
 
     from ..services.raid import get_active_raids, get_active_scouts, get_incoming_raids
 

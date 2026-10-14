@@ -582,22 +582,22 @@ def test_arena_shortage_snapshot_rejects_silent_context_coercion() -> None:
 
 
 def test_grow_arena_virtual_reserves_runs_growth(monkeypatch):
-    calls: list[int] = []
+    calls: list[tuple[int, float]] = []
     monkeypatch.setattr(
         arena_tasks,
         "grow_due_virtual_reserves",
-        lambda *, limit: calls.append(limit) or 5,
+        lambda *, limit, max_duration_seconds: calls.append((limit, max_duration_seconds)) or 5,
     )
 
     result = arena_tasks.grow_arena_virtual_reserves.run(limit=40)
 
     assert result == {"grown": 5}
-    assert calls == [40]
+    assert calls == [(40, 20)]
 
 
 def test_grow_arena_virtual_reserves_surfaces_growth_database_failure(monkeypatch):
-    def fail_growth(*, limit):
-        del limit
+    def fail_growth(*, limit, max_duration_seconds):
+        del limit, max_duration_seconds
         raise DatabaseError("growth database unavailable")
 
     monkeypatch.setattr(arena_tasks, "grow_due_virtual_reserves", fail_growth)

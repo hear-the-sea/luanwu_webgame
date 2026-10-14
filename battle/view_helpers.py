@@ -7,11 +7,12 @@ from typing import TYPE_CHECKING, Any, Iterable
 from django.apps import apps
 
 from common.constants.resources import ResourceType
+from core.game_data.technology import troop_display_sort_key
 from core.game_data.troop_device_bonus_display import format_aggregated_troop_device_bonus
 from gameplay.utils.template_loader import get_item_templates_by_keys
 from guests.models import Guest, GuestTemplate, SkillBook
 
-from .report_events import report_event_side
+from .report_events import group_action_recovery_events, report_event_side
 
 if TYPE_CHECKING:
     from .models import BattleReport
@@ -45,6 +46,13 @@ def _load_arena_match_for_report(report: "BattleReport"):
 def _load_arena_coop_event_for_report(report: "BattleReport"):
     ArenaCoopEvent = apps.get_model("gameplay", "ArenaCoopEvent")
     return ArenaCoopEvent.objects.filter(battle_report=report).first()
+
+
+def _load_arena_ring_match_for_report(report: "BattleReport"):
+    if not getattr(report, "pk", None):
+        return None
+    ArenaRingMatch = apps.get_model("gameplay", "ArenaRingMatch")
+    return ArenaRingMatch.objects.filter(battle_report=report).first()
 
 
 def _load_guild_mission_run_for_report(report: "BattleReport"):
@@ -134,9 +142,19 @@ def resolve_report_runtime_context(report: "BattleReport", *, manor_id: int) -> 
             return {"player_side": "attacker", "raid_run": None, "arena_match": arena_match}
         return {"player_side": "spectator", "raid_run": None, "arena_match": arena_match}
 
+    ring_match = _load_arena_ring_match_for_report(report)
+    if ring_match:
+        side = (
+            "defender"
+            if ring_match.defender_id == manor_id
+            else ("attacker" if ring_match.attacker_id == manor_id else "spectator")
+        )
+        return {"player_side": side, "raid_run": None}
+
     arena_coop_event = _load_arena_coop_event_for_report(report)
     if arena_coop_event:
-        return {"player_side": "attacker", "raid_run": None}
+        side = "attacker" if arena_coop_event.entries.filter(manor_id=manor_id).exists() else "spectator"
+        return {"player_side": side, "raid_run": None}
 
     guild_mission_run = _load_guild_mission_run_for_report(report)
     if guild_mission_run:
@@ -308,6 +326,7 @@ def serialize_casualty_rows(raw_loss: Any) -> list[dict[str, Any]]:
             continue
         rows.append({"label": label, "lost": lost})
 
+    rows.sort(key=lambda row: troop_display_sort_key("", row["label"]))
     return rows
 
 
@@ -381,6 +400,9 @@ def _normalize_round_lineup_side(raw_side: Any, avatar_map: dict[str, str]) -> d
         [row for row in raw_city_defenses if isinstance(row, dict)] if isinstance(raw_city_defenses, list) else []
     )
 
+    troops.sort(
+        key=lambda row: troop_display_sort_key(str(row.get("template_key") or row.get("key") or ""), row["name"])
+    )
     return {"guests": guests, "city_defenses": city_defenses, "troops": troops}
 
 
@@ -392,7 +414,9 @@ def build_rounds_display(rounds: Iterable[dict[str, Any]], avatar_map: dict[str,
         raw_lineups = raw_round.get("lineups")
         has_lineup_snapshot = isinstance(raw_lineups, dict) and "attacker" in raw_lineups and "defender" in raw_lineups
         lineups = raw_lineups if isinstance(raw_lineups, dict) else {}
-        events = [event for event in (raw_round.get("events") or []) if isinstance(event, dict)]
+        events = group_action_recovery_events(
+            event for event in (raw_round.get("events") or []) if isinstance(event, dict)
+        )
         display_rounds.append(
             {
                 **raw_round,
@@ -459,7 +483,7 @@ def serialize_troops(troops_raw: dict[str, int], troop_definitions: dict[str, di
             "count": count,
             "avatar": troop_definitions.get(key, {}).get("avatar"),
         }
-        for key, count in troops_raw.items()
+        for key, count in sorted(troops_raw.items(), key=lambda item: troop_display_sort_key(item[0]))
         if count
     ]
 

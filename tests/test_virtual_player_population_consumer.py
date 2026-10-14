@@ -71,6 +71,92 @@ def _bootstrap_plan():
     return SimpleNamespace(projection=None)
 
 
+def test_population_soft_budget_finalizes_claim_releases_ownership_and_preserves_deficit(monkeypatch):
+    now = timezone.now()
+    _activate_consumer(monkeypatch)
+    _patch_bootstrap_builder(monkeypatch)
+    released = []
+
+    @contextmanager
+    def ownership():
+        try:
+            yield lambda: None
+        finally:
+            released.append(True)
+
+    monkeypatch.setattr(population_runtime, "_population_ownership", ownership)
+    monkeypatch.setattr(population_runtime, "monotonic", lambda: 100.0)
+    monkeypatch.setattr(population_runtime, "_v2_population_cell_has_executable_deficit", lambda **kwargs: True)
+    mutations = []
+    monkeypatch.setattr(
+        population_runtime,
+        "_reactivate_or_create_virtual_player",
+        lambda **kwargs: mutations.append(kwargs)
+        or SimpleNamespace(status=PopulationMutationStatus.CREATED, profile=SimpleNamespace(pk=len(mutations))),
+    )
+    merge_population_recompute_demand(region="north", prestige_band="newbie", now=now)
+    result = population_runtime.reconcile_virtual_player_population_cell(
+        region="north", prestige_band="newbie", limit=12, now=now, max_duration_seconds=0
+    )
+    assert result.processed_count == 1
+    assert result.status is PopulationCellReconcileStatus.CONTINUED
+    demand = BotPopulationRecomputeDemand.objects.get(region="north", prestige_band="newbie")
+    assert demand.claim_token is None
+    assert demand.claimed_revision is None
+    assert demand.requested_revision > demand.completed_revision
+    assert released == [True]
+    result = population_runtime.reconcile_virtual_player_population_cell(
+        region="north", prestige_band="newbie", limit=12, now=now, deadline=100.0
+    )
+    assert result.processed_count == 1
+    assert len(mutations) == 2
+    assert released == [True, True]
+    merge_population_recompute_demand(region="south", prestige_band="newbie", now=now)
+    results = population_runtime.scan_virtual_player_population_demands(
+        limit=100,
+        cell_limit=8,
+        now=now,
+        max_duration_seconds=0,
+    )
+    assert len(results) == 1
+    assert results[0].processed_count == 1
+    assert len(mutations) == 3
+    assert released == [True, True, True]
+    assert not BotPopulationRecomputeDemand.objects.filter(claim_token__isnull=False).exists()
+
+
+def test_roll_budget_rotates_durable_cells_instead_of_static_region_order(monkeypatch):
+    now = timezone.now()
+    cells = (("north", "newbie"), ("south", "newbie"))
+    monkeypatch.setattr(
+        population_runtime, "_v2_population_runtime_config", lambda: {"enabled": True, "population": {}}
+    )
+    monkeypatch.setattr(population_runtime, "sync_mismatched_v2_current_prestige_bands", lambda: 0)
+    monkeypatch.setattr(population_runtime, "_retire_unsupported_v2_profiles", lambda **kwargs: 0)
+    monkeypatch.setattr(population_runtime, "_v2_periodic_population_cells", lambda: cells)
+    monkeypatch.setattr(population_runtime, "merge_periodic_v2_population_recompute_demands", lambda **kwargs: None)
+    monkeypatch.setattr(population_runtime, "monotonic", lambda: 100.0)
+    for region, band in cells:
+        merge_population_recompute_demand(region=region, prestige_band=band, now=now - timedelta(minutes=1))
+    calls = []
+
+    def consume(**kwargs):
+        region = kwargs["region"]
+        calls.append(region)
+        BotPopulationRecomputeDemand.objects.filter(region=region).update(available_at=kwargs["now"])
+        return SimpleNamespace(processed_count=1, status=PopulationCellReconcileStatus.CONTINUED)
+
+    monkeypatch.setattr(population_runtime, "reconcile_virtual_player_population_cell", consume)
+    assert population_runtime._roll_virtual_player_population_v2(limit=12, now=now, max_duration_seconds=0) == 1
+    assert (
+        population_runtime._roll_virtual_player_population_v2(
+            limit=12, now=now + timedelta(minutes=1), max_duration_seconds=0
+        )
+        == 1
+    )
+    assert calls == ["north", "south"]
+
+
 def _population_plan(*, deficit: int):
     cell = SimpleNamespace(structural_deficit=deficit)
     return SimpleNamespace(by_key={("north", "newbie"): cell})
@@ -1292,6 +1378,7 @@ def test_population_reconcile_task_never_runs_global_roll_or_maintenance(
         region="north",
         prestige_band="newbie",
         limit=3,
+        max_duration_seconds=20,
     )
 
 
@@ -1311,7 +1398,7 @@ def test_population_scan_task_is_transport_only(monkeypatch) -> None:
     )
 
     assert result == [{"status": "completed"}, {"status": "continued"}]
-    scan.assert_called_once_with(limit=7, cell_limit=2)
+    scan.assert_called_once_with(limit=7, cell_limit=2, max_duration_seconds=20)
 
 
 def test_periodic_current_band_sync_selects_only_mismatched_v2_profiles(

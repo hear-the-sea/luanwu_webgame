@@ -386,6 +386,7 @@ _ARENA_TRAINING_ASSIGNMENT_STALE_AFTER = timedelta(minutes=5)
 # Keep the scheduled maintenance slice large enough to drain the configured
 # population without removing the separate hard-cap safety boundary below.
 SCHEDULED_MAINTENANCE_DEFAULT_BATCH_SIZE = 200
+SCHEDULED_MAINTENANCE_BUDGET_CHUNK_SIZE = 10
 # The population audit currently fixes the maintained-profile hard cap at
 # 1000.  Keep the due selection bounded even when a caller bypasses the
 # public batch entry point.
@@ -9902,12 +9903,15 @@ def _retire_due_v2_profiles(
     profiles: tuple[BotProfile, ...],
     *,
     current_time: datetime,
+    deadline: float | None = None,
 ) -> tuple[int, frozenset[int]]:
     """Apply ordinary V2 retirement without crossing an Arena lease boundary."""
 
     retired = 0
     retired_ids: set[int] = set()
-    for profile in profiles:
+    for index, profile in enumerate(profiles):
+        if index and deadline is not None and monotonic() >= deadline:
+            break
         # Recheck the due date under the profile lock before retiring it.
         with transaction.atomic():
             locked_profile = profile_store.lock_maintained_profile(int(profile.id))
@@ -9919,14 +9923,128 @@ def _retire_due_v2_profiles(
     return retired, frozenset(retired_ids)
 
 
+def _execute_scheduled_maintenance_chunk(
+    profiles: tuple[BotProfile, ...],
+    *,
+    current_time: datetime,
+    routing: RuntimeRoutingSnapshot,
+    database_clock: datetime,
+) -> int:
+    try:
+        with record_maintenance_stage(STAGE_SAFETY_ATTEMPT_START):
+            safety_attempts = start_maintenance_attempts(
+                trigger=MaintenanceTrigger.SCHEDULED,
+                operation_ids=(None,) * len(profiles),
+                retention_reference_at=database_clock,
+            )
+    except (DatabaseError, SafetyProviderError) as exc:
+        log_safety_metric_failure(
+            operation="maintenance_attempt_started_batch",
+            exc=exc,
+        )
+        raise
+
+    terminal_batch: list[tuple[MaintenanceAttempt, MaintenanceResult | MaintenanceAttemptResult]] = []
+    try:
+        planning_snapshots = _scheduled_planning_snapshots_with_profile_isolation(
+            profiles,
+            planned_at=current_time,
+            safety_attempts=safety_attempts,
+            terminal_batch=terminal_batch,
+        )
+
+        maintained = 0
+        for profile, safety_attempt in zip(profiles, safety_attempts, strict=True):
+            profile_id = int(profile.id)
+            planning_snapshot = planning_snapshots.get(profile_id)
+            if planning_snapshot is None:
+                continue
+            try:
+                result = maintain_virtual_player_v2(
+                    profile_id,
+                    trigger=MaintenanceTrigger.SCHEDULED,
+                    now=current_time,
+                    _routing_snapshot=routing,
+                    _external_reconciliation_prechecked=True,
+                    _planning_snapshot=planning_snapshot,
+                    _safety_attempt=safety_attempt,
+                    _safety_terminal_batch=terminal_batch,
+                    _scheduled_cycle_known_absent=not bool(
+                        getattr(profile, "scheduled_cycle_exists_at_selection", True)
+                    ),
+                    _scheduled_cycle_open_known=bool(getattr(profile, "scheduled_cycle_open_at_selection", False)),
+                )
+            except DatabaseError as exc:
+                with record_maintenance_stage(STAGE_RECOVERY_STATE):
+                    record_recovery_failure(
+                        scope="profile",
+                        entity_key=str(profile_id),
+                        failure_code=classify_failure(exc, commit_uncertain=True),
+                        error=exc,
+                        operation_id=safety_attempt.operation_id,
+                        payload={"trigger": MaintenanceTrigger.SCHEDULED.value},
+                    )
+                logger.exception(
+                    "Virtual player V2 maintenance database failure isolated: profile_id=%s",
+                    profile_id,
+                    extra={
+                        "event": "virtual_player_v2_maintenance_profile_database_failure",
+                        "profile_id": int(profile_id),
+                        "failure_class": RecoveryFailureClass.COMMIT_UNCERTAIN.value,
+                    },
+                )
+                raise
+            except Exception as exc:
+                with record_maintenance_stage(STAGE_RECOVERY_STATE):
+                    record_recovery_failure(
+                        scope="profile",
+                        entity_key=str(profile_id),
+                        failure_code=classify_failure(exc),
+                        error=exc,
+                        operation_id=safety_attempt.operation_id,
+                        payload={"trigger": MaintenanceTrigger.SCHEDULED.value},
+                    )
+                logger.exception(
+                    "Virtual player V2 maintenance failed: profile_id=%s",
+                    profile_id,
+                    extra={
+                        "event": "virtual_player_v2_maintenance_failed",
+                        "profile_id": int(profile_id),
+                    },
+                )
+                continue
+            if result.outcome in {
+                MaintenanceOutcome.APPLIED,
+                MaintenanceOutcome.NO_ACTION,
+            }:
+                if bool(getattr(profile, "maintenance_recovery_needs_clear", False)):
+                    with record_maintenance_stage(STAGE_RECOVERY_STATE):
+                        clear_recovery_failure(scope="profile", entity_key=str(profile_id), now=current_time)
+                maintained += 1
+    finally:
+        # A failure after chunk admission must not strand attempts for later
+        # profiles in the admitted chunk. No attempt is created for chunks
+        # that the soft budget leaves untouched.
+        completed_operations = {attempt.operation_id for attempt, _result in terminal_batch}
+        terminal_batch.extend(
+            (attempt, MaintenanceAttemptResult.FAILED)
+            for attempt in safety_attempts
+            if attempt.operation_id not in completed_operations
+        )
+        _finish_safety_attempts_best_effort(terminal_batch)
+    return maintained
+
+
 @record_maintenance_stage(STAGE_BATCH_ORCHESTRATION)
 def _maintain_due_virtual_players_v2(
     *,
     current_time: datetime,
     limit: int,
     routing: RuntimeRoutingSnapshot,
+    max_duration_seconds: float | None = None,
 ) -> int:
     batch_started_at = monotonic()
+    deadline = None if max_duration_seconds is None else batch_started_at + max(0.0, float(max_duration_seconds))
     limit = max(0, min(SCHEDULED_MAINTENANCE_DUE_SCAN_HARD_CAP, int(limit)))
     if limit <= 0:
         return 0
@@ -10115,6 +10233,7 @@ def _maintain_due_virtual_players_v2(
     retired, _retired_ids = _retire_due_v2_profiles(
         retirement_profiles,
         current_time=current_time,
+        **({"deadline": deadline} if deadline is not None else {}),
     )
     if not profiles:
         return retired
@@ -10125,96 +10244,31 @@ def _maintain_due_virtual_players_v2(
         logger.exception("Virtual player V2 maintenance database clock annotation was invalid")
         raise
 
-    try:
-        with record_maintenance_stage(STAGE_SAFETY_ATTEMPT_START):
-            safety_attempts = start_maintenance_attempts(
-                trigger=MaintenanceTrigger.SCHEDULED,
-                operation_ids=(None,) * len(profiles),
-                retention_reference_at=database_clock,
-            )
-    except (DatabaseError, SafetyProviderError) as exc:
-        log_safety_metric_failure(
-            operation="maintenance_attempt_started_batch",
-            exc=exc,
-        )
-        raise
-
-    terminal_batch: list[tuple[MaintenanceAttempt, MaintenanceResult | MaintenanceAttemptResult]] = []
-    planning_snapshots = _scheduled_planning_snapshots_with_profile_isolation(
-        profiles,
-        planned_at=current_time,
-        safety_attempts=safety_attempts,
-        terminal_batch=terminal_batch,
-    )
-
     maintained = retired
-    for profile, safety_attempt in zip(profiles, safety_attempts, strict=True):
-        profile_id = int(profile.id)
-        planning_snapshot = planning_snapshots.get(profile_id)
-        if planning_snapshot is None:
-            continue
-        try:
-            result = maintain_virtual_player_v2(
-                profile_id,
-                trigger=MaintenanceTrigger.SCHEDULED,
-                now=current_time,
-                _routing_snapshot=routing,
-                _external_reconciliation_prechecked=True,
-                _planning_snapshot=planning_snapshot,
-                _safety_attempt=safety_attempt,
-                _safety_terminal_batch=terminal_batch,
-                _scheduled_cycle_known_absent=not bool(getattr(profile, "scheduled_cycle_exists_at_selection", True)),
-                _scheduled_cycle_open_known=bool(getattr(profile, "scheduled_cycle_open_at_selection", False)),
-            )
-        except DatabaseError as exc:
-            with record_maintenance_stage(STAGE_RECOVERY_STATE):
-                record_recovery_failure(
-                    scope="profile",
-                    entity_key=str(profile_id),
-                    failure_code=classify_failure(exc, commit_uncertain=True),
-                    error=exc,
-                    operation_id=safety_attempt.operation_id,
-                    payload={"trigger": MaintenanceTrigger.SCHEDULED.value},
-                )
-            logger.exception(
-                "Virtual player V2 maintenance database failure isolated: profile_id=%s",
-                profile_id,
+    executed_count = 0
+    chunk_size = len(profiles) if deadline is None else SCHEDULED_MAINTENANCE_BUDGET_CHUNK_SIZE
+    for offset in range(0, len(profiles), chunk_size):
+        if (executed_count or retired) and deadline is not None and monotonic() >= deadline:
+            logger.info(
+                "Virtual player maintenance yielded: budget_seconds=%.3f executed=%d pending=%d",
+                max_duration_seconds,
+                executed_count,
+                len(profiles) - offset,
                 extra={
-                    "event": "virtual_player_v2_maintenance_profile_database_failure",
-                    "profile_id": int(profile_id),
-                    "failure_class": RecoveryFailureClass.COMMIT_UNCERTAIN.value,
+                    "event": "virtual_player_maintenance_budget_exhausted",
+                    "executed_count": executed_count,
+                    "pending_count": len(profiles) - offset,
                 },
             )
-            _finish_safety_attempts_best_effort(terminal_batch)
-            raise
-        except Exception as exc:
-            with record_maintenance_stage(STAGE_RECOVERY_STATE):
-                record_recovery_failure(
-                    scope="profile",
-                    entity_key=str(profile_id),
-                    failure_code=classify_failure(exc),
-                    error=exc,
-                    operation_id=safety_attempt.operation_id,
-                    payload={"trigger": MaintenanceTrigger.SCHEDULED.value},
-                )
-            logger.exception(
-                "Virtual player V2 maintenance failed: profile_id=%s",
-                profile_id,
-                extra={
-                    "event": "virtual_player_v2_maintenance_failed",
-                    "profile_id": int(profile_id),
-                },
-            )
-            continue
-        if result.outcome in {
-            MaintenanceOutcome.APPLIED,
-            MaintenanceOutcome.NO_ACTION,
-        }:
-            if bool(getattr(profile, "maintenance_recovery_needs_clear", False)):
-                with record_maintenance_stage(STAGE_RECOVERY_STATE):
-                    clear_recovery_failure(scope="profile", entity_key=str(profile_id), now=current_time)
-            maintained += 1
-    _finish_safety_attempts_best_effort(terminal_batch)
+            break
+        chunk = profiles[offset : offset + chunk_size]
+        maintained += _execute_scheduled_maintenance_chunk(
+            chunk,
+            current_time=current_time,
+            routing=routing,
+            database_clock=database_clock,
+        )
+        executed_count += len(chunk)
     logger.info(
         "Virtual player V2 maintenance batch completed",
         extra={
@@ -10231,7 +10285,9 @@ def _maintain_due_virtual_players_v2(
     return maintained
 
 
-def maintain_due_virtual_players(*, now=None, limit: int = SCHEDULED_MAINTENANCE_DEFAULT_BATCH_SIZE) -> int:
+def maintain_due_virtual_players(
+    *, now=None, limit: int = SCHEDULED_MAINTENANCE_DEFAULT_BATCH_SIZE, max_duration_seconds: float | None = None
+) -> int:
     current_time = now or timezone.now()
     normalized_limit = max(0, min(SCHEDULED_MAINTENANCE_DUE_SCAN_HARD_CAP, int(limit)))
     if normalized_limit <= 0:
@@ -10266,6 +10322,7 @@ def maintain_due_virtual_players(*, now=None, limit: int = SCHEDULED_MAINTENANCE
             current_time=current_time,
             limit=normalized_limit,
             routing=routing,
+            **({"max_duration_seconds": max_duration_seconds} if max_duration_seconds is not None else {}),
         )
     finally:
         release_action_lock(

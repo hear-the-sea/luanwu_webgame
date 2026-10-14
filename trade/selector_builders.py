@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping
+from dataclasses import dataclass
 from typing import Any, Callable
 
 from django.core.paginator import Paginator
@@ -16,6 +17,15 @@ logger = logging.getLogger(__name__)
 
 TRADE_ITEM_PAGE_SIZE = 20
 _TOOL_EFFECT_TYPES = LEGACY_TOOL_EFFECT_TYPES
+
+
+@dataclass(frozen=True)
+class MarketInventoryDisplayRow:
+    inventory_item: Any
+    quantity: int
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self.inventory_item, name)
 
 
 def _safe_call(func: Callable[..., Any], *args: Any, default: Any, log_message: str, **kwargs: Any) -> Any:
@@ -316,6 +326,17 @@ def build_market_trade_context(
             log_message="load market sell inventory failed",
         )
         page_obj = Paginator(tradeable_qs, TRADE_ITEM_PAGE_SIZE).get_page(page)
+        page_obj.object_list = [
+            (
+                MarketInventoryDisplayRow(
+                    inventory_item=item,
+                    quantity=max(0, int(item.quantity) - int(item.bound_quantity)),
+                )
+                if hasattr(item, "bound_quantity")
+                else item
+            )
+            for item in page_obj.object_list
+        ]
         context.update(
             {
                 "tradeable_items": page_obj,

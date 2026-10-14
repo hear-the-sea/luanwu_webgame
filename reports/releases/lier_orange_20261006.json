@@ -1,0 +1,64 @@
+{
+  "name": "李耳",
+  "rarity": "orange",
+  "growth_range": [
+    8,
+    14
+  ],
+  "owned_count": 4,
+  "yaml_verified": true,
+  "migration_applied": true,
+  "readiness": true,
+  "services": {
+    "web": {
+      "image": "webgame:lier-orange-20261006-g0",
+      "status": "running",
+      "health": "healthy",
+      "restarts": 0
+    },
+    "worker": {
+      "image": "webgame:lier-orange-20261006-g1",
+      "status": "running",
+      "health": null,
+      "restarts": 0
+    },
+    "worker_battle": {
+      "image": "webgame:lier-orange-20261006-g1",
+      "status": "running",
+      "health": null,
+      "restarts": 0
+    },
+    "worker_timer": {
+      "image": "webgame:lier-orange-20261006-g1",
+      "status": "running",
+      "health": null,
+      "restarts": 0
+    },
+    "worker_timer_scan": {
+      "image": "webgame:lier-orange-20261006-g1",
+      "status": "running",
+      "health": null,
+      "restarts": 0
+    },
+    "worker_timer_safety": {
+      "image": "webgame:lier-orange-20261006-g1",
+      "status": "running",
+      "health": null,
+      "restarts": 0
+    },
+    "worker_timer_maintenance": {
+      "image": "webgame:lier-orange-20261006-g1",
+      "status": "running",
+      "health": null,
+      "restarts": 0
+    },
+    "beat": {
+      "image": "webgame:lier-orange-20261006-g1",
+      "status": "running",
+      "health": null,
+      "restarts": 0
+    }
+  },
+  "tests_passed": 20,
+  "release": "/root/code/releases/lier-orange-20261006"
+}

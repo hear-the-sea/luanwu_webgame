@@ -28,6 +28,7 @@ from gameplay.tasks.arena import (
     reconcile_arena_virtual_reserve,
     retry_arena_shortage_metric,
     scan_arena_coop_events,
+    scan_arena_rings,
     scan_arena_tournaments,
     scan_arena_virtual_reserves,
     wake_active_arena_demands_for_population_region_task,
@@ -122,6 +123,7 @@ __all__ = [
     "scan_building_upgrades",
     # Arena
     "scan_arena_coop_events",
+    "scan_arena_rings",
     "scan_arena_tournaments",
     "reconcile_arena_virtual_reserve",
     "wake_active_arena_demands_for_population_region_task",

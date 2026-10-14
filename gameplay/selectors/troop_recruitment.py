@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from core.game_data.technology import TROOP_DISPLAY_CLASSES, troop_display_sort_key
 from gameplay.constants import BuildingKeys
 from gameplay.services.manor.troop_bank import (
     TROOP_BANK_CAPACITY,
@@ -34,7 +35,7 @@ RECRUITMENT_CATEGORY_LABELS: dict[str, str] = {
 
 def _build_recruitment_categories(available_classes: set[str]) -> list[dict[str, str]]:
     categories: list[dict[str, str]] = [{"key": "all", "name": "全部"}]
-    ordered = ["dao", "qiang", "jian", "quan", "gong", "scout", "other"]
+    ordered = [*TROOP_DISPLAY_CLASSES, "other"]
     used = {"all"}
 
     for class_key in ordered:
@@ -59,6 +60,7 @@ def get_troop_recruitment_context(manor: Any, *, selected_category: str) -> dict
     speed_bonus_percent = int((total_multiplier - 1) * 100)
 
     recruitment_options = get_recruitment_options(manor)
+    recruitment_options.sort(key=lambda row: troop_display_sort_key(str(row.get("key", ""))))
     available_classes: set[str] = set()
     for troop in recruitment_options:
         troop_class = get_troop_class_for_key(str(troop.get("key", ""))) or "other"

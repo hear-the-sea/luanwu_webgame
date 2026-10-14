@@ -2,11 +2,37 @@
 
 from __future__ import annotations
 
+from core.game_data.arena_ring_rules import DEFAULT_RULES as RING_DEFAULT_RULES
+
 from .base import ValidationResult, _check_positive, _check_required_fields, _check_type, _check_unique_keys
 
 # ---------------------------------------------------------------------------
 # Schema: arena_rules.yaml
 # ---------------------------------------------------------------------------
+
+
+def validate_arena_ring_rules(data: dict, *, file: str = "arena_ring_rules.yaml") -> ValidationResult:
+    result = ValidationResult()
+    if not isinstance(data, dict):
+        result.add(file, "<root>", "expected a mapping at root level")
+        return result
+
+    for key, value in data.items():
+        if key not in RING_DEFAULT_RULES:
+            result.add(file, str(key), "unknown rule")
+        elif isinstance(value, bool) or not isinstance(value, int):
+            result.add(file, str(key), "expected an integer")
+        elif value < (0 if key == "cooldown_seconds" else 1):
+            result.add(file, str(key), "integer is below the runtime minimum")
+    if result.errors:
+        return result
+
+    rules = {**RING_DEFAULT_RULES, **data}
+    if rules["inspection_income"] + rules["inspection_fee"] != rules["inspection_cost"]:
+        result.add(file, "inspection_cost", "inspection income and fee must equal the cost")
+    if rules["inspection_fee"] * 10 != rules["inspection_cost"]:
+        result.add(file, "inspection_fee", "inspection fee must be exactly ten percent of the cost")
+    return result
 
 
 def validate_arena_rules(data: dict, *, file: str = "arena_rules.yaml") -> ValidationResult:

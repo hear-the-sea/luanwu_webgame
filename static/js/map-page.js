@@ -40,6 +40,9 @@
   let currentRegion = regionSelect.value;
   let currentSearchQuery = manorSearch.value.trim();
   let totalPages = 1;
+  let searchRequestId = 0;
+  let searchController = null;
+  const SEARCH_TIMEOUT_MS = 10000;
 
   function getCSRFToken() {
     const meta = document.querySelector('meta[name="csrf-token"]');
@@ -253,6 +256,12 @@
   }
 
   async function loadManors(pageNumber = 1) {
+    const requestId = ++searchRequestId;
+    if (searchController) searchController.abort();
+    const controller = new AbortController();
+    searchController = controller;
+    let timedOut = false;
+    let timeoutId;
     currentPage = pageNumber;
     setListHint("正在加载...", "tw-loading-hint");
 
@@ -264,8 +273,20 @@
     }
 
     try {
-      const response = await fetch(url);
-      const data = await response.json();
+      const timeout = new Promise((_, reject) => {
+        timeoutId = window.setTimeout(() => {
+          timedOut = true;
+          controller.abort();
+          reject(new Error("Map search timed out"));
+        }, SEARCH_TIMEOUT_MS);
+      });
+      const result = (async () => {
+        const response = await fetch(url, { signal: controller.signal });
+        if (!response.ok) throw new Error(`Map search failed: ${response.status}`);
+        return response.json();
+      })();
+      const data = await Promise.race([result, timeout]);
+      if (requestId !== searchRequestId) return;
       if (!data.success) {
         setListHint("加载失败，请稍后重试", "tw-empty-state");
         return;
@@ -298,8 +319,12 @@
 
       pagination.style.display = "none";
     } catch (error) {
+      if (requestId !== searchRequestId) return;
       console.error("Load error:", error);
-      setListHint("加载失败，请稍后重试", "tw-empty-state");
+      setListHint(timedOut ? "搜索超时，请重试" : "加载失败，请稍后重试", "tw-empty-state");
+    } finally {
+      window.clearTimeout(timeoutId);
+      if (requestId === searchRequestId) searchController = null;
     }
   }
 

@@ -19,6 +19,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 MAKEFILE_PATH = PROJECT_ROOT / "Makefile"
 ACCEPTANCE_CONFIG_PATH = PROJECT_ROOT / "docs" / "virtual_player_gate_a_acceptance_config_2026-07-27.yaml"
 MANIFEST_PATH = gate_evidence.GATE_A_MANIFEST_PATH
+CURRENT_COLLECTION_PATH = PROJECT_ROOT / "docs" / "virtual_player_current_suite_collection.yaml"
 CANONICAL_COMMAND = "DJANGO_TEST_USE_ENV_SERVICES=1 make test-virtual-player-gate-a"
 CONTRACT_TESTS_VARIABLE = "VIRTUAL_PLAYER_GATE_A_CONTRACT_TESTS"
 REAL_SERVICE_TESTS_VARIABLE = "VIRTUAL_PLAYER_GATE_A_REAL_SERVICE_TESTS"
@@ -120,18 +121,19 @@ def test_manifest_nodeid_count_and_checksum_match_current_collection() -> None:
     nodeids = sorted(line for line in result.stdout.splitlines() if line.startswith("tests/") and "::" in line)
     assert len(nodeids) == len(set(nodeids))
     checksum_payload = "".join(f"{nodeid}\n" for nodeid in nodeids).encode("utf-8")
-    collection = manifest["collection"]
+    collection = _load_yaml(CURRENT_COLLECTION_PATH)["suites"]["gate_a_union"]
+    assert collection["files"] == selected_files
 
     assert len(nodeids) == collection["expected_nodeid_count"]
-    assert hashlib.sha256(checksum_payload).hexdigest() == collection["nodeid_checksum"]["value"]
+    assert hashlib.sha256(checksum_payload).hexdigest() == collection["nodeid_checksum"]
     assert (
-        collection["nodeid_checksum"]
+        manifest["collection"]["nodeid_checksum"]
         | {
             "algorithm": "sha256",
             "input": "sorted_pytest_nodeids_joined_with_lf_and_terminal_lf",
             "encoding": "utf-8",
         }
-        == collection["nodeid_checksum"]
+        == manifest["collection"]["nodeid_checksum"]
     )
 
 

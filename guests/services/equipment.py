@@ -88,9 +88,9 @@ def _schedule_gear_options_cache_clear(manor_id: int, *, slots: set[str] | None 
     transaction.on_commit(lambda: _best_effort_clear_gear_options_cache(manor_id, slots=scheduled_slots))
 
 
-def give_gear(manor: Manor, template: GearTemplate) -> GearItem:
+def give_gear(manor: Manor, template: GearTemplate, *, is_bound: bool = False) -> GearItem:
     """创建一个装备道具。"""
-    return GearItem.objects.create(manor=manor, template=template)
+    return GearItem.objects.create(manor=manor, template=template, is_bound=is_bound)
 
 
 def _lock_gear_items(queryset: QuerySet[GearItem]) -> QuerySet[GearItem]:
@@ -123,6 +123,7 @@ def return_guest_gear_to_inventory_locked(manor: Manor, guest: Guest) -> int:
             item_template.key,
             1,
             template=item_template,
+            is_bound=gear.is_bound,
         )
         slots.add(gear.template.slot)
 
@@ -168,6 +169,7 @@ def _clear_replaced_items(
             item_template.key,
             1,
             template=item_template,
+            is_bound=item.is_bound,
         )
         item.inventory_backed = True
         item.save(update_fields=["inventory_backed"])
@@ -218,7 +220,7 @@ def _apply_gear_to_locked_guest(
             or inventory_item.template.key != gear.template.key
         ):
             raise EquipmentError("装备库存已发生变化，请刷新后重试")
-        inventory_core.consume_inventory_item_locked(inventory_item, 1)
+        gear.is_bound = bool(inventory_core.consume_inventory_item_locked(inventory_item, 1))
     elif gear.inventory_backed:
         if not consume_warehouse_item_for_gear(guest, gear):
             raise EquipmentError("装备库存已发生变化，请刷新后重试")
@@ -234,7 +236,7 @@ def _apply_gear_to_locked_guest(
 
     gear.guest = guest
     gear.inventory_backed = False
-    gear.save(update_fields=["guest", "inventory_backed"])
+    gear.save(update_fields=["guest", "inventory_backed", "is_bound"])
 
     apply_template_stats_to_guest(guest, gear.template, +1, updates)
     guest.save(update_fields=list(updates))
@@ -412,6 +414,7 @@ def unequip_guest_item(gear: GearItem, guest: Guest, *, allow_injured: bool = Fa
         item_template.key,
         1,
         template=item_template,
+        is_bound=gear.is_bound,
     )
 
     _schedule_gear_options_cache_clear(guest.manor_id, slots={gear.template.slot})

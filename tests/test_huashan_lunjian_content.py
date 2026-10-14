@@ -96,12 +96,12 @@ def test_huashan_lunjian_is_daily_advanced_guest_mission_with_guaranteed_chest()
     assert mission["base_travel_time"] == 2400
     assert mission["enemy_technology"] == {"level": 10, "guest_level": 100, "guest_bonus": 0.68}
     assert [(row["key"], row["label"]) for row in mission["enemy_guests"]] == EXPECTED_GUESTS
-    assert mission["drop_table"] == {"silver": 120000, "mission_chest_huashan_lunjian_advanced": 1}
+    assert mission["drop_table"] == {"silver": 120000, "mission_chest_v3_huashan_lunjian_advanced": 1}
 
 
 def test_wulin_chest_guarantees_one_equipment_pick_with_fifteen_percent_orange():
     items = {row["key"]: row for row in _load_yaml("item_templates.yaml")["items"]}
-    chest = items["mission_chest_huashan_lunjian_advanced"]
+    chest = items["mission_chest_v3_huashan_lunjian_advanced"]
     missions = {row["key"]: row for row in _load_yaml("mission_templates.yaml")["missions"]}
     payload = mission_reward_payload(missions["huashan_lunjian_advanced"], items)
     choices = payload["random_item_groups"][0]["choices"]
@@ -111,7 +111,8 @@ def test_wulin_chest_guarantees_one_equipment_pick_with_fifteen_percent_orange()
     assert chest["is_usable"] is True
     assert chest["storage_space"] == 5
     assert chest["tradeable"] is False
-    assert_fixed_reward(payload, "experience_fruit", 185)
+    assert not any(row["item_key"] == "experience_fruit" for row in payload["item_rewards"])
+    assert_fixed_reward(items["mission_chest_huashan_lunjian_advanced"]["effect_payload"], "experience_fruit", 185)
     assert_fixed_reward(payload, "huashan_sword_fragment", 1)
     assert_random_group(payload, 1, 1, {key: 85 if index < 18 else 27 for index, key in enumerate(EXPECTED_GEAR_KEYS)})
     assert [row["item_key"] for row in choices] == EXPECTED_GEAR_KEYS

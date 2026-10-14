@@ -57,6 +57,7 @@
     currentActionType: null,
     currentActionUrl: null,
     currentItemId: null,
+    currentBindingMode: null,
     selectedGuestId: null,
     selectedImageKey: null,
     lastTriggerElement: null,
@@ -207,6 +208,7 @@
       modal.setAttribute("aria-hidden", "true");
     }
     warehouseModalState.currentItemId = null;
+    warehouseModalState.currentBindingMode = null;
     warehouseModalState.currentActionType = null;
     warehouseModalState.currentActionUrl = null;
     warehouseModalState.selectedGuestId = null;
@@ -226,6 +228,7 @@
     }
 
     warehouseModalState.currentItemId = itemId;
+    warehouseModalState.currentBindingMode = triggerElement?.dataset?.bindingMode || null;
     warehouseModalState.currentActionType = actionType;
     warehouseModalState.currentActionUrl = triggerElement?.dataset?.actionUrl || null;
     warehouseModalState.selectedGuestId = null;
@@ -339,6 +342,9 @@
 
     const formData = new FormData();
     formData.append("guest_id", warehouseModalState.selectedGuestId);
+    if (warehouseModalState.currentBindingMode) {
+      formData.append("binding_mode", warehouseModalState.currentBindingMode);
+    }
     if (config.requiresImage) {
       formData.append("avatar_key", warehouseModalState.selectedImageKey);
     }

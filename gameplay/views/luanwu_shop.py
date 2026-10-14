@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
+from collections.abc import Mapping
+from typing import Any, cast
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -14,7 +15,7 @@ from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 
-from core.exceptions import GameError
+from core.exceptions import GameError, InsufficientStockError
 from core.utils import safe_positive_int, sanitize_error_message
 from core.utils.rate_limit import rate_limit_redirect
 from gameplay.services.luanwu_shop import build_luanwu_shop_context, purchase_luanwu_shop_item
@@ -59,9 +60,19 @@ def purchase_luanwu_shop_item_view(request: HttpRequest) -> HttpResponse:
         messages.error(request, "购买数量无效")
         return redirect("gameplay:luanwu_shop")
 
+    currency_mode = request.POST.get("currency_mode", "unbound_only")
+    if currency_mode not in {"allow_bound", "unbound_only"}:
+        messages.error(request, "请选择春秋币使用方式")
+        return redirect("gameplay:luanwu_shop")
+
     manor = get_manor(request.user)
     try:
-        result = purchase_luanwu_shop_item(manor, product_key, quantity)
+        result = purchase_luanwu_shop_item(manor, product_key, quantity, allow_bound=currency_mode == "allow_bound")
+    except InsufficientStockError as exc:
+        messages.error(
+            request,
+            "非绑定春秋币不足，本次兑换未扣款" if currency_mode == "unbound_only" else sanitize_error_message(exc),
+        )
     except GameError as exc:
         messages.error(request, sanitize_error_message(exc))
     except DatabaseError:
@@ -74,9 +85,17 @@ def purchase_luanwu_shop_item_view(request: HttpRequest) -> HttpResponse:
         )
         messages.error(request, "商城暂时无法完成购买，请稍后再试")
     else:
+        bound_grants = cast(Mapping[str, int], result["bound_granted_items"])
+        granted_item_names = cast(Mapping[str, str], result["granted_item_names"])
+        binding_notice = ""
+        if bound_grants:
+            bound_summary = "、".join(
+                f"{granted_item_names.get(key, key)}×{amount}" for key, amount in bound_grants.items()
+            )
+            binding_notice = f"其中绑定物品：{bound_summary}。"
         messages.success(
             request,
-            f"购买成功：获得 {result['reward_summary']}，消耗春秋币 {result['total_cost']} 枚。",
+            f"购买成功：获得 {result['reward_summary']}，消耗春秋币 {result['total_cost']} 枚。{binding_notice}",
         )
 
     return redirect("gameplay:luanwu_shop")

@@ -46,13 +46,23 @@ class MarketListingFormInput:
     duration: int
 
 
-def trade_redirect(tab: str | None = None, view: str | None = None, troop_category: str | None = None):
+def trade_redirect(tab: str | None = None, view: str | None = None, troop_category: str | None = None, *, request=None):
     base_url = reverse("trade:trade")
-    params = {}
+    params: dict[str, str | int] = {}
     if tab:
         params["tab"] = tab
     if view:
         params["view"] = view
+    if request is not None and tab in {"shop", "market"}:
+        page_keys = ("buy_page", "sell_page") if tab == "shop" else ("page",)
+        for key in page_keys:
+            if key in request.POST:
+                params[key] = safe_int(request.POST.get(key), default=1, min_val=1)
+        filter_keys = ("category",) if tab == "shop" else ("category", "rarity", "order_by", "status")
+        for key in filter_keys:
+            value = (request.POST.get(key) or "").strip()
+            if value:
+                params[key] = value
     normalized_troop_category = (troop_category or "").strip()
     if normalized_troop_category and normalized_troop_category != "all":
         params["troop_category"] = normalized_troop_category
@@ -70,7 +80,7 @@ def trade_input_error(
     troop_category: str | None = None,
 ):
     messages.error(request, message)
-    return trade_redirect(tab=tab, view=view, troop_category=troop_category)
+    return trade_redirect(tab=tab, view=view, troop_category=troop_category, request=request)
 
 
 def parse_required_post_text(request, field: str) -> str | None:
@@ -278,7 +288,7 @@ def execute_trade_action_and_redirect(
         action=action,
         success_message=success_message,
     )
-    return trade_redirect(tab=tab, view=view, troop_category=troop_category)
+    return trade_redirect(tab=tab, view=view, troop_category=troop_category, request=request)
 
 
 def execute_manor_trade_action_and_redirect(

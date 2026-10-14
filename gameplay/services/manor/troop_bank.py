@@ -221,7 +221,9 @@ def get_troop_bank_rows(manor: Manor) -> list[dict[str, Any]]:
         row["bank_count"] = bank_troop.count
 
     rows = list(rows_by_key.values())
-    rows.sort(key=lambda row: (row.get("priority", 0), row.get("key", "")))
+    from core.game_data.technology import troop_display_sort_key
+
+    rows.sort(key=lambda row: troop_display_sort_key(row["key"]))
     return rows
 
 

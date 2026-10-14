@@ -105,12 +105,12 @@ class PVPConstants:
 
     # 侦察系统
     SCOUT_BASE_SUCCESS_RATE = 0.5  # 基础成功率50%
-    SCOUT_TECH_RATE_PER_LEVEL = 0.05  # 每级侦察术增加5%
+    SCOUT_TECH_RATE_PER_LEVEL = 0.01  # 每级侦察术差修正1个百分点
     SCOUT_TRAVEL_TIME_PER_DISTANCE = 1  # 每单位距离1秒
     SCOUT_BASE_TRAVEL_TIME = 30  # 基础侦察时间30秒
     SCOUT_COOLDOWN_MINUTES = 10  # 同一目标冷却10分钟
     SCOUT_TROOP_KEY = "scout"  # 探子兵种key
-    SCOUT_MIN_SUCCESS_RATE = 0.10  # 最低成功率10%
+    SCOUT_MIN_SUCCESS_RATE = 0.01  # 最低成功率1%
     SCOUT_MAX_SUCCESS_RATE = 0.95  # 最高成功率95%
 
     # 踢馆系统

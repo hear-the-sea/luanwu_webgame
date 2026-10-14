@@ -5,6 +5,7 @@ from datetime import timedelta
 from django.db.models import Count, Q
 from django.utils import timezone
 
+import gameplay.services.arena.coop_core as arena_coop_core
 import gameplay.services.arena.core as arena_core
 from gameplay.models import (
     ArenaCoopContribution,
@@ -134,14 +135,21 @@ def get_arena_event_detail_context(manor: Manor, tournament_id: int, selected_ro
 def get_arena_coop_event_detail_context(manor: Manor, event_id: int) -> dict | None:
     context = build_common_context(manor)
     context.update(get_arena_coop_summary_context(manor))
-    event = (
-        ArenaCoopEvent.objects.select_related("battle_report")
-        .filter(pk=event_id, entries__manor=manor)
-        .distinct()
-        .first()
-    )
+    event = ArenaCoopEvent.objects.select_related("battle_report").filter(pk=event_id).first()
     if not event:
         return None
+
+    if event.status == ArenaCoopEvent.Status.RECRUITING:
+        if not ArenaCoopEntry.objects.filter(event=event, manor=manor).exists():
+            return None
+    elif event.status not in [ArenaCoopEvent.Status.PREPARING, ArenaCoopEvent.Status.RUNNING]:
+        visible_cutoff = timezone.now() - timedelta(seconds=arena_coop_core.ARENA_COOP_COMPLETED_RETENTION_SECONDS)
+        if (
+            event.status not in [ArenaCoopEvent.Status.COMPLETED, ArenaCoopEvent.Status.CANCELLED]
+            or event.ended_at is None
+            or event.ended_at < visible_cutoff
+        ):
+            return None
 
     contributions = list(
         ArenaCoopContribution.objects.select_related("entry__manor").filter(event=event).order_by("damage_rank", "id")

@@ -250,18 +250,28 @@ def get_guild_tech_level(guild, tech_key):
         return 0
 
 
-def get_guild_lineup_capacity(guild):
+def calculate_guild_lineup_capacity(level: int) -> int:
+    """根据已加载的科技等级计算上阵容量。"""
     return min(
         MAX_GUILD_LINEUP_CAPACITY,
-        int(guild_constants.GUILD_BATTLE_LINEUP_LIMIT) + get_guild_tech_level(guild, "guild_lineup_capacity"),
+        int(guild_constants.GUILD_BATTLE_LINEUP_LIMIT) + level,
     )
+
+
+def calculate_guild_dispatch_capacity(level: int) -> int:
+    """根据已加载的科技等级计算派遣容量。"""
+    return min(
+        MAX_GUILD_DISPATCH_CAPACITY,
+        int(guild_constants.GUILD_DISPATCH_GUEST_BASE_LIMIT) + level,
+    )
+
+
+def get_guild_lineup_capacity(guild):
+    return calculate_guild_lineup_capacity(get_guild_tech_level(guild, "guild_lineup_capacity"))
 
 
 def get_guild_dispatch_capacity(guild):
-    return min(
-        MAX_GUILD_DISPATCH_CAPACITY,
-        int(guild_constants.GUILD_DISPATCH_GUEST_BASE_LIMIT) + get_guild_tech_level(guild, "guild_dispatch_capacity"),
-    )
+    return calculate_guild_dispatch_capacity(get_guild_tech_level(guild, "guild_dispatch_capacity"))
 
 
 def get_tech_bonus(guild, bonus_type):

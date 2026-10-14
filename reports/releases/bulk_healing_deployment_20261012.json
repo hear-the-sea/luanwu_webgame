@@ -1,0 +1,38 @@
+{
+  "status": "deployed_and_verified",
+  "image": "webgame:bulk-healing-20261012",
+  "previous_web_image": "webgame:account-message-cascade-20261011",
+  "release": "/root/code/releases/bulk-healing-20261012",
+  "files": {
+    "guests/services/health.py": "7bfec32f56315ebe48c2ca251f744b6c276fba64c62928dc6f6f61b3d5a275fe"
+  },
+  "regression_tests_passed": 61,
+  "candidate_probe": {
+    "planning_probe": "passed",
+    "database_vendor": "mysql",
+    "self_row_locks_supported": true,
+    "production_players_modified": false
+  },
+  "ready": {
+    "status": "ok",
+    "checks": {
+      "db": true,
+      "cache": true,
+      "channel_layer": true,
+      "celery_broker": true,
+      "celery_workers": true,
+      "celery_beat": true,
+      "celery_roundtrip": true
+    }
+  },
+  "public_http": {
+    "/": 200,
+    "/accounts/login/": 200,
+    "/health/live": 200
+  },
+  "new_web_error_log_count": 0,
+  "other_services_kept_running": true,
+  "production_players_modified": false,
+  "database_migrations": false,
+  "rollback_compose": "/root/code/releases/bulk-healing-20261012/compose.rollback.yml"
+}

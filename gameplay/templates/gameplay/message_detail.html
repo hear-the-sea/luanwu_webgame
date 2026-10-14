@@ -75,7 +75,7 @@
                             <div class="icon-placeholder">🎁</div>
                         {% endif %}
                         <div class="info">
-                            <div class="name">{{ item.name }}</div>
+                            <div class="name">{{ item.name }}{% if item.is_bound %}（绑定）{% endif %}</div>
                             <div class="qty">×{{ item.quantity }}</div>
                         </div>
                     </div>

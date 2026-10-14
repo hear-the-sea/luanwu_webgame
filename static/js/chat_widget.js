@@ -194,11 +194,21 @@
   updateSendState();
   connectionController.connect();
 
-  pruneTimer = setInterval(renderer.pruneOldMessages, 30000);
+  function startPruning() {
+    if (pruneTimer === null) {
+      pruneTimer = setInterval(renderer.pruneOldMessages, 30000);
+    }
+  }
 
-  window.addEventListener("beforeunload", () => {
-    if (pruneTimer) clearInterval(pruneTimer);
-    layoutController.teardown();
-    connectionController.teardown();
+  startPruning();
+
+  window.addEventListener("pagehide", () => {
+    if (pruneTimer !== null) clearInterval(pruneTimer);
+    pruneTimer = null;
+    connectionController.suspend();
+  });
+  window.addEventListener("pageshow", () => {
+    connectionController.resume();
+    startPruning();
   });
 })();

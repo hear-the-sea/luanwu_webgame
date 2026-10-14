@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping
 
+from django.contrib.admin import AdminSite
 from django.core.exceptions import FieldDoesNotExist
 from django.db.models import Model
 
@@ -171,6 +173,159 @@ COMMON_ADMIN_FIELD_LABELS: dict[str, str] = {
     "boss_remaining_hp": "首领剩余生命",
     "coordinate_x": "横坐标",
     "coordinate_y": "纵坐标",
+    "acquired_at": "获得时间",
+    "attacker_city_defenses": "进攻方城防",
+    "attacker_equipment_bonuses": "进攻方装备加成",
+    "attacker_team": "进攻方队伍",
+    "attacker_troops": "进攻方护院",
+    "available_weekdays": "开放星期",
+    "base_agility": "基础敏捷",
+    "base_cost": "基础消耗",
+    "base_luck": "基础幸运",
+    "bootstrap_mode": "初始化模式",
+    "boss_defeated": "首领已击败",
+    "boss_initial_hp": "首领初始生命",
+    "boss_template_key": "首领模板标识",
+    "checkpoint_at": "检查点时间",
+    "clean_success_streak": "连续正常成功次数",
+    "closed_at": "关闭时间",
+    "completion_kind": "完成类型",
+    "config_key": "配置标识",
+    "cooldown_seconds": "冷却时长（秒）",
+    "cost": "消耗",
+    "current_hp": "当前生命",
+    "daily_rule_snapshot": "每日规则快照",
+    "default_gender": "默认性别",
+    "default_morality": "默认品性",
+    "defender_city_defenses": "防守方城防",
+    "defender_equipment_bonuses": "防守方装备加成",
+    "defender_team": "防守方队伍",
+    "defender_troops": "防守方护院",
+    "delta": "变化量",
+    "demand": "补位需求",
+    "domain_event_id": "领域事件编号",
+    "drop_table": "掉落配置",
+    "drops": "掉落物品",
+    "effect_payload": "效果配置",
+    "effective_pause": "当前策略暂停决定",
+    "eliminated_round": "淘汰轮次",
+    "enemy_guests": "敌方门客",
+    "enemy_snapshot": "敌方快照",
+    "enemy_technology": "敌方技术",
+    "enemy_troops": "敌方护院",
+    "entries": "预算条目",
+    "entry_cost": "参与消耗",
+    "episode": "服务期次",
+    "event_id": "活动编号",
+    "experience": "经验",
+    "extra_stats": "额外属性",
+    "first_completed_at": "首次完成时间",
+    "first_demand_at": "首次需求时间",
+    "first_observed_at": "首次观测时间",
+    "first_real_entry_at": "首次真人报名时间",
+    "flavor": "人物介绍",
+    "gear_set_bonus": "装备套装加成",
+    "gender": "性别",
+    "growth_operation_id": "成长操作编号",
+    "growth_request_digest_schema": "成长请求摘要格式",
+    "growth_round_id": "当前培养轮编号",
+    "guest_id": "原门客编号",
+    "guest_ids": "参战门客编号",
+    "guest_limit_per_entry": "每队门客上限",
+    "guest_only": "仅门客参战",
+    "guest_snapshots": "门客快照",
+    "guests": "门客",
+    "hp_bonus": "生命加成",
+    "icon": "图标",
+    "initial_missing_count": "初始缺员数量",
+    "initial_skills": "初始技能",
+    "inventory_backed": "关联背包库存",
+    "is_defense": "防守任务",
+    "is_retreating": "撤退中",
+    "last_error_digest": "最近错误摘要",
+    "last_failure_at": "最近失败时间",
+    "last_failure_code": "最近失败原因码",
+    "last_hp_recovery_at": "最近生命恢复时间",
+    "last_observed_at": "最近观测时间",
+    "last_pause_window_id": "最近暂停窗口编号",
+    "last_recovered_at": "最近恢复时间",
+    "last_snapshot": "最近快照",
+    "logical_at": "逻辑时间",
+    "losses": "损失",
+    "maintenance_mode": "维护模式",
+    "matches_won": "获胜场次",
+    "mode": "模式",
+    "next_probe_at": "下次探测时间",
+    "notes": "备注",
+    "observed_at": "观测时间",
+    "opening_ordinal": "开放序号",
+    "operation": "操作",
+    "object_id": "对象编号",
+    "payload": "附加数据",
+    "pending_outcomes": "待发布结果",
+    "phase": "阶段",
+    "policy_mode": "策略模式",
+    "policy_rollout_enabled": "策略灰度发布已启用",
+    "policy_rollout_percent": "策略灰度发布百分比",
+    "policy_rollout_target_version": "策略灰度发布目标版本",
+    "policy_version": "策略版本",
+    "prepare_duration_seconds": "准备时长（秒）",
+    "previous_mode": "此前模式",
+    "previous_reason": "此前原因",
+    "previous_revision": "此前版本号",
+    "probability_drop_table": "概率掉落配置",
+    "profile_id": "虚拟玩家档案编号",
+    "publication_pending": "等待发布",
+    "published_at": "发布时间",
+    "pvp_attack_count_reset_at": "玩家对战主动进攻重置时间",
+    "pvp_defense_count_reset_at": "玩家对战被攻击重置时间",
+    "reason": "原因",
+    "reasons": "原因列表",
+    "resolved_at": "结算时间",
+    "resource_cost": "资源消耗",
+    "resource_updated_at": "资源更新时间",
+    "result": "结果",
+    "resulting_mode": "最终模式",
+    "resulting_reason": "最终原因",
+    "resulting_revision": "最终版本号",
+    "retryable_failure_streak": "连续可重试失败次数",
+    "revision": "版本号",
+    "reward_snapshot": "奖励快照",
+    "round_interval_seconds": "轮次间隔（秒）",
+    "rounds": "战斗回合",
+    "sampled_gap_seconds": "采样间隔（秒）",
+    "scoped_pause": "作用域策略暂停决定",
+    "set_bonus": "套装加成",
+    "set_description": "套装说明",
+    "set_key": "套装标识",
+    "skills": "技能",
+    "slo_observed_at": "服务期限观测时间",
+    "slo_result": "服务期限结果",
+    "snapshot": "快照",
+    "source": "来源",
+    "terminal_reason": "终止原因",
+    "training_complete_at": "培养完成时间",
+    "training_remaining_seconds": "培养剩余时长（秒）",
+    "training_target_level": "培养目标等级",
+    "travel_time": "行军时长",
+    "troop_capacity_bonus": "护院容量加成",
+    "troop_loadout": "护院配置",
+    "unknown_observation_seconds": "未知观测时长（秒）",
+    "v2_enrolled_at": "第二版策略入组时间",
+    "version": "版本",
+    "virtual_fill_at": "虚拟玩家补位时间",
+    "virtual_fill_completed": "虚拟玩家补位已完成",
+    "window_id": "窗口编号",
+}
+
+
+ADMIN_MODEL_LABELS = {
+    "admin.LogEntry": "后台操作日志",
+    "gameplay.ArenaRuntimeBudget": "竞技场运行预算",
+    "trade.ShopStock": "商铺库存",
+    "trade.ShopPurchaseLog": "商铺购买记录",
+    "trade.ShopSellLog": "商铺出售记录",
+    "trade.GoldBarExchangeLog": "金条兑换记录",
 }
 
 
@@ -198,3 +353,23 @@ def apply_model_property_labels(model: type[Model], labels: Mapping[str, str]) -
             setattr(attr.fget, "short_description", short_description)
         elif callable(attr):
             setattr(attr, "short_description", short_description)
+
+
+def apply_registered_admin_labels(site: AdminSite) -> None:
+    """补齐后台及其内联字段的中文标签，保留已有明确中文含义。"""
+    app_labels = {"accounts", "battle", "gameplay", "guests", "guilds", "trade"}
+    models = set()
+    for model, model_admin in site._registry.items():
+        if model._meta.app_label not in app_labels and model._meta.label not in ADMIN_MODEL_LABELS:
+            continue
+        models.add(model)
+        models.update(inline.model for inline in model_admin.inlines)
+    for model in models:
+        model_label = ADMIN_MODEL_LABELS.get(model._meta.label)
+        if model_label:
+            model._meta.verbose_name = model_label
+            model._meta.verbose_name_plural = model_label
+        for field in (*model._meta.fields, *model._meta.many_to_many):
+            label = COMMON_ADMIN_FIELD_LABELS.get(field.name)
+            if label and re.search(r"[A-Za-z]", str(field.verbose_name)):
+                field.verbose_name = label

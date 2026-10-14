@@ -1,18 +1,26 @@
 from django.contrib import admin
+from django.utils import timezone
 
 from core.admin_i18n import apply_common_field_labels
+from core.admin_records import ReadOnlyAdmin
 
+from .admin_forms import SkillAdminForm
 from .models import (
     GearItem,
     GearTemplate,
     Guest,
     GuestDefection,
+    GuestRecruitment,
+    GuestSkill,
     GuestTemplate,
     RecruitmentCandidate,
+    RecruitmentExtraAttempt,
     RecruitmentPool,
     RecruitmentPoolEntry,
     RecruitmentRecord,
     SalaryPayment,
+    Skill,
+    SkillBook,
     TrainingLog,
     WorldUniqueGuest,
 )
@@ -30,7 +38,116 @@ apply_common_field_labels(
     SalaryPayment,
     GuestDefection,
     WorldUniqueGuest,
+    RecruitmentPoolEntry,
+    RecruitmentExtraAttempt,
+    GuestRecruitment,
+    GuestSkill,
+    Skill,
+    SkillBook,
+    labels={
+        "weight": "抽取权重",
+        "skill": "技能",
+        "source": "来源",
+        "learned_at": "学习时间",
+        "base_power": "基础威力",
+        "base_probability": "旧版触发概率",
+        "status_effect": "状态效果",
+        "status_probability": "状态施加概率",
+        "status_duration": "状态持续回合",
+        "damage_formula": "伤害公式",
+        "passive_config": "被动技能配置",
+        "required_force": "武力要求",
+        "required_intellect": "智力要求",
+        "required_defense": "防御要求",
+        "required_agility": "敏捷要求",
+        "targets": "目标数量",
+        "bot_profile": "虚拟玩家档案",
+        "operation_id": "招募操作编号",
+    },
 )
+
+
+@admin.register(Skill)
+class SkillAdmin(admin.ModelAdmin):
+    form = SkillAdminForm
+    list_display = ("name", "key", "kind", "rarity", "base_power", "required_level", "targets")
+    list_filter = ("kind", "rarity")
+    search_fields = ("name", "key", "description")
+    # 旧版触发概率已不参与战斗计算，避免误导运营配置。
+    exclude = ("base_probability",)
+
+
+@admin.register(SkillBook)
+class SkillBookAdmin(admin.ModelAdmin):
+    list_display = ("name", "key", "skill")
+    search_fields = ("name", "key", "skill__name", "skill__key")
+    autocomplete_fields = ("skill",)
+    list_select_related = ("skill",)
+
+
+class GuestSkillInline(admin.TabularInline):
+    model = GuestSkill
+    fields = ("skill", "source", "learned_at")
+    readonly_fields = fields
+    extra = 0
+    can_delete = False
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("skill")
+
+
+class RecruitmentDueFilter(admin.SimpleListFilter):
+    title = "招募进度"
+    parameter_name = "recruitment_due"
+
+    def lookups(self, request, model_admin):
+        return (("overdue", "已到期未完成"), ("waiting", "招募倒计时中"))
+
+    def queryset(self, request, queryset):
+        if self.value() == "overdue":
+            return queryset.filter(status=GuestRecruitment.Status.PENDING, complete_at__lte=timezone.now())
+        if self.value() == "waiting":
+            return queryset.filter(status=GuestRecruitment.Status.PENDING, complete_at__gt=timezone.now())
+        return queryset
+
+
+@admin.register(GuestRecruitment)
+class GuestRecruitmentAdmin(ReadOnlyAdmin):
+    list_display = (
+        "id",
+        "manor",
+        "pool",
+        "source",
+        "status",
+        "draw_count",
+        "result_count",
+        "complete_at",
+        "error_message",
+    )
+    list_filter = ("status", "source", RecruitmentDueFilter, "started_at")
+    search_fields = ("manor__user__username", "manor__name", "pool__name", "operation_id", "error_message")
+    list_select_related = ("manor__user", "pool")
+    date_hierarchy = "started_at"
+    ordering = ("-started_at",)
+
+
+@admin.register(RecruitmentExtraAttempt)
+class RecruitmentExtraAttemptAdmin(ReadOnlyAdmin):
+    list_display = ("manor", "pool", "date", "extra_count", "updated_at")
+    list_filter = ("date", "pool")
+    search_fields = ("manor__user__username", "manor__name", "pool__name")
+    list_select_related = ("manor__user", "pool")
+    date_hierarchy = "date"
+    ordering = ("-date",)
 
 
 @admin.register(GuestTemplate)
@@ -99,6 +216,7 @@ class GuestAdmin(admin.ModelAdmin):
     list_filter = ("template__rarity", "status")
     search_fields = ("template__name", "manor__user__username")
     autocomplete_fields = ("template", "manor")
+    inlines = (GuestSkillInline,)
 
 
 @admin.register(GearTemplate)

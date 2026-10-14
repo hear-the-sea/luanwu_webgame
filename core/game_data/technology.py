@@ -18,6 +18,31 @@ def _coerce_int(value: Any, default: int = 0) -> int:
 
 logger = logging.getLogger(__name__)
 TECHNOLOGY_TEMPLATES_PATH = settings.BASE_DIR / "data" / "technology_templates.yaml"
+TROOP_DISPLAY_CLASSES = ("gong", "quan", "qiang", "jian", "dao", "scout")
+
+
+@lru_cache(maxsize=1)
+def _troop_display_ranks() -> dict[str, tuple[int, int]]:
+    """护院仅展示排序；沿用科技配置中的兵种等级，不影响战斗顺序。"""
+    classes = load_technology_templates().get("troop_classes", {})
+    ranks = {
+        str(key): (class_index, tier)
+        for class_index, class_key in enumerate(TROOP_DISPLAY_CLASSES)
+        for tier, key in enumerate(classes.get(class_key, {}).get("troops", []))
+    }
+    data = load_yaml_data(
+        settings.BASE_DIR / "data" / "troop_templates.yaml", logger=logger, context="troop display ranks", default={}
+    )
+    for troop in data.get("troops", []):
+        if troop.get("key") in ranks:
+            ranks[str(troop.get("name", ""))] = ranks[troop["key"]]
+    return ranks
+
+
+def troop_display_sort_key(key: str, name: str = "") -> tuple[int, int, str]:
+    ranks = _troop_display_ranks()
+    rank = ranks.get(key, ranks.get(name, (len(TROOP_DISPLAY_CLASSES), 0)))
+    return (*rank, key or name)
 
 
 def _coerce_float(value: Any, default: float = 0.0) -> float:
@@ -164,6 +189,7 @@ def get_guest_stat_bonuses(config: Dict[str, Any]) -> Dict[str, float]:
 
 def clear_technology_cache() -> None:
     """Clear YAML caches (useful for tests or runtime reload)."""
+    _troop_display_ranks.cache_clear()
     load_cache_clear = getattr(load_technology_templates, "cache_clear", None)
     if callable(load_cache_clear):
         load_cache_clear()

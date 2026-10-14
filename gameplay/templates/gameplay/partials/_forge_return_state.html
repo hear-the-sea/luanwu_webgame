@@ -1,0 +1,2 @@
+<input type="hidden" name="page" value="{% if current_mode == 'decompose' %}{{ decompose_page_obj.number|default:1 }}{% else %}{{ page_obj.number|default:1 }}{% endif %}">
+{% if blueprint_page_obj %}<input type="hidden" name="blueprint_page" value="{{ blueprint_page_obj.number }}">{% endif %}

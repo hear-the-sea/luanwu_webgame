@@ -1134,6 +1134,7 @@ def _reconcile_claimed_virtual_player_population_cell(
     *,
     limit: int,
     now: datetime | None,
+    deadline: float | None = None,
 ) -> PopulationCellReconcileResult:
     if not _v2_bootstrap_routing_is_active():
         fail_population_recompute_demand(
@@ -1175,6 +1176,18 @@ def _reconcile_claimed_virtual_player_population_cell(
             from .bootstrap import build_virtual_player_v2_bootstrap_plan, create_virtual_player_v2
 
             while processed_count < limit:
+                # The preceding mutation is fully committed. Finish this
+                # demand's handoff/claim even when the shared roll budget is
+                # spent; its durable deficit will remain queued for recovery.
+                if processed_count and deadline is not None and monotonic() >= deadline:
+                    logger.info(
+                        "Virtual player population cell yielded: region=%s band=%s processed=%d limit=%d",
+                        claim.region,
+                        claim.prestige_band,
+                        processed_count,
+                        limit,
+                    )
+                    break
                 ownership_guard()
                 if not _v2_bootstrap_routing_is_active():
                     fail_population_recompute_demand(
@@ -1313,7 +1326,12 @@ def reconcile_virtual_player_population_cell(
     prestige_band: str,
     limit: int = POPULATION_RECOMPUTE_DEFAULT_BATCH_LIMIT,
     now: datetime | None = None,
+    deadline: float | None = None,
+    max_duration_seconds: float | None = None,
 ) -> PopulationCellReconcileResult:
+    if max_duration_seconds is not None:
+        relative_deadline = monotonic() + max(0.0, float(max_duration_seconds))
+        deadline = relative_deadline if deadline is None else min(deadline, relative_deadline)
     normalized = _normalize_population_demand_cells([(region, prestige_band)])[0]
     fixed_time = _demand_now(now) if now is not None else None
     if not _v2_bootstrap_routing_is_active():
@@ -1340,6 +1358,7 @@ def reconcile_virtual_player_population_cell(
             claim,
             limit=normalized_limit,
             now=fixed_time,
+            **({"deadline": deadline} if deadline is not None else {}),
         )
     except DatabaseError:
         raise
@@ -1385,8 +1404,10 @@ def scan_virtual_player_population_demands(
     limit: int = 100,
     cell_limit: int = POPULATION_RECOMPUTE_DEFAULT_BATCH_LIMIT,
     now: datetime | None = None,
+    max_duration_seconds: float | None = None,
 ) -> tuple[PopulationCellReconcileResult, ...]:
     scan_started_at = monotonic()
+    deadline = None if max_duration_seconds is None else scan_started_at + max(0.0, float(max_duration_seconds))
     normalized_limit = max(0, min(1000, int(limit)))
     normalized_cell_limit = max(0, min(100, int(cell_limit)))
     fixed_time = _demand_now(now) if now is not None else None
@@ -1397,6 +1418,11 @@ def scan_virtual_player_population_demands(
     results: list[PopulationCellReconcileResult] = []
     oldest_due_at: datetime | None = None
     for _index in range(normalized_limit):
+        if results and deadline is not None and monotonic() >= deadline:
+            logger.info(
+                "Population demand scan yielded: cells=%d budget_seconds=%.3f", len(results), max_duration_seconds
+            )
+            break
         claim = claim_next_population_recompute_demand(now=fixed_time)
         if claim is None:
             break
@@ -1408,6 +1434,7 @@ def scan_virtual_player_population_demands(
                 claim,
                 limit=normalized_cell_limit,
                 now=fixed_time,
+                **({"deadline": deadline} if deadline is not None else {}),
             )
         except DatabaseError:
             raise
@@ -2214,7 +2241,9 @@ def plan_virtual_player_population(*, now=None) -> dict[str, Any]:
     return payload
 
 
-def roll_virtual_player_population(*, limit: int | None = None, now=None) -> int:
+def roll_virtual_player_population(
+    *, limit: int | None = None, now=None, max_duration_seconds: float | None = None
+) -> int:
     routing = read_virtual_player_routing()
     bootstrap_mode = routing.bootstrap_mode
     if bootstrap_mode is BootstrapMode.V2_PAUSED:
@@ -2222,7 +2251,11 @@ def roll_virtual_player_population(*, limit: int | None = None, now=None) -> int
     if bootstrap_mode is BootstrapMode.V2_ACTIVE:
         if not assess_virtual_player_runtime(routing).v2_population_activation_allowed:
             return 0
-        return _roll_virtual_player_population_v2(limit=limit, now=now)
+        return _roll_virtual_player_population_v2(
+            limit=limit,
+            now=now,
+            **({"max_duration_seconds": max_duration_seconds} if max_duration_seconds is not None else {}),
+        )
     # The pre-gate population writer is retired.  A stale or missing routing
     # row must fail closed until the V2 runtime preflight initializes it;
     # silently re-entering the legacy writer would violate the single-policy
@@ -2234,7 +2267,10 @@ def _roll_virtual_player_population_v2(
     *,
     limit: int | None = None,
     now=None,
+    max_duration_seconds: float | None = None,
 ) -> int:
+    started_at = monotonic()
+    deadline = None if max_duration_seconds is None else started_at + max(0.0, float(max_duration_seconds))
     config = _v2_population_runtime_config()
     if not bool(config.get("enabled", True)):
         return 0
@@ -2250,15 +2286,33 @@ def _roll_virtual_player_population_v2(
     normalized_limit = max(0, int(limit))
 
     sync_mismatched_v2_current_prestige_bands()
+    band_sync_finished_at = monotonic()
     cells = _v2_periodic_population_cells()
     merge_periodic_v2_population_recompute_demands(now=current_time)
+    demand_merge_finished_at = monotonic()
     if normalized_limit == 0:
         return 0
+
+    if deadline is not None:
+        # Work left by a previous slice keeps its original availability time.
+        # Re-reading the durable order avoids restarting from region one on
+        # every bounded invocation; normal claim/lease validation still runs.
+        due_cells = tuple(
+            BotPopulationRecomputeDemand.objects.filter(
+                requested_revision__gt=F("completed_revision"),
+                available_at__lte=current_time,
+            )
+            .order_by("available_at", "completed_revision", "updated_at", "id")
+            .values_list("region", "prestige_band")
+        )
+        ranks = {cell: rank for rank, cell in enumerate(due_cells)}
+        cells = tuple(sorted(cells, key=lambda cell: ranks.get(cell, len(ranks))))
 
     _retire_unsupported_v2_profiles(
         now=current_time,
         limit=normalized_limit,
     )
+    retirement_finished_at = monotonic()
 
     processed = 0
     terminal_statuses = {
@@ -2267,6 +2321,15 @@ def _roll_virtual_player_population_v2(
         PopulationCellReconcileStatus.CLAIM_LOST,
     }
     for region, prestige_band in cells:
+        if processed and deadline is not None and monotonic() >= deadline:
+            logger.info(
+                "Virtual player population roll yielded: budget_seconds=%.3f processed=%d limit=%d duration_seconds=%.3f",
+                max_duration_seconds,
+                processed,
+                normalized_limit,
+                max(0.0, monotonic() - started_at),
+            )
+            break
         remaining = normalized_limit - processed
         if remaining <= 0:
             break
@@ -2275,10 +2338,22 @@ def _roll_virtual_player_population_v2(
             prestige_band=prestige_band,
             limit=remaining,
             now=current_time,
+            **({"deadline": deadline} if deadline is not None else {}),
         )
         processed += int(result.processed_count)
         if result.status in terminal_statuses:
             break
+    logger.info(
+        "Virtual player population roll completed: processed=%d limit=%d band_sync_seconds=%.3f "
+        "demand_merge_seconds=%.3f retirement_seconds=%.3f consume_seconds=%.3f total_seconds=%.3f",
+        processed,
+        normalized_limit,
+        max(0.0, band_sync_finished_at - started_at),
+        max(0.0, demand_merge_finished_at - band_sync_finished_at),
+        max(0.0, retirement_finished_at - demand_merge_finished_at),
+        max(0.0, monotonic() - retirement_finished_at),
+        max(0.0, monotonic() - started_at),
+    )
     return processed
 
 

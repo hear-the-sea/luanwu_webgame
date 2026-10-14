@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from datetime import timedelta
 from typing import TYPE_CHECKING, Any
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q, QuerySet
+from django.utils import timezone
 from django.views.generic import DetailView
 
 from .models import BattleReport
@@ -56,17 +58,35 @@ class BattleReportDetailView(LoginRequiredMixin, DetailView):
         manor = self._get_request_manor()
         if manor is None:
             return BattleReport.objects.none()
+        import gameplay.services.arena.coop_core as arena_coop_core
+        import gameplay.services.arena.core as arena_core
+
+        now = timezone.now()
         # 允许查看：
         # 1) 自己作为战报归属方（report.manor）
         # 2) 通过站内信收到的战报（Message.battle_report）
-        # 3) 竞技场公开战报（通过 ArenaMatch 关联）
+        # 3) 进行中或结束后保留期内的竞技场公开战报
         return (
             BattleReport.objects.select_related("manor")
             .filter(
                 Q(manor=manor)
                 | Q(messages__manor=manor)
-                | Q(arena_matches__isnull=False)
+                | Q(arena_matches__tournament__status="running")
+                | Q(
+                    arena_matches__tournament__status__in=["completed", "cancelled"],
+                    arena_matches__tournament__ended_at__gte=now
+                    - timedelta(seconds=arena_core.ARENA_COMPLETED_RETENTION_SECONDS),
+                )
                 | Q(arena_coop_events__entries__manor=manor)
+                | Q(arena_ring_matches__tenure__ended_at__isnull=True, arena_ring_matches__isnull=False)
+                | Q(arena_ring_matches__tenure__ended_at__gt=now - timedelta(hours=24))
+                | Q(arena_ring_matches__defender=manor)
+                | Q(arena_coop_events__status__in=["preparing", "running"])
+                | Q(
+                    arena_coop_events__status__in=["completed", "cancelled"],
+                    arena_coop_events__ended_at__gte=now
+                    - timedelta(seconds=arena_coop_core.ARENA_COOP_COMPLETED_RETENTION_SECONDS),
+                )
             )
             .distinct()
         )

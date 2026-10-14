@@ -23,7 +23,8 @@ def mission_reward_payload(mission, items=None) -> dict:
     assert chest["effect_type"] == "loot_box"
     assert chest["is_usable"] is True
     assert chest["effect_payload"]["mission_reward_version"] == 1
-    assert chest["effect_payload"]["reward_balance_version"] == 2
+    assert chest["effect_payload"]["reward_balance_version"] == 3
+    assert chest["effect_payload"]["experience_fruit_source"] == "battle_salvage"
     return chest["effect_payload"]
 
 

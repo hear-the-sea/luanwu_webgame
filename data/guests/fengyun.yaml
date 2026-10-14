@@ -12,10 +12,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
+      force: 8
+      intellect: 54
+      defense: 14
+      agility: 24
   - key: hero_ilrock_04632
     name: 孔慈
     default_gender: female
@@ -26,10 +26,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
+      force: 8
+      intellect: 52
+      defense: 24
+      agility: 16
   - key: hero_ilrock_04639
     name: 颜盈
     default_gender: female
@@ -40,10 +40,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
+      force: 8
+      intellect: 52
+      defense: 18
+      agility: 22
   - key: hero_ilrock_04667
     name: 于楚楚
     default_gender: female
@@ -54,10 +54,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
+      force: 8
+      intellect: 52
+      defense: 24
+      agility: 16
   - key: hero_ilrock_04666
     name: 于岳
     default_gender: male
@@ -68,10 +68,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 56
+      intellect: 6
+      defense: 28
+      agility: 10
   - key: hero_ilrock_04622
     name: 霍步天
     default_gender: male
@@ -82,10 +82,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 48
+      intellect: 8
+      defense: 28
+      agility: 16
   - key: hero_ilrock_04646
     name: 独孤鸣
     default_gender: male
@@ -96,10 +96,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 46
+      intellect: 6
+      defense: 20
+      agility: 28
   blue:
   - key: hero_ilrock_04578
     name: 断浪
@@ -111,10 +111,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 52
+      intellect: 8
+      defense: 22
+      agility: 18
   - key: hero_ilrock_04579
     name: 破军
     default_gender: male
@@ -125,10 +125,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 56
+      intellect: 6
+      defense: 24
+      agility: 14
   - key: hero_ilrock_04580
     name: 绝之介
     default_gender: male
@@ -139,10 +139,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 44
+      intellect: 6
+      defense: 38
+      agility: 12
   - key: hero_ilrock_04581
     name: 第二梦
     default_gender: female
@@ -153,10 +153,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 46
+      intellect: 6
+      defense: 22
+      agility: 26
   - key: hero_ilrock_04583
     name: 第一邪皇
     default_gender: male
@@ -167,10 +167,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 54
+      intellect: 6
+      defense: 24
+      agility: 16
   - key: hero_ilrock_04584
     name: 第二刀皇
     default_gender: male
@@ -181,10 +181,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 54
+      intellect: 6
+      defense: 24
+      agility: 16
   - key: hero_ilrock_04585
     name: 第三猪皇
     default_gender: male
@@ -195,10 +195,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 48
+      intellect: 8
+      defense: 30
+      agility: 14
   - key: hero_ilrock_04586
     name: 拳道神
     default_gender: male
@@ -209,10 +209,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 58
+      intellect: 4
+      defense: 28
+      agility: 10
   - key: hero_ilrock_04588
     name: 剑晨
     default_gender: male
@@ -223,10 +223,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 50
+      intellect: 6
+      defense: 22
+      agility: 22
   - key: hero_ilrock_04589
     name: 聂人王
     default_gender: male
@@ -237,10 +237,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 54
+      intellect: 6
+      defense: 26
+      agility: 14
   - key: hero_ilrock_04590
     name: 断帅
     default_gender: male
@@ -251,10 +251,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 52
+      intellect: 6
+      defense: 24
+      agility: 18
   - key: hero_ilrock_04592
     name: 泥菩萨
     default_gender: male
@@ -265,10 +265,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
+      force: 8
+      intellect: 64
+      defense: 12
+      agility: 16
   - key: hero_ilrock_04629
     name: 秦霜
     default_gender: male
@@ -279,10 +279,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 48
+      intellect: 8
+      defense: 30
+      agility: 14
   - key: hero_ilrock_04616
     name: 独孤一方
     default_gender: male
@@ -293,10 +293,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 50
+      intellect: 8
+      defense: 26
+      agility: 16
   - key: hero_ilrock_04653
     name: 幽若
     default_gender: female
@@ -307,10 +307,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 46
+      intellect: 6
+      defense: 20
+      agility: 28
   - key: hero_ilrock_04621
     name: 绝心
     default_gender: male
@@ -321,9 +321,9 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
+      force: 48
+      intellect: 10
+      defense: 22
       agility: 20
   purple:
   - key: hero_ilrock_04574
@@ -336,10 +336,10 @@ heroes:
     - 7
     - 12
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 42
+      intellect: 6
+      defense: 16
+      agility: 36
   - key: hero_ilrock_04575
     name: 步惊云
     default_gender: male
@@ -350,10 +350,10 @@ heroes:
     - 7
     - 12
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 54
+      intellect: 6
+      defense: 28
+      agility: 12
   - key: hero_ilrock_04577
     name: 雄霸
     default_gender: male
@@ -364,10 +364,10 @@ heroes:
     - 7
     - 12
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 52
+      intellect: 8
+      defense: 28
+      agility: 12
   - key: hero_ilrock_04587
     name: 独孤剑
     default_gender: male
@@ -378,10 +378,10 @@ heroes:
     - 7
     - 12
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 56
+      intellect: 6
+      defense: 24
+      agility: 14
   orange:
   - key: hero_ilrock_04576
     name: 韦英雄
@@ -393,7 +393,7 @@ heroes:
     - 8
     - 14
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
+      force: 52
+      intellect: 6
+      defense: 22
       agility: 20

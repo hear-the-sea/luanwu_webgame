@@ -474,6 +474,7 @@ def test_report_view_renders_additional_target_embedded_passive_events(client, d
                                 "kills": 0,
                                 "target_defeated": False,
                                 "reflect_damage": 25,
+                                "reflect_effect": "乾坤留痕",
                                 "reflect_kills": 0,
                                 "reflect_defeated": False,
                                 "actor_state": {
@@ -517,9 +518,15 @@ def test_report_view_renders_additional_target_embedded_passive_events(client, d
     actor_summary_start = body.index('class="event-unit-summary"')
     actor_summary_end = body.index("</div>", actor_summary_start)
     assert "乾坤圣火印" not in body[actor_summary_start:actor_summary_end]
-    settlement_start = body.index('class="event-target-summary event-actor-settlement-summary reflect-text"')
-    settlement_end = body.index("</div>", settlement_start)
-    settlement_markup = body[settlement_start:settlement_end]
-    assert "甲" in settlement_markup
-    assert 'data-unit-state-side="attacker"' in settlement_markup
+    settlement = BeautifulSoup(body, "html.parser").select_one(".event-actor-settlement-summary.reflect-text")
+    assert settlement is not None
+    summary = settlement.select_one(".event-unit-summary")
+    assert summary is not None
+    assert summary.select_one(".event-unit-name").get_text(strip=True) == "甲"
+    state = summary.select_one('.battle-unit-state[data-unit-state-side="attacker"]')
+    assert state is not None
+    assert "45%" in str(state)
+    settlement_text = _normalized_report_text(str(settlement))
+    assert "张无忌爆发乾坤留痕" in settlement_text
+    assert "造成伤害25，伤害人数0" in settlement_text
     assert 'data-unit-state-side="defender"' not in body

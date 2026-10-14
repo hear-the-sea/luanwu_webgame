@@ -127,7 +127,7 @@ def _use_target_guest_item(
     expected_action: str,
     missing_guest_error: str,
     success_fallback_message: Callable[[Mapping[str, Any]], str],
-    service_call: Callable[[Any, InventoryItem, int], Mapping[str, Any]],
+    service_call: Callable[..., Mapping[str, Any]],
 ) -> HttpResponse:
     manor = get_manor(request.user)
     item = _warehouse_item(manor, pk)
@@ -142,7 +142,9 @@ def _use_target_guest_item(
         return inventory_error_response(request, is_ajax, missing_guest_error)
 
     try:
-        result = service_call(manor, item, guest_id)
+        binding_mode = request.POST.get("binding_mode")
+        kwargs = {"binding_mode": binding_mode} if binding_mode is not None else {}
+        result = service_call(manor, item, guest_id, **kwargs)
         raw_message = result.get("_message")
         if raw_message is None:
             raw_message = success_fallback_message(result)
@@ -236,9 +238,12 @@ def use_item_view(request: HttpRequest, pk: int) -> HttpResponse:
     item = _warehouse_item(manor, pk)
     is_ajax = is_ajax_request(request)
     try:
+        binding_mode = request.POST.get("binding_mode")
+        kwargs = {"binding_mode": binding_mode} if binding_mode is not None else {}
         payload = use_inventory_item(
             item,
             manor=manor,
+            **kwargs,
             resource_overflow_confirmation=_load_resource_overflow_confirmation(
                 request.POST.get("resource_overflow_confirmation", "")
             ),
@@ -367,11 +372,12 @@ def use_guest_disguise_card_view(request: HttpRequest, pk: int) -> HttpResponse:
         expected_action="disguise_guest_avatar",
         missing_guest_error="请选择要易容的门客",
         success_fallback_message=lambda result: f"门客 {result.get('guest_name', '')} 已更换形象",
-        service_call=lambda manor, item, guest_id: use_guest_disguise_card(
+        service_call=lambda manor, item, guest_id, **kwargs: use_guest_disguise_card(
             manor,
             item,
             guest_id,
             avatar_key,
+            **kwargs,
         ),
     )
 

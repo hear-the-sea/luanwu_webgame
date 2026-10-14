@@ -94,8 +94,8 @@ def calculate_scout_success_rate(attacker: Manor, defender: Manor) -> float:
 
     公式：
     基础成功率 = 50%
-    成功率修正 = (我方侦察术等级 - 对方侦察术等级) × 5%
-    最终成功率 = min(95%, max(10%, 基础成功率 + 成功率修正))
+    成功率修正 = (我方侦察术等级 - 对方侦察术等级) × 1%
+    最终成功率 = min(95%, max(1%, 基础成功率 + 成功率修正))
     """
     attacker_level = get_scout_tech_level(attacker)
     defender_level = get_scout_tech_level(defender)

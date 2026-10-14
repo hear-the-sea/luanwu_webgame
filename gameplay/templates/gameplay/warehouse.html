@@ -72,7 +72,7 @@
             </thead>
             <tbody>
                 {% for entry in inventory_items %}
-                <tr>
+                <tr data-binding-mode="{{ entry.binding_mode }}">
                     <td>
                         <div class="tw-item-cell">
                             <div class="tw-item-icon rarity-{{ entry.template.rarity|default:'black' }}">
@@ -82,7 +82,7 @@
                                     <span class="tw-icon-placeholder">{{ entry.template.name|slice:":1" }}</span>
                                 {% endif %}
                             </div>
-                            <span class="tw-item-name rarity-{{ entry.template.rarity|default:'black' }}">{{ entry.template.name }}</span>
+                            <span class="tw-item-name rarity-{{ entry.template.rarity|default:'black' }}">{{ entry.template.name }}{% if entry.display_is_bound %}（绑定）{% endif %}</span>
                             <div class="tw-item-tooltip">
                                 <div class="tw-tooltip-header rarity-{{ entry.template.rarity|default:'black' }}">{{ entry.template.name }}</div>
                                 <div class="tw-tooltip-category">{{ entry.category_display }}</div>
@@ -154,28 +154,28 @@
                                 {% if entry.can_use_in_warehouse %}
                                     {% with payload=entry.template.effect_payload %}
                                     {% if payload.action == 'rebirth_guest' %}
-                                    <button type="button" class="tw-btn-primary tw-btn-sm js-open-guest-select-modal" data-item-id="{{ entry.id }}" data-action-type="rebirth" data-action-url="{% url 'gameplay:use_rebirth_card' entry.id %}" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
+                                    <button type="button" class="tw-btn-primary tw-btn-sm js-open-guest-select-modal" data-item-id="{{ entry.id }}" data-binding-mode="{{ entry.binding_mode }}" data-action-type="rebirth" data-action-url="{% url 'gameplay:use_rebirth_card' entry.id %}" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
                                     {% elif payload.action == 'disguise_guest' %}
-                                    <button type="button" class="tw-btn-primary tw-btn-sm js-open-guest-select-modal" data-item-id="{{ entry.id }}" data-action-type="disguise" data-action-url="{% url 'gameplay:use_super_guest_disguise' entry.id %}" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
+                                    <button type="button" class="tw-btn-primary tw-btn-sm js-open-guest-select-modal" data-item-id="{{ entry.id }}" data-binding-mode="{{ entry.binding_mode }}" data-action-type="disguise" data-action-url="{% url 'gameplay:use_super_guest_disguise' entry.id %}" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
                                     {% elif payload.action == 'disguise_guest_avatar' %}
-                                    <button type="button" class="tw-btn-primary tw-btn-sm js-open-guest-select-modal" data-item-id="{{ entry.id }}" data-action-type="avatar_disguise" data-action-url="{% url 'gameplay:use_guest_disguise' entry.id %}" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
+                                    <button type="button" class="tw-btn-primary tw-btn-sm js-open-guest-select-modal" data-item-id="{{ entry.id }}" data-binding-mode="{{ entry.binding_mode }}" data-action-type="avatar_disguise" data-action-url="{% url 'gameplay:use_guest_disguise' entry.id %}" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
                                     {% elif payload.action == 'soul_fusion' %}
                                     <button
                                         type="button"
                                         class="tw-btn-primary tw-btn-sm js-open-guest-select-modal"
                                         data-soul-fusion-min-level="{{ payload.min_level|default:30 }}"
                                         data-soul-fusion-rarities="{% if payload.allowed_rarities %}{{ payload.allowed_rarities|join:',' }}{% else %}green,blue,purple{% endif %}"
-                                        data-item-id="{{ entry.id }}"
+                                        data-item-id="{{ entry.id }}" data-binding-mode="{{ entry.binding_mode }}"
                                         data-action-type="soul_fusion"
                                         data-action-url="{% url 'gameplay:use_soul_container' entry.id %}"
                                         {% if entry.quantity <= 0 %}disabled{% endif %}
                                     >使用</button>
                                     {% elif payload.action == 'reroll_growth' %}
-                                    <button type="button" class="tw-btn-primary tw-btn-sm js-open-guest-select-modal" data-item-id="{{ entry.id }}" data-action-type="xisuidan" data-action-url="{% url 'gameplay:use_xisuidan' entry.id %}" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
+                                    <button type="button" class="tw-btn-primary tw-btn-sm js-open-guest-select-modal" data-item-id="{{ entry.id }}" data-binding-mode="{{ entry.binding_mode }}" data-action-type="xisuidan" data-action-url="{% url 'gameplay:use_xisuidan' entry.id %}" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
                                     {% elif payload.action == 'reset_allocation' %}
-                                    <button type="button" class="tw-btn-primary tw-btn-sm js-open-guest-select-modal" data-item-id="{{ entry.id }}" data-action-type="xidianka" data-action-url="{% url 'gameplay:use_xidianka' entry.id %}" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
+                                    <button type="button" class="tw-btn-primary tw-btn-sm js-open-guest-select-modal" data-item-id="{{ entry.id }}" data-binding-mode="{{ entry.binding_mode }}" data-action-type="xidianka" data-action-url="{% url 'gameplay:use_xidianka' entry.id %}" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
                                     {% elif payload.action == 'upgrade_guest_rarity' %}
-                                    <button type="button" class="tw-btn-primary tw-btn-sm js-open-guest-select-modal" data-item-id="{{ entry.id }}" data-action-type="rarity_upgrade" data-action-url="{% url 'gameplay:use_guest_rarity_upgrade' entry.id %}" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
+                                    <button type="button" class="tw-btn-primary tw-btn-sm js-open-guest-select-modal" data-item-id="{{ entry.id }}" data-binding-mode="{{ entry.binding_mode }}" data-action-type="rarity_upgrade" data-action-url="{% url 'gameplay:use_guest_rarity_upgrade' entry.id %}" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
                                     {% else %}
                                     <form
                                         method="post"
@@ -191,6 +191,7 @@
                                         {% endif %}
                                     >
                                         {% csrf_token %}
+                                        <input type="hidden" name="binding_mode" value="{{ entry.binding_mode }}">
                                         <button type="submit" class="tw-btn-primary tw-btn-sm" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
                                     </form>
                                     {% endif %}
@@ -200,19 +201,23 @@
                                 {% endif %}
                             </div>
                             <div class="tw-action-treasury">
+                                {% if entry.display_is_bound %}<span class="tw-muted text-sm">绑定物品不可转移</span>{% else %}
                                 <form method="post" action="{% url 'gameplay:move_to_treasury' entry.id %}">
                                     {% csrf_token %}
-                                    <input type="number" name="quantity" value="1" min="1" max="{{ entry.quantity }}" class="tw-quantity-input" {% if entry.quantity <= 0 %}disabled{% endif %}>
-                                    <button type="submit" class="tw-btn-secondary tw-btn-sm" {% if entry.quantity <= 0 %}disabled{% endif %}>放入藏宝阁</button>
+                                        <input type="hidden" name="binding_mode" value="{{ entry.binding_mode }}">
+                                    <input type="number" name="quantity" value="1" min="1" max="{{ entry.transferable_quantity }}" class="tw-quantity-input" {% if entry.transferable_quantity <= 0 %}disabled{% endif %}>
+                                    <button type="submit" class="tw-btn-secondary tw-btn-sm" {% if entry.transferable_quantity <= 0 %}disabled{% endif %}>放入藏宝阁</button>
                                 </form>
+                                {% endif %}
                             </div>
                         </div>
                         {% endif %}
                         {% else %}
                         <form method="post" action="{% url 'gameplay:move_to_warehouse' entry.id %}" class="tw-action-return-form flex items-center gap-2">
                             {% csrf_token %}
-                            <input type="number" name="quantity" value="1" min="1" max="{{ entry.quantity }}" class="tw-quantity-input" {% if entry.quantity <= 0 %}disabled{% endif %}>
-                            <button type="submit" class="tw-btn-secondary tw-btn-sm" {% if entry.quantity <= 0 %}disabled{% endif %}>移回仓库</button>
+                                        <input type="hidden" name="binding_mode" value="{{ entry.binding_mode }}">
+                            <input type="number" name="quantity" value="1" min="1" max="{{ entry.transferable_quantity }}" class="tw-quantity-input" {% if entry.transferable_quantity <= 0 %}disabled{% endif %}>
+                            <button type="submit" class="tw-btn-secondary tw-btn-sm" {% if entry.transferable_quantity <= 0 %}disabled{% endif %}>移回仓库</button>
                         </form>
                         {% endif %}
                     </td>

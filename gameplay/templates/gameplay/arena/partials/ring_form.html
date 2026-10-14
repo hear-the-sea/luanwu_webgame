@@ -1,0 +1,53 @@
+<form method="post" action="{% url 'gameplay:arena_ring_action' row.ring.key %}" class="tw-modal-form" data-ring-lineup-form data-max-guests="{{ ring_rules.max_guests }}">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="{{ row.action_kind }}">
+    <input type="hidden" name="action_token" value="{{ row.action_token }}">
+    <input type="hidden" name="expected_version" value="{{ row.ring.version }}">
+    <input type="hidden" name="expected_tenure_id" value="{{ row.tenure.id|default:0 }}">
+    <div class="tw-modal-body">
+        <p class="ring-snapshot-note">按报名阵容出战，不占用门客。</p>
+        <div class="ring-form-heading"><p>上阵门客 <small>最多 {{ ring_rules.max_guests }} 名</small></p><div><button type="button" data-ring-select-all>全选</button><button type="button" data-ring-clear-guests>清空</button></div></div>
+        <div class="tw-raid-guest-grid ring-guest-options">
+            {% for item in ring_guest_rows %}
+            <label class="tw-raid-guest-option">
+                <input type="checkbox" name="guest_ids" value="{{ item.guest.id }}" data-capacity="{{ item.capacity }}" {% if item.selected %}checked{% endif %}>
+                <span class="tw-raid-guest-card">
+                    <span class="tw-guest-avatar">
+                        {% if item.guest.avatar_url %}<img src="{{ item.guest.avatar_url }}" alt="" loading="lazy" decoding="async">
+                        {% else %}<span class="tw-avatar-placeholder">{{ item.guest.display_name|slice:":1" }}</span>{% endif %}
+                    </span>
+                    <span class="tw-guest-details">
+                        <span class="tw-guest-info-row"><span class="tw-guest-name-sm rarity-text-{{ item.guest.template.rarity|lower }}">{{ item.guest.display_name }}</span><span class="tw-guest-level-sm">等级 {{ item.guest.level }}</span></span>
+                        <span class="tw-raid-guest-stats">带兵 {{ item.capacity }}</span>
+
+                    </span>
+                    <span class="tw-raid-guest-check" aria-hidden="true">✓</span>
+                </span>
+            </label>
+            {% empty %}<p class="ring-notice">暂无可上阵门客。</p>{% endfor %}
+        </div>
+        <div class="ring-form-heading"><p>上阵护院</p><button type="button" data-ring-clear-troops>全部清零</button></div>
+        <p class="ring-form-note">护院无需持有，总数受门客带兵上限限制；科技满级，器械加成生效。</p>
+        <div class="tw-raid-troop-list ring-troop-options">
+            {% for troop in ring_troop_rows %}
+            <div class="tw-raid-troop-row">
+                <div class="tw-troop-info"><div class="tw-troop-details"><span class="tw-troop-name">{{ troop.name }}</span><span class="tw-troop-count">持有 {{ troop.available }}（庄园 {{ troop.manor_count }} / 钱庄 {{ troop.bank_count }}）</span></div></div>
+                <div class="tw-raid-troop-controls" aria-label="{{ troop.name }}数量">
+                    <button type="button" class="tw-raid-step-btn" data-ring-adjust="-10" aria-label="减少十名{{ troop.name }}">-10</button>
+                    <button type="button" class="tw-raid-step-btn" data-ring-adjust="-1" aria-label="减少一名{{ troop.name }}">−</button>
+                    <input type="number" class="tw-raid-troop-input" name="troop_{{ troop.key }}" min="0" step="1" value="{{ troop.selected }}" inputmode="numeric" aria-label="{{ troop.name }}上阵数量">
+                    <button type="button" class="tw-raid-step-btn" data-ring-adjust="1" aria-label="增加一名{{ troop.name }}">+</button>
+                    <button type="button" class="tw-raid-step-btn" data-ring-adjust="10" aria-label="增加十名{{ troop.name }}">+10</button>
+                    <button type="button" class="tw-raid-step-btn tw-raid-fill-btn" data-ring-adjust="1000">+1000</button>
+                </div>
+            </div>
+            {% empty %}<p class="ring-notice">暂无护院，也可仅派门客。</p>{% endfor %}
+        </div>
+    </div>
+    <div class="ring-modal-footer">
+        <p class="ring-capacity" aria-live="polite" data-ring-capacity>带兵上限 {{ ring_total_capacity }}</p>
+        <p class="ring-form-error" role="alert" data-ring-error hidden></p>
+        {% if row.is_mine %}<p class="ring-form-note">下场生效，时间与胜场保留。</p>{% elif row.tenure %}<p class="ring-form-note">对本任擂主剩余 {{ row.tenure_challenges_remaining }} 次挑战，两次挑战间隔 10 分钟。</p>{% endif %}
+        <div class="ring-modal-actions"><button type="button" class="ring-modal-cancel" data-ring-close data-guild-modal-close>取消</button><button type="submit" class="ring-submit" {% if not ring_guest_rows or not row.can_enter_action %}disabled{% endif %}>{% if row.is_mine %}保存阵容{% elif row.tenure %}出战夺擂{% else %}登台守擂{% endif %}</button></div>
+    </div>
+</form>

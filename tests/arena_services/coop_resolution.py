@@ -334,9 +334,14 @@ def test_run_due_arena_coop_events_degrades_expected_message_error(monkeypatch):
         "gameplay.services.arena.coop_core.create_message",
         lambda **kwargs: (_ for _ in ()).throw(MessageError("message backend down")),
     )
+    monkeypatch.setattr(
+        "gameplay.services.arena.coop_core.timezone.now",
+        lambda: event.prepare_ends_at - timedelta(seconds=5),
+    )
 
     with TestCase.captureOnCommitCallbacks(execute=False) as callbacks:
-        processed = run_due_arena_coop_events(limit=10)
+        # Keep the event due even if the system clock moves backwards during setup.
+        processed = run_due_arena_coop_events(now=event.prepare_ends_at, limit=10)
 
     event.refresh_from_db()
     assert processed == 1

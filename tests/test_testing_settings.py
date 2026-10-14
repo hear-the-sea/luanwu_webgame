@@ -36,6 +36,7 @@ def _restore_testing_settings(monkeypatch: pytest.MonkeyPatch):
 
 
 def test_testing_settings_force_in_memory_backends(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.delenv("PYTEST_XDIST_WORKER", raising=False)
     module = _reload_testing_settings(monkeypatch)
 
     assert module.DATABASES == {

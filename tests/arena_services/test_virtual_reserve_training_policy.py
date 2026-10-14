@@ -11,6 +11,7 @@ from gameplay.models import (
     ArenaVirtualReserveMember,
     BotProfile,
     BotRuntimeRoutingState,
+    BotSafetyMetricEvent,
 )
 from gameplay.services.arena import virtual_reserve_pool
 from gameplay.services.arena.virtual_lineups import BotLineupEvaluation
@@ -272,19 +273,18 @@ def test_v2_scheduled_maintenance_skips_a_lease_and_resumes_after_release(monkey
     )
     monkeypatch.setattr(
         maintenance,
-        "start_maintenance_attempts",
-        lambda **_kwargs: (object(),),
-    )
-    monkeypatch.setattr(
-        maintenance,
         "_scheduled_planning_snapshots_with_profile_isolation",
         lambda profiles, **_kwargs: {int(candidate.id): object() for candidate in profiles},
     )
-    monkeypatch.setattr(
-        maintenance,
-        "maintain_virtual_player_v2",
-        lambda profile_id, **_kwargs: calls.append(profile_id) or SimpleNamespace(outcome=MaintenanceOutcome.NO_ACTION),
-    )
+
+    def maintain_no_action(profile_id, **kwargs):
+        calls.append(profile_id)
+        result = SimpleNamespace(outcome=MaintenanceOutcome.NO_ACTION)
+        kwargs["_safety_terminal_batch"].append((kwargs["_safety_attempt"], "no_action"))
+        return result
+
+    monkeypatch.setattr(maintenance, "maintain_virtual_player_v2", maintain_no_action)
+    before_events = set(BotSafetyMetricEvent.objects.values_list("event_id", flat=True))
 
     assert (
         maintenance._maintain_due_virtual_players_v2(
@@ -295,6 +295,7 @@ def test_v2_scheduled_maintenance_skips_a_lease_and_resumes_after_release(monkey
         == 0
     )
     assert calls == []
+    assert set(BotSafetyMetricEvent.objects.values_list("event_id", flat=True)) == before_events
 
     member.delete()
 
@@ -307,3 +308,7 @@ def test_v2_scheduled_maintenance_skips_a_lease_and_resumes_after_release(monkey
         == 1
     )
     assert calls == [profile.id]
+    new_events = set(BotSafetyMetricEvent.objects.values_list("event_id", flat=True)) - before_events
+    started = [event for event in new_events if event.endswith(":started")]
+    assert len(started) == 1
+    assert started[0].removesuffix(":started") + ":terminal" in new_events

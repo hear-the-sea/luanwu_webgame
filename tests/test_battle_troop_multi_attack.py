@@ -182,13 +182,14 @@ def test_previous_engine_preserves_ranged_spear_counter(engine_version, expected
 
 @pytest.mark.parametrize(
     ("engine_version", "expected_damage"),
-    [(PREVIOUS_BATTLE_ENGINE_VERSION, 9990), (CURRENT_BATTLE_ENGINE_VERSION, 7992)],
+    [(PREVIOUS_BATTLE_ENGINE_VERSION, 9990), (CURRENT_BATTLE_ENGINE_VERSION, 6993)],
 )
 def test_previous_engine_ignores_new_ranged_damage_reduction(engine_version, expected_damage):
     actor = make_troop(999)
     target = make_target()
     target.troop_class = "quan"
-    target.tech_effects["ranged_damage_reduction"] = 0.2
+    target.tech_effects = build_tech_effects("quan", {"quan_vs_ranged": 10})
+    target.tech_effects.pop("ranged_defense")
 
     event = perform_attack(actor, [actor], [target], FixedRng(), -1, battle_engine_version=engine_version)
 
@@ -196,11 +197,23 @@ def test_previous_engine_ignores_new_ranged_damage_reduction(engine_version, exp
     assert event["damage"] == expected_damage
 
 
-@pytest.mark.parametrize(("level", "expected_reduction"), [(4, None), (5, 0.1), (9, 0.1), (10, 0.2)])
+@pytest.mark.parametrize(("level", "expected_reduction"), [(0, 0.1), (4, 0.1), (5, 0.2), (9, 0.2), (10, 0.3)])
 def test_quan_ranged_reduction_uses_technology_thresholds(level, expected_reduction):
     effects = build_tech_effects("quan", {"quan_vs_ranged": level})
 
     assert effects.get("ranged_damage_reduction") == expected_reduction
+
+
+@pytest.mark.parametrize("tech_levels", [None, {}])
+def test_quan_has_base_ranged_reduction_without_technology(monkeypatch, tech_levels):
+    from battle.combatants_pkg import troop_builder
+    from battle.troops import load_troop_templates_from_yaml
+
+    monkeypatch.setattr(troop_builder, "load_troop_templates", load_troop_templates_from_yaml)
+    units = troop_builder.build_troop_combatants({"quan_sheng": 1}, "attacker", tech_levels=tech_levels)
+
+    assert len(units) == 1
+    assert units[0].tech_effects["ranged_damage_reduction"] == 0.1
 
 
 def test_battle_round_keeps_troop_attacks_in_one_action_event():

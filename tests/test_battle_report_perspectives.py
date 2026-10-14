@@ -69,16 +69,18 @@ def test_attack_and_retaliation_defeat_labels_follow_viewer(viewer, side, branch
     if branch in {"counter", "reflect"}:
         rows = document.select(f".{branch}-text")
         effect = "反戈一击" if branch == "counter" else "护身剑罡"
-        expected = (
-            f"{_label(other, viewer)}{hit['target']}爆发{effect}，造成伤害45，伤害人数1，{_label(side, viewer)}全军覆没"
+        assert all(
+            _text(node.select_one(".event-effect-source")) == f"{_label(other, viewer)}{hit['target']}爆发{effect}"
+            for node in rows
         )
+        expected = f"{_label(other, viewer)}{hit['target']}爆发{effect}，造成伤害45，伤害人数1，{_label(side, viewer)}{event['actor']}全军覆没"
     else:
         rows = [
             node
             for node in document.select(".event-target-detail")
             if "全军覆没" in _text(node) or "被摧毁" in _text(node)
         ]
-        expected = "城墙被摧毁" if branch == "city" else f"{_label(other, viewer)}全军覆没"
+        expected = "城墙被摧毁" if branch == "city" else f"{_label(other, viewer)}{hit['target']}全军覆没"
     assert len(rows) == (2 if nested else 1)
     assert all(_text(node).endswith(expected) for node in rows)
     if viewer == "spectator":
@@ -91,7 +93,7 @@ def test_legacy_missing_side_uses_snapshot_or_neutral_target_name(viewer):
     event = {"actor": "刀圣", "target": "拳圣", "kind": "troop", "damage": 10, "target_defeated": True}
     for state, expected in (
         ({}, "拳圣全军覆没"),
-        ({"actor_state": {"side": "attacker"}}, f"{_label('defender', viewer)}全军覆没"),
+        ({"actor_state": {"side": "attacker"}}, f"{_label('defender', viewer)}拳圣全军覆没"),
     ):
         body = render_to_string(
             "battle/partials/round_event_list.html",
@@ -102,6 +104,32 @@ def test_legacy_missing_side_uses_snapshot_or_neutral_target_name(viewer):
             },
         )
         assert expected in _text(BeautifulSoup(body, "html.parser"))
+
+
+@pytest.mark.parametrize("viewer", ["attacker", "defender", "spectator"])
+@pytest.mark.parametrize("target_side", ["attacker", "defender"])
+def test_guest_defeating_troops_names_the_defeated_troop_for_every_viewer(viewer, target_side):
+    actor_side = "defender" if target_side == "attacker" else "attacker"
+    event = {
+        "actor": "吕布",
+        "kind": "guest",
+        "side": actor_side,
+        "target": "刀霸",
+        "target_state": {"kind": "troop", "side": target_side},
+        "target_defeated": True,
+        "damage": 123,
+    }
+    html = render_to_string(
+        "battle/partials/round_event_list.html",
+        {
+            "events": [event],
+            "my_side": viewer,
+            "is_spectator": viewer == "spectator",
+        },
+    )
+    text = _text(BeautifulSoup(html, "html.parser"))
+    assert f"{_label(target_side, viewer)}刀霸全军覆没" in text
+    assert f"{_label(target_side, viewer)}刀霸刀霸" not in text
 
 
 def test_legacy_round_groups_snapshot_sides_and_preserves_unknown_events():
@@ -172,9 +200,9 @@ def test_fist_heal_is_compact_and_preserves_viewer_visibility(viewer, side, heal
     )
     summary = document.select_one(".event-heal-summary")
     assert summary is not None
-    expected = "拳圣爆发被动技能五气朝元，恢复生命120"
+    expected = "拳圣五气朝元恢复生命120"
     if heal_strength is not None:
-        expected += f"，恢复人数{heal_strength}"
+        expected += f"恢复人数{heal_strength}"
     assert _text(summary) == expected
     assert not summary.select(".event-unit-summary, .event-unit-name, .event-unit-skills")
     bars = summary.select(".battle-unit-state")

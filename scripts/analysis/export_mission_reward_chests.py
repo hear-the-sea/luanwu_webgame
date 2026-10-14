@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from copy import copy
 from pathlib import Path
 
@@ -201,13 +202,13 @@ def main():
                 mission["drop_table"].get("silver", 0),
                 ",".join(map(str, mission.get("available_weekdays", []))) or "每日",
                 mission.get("daily_limit", 3),
-                reference["fixed_experience_fruit"],
+                "战斗结算按实际回收",
                 reference["old_configured_xp_hours"],
                 reference["enemy_salvage_reference_hours"],
                 f"=SUMIF('宝箱奖励明细'!A$2:A${len(details)+1},A{row},'宝箱奖励明细'!S$2:S${len(details)+1})",
                 f"=L{row}-J{row}",
                 json.dumps(mission.get("entry_cost", {}), ensure_ascii=False),
-                "箱不可交易；器械仅图纸；仓容5",
+                "经验果按实际战斗直接发；箱不可交易；器械仅图纸；仓容5",
             ]
         )
     # SUMIF统一使用完整范围，避免新增任务后引用变化。
@@ -246,23 +247,26 @@ def main():
         "直接银两",
         "开放星期",
         "每日基础次数",
-        "固定经验果",
+        "经验果来源",
         "原配置经验期望(小时)",
-        "敌军回收参考(小时)",
+        "敌军满败回收参考（非保底/小时）",
         "新箱经验期望(小时)",
-        "较原配置增加(小时)",
+        "箱内经验差值（不含战斗经验果/小时）",
         "入场消耗",
         "规则",
     ]
     rules = [
         ["范围", "32个人任务；3帮会任务维持公共红宝石奖励。"],
         ["发奖", "玩家胜利且非撤退，在既有结算时机获得原银两+对应宝箱×1；原无银两的分桃、地窖二层仍只奖励宝箱。"],
-        ["开箱", "仓库点击使用；保底经验+多个独立奖励组，命中某组只按权重选一项；组间可同时命中。"],
+        ["开箱", "仓库点击使用；配置必得道具+多个独立奖励组，命中某组只按权重选一项；组间可同时命中。"],
         [
             "经验预算",
-            "固定经验果取敌方门客全败满血+敌方护院80%阵亡参考向下取整、至少1；保留原配置经验概率和数量。不计玩家损失，不等同旧每场实际收益。",
+            "新v3箱不含经验果。经验果按实际双方战损与门客HP比例回收，在胜利非撤退时直接结算；向下取整，可为0。敌军满败参考不是保底数量。经验桃、菠萝、西瓜保持原箱内配置。",
         ],
-        ["经验差值", "新箱减原配置的差值主要是战斗回收归入固定保底；不是凭空新增同等经验。实际新旧差异取决于旧战损。"],
+        [
+            "经验差值",
+            "差值只比较箱内道具经验，不包含战斗直接发放的经验果；实际总经验需结合本场战报，不能据此当作固定收益。",
+        ],
         [
             "器械",
             "只得图纸，命中时附带配方每种材料的一半向下取整；剩余材料与锻造等级仍需满足。半材料与图纸同次命中，不是独立抽取。",
@@ -274,7 +278,7 @@ def main():
         ],
         [
             "兼容",
-            "已有非空旧掉落战报仍按旧奖励与回收结算；空掉落防守战报沿用领取时当前模板。旧武林箱保留原池/价格/交易/仓容，器械改图纸；新版高级华山用独立箱。",
+            "已有v2箱库存和非空旧v2战报保留箱内固定经验果，结算不重复发果。已有散装战报保留原回收规则；空掉落防守战报沿用领取时当前模板。旧武林箱保留原池/价格/交易/仓容，器械改图纸；新版高级华山用独立箱。",
         ],
         [
             "仓库",
@@ -326,6 +330,19 @@ def main():
                     f"data/mission_templates.yaml:{mission['key']}.drop_table.{item_key}",
                 ]
             )
+        row = [None] * 30
+        row[0] = len(direct) + 1
+        row[1:11] = old[1:11]
+        row[11:17] = ["战斗回收（动态）", "experience_fruit", "experience_fruit", "经验果", "experience", "普通"]
+        row[20:23] = ["否", "按实际战损，可为0", None]
+        row[25:30] = [
+            "个人任务",
+            None,
+            "挑战者庄园",
+            "胜利非撤退；按本场战报双方实际战损和门客HP比例回收，向下取整；不在新箱中",
+            "gameplay/services/missions_impl/finalization_helpers.py；gameplay/services/battle_salvage.py",
+        ]
+        direct.append(row)
     for row in guild_rows:
         number = len(direct) + 2
         row[0] = number - 1
@@ -336,14 +353,19 @@ def main():
     end = len(direct) + 1
     for row in catalog["任务列表"].iter_rows(min_row=2):
         for column in (14, 15, 16):
-            row[column - 1].value = row[column - 1].value.replace("$290", f"${end}")
+            row[column - 1].value = re.sub(
+                r"(任务掉落明细!\$[A-Z]+\$2:\$[A-Z]+\$)\d+", lambda match: match[1] + str(end), row[column - 1].value
+            )
+        row[15].value = (
+            f'=COUNTIFS(任务掉落明细!$B$2:$B${end},B{row[0].row},任务掉落明细!$X$2:$X${end},"<1",任务掉落明细!$X$2:$X${end},">0")'
+        )
         key = row[1].value
         if key in design:
             mission = next(x for x in missions if x["key"] == key)
             row[23].value = "；".join(
                 (items.get(k, {}).get("name", "银两")) + f"×{v}" for k, v in mission["drop_table"].items()
             )
-            row[24].value = "开箱奖励及概率见宝箱奖励明细"
+            row[24].value = "经验果按实际战斗直接回收，可为0；开箱奖励及概率见宝箱奖励明细"
             row[28].value = f"data/mission_templates.yaml:{key}"
             row[31].value = json.dumps(mission, ensure_ascii=False, separators=(",", ":"))
     reverse = []
@@ -357,12 +379,12 @@ def main():
                 row[1],
                 row[2],
                 row[11],
-                f"='任务掉落明细'!X{idx}",
+                f"='任务掉落明细'!X{idx}" if row[23] is not None else None,
                 row[18],
                 row[12],
                 row[25],
                 row[27],
-                f"='任务掉落明细'!Y{idx}",
+                f"='任务掉落明细'!Y{idx}" if row[24] is not None else None,
                 row[29],
             ]
         )
@@ -377,24 +399,24 @@ def main():
     catalog["动态奖励规则"].append(
         [
             "32新版个人任务",
-            "经验与装备统一收入宝箱",
-            "对应mission_chest_*",
-            "宝箱内容",
-            "按每箱配置发奖；不再额外散发战损经验/装备",
-            "见宝箱养成预算",
+            "经验果战斗直接回收；其他道具在宝箱中",
+            "对应mission_chest_v3_*",
+            "战报与宝箱内容",
+            "经验果按实际双方战损直接发，可为0；不再随机回收装备；箱内经验道具需开箱",
+            "战报实际回收量；箱内道具见宝箱养成预算",
             "胜利非撤退得箱；玩家仓库开启",
             "gameplay/services/missions_impl/finalization_helpers.py；gameplay/services/inventory/use.py",
         ]
     )
     for row in catalog["统计"].iter_rows(min_row=2):
         if isinstance(row[1].value, str):
-            row[1].value = row[1].value.replace("B290", f"B{end}")
+            row[1].value = re.sub(r"(任务掉落明细!B2:B)\d+", lambda match: match[1] + str(end), row[1].value)
         if row[0].value == "生成时间":
             row[1].value = "2026-10-01"
     for row in catalog["字段说明"].iter_rows(min_row=2):
         if row[0].value == "奖励掉落范围":
             row[1].value = (
-                "新版个人任务直接发银两与宝箱；内部奖励见新增宝箱奖励明细。旧战报回收见动态奖励规则。帮会公共红宝石机制保留。"
+                "新版个人任务直接发银两、宝箱和按实际战斗回收的经验果；内部奖励见新增宝箱奖励明细。旧战报回收见动态奖励规则。帮会公共红宝石机制保留。"
             )
     new_sheet(catalog, "宝箱奖励明细", headers, details)
     new_sheet(catalog, "宝箱养成预算", budget_headers, budgets)

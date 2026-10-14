@@ -1,0 +1,79 @@
+Bounded real Django ASGIHandler, independent second HTTP; periodic 20ms driver models Daphne periodic application checking (accelerated). No sockets/database/app imports.
+=== asgiref 3.10.0; cancel=False ===
+{"still_running": false, "thread_wchans": {}}
+VERSIONS 5.2.8 3.10.0 4.2.1
+SYNC_MIDDLEWARE_STARTED
+EXTERNAL_ASGI_CANCEL
+NO_CANCEL_BASELINE
+SYNC_MIDDLEWARE_CALLING_ASYNC_GET_RESPONSE
+SEND http.response.start
+SEND http.response.body
+SYNC_MIDDLEWARE_STARTED
+SYNC_MIDDLEWARE_CALLING_ASYNC_GET_RESPONSE
+UNRELATED_REQUEST_STATUS 200
+UNRELATED_REQUEST_FINISHED
+
+
+=== asgiref 3.10.0; cancel=True ===
+{"still_running": true, "thread_wchans": {"115": "futex_wait_queue", "117": "futex_wait_queue"}}
+VERSIONS 5.2.8 3.10.0 4.2.1
+SYNC_MIDDLEWARE_STARTED
+EXTERNAL_ASGI_CANCEL
+SYNC_MIDDLEWARE_CALLING_ASYNC_GET_RESPONSE
+Timeout (0:00:00.800000)!
+Thread 0x00007419dbfec6c0 (most recent call first):
+  File "/home/daniel/.pyenv/versions/3.12.7/lib/python3.12/threading.py", line 355 in wait
+  File "/home/daniel/.pyenv/versions/3.12.7/lib/python3.12/site-packages/asgiref/current_thread_executor.py", line 85 in run_until_future
+  File "/home/daniel/.pyenv/versions/3.12.7/lib/python3.12/site-packages/asgiref/sync.py", line 291 in __call__
+  File "<string>", line 18 in __call__
+  File "/home/daniel/.pyenv/versions/3.12.7/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55 in inner
+  File "/home/daniel/.pyenv/versions/3.12.7/lib/python3.12/site-packages/asgiref/sync.py", line 556 in thread_handler
+  File "/home/daniel/.pyenv/versions/3.12.7/lib/python3.12/concurrent/futures/thread.py", line 58 in run
+  File "/home/daniel/.pyenv/versions/3.12.7/lib/python3.12/concurrent/futures/thread.py", line 92 in _worker
+  File "/home/daniel/.pyenv/versions/3.12.7/lib/python3.12/threading.py", line 1012 in run
+  File "/home/daniel/.pyenv/versions/3.12.7/lib/python3.12/threading.py", line 1075 in _bootstrap_inner
+  File "/home/daniel/.pyenv/versions/3.12.7/lib/python3.12/threading.py", line 1032 in _bootstrap
+
+Thread 0x00007419ded45b80 (most recent call first):
+  File "/home/daniel/.pyenv/versions/3.12.7/lib/python3.12/threading.py", line 1169 in _wait_for_tstate_lock
+  File "/home/daniel/.pyenv/versions/3.12.7/lib/python3.12/threading.py", line 1149 in join
+  File "/home/daniel/.pyenv/versions/3.12.7/lib/python3.12/concurrent/futures/thread.py", line 238 in shutdown
+  File "/home/daniel/.pyenv/versions/3.12.7/lib/python3.12/site-packages/asgiref/sync.py", line 148 in __aexit__
+  File "/home/daniel/.pyenv/versions/3.12.7/lib/python3.12/site-packages/django/core/handlers/asgi.py", line 161 in __call__
+  File "/home/daniel/.pyenv/versions/3.12.7/lib/python3.12/asyncio/events.py", line 88 in _run
+  File "/home/daniel/.pyenv/versions/3.12.7/lib/python3.12/asyncio/base_events.py", line 1986 in _run_once
+  File "/home/daniel/.pyenv/versions/3.12.7/lib/python3.12/asyncio/base_events.py", line 641 in run_forever
+  File "/home/daniel/.pyenv/versions/3.12.7/lib/python3.12/asyncio/base_events.py", line 674 in run_until_complete
+  File "/home/daniel/.pyenv/versions/3.12.7/lib/python3.12/asyncio/runners.py", line 118 in run
+  File "/home/daniel/.pyenv/versions/3.12.7/lib/python3.12/asyncio/runners.py", line 194 in run
+  File "<string>", line 55 in <module>
+
+
+=== asgiref 3.12.1; cancel=False ===
+{"still_running": false, "thread_wchans": {}}
+VERSIONS 5.2.8 3.12.1 4.2.1
+SYNC_MIDDLEWARE_STARTED
+EXTERNAL_ASGI_CANCEL
+NO_CANCEL_BASELINE
+SYNC_MIDDLEWARE_CALLING_ASYNC_GET_RESPONSE
+SEND http.response.start
+SEND http.response.body
+SYNC_MIDDLEWARE_STARTED
+SYNC_MIDDLEWARE_CALLING_ASYNC_GET_RESPONSE
+UNRELATED_REQUEST_STATUS 200
+UNRELATED_REQUEST_FINISHED
+
+
+=== asgiref 3.12.1; cancel=True ===
+{"still_running": false, "thread_wchans": {}}
+VERSIONS 5.2.8 3.12.1 4.2.1
+SYNC_MIDDLEWARE_STARTED
+EXTERNAL_ASGI_CANCEL
+SYNC_MIDDLEWARE_CALLING_ASYNC_GET_RESPONSE
+SEND http.response.start
+SEND http.response.body
+CANCELLED_REQUEST_HANDLED_SERVER_LOOP_CONTINUES
+SYNC_MIDDLEWARE_STARTED
+SYNC_MIDDLEWARE_CALLING_ASYNC_GET_RESPONSE
+UNRELATED_REQUEST_STATUS 200
+UNRELATED_REQUEST_FINISHED

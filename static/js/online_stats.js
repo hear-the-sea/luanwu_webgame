@@ -22,6 +22,7 @@
     let reconnectTimer = null;
     let stabilityTimer = null;
     let disposed = false;
+    let terminal = false;
     let disconnected = false;
     let lastOnlineCount = null;
     let lastTotalCount = null;
@@ -41,6 +42,7 @@
     function scheduleReconnect(socket, closeCode) {
         if (disposed || currentSocket !== socket || reconnectTimer !== null) return;
         if (!reconnectPolicy.shouldReconnect(closeCode)) {
+            terminal = true;
             clearReconnectTimer();
             return;
         }
@@ -54,7 +56,8 @@
     }
 
     function connectWebSocket() {
-        if (disposed) return;
+        if (disposed || terminal) return;
+        if (currentSocket && (currentSocket.readyState === WebSocket.OPEN || currentSocket.readyState === WebSocket.CONNECTING)) return;
         try {
             const socket = new WebSocket(wsUrl);
             currentSocket = socket;
@@ -142,7 +145,11 @@
         const socket = currentSocket;
         currentSocket = null;
         if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
-            socket.close();
+            try {
+                socket.close();
+            } catch (_error) {
+                // The page has already released its reference and timers.
+            }
         }
     }
 

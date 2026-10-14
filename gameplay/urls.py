@@ -13,6 +13,7 @@ from .views.arena import (
     arena_register_view,
     refresh_arena_activity_api,
 )
+from .views.arena_ring import ArenaRingEventDetailView, ArenaRingInspectionView, ArenaRingsView, arena_ring_action_view
 from .views.buildings import (
     RepairCityDefenseView,
     UpgradeBuildingView,
@@ -135,6 +136,12 @@ urlpatterns = [
     path("tasks/", TaskBoardView.as_view(), name="tasks"),
     path("arena/", ArenaView.as_view(), name="arena"),
     path("arena/events/", ArenaEventsView.as_view(), name="arena_events"),
+    path("arena/rings/", ArenaRingsView.as_view(), name="arena_rings"),
+    path("arena/rings/events/<int:tenure_id>/", ArenaRingEventDetailView.as_view(), name="arena_ring_event_detail"),
+    path(
+        "arena/rings/inspections/<int:inspection_id>/", ArenaRingInspectionView.as_view(), name="arena_ring_inspection"
+    ),
+    path("arena/rings/<str:ring_key>/action/", arena_ring_action_view, name="arena_ring_action"),
     path("arena/events/<int:tournament_id>/", ArenaEventDetailView.as_view(), name="arena_event_detail"),
     path("arena/coop/<int:event_id>/", ArenaCoopEventDetailView.as_view(), name="arena_coop_detail"),
     path("arena/exchange/", ArenaExchangePageView.as_view(), name="arena_exchange_page"),

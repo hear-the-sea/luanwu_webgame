@@ -17,6 +17,7 @@ pytestmark = pytest.mark.evidence
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE_PATH = gate_evidence.GATE_D1_EVIDENCE_PATH
 ACCEPTANCE_PATH = PROJECT_ROOT / "docs" / "virtual_player_gate_a_acceptance_config_2026-07-27.yaml"
+CURRENT_COLLECTION_PATH = PROJECT_ROOT / "docs" / "virtual_player_current_suite_collection.yaml"
 
 
 def _load_yaml(path: Path) -> dict:
@@ -50,6 +51,21 @@ def _collected_nodeids(*, files: list[str], real_services: bool) -> list[str]:
 
 def test_gate_d1_evidence_scope_does_not_authorize_runtime_changes() -> None:
     evidence = _load_yaml(EVIDENCE_PATH)
+    current = _load_yaml(CURRENT_COLLECTION_PATH)
+    assert current["record_type"] == "current_collection_only"
+    assert current["tests_executed"] is False
+    assert current["production_certification"] is False
+    assert current["runtime_activation_authorized"] is False
+    assert current["historical_gate_evidence_updated"] is False
+    # Runtime release decisions still read the dated historical evidence;
+    # a collection-only catalog is never an execution/activation certificate.
+    assert gate_evidence.GATE_D1_EVIDENCE_PATH != CURRENT_COLLECTION_PATH
+    assert gate_evidence.GATE_A_MANIFEST_PATH != CURRENT_COLLECTION_PATH
+    assert CURRENT_COLLECTION_PATH.name not in Path(gate_evidence.__file__).read_text()
+    selected_paths = {"Makefile", *(path for suite in current["suites"].values() for path in suite["files"])}
+    assert set(current["source_file_sha256"]) == selected_paths
+    for relative_path, checksum in current["source_file_sha256"].items():
+        assert hashlib.sha256((PROJECT_ROOT / relative_path).read_bytes()).hexdigest() == checksum
 
     _assert_utc_timestamp(evidence["recorded_at_utc"])
     assert evidence["schema_version"] == 1
@@ -112,7 +128,8 @@ def test_gate_d1_evidence_suite_collections_are_current(
 ) -> None:
     evidence = _load_yaml(EVIDENCE_PATH)
     collection = evidence["suite_collection"]
-    suite = collection[suite_name]
+    suite = _load_yaml(CURRENT_COLLECTION_PATH)["suites"][f"d1_{suite_name}"]
+    assert suite["files"] == collection[suite_name]["files"]
     nodeids = _collected_nodeids(
         files=suite["files"],
         real_services=real_services,

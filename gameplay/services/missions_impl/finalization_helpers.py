@@ -231,8 +231,22 @@ def build_mission_drops_with_salvage(
             _require_mapping_payload(getattr(locked_run.mission, "drop_table", None), field_name="drop table"),
         )
 
-    # 新任务把经验与装备统一收入专属宝箱；按已保存的实际掉落识别版本，
-    # 保留旧战报已确定的奖励及回收；空掉落防守战报仍按当前模板补齐。
+    # v3 经验果按实际战损直接发放，装备奖励仍在宝箱；已经保存的经验不再重算。
+    # 按实际掉落识别版本，保留旧库存箱内经验与旧战报回收规则。
+    # 空掉落防守战报仍按当前模板补齐。
+    if any(key.startswith("mission_chest_v3_") for key in drops):
+        if "experience_fruit" not in drops:
+            from ..battle_salvage import calculate_battle_salvage
+
+            exp_fruit_count, _ = calculate_battle_salvage(
+                report,
+                equipment_casualty_side=player_side,
+                include_equipment_recovery=False,
+            )
+            if exp_fruit_count > 0:
+                drops["experience_fruit"] = exp_fruit_count
+        return drops
+
     if any(key.startswith("mission_chest_") for key in drops):
         return drops
 

@@ -19,7 +19,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_GET
 from kombu.exceptions import OperationalError as KombuOperationalError
 
-from core.tasks import CELERY_BEAT_HEARTBEAT_CACHE_KEY, celery_health_ping
+from core.tasks import CELERY_BEAT_PUBLISHED_CACHE_KEY, celery_health_ping, worker_queue_heartbeat_key
 from core.utils.degradation import get_degradation_counts
 from core.utils.infrastructure import CACHE_INFRASTRUCTURE_EXCEPTIONS, combine_infrastructure_exceptions
 from core.utils.network import get_client_ip, is_trusted_proxy_ip
@@ -234,6 +234,16 @@ def _check_celery_workers_ready() -> tuple[bool, str | None]:
         responses = celery_app.control.inspect(timeout=1.0).ping() or {}
         if not responses:
             raise HealthCheckFailure("no Celery workers responded to ping")
+        queues = getattr(settings, "CELERY_WORKER_HEALTH_QUEUES", ())
+        max_age = max(60, int(getattr(settings, "HEALTH_CHECK_WORKER_QUEUE_MAX_AGE_SECONDS", 180)))
+        now = timezone.now().timestamp()
+        missing = []
+        for queue in queues:
+            seen = cache.get(worker_queue_heartbeat_key(queue))
+            if not isinstance(seen, (int, float)) or not 0 <= now - seen <= max_age:
+                missing.append(queue)
+        if missing:
+            raise HealthCheckFailure(f"Celery queues stopped executing probes: {', '.join(missing)}")
         return True, None
     except CELERY_READY_EXCEPTIONS as exc:
         return False, _maybe_debug_error(exc)
@@ -242,7 +252,7 @@ def _check_celery_workers_ready() -> tuple[bool, str | None]:
 def _check_celery_beat_ready() -> tuple[bool, str | None]:
     max_age_seconds = max(60, int(getattr(settings, "HEALTH_CHECK_CELERY_BEAT_MAX_AGE_SECONDS", 180)))
     try:
-        last_seen_raw = cache.get(CELERY_BEAT_HEARTBEAT_CACHE_KEY)
+        last_seen_raw = cache.get(CELERY_BEAT_PUBLISHED_CACHE_KEY)
         if last_seen_raw is None:
             raise HealthCheckFailure("Celery beat heartbeat missing")
 

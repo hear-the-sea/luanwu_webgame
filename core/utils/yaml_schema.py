@@ -27,6 +27,7 @@ from core.utils.yaml_validators.registry import SUPPORTED_YAML_CONFIGS, get_supp
 from core.utils.yaml_validators.rules import (
     validate_arena_coop_rules,
     validate_arena_rewards,
+    validate_arena_ring_rules,
     validate_arena_rules,
     validate_auction_items,
     validate_guild_rules,
@@ -63,6 +64,7 @@ __all__ = [
     "validate_smithy_production",
     # rules
     "validate_arena_rules",
+    "validate_arena_ring_rules",
     "validate_arena_coop_rules",
     "validate_arena_rewards",
     "validate_trade_market_rules",

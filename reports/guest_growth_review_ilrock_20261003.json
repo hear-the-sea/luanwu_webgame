@@ -1,0 +1,6813 @@
+{
+  "review_date": "2026-10-03",
+  "source_manifest": "reports/guest_expansion_ilrock_20261002.json",
+  "reviewed_count": 200,
+  "changed_count": 119,
+  "type_changes": [
+    "魏无牙",
+    "樊瑞"
+  ],
+  "policy": "只调整本批人物的成长分配与必要的文武类型，保留品质、总成长区间、姓名、简介与稳定编号。依据现有玩家简介作平衡设计；不重掷已有成长、不重置玩家加点。",
+  "entries": [
+    {
+      "key": "hero_ilrock_04594",
+      "name": "文丑丑",
+      "file": "fengyun.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "会务与察言观色、传递消息，主智力兼顾敏捷",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 54,
+          "defense": 14,
+          "agility": 24
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04632",
+      "name": "孔慈",
+      "file": "fengyun.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "非正面武者，主智力并留生存空间",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 52,
+          "defense": 24,
+          "agility": 16
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04639",
+      "name": "颜盈",
+      "file": "fengyun.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "保留文官方向，主智力兼顾先手",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 52,
+          "defense": 18,
+          "agility": 22
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04667",
+      "name": "于楚楚",
+      "file": "fengyun.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "非正面武者，主智力并留生存空间",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 52,
+          "defense": 24,
+          "agility": 16
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04666",
+      "name": "于岳",
+      "file": "fengyun.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "麒麟臂的惊人力量，集中武力",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 56,
+          "intellect": 6,
+          "defense": 28,
+          "agility": 10
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04622",
+      "name": "霍步天",
+      "file": "fengyun.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "霍家剑法与守护家门，稳健武力",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 8,
+          "defense": 28,
+          "agility": 16
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04646",
+      "name": "独孤鸣",
+      "file": "fengyun.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "降龙神腿，武力与敏捷取舍",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 6,
+          "defense": 20,
+          "agility": 28
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04578",
+      "name": "断浪",
+      "file": "fengyun.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "火麟剑与蚀日剑法，主武力",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 52,
+          "intellect": 8,
+          "defense": 22,
+          "agility": 18
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04579",
+      "name": "破军",
+      "file": "fengyun.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "刀剑齐出的凶猛进攻，集中武力",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 56,
+          "intellect": 6,
+          "defense": 24,
+          "agility": 14
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04580",
+      "name": "绝之介",
+      "file": "fengyun.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "不灭金身，防御为次重点，保留杀拳武力",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 44,
+          "intellect": 6,
+          "defense": 38,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04581",
+      "name": "第二梦",
+      "file": "fengyun.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "刀剑传承，主武力兼顾敏捷",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 6,
+          "defense": 22,
+          "agility": 26
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04583",
+      "name": "第一邪皇",
+      "file": "fengyun.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "魔刀或断情刀法，集中武力",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 54,
+          "intellect": 6,
+          "defense": 24,
+          "agility": 16
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04584",
+      "name": "第二刀皇",
+      "file": "fengyun.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "魔刀或断情刀法，集中武力",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 54,
+          "intellect": 6,
+          "defense": 24,
+          "agility": 16
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04585",
+      "name": "第三猪皇",
+      "file": "fengyun.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "不凡刀法，稳健武力和防御取舍",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 8,
+          "defense": 30,
+          "agility": 14
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04586",
+      "name": "拳道神",
+      "file": "fengyun.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "拳殛虚空的刚猛拳劲，集中武力",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 58,
+          "intellect": 4,
+          "defense": 28,
+          "agility": 10
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04588",
+      "name": "剑晨",
+      "file": "fengyun.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "英雄剑传承，主武力兼顾敏捷",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 6,
+          "defense": 22,
+          "agility": 22
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04589",
+      "name": "聂人王",
+      "file": "fengyun.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "雪饮刀与傲寒六诀，主武力兼顾防御",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 54,
+          "intellect": 6,
+          "defense": 26,
+          "agility": 14
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04590",
+      "name": "断帅",
+      "file": "fengyun.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "火麟剑与蚀日剑法，主武力",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 52,
+          "intellect": 6,
+          "defense": 24,
+          "agility": 18
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04592",
+      "name": "泥菩萨",
+      "file": "fengyun.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "命理批言与身受病苦，集中智力、压低防御",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 64,
+          "defense": 12,
+          "agility": 16
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04629",
+      "name": "秦霜",
+      "file": "fengyun.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "天霜拳与沉稳定位，武力和防御为主",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 8,
+          "defense": 30,
+          "agility": 14
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04616",
+      "name": "独孤一方",
+      "file": "fengyun.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "保留既有剑宗武者身份，稳健武力主攻",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 8,
+          "defense": 26,
+          "agility": 16
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04653",
+      "name": "幽若",
+      "file": "fengyun.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "保留武将方向，主武力兼顾敏捷",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 6,
+          "defense": 20,
+          "agility": 28
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04621",
+      "name": "绝心",
+      "file": "fengyun.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "隐忍枭雄仍为武将输出，保留少量智力而不双修",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 10,
+          "defense": 22,
+          "agility": 20
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04574",
+      "name": "聂风",
+      "file": "fengyun.yaml",
+      "rarity": "purple",
+      "changed": true,
+      "reason": "风神腿和身法，主武力兼顾高敏捷",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 42,
+          "intellect": 6,
+          "defense": 16,
+          "agility": 36
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04575",
+      "name": "步惊云",
+      "file": "fengyun.yaml",
+      "rarity": "purple",
+      "changed": true,
+      "reason": "排云掌、麒麟臂与绝世好剑，武力和防御为主",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 54,
+          "intellect": 6,
+          "defense": 28,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04577",
+      "name": "雄霸",
+      "file": "fengyun.yaml",
+      "rarity": "purple",
+      "changed": true,
+      "reason": "三绝与三分归元气，主武力兼顾防御",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 52,
+          "intellect": 8,
+          "defense": 28,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04587",
+      "name": "独孤剑",
+      "file": "fengyun.yaml",
+      "rarity": "purple",
+      "changed": true,
+      "reason": "圣灵剑法与剑二十三，集中武力",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 56,
+          "intellect": 6,
+          "defense": 24,
+          "agility": 14
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04576",
+      "name": "韦英雄",
+      "file": "fengyun.yaml",
+      "rarity": "orange",
+      "changed": true,
+      "reason": "天剑宗师，主武力并保留敏捷",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          8,
+          14
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          8,
+          14
+        ],
+        "attribute_weights": {
+          "force": 52,
+          "intellect": 6,
+          "defense": 22,
+          "agility": 20
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03155",
+      "name": "龙小云",
+      "file": "gulong_ilrock_01.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "诡计求生与暗算，主智力并保留先手敏捷",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 54,
+          "defense": 14,
+          "agility": 24
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03160",
+      "name": "诸葛刚",
+      "file": "gulong_ilrock_01.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "沉重铁拐正面进攻，侧重武力和防御",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 52,
+          "intellect": 6,
+          "defense": 28,
+          "agility": 14
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03161",
+      "name": "伊哭",
+      "file": "gulong_ilrock_01.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "青魔手奇门兵器，武力主攻兼顾敏捷",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 6,
+          "defense": 20,
+          "agility": 26
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03185",
+      "name": "游龙生",
+      "file": "gulong_ilrock_01.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "夺情剑剑客，武力主攻兼顾出手速度",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 6,
+          "defense": 22,
+          "agility": 22
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03356",
+      "name": "江玉郎",
+      "file": "gulong_ilrock_01.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "诡计求生与暗算，主智力并保留先手敏捷",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 54,
+          "defense": 14,
+          "agility": 24
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03154",
+      "name": "百晓生",
+      "file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "博闻与兵器谱判断，集中智力",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 62,
+          "defense": 16,
+          "agility": 14
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03158",
+      "name": "吕凤先",
+      "file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "银戟与赤手争胜，集中武力",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 54,
+          "intellect": 6,
+          "defense": 24,
+          "agility": 16
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03159",
+      "name": "西门柔",
+      "file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "长鞭远近变化，主武力兼顾先手",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 6,
+          "defense": 20,
+          "agility": 28
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03165",
+      "name": "林诗音",
+      "file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "非正面武者，主智力并留生存空间",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 52,
+          "defense": 24,
+          "agility": 16
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03199",
+      "name": "南宫灵",
+      "file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "掌权布局和伪装，集中智力",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 56,
+          "defense": 18,
+          "agility": 16
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03200",
+      "name": "任慈",
+      "file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "丐帮前辈武者，侧重稳健武力和防御",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 8,
+          "defense": 28,
+          "agility": 16
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03211",
+      "name": "高亚男",
+      "file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "剑鞭武艺，主武力兼顾敏捷",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 6,
+          "defense": 20,
+          "agility": 28
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03228",
+      "name": "秋灵素",
+      "file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "线索辨认和清醒判断，主智力",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 56,
+          "defense": 20,
+          "agility": 16
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03246",
+      "name": "柳无眉",
+      "file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "画眉鸟杀局，主智力并保留先手",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 54,
+          "defense": 14,
+          "agility": 24
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03349",
+      "name": "张菁",
+      "file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "剑鞭武艺，主武力兼顾敏捷",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 6,
+          "defense": 20,
+          "agility": 28
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03354",
+      "name": "江琴",
+      "file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "掌权布局和伪装，集中智力",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 56,
+          "defense": 18,
+          "agility": 16
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03376",
+      "name": "魏无牙",
+      "file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "机关密室和布局为鲜明特点，改为主智力文官",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 60,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03384",
+      "name": "顾人玉",
+      "file": "gulong_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "玉面神拳，主武力并保留防御",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 6,
+          "defense": 28,
+          "agility": 16
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27657",
+      "name": "张志聪",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27658",
+      "name": "余霖",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27659",
+      "name": "孙一奎",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27663",
+      "name": "朱肱",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27666",
+      "name": "曾懿",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27668",
+      "name": "吴谦",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27676",
+      "name": "郭玉",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27693",
+      "name": "许叔微",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27695",
+      "name": "王履",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27697",
+      "name": "危亦林",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27698",
+      "name": "忽思慧",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27699",
+      "name": "王好古",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27700",
+      "name": "罗天益",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27703",
+      "name": "陈自明",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27706",
+      "name": "薛己",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27708",
+      "name": "高武",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27711",
+      "name": "方有执",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27714",
+      "name": "吴昆",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27717",
+      "name": "尤怡",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27718",
+      "name": "薛雪",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27719",
+      "name": "徐大椿",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27723",
+      "name": "施毓黔",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27724",
+      "name": "唐宗海",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27727",
+      "name": "王士雄",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27728",
+      "name": "喻昌",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27729",
+      "name": "张璐",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27732",
+      "name": "赵献可",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_08659",
+      "name": "李延寿",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_11710",
+      "name": "胡三省",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27653",
+      "name": "刘完素",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "purple",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27654",
+      "name": "张从正",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "purple",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27655",
+      "name": "李杲",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "purple",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27656",
+      "name": "朱震亨",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "purple",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27660",
+      "name": "滑寿",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "purple",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27669",
+      "name": "王惟一",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "purple",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27690",
+      "name": "唐慎微",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "purple",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27694",
+      "name": "成无己",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "purple",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_27702",
+      "name": "张元素",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "purple",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_01451",
+      "name": "李冰",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "purple",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_11805",
+      "name": "李诫",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "purple",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hist_ilrock_11840",
+      "name": "郑樵",
+      "file": "history_ilrock_01.yaml",
+      "rarity": "purple",
+      "changed": false,
+      "reason": "医理、史学或工程技艺已采用主智力58%的文官方向，原有防御20%、敏捷12%取舍合理",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 58,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03867",
+      "name": "了空",
+      "file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "佛门武学与深厚内功，侧重武力和防御",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 6,
+          "defense": 34,
+          "agility": 14
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03877",
+      "name": "尤楚红",
+      "file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "杖法与长辈护持，稳健武力和防御",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 6,
+          "defense": 30,
+          "agility": 14
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03878",
+      "name": "赵德言",
+      "file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "突厥谋士借军势和权谋布局，主智力",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 56,
+          "defense": 20,
+          "agility": 14
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03879",
+      "name": "席应",
+      "file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "紫气天罗限制对手，武力与防御为主",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 6,
+          "defense": 32,
+          "agility": 14
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03880",
+      "name": "安隆",
+      "file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "商路、人脉与魔门交易，主智力",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 54,
+          "defense": 20,
+          "agility": 16
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03899",
+      "name": "石青璇",
+      "file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "才情与独立应敌，主智力兼顾敏捷",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 54,
+          "defense": 16,
+          "agility": 22
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03900",
+      "name": "碧秀心",
+      "file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "保留现有文官方向，集中智力兼顾生存",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 56,
+          "defense": 22,
+          "agility": 14
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03901",
+      "name": "尚秀芳",
+      "file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "琴艺与见识，主智力并保留先手空间",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 56,
+          "defense": 18,
+          "agility": 18
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03902",
+      "name": "虚行之",
+      "file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "少帅军政务、钱粮与长远筹算，集中智力",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 60,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03974",
+      "name": "傅君瑜",
+      "file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "奕剑之术，主武力兼顾敏捷",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 6,
+          "defense": 20,
+          "agility": 28
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03975",
+      "name": "傅君嫱",
+      "file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "奕剑之术，主武力兼顾敏捷",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 6,
+          "defense": 20,
+          "agility": 28
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03962",
+      "name": "雷九指",
+      "file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "赌术、易容与暗手，主智力兼顾先手",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 54,
+          "defense": 12,
+          "agility": 26
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03994",
+      "name": "乾罗",
+      "file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "矛法黑榜高手，稳健武力主攻",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 8,
+          "defense": 26,
+          "agility": 16
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03995",
+      "name": "戚长征",
+      "file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "快刀冲锋，武力与敏捷取舍",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 6,
+          "defense": 18,
+          "agility": 26
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03996",
+      "name": "封寒",
+      "file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "左手刀高手，集中武力兼顾先手",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 52,
+          "intellect": 6,
+          "defense": 22,
+          "agility": 20
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04000",
+      "name": "方夜羽",
+      "file": "huangyi_ilrock_01.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "调度高手与布局进退，集中智力",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 60,
+          "defense": 18,
+          "agility": 14
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03860",
+      "name": "宋缺",
+      "file": "huangyi_ilrock_01.yaml",
+      "rarity": "purple",
+      "changed": true,
+      "reason": "天刀宗师，集中武力",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 54,
+          "intellect": 6,
+          "defense": 24,
+          "agility": 16
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03865",
+      "name": "梵清惠",
+      "file": "huangyi_ilrock_01.yaml",
+      "rarity": "purple",
+      "changed": true,
+      "reason": "静斋武学宗师，保留武将方向并集中武力",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 8,
+          "defense": 24,
+          "agility": 20
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03868",
+      "name": "鲁妙子",
+      "file": "huangyi_ilrock_01.yaml",
+      "rarity": "purple",
+      "changed": true,
+      "reason": "机关、建筑与宝库设计，集中智力",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 62,
+          "defense": 18,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03987",
+      "name": "蒙赤行",
+      "file": "huangyi_ilrock_01.yaml",
+      "rarity": "purple",
+      "changed": true,
+      "reason": "武学宗师与深厚修为，主武力兼顾防御",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 8,
+          "defense": 28,
+          "agility": 14
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_03993",
+      "name": "赤尊信",
+      "file": "huangyi_ilrock_01.yaml",
+      "rarity": "purple",
+      "changed": true,
+      "reason": "遍习兵器的豪雄，主武力兼顾防御",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 52,
+          "intellect": 6,
+          "defense": 26,
+          "agility": 16
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04003",
+      "name": "言静庵",
+      "file": "huangyi_ilrock_01.yaml",
+      "rarity": "purple",
+      "changed": true,
+      "reason": "静斋武学宗师，保留武将方向并集中武力",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 8,
+          "defense": 24,
+          "agility": 20
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04234",
+      "name": "释天风",
+      "file": "kunlun.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "轻功乘风蹈海，敏捷为次重点",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 42,
+          "intellect": 6,
+          "defense": 16,
+          "agility": 36
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04241",
+      "name": "花生",
+      "file": "kunlun.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "大金刚神力，武力和防御为主",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 56,
+          "intellect": 6,
+          "defense": 28,
+          "agility": 10
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04243",
+      "name": "花无媸",
+      "file": "kunlun.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "天机十算与术数，集中智力",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 62,
+          "defense": 18,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04242",
+      "name": "花清渊",
+      "file": "kunlun.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "家学术数与宫务，保留文官主智力",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 56,
+          "defense": 20,
+          "agility": 14
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04279",
+      "name": "花晓霜",
+      "file": "kunlun.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "医术救人，主智力并留生存空间",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 45,
+          "defense": 15,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 6,
+          "intellect": 60,
+          "defense": 20,
+          "agility": 14
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04244",
+      "name": "梁文靖",
+      "file": "kunlun.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "合州守城战局，主武力兼顾防御",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 8,
+          "defense": 28,
+          "agility": 14
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04245",
+      "name": "萧玉翎",
+      "file": "kunlun.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "黑水门下武艺，主武力兼顾敏捷",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 6,
+          "defense": 22,
+          "agility": 26
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04239",
+      "name": "云殊",
+      "file": "kunlun.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "抗元武者，稳健武力主攻",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 8,
+          "defense": 24,
+          "agility": 18
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04230",
+      "name": "梁萧",
+      "file": "kunlun.yaml",
+      "rarity": "purple",
+      "changed": true,
+      "reason": "最终以剑道应战，保留武将主武力；不以算学改成武智对半",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 10,
+          "defense": 24,
+          "agility": 18
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04231",
+      "name": "公羊羽",
+      "file": "kunlun.yaml",
+      "rarity": "purple",
+      "changed": true,
+      "reason": "剑术高绝且身法精妙，武力和敏捷取舍",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 6,
+          "defense": 18,
+          "agility": 30
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04232",
+      "name": "萧千绝",
+      "file": "kunlun.yaml",
+      "rarity": "purple",
+      "changed": true,
+      "reason": "黑水宗师，集中武力兼顾防御",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 52,
+          "intellect": 6,
+          "defense": 28,
+          "agility": 14
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04233",
+      "name": "九如",
+      "file": "kunlun.yaml",
+      "rarity": "purple",
+      "changed": true,
+      "reason": "大金刚神力，武力和防御为主",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 15,
+          "defense": 25,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          7,
+          12
+        ],
+        "attribute_weights": {
+          "force": 56,
+          "intellect": 6,
+          "defense": 28,
+          "agility": 10
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04838",
+      "name": "穆弘",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 45,
+          "intellect": 15,
+          "defense": 20,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 45,
+          "intellect": 15,
+          "defense": 20,
+          "agility": 20
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04842",
+      "name": "张横",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 12,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 12,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04844",
+      "name": "张顺",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "白条浪里、水面往来，保留武力并突出敏捷",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 10,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 40,
+          "intellect": 6,
+          "defense": 18,
+          "agility": 36
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04846",
+      "name": "杨雄",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 14,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 14,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04847",
+      "name": "石秀",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 12,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 12,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04848",
+      "name": "解珍",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "猎户与登山捕猎身手，主武力兼顾敏捷",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 45,
+          "intellect": 15,
+          "defense": 20,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 6,
+          "defense": 18,
+          "agility": 30
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04849",
+      "name": "解宝",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "猎户与登山捕猎身手，主武力兼顾敏捷",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 10,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 6,
+          "defense": 18,
+          "agility": 30
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04851",
+      "name": "朱武",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "神机军师，集中智力",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 48,
+          "defense": 22,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 60,
+          "defense": 18,
+          "agility": 14
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04852",
+      "name": "黄信",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "军官守备，稳健武力和防御",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 12,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 8,
+          "defense": 28,
+          "agility": 16
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04853",
+      "name": "孙立",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "枪鞭武将，集中武力",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 45,
+          "intellect": 15,
+          "defense": 20,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 8,
+          "defense": 26,
+          "agility": 16
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04854",
+      "name": "宣赞",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 10,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 10,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04855",
+      "name": "郝思文",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "随关胜应战，稳健武力",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 43,
+          "intellect": 12,
+          "defense": 20,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 8,
+          "defense": 24,
+          "agility": 20
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04856",
+      "name": "韩滔",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 14,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 14,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04858",
+      "name": "单廷珪",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 12,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 12,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04859",
+      "name": "魏定国",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 45,
+          "intellect": 15,
+          "defense": 20,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 45,
+          "intellect": 15,
+          "defense": 20,
+          "agility": 20
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04860",
+      "name": "萧让",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "书法和文书，集中智力",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 48,
+          "defense": 22,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 60,
+          "defense": 18,
+          "agility": 14
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04861",
+      "name": "裴宣",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "掌刑法、军纪，主智力兼顾防御",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 16,
+          "intellect": 46,
+          "defense": 18,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 58,
+          "defense": 24,
+          "agility": 10
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04862",
+      "name": "欧鹏",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 14,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 14,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04863",
+      "name": "邓飞",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 12,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 12,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04864",
+      "name": "燕顺",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 45,
+          "intellect": 15,
+          "defense": 20,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 45,
+          "intellect": 15,
+          "defense": 20,
+          "agility": 20
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04865",
+      "name": "凌振",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "火炮制造和施放，主智力",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 16,
+          "intellect": 46,
+          "defense": 18,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 60,
+          "defense": 20,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04866",
+      "name": "蒋敬",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "神算子、钱粮核算，集中智力",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 12,
+          "intellect": 52,
+          "defense": 18,
+          "agility": 18
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 62,
+          "defense": 18,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04867",
+      "name": "吕方",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 14,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 14,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04869",
+      "name": "安道全",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "神医诊治，主智力并留生存空间",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 16,
+          "intellect": 46,
+          "defense": 18,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 6,
+          "intellect": 58,
+          "defense": 24,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04870",
+      "name": "皇甫端",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "兽医诊治，主智力",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 12,
+          "intellect": 52,
+          "defense": 18,
+          "agility": 18
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 58,
+          "defense": 22,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04871",
+      "name": "扈三娘",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "双刀与套索，主武力兼顾敏捷",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 43,
+          "intellect": 12,
+          "defense": 20,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 6,
+          "defense": 20,
+          "agility": 28
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04872",
+      "name": "鲍旭",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 14,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 14,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04873",
+      "name": "时迁",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "鼓上蚤、盗甲与探查，敏捷第一而非正面强攻",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 38,
+          "intellect": 16,
+          "defense": 12,
+          "agility": 34
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 38,
+          "intellect": 4,
+          "defense": 12,
+          "agility": 46
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04874",
+      "name": "樊瑞",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "混世魔王法术、拜公孙胜为师，改为主智力文官",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 45,
+          "intellect": 15,
+          "defense": 20,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 56,
+          "defense": 18,
+          "agility": 18
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04875",
+      "name": "孔明",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 10,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 10,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04876",
+      "name": "孔亮",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 43,
+          "intellect": 12,
+          "defense": 20,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 43,
+          "intellect": 12,
+          "defense": 20,
+          "agility": 25
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04877",
+      "name": "项充",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 14,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 14,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04878",
+      "name": "李衮",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 12,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 12,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04879",
+      "name": "金大坚",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "刻印碑文工艺，主智力",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 50,
+          "defense": 20,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 58,
+          "defense": 22,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04880",
+      "name": "童威",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "水手驾舟与水战，主武力兼顾敏捷",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 10,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 42,
+          "intellect": 6,
+          "defense": 18,
+          "agility": 34
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04881",
+      "name": "童猛",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "水手驾舟与水战，主武力兼顾敏捷",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 43,
+          "intellect": 12,
+          "defense": 20,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 42,
+          "intellect": 6,
+          "defense": 18,
+          "agility": 34
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04882",
+      "name": "孟康",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "船舶营造，主智力兼顾防御",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 12,
+          "intellect": 52,
+          "defense": 18,
+          "agility": 18
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 56,
+          "defense": 24,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04883",
+      "name": "侯健",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "旗袍针线制作，主智力并保留敏捷",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 50,
+          "defense": 20,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 56,
+          "defense": 18,
+          "agility": 18
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04884",
+      "name": "陈达",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 45,
+          "intellect": 15,
+          "defense": 20,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 45,
+          "intellect": 15,
+          "defense": 20,
+          "agility": 20
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04885",
+      "name": "杨春",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 10,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 10,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04886",
+      "name": "郑天寿",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 43,
+          "intellect": 12,
+          "defense": 20,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 43,
+          "intellect": 12,
+          "defense": 20,
+          "agility": 25
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04887",
+      "name": "陶宗旺",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "城垣营造、工事防护，主智力兼顾较高防御",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 50,
+          "defense": 20,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 12,
+          "intellect": 50,
+          "defense": 28,
+          "agility": 10
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04888",
+      "name": "宋清",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "宴饮供给与后勤，主智力兼顾生存",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 48,
+          "defense": 22,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 50,
+          "defense": 26,
+          "agility": 14
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04889",
+      "name": "乐和",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "走报机密和联络，主智力兼顾先手",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 16,
+          "intellect": 46,
+          "defense": 18,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 52,
+          "defense": 14,
+          "agility": 26
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04890",
+      "name": "龚旺",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "飞枪或飞叉，主武力兼顾出手速度",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 10,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 6,
+          "defense": 20,
+          "agility": 28
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04891",
+      "name": "丁得孙",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": true,
+      "reason": "飞枪或飞叉，主武力兼顾出手速度",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 43,
+          "intellect": 12,
+          "defense": 20,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 6,
+          "defense": 20,
+          "agility": 28
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04892",
+      "name": "穆春",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 14,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 14,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04893",
+      "name": "曹正",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 12,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 12,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04894",
+      "name": "宋万",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 45,
+          "intellect": 15,
+          "defense": 20,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 45,
+          "intellect": 15,
+          "defense": 20,
+          "agility": 20
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04895",
+      "name": "杜迁",
+      "file": "shuihu.yaml",
+      "rarity": "green",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 10,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 10,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04817",
+      "name": "公孙胜",
+      "file": "shuihu.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "道术破妖术，主智力并保留敏捷",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 12,
+          "intellect": 52,
+          "defense": 18,
+          "agility": 18
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 58,
+          "defense": 16,
+          "agility": 18
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04850",
+      "name": "燕青",
+      "file": "shuihu.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "相扑弩射、灵巧身手，武力与敏捷取舍",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 38,
+          "intellect": 16,
+          "defense": 12,
+          "agility": 34
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 42,
+          "intellect": 6,
+          "defense": 16,
+          "agility": 36
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04824",
+      "name": "呼延灼",
+      "file": "shuihu.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 10,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 10,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04825",
+      "name": "花荣",
+      "file": "shuihu.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 43,
+          "intellect": 12,
+          "defense": 20,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 43,
+          "intellect": 12,
+          "defense": 20,
+          "agility": 25
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04826",
+      "name": "柴进",
+      "file": "shuihu.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 50,
+          "defense": 20,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 50,
+          "defense": 20,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04827",
+      "name": "李应",
+      "file": "shuihu.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 12,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 12,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04828",
+      "name": "朱仝",
+      "file": "shuihu.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 45,
+          "intellect": 15,
+          "defense": 20,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 45,
+          "intellect": 15,
+          "defense": 20,
+          "agility": 20
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04829",
+      "name": "董平",
+      "file": "shuihu.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "双枪冲锋迅疾，主武力兼顾先手",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 10,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 6,
+          "defense": 18,
+          "agility": 26
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04830",
+      "name": "张清",
+      "file": "shuihu.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 43,
+          "intellect": 12,
+          "defense": 20,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 43,
+          "intellect": 12,
+          "defense": 20,
+          "agility": 25
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04831",
+      "name": "杨志",
+      "file": "shuihu.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 14,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 14,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04832",
+      "name": "徐宁",
+      "file": "shuihu.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 12,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 12,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04833",
+      "name": "索超",
+      "file": "shuihu.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "急先锋斧将，武力为主、提高先手",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 45,
+          "intellect": 15,
+          "defense": 20,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 52,
+          "intellect": 6,
+          "defense": 20,
+          "agility": 22
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04834",
+      "name": "戴宗",
+      "file": "shuihu.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "神行太保传书探声，敏捷第一而非正面强攻",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 38,
+          "intellect": 16,
+          "defense": 12,
+          "agility": 34
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 36,
+          "intellect": 4,
+          "defense": 10,
+          "agility": 50
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04835",
+      "name": "刘唐",
+      "file": "shuihu.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "朴刀步军头领，稳健武力",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 43,
+          "intellect": 12,
+          "defense": 20,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 8,
+          "defense": 26,
+          "agility": 18
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04836",
+      "name": "李逵",
+      "file": "shuihu.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 55,
+          "intellect": 8,
+          "defense": 27,
+          "agility": 10
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 55,
+          "intellect": 8,
+          "defense": 27,
+          "agility": 10
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04837",
+      "name": "史进",
+      "file": "shuihu.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 12,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 12,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04839",
+      "name": "雷横",
+      "file": "shuihu.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 10,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 10,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04840",
+      "name": "李俊",
+      "file": "shuihu.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 43,
+          "intellect": 12,
+          "defense": 20,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 43,
+          "intellect": 12,
+          "defense": 20,
+          "agility": 25
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04841",
+      "name": "阮小二",
+      "file": "shuihu.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 14,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 14,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04843",
+      "name": "阮小五",
+      "file": "shuihu.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "水军近战，武力与敏捷兼顾",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 45,
+          "intellect": 15,
+          "defense": 20,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 8,
+          "defense": 24,
+          "agility": 22
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04845",
+      "name": "阮小七",
+      "file": "shuihu.yaml",
+      "rarity": "blue",
+      "changed": true,
+      "reason": "浪中驾舟交锋，武力与敏捷取舍",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 43,
+          "intellect": 12,
+          "defense": 20,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 44,
+          "intellect": 6,
+          "defense": 18,
+          "agility": 32
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04868",
+      "name": "郭盛",
+      "file": "shuihu.yaml",
+      "rarity": "blue",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 12,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 48,
+          "intellect": 12,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04818",
+      "name": "鲁达",
+      "file": "shuihu.yaml",
+      "rarity": "purple",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 55,
+          "intellect": 8,
+          "defense": 27,
+          "agility": 10
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 55,
+          "intellect": 8,
+          "defense": 27,
+          "agility": 10
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04819",
+      "name": "武松",
+      "file": "shuihu.yaml",
+      "rarity": "purple",
+      "changed": false,
+      "reason": "原有武力主攻或智力主攻已清晰，防御和敏捷分配符合现有简介，不为差异而硬改",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 10,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 10,
+          "defense": 25,
+          "agility": 15
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04820",
+      "name": "林冲",
+      "file": "shuihu.yaml",
+      "rarity": "purple",
+      "changed": true,
+      "reason": "枪棒教头沉稳正面应战，集中武力",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 43,
+          "intellect": 12,
+          "defense": 20,
+          "agility": 25
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 50,
+          "intellect": 8,
+          "defense": 26,
+          "agility": 16
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04821",
+      "name": "关胜",
+      "file": "shuihu.yaml",
+      "rarity": "purple",
+      "changed": true,
+      "reason": "青龙刀骑将，集中武力",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 46,
+          "intellect": 14,
+          "defense": 25,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 52,
+          "intellect": 8,
+          "defense": 26,
+          "agility": 14
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04822",
+      "name": "吴用",
+      "file": "shuihu.yaml",
+      "rarity": "purple",
+      "changed": true,
+      "reason": "智多星布局军机，集中智力",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 15,
+          "intellect": 50,
+          "defense": 20,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 8,
+          "intellect": 62,
+          "defense": 18,
+          "agility": 12
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_04823",
+      "name": "卢俊义",
+      "file": "shuihu.yaml",
+      "rarity": "purple",
+      "changed": true,
+      "reason": "玉麒麟棍棒与攻坚，集中武力",
+      "before": {
+        "archetype": "military",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 45,
+          "intellect": 15,
+          "defense": 20,
+          "agility": 20
+        }
+      },
+      "after": {
+        "archetype": "military",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 54,
+          "intellect": 6,
+          "defense": 24,
+          "agility": 16
+        }
+      }
+    },
+    {
+      "key": "hero_ilrock_11683",
+      "name": "宋江",
+      "file": "shuihu.yaml",
+      "rarity": "purple",
+      "changed": true,
+      "reason": "统领聚义与招安取舍，主智力兼顾生存",
+      "before": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 20,
+          "intellect": 45,
+          "defense": 20,
+          "agility": 15
+        }
+      },
+      "after": {
+        "archetype": "civil",
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {
+          "force": 10,
+          "intellect": 54,
+          "defense": 22,
+          "agility": 14
+        }
+      }
+    }
+  ]
+}

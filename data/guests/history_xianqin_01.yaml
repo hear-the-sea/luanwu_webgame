@@ -91,6 +91,32 @@ heroes:
       intellect: 12
       defense: 22
       agility: 14
+  - key: hist_xianqin_0008
+    name: 孙武
+    default_gender: male
+    archetype: civil
+    flavor: （约前545年—约前470年）知己知彼，百战不殆。这位来自齐国的兵法大师，以一部《孙子兵法》震古烁今。吴宫教战斩美姬，以示军法无情；西破强楚五战五捷，威震诸侯。其兵法十三篇，言简意赅却包罗万象，从战略到战术，从庙算到实战，无所不备。上兵伐谋，不战而屈人之兵——这等境界，后世将帅穷尽毕生难以企及。此书东传日本、西入欧美，成为世界军事理论之圣典。兵家鼻祖，实至名归。
+    growth_range:
+    - 9
+    - 14
+    attribute_weights:
+      force: 10
+      intellect: 56
+      defense: 18
+      agility: 16
+  - key: hist_xianqin_0007
+    name: 李耳
+    default_gender: male
+    archetype: civil
+    flavor: （约前571年—约前471年）紫气东来，道法自然。他骑青牛出函谷关，留五千言《道德经》而西去，从此不知所踪。这位周室守藏之吏，以无为之道参透天地玄机，以柔弱之姿揭示至强之理。上善若水，大音希声，大象无形——其言玄之又玄，却是众妙之门。道家思想与儒学分庭抗礼，共同构建华夏哲学之根基。两千年来，无数修道之士寻觅其踪迹，欲得长生大道，而老子之名，已入仙班。
+    growth_range:
+    - 8
+    - 14
+    attribute_weights:
+      force: 6
+      intellect: 64
+      defense: 18
+      agility: 12
   purple:
   - key: hist_xianqin_0022
     name: 姬寤生
@@ -105,32 +131,6 @@ heroes:
       intellect: 20
       defense: 24
       agility: 18
-  - key: hist_xianqin_0007
-    name: 李耳
-    default_gender: male
-    archetype: civil
-    flavor: （约前571年—约前471年）紫气东来，道法自然。他骑青牛出函谷关，留五千言《道德经》而西去，从此不知所踪。这位周室守藏之吏，以无为之道参透天地玄机，以柔弱之姿揭示至强之理。上善若水，大音希声，大象无形——其言玄之又玄，却是众妙之门。道家思想与儒学分庭抗礼，共同构建华夏哲学之根基。两千年来，无数修道之士寻觅其踪迹，欲得长生大道，而老子之名，已入仙班。
-    growth_range:
-    - 7
-    - 12
-    attribute_weights:
-      force: 6
-      intellect: 64
-      defense: 18
-      agility: 12
-  - key: hist_xianqin_0008
-    name: 孙武
-    default_gender: male
-    archetype: military
-    flavor: （约前545年—约前470年）知己知彼，百战不殆。这位来自齐国的兵法大师，以一部《孙子兵法》震古烁今。吴宫教战斩美姬，以示军法无情；西破强楚五战五捷，威震诸侯。其兵法十三篇，言简意赅却包罗万象，从战略到战术，从庙算到实战，无所不备。上兵伐谋，不战而屈人之兵——这等境界，后世将帅穷尽毕生难以企及。此书东传日本、西入欧美，成为世界军事理论之圣典。兵家鼻祖，实至名归。
-    growth_range:
-    - 7
-    - 11
-    attribute_weights:
-      force: 38
-      intellect: 28
-      defense: 20
-      agility: 14
   - key: hist_xianqin_0009
     name: 孟轲
     default_gender: male

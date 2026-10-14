@@ -1,0 +1,1314 @@
+{
+  "resources": {
+    "utc": "2026-10-13T04:16:09.052875+00:00",
+    "web_image": "webgame:bulk-healing-20261012",
+    "started": "2026-10-12T04:40:59.35078332Z",
+    "restarts": 0,
+    "health": "healthy",
+    "load": " 04:16:09 up 96 days,  3:27,  0 users,  load average: 0.22, 0.59, 0.69\n",
+    "memory": "               total        used        free      shared  buff/cache   available\nMem:            7937        3994         180           2        3761        3632\nSwap:              0           0           0\n",
+    "disk": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/vda1        29G   12G   18G  40% /\n",
+    "stats": "code-web-1 30.21% 364.9MiB / 384MiB\ncode-worker_timer_safety-1 0.04% 125.6MiB / 512MiB\ncode-worker_timer_scan-1 0.04% 183.7MiB / 256MiB\ncode-worker_timer-1 0.04% 204.7MiB / 1GiB\ncode-worker-1 0.28% 119.8MiB / 256MiB\ncode-worker_timer_maintenance-1 0.05% 188.6MiB / 768MiB\ncode-worker_battle-1 0.04% 184.5MiB / 256MiB\ncode-beat-1 0.00% 113.5MiB / 192MiB\ncode-caddy-1 4.17% 135.8MiB / 256MiB\ncode-db-1 6.98% 1.774GiB / 2GiB\ncode-redis-1 5.03% 23.02MiB / 512MiB\ngongsi-deploy-caddy-1 8.31% 64.4MiB / 7.751GiB\ngongsi-deploy-web-1 0.00% 134.5MiB / 7.751GiB\nnagomi-web 0.05% 101.5MiB / 7.751GiB\n",
+    "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st\n 0  0      0 184224 650836 3194212    0    0     6    98    1    1  3  1 96  0  0\n 0  0      0 180532 650836 3194100    0    0     4   540 3287 5382  6  2 92  0  0\n 1  0      0 180532 650836 3194112    0    0     4   212  987 1301  1  0 99  0  0\n 0  0      0 180284 650836 3194124    0    0     4  1964 2749 4486  8  1 91  0  0\n 0  0      0 180060 650836 3194164    0    0     4   516 4104 6860  8  2 90  0  0\n",
+    "kernel_errors": []
+  },
+  "http": {
+    "first_utc": "2026-10-13T01:11:19.228867+00:00",
+    "last_utc": "2026-10-13T04:16:43.108694+00:00",
+    "http_status": {
+      "0": 33,
+      "200": 20015,
+      "204": 22,
+      "206": 108,
+      "302": 2801,
+      "304": 1119,
+      "400": 102,
+      "403": 71,
+      "404": 3,
+      "405": 4,
+      "502": 1
+    },
+    "websocket": [
+      {
+        "path": "/ws/online-stats/",
+        "status": 403,
+        "count": 7963
+      },
+      {
+        "path": "/ws/notifications/",
+        "status": 403,
+        "count": 7095
+      },
+      {
+        "path": "/ws/chat/world/",
+        "status": 403,
+        "count": 5510
+      },
+      {
+        "path": "/ws/chat/world/",
+        "status": 101,
+        "count": 3881
+      },
+      {
+        "path": "/ws/notifications/",
+        "status": 101,
+        "count": 3662
+      },
+      {
+        "path": "/ws/online-stats/",
+        "status": 101,
+        "count": 3164
+      },
+      {
+        "path": "/ws/online-stats/",
+        "status": 0,
+        "count": 18
+      },
+      {
+        "path": "/ws/chat/world/",
+        "status": 0,
+        "count": 14
+      },
+      {
+        "path": "/ws/notifications/",
+        "status": 0,
+        "count": 13
+      },
+      {
+        "path": "/ws/notifications/",
+        "status": 502,
+        "count": 4
+      },
+      {
+        "path": "/ws/online-stats/",
+        "status": 502,
+        "count": 3
+      },
+      {
+        "path": "/ws/chat/world/",
+        "status": 502,
+        "count": 2
+      }
+    ],
+    "paths": {
+      "/assets/": {
+        "count": 2740,
+        "p50": 0.2,
+        "p95": 0.6,
+        "p99": 2.1,
+        "max": 118.1,
+        "over1s": 0,
+        "over5s": 0
+      },
+      "/manor/messages/": {
+        "count": 2171,
+        "p50": 34.8,
+        "p95": 62.5,
+        "p99": 134,
+        "max": 6262.1,
+        "over1s": 2,
+        "over5s": 1
+      },
+      "/manor/tasks/": {
+        "count": 1696,
+        "p50": 63.8,
+        "p95": 105.9,
+        "p99": 462.1,
+        "max": 9488.5,
+        "over1s": 1,
+        "over5s": 1
+      },
+      "/": {
+        "count": 1271,
+        "p50": 64.9,
+        "p95": 105.3,
+        "p99": 174.9,
+        "max": 8429.6,
+        "over1s": 2,
+        "over5s": 1
+      },
+      "/manor/forge/": {
+        "count": 1192,
+        "p50": 56.2,
+        "p95": 88.1,
+        "p99": 152.1,
+        "max": 558.4,
+        "over1s": 0,
+        "over5s": 0
+      },
+      "/guests/": {
+        "count": 1154,
+        "p50": 72.1,
+        "p95": 108.9,
+        "p99": 281.7,
+        "max": 643.9,
+        "over1s": 0,
+        "over5s": 0
+      },
+      "/guests/:id/use-exp-item/": {
+        "count": 969,
+        "p50": 47.5,
+        "p95": 433.6,
+        "p99": 829.5,
+        "max": 3195.1,
+        "over1s": 3,
+        "over5s": 0
+      },
+      "/manor/warehouse/": {
+        "count": 893,
+        "p50": 77.1,
+        "p95": 125.7,
+        "p99": 245.4,
+        "max": 493.6,
+        "over1s": 0,
+        "over5s": 0
+      },
+      "/trade/": {
+        "count": 853,
+        "p50": 44.8,
+        "p95": 88.8,
+        "p99": 182.5,
+        "max": 562.8,
+        "over1s": 0,
+        "over5s": 0
+      },
+      "/manor/technology/": {
+        "count": 817,
+        "p50": 33,
+        "p95": 122.4,
+        "p99": 217.6,
+        "max": 562.2,
+        "over1s": 0,
+        "over5s": 0
+      },
+      "/manor/work/": {
+        "count": 811,
+        "p50": 44.4,
+        "p95": 71.1,
+        "p99": 118.7,
+        "max": 574.4,
+        "over1s": 0,
+        "over5s": 0
+      },
+      "/manor/recruitment/": {
+        "count": 778,
+        "p50": 51.4,
+        "p95": 93.9,
+        "p99": 201.8,
+        "max": 3983.2,
+        "over1s": 1,
+        "over5s": 0
+      },
+      "/manor/troop-recruitment/": {
+        "count": 402,
+        "p50": 49.2,
+        "p95": 81.9,
+        "p99": 209.7,
+        "max": 450.7,
+        "over1s": 0,
+        "over5s": 0
+      },
+      "/manor/warehouse/use/:id/": {
+        "count": 359,
+        "p50": 59.4,
+        "p95": 462.6,
+        "p99": 579.5,
+        "max": 12106.1,
+        "over1s": 1,
+        "over5s": 1
+      },
+      "/guests/candidates/reveal/": {
+        "count": 320,
+        "p50": 58.8,
+        "p95": 507,
+        "p99": 883.9,
+        "max": 5041.7,
+        "over1s": 3,
+        "over5s": 2
+      },
+      "/guests/:id/allocate-points/": {
+        "count": 316,
+        "p50": 37.5,
+        "p95": 77.4,
+        "p99": 545.3,
+        "max": 708.7,
+        "over1s": 0,
+        "over5s": 0
+      },
+      "/manor/smithy/": {
+        "count": 310,
+        "p50": 42.5,
+        "p95": 67.8,
+        "p99": 88.3,
+        "max": 536.2,
+        "over1s": 0,
+        "over5s": 0
+      },
+      "/guests/recruit/": {
+        "count": 309,
+        "p50": 88.6,
+        "p95": 512.9,
+        "p99": 871.9,
+        "max": 1482.8,
+        "over1s": 4,
+        "over5s": 0
+      },
+      "/manor/api/missions/refresh/": {
+        "count": 294,
+        "p50": 16.1,
+        "p95": 42.3,
+        "p99": 109.5,
+        "max": 264.9,
+        "over1s": 0,
+        "over5s": 0
+      },
+      "/manor/tasks/accept/": {
+        "count": 286,
+        "p50": 111.5,
+        "p95": 559.7,
+        "p99": 1556,
+        "max": 8773.9,
+        "over1s": 7,
+        "over5s": 2
+      }
+    },
+    "slow_paths": {
+      "/manor/messages/": {
+        "count": 2171,
+        "p50": 34.8,
+        "p95": 62.5,
+        "p99": 134,
+        "max": 6262.1,
+        "over1s": 2,
+        "over5s": 1
+      },
+      "/": {
+        "count": 1271,
+        "p50": 64.9,
+        "p95": 105.3,
+        "p99": 174.9,
+        "max": 8429.6,
+        "over1s": 2,
+        "over5s": 1
+      },
+      "/manor/tasks/": {
+        "count": 1696,
+        "p50": 63.8,
+        "p95": 105.9,
+        "p99": 462.1,
+        "max": 9488.5,
+        "over1s": 1,
+        "over5s": 1
+      },
+      "/manor/tasks/accept/": {
+        "count": 286,
+        "p50": 111.5,
+        "p95": 559.7,
+        "p99": 1556,
+        "max": 8773.9,
+        "over1s": 7,
+        "over5s": 2
+      },
+      "/manor/recruitment/": {
+        "count": 778,
+        "p50": 51.4,
+        "p95": 93.9,
+        "p99": 201.8,
+        "max": 3983.2,
+        "over1s": 1,
+        "over5s": 0
+      },
+      "/guests/candidates/reveal/": {
+        "count": 320,
+        "p50": 58.8,
+        "p95": 507,
+        "p99": 883.9,
+        "max": 5041.7,
+        "over1s": 3,
+        "over5s": 2
+      },
+      "/manor/work/claim/:id/": {
+        "count": 253,
+        "p50": 37.1,
+        "p95": 238,
+        "p99": 481,
+        "max": 1388.5,
+        "over1s": 1,
+        "over5s": 0
+      },
+      "/guests/candidates/accept/": {
+        "count": 226,
+        "p50": 146.8,
+        "p95": 659.3,
+        "p99": 1575.2,
+        "max": 117748.2,
+        "over1s": 6,
+        "over5s": 1
+      },
+      "/accounts/login/": {
+        "count": 233,
+        "p50": 24.5,
+        "p95": 416.1,
+        "p99": 2732.6,
+        "max": 12100.9,
+        "over1s": 6,
+        "over5s": 1
+      },
+      "/guests/recruit/": {
+        "count": 309,
+        "p50": 88.6,
+        "p95": 512.9,
+        "p99": 871.9,
+        "max": 1482.8,
+        "over1s": 4,
+        "over5s": 0
+      },
+      "/manor/warehouse/use/:id/": {
+        "count": 359,
+        "p50": 59.4,
+        "p95": 462.6,
+        "p99": 579.5,
+        "max": 12106.1,
+        "over1s": 1,
+        "over5s": 1
+      },
+      "/guests/recruit/use-card/": {
+        "count": 154,
+        "p50": 62.2,
+        "p95": 200.5,
+        "p99": 787.1,
+        "max": 5577.9,
+        "over1s": 1,
+        "over5s": 1
+      },
+      "/manor/": {
+        "count": 222,
+        "p50": 36,
+        "p95": 66,
+        "p99": 87.4,
+        "max": 5378.6,
+        "over1s": 1,
+        "over5s": 1
+      },
+      "/trade/market/purchase/:id/": {
+        "count": 87,
+        "p50": 58.1,
+        "p95": 140.6,
+        "p99": 2291,
+        "max": 2570.4,
+        "over1s": 3,
+        "over5s": 0
+      },
+      "/guests/equip/": {
+        "count": 38,
+        "p50": 38.3,
+        "p95": 118.4,
+        "p99": 2003.8,
+        "max": 5078.9,
+        "over1s": 2,
+        "over5s": 1
+      },
+      "/manor/smithy/produce/": {
+        "count": 32,
+        "p50": 38.4,
+        "p95": 130.9,
+        "p99": 355.9,
+        "max": 6759.1,
+        "over1s": 1,
+        "over5s": 1
+      },
+      "/manor/stable/produce/": {
+        "count": 89,
+        "p50": 35.1,
+        "p95": 437.2,
+        "p99": 5487.3,
+        "max": 7171.4,
+        "over1s": 3,
+        "over5s": 2
+      },
+      "/trade/shop/buy/": {
+        "count": 45,
+        "p50": 37.7,
+        "p95": 72.4,
+        "p99": 213.7,
+        "max": 18550.2,
+        "over1s": 1,
+        "over5s": 1
+      },
+      "/accounts/logout/": {
+        "count": 54,
+        "p50": 16.7,
+        "p95": 442.7,
+        "p99": 485.5,
+        "max": 1352.6,
+        "over1s": 1,
+        "over5s": 0
+      },
+      "/guests/:id/use-exp-item/": {
+        "count": 969,
+        "p50": 47.5,
+        "p95": 433.6,
+        "p99": 829.5,
+        "max": 3195.1,
+        "over1s": 3,
+        "over5s": 0
+      },
+      "/guests/heal-all-guests/": {
+        "count": 181,
+        "p50": 36.4,
+        "p95": 112.3,
+        "p99": 573.7,
+        "max": 6460.2,
+        "over1s": 1,
+        "over5s": 1
+      },
+      "/trade/bank/exchange-gold-bar/": {
+        "count": 23,
+        "p50": 45.6,
+        "p95": 590.5,
+        "p99": 780.8,
+        "max": 4968.7,
+        "over1s": 1,
+        "over5s": 0
+      }
+    },
+    "hourly": {
+      "10-13 01 UTC": {
+        "count": 8035,
+        "p50": 50,
+        "p95": 120.5,
+        "p99": 297.8,
+        "max": 731.6,
+        "over1s": 0,
+        "over5s": 0
+      },
+      "10-13 02 UTC": {
+        "count": 7798,
+        "p50": 44,
+        "p95": 113.2,
+        "p99": 489.1,
+        "max": 117748.2,
+        "over1s": 9,
+        "over5s": 3
+      },
+      "10-13 03 UTC": {
+        "count": 5827,
+        "p50": 48.5,
+        "p95": 193.4,
+        "p99": 705.9,
+        "max": 12106.1,
+        "over1s": 22,
+        "over5s": 5
+      },
+      "10-13 04 UTC": {
+        "count": 2619,
+        "p50": 40.6,
+        "p95": 251.7,
+        "p99": 779.8,
+        "max": 18550.2,
+        "over1s": 21,
+        "over5s": 10
+      }
+    },
+    "5xx_minutes": {
+      "10-13 02:57 UTC": 1
+    }
+  },
+  "state": {
+    "web_memory": "388964352\nlow 0\nhigh 0\nmax 24\noom 0\noom_kill 0\nanon 370454528\nfile 10276864\nkernel_stack 180224\npagetables 1093632\npercpu 288\nsock 86016\nshmem 0\nfile_mapped 3026944\nfile_dirty 0\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 370388992\nactive_anon 24576\ninactive_file 5128192\nactive_file 5148672\nunevictable 0\nslab_reclaimable 5871232\nslab_unreclaimable 716184\nslab 6587416\nworkingset_refault_anon 0\nworkingset_refault_file 2864\nworkingset_activate_anon 0\nworkingset_activate_file 887\nworkingset_restore_anon 0\nworkingset_restore_file 870\nworkingset_nodereclaim 0\npgfault 29687693\npgmajfault 150\npgrefill 269\npgscan 1601\npgsteal 1289\npgactivate 1293\npgdeactivate 261\npglazyfree 0\npglazyfreed 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\n",
+    "web_processes": "PID                 COMMAND             RSS                 NLWP\n1307357             daphne              382140              10\n",
+    "queues": {
+      "default": 0,
+      "battle": 0,
+      "timer": 0,
+      "timer_scan": 0,
+      "timer_safety": 0,
+      "timer_maintenance": 0
+    },
+    "ip_unexpired_slots": [
+      20,
+      20,
+      15,
+      9,
+      9,
+      6,
+      6,
+      6,
+      3,
+      3,
+      3,
+      1,
+      1
+    ],
+    "mysql": "Variable_name\tValue\nInnodb_row_lock_current_waits\t0\nInnodb_row_lock_waits\t36462\nSlow_queries\t128\nThreads_connected\t12\nThreads_running\t2\ncurrent_lock_waits\n0\n"
+  },
+  "app": {
+    "first": "2026-10-12T14:10:41.371455402Z",
+    "last": "2026-10-13T04:20:16.707459698Z",
+    "lines": 567162,
+    "error_occurrences": {
+      "WebSocket IP capacity rejected connection": 56590,
+      "WebSocket connection capacity rejected": 4816,
+      "Attempt to send on a closed protocol": 24
+    },
+    "slow_count": 3209,
+    "slow_requests": [
+      {
+        "utc": "2026-10-12T16:04:02.508209583Z",
+        "path": "/trade/bank/exchange-gold-bar/",
+        "status": 500,
+        "app_ms": 24127
+      },
+      {
+        "utc": "2026-10-12T16:04:01.459136037Z",
+        "path": "/trade/bank/exchange-gold-bar/",
+        "status": 500,
+        "app_ms": 23710
+      },
+      {
+        "utc": "2026-10-12T16:04:02.929581637Z",
+        "path": "/guests/candidates/accept/",
+        "status": 500,
+        "app_ms": 23572
+      },
+      {
+        "utc": "2026-10-12T16:04:02.638663088Z",
+        "path": "/guests/recruit/",
+        "status": 200,
+        "app_ms": 23103
+      },
+      {
+        "utc": "2026-10-12T16:04:02.510567802Z",
+        "path": "/manor/api/recruitment/refresh/",
+        "status": 500,
+        "app_ms": 23053
+      },
+      {
+        "utc": "2026-10-12T16:04:01.688702454Z",
+        "path": "/manor/tasks/",
+        "status": 500,
+        "app_ms": 22970
+      },
+      {
+        "utc": "2026-10-12T16:04:01.66658899Z",
+        "path": "/manor/tasks/",
+        "status": 500,
+        "app_ms": 21286
+      },
+      {
+        "utc": "2026-10-12T16:04:01.646692177Z",
+        "path": "/manor/tasks/",
+        "status": 500,
+        "app_ms": 20710
+      },
+      {
+        "utc": "2026-10-12T16:04:01.758055384Z",
+        "path": "/manor/tasks/",
+        "status": 500,
+        "app_ms": 20190
+      },
+      {
+        "utc": "2026-10-12T16:04:02.509328278Z",
+        "path": "/guests/candidates/reveal/",
+        "status": 500,
+        "app_ms": 19915
+      },
+      {
+        "utc": "2026-10-12T16:04:02.83077361Z",
+        "path": "/manor/tasks/",
+        "status": 200,
+        "app_ms": 19698
+      },
+      {
+        "utc": "2026-10-12T16:04:03.210858404Z",
+        "path": "/trade/bank/exchange-gold-bar/",
+        "status": 302,
+        "app_ms": 19180
+      },
+      {
+        "utc": "2026-10-12T16:04:01.699681615Z",
+        "path": "/manor/tasks/",
+        "status": 500,
+        "app_ms": 19133
+      },
+      {
+        "utc": "2026-10-13T04:05:07.516672038Z",
+        "path": "/trade/shop/buy/",
+        "status": 302,
+        "app_ms": 18438
+      },
+      {
+        "utc": "2026-10-12T16:17:15.416675325Z",
+        "path": "/manor/tasks/",
+        "status": 500,
+        "app_ms": 18234
+      },
+      {
+        "utc": "2026-10-13T04:05:07.248379436Z",
+        "path": "/manor/stable/produce/",
+        "status": 500,
+        "app_ms": 18210
+      },
+      {
+        "utc": "2026-10-12T16:17:15.248035624Z",
+        "path": "/trade/",
+        "status": 200,
+        "app_ms": 18141
+      },
+      {
+        "utc": "2026-10-12T16:04:03.061157795Z",
+        "path": "/trade/",
+        "status": 200,
+        "app_ms": 17342
+      },
+      {
+        "utc": "2026-10-12T16:04:02.46078088Z",
+        "path": "/guests/recruit/",
+        "status": 500,
+        "app_ms": 17120
+      },
+      {
+        "utc": "2026-10-12T16:17:15.249898557Z",
+        "path": "/trade/",
+        "status": 200,
+        "app_ms": 16632
+      },
+      {
+        "utc": "2026-10-12T16:17:15.24967296Z",
+        "path": "/trade/",
+        "status": 200,
+        "app_ms": 16367
+      },
+      {
+        "utc": "2026-10-12T16:17:15.249902575Z",
+        "path": "/trade/",
+        "status": 500,
+        "app_ms": 16252
+      },
+      {
+        "utc": "2026-10-12T16:17:15.984530455Z",
+        "path": "/manor/messages/",
+        "status": 200,
+        "app_ms": 16247
+      },
+      {
+        "utc": "2026-10-12T16:17:15.248278323Z",
+        "path": "/trade/",
+        "status": 200,
+        "app_ms": 16179
+      },
+      {
+        "utc": "2026-10-13T04:05:07.510527704Z",
+        "path": "/manor/tasks/accept/",
+        "status": 500,
+        "app_ms": 16079
+      }
+    ]
+  },
+  "exceptions": {
+    "exception_classes": {
+      "TimeoutError": 24,
+      "redis.exceptions.TimeoutError": 77,
+      "websocket.exceptions.WebSocketConnectionLimitUnavailable": 23,
+      "autobahn.exception.Disconnected": 8,
+      "django_redis.exceptions.ConnectionInterrupted": 49
+    },
+    "exception_hours": {
+      "2026-10-12T15 autobahn.exception.Disconnected": 1,
+      "2026-10-12T16 TimeoutError": 14,
+      "2026-10-12T16 autobahn.exception.Disconnected": 2,
+      "2026-10-12T16 django_redis.exceptions.ConnectionInterrupted": 46,
+      "2026-10-12T16 redis.exceptions.TimeoutError": 63,
+      "2026-10-12T16 websocket.exceptions.WebSocketConnectionLimitUnavailable": 13,
+      "2026-10-12T21 TimeoutError": 1,
+      "2026-10-12T21 redis.exceptions.TimeoutError": 1,
+      "2026-10-12T21 websocket.exceptions.WebSocketConnectionLimitUnavailable": 1,
+      "2026-10-12T22 TimeoutError": 2,
+      "2026-10-12T22 redis.exceptions.TimeoutError": 2,
+      "2026-10-12T22 websocket.exceptions.WebSocketConnectionLimitUnavailable": 2,
+      "2026-10-13T00 autobahn.exception.Disconnected": 2,
+      "2026-10-13T01 autobahn.exception.Disconnected": 1,
+      "2026-10-13T02 TimeoutError": 2,
+      "2026-10-13T02 autobahn.exception.Disconnected": 2,
+      "2026-10-13T02 redis.exceptions.TimeoutError": 2,
+      "2026-10-13T02 websocket.exceptions.WebSocketConnectionLimitUnavailable": 2,
+      "2026-10-13T04 TimeoutError": 5,
+      "2026-10-13T04 django_redis.exceptions.ConnectionInterrupted": 3,
+      "2026-10-13T04 redis.exceptions.TimeoutError": 9,
+      "2026-10-13T04 websocket.exceptions.WebSocketConnectionLimitUnavailable": 5
+    },
+    "exception_samples": [
+      {
+        "utc": "2026-10-12T21:41:10.336904082Z",
+        "exception": "TimeoutError",
+        "message": "timed out"
+      },
+      {
+        "utc": "2026-10-12T21:41:10.337053295Z",
+        "exception": "redis.exceptions.TimeoutError",
+        "message": "Timeout reading from socket"
+      },
+      {
+        "utc": "2026-10-12T21:41:10.337136934Z",
+        "exception": "websocket.exceptions.WebSocketConnectionLimitUnavailable",
+        "message": "WebSocket capacity heartbeat unavailable"
+      },
+      {
+        "utc": "2026-10-12T22:03:57.944735731Z",
+        "exception": "TimeoutError",
+        "message": "timed out"
+      },
+      {
+        "utc": "2026-10-12T22:03:57.944933576Z",
+        "exception": "redis.exceptions.TimeoutError",
+        "message": "Timeout reading from socket"
+      },
+      {
+        "utc": "2026-10-12T22:03:57.945044495Z",
+        "exception": "websocket.exceptions.WebSocketConnectionLimitUnavailable",
+        "message": "WebSocket capacity heartbeat unavailable"
+      },
+      {
+        "utc": "2026-10-12T22:03:59.946515581Z",
+        "exception": "TimeoutError",
+        "message": "timed out"
+      },
+      {
+        "utc": "2026-10-12T22:03:59.946639927Z",
+        "exception": "redis.exceptions.TimeoutError",
+        "message": "Timeout reading from socket"
+      },
+      {
+        "utc": "2026-10-12T22:03:59.946761036Z",
+        "exception": "websocket.exceptions.WebSocketConnectionLimitUnavailable",
+        "message": "WebSocket capacity heartbeat unavailable"
+      },
+      {
+        "utc": "2026-10-13T00:11:06.066101203Z",
+        "exception": "autobahn.exception.Disconnected",
+        "message": "Attempt to send on a closed protocol"
+      },
+      {
+        "utc": "2026-10-13T00:44:57.925298258Z",
+        "exception": "autobahn.exception.Disconnected",
+        "message": "Attempt to send on a closed protocol"
+      },
+      {
+        "utc": "2026-10-13T01:59:17.009968976Z",
+        "exception": "autobahn.exception.Disconnected",
+        "message": "Attempt to send on a closed protocol"
+      },
+      {
+        "utc": "2026-10-13T02:27:30.030026148Z",
+        "exception": "autobahn.exception.Disconnected",
+        "message": "Attempt to send on a closed protocol"
+      },
+      {
+        "utc": "2026-10-13T02:40:43.318889054Z",
+        "exception": "TimeoutError",
+        "message": "timed out"
+      },
+      {
+        "utc": "2026-10-13T02:40:43.319095253Z",
+        "exception": "redis.exceptions.TimeoutError",
+        "message": "Timeout reading from socket"
+      },
+      {
+        "utc": "2026-10-13T02:40:43.31920521Z",
+        "exception": "websocket.exceptions.WebSocketConnectionLimitUnavailable",
+        "message": "WebSocket connection limiter unavailable"
+      },
+      {
+        "utc": "2026-10-13T02:40:45.323295911Z",
+        "exception": "TimeoutError",
+        "message": "timed out"
+      },
+      {
+        "utc": "2026-10-13T02:40:45.323463157Z",
+        "exception": "redis.exceptions.TimeoutError",
+        "message": "Timeout reading from socket"
+      }
+    ],
+    "today_slow_hours": {
+      "2026-10-12T16": 281,
+      "2026-10-12T17": 222,
+      "2026-10-12T18": 220,
+      "2026-10-12T19": 221,
+      "2026-10-12T20": 221,
+      "2026-10-12T21": 219,
+      "2026-10-12T22": 220,
+      "2026-10-12T23": 221,
+      "2026-10-13T00": 224,
+      "2026-10-13T01": 220,
+      "2026-10-13T02": 225,
+      "2026-10-13T03": 219,
+      "2026-10-13T04": 100
+    },
+    "today_slow_count": 2813,
+    "today_top_slow": [
+      {
+        "utc": "2026-10-12T16:04:02.508209583Z",
+        "path": "/trade/bank/exchange-gold-bar/",
+        "status": 500,
+        "app_ms": 24127
+      },
+      {
+        "utc": "2026-10-12T16:04:01.459136037Z",
+        "path": "/trade/bank/exchange-gold-bar/",
+        "status": 500,
+        "app_ms": 23710
+      },
+      {
+        "utc": "2026-10-12T16:04:02.929581637Z",
+        "path": "/guests/candidates/accept/",
+        "status": 500,
+        "app_ms": 23572
+      },
+      {
+        "utc": "2026-10-12T16:04:02.638663088Z",
+        "path": "/guests/recruit/",
+        "status": 200,
+        "app_ms": 23103
+      },
+      {
+        "utc": "2026-10-12T16:04:02.510567802Z",
+        "path": "/manor/api/recruitment/refresh/",
+        "status": 500,
+        "app_ms": 23053
+      },
+      {
+        "utc": "2026-10-12T16:04:01.688702454Z",
+        "path": "/manor/tasks/",
+        "status": 500,
+        "app_ms": 22970
+      },
+      {
+        "utc": "2026-10-12T16:04:01.66658899Z",
+        "path": "/manor/tasks/",
+        "status": 500,
+        "app_ms": 21286
+      },
+      {
+        "utc": "2026-10-12T16:04:01.646692177Z",
+        "path": "/manor/tasks/",
+        "status": 500,
+        "app_ms": 20710
+      },
+      {
+        "utc": "2026-10-12T16:04:01.758055384Z",
+        "path": "/manor/tasks/",
+        "status": 500,
+        "app_ms": 20190
+      },
+      {
+        "utc": "2026-10-12T16:04:02.509328278Z",
+        "path": "/guests/candidates/reveal/",
+        "status": 500,
+        "app_ms": 19915
+      },
+      {
+        "utc": "2026-10-12T16:04:02.83077361Z",
+        "path": "/manor/tasks/",
+        "status": 200,
+        "app_ms": 19698
+      },
+      {
+        "utc": "2026-10-12T16:04:03.210858404Z",
+        "path": "/trade/bank/exchange-gold-bar/",
+        "status": 302,
+        "app_ms": 19180
+      },
+      {
+        "utc": "2026-10-12T16:04:01.699681615Z",
+        "path": "/manor/tasks/",
+        "status": 500,
+        "app_ms": 19133
+      },
+      {
+        "utc": "2026-10-13T04:05:07.516672038Z",
+        "path": "/trade/shop/buy/",
+        "status": 302,
+        "app_ms": 18438
+      },
+      {
+        "utc": "2026-10-12T16:17:15.416675325Z",
+        "path": "/manor/tasks/",
+        "status": 500,
+        "app_ms": 18234
+      },
+      {
+        "utc": "2026-10-13T04:05:07.248379436Z",
+        "path": "/manor/stable/produce/",
+        "status": 500,
+        "app_ms": 18210
+      },
+      {
+        "utc": "2026-10-12T16:17:15.248035624Z",
+        "path": "/trade/",
+        "status": 200,
+        "app_ms": 18141
+      },
+      {
+        "utc": "2026-10-12T16:04:03.061157795Z",
+        "path": "/trade/",
+        "status": 200,
+        "app_ms": 17342
+      },
+      {
+        "utc": "2026-10-12T16:04:02.46078088Z",
+        "path": "/guests/recruit/",
+        "status": 500,
+        "app_ms": 17120
+      },
+      {
+        "utc": "2026-10-12T16:17:15.249898557Z",
+        "path": "/trade/",
+        "status": 200,
+        "app_ms": 16632
+      }
+    ]
+  },
+  "db": {
+    "digests_cumulative": "NAME\tENABLED\nevents_statements_history\tYES\nevents_statements_history_long\tNO\nLEFT(DIGEST_TEXT,220)\tCOUNT_STAR\tmax_ms\tavg_ms\tLAST_SEEN\nCOMMIT\t4349276\t63480.4\t2.87\t2026-10-13 04:20:38.909163\nINSERT INTO `gameplay_resourceevent` ( `manor_id` , `resource_type` , `delta` , `reason` , `note` , `created_at` ) VALUES (...)\t1701145\t54798.6\t0.27\t2026-10-13 04:20:30.782964\nSELECT `guests_guest` . `id` , `guests_guest` . `manor_id` , `guests_guest` . `template_id` , `guests_guest` . `level` , `guests_guest` . `experience` , `guests_guest` . `attack_bonus` , `guests_guest` . `defense_bonus` \t6799653\t50677.4\t0.67\t2026-10-13 04:20:38.178617\nSELECT `gameplay_manor` . `id` , `gameplay_manor` . `user_id` , `gameplay_manor` . `name` , `gameplay_manor` . `grain` , `gameplay_manor` . `silver` , `gameplay_manor` . `arena_coins` , `gameplay_manor` . `arena_particip\t4937687\t50322.4\t0.61\t2026-10-13 04:20:38.903311\nINSERT INTO `guests_recruitmentcandidate` ( `manor_id` , `pool_id` , `template_id` , `display_name` , `rarity` , `archetype` , `rarity_revealed` , `created_at` ) VALUES (...)\t516928\t42841.9\t0.42\t2026-10-13 04:20:29.019470\nSELECT SUM ( `gameplay_botmaintenanceattempt` . `grain_cost` ) AS `total` FROM `gameplay_botmaintenanceattempt` INNER JOIN `gameplay_botmaintenancecycle` ON ( `gameplay_botmaintenanceattempt` . `cycle_id` = `gameplay_bot\t250222\t37232.8\t2.01\t2026-10-13 04:20:04.647980\nSELECT `gameplay_workassignment` . `id` , `gameplay_workassignment` . `manor_id` , `gameplay_workassignment` . `guest_id` , `gameplay_workassignment` . `work_template_id` , `gameplay_workassignment` . `status` , `gamepla\t23730\t24355.3\t2.25\t2026-10-13 04:19:17.847353\nROLLBACK\t38787\t23675.2\t1.10\t2026-10-13 04:19:58.892746\nINSERT INTO `gameplay_resourceevent` ( `manor_id` , `resource_type` , `delta` , `reason` , `note` , `created_at` ) VALUES (...) /* , ... */\t1210610\t23014.6\t0.28\t2026-10-13 04:20:07.359698\nSELECT `gameplay_missiontemplate` . `key` AS `mission__key` , COUNT ( `gameplay_missionrun` . `id` ) AS `count` FROM `gameplay_missionrun` INNER JOIN `gameplay_missiontemplate` ON ( `gameplay_missionrun` . `mission_id` =\t214726\t22641.0\t1.20\t2026-10-13 04:20:37.087757\nSELECT `guests_guestrecruitment` . `id` , `guests_guestrecruitment` . `manor_id` , `guests_guestrecruitment` . `bot_profile_id` , `guests_guestrecruitment` . `pool_id` , `guests_guestrecruitment` . `source` , `guests_gue\t81817\t21995.2\t1.49\t2026-10-13 04:20:28.876048\nINSERT INTO `guests_guestrecruitment` ( `manor_id` , `bot_profile_id` , `pool_id` , `source` , `operation_id` , `quota_date` , `quota_ordinal` , `pool_snapshot` , `salary_commitment` , `cost` , `draw_count` , `duration_s\t142503\t21759.9\t1.23\t2026-10-13 04:20:02.594648\n",
+    "latest_deadlock_structure": [
+      "2026-10-12 17:03:19 140561721845312",
+      "*** (1) TRANSACTION:",
+      "LOCK WAIT 63 lock struct(s), heap size 8312, 59 row lock(s), undo log entries 23",
+      "*** (1) HOLDS THE LOCK(S):",
+      "RECORD LOCKS space id 2455 page no 101130 n bits 536 index bot_maint_completion_due_idx of table `webgame`.`gameplay_botmaintenancecompletionevent` trx id 11469592 lock_mode X locks rec but not gap",
+      "*** (1) WAITING FOR THIS LOCK TO BE GRANTED:",
+      "RECORD LOCKS space id 2455 page no 114269 n bits 72 index PRIMARY of table `webgame`.`gameplay_botmaintenancecompletionevent` trx id 11469592 lock_mode X locks rec but not gap waiting",
+      "*** (2) TRANSACTION:",
+      "LOCK WAIT 21 lock struct(s), heap size 1128, 28 row lock(s), undo log entries 1",
+      "*** (2) HOLDS THE LOCK(S):",
+      "RECORD LOCKS space id 2455 page no 114269 n bits 72 index PRIMARY of table `webgame`.`gameplay_botmaintenancecompletionevent` trx id 11469596 lock_mode X locks rec but not gap",
+      "*** (2) WAITING FOR THIS LOCK TO BE GRANTED:",
+      "RECORD LOCKS space id 2455 page no 101130 n bits 536 index bot_maint_completion_due_idx of table `webgame`.`gameplay_botmaintenancecompletionevent` trx id 11469596 lock_mode X locks rec but not gap waiting",
+      "*** WE ROLL BACK TRANSACTION (2)"
+    ]
+  },
+  "redis": {
+    "slowlog_summary": [
+      {
+        "unix": 1791862200,
+        "duration_ms": 10.666,
+        "command": "SET",
+        "argument_count": 6,
+        "script_chars": null
+      },
+      {
+        "unix": 1791850806,
+        "duration_ms": 11.646,
+        "command": "SET",
+        "argument_count": 4,
+        "script_chars": null
+      }
+    ],
+    "latency_latest": [],
+    "info": {
+      "uptime_in_seconds": "2048682",
+      "blocked_clients": "7",
+      "used_memory_human": "11.64M",
+      "aof_last_bgrewrite_status": "ok",
+      "aof_last_write_status": "ok",
+      "aof_delayed_fsync": "136",
+      "instantaneous_ops_per_sec": "363",
+      "rejected_connections": "0",
+      "evicted_keys": "0",
+      "latest_fork_usec": "1333",
+      "total_error_replies": "29"
+    },
+    "redis_log_events": [
+      "1:M 13 Oct 2026 02:40:38.997 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis.",
+      "1:M 13 Oct 2026 02:40:41.121 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis.",
+      "1:M 13 Oct 2026 02:51:00.253 * Creating AOF incr file appendonly.aof.553.incr.aof on background rewrite",
+      "1:M 13 Oct 2026 02:51:00.254 * Background append only file rewriting started by pid 1636235",
+      "1636235:C 13 Oct 2026 02:51:00.301 * Successfully created the temporary AOF base file temp-rewriteaof-bg-1636235.aof",
+      "1636235:C 13 Oct 2026 02:51:00.302 * Fork CoW for AOF rewrite: current 1 MB, peak 1 MB, average 1 MB",
+      "1:M 13 Oct 2026 02:51:00.355 * Background AOF rewrite terminated with success",
+      "1:M 13 Oct 2026 02:51:00.355 * Successfully renamed the temporary AOF base file temp-rewriteaof-bg-1636235.aof into appendonly.aof.553.base.rdb",
+      "1:M 13 Oct 2026 02:51:00.358 * Removing the history file appendonly.aof.552.incr.aof in the background",
+      "1:M 13 Oct 2026 02:51:00.358 * Removing the history file appendonly.aof.552.base.rdb in the background",
+      "1:M 13 Oct 2026 02:51:00.362 * Background AOF rewrite finished successfully",
+      "1:M 13 Oct 2026 02:56:08.607 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis.",
+      "1:M 13 Oct 2026 02:56:10.731 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis.",
+      "1:M 13 Oct 2026 04:01:00.161 * Creating AOF incr file appendonly.aof.554.incr.aof on background rewrite",
+      "1:M 13 Oct 2026 04:01:00.162 * Background append only file rewriting started by pid 1639593",
+      "1639593:C 13 Oct 2026 04:01:00.217 * Successfully created the temporary AOF base file temp-rewriteaof-bg-1639593.aof",
+      "1639593:C 13 Oct 2026 04:01:00.218 * Fork CoW for AOF rewrite: current 1 MB, peak 1 MB, average 1 MB",
+      "1:M 13 Oct 2026 04:01:00.263 * Background AOF rewrite terminated with success",
+      "1:M 13 Oct 2026 04:01:00.263 * Successfully renamed the temporary AOF base file temp-rewriteaof-bg-1639593.aof into appendonly.aof.554.base.rdb",
+      "1:M 13 Oct 2026 04:01:00.265 * Removing the history file appendonly.aof.553.incr.aof in the background",
+      "1:M 13 Oct 2026 04:01:00.265 * Removing the history file appendonly.aof.553.base.rdb in the background",
+      "1:M 13 Oct 2026 04:01:00.267 * Background AOF rewrite finished successfully",
+      "1:M 13 Oct 2026 04:04:51.769 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis.",
+      "1:M 13 Oct 2026 04:04:53.800 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis.",
+      "1:M 13 Oct 2026 04:04:55.823 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis."
+    ],
+    "slowlog_note": "Filtered recent entries only; fsync and client network wait are not command execution duration."
+  },
+  "storage": {
+    "disk_devices": "NAME      SIZE TYPE MOUNTPOINT\nloop0   115.2M loop /snap/lxd/40911\nloop1    63.8M loop /snap/core20/2866\nloop2    63.8M loop /snap/core20/2922\nloop3      74M loop /snap/core22/2437\nloop4    50.3M loop /snap/snapd/27738\nloop5    44.7M loop /snap/snapd/28254\nloop6   115.3M loop /snap/lxd/40575\nloop7      74M loop /snap/core22/2955\nsr0       376K rom  \nvda        30G disk \n├─vda1   29.9G part /\n├─vda14     4M part \n└─vda15   106M part /boot/efi\nvdb       120G disk \n└─vdb1    120G part /data\n",
+    "storage": "Filesystem     Type  Size  Used Avail Use% Mounted on\n/dev/vda1      ext4   29G   12G   18G  40% /\n/dev/vdb1      ext4  118G   21G   92G  19% /data\n",
+    "timers": "NEXT                        LEFT               LAST                        PASSED        UNIT                           ACTIVATES\nTue 2026-10-13 05:37:27 UTC 1h 13min left      Mon 2026-10-12 23:35:16 UTC 4h 48min ago  ua-timer.timer                 ua-timer.service\nTue 2026-10-13 06:11:11 UTC 1h 47min left      Mon 2026-10-12 01:54:10 UTC 1 day 2h ago  man-db.timer                   man-db.service\nTue 2026-10-13 06:12:31 UTC 1h 48min left      Mon 2026-10-12 06:12:08 UTC 22h ago       apt-daily-upgrade.timer        apt-daily-upgrade.service\nTue 2026-10-13 07:50:09 UTC 3h 26min left      Mon 2026-10-12 12:22:46 UTC 16h ago       motd-news.timer                motd-news.service\nTue 2026-10-13 10:44:23 UTC 6h left            Mon 2026-10-12 17:31:35 UTC 10h ago       certbot.timer                  certbot.service\nTue 2026-10-13 14:21:20 UTC 9h left            Tue 2026-10-13 02:06:34 UTC 2h 17min ago  fwupd-refresh.timer            fwupd-refresh.service\nTue 2026-10-13 17:17:27 UTC 12h left           Mon 2026-10-12 20:59:25 UTC 7h ago        apt-daily.timer                apt-daily.service\nWed 2026-10-14 00:00:00 UTC 19h left           Tue 2026-10-13 00:00:00 UTC 4h 23min ago  dpkg-db-backup.timer           dpkg-db-backup.service\nWed 2026-10-14 00:00:00 UTC 19h left           Tue 2026-10-13 00:00:00 UTC 4h 23min ago  logrotate.timer                logrotate.service\nWed 2026-10-14 01:04:33 UTC 20h left           Tue 2026-10-13 01:04:33 UTC 3h 19min ago  update-notifier-download.timer update-notifier-download.service\nWed 2026-10-14 01:16:36 UTC 20h left           Tue 2026-10-13 01:16:36 UTC 3h 7min ago   systemd-tmpfiles-clean.timer   systemd-tmpfiles-clean.service\nSun 2026-10-18 03:10:12 UTC 4 days left        Sun 2026-10-11 03:10:53 UTC 2 days ago    e2scrub_all.timer              e2scrub_all.service\nMon 2026-10-19 01:15:44 UTC 5 days left        Mon 2026-10-12 01:39:58 UTC 1 day 2h ago  fstrim.timer                   fstrim.service\nTue 2026-10-20 07:53:46 UTC 1 week 0 days left Sun 2026-10-11 12:02:27 UTC 1 day 16h ago update-notifier-motd.timer     update-notifier-motd.service\nn/a                         n/a                n/a                         n/a           apport-autoreport.timer        apport-autoreport.service\nn/a                         n/a                n/a                         n/a           snapd.snap-repair.timer        snapd.snap-repair.service\nn/a                         n/a                n/a                         n/a           ua-license-check.timer         ua-license-check.service\n\n17 timers listed.\n",
+    "io_history_files": [],
+    "iostat_available": "",
+    "code-db-1": {
+      "restarts": 0,
+      "mounts": [
+        {
+          "source": "/data/docker/volumes/code_db_data/_data",
+          "target": "/var/lib/mysql"
+        }
+      ]
+    },
+    "code-redis-1": {
+      "restarts": 0,
+      "mounts": [
+        {
+          "source": "/data/docker/volumes/code_redis_data/_data",
+          "target": "/data"
+        }
+      ]
+    },
+    "fsync_delays_today": [
+      "1:M 12 Oct 2026 16:03:39.559 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis.",
+      "1:M 12 Oct 2026 16:03:41.569 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis.",
+      "1:M 12 Oct 2026 16:03:43.696 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis.",
+      "1:M 12 Oct 2026 16:07:04.558 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis.",
+      "1:M 12 Oct 2026 16:07:06.618 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis.",
+      "1:M 12 Oct 2026 16:15:11.365 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis.",
+      "1:M 12 Oct 2026 21:41:04.745 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis.",
+      "1:M 12 Oct 2026 21:41:06.881 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis.",
+      "1:M 12 Oct 2026 22:46:09.469 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis.",
+      "1:M 13 Oct 2026 00:41:02.044 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis.",
+      "1:M 13 Oct 2026 00:41:04.154 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis.",
+      "1:M 13 Oct 2026 02:40:36.913 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis.",
+      "1:M 13 Oct 2026 02:40:38.997 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis.",
+      "1:M 13 Oct 2026 02:40:41.121 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis.",
+      "1:M 13 Oct 2026 02:56:08.607 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis.",
+      "1:M 13 Oct 2026 02:56:10.731 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis.",
+      "1:M 13 Oct 2026 04:04:51.769 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis.",
+      "1:M 13 Oct 2026 04:04:53.800 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis.",
+      "1:M 13 Oct 2026 04:04:55.823 * Asynchronous AOF fsync is taking too long (disk is busy?). Writing the AOF buffer without waiting for fsync to complete, this may slow down Redis."
+    ]
+  },
+  "summary": {
+    "redis_topology": {
+      "REDIS_CHANNEL_URL": {
+        "host": "redis",
+        "database": "/1"
+      },
+      "REDIS_CACHE_URL": {
+        "host": "redis",
+        "database": "/2"
+      },
+      "REDIS_BROKER_URL": {
+        "host": "redis",
+        "database": "/0"
+      }
+    },
+    "timeout_app_frames": {
+      "/app/websocket/backends/capacity_heartbeat.py:68 refresh_connection_and_ip_capacity_slots": 7,
+      "/app/websocket/consumers/session_guard.py:149 _refresh_connection_slot_sync": 6,
+      "/app/websocket/backends/connection_limiter.py:199 refresh_connection_slot": 6,
+      "/app/websocket/middleware/ip_capacity.py:245 __call__": 4,
+      "/app/websocket/middleware/ip_capacity.py:125 _refresh_capacity_pair": 3,
+      "/app/websocket/middleware/ip_capacity.py:87 _refresh_capacity_pair_sync": 3,
+      "/app/websocket/backends/capacity_heartbeat.py:73 refresh_connection_and_ip_capacity_slots": 3,
+      "/app/websocket/consumers/session_guard.py:175 _refresh_connection_slot": 2,
+      "/app/websocket/backends/worker_lease.py:128 refresh": 1,
+      "/app/websocket/backends/worker_lease.py:57 refresh_worker_lease": 1
+    },
+    "today_nonhealth_slow": 102,
+    "today_5xx": 63,
+    "today_ws_capacity": {
+      "WebSocket IP capacity rejected connection": 37879,
+      "WebSocket connection capacity rejected": 4677
+    }
+  },
+  "workers": {
+    "code-worker_timer-1": {
+      "events": {
+        "Timeout reading from socket": 2,
+        "Deadlock found": 2
+      },
+      "long_task_types": {
+        "gameplay.reconcile_virtual_player_population_cell": {
+          "count": 272,
+          "max_seconds": 12.966,
+          "over10s": 5
+        },
+        "gameplay.reconcile_arena_virtual_reserve": {
+          "count": 103,
+          "max_seconds": 8.362,
+          "over10s": 0
+        },
+        "guests.complete_recruitment": {
+          "count": 473,
+          "max_seconds": 24.123,
+          "over10s": 1
+        },
+        "gameplay.complete_mission": {
+          "count": 1119,
+          "max_seconds": 14.013,
+          "over10s": 1
+        },
+        "gameplay.complete_troop_recruitment": {
+          "count": 71,
+          "max_seconds": 6.251,
+          "over10s": 0
+        }
+      },
+      "slowest_tasks": [
+        {
+          "utc": "2026-10-12T16:04:01.483980695Z",
+          "task": "guests.complete_recruitment",
+          "seconds": 24.123
+        }
+      ]
+    },
+    "code-worker_timer_maintenance-1": {
+      "events": {
+        "Timeout reading from socket": 2
+      },
+      "long_task_types": {
+        "gameplay.scan_virtual_player_population_demands": {
+          "count": 150,
+          "max_seconds": 21.313,
+          "over10s": 6
+        },
+        "gameplay.scan_virtual_player_maintenance": {
+          "count": 746,
+          "max_seconds": 40.854,
+          "over10s": 92
+        },
+        "gameplay.scan_arena_virtual_reserves": {
+          "count": 746,
+          "max_seconds": 10.685,
+          "over10s": 1
+        },
+        "gameplay.grow_arena_virtual_reserves": {
+          "count": 746,
+          "max_seconds": 83.309,
+          "over10s": 12
+        },
+        "gameplay.roll_virtual_players": {
+          "count": 13,
+          "max_seconds": 227.44,
+          "over10s": 1
+        }
+      },
+      "slowest_tasks": [
+        {
+          "utc": "2026-10-12T23:11:01.56173744Z",
+          "task": "gameplay.roll_virtual_players",
+          "seconds": 227.44
+        },
+        {
+          "utc": "2026-10-12T17:10:33.349366063Z",
+          "task": "gameplay.grow_arena_virtual_reserves",
+          "seconds": 83.309
+        },
+        {
+          "utc": "2026-10-12T17:33:28.42852126Z",
+          "task": "gameplay.grow_arena_virtual_reserves",
+          "seconds": 65.08
+        },
+        {
+          "utc": "2026-10-12T17:34:53.962267069Z",
+          "task": "gameplay.grow_arena_virtual_reserves",
+          "seconds": 51.359
+        },
+        {
+          "utc": "2026-10-13T03:53:49.3349468Z",
+          "task": "gameplay.grow_arena_virtual_reserves",
+          "seconds": 49.306
+        },
+        {
+          "utc": "2026-10-12T17:28:41.197151051Z",
+          "task": "gameplay.scan_virtual_player_maintenance",
+          "seconds": 40.854
+        },
+        {
+          "utc": "2026-10-12T16:28:35.68379152Z",
+          "task": "gameplay.grow_arena_virtual_reserves",
+          "seconds": 34.024
+        },
+        {
+          "utc": "2026-10-12T17:08:34.022375239Z",
+          "task": "gameplay.scan_virtual_player_maintenance",
+          "seconds": 34.014
+        }
+      ]
+    },
+    "code-worker_timer_scan-1": {
+      "events": {
+        "Timeout reading from socket": 2
+      },
+      "long_task_types": {
+        "guests.scan_training": {
+          "count": 75,
+          "max_seconds": 6.716,
+          "over10s": 0
+        },
+        "gameplay.sync_resource_production": {
+          "count": 747,
+          "max_seconds": 10.847,
+          "over10s": 1
+        }
+      },
+      "slowest_tasks": []
+    }
+  },
+  "proxy_detail": {
+    "long_proxy_requests": [
+      {
+        "utc": "2026-10-13T03:31:18.426794848Z",
+        "path": "/manor/warehouse/use/:id/",
+        "status": 200,
+        "seconds": 12.106116255
+      },
+      {
+        "utc": "2026-10-13T04:05:07.201722699Z",
+        "path": "/accounts/login/",
+        "status": 0,
+        "seconds": 12.100920374
+      },
+      {
+        "utc": "2026-10-13T04:05:07.623867924Z",
+        "path": "/trade/shop/buy/",
+        "status": 302,
+        "seconds": 18.550177753
+      },
+      {
+        "utc": "2026-10-13T02:57:14.113665085Z",
+        "path": "/guests/candidates/accept/",
+        "status": 502,
+        "seconds": 117.748199554
+      },
+      {
+        "utc": "2026-10-13T04:18:10.166084861Z",
+        "path": "/guests/:id/use-exp-item/",
+        "status": 200,
+        "seconds": 10.585966021
+      },
+      {
+        "utc": "2026-10-13T04:19:41.526191833Z",
+        "path": "/guests/:id/use-exp-item/",
+        "status": 200,
+        "seconds": 10.593794347
+      }
+    ],
+    "proxy_errors": [
+      {
+        "utc": "2026-10-13T02:57:14.113680335Z",
+        "message": "readfrom tcp 172.20.0.12:40996->172.20.0.9:8000: write tcp 172.20.0.12:40996->172.20.0.9:8000: use of closed network connection",
+        "status": 502,
+        "path": "/guests/candidates/accept/"
+      }
+    ]
+  },
+  "scope": "read-only diagnosis; no production configuration edits, restarts or deployment",
+  "final_public_health": "200 0.159253"
+}

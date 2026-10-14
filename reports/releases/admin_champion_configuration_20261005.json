@@ -1,0 +1,535 @@
+{
+  "status": "applied_and_independently_verified",
+  "verified_at": "2026-10-05T00:03:54.485252+08:00",
+  "host": "154.201.68.231",
+  "backup_directory": "/root/code/releases/admin-champion-20261004T155044Z",
+  "preview_digest": "76bed9a332541fb3a3ddc88f4751e80b5cbef37fbd781fa59951cf33d1ec3496",
+  "verification": {
+    "verified": true,
+    "username": "admin",
+    "manor_id": 1,
+    "buildings_maxed": 22,
+    "technologies_maxed": 42,
+    "active_guests": 20,
+    "guest_capacity": 20,
+    "max_squad_size": 20,
+    "gear_count": 220,
+    "skill_count": 60,
+    "fast_guests": [
+      {
+        "id": 17576,
+        "key": "hero_a_qing",
+        "name": "阿青",
+        "level": 100,
+        "agility": 977,
+        "allocated_agility": 99,
+        "luck": 201,
+        "max_hp": 23375,
+        "skills": [
+          "瞬狱杀阵",
+          "静水筹谋",
+          "铁壁心法"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17577,
+        "key": "hero_shi_zhongjian",
+        "name": "石破天",
+        "level": 100,
+        "agility": 805,
+        "allocated_agility": 99,
+        "luck": 200,
+        "max_hp": 27625,
+        "skills": [
+          "瞬狱杀阵",
+          "铁壁心法",
+          "嗜血狂怒"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17580,
+        "key": "hist_xianqin_0002",
+        "name": "姬昌",
+        "level": 100,
+        "agility": 660,
+        "allocated_agility": 99,
+        "luck": 304,
+        "max_hp": 22434,
+        "skills": [
+          "梵天真火",
+          "铁壁心法",
+          "同袍号令"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17583,
+        "key": "hist_xianqin_0008",
+        "name": "孙武",
+        "level": 100,
+        "agility": 727,
+        "allocated_agility": 99,
+        "luck": 306,
+        "max_hp": 21984,
+        "skills": [
+          "梵天真火",
+          "静水筹谋",
+          "铁壁心法"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17585,
+        "key": "hist_xianqin_0433",
+        "name": "女娲",
+        "level": 100,
+        "agility": 664,
+        "allocated_agility": 99,
+        "luck": 307,
+        "max_hp": 19684,
+        "skills": [
+          "梵天真火",
+          "静水筹谋",
+          "铁壁心法"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17586,
+        "key": "hist_sljnbc_0002",
+        "name": "诸葛亮",
+        "level": 100,
+        "agility": 628,
+        "allocated_agility": 99,
+        "luck": 308,
+        "max_hp": 22484,
+        "skills": [
+          "梵天真火",
+          "静水筹谋",
+          "铁壁心法"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17588,
+        "key": "hist_qinhan_0006",
+        "name": "张良",
+        "level": 100,
+        "agility": 592,
+        "allocated_agility": 99,
+        "luck": 301,
+        "max_hp": 19619,
+        "skills": [
+          "梵天真火",
+          "静水筹谋",
+          "铁壁心法"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17589,
+        "key": "hero_wang_xu",
+        "name": "王诩",
+        "level": 100,
+        "agility": 645,
+        "allocated_agility": 99,
+        "luck": 304,
+        "max_hp": 16940,
+        "skills": [
+          "梵天真火",
+          "静水筹谋",
+          "铁壁心法"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      }
+    ],
+    "roster": [
+      {
+        "id": 17571,
+        "key": "hero_sao_di_seng",
+        "name": "扫地僧",
+        "level": 100,
+        "agility": 341,
+        "allocated_agility": 0,
+        "luck": 159,
+        "max_hp": 54649,
+        "skills": [
+          "龙吟破阵",
+          "铁壁心法",
+          "招锋引敌"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17572,
+        "key": "hist_sljnbc_0109",
+        "name": "周泰",
+        "level": 100,
+        "agility": 231,
+        "allocated_agility": 0,
+        "luck": 137,
+        "max_hp": 51749,
+        "skills": [
+          "龙吟破阵",
+          "铁壁心法",
+          "招锋引敌"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17573,
+        "key": "hero_xiao_feng",
+        "name": "乔峰",
+        "level": 100,
+        "agility": 305,
+        "allocated_agility": 0,
+        "luck": 140,
+        "max_hp": 50849,
+        "skills": [
+          "龙吟破阵",
+          "铁壁心法",
+          "嗜血狂怒"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17574,
+        "key": "hero_yan_nantian",
+        "name": "燕南天",
+        "level": 100,
+        "agility": 358,
+        "allocated_agility": 0,
+        "luck": 156,
+        "max_hp": 50549,
+        "skills": [
+          "龙吟破阵",
+          "铁壁心法",
+          "嗜血狂怒"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17575,
+        "key": "hist_qinhan_0023",
+        "name": "项羽",
+        "level": 100,
+        "agility": 294,
+        "allocated_agility": 0,
+        "luck": 163,
+        "max_hp": 46649,
+        "skills": [
+          "龙吟破阵",
+          "铁壁心法",
+          "嗜血狂怒"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17576,
+        "key": "hero_a_qing",
+        "name": "阿青",
+        "level": 100,
+        "agility": 977,
+        "allocated_agility": 99,
+        "luck": 201,
+        "max_hp": 23375,
+        "skills": [
+          "瞬狱杀阵",
+          "静水筹谋",
+          "铁壁心法"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17577,
+        "key": "hero_shi_zhongjian",
+        "name": "石破天",
+        "level": 100,
+        "agility": 805,
+        "allocated_agility": 99,
+        "luck": 200,
+        "max_hp": 27625,
+        "skills": [
+          "瞬狱杀阵",
+          "铁壁心法",
+          "嗜血狂怒"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17578,
+        "key": "hist_xianqin_0439",
+        "name": "帝舜",
+        "level": 100,
+        "agility": 323,
+        "allocated_agility": 0,
+        "luck": 316,
+        "max_hp": 25205,
+        "skills": [
+          "梵天真火",
+          "铁壁心法",
+          "同袍号令"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17579,
+        "key": "hist_xianqin_0438",
+        "name": "帝尧",
+        "level": 100,
+        "agility": 307,
+        "allocated_agility": 0,
+        "luck": 313,
+        "max_hp": 23855,
+        "skills": [
+          "梵天真火",
+          "铁壁心法",
+          "同袍号令"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17580,
+        "key": "hist_xianqin_0002",
+        "name": "姬昌",
+        "level": 100,
+        "agility": 660,
+        "allocated_agility": 99,
+        "luck": 304,
+        "max_hp": 22434,
+        "skills": [
+          "梵天真火",
+          "铁壁心法",
+          "同袍号令"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17581,
+        "key": "hist_suitang_0003_wuzhao",
+        "name": "武曌",
+        "level": 100,
+        "agility": 311,
+        "allocated_agility": 0,
+        "luck": 315,
+        "max_hp": 26255,
+        "skills": [
+          "梵天真火",
+          "铁壁心法",
+          "同袍号令"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17582,
+        "key": "hist_xianqin_0006",
+        "name": "孔丘",
+        "level": 100,
+        "agility": 287,
+        "allocated_agility": 0,
+        "luck": 313,
+        "max_hp": 24855,
+        "skills": [
+          "梵天真火",
+          "铁壁心法",
+          "嗜血狂怒"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17583,
+        "key": "hist_xianqin_0008",
+        "name": "孙武",
+        "level": 100,
+        "agility": 727,
+        "allocated_agility": 99,
+        "luck": 306,
+        "max_hp": 21984,
+        "skills": [
+          "梵天真火",
+          "静水筹谋",
+          "铁壁心法"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17584,
+        "key": "hist_xianqin_0435",
+        "name": "神农",
+        "level": 100,
+        "agility": 316,
+        "allocated_agility": 0,
+        "luck": 307,
+        "max_hp": 25955,
+        "skills": [
+          "梵天真火",
+          "铁壁心法",
+          "嗜血狂怒"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17585,
+        "key": "hist_xianqin_0433",
+        "name": "女娲",
+        "level": 100,
+        "agility": 664,
+        "allocated_agility": 99,
+        "luck": 307,
+        "max_hp": 19684,
+        "skills": [
+          "梵天真火",
+          "静水筹谋",
+          "铁壁心法"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17586,
+        "key": "hist_sljnbc_0002",
+        "name": "诸葛亮",
+        "level": 100,
+        "agility": 628,
+        "allocated_agility": 99,
+        "luck": 308,
+        "max_hp": 22484,
+        "skills": [
+          "梵天真火",
+          "静水筹谋",
+          "铁壁心法"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17587,
+        "key": "hist_xianqin_0434",
+        "name": "伏羲",
+        "level": 100,
+        "agility": 310,
+        "allocated_agility": 0,
+        "luck": 317,
+        "max_hp": 25605,
+        "skills": [
+          "梵天真火",
+          "铁壁心法",
+          "嗜血狂怒"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17588,
+        "key": "hist_qinhan_0006",
+        "name": "张良",
+        "level": 100,
+        "agility": 592,
+        "allocated_agility": 99,
+        "luck": 301,
+        "max_hp": 19619,
+        "skills": [
+          "梵天真火",
+          "静水筹谋",
+          "铁壁心法"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17589,
+        "key": "hero_wang_xu",
+        "name": "王诩",
+        "level": 100,
+        "agility": 645,
+        "allocated_agility": 99,
+        "luck": 304,
+        "max_hp": 16940,
+        "skills": [
+          "梵天真火",
+          "静水筹谋",
+          "铁壁心法"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      },
+      {
+        "id": 17590,
+        "key": "hist_xianqin_0007",
+        "name": "李耳",
+        "level": 100,
+        "agility": 312,
+        "allocated_agility": 0,
+        "luck": 320,
+        "max_hp": 23987,
+        "skills": [
+          "梵天真火",
+          "静水筹谋",
+          "铁壁心法"
+        ],
+        "gear_count": 11,
+        "attribute_points": 0
+      }
+    ],
+    "preserved_original_guests": [
+      {
+        "id": 3,
+        "template__name": "玉兔",
+        "status": "vacation",
+        "training_complete_at": null,
+        "training_remaining_seconds": 54292
+      },
+      {
+        "id": 11412,
+        "template__name": "布衣百姓",
+        "status": "vacation",
+        "training_complete_at": null,
+        "training_remaining_seconds": 33644
+      },
+      {
+        "id": 11413,
+        "template__name": "布衣百姓",
+        "status": "vacation",
+        "training_complete_at": null,
+        "training_remaining_seconds": 33644
+      },
+      {
+        "id": 11414,
+        "template__name": "布衣百姓",
+        "status": "vacation",
+        "training_complete_at": null,
+        "training_remaining_seconds": 33644
+      }
+    ]
+  },
+  "isolated_rehearsal": {
+    "transaction_rollback": true,
+    "apply_complete": true,
+    "repeat_without_duplicate_guests_or_gear": true
+  },
+  "configuration_file": "reports/admin_champion_config_20261004.json"
+}

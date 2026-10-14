@@ -1429,6 +1429,7 @@ def reload_runtime_configs() -> dict[str, int]:
     from gameplay.services.arena.coop_rules import clear_arena_coop_rules_cache, load_arena_coop_rules
     from gameplay.services.arena.core import refresh_arena_constants
     from gameplay.services.arena.rewards import clear_arena_reward_cache, load_arena_reward_catalog
+    from gameplay.services.arena.ring_rules import clear_ring_rules_cache, load_ring_rules
     from gameplay.services.arena.rules import clear_arena_rules_cache, load_arena_rules
     from gameplay.services.buildings.forge import (
         clear_forge_blueprint_cache,
@@ -1502,6 +1503,9 @@ def reload_runtime_configs() -> dict[str, int]:
     clear_arena_coop_rules_cache()
     arena_coop_rules = load_arena_coop_rules()
     refresh_arena_coop_constants()
+
+    clear_ring_rules_cache()
+    load_ring_rules()
 
     clear_trade_market_rules_cache()
     trade_market_rules = load_trade_market_rules()

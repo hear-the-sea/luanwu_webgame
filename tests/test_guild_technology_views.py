@@ -44,6 +44,90 @@ def test_technology_page_renders_capacity_tech_with_count_effect_and_cost(guild_
 
 
 @pytest.mark.django_db
+def test_capacity_display_reuses_loaded_levels_without_queries(guild_tech_client, django_assert_num_queries):
+    from guilds.views.technology import _build_tech_display_meta
+
+    _client, _user, guild = guild_tech_client
+    for key in ("guild_lineup_capacity", "guild_dispatch_capacity"):
+        GuildTechnology.objects.create(guild=guild, tech_key=key, category="combat", level=1, max_level=20)
+    technologies = list(GuildTechnology.objects.filter(guild_id=guild.pk))
+
+    with django_assert_num_queries(0):
+        display = {tech.tech_key: _build_tech_display_meta(tech) for tech in technologies}
+
+    assert display["guild_lineup_capacity"]["current_effect"] == "21 名"
+    assert display["guild_lineup_capacity"]["next_effect"] == "22 名"
+    assert display["guild_dispatch_capacity"]["current_effect"] == "6 名"
+    assert display["guild_dispatch_capacity"]["next_effect"] == "7 名"
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("category", ["production", "combat", "welfare"])
+def test_technology_page_builds_only_selected_category_display(guild_tech_client, category, monkeypatch):
+    from guilds.views import technology as technology_view
+
+    client, _user, guild = guild_tech_client
+    categories = {
+        "equipment_forge": "production",
+        "guild_lineup_capacity": "combat",
+        "guild_dispatch_capacity": "combat",
+        "resource_boost": "welfare",
+    }
+    for key, tech_category in categories.items():
+        GuildTechnology.objects.create(guild=guild, tech_key=key, category=tech_category, level=1, max_level=20)
+    built_keys = []
+    original = technology_view._build_tech_display_meta
+
+    def record_display(tech):
+        built_keys.append(tech.tech_key)
+        return original(tech)
+
+    monkeypatch.setattr(technology_view, "_build_tech_display_meta", record_display)
+    response = client.get(reverse("guilds:technology"), {"category": category})
+
+    assert response.status_code == 200
+    expected_keys = {key for key, value in categories.items() if value == category}
+    assert set(built_keys) == expected_keys
+    assert set(response.context["tech_display_meta"]) == expected_keys
+    assert {tech.tech_key for tech in response.context["technologies"]} == set(categories)
+    assert {tech.tech_key for tech in response.context["filtered_technologies"]} == expected_keys
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("level,lineup,dispatch", [(0, 20, 5), (1, 21, 6), (20, 40, 25), (21, 40, 25)])
+def test_capacity_display_and_service_share_limits(
+    guild_tech_client, django_assert_num_queries, level, lineup, dispatch
+):
+    from guilds.services import technology as technology_service
+    from guilds.views.technology import _build_tech_display_meta
+
+    _client, _user, guild = guild_tech_client
+    for key, expected, calculate, load in (
+        (
+            "guild_lineup_capacity",
+            lineup,
+            technology_service.calculate_guild_lineup_capacity,
+            technology_service.get_guild_lineup_capacity,
+        ),
+        (
+            "guild_dispatch_capacity",
+            dispatch,
+            technology_service.calculate_guild_dispatch_capacity,
+            technology_service.get_guild_dispatch_capacity,
+        ),
+    ):
+        GuildTechnology.objects.create(guild=guild, tech_key=key, category="combat", level=level, max_level=20)
+        tech = GuildTechnology.objects.get(guild_id=guild.pk, tech_key=key)
+        with django_assert_num_queries(0):
+            assert calculate(level) == expected
+            display = _build_tech_display_meta(tech)
+        assert display["current_effect"] == f"{expected} 名"
+        assert display["next_effect"] == f"{calculate(min(20, level + 1))} 名"
+        with django_assert_num_queries(1):
+            assert load(guild) == expected
+
+
+@pytest.mark.django_db
 def test_technology_page_uses_category_switches_and_removes_caption(guild_tech_client):
     client, _user, guild = guild_tech_client
     GuildTechnology.objects.create(

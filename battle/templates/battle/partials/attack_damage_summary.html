@@ -4,7 +4,7 @@
     <span class="event-target-arrow" aria-hidden="true">→</span>
     <span class="event-target-detail">
         {% if attack.is_dodge %}
-            {% if phase_skill %}{{ attack.actor|default:event.actor }}爆发{{ phase_skill }}：{% else %}普通攻击：{% endif %}<strong class="event-target-name">{{ attack.target }}</strong>闪避了攻击
+            {% if phase_skill %}{{ attack.actor|default:event.actor }}爆发{{ phase_skill }}：{% elif attack.skills and not is_secondary %}<span class="event-active-skill">爆发技能：{{ attack.skills|join:"、" }}</span>，{% else %}普通攻击：{% endif %}<strong class="event-target-name">{{ attack.target }}</strong>闪避了攻击
         {% elif attack.current_target_bonus %}
             对当前目标<strong class="event-target-name">{{ attack.target }}</strong>追加真实伤害<strong class="event-damage-value">{{ attack.damage|default:0 }}</strong>，伤害人数<strong class="event-kill-count">{{ attack.kills|default:0 }}</strong>{% include "battle/partials/target_defeat_summary.html" %}
         {% elif phase_skill %}

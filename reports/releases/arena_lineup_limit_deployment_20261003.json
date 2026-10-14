@@ -1,0 +1,58 @@
+{
+  "release": "arena-lineup-limit-20261003T145649Z",
+  "image": "webgame:arena-lineup-limit-20261003T145649Z",
+  "base_image": "webgame:arena-troop-cap-20261003T142859Z",
+  "base_image_id": "sha256:1dc7fc9b60d59da84813dfb86ade00d3f592ea2d7b58b1bfd7e5e80cfde6ec50",
+  "files": {
+    "gameplay/services/arena/ring.py": "70f06dd827075c44a54f752348b519c47c92cd734c810ac5bdb9189e785d1ec9",
+    "gameplay/services/arena/ring_rules.py": "94ac0647cfc7d8e17e27601b40f09fd23eddf97daa23757e1d149f9c15bd98ee",
+    "gameplay/selectors/arena/rings.py": "1dd1eb2a839a6fd2f4fbb4d4680375e5db10f321179958906ca5ca134c588672",
+    "data/arena_ring_rules.yaml": "d62ccc3c5b9ab1fb38541ef603b47fde6242a7a1dbb18b3cb0ea3d4b661a7a8a",
+    "gameplay/templates/gameplay/arena/rings.html": "0211c0a505d77661952a39a496d4343a0fa5b1f58c4d606771f9c5c815a466f2",
+    "gameplay/templates/gameplay/arena/partials/ring_form.html": "2d744de579af9674a466072772832a61630a5d5ddcc545d877baafc09db25071",
+    "static/css/arena-rings.css": "beaae50eeefb77072439a409b6a708c90a8f66cae020d02ef80fcd22e416ec6c"
+  },
+  "base_files": {
+    "gameplay/services/arena/ring.py": "81b5e63806b03ea4ecdc65b056ce5ceba878bd5e98b3bb1c909dd434f5d7dacb",
+    "gameplay/services/arena/ring_rules.py": "0ce48932dee3d07329448720cd1245080cb70eb1d6dfdb8cccffd5c5dccac012",
+    "gameplay/selectors/arena/rings.py": "28e1524b7a3758ed227e5d5cd1ac0f45b38abb1dee7b02184277bad73d3d9c93",
+    "data/arena_ring_rules.yaml": "57dc21097c3407368c6f3ffea485c48e76e9edbf7c3f0ecb4305a873ceda8869",
+    "gameplay/templates/gameplay/arena/rings.html": "93530f8ccb75f01734f174446d8c6cc34e1878e20f47b64ed82c9a26123287c0",
+    "gameplay/templates/gameplay/arena/partials/ring_form.html": "e739cb54cfe8ee847964e883479464002191369c407483a2628f2173a5a1665b",
+    "static/css/arena-rings.css": "94327de2f3ad2cefc054075a3ab4bc26c4f68d673d2d09f2efc1499047141724"
+  },
+  "database_changes": false,
+  "services": [
+    "web"
+  ],
+  "status": "deployed_verified",
+  "image_id": "sha256:8c4c55ced2e6e829218f9c9e7b2710a0a2ec056ecdc2572a656eccf5475d7b34",
+  "health": "healthy",
+  "backup_dir": "/root/code/releases/arena-lineup-limit-20261003T145649Z/backup",
+  "workers_restarted": false,
+  "live_verification": {
+    "status": "verified",
+    "max_lineup_updates": 2,
+    "lineup_update_seconds": 600,
+    "initial_cooldown": true,
+    "owners_verified": 2,
+    "render_status": 200,
+    "static_css": "/static/css/arena-rings.9fa7a12f0ac4.css"
+  },
+  "tests": {
+    "backend": 63,
+    "browser": 6,
+    "formatting": "passed",
+    "ruff": "passed"
+  },
+  "public_checks": [
+    {
+      "path": "/health/live",
+      "status": 200
+    },
+    {
+      "path": "/static/css/arena-rings.9fa7a12f0ac4.css",
+      "status": 200
+    }
+  ]
+}

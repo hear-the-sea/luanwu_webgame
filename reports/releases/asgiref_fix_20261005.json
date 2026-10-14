@@ -1,0 +1,63 @@
+{
+  "versions": {
+    "code-web-1": "3.12.1",
+    "code-worker_battle-1": "3.12.1"
+  },
+  "regression": {
+    "code-web-1": "cancelled request does not deadlock; independent request returned 200",
+    "code-worker_battle-1": "cancelled request does not deadlock; independent request returned 200"
+  },
+  "public_http": {
+    "/": 200,
+    "/accounts/login/": 200,
+    "/health/live": 200
+  },
+  "readiness": true,
+  "spear_counter_cap": true,
+  "services": {
+    "web": {
+      "image": "webgame:asgiref-fix-20261005-g0",
+      "status": "running",
+      "health": "healthy"
+    },
+    "worker": {
+      "image": "webgame:asgiref-fix-20261005-g1",
+      "status": "running",
+      "health": null
+    },
+    "worker_battle": {
+      "image": "webgame:asgiref-fix-20261005-g1",
+      "status": "running",
+      "health": null
+    },
+    "worker_timer": {
+      "image": "webgame:asgiref-fix-20261005-g1",
+      "status": "running",
+      "health": null
+    },
+    "worker_timer_scan": {
+      "image": "webgame:asgiref-fix-20261005-g1",
+      "status": "running",
+      "health": null
+    },
+    "worker_timer_safety": {
+      "image": "webgame:asgiref-fix-20261005-g1",
+      "status": "running",
+      "health": null
+    },
+    "worker_timer_maintenance": {
+      "image": "webgame:asgiref-fix-20261005-g1",
+      "status": "running",
+      "health": null
+    },
+    "beat": {
+      "image": "webgame:asgiref-fix-20261005-g1",
+      "status": "running",
+      "health": null
+    }
+  },
+  "local_tests": {
+    "passed": 68,
+    "skipped": 1
+  }
+}

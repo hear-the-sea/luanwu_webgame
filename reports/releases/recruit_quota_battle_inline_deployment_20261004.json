@@ -1,0 +1,36 @@
+{
+  "release": "recruit-quota-battle-inline-20261004T030745Z",
+  "image": "webgame:recruit-quota-battle-inline-20261004T030745Z",
+  "base_image": "webgame:battle-passive-actions-20261004T024343Z",
+  "base_image_id": "sha256:0bfa1c53972b736b2c47345b4c6e479548b2e4e16c892a93bc8a39de0b76d751",
+  "files": {
+    "guests/views/recruit_responses.py": "bc7fc2c7963367a0877ff97134fa7f0d4385f9d720cec01f155b7dea2622255e",
+    "guests/views/recruit_action_runtime.py": "af6db467e24cac108c61cf33afafb8224e2f23541552aa2d8485c6a6b8341292",
+    "static/js/recruitment-hall.js": "9f65814dd309a2880a5c447db77d062ec780dab883dbe3f04504c9497f3be298",
+    "static/css/style.css": "bb6470d80e849568cfb52a16eb04479dac858bf485b75a490efe0d3b4316e8e7",
+    "battle/templates/battle/partials/retaliation_damage_summary.html": "6cabf7a21007da0f0e16069b3294f8a664e9ed690759e4530dc50e073461acd7"
+  },
+  "base_files": {
+    "guests/views/recruit_responses.py": "e824fd9e7783d75752248af651371bf371ea10381390323b5f1e43b3ebed578f",
+    "guests/views/recruit_action_runtime.py": "e4feaad98b3190b1609bd9531f2c40f1f138d3df8003f21d72b7dee227635ef8",
+    "static/js/recruitment-hall.js": "f5dc129ae1e68d27b505c6808d0000d1ea723850a25ac3eb6efe4e93129e1603",
+    "static/css/style.css": "ff0b7f4e13ccdb626f6222a4c03994e25f2a9280b65ab7c296f33e80e84f8304",
+    "battle/templates/battle/partials/retaliation_damage_summary.html": "fa09a43b6ba389d0d7c7c6eb3dbb44fa39bb4bc1a9b59a9a0e559c553e6ee6f8"
+  },
+  "database_changes": false,
+  "services": [
+    "web"
+  ],
+  "status": "deployed_verified",
+  "image_id": "sha256:c81e99956f65274a29d46b6f994250726724ba944b93330439872e9aba0f52d7",
+  "health": "healthy",
+  "backup_dir": "/root/code/releases/recruit-quota-battle-inline-20261004T030745Z/backup",
+  "workers_restarted": false,
+  "live_render_verified": true,
+  "public_assets_verified": true,
+  "public_health_status": 200,
+  "tests": {
+    "backend": 225,
+    "browser": 16
+  }
+}

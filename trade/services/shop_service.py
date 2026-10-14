@@ -74,6 +74,10 @@ class SellableItemDisplay:
     inventory_item: InventoryItem
     sell_price: int
 
+    @property
+    def quantity(self) -> int:
+        return self.inventory_item.unbound_quantity
+
 
 # 效果类型到种类名称映射（单一来源，来自 gameplay.models.items）
 EFFECT_TYPE_CATEGORY = ITEM_EFFECT_TYPE_LABELS
@@ -184,7 +188,7 @@ def get_sellable_inventory_queryset(manor: Manor, category: str = None):
         category: 分类筛选（可选），使用 normalized effect_type
     """
     items = manor.inventory_items.select_related("template").filter(
-        quantity__gt=0, storage_location=InventoryItem.StorageLocation.WAREHOUSE
+        quantity__gt=F("bound_quantity"), storage_location=InventoryItem.StorageLocation.WAREHOUSE
     )
 
     # 数据库层面的分类筛选
@@ -208,7 +212,7 @@ def build_sellable_inventory_display_rows(items: Iterable[InventoryItem]) -> Lis
         sell_price = sell_price_overrides.get(item.template.key)
         if sell_price is None:
             sell_price = safe_non_negative_int(item.template.price, 0)
-        if sell_price > 0:
+        if sell_price > 0 and item.unbound_quantity > 0:
             result.append(SellableItemDisplay(inventory_item=item, sell_price=sell_price))
 
     return result
@@ -356,7 +360,7 @@ def sell_item(manor: Manor, item_key: str, quantity: int) -> Dict:
     # 锁定庄园并发放银两（并发安全）
     locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
     if template.key == GOLD_BAR_ITEM_KEY:
-        consume_available_gold_bars_locked(locked_manor, quantity)
+        consume_available_gold_bars_locked(locked_manor, quantity, allow_bound=False)
     else:
         inventory_item = (
             InventoryItem.objects.select_for_update()
@@ -369,15 +373,15 @@ def sell_item(manor: Manor, item_key: str, quantity: int) -> Dict:
         )
         if inventory_item is None:
             raise ItemInsufficientError(template.name, quantity, 0, message="您没有该物品")
-        if inventory_item.quantity < quantity:
+        if inventory_item.unbound_quantity < quantity:
             raise ItemInsufficientError(
                 template.name,
                 quantity,
-                int(inventory_item.quantity),
-                message="物品数量不足",
+                inventory_item.unbound_quantity,
+                message="非绑定物品数量不足，绑定物品不可出售",
             )
         inventory_item.template = template
-        consume_inventory_item_locked(inventory_item, quantity)
+        consume_inventory_item_locked(inventory_item, quantity, allow_bound=False)
 
     _credited, overflow = grant_resources_locked(
         locked_manor,

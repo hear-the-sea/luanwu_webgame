@@ -1,0 +1,40 @@
+{
+  "release": "battle-display-review-final-20261003T234008Z",
+  "image": "webgame:battle-display-review-final-20261003T234008Z",
+  "base_image": "webgame:battle-display-review-20261003T233457Z",
+  "base_image_id": "sha256:814b775fba43512b15fd2af62713fafffea8b4375129f7db662be841f9a009da",
+  "files": {
+    "guilds/views/contribution.py": "cd4869c720826e372a20ab18e25e3b5b588fe531974357cf20686a9b7f2d1d66"
+  },
+  "base_files": {
+    "guilds/views/contribution.py": "03770b9b02ac5593c059b55f64cf7e34172531f0cfb960d03aff81357599b8b7"
+  },
+  "database_changes": false,
+  "services": [
+    "web"
+  ],
+  "status": "deployed_verified",
+  "image_id": "sha256:0c447963f7896ef652200369b33a24b80616448cd9fea46bae42c7a1dbc8de97",
+  "health": "healthy",
+  "backup_dir": "/root/code/releases/battle-display-review-final-20261003T234008Z/backup",
+  "workers_restarted": false,
+  "live_verification": {
+    "status": "verified",
+    "source_files_verified": 27,
+    "container_files_verified": 27,
+    "public_health_status": 200,
+    "historical_reports_checked": 30,
+    "raw_reports_unchanged": true,
+    "recovery_and_passive_order": true,
+    "per_target_status_order": true,
+    "casualty_order": true,
+    "cache_refresh": true,
+    "guild_display_order": true
+  },
+  "tests": {
+    "backend": 455,
+    "browser": 21,
+    "black": "passed",
+    "ruff": "passed"
+  }
+}

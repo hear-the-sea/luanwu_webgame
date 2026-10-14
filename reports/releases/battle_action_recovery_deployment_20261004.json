@@ -1,0 +1,41 @@
+{
+  "release": "battle-action-recovery-20261003T222213Z",
+  "image": "webgame:battle-action-recovery-20261003T222213Z",
+  "base_image": "webgame:arena-history-20261003T153321Z",
+  "base_image_id": "sha256:feae6f472c1e9c629622e48fa668445775c2e5f0bf4c423e8d6cacccccacb0db",
+  "files": {
+    "battle/report_events.py": "541cdfe685ca332243d73930cd72bb74d2290bf515b7ff2e25528a86cc5fa54c",
+    "battle/view_helpers.py": "432bffa8149346d2dbfa85ca12643c1b9000256941ae40e7706ddc2c845b4912",
+    "battle/templates/battle/partials/attack_action_details.html": "aeb15b37e8ca7cb0b0a7ea647b6bef028f58d00ef1d0af4c6cd3b1c362b922c0"
+  },
+  "base_files": {
+    "battle/report_events.py": "9f79f90e9e7f503ffc88675daf35ffde8444dcd0e7aeb4eb2ca951a1fcab34be",
+    "battle/view_helpers.py": "f98a2fa8aec48f7db09db6df940a43988572937a59e5964d34876c4033c62bda",
+    "battle/templates/battle/partials/attack_action_details.html": "a40416c9bf644adc65c15c5701c055ac22aec3fa3373f995169902ba7e7d36ee"
+  },
+  "database_changes": false,
+  "services": [
+    "web"
+  ],
+  "status": "deployed_verified",
+  "image_id": "sha256:c921d500e8522c9853e4ac7cf315528b4a7eb72ef79911dd506aa0ab5afdef81",
+  "health": "healthy",
+  "backup_dir": "/root/code/releases/battle-action-recovery-20261003T222213Z/backup",
+  "workers_restarted": false,
+  "live_verification": {
+    "status": "verified",
+    "viewer_perspectives": 3,
+    "one_action_per_attack": true,
+    "duplicate_revival_removed": true,
+    "heal_strength_preserved": true,
+    "historical_reports_checked": 20,
+    "historical_actions_merged": 3,
+    "raw_reports_unchanged": true,
+    "public_health_status": 200
+  },
+  "tests": {
+    "backend": 187,
+    "black": "passed",
+    "ruff": "passed"
+  }
+}

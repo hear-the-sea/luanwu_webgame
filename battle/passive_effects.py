@@ -329,6 +329,7 @@ def apply_effect(effect: dict[str, Any], context: dict[str, Any]) -> None:
             sources[scoped_source_key] = {
                 "ratio": float(effect.get("ratio") or 0),
                 "cap": float(effect.get("cap") or 0),
+                "name": str(effect.get("log_name") or context.get("skill_name") or "反震"),
             }
             register_modifier_source(
                 target_unit,

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 from logging import Logger
-from typing import TYPE_CHECKING, Any, Callable, Iterable
+from typing import TYPE_CHECKING, Any, Callable, Iterable, Protocol
 
 from core.exceptions import ForgeOperationError, MessageError
 from core.utils.imports import is_missing_target_import
@@ -17,6 +17,12 @@ if TYPE_CHECKING:
     from ...models import EquipmentProduction, InventoryItem, Manor
 
 FilteredConfigs = list[tuple[str, dict[str, Any]]]
+
+
+class InventoryItemAdder(Protocol):
+    def __call__(self, manor: Manor, item_key: str, quantity: int, *, is_bound: bool) -> Any: ...
+
+
 FORGE_MESSAGE_BEST_EFFORT_EXCEPTIONS: InfrastructureExceptions = combine_infrastructure_exceptions(
     MessageError,
     infrastructure_exceptions=DATABASE_INFRASTRUCTURE_EXCEPTIONS,
@@ -109,8 +115,10 @@ def consume_forging_materials_locked(
     total_costs: dict[str, int],
     material_name_map: dict[str, str],
     material_name_fallback_map: dict[str, str],
-    consume_inventory_item_locked: Callable[[InventoryItem, int], None],
-) -> None:
+    consume_inventory_item_locked: Callable[[InventoryItem, int], int],
+    quantity: int,
+) -> int:
+    bound_craft_count = 0
     for mat_key, total_amount in total_costs.items():
         item = (
             inventory_item_model.objects.select_for_update()
@@ -125,7 +133,12 @@ def consume_forging_materials_locked(
         mat_name = material_name_map.get(mat_key, material_name_fallback_map.get(mat_key, "所需材料"))
         if not item or item.quantity < total_amount:
             raise ForgeOperationError(f"{mat_name}不足")
-        consume_inventory_item_locked(item, total_amount)
+        bound_used = consume_inventory_item_locked(item, total_amount)
+        if mat_key.startswith("blueprint_"):
+            # 多张图纸一件时，先消耗绑定图纸，计算有绑定图纸参与的件数。
+            per_item = total_amount // quantity
+            bound_craft_count = max(bound_craft_count, (bound_used + per_item - 1) // per_item)
+    return bound_craft_count
 
 
 def create_equipment_production_record(
@@ -139,6 +152,7 @@ def create_equipment_production_record(
     base_duration: int,
     actual_duration: int,
     current_time: datetime,
+    output_bound_quantity: int = 0,
 ) -> EquipmentProduction:
     return equipment_production_model.objects.create(
         manor=locked_manor,
@@ -146,6 +160,8 @@ def create_equipment_production_record(
         equipment_name=equipment_name,
         quantity=quantity,
         material_costs=total_costs,
+        output_is_bound=output_bound_quantity == quantity,
+        output_bound_quantity=output_bound_quantity,
         base_duration=base_duration,
         actual_duration=actual_duration,
         complete_at=current_time + timedelta(seconds=actual_duration),
@@ -186,7 +202,7 @@ def finalize_equipment_production_locked(
     equipment_production_model: type[EquipmentProduction],
     production: EquipmentProduction,
     current_time: datetime,
-    add_item_to_inventory_locked: Callable[[Manor, str, int], Any],
+    add_item_to_inventory_locked: InventoryItemAdder,
 ) -> EquipmentProduction | None:
     if not getattr(production, "pk", None):
         return None
@@ -207,11 +223,25 @@ def finalize_equipment_production_locked(
     if locked_production.complete_at > current_time:
         return None
 
-    add_item_to_inventory_locked(
-        locked_manor,
-        locked_production.equipment_key,
-        locked_production.quantity,
-    )
+    bound_quantity = locked_production.output_bound_quantity
+    # 兼容旧调用方创建的仅带布尔标志的队列，以及迁移前的绑定承诺。
+    if locked_production.output_is_bound:
+        bound_quantity = locked_production.quantity
+    if bound_quantity:
+        add_item_to_inventory_locked(
+            locked_manor,
+            locked_production.equipment_key,
+            bound_quantity,
+            is_bound=True,
+        )
+    unbound_quantity = locked_production.quantity - bound_quantity
+    if unbound_quantity:
+        add_item_to_inventory_locked(
+            locked_manor,
+            locked_production.equipment_key,
+            unbound_quantity,
+            is_bound=False,
+        )
     locked_production.status = equipment_production_model.Status.COMPLETED
     locked_production.finished_at = current_time
     locked_production.save(update_fields=["status", "finished_at"])

@@ -36,6 +36,8 @@ def _load_payload(file_path: Path):
 
 
 def _build_item_defaults(entry: dict) -> dict:
+    if not isinstance(entry.get("default_bound", False), bool):
+        raise CommandError("default_bound 必须为布尔值")
     return {
         "name": entry.get("name"),
         "description": entry.get("description", ""),
@@ -44,6 +46,7 @@ def _build_item_defaults(entry: dict) -> dict:
         "icon": entry.get("icon", ""),
         "rarity": entry.get("rarity", "gray"),
         "tradeable": entry.get("tradeable", False),
+        "default_bound": entry.get("default_bound", False),
         "price": entry.get("price", 0),
         "storage_space": entry.get("storage_space", 1),
         "is_usable": entry.get("is_usable", False),

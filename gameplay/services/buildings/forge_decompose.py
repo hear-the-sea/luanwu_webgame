@@ -166,9 +166,9 @@ def decompose_equipment(
             roll_decompose_rewards(template.rarity, quantity, config),
             contract_name="forge decompose rewards",
         )
-        consume_inventory_item_locked(locked_item, quantity)
+        bound_used = consume_inventory_item_locked(locked_item, quantity)
         for reward_key, reward_amount in rewards.items():
-            add_item_to_inventory_locked(locked_manor, reward_key, reward_amount)
+            add_item_to_inventory_locked(locked_manor, reward_key, reward_amount, is_bound=bool(bound_used))
 
     return {
         "equipment_key": equipment_key,

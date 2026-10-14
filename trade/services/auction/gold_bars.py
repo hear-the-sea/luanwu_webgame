@@ -31,13 +31,26 @@ def get_frozen_gold_bars(manor: Manor) -> int:
 
 
 def get_available_gold_bars(manor: Manor) -> int:
-    """获取庄园可用的金条数量（总数 - 冻结数）"""
-    total = get_total_gold_bars(manor)
+    """获取可用于拍卖的非绑定、未冻结金条数量。"""
+    total = get_unbound_gold_bars(manor)
     frozen = get_frozen_gold_bars(manor)
     return max(0, int(total) - int(frozen))
 
 
-def consume_available_gold_bars_locked(manor: Manor, amount: int) -> None:
+def get_unbound_gold_bars(manor: Manor) -> int:
+    row = (
+        InventoryItem.objects.filter(
+            manor=manor,
+            template__key=GOLD_BAR_ITEM_KEY,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        )
+        .values_list("quantity", "bound_quantity")
+        .first()
+    )
+    return max(0, int(row[0]) - int(row[1])) if row else 0
+
+
+def consume_available_gold_bars_locked(manor: Manor, amount: int, *, allow_bound: bool = True) -> None:
     """消耗未被冻结的仓库金条。调用方必须已经在事务中。"""
     if not transaction.get_connection().in_atomic_block:
         raise RuntimeError("consume_available_gold_bars_locked must be called inside transaction.atomic()")
@@ -56,6 +69,8 @@ def consume_available_gold_bars_locked(manor: Manor, amount: int) -> None:
         .first()
     )
     total = int(getattr(inventory_item, "quantity", 0) or 0)
+    if not allow_bound:
+        total -= int(getattr(inventory_item, "bound_quantity", 0) or 0)
     frozen = int(
         FrozenGoldBar.objects.filter(manor=manor, is_frozen=True).aggregate(total=Sum("amount")).get("total") or 0
     )
@@ -64,7 +79,7 @@ def consume_available_gold_bars_locked(manor: Manor, amount: int) -> None:
     if available < amount or inventory_item is None:
         raise ItemInsufficientError(item_name, amount, available)
 
-    consume_inventory_item_locked(inventory_item, amount)
+    consume_inventory_item_locked(inventory_item, amount, allow_bound=allow_bound)
 
 
 def freeze_gold_bars(manor: Manor, amount: int, bid: AuctionBid) -> FrozenGoldBar:
@@ -83,6 +98,7 @@ def freeze_gold_bars(manor: Manor, amount: int, bid: AuctionBid) -> FrozenGoldBa
         .first()
     )
     total = int(getattr(inventory_item, "quantity", 0) or 0)
+    total -= int(getattr(inventory_item, "bound_quantity", 0) or 0)
     frozen = int(
         FrozenGoldBar.objects.filter(manor=manor, is_frozen=True).aggregate(total=Sum("amount")).get("total") or 0
     )
@@ -139,6 +155,7 @@ def consume_frozen_gold_bars(frozen_record: FrozenGoldBar, manor: Manor) -> None
             GOLD_BAR_ITEM_KEY,
             locked.amount,
             allow_frozen_gold_bars=True,
+            allow_bound=False,
         )
 
         locked.is_frozen = False

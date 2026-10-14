@@ -40,7 +40,7 @@ function createTasksPageHarness(confirmResult) {
       return [];
     },
   };
-  const windowObject = {
+  const windowObject = Object.assign(new EventTarget(), {
     initItemTooltip(options) {
       calls.tooltip.push(options);
     },
@@ -54,11 +54,11 @@ function createTasksPageHarness(confirmResult) {
       return Promise.resolve(confirmResult);
     },
     setTimeout,
-  };
+  });
 
   vm.runInNewContext(
     source,
-    { window: windowObject, document, console, setTimeout, clearTimeout },
+    { window: windowObject, document, console, setTimeout, clearTimeout, Event },
     { filename: "tasks-page.js" }
   );
   listeners.get("DOMContentLoaded")();

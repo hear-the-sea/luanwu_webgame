@@ -12,10 +12,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 46
+      intellect: 6
+      defense: 34
+      agility: 14
   - key: hero_ilrock_03877
     name: 尤楚红
     default_gender: female
@@ -26,10 +26,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 50
+      intellect: 6
+      defense: 30
+      agility: 14
   - key: hero_ilrock_03878
     name: 赵德言
     default_gender: male
@@ -40,10 +40,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
+      force: 10
+      intellect: 56
+      defense: 20
+      agility: 14
   - key: hero_ilrock_03879
     name: 席应
     default_gender: male
@@ -54,10 +54,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 48
+      intellect: 6
+      defense: 32
+      agility: 14
   - key: hero_ilrock_03880
     name: 安隆
     default_gender: male
@@ -68,10 +68,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
+      force: 10
+      intellect: 54
+      defense: 20
+      agility: 16
   - key: hero_ilrock_03899
     name: 石青璇
     default_gender: female
@@ -82,10 +82,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
+      force: 8
+      intellect: 54
+      defense: 16
+      agility: 22
   - key: hero_ilrock_03900
     name: 碧秀心
     default_gender: female
@@ -96,10 +96,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
+      force: 8
+      intellect: 56
+      defense: 22
+      agility: 14
   - key: hero_ilrock_03901
     name: 尚秀芳
     default_gender: female
@@ -110,10 +110,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
+      force: 8
+      intellect: 56
+      defense: 18
+      agility: 18
   - key: hero_ilrock_03902
     name: 虚行之
     default_gender: male
@@ -124,10 +124,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
+      force: 8
+      intellect: 60
+      defense: 20
+      agility: 12
   - key: hero_ilrock_03974
     name: 傅君瑜
     default_gender: female
@@ -138,10 +138,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 46
+      intellect: 6
+      defense: 20
+      agility: 28
   - key: hero_ilrock_03975
     name: 傅君嫱
     default_gender: female
@@ -152,10 +152,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 46
+      intellect: 6
+      defense: 20
+      agility: 28
   - key: hero_ilrock_03962
     name: 雷九指
     default_gender: male
@@ -166,10 +166,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
+      force: 8
+      intellect: 54
+      defense: 12
+      agility: 26
   - key: hero_ilrock_03994
     name: 乾罗
     default_gender: male
@@ -180,10 +180,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 50
+      intellect: 8
+      defense: 26
+      agility: 16
   - key: hero_ilrock_03995
     name: 戚长征
     default_gender: male
@@ -194,10 +194,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 50
+      intellect: 6
+      defense: 18
+      agility: 26
   - key: hero_ilrock_03996
     name: 封寒
     default_gender: male
@@ -208,9 +208,9 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
+      force: 52
+      intellect: 6
+      defense: 22
       agility: 20
   - key: hero_ilrock_04000
     name: 方夜羽
@@ -222,10 +222,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
+      force: 8
+      intellect: 60
+      defense: 18
+      agility: 14
   purple:
   - key: hero_ilrock_03860
     name: 宋缺
@@ -237,10 +237,10 @@ heroes:
     - 7
     - 12
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 54
+      intellect: 6
+      defense: 24
+      agility: 16
   - key: hero_ilrock_03865
     name: 梵清惠
     default_gender: female
@@ -251,9 +251,9 @@ heroes:
     - 7
     - 12
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
+      force: 48
+      intellect: 8
+      defense: 24
       agility: 20
   - key: hero_ilrock_03868
     name: 鲁妙子
@@ -265,10 +265,10 @@ heroes:
     - 7
     - 12
     attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
+      force: 8
+      intellect: 62
+      defense: 18
+      agility: 12
   - key: hero_ilrock_03987
     name: 蒙赤行
     default_gender: male
@@ -279,10 +279,10 @@ heroes:
     - 7
     - 12
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 50
+      intellect: 8
+      defense: 28
+      agility: 14
   - key: hero_ilrock_03993
     name: 赤尊信
     default_gender: male
@@ -293,10 +293,10 @@ heroes:
     - 7
     - 12
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 52
+      intellect: 6
+      defense: 26
+      agility: 16
   - key: hero_ilrock_04003
     name: 言静庵
     default_gender: female
@@ -307,7 +307,7 @@ heroes:
     - 7
     - 12
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
+      force: 48
+      intellect: 8
+      defense: 24
       agility: 20

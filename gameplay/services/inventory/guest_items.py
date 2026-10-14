@@ -30,7 +30,7 @@ from guests.growth_engine import (
 from guests.models import GuestStatus
 from guests.services.world_unique import ensure_guest_not_world_unique
 
-from .core import add_item_to_inventory_locked, consume_inventory_item_locked
+from .core import add_item_to_inventory_locked, consume_inventory_item_locked, inventory_use_source_is_bound
 from .guest_reset_helpers import (
     apply_guest_template_reset,
     build_reset_extra_parts,
@@ -98,7 +98,9 @@ def _resolve_super_guest_disguise_config(payload: object) -> tuple[str, int, int
 
 
 @transaction.atomic
-def use_super_guest_disguise_card(manor: Manor, item: InventoryItem, guest_id: int) -> Dict[str, Any]:
+def use_super_guest_disguise_card(
+    manor: Manor, item: InventoryItem, guest_id: int, *, binding_mode: str | None = None
+) -> Dict[str, Any]:
     """给指定门客应用一次性超级易容效果。"""
     # 死锁预防：统一锁顺序 Manor -> InventoryItem -> Guest
     manor = Manor.objects.select_for_update().get(pk=manor.pk)
@@ -108,6 +110,7 @@ def use_super_guest_disguise_card(manor: Manor, item: InventoryItem, guest_id: i
         guest_id,
         SUPER_GUEST_DISGUISE_ACTION,
         allowed_statuses=GuestStatus.values,
+        binding_mode=binding_mode,
     )
 
     avatar_key, hp_bonus, force_bonus, agility_bonus = _resolve_super_guest_disguise_config(
@@ -134,7 +137,7 @@ def use_super_guest_disguise_card(manor: Manor, item: InventoryItem, guest_id: i
             "current_hp",
         ]
     )
-    consume_inventory_item_locked(locked_item, 1)
+    consume_inventory_item_locked(locked_item, 1, binding_mode=binding_mode)
 
     return {
         "guest_name": guest.display_name,
@@ -155,6 +158,8 @@ def use_guest_disguise_card(
     item: InventoryItem,
     guest_id: int,
     avatar_key: str,
+    *,
+    binding_mode: str | None = None,
 ) -> Dict[str, Any]:
     """为所属门客应用玩家选择的猴、猪或鸭头像。"""
     # 死锁预防：统一锁顺序 Manor -> InventoryItem -> Guest
@@ -165,6 +170,7 @@ def use_guest_disguise_card(
         guest_id,
         GUEST_DISGUISE_AVATAR_ACTION,
         allowed_statuses=GuestStatus.values,
+        binding_mode=binding_mode,
     )
 
     payload = locked_item.template.effect_payload
@@ -190,7 +196,7 @@ def use_guest_disguise_card(
 
     guest.avatar_asset_key = avatar_asset_key
     guest.save(update_fields=["avatar_asset_key"])
-    consume_inventory_item_locked(locked_item, 1)
+    consume_inventory_item_locked(locked_item, 1, binding_mode=binding_mode)
 
     return {
         "guest_name": guest.display_name,
@@ -201,7 +207,9 @@ def use_guest_disguise_card(
 
 
 @transaction.atomic
-def use_guest_rebirth_card(manor: Manor, item: InventoryItem, guest_id: int) -> Dict[str, Any]:
+def use_guest_rebirth_card(
+    manor: Manor, item: InventoryItem, guest_id: int, *, binding_mode: str | None = None
+) -> Dict[str, Any]:
     """使用门客重生卡，将指定门客重置为1级。"""
     # 死锁预防：统一锁顺序 Manor -> InventoryItem -> Guest
     manor = Manor.objects.select_for_update().get(pk=manor.pk)
@@ -211,6 +219,7 @@ def use_guest_rebirth_card(manor: Manor, item: InventoryItem, guest_id: int) -> 
         item,
         guest_id,
         "rebirth_guest",
+        binding_mode=binding_mode,
     )
 
     reset_prep = prepare_guest_for_reset(guest, action_label="重生", manor=manor)
@@ -221,7 +230,7 @@ def use_guest_rebirth_card(manor: Manor, item: InventoryItem, guest_id: int) -> 
 
     ensure_auto_training(guest)
 
-    consume_inventory_item_locked(locked_item, 1)
+    consume_inventory_item_locked(locked_item, 1, binding_mode=binding_mode)
 
     extras = build_reset_extra_parts(
         unequipped_count=reset_prep.unequipped_count,
@@ -239,7 +248,9 @@ def use_guest_rebirth_card(manor: Manor, item: InventoryItem, guest_id: int) -> 
 
 
 @transaction.atomic
-def use_xisuidan(manor: Manor, item: InventoryItem, guest_id: int) -> Dict[str, Any]:
+def use_xisuidan(
+    manor: Manor, item: InventoryItem, guest_id: int, *, binding_mode: str | None = None
+) -> Dict[str, Any]:
     """使用洗髓丹，重新随机门客的升级成长点数。"""
     # 死锁预防：统一锁顺序 Manor -> InventoryItem -> Guest
     manor = Manor.objects.select_for_update().get(pk=manor.pk)
@@ -251,6 +262,7 @@ def use_xisuidan(manor: Manor, item: InventoryItem, guest_id: int) -> Dict[str, 
         item,
         guest_id,
         "reroll_growth",
+        binding_mode=binding_mode,
     )
 
     result = reroll_guest_growth(
@@ -260,7 +272,7 @@ def use_xisuidan(manor: Manor, item: InventoryItem, guest_id: int) -> Dict[str, 
         max_attempts=XISUIDAN_MAX_REROLL_ATTEMPTS,
     )
 
-    consume_inventory_item_locked(locked_item, 1)
+    consume_inventory_item_locked(locked_item, 1, binding_mode=binding_mode)
 
     return {
         "guest_name": guest.display_name,
@@ -273,7 +285,9 @@ def use_xisuidan(manor: Manor, item: InventoryItem, guest_id: int) -> Dict[str, 
 
 
 @transaction.atomic
-def use_xidianka(manor: Manor, item: InventoryItem, guest_id: int) -> Dict[str, Any]:
+def use_xidianka(
+    manor: Manor, item: InventoryItem, guest_id: int, *, binding_mode: str | None = None
+) -> Dict[str, Any]:
     """使用洗点卡，重置门客的属性点分配。"""
     # 死锁预防：统一锁顺序 Manor -> InventoryItem -> Guest
     manor = Manor.objects.select_for_update().get(pk=manor.pk)
@@ -283,11 +297,12 @@ def use_xidianka(manor: Manor, item: InventoryItem, guest_id: int) -> Dict[str, 
         item,
         guest_id,
         "reset_allocation",
+        binding_mode=binding_mode,
     )
 
     result = reset_guest_allocation(guest)
 
-    consume_inventory_item_locked(locked_item, 1)
+    consume_inventory_item_locked(locked_item, 1, binding_mode=binding_mode)
 
     return {
         "guest_name": guest.display_name,
@@ -298,7 +313,9 @@ def use_xidianka(manor: Manor, item: InventoryItem, guest_id: int) -> Dict[str, 
 
 
 @transaction.atomic
-def use_guest_rarity_upgrade_item(manor: Manor, item: InventoryItem, guest_id: int) -> Dict[str, Any]:
+def use_guest_rarity_upgrade_item(
+    manor: Manor, item: InventoryItem, guest_id: int, *, binding_mode: str | None = None
+) -> Dict[str, Any]:
     """使用升阶道具，将指定门客升级到目标稀有度模板。"""
     # 死锁预防：统一锁顺序 Manor -> InventoryItem -> Guest
     manor = Manor.objects.select_for_update().get(pk=manor.pk)
@@ -308,6 +325,7 @@ def use_guest_rarity_upgrade_item(manor: Manor, item: InventoryItem, guest_id: i
         item,
         guest_id,
         "upgrade_guest_rarity",
+        binding_mode=binding_mode,
     )
     ensure_guest_not_world_unique(guest, action="升阶")
 
@@ -325,7 +343,7 @@ def use_guest_rarity_upgrade_item(manor: Manor, item: InventoryItem, guest_id: i
 
     ensure_auto_training(guest)
 
-    consume_inventory_item_locked(locked_item, 1)
+    consume_inventory_item_locked(locked_item, 1, binding_mode=binding_mode)
 
     extras = build_reset_extra_parts(
         unequipped_count=reset_prep.unequipped_count,
@@ -349,7 +367,9 @@ def use_guest_rarity_upgrade_item(manor: Manor, item: InventoryItem, guest_id: i
 
 
 @transaction.atomic
-def use_soul_container(manor: Manor, item: InventoryItem, guest_id: int) -> Dict[str, Any]:
+def use_soul_container(
+    manor: Manor, item: InventoryItem, guest_id: int, *, binding_mode: str | None = None
+) -> Dict[str, Any]:
     """使用灵魂容器，融合门客并生成一件专属饰品。"""
     manor = Manor.objects.select_for_update().get(pk=manor.pk)
 
@@ -359,6 +379,7 @@ def use_soul_container(manor: Manor, item: InventoryItem, guest_id: int) -> Dict
         guest_id,
         "soul_fusion",
         allowed_statuses=SOUL_FUSION_ALLOWED_GUEST_STATUSES,
+        binding_mode=binding_mode,
     )
     ensure_guest_not_world_unique(guest, action="灵魂融合")
 
@@ -392,11 +413,12 @@ def use_soul_container(manor: Manor, item: InventoryItem, guest_id: int) -> Dict
         generated_template.key,
         1,
         template=generated_template,
+        is_bound=inventory_use_source_is_bound(locked_item),
     )
 
     unequipped_count = _detach_guest_gears_for_reset(guest, action_label="灵魂融合", manor=manor)
     guest.delete()
-    consume_inventory_item_locked(locked_item, 1)
+    consume_inventory_item_locked(locked_item, 1, binding_mode=binding_mode)
 
     extra_parts = [f"获得饰品【{generated_template.name}】", _format_soul_fusion_stat_summary(rolled_stats)]
     if unequipped_count > 0:

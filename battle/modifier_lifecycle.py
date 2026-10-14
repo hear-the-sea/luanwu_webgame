@@ -120,11 +120,13 @@ def refresh_modifier_projections(modifiers: dict[str, Any]) -> None:
         modifiers.pop("reflect_sources", None)
         modifiers.pop("reflect_ratio", None)
         modifiers.pop("reflect_cap", None)
+        modifiers.pop("reflect_name", None)
     elif isinstance(reflect_sources, dict):
         latest = next(reversed(reflect_sources.values()))
         payload = latest if isinstance(latest, dict) else {}
         modifiers["reflect_ratio"] = float(payload.get("ratio", 0.0) or 0.0)
         modifiers["reflect_cap"] = float(payload.get("cap", 0.0) or 0.0)
+        modifiers["reflect_name"] = str(payload.get("name") or "反震")
 
     for sources_key in ("burst_softcap_sources", "true_damage_ratio_sources"):
         sources = modifiers.get(sources_key)

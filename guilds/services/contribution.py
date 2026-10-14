@@ -6,8 +6,9 @@ from django.utils import timezone
 
 import guilds.constants as guild_constants
 from core.exceptions import GuildContributionError, GuildMembershipError, ItemInsufficientError, ItemNotFoundError
-from gameplay.models import Manor, ResourceEvent
-from gameplay.services.resources import spend_resources_locked
+from gameplay.models import InventoryItem, Manor, ResourceEvent
+from gameplay.services.inventory.core import get_warehouse_grain_quantity_locked
+from gameplay.services.resources import settle_resource_production_locked, spend_resources_locked
 from trade.services.auction.gold_bars import consume_available_gold_bars_locked
 
 from ..models import Guild, GuildDonationLog, GuildMember, GuildResourceLog
@@ -126,15 +127,41 @@ def donate_resource(member, resource_type, amount):
         # 步骤3：扣除玩家资源（银两/粮食走庄园资源，金条走仓库InventoryItem）
         if resource_type == GOLD_BAR_ITEM_KEY:
             try:
-                consume_available_gold_bars_locked(manor, amount)
+                consume_available_gold_bars_locked(manor, amount, allow_bound=False)
             except ItemInsufficientError:
                 raise GuildContributionError("金条不足")
             except ItemNotFoundError as exc:
                 raise GuildContributionError("金条物品不存在，请联系管理员") from exc
         else:
+            if resource_type == "grain":
+                settle_resource_production_locked(manor)
+                grain_total = get_warehouse_grain_quantity_locked(manor)
+                grain_bound = (
+                    InventoryItem.objects.filter(
+                        manor=manor,
+                        template__key="grain",
+                        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+                    )
+                    .values_list("bound_quantity", flat=True)
+                    .first()
+                    or 0
+                )
+                if max(0, grain_total - grain_bound) < amount:
+                    raise GuildContributionError("非绑定粮食不足，绑定粮食不可捐赠")
             spend_resources_locked(
-                manor, {resource_type: amount}, note="帮会捐献", reason=ResourceEvent.Reason.GUILD_DONATION
+                manor,
+                {resource_type: amount},
+                note="帮会捐献",
+                reason=ResourceEvent.Reason.GUILD_DONATION,
+                sync_production=resource_type != "grain",
             )
+            if resource_type == "grain":
+                # 资源支出通常优先消耗绑定粮食；捐献只能扣除非绑定部分。
+                InventoryItem.objects.filter(
+                    manor=manor,
+                    template__key="grain",
+                    storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+                ).update(bound_quantity=grain_bound)
 
         # 步骤4：银两继续写 Guild 字段；粮食/金条写入真实帮会仓库行
         if resource_type == "silver":

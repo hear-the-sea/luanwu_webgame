@@ -1,0 +1,1002 @@
+{
+  "caddy": {
+    "source": "retained Caddy access logs requested last 48h",
+    "lines": 63253,
+    "first_utc": "2026-10-12T02:18:43.398769+00:00",
+    "last_utc": "2026-10-12T04:44:34.566171+00:00",
+    "http_status": {
+      "0": 18,
+      "200": 23479,
+      "204": 41,
+      "206": 16,
+      "301": 1,
+      "302": 2559,
+      "304": 947,
+      "400": 53,
+      "403": 12,
+      "404": 9,
+      "502": 51
+    },
+    "ws_status": [
+      {
+        "path": "/ws/online-stats/",
+        "status": 403,
+        "count": 8886
+      },
+      {
+        "path": "/ws/notifications/",
+        "status": 403,
+        "count": 7435
+      },
+      {
+        "path": "/ws/chat/world/",
+        "status": 403,
+        "count": 5151
+      },
+      {
+        "path": "/ws/chat/world/",
+        "status": 101,
+        "count": 4574
+      },
+      {
+        "path": "/ws/notifications/",
+        "status": 101,
+        "count": 4343
+      },
+      {
+        "path": "/ws/online-stats/",
+        "status": 101,
+        "count": 4178
+      },
+      {
+        "path": "/ws/chat/world/",
+        "status": 502,
+        "count": 243
+      },
+      {
+        "path": "/ws/online-stats/",
+        "status": 502,
+        "count": 240
+      },
+      {
+        "path": "/ws/notifications/",
+        "status": 502,
+        "count": 225
+      },
+      {
+        "path": "/ws/online-stats/",
+        "status": 0,
+        "count": 14
+      },
+      {
+        "path": "/ws/chat/world/",
+        "status": 0,
+        "count": 11
+      },
+      {
+        "path": "/ws/notifications/",
+        "status": 0,
+        "count": 6
+      }
+    ],
+    "top_paths": {
+      "/assets/": {
+        "count": 3649,
+        "p50_ms": 0.3,
+        "p95_ms": 0.6,
+        "p99_ms": 1.8,
+        "max_ms": 139.6,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "/manor/messages/": {
+        "count": 3348,
+        "p50_ms": 34.7,
+        "p95_ms": 65.4,
+        "p99_ms": 144.3,
+        "max_ms": 527.8,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "/manor/tasks/": {
+        "count": 1124,
+        "p50_ms": 62.6,
+        "p95_ms": 109.7,
+        "p99_ms": 446,
+        "max_ms": 575.1,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "/": {
+        "count": 1107,
+        "p50_ms": 64.6,
+        "p95_ms": 119.3,
+        "p99_ms": 434.6,
+        "max_ms": 995.3,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "/guests/": {
+        "count": 1038,
+        "p50_ms": 68.8,
+        "p95_ms": 118.1,
+        "p99_ms": 408.3,
+        "max_ms": 611.6,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "/manor/work/": {
+        "count": 975,
+        "p50_ms": 46.3,
+        "p95_ms": 82.4,
+        "p99_ms": 197.4,
+        "max_ms": 649.6,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "/manor/technology/": {
+        "count": 965,
+        "p50_ms": 29.5,
+        "p95_ms": 52.5,
+        "p99_ms": 76.9,
+        "max_ms": 451.5,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "/trade/": {
+        "count": 945,
+        "p50_ms": 49.9,
+        "p95_ms": 92.4,
+        "p99_ms": 169.7,
+        "max_ms": 537.7,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "/manor/recruitment/": {
+        "count": 894,
+        "p50_ms": 52,
+        "p95_ms": 96.3,
+        "p99_ms": 212.9,
+        "max_ms": 901.5,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "/guests/:id/allocate-points/": {
+        "count": 800,
+        "p50_ms": 37,
+        "p95_ms": 68,
+        "p99_ms": 107.4,
+        "max_ms": 470.6,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "/manor/warehouse/": {
+        "count": 761,
+        "p50_ms": 75.1,
+        "p95_ms": 136.6,
+        "p99_ms": 475.3,
+        "max_ms": 560.5,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "/manor/api/map/search/": {
+        "count": 760,
+        "p50_ms": 19.3,
+        "p95_ms": 36.3,
+        "p99_ms": 84.6,
+        "max_ms": 418.7,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "/guests/:id/use-exp-item/": {
+        "count": 745,
+        "p50_ms": 46.8,
+        "p95_ms": 99.2,
+        "p99_ms": 260.6,
+        "max_ms": 626.8,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "/manor/troop-recruitment/": {
+        "count": 545,
+        "p50_ms": 49.7,
+        "p95_ms": 86.8,
+        "p99_ms": 155.9,
+        "max_ms": 536.7,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "/manor/forge/": {
+        "count": 437,
+        "p50_ms": 60.8,
+        "p95_ms": 95.7,
+        "p99_ms": 332.9,
+        "max_ms": 548.6,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "/manor/smithy/": {
+        "count": 368,
+        "p50_ms": 42.1,
+        "p95_ms": 74.7,
+        "p99_ms": 142.1,
+        "max_ms": 401.1,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "/guests/:id/": {
+        "count": 349,
+        "p50_ms": 64.1,
+        "p95_ms": 124.7,
+        "p99_ms": 478,
+        "max_ms": 587.8,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "/guests/recruit/": {
+        "count": 335,
+        "p50_ms": 87.4,
+        "p95_ms": 146.3,
+        "p99_ms": 232.5,
+        "max_ms": 583.6,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "/guests/candidates/reveal/": {
+        "count": 324,
+        "p50_ms": 59.5,
+        "p95_ms": 94.6,
+        "p99_ms": 117,
+        "max_ms": 681.1,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "/manor/work/assign/": {
+        "count": 299,
+        "p50_ms": 31.4,
+        "p95_ms": 72.6,
+        "p99_ms": 383.5,
+        "max_ms": 520.9,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "/manor/api/recruitment/refresh/": {
+        "count": 294,
+        "p50_ms": 208.5,
+        "p95_ms": 659.7,
+        "p99_ms": 763.8,
+        "max_ms": 826.1,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "/manor/api/map/backfill/": {
+        "count": 286,
+        "p50_ms": 48.7,
+        "p95_ms": 87.7,
+        "p99_ms": 209.2,
+        "max_ms": 463.3,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "/manor/work/claim/:id/": {
+        "count": 284,
+        "p50_ms": 38.5,
+        "p95_ms": 83,
+        "p99_ms": 142.6,
+        "max_ms": 274.3,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "/manor/map/": {
+        "count": 264,
+        "p50_ms": 45.5,
+        "p95_ms": 76.8,
+        "p99_ms": 255.8,
+        "max_ms": 485.2,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "/manor/ranch/": {
+        "count": 258,
+        "p50_ms": 38.4,
+        "p95_ms": 69.3,
+        "p99_ms": 114.8,
+        "max_ms": 181.5,
+        "over_1s": 0,
+        "over_5s": 0
+      }
+    },
+    "slow_paths": {
+      "/guests/heal-all-guests/": {
+        "count": 77,
+        "p50_ms": 189.9,
+        "p95_ms": 807.4,
+        "p99_ms": 1202.1,
+        "max_ms": 1677.9,
+        "over_1s": 2,
+        "over_5s": 0
+      },
+      "/manor/arena/register/": {
+        "count": 19,
+        "p50_ms": 294.7,
+        "p95_ms": 797.1,
+        "p99_ms": 797.1,
+        "max_ms": 8043.6,
+        "over_1s": 1,
+        "over_5s": 1
+      },
+      "/manor/messages/mark/": {
+        "count": 146,
+        "p50_ms": 22.5,
+        "p95_ms": 48.3,
+        "p99_ms": 117.3,
+        "max_ms": 4027.4,
+        "over_1s": 1,
+        "over_5s": 0
+      },
+      "/guilds/warehouse/": {
+        "count": 11,
+        "p50_ms": 33.4,
+        "p95_ms": 41.9,
+        "p99_ms": 41.9,
+        "max_ms": 1486.9,
+        "over_1s": 1,
+        "over_5s": 0
+      }
+    },
+    "hourly": {
+      "10-12 02 UTC": {
+        "count": 5779,
+        "p50_ms": 41.2,
+        "p95_ms": 97.3,
+        "p99_ms": 330.2,
+        "max_ms": 8043.6,
+        "over_1s": 3,
+        "over_5s": 1
+      },
+      "10-12 03 UTC": {
+        "count": 9661,
+        "p50_ms": 40.5,
+        "p95_ms": 94.3,
+        "p99_ms": 312.2,
+        "max_ms": 797.1,
+        "over_1s": 0,
+        "over_5s": 0
+      },
+      "10-12 04 UTC": {
+        "count": 11746,
+        "p50_ms": 40.7,
+        "p95_ms": 120.4,
+        "p99_ms": 428.1,
+        "max_ms": 1677.9,
+        "over_1s": 2,
+        "over_5s": 0
+      }
+    },
+    "proxy_errors": {
+      "aborting with incomplete response": 2,
+      "dial tcp 172.20.0.9:8000: connect: connection refused": 731,
+      "dial tcp 172.18.0.2:8000: connect: connection refused": 28
+    }
+  },
+  "timing": {
+    "host_counts": {
+      "luanwu.top:443": 8724,
+      "luanwu.top": 54710
+    },
+    "web_started_utc": "2026-10-12T04:40:59.35078332Z",
+    "heal_requests": {
+      "before": {
+        "count": 76,
+        "max_ms": 1677.9,
+        "durations_ms": [
+          1202.1,
+          88.3,
+          56.2,
+          85.2,
+          173.4,
+          41.9,
+          151.5,
+          275.7,
+          414.6,
+          718.8,
+          281.4,
+          550.8,
+          199.5,
+          189.9,
+          451.7,
+          535.7,
+          317.2,
+          278.2,
+          92.9,
+          178.6,
+          81.3,
+          54.4,
+          63.1,
+          34.5,
+          86.8,
+          56.2,
+          90.3,
+          62.7,
+          112.3,
+          754.9,
+          69.9,
+          438.8,
+          986.8,
+          120.2,
+          181.9,
+          120.3,
+          116.5,
+          86,
+          94.5,
+          44.3,
+          112.2,
+          91.4,
+          678.4,
+          62.1,
+          807.4,
+          55.4,
+          223.8,
+          1677.9,
+          683.6,
+          145.3,
+          249.7,
+          42.7,
+          138.1,
+          479.3,
+          256.8,
+          70.2,
+          837.2,
+          394,
+          207.8,
+          223.1,
+          322.9,
+          201.3,
+          333.8,
+          402.1,
+          659,
+          357.5,
+          569,
+          39.3,
+          632.2,
+          144.8,
+          305.6,
+          602.1,
+          301.9,
+          166,
+          496.8,
+          100.6
+        ]
+      },
+      "after": {
+        "count": 1,
+        "max_ms": 43,
+        "durations_ms": [
+          43
+        ]
+      }
+    },
+    "5xx_by_minute": {
+      "10-12 04:40 UTC": 469,
+      "10-12 04:41 UTC": 290
+    },
+    "ws_status_since_deploy": {
+      "101": 394,
+      "403": 561,
+      "502": 303
+    },
+    "current_ip": [
+      "172.20.0.9"
+    ]
+  },
+  "workers": {
+    "code-web-1": {
+      "lines": 10141,
+      "first_utc": "2026-10-12T04:41:08.088750314Z",
+      "last_utc": "2026-10-12T04:48:47.187317932Z",
+      "events": {
+        "WebSocket IP capacity rejected connection": 938,
+        "WARNING": 6,
+        "WebSocket connection capacity rejected": 235,
+        "ERROR": 1,
+        "Traceback (most recent call last)": 1
+      },
+      "top_tasks": {}
+    },
+    "code-worker-1": {
+      "lines": 26820,
+      "first_utc": "2026-10-10T04:48:57.094729390Z",
+      "last_utc": "2026-10-12T04:48:37.828306776Z",
+      "events": {},
+      "top_tasks": {
+        "core.celery_health_ping": {
+          "count": 10530,
+          "total_s": 12.957,
+          "max_s": 0.011,
+          "over_1s": 0,
+          "over_10s": 0,
+          "avg_s": 0.0012
+        },
+        "core.record_worker_queue_heartbeat": {
+          "count": 2880,
+          "total_s": 3.133,
+          "max_s": 0.02,
+          "over_1s": 0,
+          "over_10s": 0,
+          "avg_s": 0.0011
+        }
+      }
+    },
+    "code-worker_battle-1": {
+      "lines": 15498,
+      "first_utc": "2026-10-10T04:49:00.067695408Z",
+      "last_utc": "2026-10-12T04:48:22.195440567Z",
+      "events": {},
+      "top_tasks": {
+        "battle.generate_report": {
+          "count": 3246,
+          "total_s": 1732.935,
+          "max_s": 0.969,
+          "over_1s": 0,
+          "over_10s": 0,
+          "avg_s": 0.5339
+        },
+        "core.record_worker_queue_heartbeat": {
+          "count": 2880,
+          "total_s": 4.543,
+          "max_s": 0.022,
+          "over_1s": 0,
+          "over_10s": 0,
+          "avg_s": 0.0016
+        }
+      }
+    },
+    "code-worker_timer-1": {
+      "lines": 166886,
+      "first_utc": "2026-10-10T04:48:52.295003777Z",
+      "last_utc": "2026-10-12T04:48:43.926317413Z",
+      "events": {
+        "WARNING": 1872,
+        "Deadlock found": 19,
+        "ERROR": 3,
+        "Traceback (most recent call last)": 6,
+        "OperationalError": 16
+      },
+      "top_tasks": {
+        "gameplay.reconcile_virtual_player_maintenance_completion": {
+          "count": 64874,
+          "total_s": 2525.656,
+          "max_s": 1.132,
+          "over_1s": 1,
+          "over_10s": 0,
+          "avg_s": 0.0389
+        },
+        "gameplay.reconcile_virtual_player_population_cell": {
+          "count": 1059,
+          "total_s": 2147.494,
+          "max_s": 18.255,
+          "over_1s": 299,
+          "over_10s": 22,
+          "avg_s": 2.0279
+        },
+        "gameplay.reconcile_arena_virtual_reserve": {
+          "count": 477,
+          "total_s": 445.586,
+          "max_s": 19.026,
+          "over_1s": 116,
+          "over_10s": 3,
+          "avg_s": 0.9341
+        },
+        "gameplay.complete_mission": {
+          "count": 3403,
+          "total_s": 404.347,
+          "max_s": 1.022,
+          "over_1s": 1,
+          "over_10s": 0,
+          "avg_s": 0.1188
+        },
+        "guests.complete_recruitment": {
+          "count": 1345,
+          "total_s": 316.683,
+          "max_s": 1.376,
+          "over_1s": 1,
+          "over_10s": 0,
+          "avg_s": 0.2355
+        },
+        "guests.complete_training": {
+          "count": 6149,
+          "total_s": 176.327,
+          "max_s": 1.378,
+          "over_1s": 3,
+          "over_10s": 0,
+          "avg_s": 0.0287
+        },
+        "gameplay.process_raid_battle": {
+          "count": 36,
+          "total_s": 10.351,
+          "max_s": 0.764,
+          "over_1s": 0,
+          "over_10s": 0,
+          "avg_s": 0.2875
+        },
+        "gameplay.complete_scout": {
+          "count": 232,
+          "total_s": 9.535,
+          "max_s": 0.37,
+          "over_1s": 0,
+          "over_10s": 0,
+          "avg_s": 0.0411
+        }
+      }
+    },
+    "code-worker_timer_scan-1": {
+      "lines": 80216,
+      "first_utc": "2026-10-10T04:49:00.008205708Z",
+      "last_utc": "2026-10-12T04:48:02.181558543Z",
+      "events": {
+        "WARNING": 3
+      },
+      "top_tasks": {
+        "gameplay.sync_resource_production": {
+          "count": 2880,
+          "total_s": 5803.588,
+          "max_s": 3.428,
+          "over_1s": 2880,
+          "over_10s": 0,
+          "avg_s": 2.0151
+        },
+        "guests.scan_training": {
+          "count": 288,
+          "total_s": 1460.577,
+          "max_s": 8.634,
+          "over_1s": 288,
+          "over_10s": 0,
+          "avg_s": 5.0714
+        },
+        "guests.scan_recruitments": {
+          "count": 576,
+          "total_s": 285.86,
+          "max_s": 3.339,
+          "over_1s": 82,
+          "over_10s": 0,
+          "avg_s": 0.4963
+        },
+        "guests.scan_passive_hp_recovery": {
+          "count": 576,
+          "total_s": 237.327,
+          "max_s": 12.908,
+          "over_1s": 7,
+          "over_10s": 1,
+          "avg_s": 0.412
+        },
+        "gameplay.scan_building_upgrades": {
+          "count": 288,
+          "total_s": 120.138,
+          "max_s": 0.955,
+          "over_1s": 0,
+          "over_10s": 0,
+          "avg_s": 0.4171
+        },
+        "gameplay.scan_arena_tournaments": {
+          "count": 2880,
+          "total_s": 99.129,
+          "max_s": 9.921,
+          "over_1s": 2,
+          "over_10s": 0,
+          "avg_s": 0.0344
+        },
+        "gameplay.scan_technology_upgrades": {
+          "count": 576,
+          "total_s": 87.444,
+          "max_s": 1.71,
+          "over_1s": 1,
+          "over_10s": 0,
+          "avg_s": 0.1518
+        },
+        "gameplay.scan_arena_coop_events": {
+          "count": 2880,
+          "total_s": 71.238,
+          "max_s": 1.328,
+          "over_1s": 1,
+          "over_10s": 0,
+          "avg_s": 0.0247
+        }
+      }
+    },
+    "code-worker_timer_safety-1": {
+      "lines": 40321,
+      "first_utc": "2026-10-10T04:49:00.017797627Z",
+      "last_utc": "2026-10-12T04:48:00.133525358Z",
+      "events": {},
+      "top_tasks": {
+        "gameplay.monitor_virtual_player_safety": {
+          "count": 2880,
+          "total_s": 82.694,
+          "max_s": 2.729,
+          "over_1s": 4,
+          "over_10s": 0,
+          "avg_s": 0.0287
+        },
+        "gameplay.aggregate_virtual_player_safety": {
+          "count": 2880,
+          "total_s": 55.064,
+          "max_s": 2.38,
+          "over_1s": 1,
+          "over_10s": 0,
+          "avg_s": 0.0191
+        },
+        "gameplay.heartbeat_virtual_player_arena_shortage_emitter": {
+          "count": 2880,
+          "total_s": 43.882,
+          "max_s": 0.377,
+          "over_1s": 0,
+          "over_10s": 0,
+          "avg_s": 0.0152
+        },
+        "gameplay.heartbeat_virtual_player_maintenance_attempt_emitter": {
+          "count": 2880,
+          "total_s": 43.419,
+          "max_s": 0.218,
+          "over_1s": 0,
+          "over_10s": 0,
+          "avg_s": 0.0151
+        },
+        "gameplay.heartbeat_virtual_player_h01_callback_attempt_emitter": {
+          "count": 2880,
+          "total_s": 43.379,
+          "max_s": 0.072,
+          "over_1s": 0,
+          "over_10s": 0,
+          "avg_s": 0.0151
+        },
+        "core.record_worker_queue_heartbeat": {
+          "count": 2880,
+          "total_s": 3.083,
+          "max_s": 0.017,
+          "over_1s": 0,
+          "over_10s": 0,
+          "avg_s": 0.0011
+        },
+        "core.record_celery_beat_heartbeat": {
+          "count": 2880,
+          "total_s": 2.265,
+          "max_s": 0.009,
+          "over_1s": 0,
+          "over_10s": 0,
+          "avg_s": 0.0008
+        }
+      }
+    },
+    "code-worker_timer_maintenance-1": {
+      "lines": 96195,
+      "first_utc": "2026-10-10T04:49:07.938442308Z",
+      "last_utc": "2026-10-12T04:48:11.868146776Z",
+      "events": {
+        "WARNING": 13,
+        "Traceback (most recent call last)": 1
+      },
+      "top_tasks": {
+        "gameplay.scan_virtual_player_maintenance": {
+          "count": 2885,
+          "total_s": 12548.552,
+          "max_s": 88.552,
+          "over_1s": 2634,
+          "over_10s": 173,
+          "avg_s": 4.3496
+        },
+        "gameplay.grow_arena_virtual_reserves": {
+          "count": 2886,
+          "total_s": 6500.388,
+          "max_s": 147.406,
+          "over_1s": 127,
+          "over_10s": 98,
+          "avg_s": 2.2524
+        },
+        "gameplay.scan_arena_virtual_reserves": {
+          "count": 2886,
+          "total_s": 1053.177,
+          "max_s": 11.006,
+          "over_1s": 124,
+          "over_10s": 3,
+          "avg_s": 0.3649
+        },
+        "gameplay.scan_virtual_player_population_demands": {
+          "count": 577,
+          "total_s": 665.142,
+          "max_s": 39.223,
+          "over_1s": 256,
+          "over_10s": 8,
+          "avg_s": 1.1528
+        },
+        "gameplay.roll_virtual_players": {
+          "count": 48,
+          "total_s": 307.412,
+          "max_s": 9.104,
+          "over_1s": 47,
+          "over_10s": 0,
+          "avg_s": 6.4044
+        },
+        "gameplay.collect_arena_fill_service_outcomes": {
+          "count": 2885,
+          "total_s": 95.666,
+          "max_s": 3.333,
+          "over_1s": 2,
+          "over_10s": 0,
+          "avg_s": 0.0332
+        },
+        "gameplay.scan_world_chat_attempts": {
+          "count": 2886,
+          "total_s": 15.548,
+          "max_s": 0.045,
+          "over_1s": 0,
+          "over_10s": 0,
+          "avg_s": 0.0054
+        },
+        "trade.process_pending_auction_deliveries": {
+          "count": 2885,
+          "total_s": 10.601,
+          "max_s": 0.032,
+          "over_1s": 0,
+          "over_10s": 0,
+          "avg_s": 0.0037
+        }
+      }
+    },
+    "code-beat-1": {
+      "lines": 91943,
+      "first_utc": "2026-10-10T04:49:00.000593722Z",
+      "last_utc": "2026-10-12T04:48:00.070251349Z",
+      "events": {},
+      "top_tasks": {}
+    }
+  },
+  "final": {
+    "checked_at": "2026-10-12T04:51:27.849779+00:00",
+    "web_image": "webgame:bulk-healing-20261012",
+    "web_started": "2026-10-12T04:40:59.35078332Z",
+    "web_restarts": 0,
+    "web_health": "healthy",
+    "stats": "code-web-1 48.60% 169.6MiB / 384MiB\ncode-worker_timer_safety-1 0.09% 121MiB / 512MiB\ncode-worker_timer_scan-1 0.13% 165.4MiB / 256MiB\ncode-worker_timer-1 0.09% 198.7MiB / 1GiB\ncode-worker-1 0.08% 119.5MiB / 256MiB\ncode-worker_timer_maintenance-1 99.61% 195.5MiB / 768MiB\ncode-worker_battle-1 0.04% 187.7MiB / 256MiB\ncode-beat-1 0.00% 128.5MiB / 192MiB\ncode-caddy-1 1.93% 134.6MiB / 256MiB\ncode-db-1 7.32% 1.766GiB / 2GiB\ncode-redis-1 1.68% 36.78MiB / 512MiB\ngongsi-deploy-caddy-1 2.68% 62.25MiB / 7.751GiB\ngongsi-deploy-web-1 0.00% 134.2MiB / 7.751GiB\nnagomi-web 0.00% 105.3MiB / 7.751GiB\n",
+    "memory_cgroup": "memory.current\n183992320\nmemory.peak\nmemory.events\nlow 0\nhigh 0\nmax 0\noom 0\noom_kill 0\n",
+    "ready": {
+      "status": "ok",
+      "checks": {
+        "db": true,
+        "cache": true,
+        "channel_layer": true,
+        "celery_broker": true,
+        "celery_workers": true,
+        "celery_beat": true,
+        "celery_roundtrip": true
+      }
+    },
+    "public_health_samples_status_total_ttfb": [
+      "200 0.076383 0.076215",
+      "200 0.065110 0.064988",
+      "200 0.073169 0.073064"
+    ]
+  },
+  "scope": "Read-only remote operational audit; no service restarts, production data edits, configuration edits or application deployments during this audit.",
+  "requested_window_hours": 48,
+  "limits": {
+    "http_history": "Retained Caddy logs cover only 2026-10-12 02:18:43–04:44:34 UTC, not full 48h, due max-size 20m/max-file 5 rotation. Current Web logs begin after 04:40:59 UTC deployment.",
+    "worker_history": "Background worker logs cover approximately full 48h.",
+    "mysql_digest": "Digest and global counters cumulative since MySQL started on 2026-09-20; LAST_SEEN within 2d does not isolate 2d measurements.",
+    "memory_peak": "memory.peak file unavailable; current memory and memory.events obtained.",
+    "healing": "Only one completed healing HTTP request after release in retained split sample; workload differs across before/after. Do not claim longitudinal speedup."
+  },
+  "initial_resource_snapshot": {
+    "at_utc": "2026-10-12T04:43:32Z",
+    "load_average": [
+      0.51,
+      0.89,
+      0.81
+    ],
+    "memory_available_mb": 3875,
+    "disk_used_percent": 40,
+    "web_memory_mib": 136.2,
+    "mysql_memory_gib": 1.766,
+    "mysql_memory_limit_gib": 2,
+    "cpu_idle_percent_recent_samples": [
+      92,
+      93,
+      96,
+      97
+    ],
+    "io_wait_percent_recent_samples": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "current_database_snapshot": {
+    "at_utc": "2026-10-12T04:45:24Z",
+    "threads_connected": 11,
+    "threads_running": 2,
+    "current_row_lock_waits": 0,
+    "slow_query_log": "OFF",
+    "long_query_time_seconds": 10,
+    "uptime_seconds": 1872554,
+    "cumulative_slow_queries": 103,
+    "cumulative_row_lock_waits": 33919,
+    "cumulative_row_lock_time_ms": 5660107
+  },
+  "current_redis_snapshot": {
+    "used_memory": "25.54M",
+    "evicted_keys": 0,
+    "rejected_connections": 0,
+    "aof_last_write_status": "ok",
+    "aof_last_bgrewrite_status": "ok",
+    "blocked_clients": 6,
+    "blocked_clients_note": "Includes normal broker blocking consumers; not proof of application stall."
+  },
+  "current_queues": {
+    "celery": 0,
+    "default": 0,
+    "battle": 0,
+    "timer": 0,
+    "timer_scan": 0,
+    "timer_safety": 0,
+    "timer_maintenance": 0,
+    "note": "Includes standard priority buckets; snapshot, not 48h queue history."
+  },
+  "capacity_snapshot": {
+    "cache_redis_database": 2,
+    "ip_groups": 9,
+    "unexpired_slot_counts_desc": [
+      20,
+      20,
+      18,
+      12,
+      10,
+      9,
+      8,
+      5,
+      3
+    ],
+    "configured_per_ip_limit": 20,
+    "configured_per_user_limit": 12,
+    "current_web_ip_capacity_rejections": 938,
+    "current_web_user_capacity_rejections": 235
+  },
+  "retry_recovery": {
+    "deadlock_retry_tasks": 5,
+    "tasks_later_succeeded": 5,
+    "by_task": {
+      "guests.complete_recruitment": 2,
+      "guests.complete_training": 1,
+      "gameplay.reconcile_virtual_player_maintenance_completion": 2
+    }
+  },
+  "errors": {
+    "websocket_closed_protocol": 1,
+    "websocket_closed_protocol_location": "websocket/consumers/online_stats.py:153 stats_update -> send_json",
+    "task_error_logs": {
+      "recruitment": 2,
+      "training": 1
+    },
+    "task_error_cause": "MySQL 1213 deadlock; retry log IDs internally correlated with later successful executions.",
+    "maintenance_recoverable_business_error": 1
+  },
+  "historical_oom": {
+    "at_utc": "2026-10-10T11:18:13Z",
+    "cause": "Previously documented diagnostic Django process inside 384MiB Web container caused cgroup OOM killing Daphne. Existing known incident, not caused by this audit; no additional OOM kernel events found in requested window."
+  },
+  "remote_frontend": {
+    "chat_widget_pagehide": false,
+    "notifications_pagehide": false,
+    "online_stats_pagehide": true,
+    "per_page_sockets": 3,
+    "persistent_reconnect_max_seconds": 15,
+    "local_comparison": "Local frontend lifecycle/reconnect files differ from remote; candidate local release must be reviewed and tested separately."
+  },
+  "priorities": [
+    "Repair frontend WebSocket lifecycle, cross-tab sharing and persistent retry backoff while preserving origin/session controls.",
+    "Split long virtual maintenance/reserve growth into smaller idempotent bounded jobs; measure SQL/CPU, lock time and queue wait separately.",
+    "Audit training/recruitment shared-template locks and consistent Manor-first lock order, preserving retries.",
+    "Retain 48h+ HTTP metrics/error logs and instrument slow requests; plan controlled slow-query observation.",
+    "Prepare blue-green Web release with health checks before proxy switch and connection drain to remove rollout 502 gap.",
+    "Profile recruitment refresh endpoint and arena registration outlier after request-stage timings are available."
+  ]
+}

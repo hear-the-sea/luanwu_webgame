@@ -11,6 +11,7 @@ public model classes/constants here to preserve the historical import style:
 from .arena import ArenaEntry, ArenaEntryGuest, ArenaExchangeRecord, ArenaMatch, ArenaTournament
 from .arena_coop import ArenaCoopContribution, ArenaCoopEntry, ArenaCoopEntryGuest, ArenaCoopEvent
 from .arena_fill_service import ArenaFillServiceEpisode, ArenaFillServiceOutcome
+from .arena_ring import ArenaRing, ArenaRingAction, ArenaRingDaily, ArenaRingInspection, ArenaRingMatch, ArenaRingTenure
 from .arena_runtime_budget import ArenaRuntimeBudget
 from .arena_virtual import ArenaReserveTrainingAssignment, ArenaVirtualDemand, ArenaVirtualReserveMember
 from .bots import (
@@ -75,6 +76,12 @@ from .virtual_player_maintenance import (
 )
 
 __all__ = [
+    "ArenaRing",
+    "ArenaRingTenure",
+    "ArenaRingMatch",
+    "ArenaRingDaily",
+    "ArenaRingAction",
+    "ArenaRingInspection",
     # manor/buildings
     "ResourceType",
     "Manor",

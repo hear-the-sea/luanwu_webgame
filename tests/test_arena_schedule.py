@@ -8,9 +8,11 @@ from gameplay import tasks
 def test_arena_scan_tasks_have_stable_exports_and_timer_routes():
     assert tasks.scan_arena_tournaments.name == "gameplay.scan_arena_tournaments"
     assert tasks.scan_arena_coop_events.name == "gameplay.scan_arena_coop_events"
+    assert tasks.scan_arena_rings.name == "gameplay.scan_arena_rings"
     for task_name in [
         "gameplay.scan_arena_tournaments",
         "gameplay.scan_arena_coop_events",
+        "gameplay.scan_arena_rings",
     ]:
         assert settings.CELERY_TASK_ROUTES[task_name] == {"queue": settings.CELERY_TIMER_SCAN_QUEUE}
 
@@ -43,14 +45,17 @@ def test_arena_reserve_and_lifecycle_schedules_are_separate():
     reserve = settings.CELERY_BEAT_SCHEDULE["scan-arena-virtual-reserves"]
     tournament_entry = settings.CELERY_BEAT_SCHEDULE["scan-arena-tournaments"]
     coop_entry = settings.CELERY_BEAT_SCHEDULE["scan-arena-coop-events"]
+    ring_entry = settings.CELERY_BEAT_SCHEDULE["scan-arena-rings"]
     growth = settings.CELERY_BEAT_SCHEDULE["grow-arena-virtual-reserves"]
 
     assert reserve["task"] == "gameplay.scan_arena_virtual_reserves"
     assert tournament_entry["task"] == "gameplay.scan_arena_tournaments"
     assert coop_entry["task"] == "gameplay.scan_arena_coop_events"
+    assert ring_entry["task"] == "gameplay.scan_arena_rings"
     assert reserve["schedule"]._orig_minute == "*/5"
     assert tournament_entry["schedule"]._orig_minute == "*/1"
     assert coop_entry["schedule"]._orig_minute == "*/1"
+    assert ring_entry["schedule"]._orig_minute == "*/1"
     assert growth["task"] == "gameplay.grow_arena_virtual_reserves"
     assert growth["schedule"]._orig_minute == "1-59/5"
     assert growth["schedule"]._orig_hour == "*"

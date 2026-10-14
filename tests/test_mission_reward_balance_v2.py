@@ -13,15 +13,20 @@ from tests.mission_reward_content_helpers import assert_fixed_reward
 
 DATA = Path(__file__).resolve().parents[1] / "data"
 ITEMS = {x["key"]: x for x in yaml.safe_load((DATA / "item_templates.yaml").read_text())["items"]}
-BOXES = [x for x in ITEMS.values() if x["key"].startswith("mission_chest_")]
+MISSIONS = yaml.safe_load((DATA / "mission_templates.yaml").read_text())["missions"]
+BOXES = [ITEMS[key] for mission in MISSIONS for key in mission["drop_table"] if key != "silver"]
+HISTORICAL_BOXES = [ITEMS["mission_chest_" + mission["key"]] for mission in MISSIONS]
 TOKENS = [x for x in ITEMS.values() if x.get("effect_payload", {}).get("collection_cost")]
 
 
 def test_v2_has_daily_fengshen_progression_and_bounded_collection_goals():
     assert len(BOXES) == 32 and len(TOKENS) == 6
-    assert all(x["effect_payload"]["reward_balance_version"] == 2 for x in BOXES)
-    assert_fixed_reward(ITEMS["mission_chest_biyou_candeng"]["effect_payload"], "wanyin_flag_fragment", 1)
-    assert_fixed_reward(ITEMS["mission_chest_shier_xianyin"]["effect_payload"], "yuxu_broken_seal", 1)
+    assert len(HISTORICAL_BOXES) == 32
+    assert all(x["effect_payload"]["reward_balance_version"] == 3 for x in BOXES)
+    assert all(x["effect_payload"]["reward_balance_version"] == 2 for x in HISTORICAL_BOXES)
+    for prefix in ("mission_chest_", "mission_chest_v3_"):
+        assert_fixed_reward(ITEMS[prefix + "biyou_candeng"]["effect_payload"], "wanyin_flag_fragment", 1)
+        assert_fixed_reward(ITEMS[prefix + "shier_xianyin"]["effect_payload"], "yuxu_broken_seal", 1)
     for token in TOKENS:
         p = token["effect_payload"]
         assert p["required_items"] == {token["key"]: p["collection_cost"] - 1}
@@ -29,21 +34,22 @@ def test_v2_has_daily_fengshen_progression_and_bounded_collection_goals():
         assert token["tradeable"] is False
         assert ITEMS[p["result_item_key"]]["rarity"] == "orange"
         assert ITEMS[p["result_item_key"]]["effect_type"] != "equip_device"
-        assert (
-            sum(
-                any(
-                    r["item_key"] == token["key"] and r["min_quantity"] == r["max_quantity"] == 1
-                    for r in b["effect_payload"]["item_rewards"]
+        for boxes in (BOXES, HISTORICAL_BOXES):
+            assert (
+                sum(
+                    any(
+                        r["item_key"] == token["key"] and r["min_quantity"] == r["max_quantity"] == 1
+                        for r in b["effect_payload"]["item_rewards"]
+                    )
+                    for b in boxes
                 )
-                for b in BOXES
+                == 1
             )
-            == 1
-        )
 
 
 def test_material_support_matches_actual_device_recipe_without_rounding_inflation():
     recipes = {x["blueprint_key"]: x for x in yaml.safe_load((DATA / "forge_blueprints.yaml").read_text())["recipes"]}
-    for box in BOXES:
+    for box in BOXES + HISTORICAL_BOXES:
         payload = box["effect_payload"]
         keys = {r["item_key"] for r in payload["item_rewards"]} | {
             c["item_key"] for g in payload["random_item_groups"] for c in g["choices"]

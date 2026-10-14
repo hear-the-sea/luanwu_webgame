@@ -75,6 +75,12 @@ from .arena import (  # noqa: E402, F401
     ArenaTournamentAdmin,
 )
 from .arena_coop import ArenaCoopEventAdmin  # noqa: E402, F401
+from .arena_ring import (  # noqa: E402, F401
+    ArenaRingAdmin,
+    ArenaRingDailyAdmin,
+    ArenaRingMatchAdmin,
+    ArenaRingTenureAdmin,
+)
 from .arena_virtual import ArenaVirtualDemandAdmin, ArenaVirtualReserveMemberAdmin  # noqa: E402, F401
 from .bots import (  # noqa: E402, F401
     BotBackfillDemandAdmin,

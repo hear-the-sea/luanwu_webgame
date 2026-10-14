@@ -99,6 +99,7 @@ class ItemTemplate(models.Model):
     image = models.ImageField(upload_to="items/", blank=True, null=True, verbose_name="物品图片")
     rarity = models.CharField(max_length=16, default="gray")
     tradeable = models.BooleanField(default=False)
+    default_bound = models.BooleanField("默认绑定", default=False)
     price = models.PositiveIntegerField(default=0)
     storage_space = models.PositiveIntegerField(default=1, verbose_name="占用空间")
     is_usable = models.BooleanField(default=False, verbose_name="可在仓库使用")
@@ -123,6 +124,20 @@ class ItemTemplate(models.Model):
         return _equipment_summary(self.effect_payload)
 
 
+MISSION_CHEST_CATEGORY_KEY = "mission_chest"
+MISSION_CHEST_KEY_PREFIX = "mission_chest_"
+# 宝箱化之前由任务直接发放的奖励容器，兼容玩家仓库中的历史物品。
+LEGACY_MISSION_CHEST_KEYS = frozenset(
+    {
+        "mid_autumn_mooncake",
+        "passive_skill_book_box",
+        "civil_skill_book_box",
+        "saiwai_equipment_box",
+        "fengshen_equipment_box",
+        "huashan_wulin_chest",
+    }
+)
+
 LEGACY_TOOL_EFFECT_TYPES = {
     "tool",
     "loot_box",
@@ -133,6 +148,7 @@ LEGACY_TOOL_EFFECT_TYPES = {
 }
 
 ITEM_EFFECT_TYPE_LABELS = {
+    MISSION_CHEST_CATEGORY_KEY: "任务宝箱",
     ItemTemplate.EffectType.RESOURCE_PACK: "资源包",
     ItemTemplate.EffectType.RESOURCE: "资源",
     ItemTemplate.EffectType.SKILL_BOOK: "技能书",
@@ -280,6 +296,7 @@ class InventoryItem(models.Model):
     manor = models.ForeignKey("gameplay.Manor", on_delete=models.CASCADE, related_name="inventory_items")
     template = models.ForeignKey(ItemTemplate, on_delete=models.CASCADE, related_name="inventory_entries")
     quantity = models.PositiveIntegerField(default=0)
+    bound_quantity = models.PositiveIntegerField("绑定数量", default=0)
     storage_location = models.CharField(
         max_length=16,
         choices=StorageLocation.choices,
@@ -293,12 +310,21 @@ class InventoryItem(models.Model):
         verbose_name = "仓库物品"
         verbose_name_plural = "仓库物品"
         unique_together = ("manor", "template", "storage_location")
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(bound_quantity__lte=models.F("quantity")), name="inventory_bound_lte_total"
+            )
+        ]
         indexes = [
             models.Index(fields=["manor", "storage_location", "quantity"], name="inventory_manor_loc_qty_idx"),
         ]
 
     def __str__(self) -> str:
         return f"{self.manor} - {self.template.name} x{self.quantity}"
+
+    @property
+    def unbound_quantity(self) -> int:
+        return max(0, int(self.quantity) - int(self.bound_quantity))
 
     @property
     def effect_summary(self) -> str:
@@ -333,6 +359,10 @@ class InventoryItem(models.Model):
     @property
     def category_display(self) -> str:
         """获取物品种类显示名称"""
+        if self.template.effect_type == ItemTemplate.EffectType.LOOT_BOX and (
+            self.template.key.startswith(MISSION_CHEST_KEY_PREFIX) or self.template.key in LEGACY_MISSION_CHEST_KEYS
+        ):
+            return get_item_effect_type_label(MISSION_CHEST_CATEGORY_KEY)
         return get_item_effect_type_label(self.template.effect_type)
 
 
@@ -351,10 +381,18 @@ def normalize_message_attachment_buckets(attachments: object) -> tuple[Attachmen
     )
 
 
+def normalize_bound_message_items(attachments: object) -> AttachmentBucket:
+    """绑定道具使用独立分组，保留旧邮件的非绑定 items 格式。"""
+    if not isinstance(attachments, dict):
+        return {}
+    items = attachments.get("bound_items")
+    return items if isinstance(items, dict) else {}
+
+
 def message_has_attachments(attachments: object) -> bool:
     """仅将非空资源或道具字典视为真实附件。"""
     resources, items = normalize_message_attachment_buckets(attachments)
-    return bool(resources or items)
+    return bool(resources or items or normalize_bound_message_items(attachments))
 
 
 def message_has_protected_attachments(attachments: object, *, is_claimed: bool) -> bool:
@@ -450,11 +488,13 @@ class Message(models.Model):
         parts = []
         attachments = self.attachments
         resources, items = normalize_message_attachment_buckets(attachments)
+        bound_items = normalize_bound_message_items(attachments)
 
         if self.is_claimed and isinstance(attachments, dict):
             claimed = attachments.get("claimed")
             if isinstance(claimed, dict):
                 resources, items = normalize_message_attachment_buckets(claimed)
+                bound_items = normalize_bound_message_items(claimed)
 
         resource_labels = dict(ResourceType.choices)
         for key, amount in resources.items():
@@ -464,6 +504,8 @@ class Message(models.Model):
         # 物品数量统计
         if items:
             parts.append(f"{len(items)}种道具")
+        if bound_items:
+            parts.append(f"{len(bound_items)}种绑定道具")
 
         return "、".join(parts) if parts else "附件"
 
@@ -493,6 +535,8 @@ def _validate_attachment_bucket(value, bucket_name: str) -> None:
     for key, amount in value.items():
         if not isinstance(key, str) or not key.strip():
             raise ValidationError({bucket_name: f"{bucket_name} 的 key 必须为非空字符串"})
+        if isinstance(amount, (bool, float)):
+            raise ValidationError({bucket_name: f"{bucket_name}.{key} 必须为整数"})
         try:
             normalized_amount = int(amount)
         except (TypeError, ValueError):
@@ -538,6 +582,7 @@ class GlobalMailCampaign(models.Model):
         items = attachments.get("items", {})
         _validate_attachment_bucket(resources, "resources")
         _validate_attachment_bucket(items, "items")
+        _validate_attachment_bucket(attachments.get("bound_items", {}), "bound_items")
 
     def is_active_at(self, dt=None) -> bool:
         if not self.is_active:

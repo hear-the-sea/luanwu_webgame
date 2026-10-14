@@ -4053,6 +4053,90 @@ def test_due_coop_fill_uses_shared_reserve_and_moves_to_preparing():
 
 
 @pytest.mark.django_db
+def test_growth_soft_budget_releases_claim_and_resumes_same_round(monkeypatch, training_member, caplog):
+    now = timezone.now()
+    power_before = int(training_member.current_lineup_power)
+    monkeypatch.setattr(
+        virtual_reserve_pool,
+        "accelerate_virtual_player_growth",
+        lambda *_args, **_kwargs: AcceleratedGrowthOutcome.GROWN,
+    )
+    monkeypatch.setattr(
+        virtual_reserve_pool,
+        "evaluate_bot_lineup",
+        lambda *_args, **_kwargs: BotLineupEvaluation(
+            ({"attack": 100, "defense": 100, "max_hp": 1000},), power_before, False
+        ),
+    )
+    caplog.set_level(logging.INFO, logger=virtual_reserve_pool.__name__)
+    # Even a zero budget completes one indivisible domain operation.
+    assert grow_due_virtual_reserves(now=now, limit=1, max_duration_seconds=0) == 1
+    training_member.refresh_from_db()
+    assert training_member.growth_claim_token is None
+    assert training_member.growth_claim_expires_at is None
+    assert training_member.growth_applied_action_count == 1
+    assert training_member.next_acceleration_at == now
+    entries = parse_arena_growth_budget_entries(training_member.arena_growth_budget_entries, now=now)
+    assert all(entry.outcome is not ArenaGrowthAttemptOutcome.PENDING for entry in entries)
+    budget_record = next(
+        record for record in caplog.records if getattr(record, "event", None) == "arena_virtual_growth_budget_exhausted"
+    )
+    assert "attempted=1 processed=1 selected=1" in budget_record.getMessage()
+
+    # The persistent due marker resumes the remaining seven slots, not a new
+    # round or a replay of the first slot, on the next ordinary scan.
+    assert grow_due_virtual_reserves(now=now, limit=1) == 7
+    training_member.refresh_from_db()
+    assert training_member.growth_applied_action_count == 8
+    assert training_member.growth_claim_token is None
+    assert training_member.growth_claim_expires_at is None
+
+
+@pytest.mark.django_db
+def test_growth_zero_limit_does_not_spend_first_attempt_under_budget(monkeypatch, training_member):
+    calls = []
+    monkeypatch.setattr(
+        virtual_reserve_pool, "_grow_due_virtual_reserves_once", lambda **kwargs: calls.append(kwargs) or 1
+    )
+    assert grow_due_virtual_reserves(now=timezone.now(), limit=0, max_duration_seconds=0) == 0
+    assert calls == []
+
+
+@pytest.mark.django_db
+def test_growth_budget_keeps_unprocessed_member_ahead_of_resumed_member(monkeypatch, training_member):
+    now = timezone.now()
+    second = ArenaVirtualReserveMember.objects.create(
+        demand=training_member.demand,
+        profile=_create_bot_profile("reserve_budget_second", guest_stats=[(150, 150, 25)]),
+        state=ArenaVirtualReserveMember.State.TRAINING,
+        current_lineup_power=450,
+        next_acceleration_at=training_member.next_acceleration_at,
+    )
+    monkeypatch.setattr(
+        virtual_reserve_pool,
+        "accelerate_virtual_player_growth",
+        lambda *_args, **_kwargs: AcceleratedGrowthOutcome.GROWN,
+    )
+    monkeypatch.setattr(
+        virtual_reserve_pool,
+        "evaluate_bot_lineup",
+        lambda *_args, **_kwargs: BotLineupEvaluation(({"attack": 100, "defense": 100, "max_hp": 1000},), 450, False),
+    )
+    assert grow_due_virtual_reserves(now=now, limit=1, max_duration_seconds=0) == 1
+    training_member.refresh_from_db()
+    second.refresh_from_db()
+    assert (training_member.growth_applied_action_count, second.growth_applied_action_count) == (1, 0)
+    # The completed step moves the first member's due marker forward. The
+    # untouched, older marker now wins even with limit=1 on every scan.
+    assert grow_due_virtual_reserves(now=now + timedelta(minutes=1), limit=1, max_duration_seconds=0) == 1
+    training_member.refresh_from_db()
+    second.refresh_from_db()
+    assert (training_member.growth_applied_action_count, second.growth_applied_action_count) == (1, 1)
+    assert training_member.growth_claim_token is None
+    assert second.growth_claim_token is None
+
+
+@pytest.mark.django_db
 def test_periodic_scan_replenishes_and_fills_due_reserve():
     now = timezone.now()
     demand = _create_tournament_demand(player_limit=2)

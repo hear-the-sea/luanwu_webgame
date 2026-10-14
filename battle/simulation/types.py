@@ -45,6 +45,7 @@ class AttackLogEntry(TypedDict):
     # 武艺/技术特殊效果（命中时才会记录）
     is_double_strike: NotRequired[bool]
     reflect_damage: NotRequired[int]
+    reflect_effect: NotRequired[str]
     reflect_kills: NotRequired[int]
     reflect_defeated: NotRequired[bool]
     counter_damage: NotRequired[int]
@@ -114,6 +115,7 @@ class _DamageApplication:
     target: _UnitDamageApplication
     reflect: _UnitDamageApplication
     counter: _UnitDamageApplication
+    reflect_effect: str = ""
 
     @property
     def display_damage(self) -> int:

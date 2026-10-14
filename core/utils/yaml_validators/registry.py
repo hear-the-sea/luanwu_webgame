@@ -27,6 +27,7 @@ from .production import (
 from .rules import (
     validate_arena_coop_rules,
     validate_arena_rewards,
+    validate_arena_ring_rules,
     validate_arena_rules,
     validate_auction_items,
     validate_guild_rules,
@@ -56,6 +57,7 @@ SUPPORTED_YAML_CONFIGS = (
     "shop_items.yaml",
     "luanwu_shop.yaml",
     "arena_rules.yaml",
+    "arena_ring_rules.yaml",
     "arena_coop_rules.yaml",
     "trade_market_rules.yaml",
     "warehouse_production.yaml",
@@ -140,6 +142,7 @@ def validate_all_configs(data_dir: str | Path) -> ValidationResult:
     shop_data = _load("shop_items.yaml")
     luanwu_shop_data = _load("luanwu_shop.yaml")
     arena_data = _load("arena_rules.yaml")
+    arena_ring_data = _load("arena_ring_rules.yaml")
     arena_coop_data = _load("arena_coop_rules.yaml")
     trade_data = _load("trade_market_rules.yaml")
     warehouse_data = _load("warehouse_production.yaml")
@@ -217,6 +220,9 @@ def validate_all_configs(data_dir: str | Path) -> ValidationResult:
 
     if arena_data is not None:
         result.merge(validate_arena_rules(arena_data))
+
+    if arena_ring_data is not None:
+        result.merge(validate_arena_ring_rules(arena_ring_data))
 
     if arena_coop_data is not None:
         result.merge(validate_arena_coop_rules(arena_coop_data))

@@ -1,0 +1,38 @@
+{
+  "status": "reset_complete_verified",
+  "host": "154.201.68.231",
+  "image": "webgame:arena-reset-20261003T124027Z",
+  "reset": {
+    "status": "reset_complete",
+    "timestamp": "2026-10-03T12:43:48.610386+00:00",
+    "rings_cleared": 2,
+    "active_tenures_ended": 2,
+    "previous_cooldowns_cleared": 1,
+    "remaining_active_tenures": 0,
+    "remaining_cooldowns": 0,
+    "history_preserved": true,
+    "earned_time_rewards_settled": true,
+    "backup_file": "/tmp/arena_reset_before_20261003T124027Z.json"
+  },
+  "verification": {
+    "rings": [
+      {
+        "key": "qinglong",
+        "current_tenure_id": null
+      },
+      {
+        "key": "baihu",
+        "current_tenure_id": null
+      }
+    ],
+    "active_tenures": 0,
+    "cooldowns": 0,
+    "reset_backups": [
+      "/tmp/arena_reset_before_20261003T124027Z.json"
+    ]
+  },
+  "backup": "/root/code/releases/arena-reset-20261003T124027Z/backup/reset_before.json",
+  "health": "healthy",
+  "tests_passed": 2,
+  "schema_changes": false
+}

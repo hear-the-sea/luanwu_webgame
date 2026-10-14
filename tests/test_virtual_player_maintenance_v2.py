@@ -211,6 +211,76 @@ def active_v2_profile(released_v2_policy, game_data) -> BotProfile:
     return _create_v2_profile(seed=995_001)
 
 
+@pytest.mark.django_db
+def test_scheduled_budget_admits_only_complete_chunks_and_resumes_older_profiles(active_v2_profile, monkeypatch):
+    profiles = [active_v2_profile, _create_v2_profile(seed=995_091), _create_v2_profile(seed=995_092)]
+    BotProfile.objects.filter(pk__in=[profile.pk for profile in profiles]).update(
+        next_growth_at=FIXED_NOW - timedelta(hours=1)
+    )
+    monkeypatch.setattr(maintenance, "SCHEDULED_MAINTENANCE_BUDGET_CHUNK_SIZE", 1)
+    monkeypatch.setattr(maintenance, "monotonic", lambda: 100.0)
+    before = set(BotSafetyMetricEvent.objects.values_list("event_id", flat=True))
+    with CaptureQueriesContext(connection) as queries:
+        assert (
+            maintenance._maintain_due_virtual_players_v2(
+                current_time=FIXED_NOW,
+                limit=3,
+                routing=maintenance.read_virtual_player_routing(),
+                max_duration_seconds=0,
+            )
+            == 1
+        )
+    sequences = list(
+        BotProfile.objects.filter(pk__in=[profile.pk for profile in profiles])
+        .order_by("id")
+        .values_list("maintenance_sequence", flat=True)
+    )
+    assert sequences == [1, 0, 0]
+    new_events = set(BotSafetyMetricEvent.objects.values_list("event_id", flat=True)) - before
+    started = [event for event in new_events if event.endswith(":started")]
+    assert started
+    assert all(event.removesuffix(":started") + ":terminal" in new_events for event in started)
+    assert not BotMaintenanceCycle.objects.filter(profile_id__in=[profiles[1].pk, profiles[2].pk]).exists()
+    assert (
+        maintenance._maintain_due_virtual_players_v2(
+            current_time=FIXED_NOW,
+            limit=3,
+            routing=maintenance.read_virtual_player_routing(),
+            max_duration_seconds=0,
+        )
+        == 1
+    )
+    sequences = list(
+        BotProfile.objects.filter(pk__in=[profile.pk for profile in profiles])
+        .order_by("id")
+        .values_list("maintenance_sequence", flat=True)
+    )
+    assert sequences == [1, 1, 0]
+    print(f"bounded_maintenance admitted=1 due=3 sql={len(queries)}")
+
+
+@pytest.mark.django_db
+def test_admitted_chunk_marks_remaining_attempts_terminal_after_database_failure(active_v2_profile, monkeypatch):
+    profiles = (active_v2_profile, _create_v2_profile(seed=995_093))
+    before = set(BotSafetyMetricEvent.objects.values_list("event_id", flat=True))
+    monkeypatch.setattr(
+        maintenance,
+        "maintain_virtual_player_v2",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(DatabaseError("chunk failed")),
+    )
+    with pytest.raises(DatabaseError, match="chunk failed"):
+        maintenance._execute_scheduled_maintenance_chunk(
+            profiles,
+            current_time=FIXED_NOW,
+            routing=maintenance.read_virtual_player_routing(),
+            database_clock=FIXED_NOW,
+        )
+    new_events = set(BotSafetyMetricEvent.objects.values_list("event_id", flat=True)) - before
+    started = [event for event in new_events if event.endswith(":started")]
+    assert len(started) == 2
+    assert all(event.removesuffix(":started") + ":terminal" in new_events for event in started)
+
+
 @pytest.fixture
 def idle_v2_guests(active_v2_profile) -> None:
     # Bootstrap starts automatic training. These scenarios need idle guests

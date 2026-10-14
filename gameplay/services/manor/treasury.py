@@ -16,7 +16,7 @@ from core.exceptions import (
 
 from ...constants import BUILDING_MAX_LEVELS, BuildingKeys
 from ...models import InventoryItem, ItemTemplate, Manor
-from ..inventory.core import GRAIN_ITEM_KEY, TREASURY_BLOCKED_ITEM_KEYS, add_item_to_inventory_locked
+from ..inventory.core import TREASURY_BLOCKED_ITEM_KEYS, add_items_to_inventory_locked, consume_inventory_item_locked
 from ..inventory.core import get_warehouse_used_space as _get_warehouse_used_space
 
 
@@ -116,11 +116,11 @@ def move_item_to_treasury(manor: Manor, item_id: int, quantity: int) -> None:
         from trade.services.auction_service import get_frozen_gold_bars
 
         frozen = get_frozen_gold_bars(manor)
-        available = warehouse_item.quantity - frozen
+        available = warehouse_item.unbound_quantity - frozen
         if available < quantity:
             raise InsufficientStockError(warehouse_item.template.name, quantity, available)
-    elif warehouse_item.quantity < quantity:
-        raise InsufficientStockError(warehouse_item.template.name, quantity, warehouse_item.quantity)
+    elif warehouse_item.unbound_quantity < quantity:
+        raise InsufficientStockError(warehouse_item.template.name, quantity, warehouse_item.unbound_quantity)
 
     # 检查藏宝阁空间是否足够
     item_space = warehouse_item.template.storage_space * quantity
@@ -129,26 +129,17 @@ def move_item_to_treasury(manor: Manor, item_id: int, quantity: int) -> None:
     if treasury_used + item_space > treasury_capacity:
         raise InsufficientSpaceError("treasury", treasury_capacity - treasury_used, item_space)
 
-    # 减少仓库中的物品数量
-    warehouse_item.quantity -= quantity
-    if warehouse_item.quantity == 0:
-        warehouse_item.delete()
-    else:
-        warehouse_item.save(update_fields=["quantity"])
-
-    # 增加藏宝阁中的物品数量
-    treasury_item, created = InventoryItem.objects.get_or_create(
-        manor=manor,
-        template=warehouse_item.template,
+    # 绑定物品只允许自用，存储移动仅使用非绑定数量。
+    template = warehouse_item.template
+    bound_moved = consume_inventory_item_locked(warehouse_item, quantity, allow_bound=False)
+    add_items_to_inventory_locked(
+        manor,
+        {template.key: quantity},
         storage_location=InventoryItem.StorageLocation.TREASURY,
-        defaults={"quantity": 0},
+        templates={template.key: template},
+        bound_quantities={template.key: bound_moved},
+        is_bound=False,
     )
-
-    if not created:
-        treasury_item = InventoryItem.objects.select_for_update().get(pk=treasury_item.pk)
-
-    treasury_item.quantity += quantity
-    treasury_item.save(update_fields=["quantity"])
 
 
 @transaction.atomic
@@ -179,26 +170,16 @@ def move_item_to_warehouse(manor: Manor, item_id: int, quantity: int) -> None:
     if not treasury_item:
         raise ItemNotFoundError("物品不存在或不在藏宝阁中")
 
-    if treasury_item.quantity < quantity:
-        raise InsufficientStockError(treasury_item.template.name, quantity, treasury_item.quantity)
+    if treasury_item.unbound_quantity < quantity:
+        raise InsufficientStockError(treasury_item.template.name, quantity, treasury_item.unbound_quantity)
 
-    # 检查是否是粮食物品
-    is_grain = treasury_item.template.key == GRAIN_ITEM_KEY
-
-    # 减少藏宝阁中的物品数量
-    treasury_item.quantity -= quantity
-    if treasury_item.quantity == 0:
-        treasury_item.delete()
-    else:
-        treasury_item.save(update_fields=["quantity"])
-
-    # 增加仓库中的物品数量；粮食必须走唯一账本接口。
-    if is_grain:
-        add_item_to_inventory_locked(manor, GRAIN_ITEM_KEY, quantity)
-    else:
-        add_item_to_inventory_locked(
-            manor,
-            treasury_item.template.key,
-            quantity,
-            template=treasury_item.template,
-        )
+    # 返还仓库同样只允许非绑定数量，包括旧藏宝阁粮食的兼容路径。
+    template = treasury_item.template
+    bound_moved = consume_inventory_item_locked(treasury_item, quantity, allow_bound=False)
+    add_items_to_inventory_locked(
+        manor,
+        {template.key: quantity},
+        templates={template.key: template},
+        bound_quantities={template.key: bound_moved},
+        is_bound=False,
+    )

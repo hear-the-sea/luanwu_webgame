@@ -12,6 +12,8 @@ from django.db.models import Count, Q
 from django.utils import timezone
 from django.utils.html import format_html
 
+from core.admin_cascade import is_account_message_cascade
+
 from ..models import GlobalMailCampaign, GlobalMailDelivery, Manor, Message
 from ..services.utils.messages import (
     MessageDeleteResult,
@@ -26,6 +28,27 @@ User = get_user_model()
 _MESSAGE_BULK_DELETE_PERMISSION_ATTR = "_message_admin_bulk_delete_permission"
 _MESSAGE_BULK_DELETE_PERMISSION_TOKEN = object()
 _MISSING_REQUEST_ATTR = object()
+
+
+def _normalize_attachment_bucket(value, field_name: str) -> dict[str, int]:
+    bucket = value if value is not None else {}
+    if not isinstance(bucket, dict):
+        raise forms.ValidationError({field_name: f"{field_name} 必须为对象"})
+    normalized: dict[str, int] = {}
+    for raw_key, raw_amount in bucket.items():
+        key = str(raw_key).strip()
+        if not key:
+            raise forms.ValidationError({field_name: f"{field_name} 的 key 必须为非空字符串"})
+        try:
+            amount = int(raw_amount)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise forms.ValidationError({field_name: f"{field_name}.{key} 必须为整数"}) from exc
+        if isinstance(raw_amount, (bool, float)):
+            raise forms.ValidationError({field_name: f"{field_name}.{key} 必须为整数"})
+        if amount <= 0:
+            raise forms.ValidationError({field_name: f"{field_name}.{key} 必须大于 0"})
+        normalized[key] = amount
+    return normalized
 
 
 @contextmanager
@@ -63,14 +86,27 @@ class SendMessageForm(forms.ModelForm):
     attachment_items = forms.JSONField(
         required=False,
         initial={},
-        label="附件道具",
+        label="非绑定附件道具",
         help_text='格式：{"item_key": 数量}，例如：{"experience_peach": 5}',
+        widget=forms.Textarea(attrs={"rows": 3, "cols": 60}),
+    )
+    attachment_bound_items = forms.JSONField(
+        required=False,
+        initial={},
+        label="绑定附件道具",
+        help_text='格式：{"item_key": 数量}，绑定洗髓丹示例：{"xisuidan": 10}；领取后仅限自用或丢弃，不可出售、转移。',
         widget=forms.Textarea(attrs={"rows": 3, "cols": 60}),
     )
 
     class Meta:
         model = Message
         fields = ["kind", "title", "body"]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        for field in ("attachment_resources", "attachment_items", "attachment_bound_items"):
+            cleaned_data[field] = _normalize_attachment_bucket(cleaned_data.get(field), field)
+        return cleaned_data
 
 
 class GlobalMailCampaignForm(forms.ModelForm):
@@ -84,8 +120,15 @@ class GlobalMailCampaignForm(forms.ModelForm):
     attachment_items = forms.JSONField(
         required=False,
         initial={},
-        label="附件道具",
+        label="非绑定附件道具",
         help_text='格式：{"item_key": 数量}，例如：{"peace_shield_small": 1}',
+        widget=forms.Textarea(attrs={"rows": 3, "cols": 60}),
+    )
+    attachment_bound_items = forms.JSONField(
+        required=False,
+        initial={},
+        label="绑定附件道具",
+        help_text='格式：{"item_key": 数量}，绑定洗髓丹示例：{"xisuidan": 10}；领取后仅限自用或丢弃，不可出售、转移。',
         widget=forms.Textarea(attrs={"rows": 3, "cols": 60}),
     )
     send_to_existing_now = forms.BooleanField(
@@ -112,37 +155,27 @@ class GlobalMailCampaignForm(forms.ModelForm):
         if isinstance(attachments, dict):
             self.fields["attachment_resources"].initial = attachments.get("resources") or {}
             self.fields["attachment_items"].initial = attachments.get("items") or {}
+            self.fields["attachment_bound_items"].initial = attachments.get("bound_items") or {}
 
     @staticmethod
     def _normalize_attachment_bucket(value, field_name: str) -> dict[str, int]:
-        bucket = value or {}
-        if not isinstance(bucket, dict):
-            raise forms.ValidationError({field_name: f"{field_name} 必须为对象"})
-
-        normalized: dict[str, int] = {}
-        for raw_key, raw_amount in bucket.items():
-            key = str(raw_key).strip()
-            if not key:
-                raise forms.ValidationError({field_name: f"{field_name} 的 key 必须为非空字符串"})
-            try:
-                amount = int(raw_amount)
-            except (TypeError, ValueError) as exc:
-                raise forms.ValidationError({field_name: f"{field_name}.{key} 必须为整数"}) from exc
-            if amount <= 0:
-                raise forms.ValidationError({field_name: f"{field_name}.{key} 必须大于 0"})
-            normalized[key] = amount
-        return normalized
+        return _normalize_attachment_bucket(value, field_name)
 
     def clean(self):
         cleaned_data = super().clean()
         resources = self._normalize_attachment_bucket(cleaned_data.get("attachment_resources"), "attachment_resources")
         items = self._normalize_attachment_bucket(cleaned_data.get("attachment_items"), "attachment_items")
+        bound_items = self._normalize_attachment_bucket(
+            cleaned_data.get("attachment_bound_items"), "attachment_bound_items"
+        )
 
         attachments = {}
         if resources:
             attachments["resources"] = resources
         if items:
             attachments["items"] = items
+        if bound_items:
+            attachments["bound_items"] = bound_items
         cleaned_data["attachments"] = attachments
         return cleaned_data
 
@@ -208,7 +241,10 @@ class GlobalMailCampaignAdmin(admin.ModelAdmin):
     fieldsets = (
         ("基础信息", {"fields": ("key", "kind", "title", "body", "runtime_status_badge")}),
         ("生效时间", {"fields": ("is_active", "start_at", "end_at")}),
-        ("附件配置", {"fields": ("attachment_resources", "attachment_items", "attachments_preview")}),
+        (
+            "附件配置",
+            {"fields": ("attachment_resources", "attachment_items", "attachment_bound_items", "attachments_preview")},
+        ),
         ("补发操作", {"fields": ("send_to_existing_now", "backfill_batch_size")}),
         ("统计", {"fields": ("deliveries_count", "created_at", "updated_at"), "classes": ("collapse",)}),
     )
@@ -241,11 +277,15 @@ class GlobalMailCampaignAdmin(admin.ModelAdmin):
         attachments = obj.attachments if isinstance(obj.attachments, dict) else {}
         resources = attachments.get("resources") if isinstance(attachments.get("resources"), dict) else {}
         items = attachments.get("items") if isinstance(attachments.get("items"), dict) else {}
+        bound_items = attachments.get("bound_items") if isinstance(attachments.get("bound_items"), dict) else {}
         resource_total = sum(int(v) for v in resources.values()) if resources else 0
         item_total = sum(int(v) for v in items.values()) if items else 0
-        if not resources and not items:
+        if not resources and not items and not bound_items:
             return "无附件"
-        return f"资源 {len(resources)} 类/{resource_total}，道具 {len(items)} 类/{item_total}"
+        summary = f"资源 {len(resources)} 类/{resource_total}，道具 {len(items)} 类/{item_total}"
+        if bound_items:
+            summary += f"，绑定道具 {len(bound_items)} 类/{sum(int(v) for v in bound_items.values())}"
+        return summary
 
     @admin.display(description="附件预览")
     def attachments_preview(self, obj):
@@ -324,7 +364,12 @@ class MessageAdmin(admin.ModelAdmin):
         is_safe_bulk_delete = (
             getattr(request, _MESSAGE_BULK_DELETE_PERMISSION_ATTR, None) is _MESSAGE_BULK_DELETE_PERMISSION_TOKEN
         )
-        if obj is not None and obj.has_protected_attachments and not is_safe_bulk_delete:
+        if (
+            obj is not None
+            and obj.has_protected_attachments
+            and not is_safe_bulk_delete
+            and not is_account_message_cascade(request, obj)
+        ):
             return False
         return super().has_delete_permission(request, obj)
 
@@ -386,6 +431,7 @@ class MessageAdmin(admin.ModelAdmin):
         recipients = form.cleaned_data.get("recipients")
         attachment_resources = form.cleaned_data.get("attachment_resources") or {}
         attachment_items = form.cleaned_data.get("attachment_items") or {}
+        attachment_bound_items = form.cleaned_data.get("attachment_bound_items") or {}
 
         # 构建附件数据
         attachments = {}
@@ -393,6 +439,8 @@ class MessageAdmin(admin.ModelAdmin):
             attachments["resources"] = attachment_resources
         if attachment_items:
             attachments["items"] = attachment_items
+        if attachment_bound_items:
+            attachments["bound_items"] = attachment_bound_items
 
         # 如果没有指定接收人，默认只发送给真实玩家，避免消耗虚拟玩家资源
         if not recipients:

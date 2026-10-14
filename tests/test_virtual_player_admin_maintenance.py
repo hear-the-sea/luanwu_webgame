@@ -94,7 +94,7 @@ def test_virtual_player_v2_admin_list_columns_are_explicit_and_sortable() -> Non
         "last_pause_window_identifier",
         "safety_clean_window_streak",
         "safety_clean_window_kind",
-        "paused_from_maintenance_mode",
+        "paused_from_mode_label",
         "pause_reason",
         "updated_at",
     )

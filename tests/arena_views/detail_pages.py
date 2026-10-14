@@ -48,6 +48,7 @@ def test_arena_coop_detail_view_renders(arena_client):
         boss_name="张无忌",
         boss_remaining_hp=0,
         battle_report=report,
+        ended_at=now,
     )
     entry = ArenaCoopEntry.objects.create(event=event, manor=manor, status=ArenaCoopEntry.Status.COMPLETED)
     ArenaCoopContribution.objects.create(
@@ -77,7 +78,7 @@ def test_arena_coop_detail_view_renders(arena_client):
 
 
 @pytest.mark.django_db
-def test_arena_events_view_running_coop_summary_has_no_detail_action(arena_client):
+def test_arena_events_view_running_coop_has_public_detail_action(arena_client):
     client, _manor = arena_client
     event = ArenaCoopEvent.objects.create(
         status=ArenaCoopEvent.Status.RUNNING,
@@ -90,11 +91,10 @@ def test_arena_events_view_running_coop_summary_has_no_detail_action(arena_clien
 
     assert response.status_code == 200
     body = response.content.decode("utf-8")
-    assert "进行中的共斗" not in body
-    assert f"共斗 #{event.id}" not in body
-    assert "查看共斗详情" not in body
-    assert f"围攻光明顶 #{event.id}" not in body
-    assert "首领：张无忌" not in body
+    assert "查看共斗详情" in body
+    assert f"围攻光明顶 #{event.id}" in body
+    assert "首领：张无忌" in body
+    assert client.get(reverse("gameplay:arena_coop_detail", args=[event.id])).status_code == 200
 
 
 @pytest.mark.django_db
@@ -192,7 +192,9 @@ def test_arena_coop_detail_keeps_virtual_damage_out_of_real_reward_ranking(arena
         password="pass123",
         email="arena_coop_detail_virtual@test.local",
     )
-    event = ArenaCoopEvent.objects.create(status=ArenaCoopEvent.Status.COMPLETED, player_limit=2)
+    event = ArenaCoopEvent.objects.create(
+        status=ArenaCoopEvent.Status.COMPLETED, player_limit=2, ended_at=timezone.now()
+    )
     player_entry = ArenaCoopEntry.objects.create(event=event, manor=manor, status=ArenaCoopEntry.Status.COMPLETED)
     virtual_entry = ArenaCoopEntry.objects.create(
         event=event,
@@ -344,3 +346,54 @@ def test_arena_event_detail_view_supports_round_paging_and_inline_report(arena_c
     assert reverse("battle:report_detail", kwargs={"pk": report.id}) in body
     assert "tw-arena-loser text-text-muted" in body
     assert ">结果<" not in body
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("event_kind", ["tournament", "coop"])
+@pytest.mark.parametrize("status", ["completed", "cancelled"])
+def test_spectators_can_view_events_and_reports_for_24_hours(arena_client, django_user_model, event_kind, status):
+    client, _spectator = arena_client
+    owner = ensure_manor(django_user_model.objects.create_user(username=f"retention_{event_kind}_{status}"))
+    now = timezone.now()
+
+    def create_event(minutes_ago):
+        report = BattleReport.objects.create(
+            manor=owner,
+            opponent_name="对手",
+            battle_type="arena_coop" if event_kind == "coop" else "arena",
+            attacker_team=[],
+            attacker_troops={},
+            defender_team=[],
+            defender_troops={},
+            rounds=[],
+            losses={},
+            drops={},
+            winner="attacker",
+            starts_at=now,
+            completed_at=now,
+            seed=1,
+        )
+        ended_at = now - timedelta(minutes=minutes_ago)
+        if event_kind == "coop":
+            event = ArenaCoopEvent.objects.create(status=status, ended_at=ended_at, battle_report=report)
+            ArenaCoopEntry.objects.create(event=event, manor=owner, status=ArenaCoopEntry.Status.COMPLETED)
+            detail_url = reverse("gameplay:arena_coop_detail", args=[event.id])
+        else:
+            event = ArenaTournament.objects.create(status=status, ended_at=ended_at)
+            entry = ArenaEntry.objects.create(tournament=event, manor=owner)
+            ArenaMatch.objects.create(
+                tournament=event, round_number=1, match_index=0, attacker_entry=entry, battle_report=report
+            )
+            detail_url = reverse("gameplay:arena_event_detail", args=[event.id])
+        return event, detail_url, reverse("battle:report_detail", args=[report.id])
+
+    recent_event, recent_detail, recent_report = create_event(24 * 60 - 1)
+    expired_event, expired_detail, expired_report = create_event(24 * 60 + 1)
+    response = client.get(reverse("gameplay:arena_events"))
+    cards = response.context["completed_event_card_rows"]
+    assert recent_detail in [row["action_url"] for row in cards]
+    assert expired_detail not in [row["action_url"] for row in cards]
+    assert client.get(recent_detail).status_code == 200
+    assert client.get(expired_detail).status_code == 404
+    assert client.get(recent_report).status_code == 200
+    assert client.get(expired_report).status_code == 404

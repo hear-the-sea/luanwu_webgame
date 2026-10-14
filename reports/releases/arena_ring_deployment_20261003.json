@@ -1,0 +1,124 @@
+{
+  "status": "deployed_verified",
+  "release": "arena-ring-20261003T114511Z",
+  "image": "webgame:arena-ring-20261003T114511Z",
+  "image_id": "sha256:6a83f90029725e11adef8be1c2ea800076006ef09ec7120ddbe5184064d7dde4",
+  "backup_dir": "/root/code/releases/arena-ring-20261003T114511Z/backup",
+  "services": [
+    "web",
+    "worker",
+    "worker_battle",
+    "worker_timer",
+    "worker_timer_scan",
+    "worker_timer_safety",
+    "worker_timer_maintenance",
+    "beat"
+  ],
+  "health": "passed",
+  "mysql_arena_ring_smoke": {
+    "mysql_arena_ring_smoke": "passed",
+    "transaction_rolled_back": true,
+    "guest_states_preserved": true,
+    "troop_stocks_preserved": true,
+    "arena_pages_rendered": true
+  },
+  "existing_player_assets_preserved": true,
+  "real_players": 109,
+  "bot_players": 1021,
+  "routing_before": {
+    "revision": 550,
+    "bootstrap_mode": "v2_active",
+    "maintenance_mode": "v2_active",
+    "pause_reason": ""
+  },
+  "mail_sent": false,
+  "runtime_file_hashes": "all_match",
+  "rings": 2,
+  "migration_applied": true,
+  "reward_rules_verified": true,
+  "scan_task_registered": true,
+  "scan_task_queue": "timer_scan",
+  "worker_ping_count": 6,
+  "host": "154.201.68.231",
+  "local_tests": {
+    "passed": 87
+  },
+  "public_url": "https://luanwu.top/manor/arena/rings/",
+  "planned_restart_fence": "awaiting_normal_safety_monitor_recovery",
+  "production_smoke": "transaction_rolled_back",
+  "user_credentials_persisted": false,
+  "files": {
+    "battle/view_helpers.py": "f98a2fa8aec48f7db09db6df940a43988572937a59e5964d34876c4033c62bda",
+    "battle/views.py": "7ebd5a1534c8ba5d0ca4f97577d9a509aa40bcc32649174242ca41ec0a5f5813",
+    "config/settings/celery_conf.py": "7c453eb66189dd4932a1382cba8929d14f0d7b11e532f2d2728d54f223ad3374",
+    "data/arena_rules.yaml": "1a0dd932125c18017cfee7da1b69279841ac180f53a3cddf6d85c9ffa4ed6e25",
+    "data/arena_ring_rules.yaml": "069e13e88a2a4748b33f51ef521dbe421006edef930ad7f5e60ef7375d58ab58",
+    "gameplay/models/__init__.py": "c666c5551730540b720077f836e3b2da20c16ed2df94a79c8fa05bbfbda257bc",
+    "gameplay/models/arena_ring.py": "7bb409e40849fc16745df5b2dae74366e28c86e3f5c13128ddf232afbc07d07e",
+    "gameplay/migrations/0197_arena_ring.py": "983229a8748ca8c4dbc458d629714c7f4b61ecfa1f9f22c314b35f32aa7001e8",
+    "gameplay/selectors/arena/details.py": "6f5ba261e30ac23af3ceed2fd3e4508807846ffc215e3b9c25a2fe0f38fc670e",
+    "gameplay/selectors/arena/events.py": "ffafbe85d581fdf4ab2ea2c26c7613d1d37ca267a49c4692421cb17c3345ccfc",
+    "gameplay/selectors/arena/rings.py": "e9d00949a298d3064ec42962814e92d68442f8ba680643ae374bc57bd31aefc1",
+    "gameplay/services/arena/rules.py": "7e6f2eb4fa1ceac862e77e93abf78c2a46c51e37d54da0f13f9d61f71d590706",
+    "gameplay/services/arena/ring.py": "bf36c8bc43733c6220b7d7f81d5d71e741b1605e6bf85e0b99fcf446d1f03385",
+    "gameplay/services/arena/ring_rewards.py": "7bd090ee46b94ad3a98cb9b7e13fd895f12306c58622f75bc08440bb17d24103",
+    "gameplay/services/arena/ring_rules.py": "dd98d322ba2868de1e95dca29e9b6bb38b86d7e447c63f962205386a86e73d48",
+    "gameplay/services/arena/ring_snapshots.py": "a607236d3e3c05f8407fc37c3a3b9f845407a43ebbd80574d318f8810ecc6f5a",
+    "gameplay/services/runtime_configs.py": "2159559cf724188490f71dec6c7a8787bbd54bdbde88812b0db8d10d80812e3c",
+    "gameplay/tasks/__init__.py": "7cb2fdc9d2ec2b64a18214f31c35165410a8fd812514785ab76bf1d4bb2154da",
+    "gameplay/tasks/arena.py": "3c394fd9cdfa5385621e8b8dcc3189a6dd5b118dfea08628b2bf853b18be4c68",
+    "gameplay/templates/gameplay/arena/events.html": "ce2292961c2fc1e468c48aadd345195566878bbe5afb9baddb53b4461a014db9",
+    "gameplay/templates/gameplay/arena/partials/event_pagination.html": "4d9e389ba766a136b3a0cecc3f7c1324eabee6fd2e49f2c0f04cba5414e33096",
+    "gameplay/templates/gameplay/arena/partials/ring_form.html": "ac1003bac06dbc33029cbf7370f40cff5a74874c435f718072c1f6dafd4c7033",
+    "gameplay/templates/gameplay/arena/partials/ring_lineup.html": "e5ee9a7f8e90c5f0bc038c57fbcb0c257a98a515d2f9939a7daaaefc9e6852eb",
+    "gameplay/templates/gameplay/arena/ring_detail.html": "2e77534fd38bf20c2cc2ea6235af55a21fc4a8ff23ba3e1003860f2673cde765",
+    "gameplay/templates/gameplay/arena/ring_inspection.html": "e4ce3ca35262bc9b24173f9325f15fe56e7c68c174baf64d329837611827a2e7",
+    "gameplay/templates/gameplay/arena/rings.html": "37f4d262836c884977085076a539b182bcf96294ee29a8bde37a7793f7c3fae9",
+    "gameplay/urls.py": "9f8b546ce82eafdce922914b5e79638ec8add8d3082555d2eafb3b03e7e3856c",
+    "gameplay/views/arena.py": "0dd536df1c43ac0b6661b4116bdfefd7040dc7c6d6d676b3731843f0d54dca31",
+    "gameplay/views/arena_ring.py": "37678cfa8575ed1b0b1e6ac30fae6585e025bb77be8c0f9ed6428fb253dde2d9",
+    "static/css/arena-rings.css": "a279e422886e8af50c18fb4f0135fd1bab7302b6f210856e8e1de75d6cb4b132",
+    "static/js/arena-rings.js": "7d64d1f1207a7115d16aa20a65092eae6704bbe290bd901021826bfa36353eda",
+    "static/images/buildings/青龙擂.png": "0b1cf08cd5a4cb68762be4e2815ff44cb4cc2403e96ae69da96be1e4c8d99ef5",
+    "static/images/buildings/白虎擂.png": "2be1a4b87546fa873b77abbf81b69d0f417ec3ce687c0d5d064599a9b8b2da13"
+  },
+  "base_image": "webgame:binding-rules-20261003T034820Z",
+  "public_checks": [
+    {
+      "path": "/static/css/arena-rings.4b8c66262727.css",
+      "status": 200,
+      "content_type": "text/css; charset=utf-8",
+      "bytes": 11603
+    },
+    {
+      "path": "/static/js/arena-rings.64fcf2bb64e3.js",
+      "status": 200,
+      "content_type": "text/javascript; charset=utf-8",
+      "bytes": 3279
+    },
+    {
+      "path": "/static/images/buildings/青龙擂.5a7e6fb10b17.png",
+      "status": 200,
+      "content_type": "image/png",
+      "bytes": 3286937
+    },
+    {
+      "path": "/static/images/buildings/白虎擂.d9404541fd69.png",
+      "status": 200,
+      "content_type": "image/png",
+      "bytes": 3068726
+    },
+    {
+      "path": "/health/live",
+      "status": 200,
+      "content_type": "application/json",
+      "bytes": 16
+    },
+    {
+      "path": "/manor/arena/rings/",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "bytes": 2706
+    }
+  ]
+}

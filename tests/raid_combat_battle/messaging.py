@@ -38,13 +38,19 @@ def test_send_raid_battle_messages_sends_extra_capture_notice_to_defender_when_d
 
     raid_messaging._send_raid_battle_messages(run)
 
-    assert len(sent) == 3
+    assert len(sent) == 4
     assert sent[1]["manor"] is defender
     assert sent[2]["manor"] is defender
     assert sent[2]["title"] == "门客被俘通知"
     assert "赵云" in str(sent[2]["body"])
     assert "已被押入" in str(sent[2]["body"])
     assert sent[2]["battle_report"] is report
+    assert sent[3]["manor"] is attacker
+    assert sent[3]["title"] == "门客俘获通知"
+    assert "赵云" in str(sent[3]["body"])
+    assert "防守方" in str(sent[3]["body"])
+    assert "己方监牢" in str(sent[3]["body"])
+    assert sent[3]["battle_report"] is report
 
 
 def test_send_raid_battle_messages_sends_extra_capture_notice_to_attacker_when_attacker_guest_is_captured(monkeypatch):
@@ -80,13 +86,19 @@ def test_send_raid_battle_messages_sends_extra_capture_notice_to_attacker_when_a
 
     raid_messaging._send_raid_battle_messages(run)
 
-    assert len(sent) == 3
+    assert len(sent) == 4
     assert sent[0]["manor"] is attacker
     assert sent[2]["manor"] is attacker
     assert sent[2]["title"] == "门客被俘通知"
     assert "关羽" in str(sent[2]["body"])
     assert "装备尽失" in str(sent[2]["body"])
     assert sent[2]["battle_report"] is report
+    assert sent[3]["manor"] is defender
+    assert sent[3]["title"] == "门客俘获通知"
+    assert "关羽" in str(sent[3]["body"])
+    assert "进攻方" in str(sent[3]["body"])
+    assert "己方监牢" in str(sent[3]["body"])
+    assert sent[3]["battle_report"] is report
 
 
 def test_send_raid_battle_messages_does_not_send_extra_notice_without_capture(monkeypatch):

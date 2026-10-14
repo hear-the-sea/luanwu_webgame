@@ -1,0 +1,25 @@
+{% extends "admin/index.html" %}
+{% load static %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/admin-operations.css' %}">{% endblock %}
+{% block content %}
+<div id="content-main" class="operations">
+  <div class="operations-intro"><p class="operations-eyebrow">江湖 · 运营工作台</p><h2>从业务出发，快速找到管理入口</h2><p>玩家、消息、竞技与养成集中管理。配置和技术记录收纳在下方，所有入口遵循当前账号权限。</p></div>
+  <label for="operation-search" class="operation-search-label">查找管理功能</label>
+  <input id="operation-search" type="search" placeholder="输入玩家、邮件、擂台等关键词" autocomplete="off">
+  <p id="operation-empty" hidden role="status">没有匹配的管理功能，请尝试其他关键词。</p>
+  {% for group in operation_groups %}
+  <details class="operation-group" {% if group.name != '配置与技术记录' %}open{% endif %}>
+    <summary>{{ group.name }} <span>{{ group.models|length }} 项</span></summary>
+    <ul>
+      {% for model in group.models %}
+      <li data-operation-name="{{ model.name }}">
+        {% if model.admin_url %}<a class="operation-name" href="{{ model.admin_url }}">{{ model.name }}</a>{% else %}<span class="operation-name">{{ model.name }}</span>{% endif %}
+        {% if model.add_url %}<a class="operation-add" href="{{ model.add_url }}">新增<span class="visually-hidden">{{ model.name }}</span></a>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </details>
+  {% empty %}<p>当前账号暂无可用的管理功能，请联系管理员分配权限。</p>{% endfor %}
+</div>
+<script src="{% static 'js/admin-operations.js' %}" defer></script>
+{% endblock %}

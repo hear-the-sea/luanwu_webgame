@@ -24,6 +24,7 @@
   const FAST_RETRY_LIMIT = 5;
   const DEFAULT_TRANSIENT_BASE_MS = 2000;
   const DEFAULT_TRANSIENT_MAX_MS = 15000;
+  const DEFAULT_PERSISTENT_MAX_MS = 60000;
 
   function normalizePositiveNumber(value, fallback) {
     return Number.isFinite(value) && value > 0 ? value : fallback;
@@ -40,6 +41,8 @@
       normalizePositiveNumber(options.transientMaxMs, DEFAULT_TRANSIENT_MAX_MS),
     );
     let transientDelayMs = transientBaseMs;
+    let persistentDelayMs = transientBaseMs;
+    const persistentMaxMs = Math.max(transientBaseMs, DEFAULT_PERSISTENT_MAX_MS);
     let fastRetryCount = 0;
 
     function randomUnit() {
@@ -51,24 +54,32 @@
     }
 
     function nextDelay(closeCode) {
+      const persistentFailure = [
+        CLOSE_CODES.CAPACITY_LIMIT_REACHED,
+        CLOSE_CODES.ABNORMAL_CLOSURE,
+      ].includes(Number(closeCode));
       if (
-        [CLOSE_CODES.CAPACITY_LIMIT_REACHED, CLOSE_CODES.ABNORMAL_CLOSURE].includes(Number(closeCode)) &&
+        persistentFailure &&
         fastRetryCount < FAST_RETRY_LIMIT
       ) {
         fastRetryCount += 1;
         return Math.round(1000 + randomUnit() * 1000);
       }
 
-      const delay = Math.min(
-        transientMaxMs,
-        Math.round(transientDelayMs * (0.9 + randomUnit() * 0.2)),
-      );
-      transientDelayMs = Math.min(transientDelayMs * 2, transientMaxMs);
+      const maxMs = persistentFailure ? persistentMaxMs : transientMaxMs;
+      const nextDelayMs = persistentFailure ? persistentDelayMs : transientDelayMs;
+      const delay = Math.min(maxMs, Math.round(nextDelayMs * (0.9 + randomUnit() * 0.2)));
+      if (persistentFailure) {
+        persistentDelayMs = Math.min(persistentDelayMs * 2, maxMs);
+      } else {
+        transientDelayMs = Math.min(transientDelayMs * 2, maxMs);
+      }
       return delay;
     }
 
     function markStable() {
       transientDelayMs = transientBaseMs;
+      persistentDelayMs = transientBaseMs;
       fastRetryCount = 0;
     }
 

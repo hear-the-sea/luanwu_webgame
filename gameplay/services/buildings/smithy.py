@@ -413,6 +413,7 @@ def start_smelting_production(manor: Manor, metal_key: str, quantity: int = 1) -
             raise ProductionStartError(f"冶炼坊制作队列已满，当前最多同时制作{queue_capacity}项")
 
         # 扣除材料
+        output_is_bound = False
         if cost_type == "silver":
             try:
                 spend_resources_locked(
@@ -442,7 +443,7 @@ def start_smelting_production(manor: Manor, metal_key: str, quantity: int = 1) -
             )
             if not item or item.quantity < total_cost:
                 raise ProductionStartError(f"{cost_name}不足")
-            consume_inventory_item_locked(item, total_cost)
+            output_is_bound = bool(consume_inventory_item_locked(item, total_cost))
 
         unit_duration = calculate_smelting_duration(config["base_duration"], manor)
         actual_duration = unit_duration * quantity
@@ -455,6 +456,7 @@ def start_smelting_production(manor: Manor, metal_key: str, quantity: int = 1) -
             quantity=quantity,
             cost_type=cost_type,
             cost_amount=total_cost,
+            output_is_bound=output_is_bound,
             base_duration=config["base_duration"],
             actual_duration=actual_duration,
             complete_at=timezone.now() + timedelta(seconds=actual_duration),
@@ -552,7 +554,12 @@ def finalize_smelting_production(production: SmeltingProduction, send_notificati
         # 添加物品到仓库（按数量添加）
         from ..inventory.core import add_item_to_inventory_locked
 
-        add_item_to_inventory_locked(locked_manor, locked_production.metal_key, locked_production.quantity)
+        add_item_to_inventory_locked(
+            locked_manor,
+            locked_production.metal_key,
+            locked_production.quantity,
+            is_bound=locked_production.output_is_bound,
+        )
 
         # 更新制作状态
         finished_at = timezone.now()

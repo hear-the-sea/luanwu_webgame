@@ -130,8 +130,8 @@ def build_troop_combatants(
         defense = unit_defense * count
 
         tech_effects_dict: Dict[str, float] = {}
-        if effective_levels is not None and troop_class:
-            tech_effects_dict = build_tech_effects(troop_class, tech_levels=effective_levels)
+        if troop_class:
+            tech_effects_dict = build_tech_effects(troop_class, tech_levels=effective_levels or {})
 
         priority = int(definition["priority"])
 

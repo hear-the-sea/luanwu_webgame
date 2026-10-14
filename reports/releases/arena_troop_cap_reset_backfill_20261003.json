@@ -1,0 +1,76 @@
+{
+  "release": "arena-troop-cap-20261003T142859Z",
+  "image": "webgame:arena-troop-cap-20261003T142859Z",
+  "base_image": "webgame:arena-free-troops-20261003T141329Z",
+  "base_image_id": "sha256:36ba4f2de5f7642b6945102d089e9a58dd38d8624dadfe69452a312b2a392268",
+  "files": {
+    "gameplay/services/arena/ring.py": "81b5e63806b03ea4ecdc65b056ce5ceba878bd5e98b3bb1c909dd434f5d7dacb",
+    "gameplay/services/arena/ring_snapshots.py": "f732d15afb0a3c7b1c5f5dfbc215dc0862924698083998d65ac8cc516ff3a3f0",
+    "gameplay/selectors/arena/rings.py": "28e1524b7a3758ed227e5d5cd1ac0f45b38abb1dee7b02184277bad73d3d9c93",
+    "gameplay/templates/gameplay/arena/rings.html": "93530f8ccb75f01734f174446d8c6cc34e1878e20f47b64ed82c9a26123287c0",
+    "gameplay/templates/gameplay/arena/partials/ring_form.html": "e739cb54cfe8ee847964e883479464002191369c407483a2628f2173a5a1665b",
+    "static/js/arena-rings.js": "27d26f3b6e999af1eeec807832cd0f0efac40e8914f97defb5510ae8d78242df"
+  },
+  "base_files": {
+    "gameplay/services/arena/ring.py": "ee1c1fa279f7e357f5e97e01555394b61d4255c4498780508ee77079d312ad4e",
+    "gameplay/services/arena/ring_snapshots.py": "4bce876078e05de658bc9f6e6e98a2a1a2ddb301702193d8bbc142942f12eb2a",
+    "gameplay/selectors/arena/rings.py": "2edfdbd3a0281d59370dd8bc6d7654a706067f03e10ce8a99cc8ee3106b7e554",
+    "gameplay/templates/gameplay/arena/rings.html": "1f92581bc3618f9c4a3d614c3bebddf2259f13ea43a59a381c30e6d890bfa0d7",
+    "gameplay/templates/gameplay/arena/partials/ring_form.html": "db3b397685eaf4d5b1817897a5b9c2521b4dde7f0ee3c2e137f4c8238d3fe10d",
+    "static/js/arena-rings.js": "67e41a61b66715e0657eeb168ca5b42eca5d3bf4845aa0be3177173190244756"
+  },
+  "database_changes": false,
+  "services": [
+    "web"
+  ],
+  "status": "deployed_verified",
+  "image_id": "sha256:1dc7fc9b60d59da84813dfb86ade00d3f592ea2d7b58b1bfd7e5e80cfde6ec50",
+  "health": "healthy",
+  "backup_dir": "/root/code/releases/arena-troop-cap-20261003T142859Z/backup",
+  "workers_restarted": false,
+  "operation": {
+    "status": "reset_complete",
+    "timestamp": "2026-10-03T14:35:52.477399+00:00",
+    "rings_cleared": 2,
+    "active_tenures_ended": 2,
+    "previous_cooldowns_cleared": 3,
+    "remaining_active_tenures": 0,
+    "remaining_cooldowns": 0,
+    "history_preserved": true,
+    "earned_time_rewards_settled": true,
+    "backup_file": "/root/code/releases/arena-troop-cap-20261003T142859Z/backup/reset_and_backfill_before.json",
+    "challenge_uses_cleared": 44,
+    "challenge_players_cleared": 17,
+    "spring_backfill_milestones": 2,
+    "spring_backfill_players": 1,
+    "spring_backfill_coins": 9,
+    "daily_reward_caps_preserved": true
+  },
+  "live_verification": {
+    "render_status": 200,
+    "capacity_restriction": true,
+    "virtual_stock": true,
+    "max_guests": 20,
+    "cooldown_seconds": 600,
+    "backfill_receipts": 2,
+    "backfill_coins": 9,
+    "static_js": "/static/js/arena-rings.44125fe61b45.js"
+  },
+  "tests": {
+    "backend": 57,
+    "browser": 3,
+    "operation": 2,
+    "formatting": "passed",
+    "ruff": "passed"
+  },
+  "public_checks": [
+    {
+      "path": "/health/live",
+      "status": 200
+    },
+    {
+      "path": "/static/js/arena-rings.44125fe61b45.js",
+      "status": 200
+    }
+  ]
+}

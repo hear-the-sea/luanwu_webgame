@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 from django.db import transaction
 
-from core.exceptions import GuestNotFoundError, GuestNotIdleError, WorldUniqueGuestError
+from core.exceptions import EquipmentError, GuestNotFoundError, GuestNotIdleError, WorldUniqueGuestError
 from gameplay.models import Manor
 
 from ..models import Guest, GuestStatus
@@ -33,7 +33,7 @@ def dismiss_guest(guest: Guest) -> DismissGuestResult:
         locked_guest = Guest.objects.select_for_update().filter(pk=guest.pk, manor_id=locked_manor.pk).first()
         if not locked_guest:
             raise GuestNotFoundError()
-        if locked_guest.status not in {GuestStatus.IDLE, GuestStatus.INJURED}:
+        if locked_guest.status not in {GuestStatus.IDLE, GuestStatus.INJURED, GuestStatus.VACATION}:
             raise GuestNotIdleError(locked_guest)
 
         guest_name = locked_guest.display_name
@@ -49,8 +49,9 @@ def dismiss_guest(guest: Guest) -> DismissGuestResult:
             if released is None:
                 raise WorldUniqueGuestError(message="唯一门客归属状态异常，无法辞退")
         else:
-            for gear in gear_items:
-                equipment_service.unequip_guest_item(gear, locked_guest, allow_injured=True)
+            if any(gear.manor_id != locked_manor.pk for gear in gear_items):
+                raise EquipmentError("无法卸下其他庄园的装备")
+            equipment_service.return_guest_gear_to_inventory_locked(locked_manor, locked_guest)
             locked_guest.delete()
 
     return DismissGuestResult(guest_name=guest_name, gear_summary=gear_summary)

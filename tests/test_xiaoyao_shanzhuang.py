@@ -98,6 +98,34 @@ def test_xiaoyao_frees_active_slot_but_keeps_salary_and_blocks_battle(manor_fact
 
 
 @pytest.mark.django_db
+def test_dismiss_vacation_guest_without_recall_when_active_roster_is_full(manor_factory, client):
+    manor, user = manor_factory(username="xiaoyao_dismiss_full_roster")
+    _enable_xiaoyao(manor)
+    guests = [_guest(manor, f"xiaoyao_dismiss_guest_{index}") for index in range(manor.guest_capacity)]
+    vacation_guest = guests[0]
+    move_guest_to_xiaoyao(manor, vacation_guest.pk)
+    vacation_guest.refresh_from_db()
+    _guest(manor, "xiaoyao_dismiss_replacement")
+    assert manor.active_guest_count == manor.guest_capacity
+    assert manor.guests.filter(status=GuestStatus.VACATION).count() == manor.xiaoyao_capacity
+
+    client.force_login(user)
+    response = client.get(reverse("guests:detail", args=[vacation_guest.pk]))
+    assert response.status_code == 200
+    assert reverse("guests:dismiss", args=[vacation_guest.pk]) in response.content.decode()
+    response = client.post(reverse("guests:dismiss", args=[vacation_guest.pk]))
+    assert response.status_code == 302
+    assert response.url == reverse("guests:roster")
+    assert not Guest.objects.filter(pk=vacation_guest.pk).exists()
+    assert manor.active_guest_count == manor.guest_capacity
+    assert not manor.guests.filter(status=GuestStatus.VACATION).exists()
+
+    move_guest_to_xiaoyao(manor, guests[1].pk)
+    guests[1].refresh_from_db()
+    assert guests[1].status == GuestStatus.VACATION
+
+
+@pytest.mark.django_db
 def test_world_unique_guest_cannot_enter_xiaoyao(manor_factory):
     manor, _user = manor_factory(username="xiaoyao_unique_guest")
     _enable_xiaoyao(manor)

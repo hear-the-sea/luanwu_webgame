@@ -84,7 +84,11 @@ def build_tech_effects(
 
     if troop_class == "quan":
         ranged_level = safe_int(tech_levels.get("quan_vs_ranged", 0), default=0)
-        if ranged_level >= 5:
-            effects["ranged_damage_reduction"] = 0.20 if ranged_level >= 10 else 0.10
+        if ranged_level >= 10:
+            effects["ranged_damage_reduction"] = 0.30
+        elif ranged_level >= 5:
+            effects["ranged_damage_reduction"] = 0.20
+        else:
+            effects["ranged_damage_reduction"] = 0.10
 
     return effects

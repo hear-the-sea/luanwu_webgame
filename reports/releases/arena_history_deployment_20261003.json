@@ -1,0 +1,46 @@
+{
+  "release": "arena-history-20261003T153321Z",
+  "image": "webgame:arena-history-20261003T153321Z",
+  "base_image": "webgame:arena-challenge-limit-20261003T151152Z",
+  "base_image_id": "sha256:e05f1644a55d1fc39880292295169d89997812f44545b2244f13b0cc39044e9d",
+  "files": {
+    "gameplay/selectors/arena/rings.py": "283fccec6915f3d18c37438c1c725af32895aa7d74da1e328d9dce9576a6d0ec",
+    "gameplay/views/arena.py": "94cfac6d49e6cdbfd1f3c3a4c1375e14592823c36121d594263d1c5bc1a602ff",
+    "gameplay/templates/gameplay/arena/events.html": "4bfc743f64c59cbe1d1de827ed1b040c1158798b0b456193887c2a1ae90079b5",
+    "static/css/arena-rings.css": "fe0c39458de050d15be88b1fa80ed798d5266511a229263a51e30ab222519761"
+  },
+  "base_files": {
+    "gameplay/selectors/arena/rings.py": "eec57b57f76d88d20cb134641ad97f8164845281ebabb7334489c4a1c4b48fb1",
+    "gameplay/views/arena.py": "0dd536df1c43ac0b6661b4116bdfefd7040dc7c6d6d676b3731843f0d54dca31",
+    "gameplay/templates/gameplay/arena/events.html": "ce2292961c2fc1e468c48aadd345195566878bbe5afb9baddb53b4461a014db9",
+    "static/css/arena-rings.css": "beaae50eeefb77072439a409b6a708c90a8f66cae020d02ef80fcd22e416ec6c"
+  },
+  "database_changes": false,
+  "services": [
+    "web"
+  ],
+  "status": "deployed_verified",
+  "image_id": "sha256:feae6f472c1e9c629622e48fa668445775c2e5f0bf4c423e8d6cacccccacb0db",
+  "health": "healthy",
+  "backup_dir": "/root/code/releases/arena-history-20261003T153321Z/backup",
+  "workers_restarted": false,
+  "live_verification": {
+    "status": "verified",
+    "ring_groups": 2,
+    "records_per_page": 10,
+    "retention_hours": 24,
+    "independent_pagination": true,
+    "default_collapsed": true,
+    "attacker_limit": 2,
+    "attacker_cooldown_seconds": 600,
+    "public_health_status": 200,
+    "public_css_verified": true
+  },
+  "tests": {
+    "backend": 63,
+    "browser": 9,
+    "black": "passed",
+    "ruff": "passed",
+    "eslint": "passed"
+  }
+}

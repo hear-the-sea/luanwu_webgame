@@ -1,0 +1,3603 @@
+{
+  "status": "proposal_only_not_applied",
+  "version": "20261003-review-1",
+  "scope": "32 personal missions: 8 junior, 10 intermediate, 14 advanced",
+  "baseline": "workspace v3 YAML and runtime reward semantics; no player-economy telemetry read",
+  "binding_rule": "real source binding inherited; no-diagram equipment synthesis remains unbound",
+  "new_mechanics_needing_approval": [
+    "versioned v4 chests preserve historical boxes",
+    "first-win-per-day collection awarded at victory settlement",
+    "six new collection keys with historical old costs unchanged",
+    "rarity-based diagram support: green/blue 50%, purple25%, orange0%"
+  ],
+  "missions": [
+    {
+      "key": "mid_autumn_moon_palace_trial",
+      "name": "广寒宫试炼",
+      "tier": "intermediate",
+      "silver": 40000,
+      "daily_base": 3,
+      "card_limit": 5,
+      "weekdays": [
+        2,
+        4,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "buxuedan": 2,
+        "experience_peach": 2,
+        "mid_autumn_mooncake": 1
+      },
+      "groups": [
+        {
+          "label": "mid_autumn_mooncake_bonus_1",
+          "chance": 0.4,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "mid_autumn_mooncake",
+              "weight": 1,
+              "probability_per_box": 0.4
+            }
+          ]
+        },
+        {
+          "label": "mid_autumn_mooncake_bonus_2",
+          "chance": 0.15,
+          "quantity": 2,
+          "choices": [
+            {
+              "item_key": "mid_autumn_mooncake",
+              "weight": 1,
+              "probability_per_box": 0.15
+            }
+          ]
+        },
+        {
+          "label": "jade_rabbit_summon_scroll",
+          "chance": 0.05,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "jade_rabbit_summon_scroll",
+              "weight": 1,
+              "probability_per_box": 0.05
+            }
+          ]
+        },
+        {
+          "label": "wu_gang_summon_scroll",
+          "chance": 0.02,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "wu_gang_summon_scroll",
+              "weight": 1,
+              "probability_per_box": 0.02
+            }
+          ]
+        },
+        {
+          "label": "chang_e_summon_scroll",
+          "chance": 0.005,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "chang_e_summon_scroll",
+              "weight": 1,
+              "probability_per_box": 0.005
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 16,
+      "expected_acceleration_hours": 16.0,
+      "expected_orange_equipment_per_box": 0,
+      "monthly_orange_expectation_base": 0.0,
+      "monthly_orange_expectation_full_cards": 0.0
+    },
+    {
+      "key": "kasukabe_daisakusen",
+      "name": "春日部大作战",
+      "tier": "intermediate",
+      "silver": 40000,
+      "daily_base": 3,
+      "card_limit": 5,
+      "weekdays": [
+        2,
+        4,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "buxuedan": 2,
+        "experience_peach": 2,
+        "kasukabe_crayon": 2
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.25,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_pineapple",
+              "weight": 1,
+              "probability_per_box": 0.25
+            }
+          ]
+        },
+        {
+          "label": "kasukabe_crayon_bonus_1",
+          "chance": 0.25,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "kasukabe_crayon",
+              "weight": 1,
+              "probability_per_box": 0.25
+            }
+          ]
+        },
+        {
+          "label": "主题装备",
+          "chance": 0.35,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_action_mask",
+              "weight": 10000,
+              "probability_per_box": 0.08974358974358974
+            },
+            {
+              "item_key": "equip_shiro_leash",
+              "weight": 10000,
+              "probability_per_box": 0.08974358974358974
+            },
+            {
+              "item_key": "equip_kasukabe_satchel",
+              "weight": 8000,
+              "probability_per_box": 0.07179487179487179
+            },
+            {
+              "item_key": "equip_action_beam_glove",
+              "weight": 6000,
+              "probability_per_box": 0.05384615384615385
+            },
+            {
+              "item_key": "equip_nohara_pan",
+              "weight": 5000,
+              "probability_per_box": 0.04487179487179487
+            }
+          ]
+        },
+        {
+          "label": "fangdajing",
+          "chance": 0.1,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "fangdajing",
+              "weight": 1,
+              "probability_per_box": 0.1
+            }
+          ]
+        },
+        {
+          "label": "mission_card",
+          "chance": 0.02,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "mission_card",
+              "weight": 1,
+              "probability_per_box": 0.02
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 16,
+      "expected_acceleration_hours": 20.0,
+      "expected_orange_equipment_per_box": 0,
+      "monthly_orange_expectation_base": 0.0,
+      "monthly_orange_expectation_full_cards": 0.0
+    },
+    {
+      "key": "huashan_lunjian",
+      "name": "华山论贱",
+      "tier": "junior",
+      "silver": 8000,
+      "daily_base": 3,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "zhixuesan": 2,
+        "tong": 5,
+        "xi": 2,
+        "tie": 1
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.2,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_peach",
+              "weight": 1,
+              "probability_per_box": 0.2
+            }
+          ]
+        },
+        {
+          "label": "huashan_equipment_pool",
+          "chance": 0.5,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_shushengzhesan",
+              "weight": 1,
+              "probability_per_box": 0.25
+            },
+            {
+              "item_key": "equip_yanlingmao",
+              "weight": 1,
+              "probability_per_box": 0.25
+            }
+          ]
+        },
+        {
+          "label": "book_thunder_control",
+          "chance": 0.06,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_thunder_control",
+              "weight": 1,
+              "probability_per_box": 0.06
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 0,
+      "expected_acceleration_hours": 1.6,
+      "expected_orange_equipment_per_box": 0,
+      "monthly_orange_expectation_base": 0.0,
+      "monthly_orange_expectation_full_cards": 0.0
+    },
+    {
+      "key": "wagangzhai_nixi",
+      "name": "瓦岗寨的逆袭",
+      "tier": "intermediate",
+      "silver": 40000,
+      "daily_base": 3,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "buxuedan": 2,
+        "tong": 8,
+        "xi": 5,
+        "tie": 3,
+        "experience_peach": 2
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.25,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_pineapple",
+              "weight": 1,
+              "probability_per_box": 0.25
+            }
+          ]
+        },
+        {
+          "label": "主题装备",
+          "chance": 0.4,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_feiyunzui",
+              "weight": 10000,
+              "probability_per_box": 0.11764705882352941
+            },
+            {
+              "item_key": "equip_xuantiekui",
+              "weight": 7000,
+              "probability_per_box": 0.08235294117647059
+            },
+            {
+              "item_key": "equip_hantiekui",
+              "weight": 6000,
+              "probability_per_box": 0.07058823529411765
+            },
+            {
+              "item_key": "equip_wujinjia",
+              "weight": 6000,
+              "probability_per_box": 0.07058823529411765
+            },
+            {
+              "item_key": "equip_linwenzhanjia",
+              "weight": 5000,
+              "probability_per_box": 0.058823529411764705
+            }
+          ]
+        },
+        {
+          "label": "军阵目标",
+          "chance": 0.04,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_pojunhufu",
+              "weight": 6,
+              "probability_per_box": 0.021818181818181816
+            },
+            {
+              "item_key": "equip_xuanjiazhanju",
+              "weight": 5,
+              "probability_per_box": 0.018181818181818184
+            }
+          ]
+        },
+        {
+          "label": "book_ice_curse",
+          "chance": 0.06,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_ice_curse",
+              "weight": 1,
+              "probability_per_box": 0.06
+            }
+          ]
+        },
+        {
+          "label": "book_fatal_chain_sword",
+          "chance": 0.025,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_fatal_chain_sword",
+              "weight": 1,
+              "probability_per_box": 0.025
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 16,
+      "expected_acceleration_hours": 20.0,
+      "expected_orange_equipment_per_box": 0,
+      "monthly_orange_expectation_base": 0.0,
+      "monthly_orange_expectation_full_cards": 0.0
+    },
+    {
+      "key": "jingyanggang",
+      "name": "景阳冈",
+      "tier": "junior",
+      "silver": 7000,
+      "daily_base": 3,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "zhixuesan": 2,
+        "tong": 5,
+        "xi": 2,
+        "tie": 1
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.2,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_peach",
+              "weight": 1,
+              "probability_per_box": 0.2
+            }
+          ]
+        },
+        {
+          "label": "jingyang_equipment_pool",
+          "chance": 0.6,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_hupixue",
+              "weight": 1,
+              "probability_per_box": 0.3
+            },
+            {
+              "item_key": "equip_huwenkui",
+              "weight": 1,
+              "probability_per_box": 0.3
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 0,
+      "expected_acceleration_hours": 1.6,
+      "expected_orange_equipment_per_box": 0,
+      "monthly_orange_expectation_base": 0.0,
+      "monthly_orange_expectation_full_cards": 0.0
+    },
+    {
+      "key": "wulongshan",
+      "name": "乌龙山",
+      "tier": "junior",
+      "silver": 15000,
+      "daily_base": 3,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "zhixuesan": 2,
+        "tong": 5,
+        "xi": 2,
+        "tie": 1
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.2,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_peach",
+              "weight": 1,
+              "probability_per_box": 0.2
+            }
+          ]
+        },
+        {
+          "label": "wulong_equipment_pool",
+          "chance": 0.6,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_baoutoukui",
+              "weight": 1,
+              "probability_per_box": 0.15
+            },
+            {
+              "item_key": "equip_tiegugun",
+              "weight": 1,
+              "probability_per_box": 0.15
+            },
+            {
+              "item_key": "equip_youxiaxue",
+              "weight": 1,
+              "probability_per_box": 0.15
+            },
+            {
+              "item_key": "equip_mengguma",
+              "weight": 1,
+              "probability_per_box": 0.15
+            }
+          ]
+        },
+        {
+          "label": "book_dragon_break_curse",
+          "chance": 0.06,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_dragon_break_curse",
+              "weight": 1,
+              "probability_per_box": 0.06
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 0,
+      "expected_acceleration_hours": 1.6,
+      "expected_orange_equipment_per_box": 0,
+      "monthly_orange_expectation_base": 0.0,
+      "monthly_orange_expectation_full_cards": 0.0
+    },
+    {
+      "key": "wagangzhai",
+      "name": "瓦岗寨",
+      "tier": "junior",
+      "silver": 20000,
+      "daily_base": 3,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "zhixuesan": 2,
+        "tong": 5,
+        "xi": 2,
+        "tie": 1
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.2,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_peach",
+              "weight": 1,
+              "probability_per_box": 0.2
+            }
+          ]
+        },
+        {
+          "label": "wagang_equipment_pool",
+          "chance": 0.65,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_suozijia",
+              "weight": 1,
+              "probability_per_box": 0.07222222222222223
+            },
+            {
+              "item_key": "equip_shanwenjia",
+              "weight": 1,
+              "probability_per_box": 0.07222222222222223
+            },
+            {
+              "item_key": "equip_tiexianjia",
+              "weight": 1,
+              "probability_per_box": 0.07222222222222223
+            },
+            {
+              "item_key": "equip_pofengji",
+              "weight": 1,
+              "probability_per_box": 0.07222222222222223
+            },
+            {
+              "item_key": "equip_tongshanchui",
+              "weight": 1,
+              "probability_per_box": 0.07222222222222223
+            },
+            {
+              "item_key": "equip_tiehufu",
+              "weight": 1,
+              "probability_per_box": 0.07222222222222223
+            },
+            {
+              "item_key": "equip_yiqiyaopai",
+              "weight": 1,
+              "probability_per_box": 0.07222222222222223
+            },
+            {
+              "item_key": "equip_xiliangma",
+              "weight": 1,
+              "probability_per_box": 0.07222222222222223
+            },
+            {
+              "item_key": "equip_chibiao",
+              "weight": 1,
+              "probability_per_box": 0.07222222222222223
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 0,
+      "expected_acceleration_hours": 1.6,
+      "expected_orange_equipment_per_box": 0,
+      "monthly_orange_expectation_base": 0.0,
+      "monthly_orange_expectation_full_cards": 0.0
+    },
+    {
+      "key": "fugui_shanzhuang",
+      "name": "富贵山庄",
+      "tier": "junior",
+      "silver": 14000,
+      "daily_base": 3,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "zhixuesan": 2,
+        "tong": 5,
+        "xi": 2,
+        "tie": 1
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.2,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_peach",
+              "weight": 1,
+              "probability_per_box": 0.2
+            }
+          ]
+        },
+        {
+          "label": "fugui_equipment_pool",
+          "chance": 0.65,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_yupei",
+              "weight": 1,
+              "probability_per_box": 0.1625
+            },
+            {
+              "item_key": "equip_fudai",
+              "weight": 1,
+              "probability_per_box": 0.1625
+            },
+            {
+              "item_key": "equip_zhujian",
+              "weight": 1,
+              "probability_per_box": 0.1625
+            },
+            {
+              "item_key": "equip_moyuyan",
+              "weight": 1,
+              "probability_per_box": 0.1625
+            }
+          ]
+        },
+        {
+          "label": "book_steadfast_planning",
+          "chance": 0.06,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_steadfast_planning",
+              "weight": 1,
+              "probability_per_box": 0.06
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 0,
+      "expected_acceleration_hours": 1.6,
+      "expected_orange_equipment_per_box": 0,
+      "monthly_orange_expectation_base": 0.0,
+      "monthly_orange_expectation_full_cards": 0.0
+    },
+    {
+      "key": "shizipo_heidian",
+      "name": "十字坡黑店",
+      "tier": "intermediate",
+      "silver": 30000,
+      "daily_base": 3,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "buxuedan": 2,
+        "tong": 8,
+        "xi": 5,
+        "tie": 3,
+        "experience_peach": 2
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.25,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_pineapple",
+              "weight": 1,
+              "probability_per_box": 0.25
+            }
+          ]
+        },
+        {
+          "label": "主题装备",
+          "chance": 0.5,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_duanhunbian",
+              "weight": 20000,
+              "probability_per_box": 0.14285714285714285
+            },
+            {
+              "item_key": "equip_hanyuejian",
+              "weight": 10000,
+              "probability_per_box": 0.07142857142857142
+            },
+            {
+              "item_key": "equip_lieyandao",
+              "weight": 10000,
+              "probability_per_box": 0.07142857142857142
+            },
+            {
+              "item_key": "equip_zhenyuechui",
+              "weight": 10000,
+              "probability_per_box": 0.07142857142857142
+            },
+            {
+              "item_key": "equip_huyaxianglian",
+              "weight": 10000,
+              "probability_per_box": 0.07142857142857142
+            },
+            {
+              "item_key": "equip_xueyuzhuo",
+              "weight": 10000,
+              "probability_per_box": 0.07142857142857142
+            }
+          ]
+        },
+        {
+          "label": "shizipo_skill_book_random",
+          "chance": 0.06,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_soul_erode",
+              "weight": 1,
+              "probability_per_box": 0.03
+            },
+            {
+              "item_key": "book_draw_enemy_blades",
+              "weight": 1,
+              "probability_per_box": 0.03
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 16,
+      "expected_acceleration_hours": 20.0,
+      "expected_orange_equipment_per_box": 0,
+      "monthly_orange_expectation_base": 0.0,
+      "monthly_orange_expectation_full_cards": 0.0
+    },
+    {
+      "key": "shanhaiguan",
+      "name": "山海关",
+      "tier": "intermediate",
+      "silver": 40000,
+      "daily_base": 3,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "buxuedan": 2,
+        "tong": 8,
+        "xi": 5,
+        "tie": 3,
+        "experience_peach": 2
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.25,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_pineapple",
+              "weight": 1,
+              "probability_per_box": 0.25
+            }
+          ]
+        },
+        {
+          "label": "blueprint_xiaowei_set",
+          "chance": 0.25,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "blueprint_xiaoweitoukie",
+              "weight": 1,
+              "probability_per_box": 0.0625
+            },
+            {
+              "item_key": "blueprint_xiaoweikaijia",
+              "weight": 1,
+              "probability_per_box": 0.0625
+            },
+            {
+              "item_key": "blueprint_xiaoweichangxue",
+              "weight": 1,
+              "probability_per_box": 0.0625
+            },
+            {
+              "item_key": "blueprint_xiaoweichangjian",
+              "weight": 1,
+              "probability_per_box": 0.0625
+            }
+          ]
+        },
+        {
+          "label": "守关坐骑",
+          "chance": 0.2,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_zhaoyeyushizi",
+              "weight": 15,
+              "probability_per_box": 0.09090909090909091
+            },
+            {
+              "item_key": "equip_zhuidian",
+              "weight": 10,
+              "probability_per_box": 0.06060606060606061
+            },
+            {
+              "item_key": "equip_bailongju",
+              "weight": 8,
+              "probability_per_box": 0.048484848484848485
+            }
+          ]
+        },
+        {
+          "label": "守关坐骑",
+          "chance": 0.005,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_dilu",
+              "weight": 2,
+              "probability_per_box": 0.005
+            }
+          ]
+        },
+        {
+          "label": "主题装备",
+          "chance": 0.25,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_feiyukui",
+              "weight": 10000,
+              "probability_per_box": 0.125
+            },
+            {
+              "item_key": "equip_langyakui",
+              "weight": 10000,
+              "probability_per_box": 0.125
+            }
+          ]
+        },
+        {
+          "label": "shanhaiguan_skill_book_random",
+          "chance": 0.06,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_iron_wall_heart",
+              "weight": 5,
+              "probability_per_box": 0.03333333333333333
+            },
+            {
+              "item_key": "book_last_chance_revival",
+              "weight": 4,
+              "probability_per_box": 0.026666666666666665
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 16,
+      "expected_acceleration_hours": 20.0,
+      "expected_orange_equipment_per_box": 0,
+      "monthly_orange_expectation_base": 0.0,
+      "monthly_orange_expectation_full_cards": 0.0
+    },
+    {
+      "key": "shiren_daochang",
+      "name": "十人道场",
+      "tier": "intermediate",
+      "silver": 20000,
+      "daily_base": 3,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "buxuedan": 2,
+        "tong": 8,
+        "xi": 5,
+        "tie": 3,
+        "experience_peach": 6
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.2,
+          "quantity": 2,
+          "choices": [
+            {
+              "item_key": "experience_peach",
+              "weight": 1,
+              "probability_per_box": 0.2
+            }
+          ]
+        },
+        {
+          "label": "主题装备",
+          "chance": 0.35,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_yunwenkui",
+              "weight": 10000,
+              "probability_per_box": 0.0875
+            },
+            {
+              "item_key": "equip_yunwenfayi",
+              "weight": 10000,
+              "probability_per_box": 0.0875
+            },
+            {
+              "item_key": "equip_xingluoshan",
+              "weight": 10000,
+              "probability_per_box": 0.0875
+            },
+            {
+              "item_key": "equip_linghuzhui",
+              "weight": 10000,
+              "probability_per_box": 0.0875
+            }
+          ]
+        },
+        {
+          "label": "shiren_skill_book_random",
+          "chance": 0.06,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_taiyi_wind",
+              "weight": 1,
+              "probability_per_box": 0.03
+            },
+            {
+              "item_key": "book_flower_rain",
+              "weight": 1,
+              "probability_per_box": 0.03
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 48,
+      "expected_acceleration_hours": 51.2,
+      "expected_orange_equipment_per_box": 0,
+      "monthly_orange_expectation_base": 0.0,
+      "monthly_orange_expectation_full_cards": 0.0
+    },
+    {
+      "key": "jiguanshou_chuxian",
+      "name": "机关兽初现",
+      "tier": "junior",
+      "silver": 24000,
+      "daily_base": 2,
+      "card_limit": 1,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "zhixuesan": 2,
+        "tong": 5,
+        "xi": 2,
+        "tie": 1
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.2,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_peach",
+              "weight": 1,
+              "probability_per_box": 0.2
+            }
+          ]
+        },
+        {
+          "label": "入门机关与算筹",
+          "chance": 0.7,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "blueprint_xiaoxingjiguanshu",
+              "weight": 1,
+              "probability_per_box": 0.2333333333333333
+            },
+            {
+              "item_key": "blueprint_tongchanjiguan",
+              "weight": 1,
+              "probability_per_box": 0.2333333333333333
+            },
+            {
+              "item_key": "equip_qingtongsuanchou",
+              "weight": 1,
+              "probability_per_box": 0.2333333333333333
+            }
+          ]
+        },
+        {
+          "label": "入门蓝图惊喜",
+          "chance": 0.02,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "blueprint_jixiemao",
+              "weight": 1,
+              "probability_per_box": 0.02
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 0,
+      "expected_acceleration_hours": 1.6,
+      "expected_orange_equipment_per_box": 0,
+      "monthly_orange_expectation_base": 0.0,
+      "monthly_orange_expectation_full_cards": 0.0
+    },
+    {
+      "key": "biwu_zhaoqin",
+      "name": "比武招亲",
+      "tier": "junior",
+      "silver": 20000,
+      "daily_base": 3,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "zhixuesan": 2,
+        "tong": 5,
+        "xi": 2,
+        "tie": 1
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.2,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_peach",
+              "weight": 1,
+              "probability_per_box": 0.2
+            }
+          ]
+        },
+        {
+          "label": "biwu_equipment_pool",
+          "chance": 0.65,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_xuantiejia",
+              "weight": 1,
+              "probability_per_box": 0.1625
+            },
+            {
+              "item_key": "equip_qingtongsuanchou",
+              "weight": 1,
+              "probability_per_box": 0.1625
+            },
+            {
+              "item_key": "equip_tongjing",
+              "weight": 1,
+              "probability_per_box": 0.1625
+            },
+            {
+              "item_key": "equip_qingzongma",
+              "weight": 1,
+              "probability_per_box": 0.1625
+            }
+          ]
+        },
+        {
+          "label": "book_endless_chatter",
+          "chance": 0.06,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_endless_chatter",
+              "weight": 1,
+              "probability_per_box": 0.06
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 0,
+      "expected_acceleration_hours": 1.6,
+      "expected_orange_equipment_per_box": 0,
+      "monthly_orange_expectation_base": 0.0,
+      "monthly_orange_expectation_full_cards": 0.0
+    },
+    {
+      "key": "tianpeng_dijiao_1",
+      "name": "天蓬元帅的地窖（第一层）",
+      "tier": "intermediate",
+      "silver": 50000,
+      "daily_base": 3,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "buxuedan": 2,
+        "experience_pineapple": 4
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.25,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_pineapple",
+              "weight": 1,
+              "probability_per_box": 0.25
+            }
+          ]
+        },
+        {
+          "label": "主题装备",
+          "chance": 0.3,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_junzijian",
+              "weight": 10000,
+              "probability_per_box": 0.08571428571428572
+            },
+            {
+              "item_key": "equip_xuanjiazhanbao",
+              "weight": 5000,
+              "probability_per_box": 0.04285714285714286
+            },
+            {
+              "item_key": "equip_xuanbinggong",
+              "weight": 6000,
+              "probability_per_box": 0.05142857142857143
+            },
+            {
+              "item_key": "equip_fengyuzan",
+              "weight": 7000,
+              "probability_per_box": 0.06
+            },
+            {
+              "item_key": "equip_xingshashouchuan",
+              "weight": 7000,
+              "probability_per_box": 0.06
+            }
+          ]
+        },
+        {
+          "label": "book_red_lotus_dance",
+          "chance": 0.025,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_red_lotus_dance",
+              "weight": 1,
+              "probability_per_box": 0.025
+            }
+          ]
+        },
+        {
+          "label": "book_tangseng_sermon",
+          "chance": 0.015,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_tangseng_sermon",
+              "weight": 1,
+              "probability_per_box": 0.015
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 64,
+      "expected_acceleration_hours": 68.0,
+      "expected_orange_equipment_per_box": 0,
+      "monthly_orange_expectation_base": 0.0,
+      "monthly_orange_expectation_full_cards": 0.0
+    },
+    {
+      "key": "tianpeng_dijiao_2",
+      "name": "天蓬元帅的地窖（第二层）",
+      "tier": "advanced",
+      "silver": 0,
+      "daily_base": 3,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "buxuedan": 4,
+        "experience_pineapple": 6
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.25,
+          "quantity": 2,
+          "choices": [
+            {
+              "item_key": "experience_watermelon",
+              "weight": 1,
+              "probability_per_box": 0.25
+            }
+          ]
+        },
+        {
+          "label": "狐仙图纸",
+          "chance": 0.15,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "blueprint_huxianjian",
+              "weight": 1,
+              "probability_per_box": 0.049999999999999996
+            },
+            {
+              "item_key": "blueprint_huxianpao",
+              "weight": 1,
+              "probability_per_box": 0.049999999999999996
+            },
+            {
+              "item_key": "blueprint_huxianxie",
+              "weight": 1,
+              "probability_per_box": 0.049999999999999996
+            }
+          ]
+        },
+        {
+          "label": "主题装备",
+          "chance": 0.25,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_zhaoyaojing",
+              "weight": 15000,
+              "probability_per_box": 0.06818181818181818
+            },
+            {
+              "item_key": "equip_qiankunquan",
+              "weight": 10000,
+              "probability_per_box": 0.045454545454545456
+            },
+            {
+              "item_key": "equip_tianjiluopan",
+              "weight": 10000,
+              "probability_per_box": 0.045454545454545456
+            },
+            {
+              "item_key": "equip_lingwenyubi",
+              "weight": 10000,
+              "probability_per_box": 0.045454545454545456
+            },
+            {
+              "item_key": "equip_guanxingdeng",
+              "weight": 10000,
+              "probability_per_box": 0.045454545454545456
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 96,
+      "expected_acceleration_hours": 108.0,
+      "expected_orange_equipment_per_box": 0,
+      "monthly_orange_expectation_base": 0.0,
+      "monthly_orange_expectation_full_cards": 0.0
+    },
+    {
+      "key": "jiguan_chuniao",
+      "name": "机关雏鸟",
+      "tier": "intermediate",
+      "silver": 30000,
+      "daily_base": 3,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "buxuedan": 2,
+        "tong": 8,
+        "xi": 5,
+        "tie": 3,
+        "experience_peach": 2
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.25,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_pineapple",
+              "weight": 1,
+              "probability_per_box": 0.25
+            }
+          ]
+        },
+        {
+          "label": "机关雏鸟主图纸",
+          "chance": 0.25,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "blueprint_jiguanchuniao",
+              "weight": 1,
+              "probability_per_box": 0.25
+            }
+          ]
+        },
+        {
+          "label": "blueprint_mechanism_blue",
+          "chance": 0.15,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "blueprint_jixiemao",
+              "weight": 1,
+              "probability_per_box": 0.049999999999999996
+            },
+            {
+              "item_key": "blueprint_kuileimuren",
+              "weight": 1,
+              "probability_per_box": 0.049999999999999996
+            },
+            {
+              "item_key": "blueprint_qingji",
+              "weight": 1,
+              "probability_per_box": 0.049999999999999996
+            }
+          ]
+        },
+        {
+          "label": "进阶机关熊图纸",
+          "chance": 0.01,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "blueprint_jiguanxiong",
+              "weight": 1,
+              "probability_per_box": 0.01
+            }
+          ]
+        },
+        {
+          "label": "主题装备",
+          "chance": 0.2,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_feiyunzui",
+              "weight": 10000,
+              "probability_per_box": 0.2
+            }
+          ]
+        },
+        {
+          "label": "book_thunder_nine_heavens",
+          "chance": 0.025,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_thunder_nine_heavens",
+              "weight": 1,
+              "probability_per_box": 0.025
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 16,
+      "expected_acceleration_hours": 20.0,
+      "expected_orange_equipment_per_box": 0,
+      "monthly_orange_expectation_base": 0.0,
+      "monthly_orange_expectation_full_cards": 0.0
+    },
+    {
+      "key": "dongtian_fudi",
+      "name": "洞天福地",
+      "tier": "advanced",
+      "silver": 50000,
+      "daily_base": 3,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "buxuedan": 4,
+        "tong": 12,
+        "xi": 8,
+        "tie": 5,
+        "experience_watermelon": 3
+      },
+      "groups": [
+        {
+          "label": "xidianka",
+          "chance": 0.1,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "xidianka",
+              "weight": 1,
+              "probability_per_box": 0.1
+            }
+          ]
+        },
+        {
+          "label": "xisuidan",
+          "chance": 0.005,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "xisuidan",
+              "weight": 1,
+              "probability_per_box": 0.005
+            }
+          ]
+        },
+        {
+          "label": "equip_pojunxue",
+          "chance": 0.1,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_pojunxue",
+              "weight": 1,
+              "probability_per_box": 0.1
+            }
+          ]
+        },
+        {
+          "label": "洞天军备与灵物",
+          "chance": 0.18,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_pojunji",
+              "weight": 16,
+              "probability_per_box": 0.048
+            },
+            {
+              "item_key": "equip_pojunkui",
+              "weight": 16,
+              "probability_per_box": 0.048
+            },
+            {
+              "item_key": "equip_pojunzhanjia",
+              "weight": 16,
+              "probability_per_box": 0.048
+            },
+            {
+              "item_key": "equip_longjingzhu",
+              "weight": 6,
+              "probability_per_box": 0.018000000000000002
+            },
+            {
+              "item_key": "equip_qingshuanglu",
+              "weight": 6,
+              "probability_per_box": 0.018000000000000002
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 72,
+      "expected_acceleration_hours": 72.0,
+      "expected_orange_equipment_per_box": 0,
+      "monthly_orange_expectation_base": 0.0,
+      "monthly_orange_expectation_full_cards": 0.0
+    },
+    {
+      "key": "jiufeng_feihuan",
+      "name": "九峰匪患",
+      "tier": "intermediate",
+      "silver": 20000,
+      "daily_base": 3,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "buxuedan": 2,
+        "tong": 8,
+        "xi": 5,
+        "tie": 3,
+        "experience_peach": 2
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.25,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_pineapple",
+              "weight": 1,
+              "probability_per_box": 0.25
+            }
+          ]
+        },
+        {
+          "label": "主题装备",
+          "chance": 0.35,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_zhuifengxue",
+              "weight": 7000,
+              "probability_per_box": 0.07
+            },
+            {
+              "item_key": "equip_yingxingxue",
+              "weight": 7000,
+              "probability_per_box": 0.07
+            },
+            {
+              "item_key": "equip_pojunxue",
+              "weight": 6000,
+              "probability_per_box": 0.06
+            },
+            {
+              "item_key": "equip_jinlinxue",
+              "weight": 6000,
+              "probability_per_box": 0.06
+            },
+            {
+              "item_key": "equip_qianliju",
+              "weight": 6000,
+              "probability_per_box": 0.06
+            },
+            {
+              "item_key": "equip_juanmaochitu",
+              "weight": 3000,
+              "probability_per_box": 0.03
+            }
+          ]
+        },
+        {
+          "label": "凌波鞋",
+          "chance": 0.12,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_lingboxie",
+              "weight": 1,
+              "probability_per_box": 0.12
+            }
+          ]
+        },
+        {
+          "label": "救援机关",
+          "chance": 0.01,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "blueprint_muniuliuma",
+              "weight": 1,
+              "probability_per_box": 0.01
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 16,
+      "expected_acceleration_hours": 20.0,
+      "expected_orange_equipment_per_box": 0,
+      "monthly_orange_expectation_base": 0.0,
+      "monthly_orange_expectation_full_cards": 0.0
+    },
+    {
+      "key": "taozi_fenban",
+      "name": "我的桃子分你一半",
+      "tier": "junior",
+      "silver": 0,
+      "daily_base": 1,
+      "card_limit": 0,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "zhixuesan": 2,
+        "experience_peach": 8
+      },
+      "groups": [
+        {
+          "label": "taozi_equipment_pool",
+          "chance": 0.3,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_qingzhujia",
+              "weight": 1,
+              "probability_per_box": 0.02727272727272727
+            },
+            {
+              "item_key": "equip_qingtengguan",
+              "weight": 1,
+              "probability_per_box": 0.02727272727272727
+            },
+            {
+              "item_key": "equip_zhuyelu",
+              "weight": 1,
+              "probability_per_box": 0.02727272727272727
+            },
+            {
+              "item_key": "equip_tayunxue",
+              "weight": 1,
+              "probability_per_box": 0.02727272727272727
+            },
+            {
+              "item_key": "equip_jifengxue",
+              "weight": 1,
+              "probability_per_box": 0.02727272727272727
+            },
+            {
+              "item_key": "equip_hushenfu",
+              "weight": 1,
+              "probability_per_box": 0.02727272727272727
+            },
+            {
+              "item_key": "equip_taomupai",
+              "weight": 1,
+              "probability_per_box": 0.02727272727272727
+            },
+            {
+              "item_key": "equip_tanmunianzhu",
+              "weight": 1,
+              "probability_per_box": 0.02727272727272727
+            },
+            {
+              "item_key": "equip_taomujian",
+              "weight": 1,
+              "probability_per_box": 0.02727272727272727
+            },
+            {
+              "item_key": "equip_luopan",
+              "weight": 1,
+              "probability_per_box": 0.02727272727272727
+            },
+            {
+              "item_key": "equip_taxuema",
+              "weight": 1,
+              "probability_per_box": 0.02727272727272727
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 64,
+      "expected_acceleration_hours": 64.0,
+      "expected_orange_equipment_per_box": 0,
+      "monthly_orange_expectation_base": 0.0,
+      "monthly_orange_expectation_full_cards": 0.0
+    },
+    {
+      "key": "simian_chuge",
+      "name": "四面楚歌",
+      "tier": "advanced",
+      "silver": 50000,
+      "daily_base": 3,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "buxuedan": 4,
+        "tong": 12,
+        "xi": 8,
+        "tie": 5,
+        "experience_pineapple": 3
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.2,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_watermelon",
+              "weight": 1,
+              "probability_per_box": 0.2
+            }
+          ]
+        },
+        {
+          "label": "equip_wuzhuima",
+          "chance": 0.06,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_wuzhuima",
+              "weight": 1,
+              "probability_per_box": 0.06
+            }
+          ]
+        },
+        {
+          "label": "equip_bawangqiang",
+          "chance": 0.06,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_bawangqiang",
+              "weight": 6,
+              "probability_per_box": 0.036
+            },
+            {
+              "item_key": "equip_bawangkui",
+              "weight": 4,
+              "probability_per_box": 0.024
+            }
+          ]
+        },
+        {
+          "label": "passive_skill_book_box",
+          "chance": 0.08,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_steadfast_planning",
+              "weight": 1,
+              "probability_per_box": 0.011428571428571429
+            },
+            {
+              "item_key": "book_iron_wall_heart",
+              "weight": 1,
+              "probability_per_box": 0.011428571428571429
+            },
+            {
+              "item_key": "book_last_chance_revival",
+              "weight": 1,
+              "probability_per_box": 0.011428571428571429
+            },
+            {
+              "item_key": "book_draw_enemy_blades",
+              "weight": 1,
+              "probability_per_box": 0.011428571428571429
+            },
+            {
+              "item_key": "book_desperate_beast",
+              "weight": 1,
+              "probability_per_box": 0.011428571428571429
+            },
+            {
+              "item_key": "book_bloodthirsty_fury",
+              "weight": 1,
+              "probability_per_box": 0.011428571428571429
+            },
+            {
+              "item_key": "book_comrade_command",
+              "weight": 1,
+              "probability_per_box": 0.011428571428571429
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 48,
+      "expected_acceleration_hours": 52.8,
+      "expected_orange_equipment_per_box": 0,
+      "monthly_orange_expectation_base": 0.0,
+      "monthly_orange_expectation_full_cards": 0.0
+    },
+    {
+      "key": "manzu_ruqin",
+      "name": "蛮族入侵",
+      "tier": "advanced",
+      "silver": 50000,
+      "daily_base": 3,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "buxuedan": 4,
+        "tong": 12,
+        "xi": 8,
+        "tie": 5,
+        "experience_pineapple": 3
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.2,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_watermelon",
+              "weight": 1,
+              "probability_per_box": 0.2
+            }
+          ]
+        },
+        {
+          "label": "civil_skill_book_box",
+          "chance": 0.1,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_flower_rain",
+              "weight": 1,
+              "probability_per_box": 0.014285714285714287
+            },
+            {
+              "item_key": "book_soul_erode",
+              "weight": 1,
+              "probability_per_box": 0.014285714285714287
+            },
+            {
+              "item_key": "book_red_lotus_dance",
+              "weight": 1,
+              "probability_per_box": 0.014285714285714287
+            },
+            {
+              "item_key": "book_thunder_nine_heavens",
+              "weight": 1,
+              "probability_per_box": 0.014285714285714287
+            },
+            {
+              "item_key": "book_tangseng_sermon",
+              "weight": 1,
+              "probability_per_box": 0.014285714285714287
+            },
+            {
+              "item_key": "book_five_thunder_descent",
+              "weight": 1,
+              "probability_per_box": 0.014285714285714287
+            },
+            {
+              "item_key": "book_brahma_true_fire",
+              "weight": 1,
+              "probability_per_box": 0.014285714285714287
+            }
+          ]
+        },
+        {
+          "label": "pubayi_guest_card",
+          "chance": 0.03,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "pubayi_guest_card",
+              "weight": 1,
+              "probability_per_box": 0.03
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 48,
+      "expected_acceleration_hours": 52.8,
+      "expected_orange_equipment_per_box": 0,
+      "monthly_orange_expectation_base": 0.0,
+      "monthly_orange_expectation_full_cards": 0.0
+    },
+    {
+      "key": "zhuiji_manzu",
+      "name": "追击蛮族",
+      "tier": "advanced",
+      "silver": 40000,
+      "daily_base": 3,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "buxuedan": 4,
+        "tong": 12,
+        "xi": 8,
+        "tie": 5,
+        "experience_pineapple": 3
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.2,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_watermelon",
+              "weight": 1,
+              "probability_per_box": 0.2
+            }
+          ]
+        },
+        {
+          "label": "saiwai_equipment_box",
+          "chance": 0.18,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_xuanwukui",
+              "weight": 10,
+              "probability_per_box": 0.02571428571428571
+            },
+            {
+              "item_key": "equip_xuanwujia",
+              "weight": 10,
+              "probability_per_box": 0.02571428571428571
+            },
+            {
+              "item_key": "equip_xuanwuxue",
+              "weight": 10,
+              "probability_per_box": 0.02571428571428571
+            },
+            {
+              "item_key": "equip_xuanwuchui",
+              "weight": 10,
+              "probability_per_box": 0.02571428571428571
+            },
+            {
+              "item_key": "equip_jinlun",
+              "weight": 10,
+              "probability_per_box": 0.02571428571428571
+            },
+            {
+              "item_key": "equip_jinshezui",
+              "weight": 10,
+              "probability_per_box": 0.02571428571428571
+            },
+            {
+              "item_key": "equip_tiancanbaoyi",
+              "weight": 10,
+              "probability_per_box": 0.02571428571428571
+            }
+          ]
+        },
+        {
+          "label": "saiwai_equipment_box",
+          "chance": 0.001,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_jinsirujia",
+              "weight": 2,
+              "probability_per_box": 0.0005
+            },
+            {
+              "item_key": "equip_hanxuebaoma",
+              "weight": 2,
+              "probability_per_box": 0.0005
+            }
+          ]
+        },
+        {
+          "label": "book_dragon_roar",
+          "chance": 0.005,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_dragon_roar",
+              "weight": 1,
+              "probability_per_box": 0.005
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 48,
+      "expected_acceleration_hours": 52.8,
+      "expected_orange_equipment_per_box": 0.001,
+      "monthly_orange_expectation_base": 0.09,
+      "monthly_orange_expectation_full_cards": 0.24
+    },
+    {
+      "key": "liangshanbo_zhuyingtai",
+      "name": "梁山伯与祝英台",
+      "tier": "intermediate",
+      "silver": 10000,
+      "daily_base": 3,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        3,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "buxuedan": 2,
+        "tong": 8,
+        "xi": 5,
+        "tie": 3,
+        "experience_peach": 2,
+        "haorenka": 1
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.25,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_pineapple",
+              "weight": 1,
+              "probability_per_box": 0.25
+            }
+          ]
+        },
+        {
+          "label": "nichang_random_piece",
+          "chance": 0.2,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_nichangyuyi",
+              "weight": 1,
+              "probability_per_box": 0.06666666666666667
+            },
+            {
+              "item_key": "equip_nichangwuxie",
+              "weight": 1,
+              "probability_per_box": 0.06666666666666667
+            },
+            {
+              "item_key": "equip_nichangjian",
+              "weight": 1,
+              "probability_per_box": 0.06666666666666667
+            }
+          ]
+        },
+        {
+          "label": "主题装备",
+          "chance": 0.3,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_baguadao",
+              "weight": 10000,
+              "probability_per_box": 0.075
+            },
+            {
+              "item_key": "equip_yiqiyaopai",
+              "weight": 6000,
+              "probability_per_box": 0.045
+            },
+            {
+              "item_key": "equip_zhujian",
+              "weight": 5000,
+              "probability_per_box": 0.0375
+            },
+            {
+              "item_key": "equip_moyuyan",
+              "weight": 5000,
+              "probability_per_box": 0.0375
+            },
+            {
+              "item_key": "equip_xuantiejie",
+              "weight": 7000,
+              "probability_per_box": 0.0525
+            },
+            {
+              "item_key": "equip_liuyunpei",
+              "weight": 7000,
+              "probability_per_box": 0.0525
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 16,
+      "expected_acceleration_hours": 20.0,
+      "expected_orange_equipment_per_box": 0,
+      "monthly_orange_expectation_base": 0.0,
+      "monthly_orange_expectation_full_cards": 0.0
+    },
+    {
+      "key": "biyou_candeng",
+      "name": "封神之战：碧游残灯",
+      "tier": "advanced",
+      "silver": 60000,
+      "daily_base": 3,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "buxuedan": 4,
+        "tong": 12,
+        "xi": 8,
+        "tie": 5,
+        "experience_pineapple": 3,
+        "wanyin_flag_fragment": 1
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.2,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_watermelon",
+              "weight": 1,
+              "probability_per_box": 0.2
+            }
+          ]
+        },
+        {
+          "label": "equip_xiaowei_set",
+          "chance": 0.3,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_xiaoweitoukui",
+              "weight": 1,
+              "probability_per_box": 0.075
+            },
+            {
+              "item_key": "equip_xiaoweikaijia",
+              "weight": 1,
+              "probability_per_box": 0.075
+            },
+            {
+              "item_key": "equip_xiaoweichangxue",
+              "weight": 1,
+              "probability_per_box": 0.075
+            },
+            {
+              "item_key": "equip_xiaoweichangjian",
+              "weight": 1,
+              "probability_per_box": 0.075
+            }
+          ]
+        },
+        {
+          "label": "equip_huxian_set",
+          "chance": 0.12,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "blueprint_huxianpao",
+              "weight": 1,
+              "probability_per_box": 0.04
+            },
+            {
+              "item_key": "blueprint_huxianxie",
+              "weight": 1,
+              "probability_per_box": 0.04
+            },
+            {
+              "item_key": "blueprint_huxianjian",
+              "weight": 1,
+              "probability_per_box": 0.04
+            }
+          ]
+        },
+        {
+          "label": "equip_baguajing",
+          "chance": 0.035,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_baguajing",
+              "weight": 1,
+              "probability_per_box": 0.035
+            }
+          ]
+        },
+        {
+          "label": "book_last_chance_revival",
+          "chance": 0.04,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_last_chance_revival",
+              "weight": 1,
+              "probability_per_box": 0.04
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 48,
+      "expected_acceleration_hours": 52.8,
+      "expected_orange_equipment_per_box": 0,
+      "monthly_orange_expectation_base": 0.0,
+      "monthly_orange_expectation_full_cards": 0.0
+    },
+    {
+      "key": "shier_xianyin",
+      "name": "封神之战：十二仙印",
+      "tier": "advanced",
+      "silver": 80000,
+      "daily_base": 2,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {
+        "wanyin_flag_fragment": 1
+      },
+      "fixed": {
+        "buxuedan": 4,
+        "tong": 12,
+        "xi": 8,
+        "tie": 5,
+        "experience_pineapple": 3,
+        "yuxu_broken_seal": 1
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.2,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_watermelon",
+              "weight": 1,
+              "probability_per_box": 0.2
+            }
+          ]
+        },
+        {
+          "label": "book_five_thunder_descent",
+          "chance": 0.02,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_five_thunder_descent",
+              "weight": 1,
+              "probability_per_box": 0.02
+            }
+          ]
+        },
+        {
+          "label": "book_hell_instant_formation",
+          "chance": 0.02,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_hell_instant_formation",
+              "weight": 1,
+              "probability_per_box": 0.02
+            }
+          ]
+        },
+        {
+          "label": "equip_taiqingyuce",
+          "chance": 0.0005,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_taiqingyuce",
+              "weight": 1,
+              "probability_per_box": 0.0005
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 48,
+      "expected_acceleration_hours": 52.8,
+      "expected_orange_equipment_per_box": 0.0005,
+      "monthly_orange_expectation_base": 0.03,
+      "monthly_orange_expectation_full_cards": 0.105
+    },
+    {
+      "key": "fengbang_tianmen",
+      "name": "封神之战：封榜天门",
+      "tier": "advanced",
+      "silver": 100000,
+      "daily_base": 1,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {
+        "yuxu_broken_seal": 1
+      },
+      "fixed": {
+        "buxuedan": 4,
+        "tong": 12,
+        "xi": 8,
+        "tie": 5,
+        "experience_watermelon": 3
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.25,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_pineapple",
+              "weight": 1,
+              "probability_per_box": 0.25
+            }
+          ]
+        },
+        {
+          "label": "封神至宝",
+          "chance": 0.003,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_taiqingyuce",
+              "weight": 1,
+              "probability_per_box": 0.001
+            },
+            {
+              "item_key": "equip_fengshenbang",
+              "weight": 1,
+              "probability_per_box": 0.001
+            },
+            {
+              "item_key": "equip_zhuxianjian",
+              "weight": 1,
+              "probability_per_box": 0.001
+            }
+          ]
+        },
+        {
+          "label": "blueprint_top_orange",
+          "chance": 0.005,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "blueprint_feiyuan",
+              "weight": 1,
+              "probability_per_box": 0.0016666666666666668
+            },
+            {
+              "item_key": "blueprint_chixiaojifeng",
+              "weight": 1,
+              "probability_per_box": 0.0016666666666666668
+            },
+            {
+              "item_key": "blueprint_mojiajiguanren",
+              "weight": 1,
+              "probability_per_box": 0.0016666666666666668
+            }
+          ]
+        },
+        {
+          "label": "blueprint_top_blue",
+          "chance": 0.3,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "blueprint_qinglongkui",
+              "weight": 1,
+              "probability_per_box": 0.075
+            },
+            {
+              "item_key": "blueprint_qinglongjia",
+              "weight": 1,
+              "probability_per_box": 0.075
+            },
+            {
+              "item_key": "blueprint_qinglongxue",
+              "weight": 1,
+              "probability_per_box": 0.075
+            },
+            {
+              "item_key": "blueprint_qinglongdao",
+              "weight": 1,
+              "probability_per_box": 0.075
+            }
+          ]
+        },
+        {
+          "label": "blueprint_top_purple",
+          "chance": 0.15,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "blueprint_qilinkui",
+              "weight": 1,
+              "probability_per_box": 0.0375
+            },
+            {
+              "item_key": "blueprint_qilinjia",
+              "weight": 1,
+              "probability_per_box": 0.0375
+            },
+            {
+              "item_key": "blueprint_qilinxue",
+              "weight": 1,
+              "probability_per_box": 0.0375
+            },
+            {
+              "item_key": "blueprint_qilindao",
+              "weight": 1,
+              "probability_per_box": 0.0375
+            }
+          ]
+        },
+        {
+          "label": "fengshen_equipment_box",
+          "chance": 0.15,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_hunyuansan",
+              "weight": 1,
+              "probability_per_box": 0.01875
+            },
+            {
+              "item_key": "equip_xuanmingdeng",
+              "weight": 1,
+              "probability_per_box": 0.01875
+            },
+            {
+              "item_key": "equip_zijinhulu",
+              "weight": 1,
+              "probability_per_box": 0.01875
+            },
+            {
+              "item_key": "equip_tianyinguqin",
+              "weight": 1,
+              "probability_per_box": 0.01875
+            },
+            {
+              "item_key": "equip_qixingjian",
+              "weight": 1,
+              "probability_per_box": 0.01875
+            },
+            {
+              "item_key": "equip_guiyuanzhu",
+              "weight": 1,
+              "probability_per_box": 0.01875
+            },
+            {
+              "item_key": "equip_xuanwuyufu",
+              "weight": 1,
+              "probability_per_box": 0.01875
+            },
+            {
+              "item_key": "equip_zhurixue",
+              "weight": 1,
+              "probability_per_box": 0.01875
+            }
+          ]
+        },
+        {
+          "label": "equip_baguajing",
+          "chance": 0.04,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_baguajing",
+              "weight": 1,
+              "probability_per_box": 0.04
+            }
+          ]
+        },
+        {
+          "label": "book_dragon_roar",
+          "chance": 0.01,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_dragon_roar",
+              "weight": 1,
+              "probability_per_box": 0.01
+            }
+          ]
+        },
+        {
+          "label": "book_five_thunder_descent",
+          "chance": 0.02,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_five_thunder_descent",
+              "weight": 1,
+              "probability_per_box": 0.02
+            }
+          ]
+        },
+        {
+          "label": "book_last_chance_revival",
+          "chance": 0.04,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_last_chance_revival",
+              "weight": 1,
+              "probability_per_box": 0.04
+            }
+          ]
+        }
+      ],
+      "first_win_collection": {
+        "new_item_key": "mission_collection_v4_fengbang_tianmen",
+        "target_key": "equip_zhuxianjian",
+        "target_name": "诛仙剑",
+        "required_quantity": 120,
+        "quantity_per_day": 1,
+        "probability": 1,
+        "awarded_on": "first victorious non-retreat settlement per manor/mission/attribution-day",
+        "repeatable": true,
+        "tradeable": false,
+        "inside_chest": false,
+        "default_bound": true,
+        "is_blueprint": false,
+        "output_is_bound": false
+      },
+      "guaranteed_acceleration_hours": 72,
+      "expected_acceleration_hours": 76.0,
+      "expected_orange_equipment_per_box": 0.003,
+      "monthly_orange_expectation_base": 0.09,
+      "monthly_orange_expectation_full_cards": 0.54
+    },
+    {
+      "key": "zhuolu_zhongyuan",
+      "name": "逐鹿中原",
+      "tier": "advanced",
+      "silver": 100000,
+      "daily_base": 1,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "buxuedan": 4,
+        "tong": 12,
+        "xi": 8,
+        "tie": 5,
+        "experience_watermelon": 3
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.25,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_pineapple",
+              "weight": 1,
+              "probability_per_box": 0.25
+            }
+          ]
+        },
+        {
+          "label": "上古王权",
+          "chance": 0.003,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_shanheshejitu",
+              "weight": 1,
+              "probability_per_box": 0.0004285714285714286
+            },
+            {
+              "item_key": "equip_zhoutianxingpan",
+              "weight": 1,
+              "probability_per_box": 0.0004285714285714286
+            },
+            {
+              "item_key": "equip_xuanyuanjian",
+              "weight": 1,
+              "probability_per_box": 0.0004285714285714286
+            },
+            {
+              "item_key": "equip_longhuangguan",
+              "weight": 1,
+              "probability_per_box": 0.0004285714285714286
+            },
+            {
+              "item_key": "equip_chuanguoyuxi",
+              "weight": 1,
+              "probability_per_box": 0.0004285714285714286
+            },
+            {
+              "item_key": "equip_qilin",
+              "weight": 1,
+              "probability_per_box": 0.0004285714285714286
+            },
+            {
+              "item_key": "equip_qingluan",
+              "weight": 1,
+              "probability_per_box": 0.0004285714285714286
+            }
+          ]
+        },
+        {
+          "label": "blueprint_top_orange",
+          "chance": 0.005,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "blueprint_feiyuan",
+              "weight": 1,
+              "probability_per_box": 0.0016666666666666668
+            },
+            {
+              "item_key": "blueprint_chixiaojifeng",
+              "weight": 1,
+              "probability_per_box": 0.0016666666666666668
+            },
+            {
+              "item_key": "blueprint_mojiajiguanren",
+              "weight": 1,
+              "probability_per_box": 0.0016666666666666668
+            }
+          ]
+        },
+        {
+          "label": "blueprint_top_blue",
+          "chance": 0.3,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "blueprint_qinglongkui",
+              "weight": 1,
+              "probability_per_box": 0.075
+            },
+            {
+              "item_key": "blueprint_qinglongjia",
+              "weight": 1,
+              "probability_per_box": 0.075
+            },
+            {
+              "item_key": "blueprint_qinglongxue",
+              "weight": 1,
+              "probability_per_box": 0.075
+            },
+            {
+              "item_key": "blueprint_qinglongdao",
+              "weight": 1,
+              "probability_per_box": 0.075
+            }
+          ]
+        },
+        {
+          "label": "blueprint_top_purple",
+          "chance": 0.15,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "blueprint_qilinkui",
+              "weight": 1,
+              "probability_per_box": 0.0375
+            },
+            {
+              "item_key": "blueprint_qilinjia",
+              "weight": 1,
+              "probability_per_box": 0.0375
+            },
+            {
+              "item_key": "blueprint_qilinxue",
+              "weight": 1,
+              "probability_per_box": 0.0375
+            },
+            {
+              "item_key": "blueprint_qilindao",
+              "weight": 1,
+              "probability_per_box": 0.0375
+            }
+          ]
+        },
+        {
+          "label": "book_bloodthirsty_fury",
+          "chance": 0.02,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_bloodthirsty_fury",
+              "weight": 1,
+              "probability_per_box": 0.02
+            }
+          ]
+        },
+        {
+          "label": "book_desperate_beast",
+          "chance": 0.02,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_desperate_beast",
+              "weight": 1,
+              "probability_per_box": 0.02
+            }
+          ]
+        },
+        {
+          "label": "book_prison_break_blade",
+          "chance": 0.02,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_prison_break_blade",
+              "weight": 1,
+              "probability_per_box": 0.02
+            }
+          ]
+        },
+        {
+          "label": "book_city_felling_strike",
+          "chance": 0.02,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_city_felling_strike",
+              "weight": 1,
+              "probability_per_box": 0.02
+            }
+          ]
+        }
+      ],
+      "first_win_collection": {
+        "new_item_key": "mission_collection_v4_zhuolu_zhongyuan",
+        "target_key": "equip_xuanyuanjian",
+        "target_name": "轩辕剑",
+        "required_quantity": 120,
+        "quantity_per_day": 1,
+        "probability": 1,
+        "awarded_on": "first victorious non-retreat settlement per manor/mission/attribution-day",
+        "repeatable": true,
+        "tradeable": false,
+        "inside_chest": false,
+        "default_bound": true,
+        "is_blueprint": false,
+        "output_is_bound": false
+      },
+      "guaranteed_acceleration_hours": 72,
+      "expected_acceleration_hours": 76.0,
+      "expected_orange_equipment_per_box": 0.003,
+      "monthly_orange_expectation_base": 0.09,
+      "monthly_orange_expectation_full_cards": 0.54
+    },
+    {
+      "key": "guandu_zhizhan",
+      "name": "官渡之战",
+      "tier": "advanced",
+      "silver": 120000,
+      "daily_base": 1,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "buxuedan": 4,
+        "tong": 12,
+        "xi": 8,
+        "tie": 5,
+        "experience_watermelon": 3
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.25,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_pineapple",
+              "weight": 1,
+              "probability_per_box": 0.25
+            }
+          ]
+        },
+        {
+          "label": "官渡橙色军备",
+          "chance": 0.003,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_taixudiguan",
+              "weight": 120,
+              "probability_per_box": 0.0006122448979591836
+            },
+            {
+              "item_key": "equip_hundunlongpao",
+              "weight": 120,
+              "probability_per_box": 0.0006122448979591836
+            },
+            {
+              "item_key": "equip_diwangkui",
+              "weight": 120,
+              "probability_per_box": 0.0006122448979591836
+            },
+            {
+              "item_key": "equip_panlonggun",
+              "weight": 96,
+              "probability_per_box": 0.000489795918367347
+            },
+            {
+              "item_key": "equip_qiankunshengong",
+              "weight": 96,
+              "probability_per_box": 0.000489795918367347
+            },
+            {
+              "item_key": "equip_changshengjian",
+              "weight": 36,
+              "probability_per_box": 0.0001836734693877551
+            }
+          ]
+        },
+        {
+          "label": "曹氏名驹",
+          "chance": 0.12,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_jueying",
+              "weight": 1,
+              "probability_per_box": 0.06
+            },
+            {
+              "item_key": "equip_zhaohuangfeidian",
+              "weight": 1,
+              "probability_per_box": 0.06
+            }
+          ]
+        }
+      ],
+      "first_win_collection": {
+        "new_item_key": "mission_collection_v4_guandu_zhizhan",
+        "target_key": "equip_diwangkui",
+        "target_name": "帝王盔",
+        "required_quantity": 80,
+        "quantity_per_day": 1,
+        "probability": 1,
+        "awarded_on": "first victorious non-retreat settlement per manor/mission/attribution-day",
+        "repeatable": true,
+        "tradeable": false,
+        "inside_chest": false,
+        "default_bound": true,
+        "is_blueprint": false,
+        "output_is_bound": false
+      },
+      "guaranteed_acceleration_hours": 72,
+      "expected_acceleration_hours": 76.0,
+      "expected_orange_equipment_per_box": 0.003,
+      "monthly_orange_expectation_base": 0.09,
+      "monthly_orange_expectation_full_cards": 0.54
+    },
+    {
+      "key": "huashan_lunjian_advanced",
+      "name": "华山论剑",
+      "tier": "advanced",
+      "silver": 120000,
+      "daily_base": 1,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "buxuedan": 4,
+        "tong": 12,
+        "xi": 8,
+        "tie": 5,
+        "experience_watermelon": 3
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.25,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_pineapple",
+              "weight": 1,
+              "probability_per_box": 0.25
+            }
+          ]
+        },
+        {
+          "label": "武林名器",
+          "chance": 0.25,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "blueprint_taotieding",
+              "weight": 85,
+              "probability_per_box": 0.013888888888888888
+            },
+            {
+              "item_key": "equip_yuanyangdao",
+              "weight": 85,
+              "probability_per_box": 0.013888888888888888
+            },
+            {
+              "item_key": "equip_shenghuoling",
+              "weight": 85,
+              "probability_per_box": 0.013888888888888888
+            },
+            {
+              "item_key": "equip_duoqinghuan",
+              "weight": 85,
+              "probability_per_box": 0.013888888888888888
+            },
+            {
+              "item_key": "equip_tulongdao",
+              "weight": 85,
+              "probability_per_box": 0.013888888888888888
+            },
+            {
+              "item_key": "equip_liekongxue",
+              "weight": 85,
+              "probability_per_box": 0.013888888888888888
+            },
+            {
+              "item_key": "equip_shuanghuagong",
+              "weight": 85,
+              "probability_per_box": 0.013888888888888888
+            },
+            {
+              "item_key": "equip_yuxiao",
+              "weight": 85,
+              "probability_per_box": 0.013888888888888888
+            },
+            {
+              "item_key": "equip_wuqiaojian",
+              "weight": 85,
+              "probability_per_box": 0.013888888888888888
+            },
+            {
+              "item_key": "equip_tiancanbaoyi",
+              "weight": 85,
+              "probability_per_box": 0.013888888888888888
+            },
+            {
+              "item_key": "equip_biyudao",
+              "weight": 85,
+              "probability_per_box": 0.013888888888888888
+            },
+            {
+              "item_key": "equip_libiegou",
+              "weight": 85,
+              "probability_per_box": 0.013888888888888888
+            },
+            {
+              "item_key": "equip_ziweiruanjian",
+              "weight": 85,
+              "probability_per_box": 0.013888888888888888
+            },
+            {
+              "item_key": "equip_xiuhuazhen",
+              "weight": 85,
+              "probability_per_box": 0.013888888888888888
+            },
+            {
+              "item_key": "equip_xuedao",
+              "weight": 85,
+              "probability_per_box": 0.013888888888888888
+            },
+            {
+              "item_key": "equip_jinshejian",
+              "weight": 85,
+              "probability_per_box": 0.013888888888888888
+            },
+            {
+              "item_key": "equip_jinshezui",
+              "weight": 85,
+              "probability_per_box": 0.013888888888888888
+            },
+            {
+              "item_key": "equip_jinlun",
+              "weight": 85,
+              "probability_per_box": 0.013888888888888888
+            }
+          ]
+        },
+        {
+          "label": "武林名器",
+          "chance": 0.003,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_yuanyuewandao",
+              "weight": 27,
+              "probability_per_box": 0.00030000000000000003
+            },
+            {
+              "item_key": "equip_tianyamingyuedao",
+              "weight": 27,
+              "probability_per_box": 0.00030000000000000003
+            },
+            {
+              "item_key": "equip_kongquelin",
+              "weight": 27,
+              "probability_per_box": 0.00030000000000000003
+            },
+            {
+              "item_key": "equip_xiaolifeidao",
+              "weight": 27,
+              "probability_per_box": 0.00030000000000000003
+            },
+            {
+              "item_key": "equip_dagoubang",
+              "weight": 27,
+              "probability_per_box": 0.00030000000000000003
+            },
+            {
+              "item_key": "equip_xuantiechongjian",
+              "weight": 27,
+              "probability_per_box": 0.00030000000000000003
+            },
+            {
+              "item_key": "equip_shendiao",
+              "weight": 27,
+              "probability_per_box": 0.00030000000000000003
+            },
+            {
+              "item_key": "equip_shangshanfaeling",
+              "weight": 27,
+              "probability_per_box": 0.00030000000000000003
+            },
+            {
+              "item_key": "equip_ruanweijia",
+              "weight": 27,
+              "probability_per_box": 0.00030000000000000003
+            },
+            {
+              "item_key": "equip_shenxingxue",
+              "weight": 27,
+              "probability_per_box": 0.00030000000000000003
+            }
+          ]
+        }
+      ],
+      "first_win_collection": {
+        "new_item_key": "mission_collection_v4_huashan_lunjian_advanced",
+        "target_key": "equip_xuantiechongjian",
+        "target_name": "玄铁重剑",
+        "required_quantity": 80,
+        "quantity_per_day": 1,
+        "probability": 1,
+        "awarded_on": "first victorious non-retreat settlement per manor/mission/attribution-day",
+        "repeatable": true,
+        "tradeable": false,
+        "inside_chest": false,
+        "default_bound": true,
+        "is_blueprint": false,
+        "output_is_bound": false
+      },
+      "guaranteed_acceleration_hours": 72,
+      "expected_acceleration_hours": 76.0,
+      "expected_orange_equipment_per_box": 0.003,
+      "monthly_orange_expectation_base": 0.09,
+      "monthly_orange_expectation_full_cards": 0.54
+    },
+    {
+      "key": "sishui_huaxiong_chengwei",
+      "name": "飞将浮沉录：汜水关华雄逞威",
+      "tier": "advanced",
+      "silver": 90000,
+      "daily_base": 1,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {},
+      "fixed": {
+        "buxuedan": 4,
+        "tong": 12,
+        "xi": 8,
+        "tie": 5,
+        "experience_watermelon": 3,
+        "sishui_battle_report": 1
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.25,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_pineapple",
+              "weight": 1,
+              "probability_per_box": 0.25
+            }
+          ]
+        },
+        {
+          "label": "sishui_equipment_pool",
+          "chance": 0.4,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_pozhenqiang",
+              "weight": 1,
+              "probability_per_box": 0.13333333333333333
+            },
+            {
+              "item_key": "equip_chuanyungong",
+              "weight": 1,
+              "probability_per_box": 0.13333333333333333
+            },
+            {
+              "item_key": "equip_longwenyupei",
+              "weight": 1,
+              "probability_per_box": 0.13333333333333333
+            }
+          ]
+        },
+        {
+          "label": "equip_zhuyuye",
+          "chance": 0.01,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_zhuyuye",
+              "weight": 1,
+              "probability_per_box": 0.01
+            }
+          ]
+        }
+      ],
+      "first_win_collection": null,
+      "guaranteed_acceleration_hours": 72,
+      "expected_acceleration_hours": 76.0,
+      "expected_orange_equipment_per_box": 0,
+      "monthly_orange_expectation_base": 0.0,
+      "monthly_orange_expectation_full_cards": 0.0
+    },
+    {
+      "key": "hulao_qunying_zhan_lvbu",
+      "name": "飞将浮沉录：虎牢关群英战吕布",
+      "tier": "advanced",
+      "silver": 110000,
+      "daily_base": 1,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {
+        "sishui_battle_report": 1
+      },
+      "fixed": {
+        "buxuedan": 4,
+        "tong": 12,
+        "xi": 8,
+        "tie": 5,
+        "experience_watermelon": 3,
+        "hulao_war_banner": 1
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.25,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_pineapple",
+              "weight": 1,
+              "probability_per_box": 0.25
+            }
+          ]
+        },
+        {
+          "label": "主题装备",
+          "chance": 0.002,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_fangtianhuaji",
+              "weight": 1,
+              "probability_per_box": 0.0006666666666666666
+            },
+            {
+              "item_key": "equip_longlinzhanjia",
+              "weight": 1,
+              "probability_per_box": 0.0006666666666666666
+            },
+            {
+              "item_key": "equip_chituma",
+              "weight": 1,
+              "probability_per_box": 0.0006666666666666666
+            }
+          ]
+        }
+      ],
+      "first_win_collection": {
+        "new_item_key": "mission_collection_v4_hulao_qunying_zhan_lvbu",
+        "target_key": "equip_fangtianhuaji",
+        "target_name": "方天画戟",
+        "required_quantity": 100,
+        "quantity_per_day": 1,
+        "probability": 1,
+        "awarded_on": "first victorious non-retreat settlement per manor/mission/attribution-day",
+        "repeatable": true,
+        "tradeable": false,
+        "inside_chest": false,
+        "default_bound": true,
+        "is_blueprint": false,
+        "output_is_bound": false
+      },
+      "guaranteed_acceleration_hours": 72,
+      "expected_acceleration_hours": 76.0,
+      "expected_orange_equipment_per_box": 0.002,
+      "monthly_orange_expectation_base": 0.06,
+      "monthly_orange_expectation_full_cards": 0.36
+    },
+    {
+      "key": "baimenlou_mingyun_jueze",
+      "name": "飞将浮沉录：白门楼命运抉择",
+      "tier": "advanced",
+      "silver": 180000,
+      "daily_base": 1,
+      "card_limit": 5,
+      "weekdays": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "entry_cost": {
+        "hulao_war_banner": 1
+      },
+      "fixed": {
+        "buxuedan": 4,
+        "tong": 12,
+        "xi": 8,
+        "tie": 5,
+        "experience_watermelon": 3
+      },
+      "groups": [
+        {
+          "label": "额外培养",
+          "chance": 0.25,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "experience_pineapple",
+              "weight": 1,
+              "probability_per_box": 0.25
+            }
+          ]
+        },
+        {
+          "label": "白门楼橙色名器",
+          "chance": 0.001,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_panlonggun",
+              "weight": 1,
+              "probability_per_box": 0.001
+            }
+          ]
+        },
+        {
+          "label": "白门楼紫色军备",
+          "chance": 0.2,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "equip_pojunzhanjia",
+              "weight": 1,
+              "probability_per_box": 0.1
+            },
+            {
+              "item_key": "equip_tianjiguan",
+              "weight": 1,
+              "probability_per_box": 0.1
+            }
+          ]
+        },
+        {
+          "label": "lvbu_guest_scroll",
+          "chance": 0.0005,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "lvbu_guest_scroll",
+              "weight": 1,
+              "probability_per_box": 0.0005
+            }
+          ]
+        },
+        {
+          "label": "diaochan_guest_scroll",
+          "chance": 0.005,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "diaochan_guest_scroll",
+              "weight": 1,
+              "probability_per_box": 0.005
+            }
+          ]
+        },
+        {
+          "label": "super_guest_disguise_card",
+          "chance": 0.0005,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "super_guest_disguise_card",
+              "weight": 1,
+              "probability_per_box": 0.0005
+            }
+          ]
+        },
+        {
+          "label": "book_dragon_roar",
+          "chance": 0.02,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_dragon_roar",
+              "weight": 1,
+              "probability_per_box": 0.02
+            }
+          ]
+        },
+        {
+          "label": "book_stratagem_burst",
+          "chance": 0.02,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_stratagem_burst",
+              "weight": 1,
+              "probability_per_box": 0.02
+            }
+          ]
+        },
+        {
+          "label": "book_prison_break_blade",
+          "chance": 0.02,
+          "quantity": 1,
+          "choices": [
+            {
+              "item_key": "book_prison_break_blade",
+              "weight": 1,
+              "probability_per_box": 0.02
+            }
+          ]
+        }
+      ],
+      "first_win_collection": {
+        "new_item_key": "mission_collection_v4_baimenlou_mingyun_jueze",
+        "target_key": "equip_panlonggun",
+        "target_name": "盘龙棍",
+        "required_quantity": 80,
+        "quantity_per_day": 1,
+        "probability": 1,
+        "awarded_on": "first victorious non-retreat settlement per manor/mission/attribution-day",
+        "repeatable": true,
+        "tradeable": false,
+        "inside_chest": false,
+        "default_bound": true,
+        "is_blueprint": false,
+        "output_is_bound": false
+      },
+      "guaranteed_acceleration_hours": 72,
+      "expected_acceleration_hours": 76.0,
+      "expected_orange_equipment_per_box": 0.001,
+      "monthly_orange_expectation_base": 0.03,
+      "monthly_orange_expectation_full_cards": 0.18
+    }
+  ],
+  "aggregate_pressure": {
+    "time_unit": "training_acceleration_hours",
+    "base_weekly_hours": 18685.6,
+    "full_card_weekly_hours": 62084.8,
+    "base_weekly_attempts": 522,
+    "full_card_weekly_attempts": 1539,
+    "random_orange_equipment_monthly_base": 0.57,
+    "random_orange_equipment_monthly_full_cards": 3.045,
+    "collection_orange_equipment_monthly_long_run_all_routes": 1.925,
+    "moon_total_hours_per_box_under_level_50": 35.074,
+    "moon_directly_usable_hours_per_box_level_50_and_above": 25.724,
+    "assumptions": "all enabled missions successfully completed, boxes opened, sufficient teams, cards, entry tokens and action points; excludes non-mission sources and actual battle salvage; collection only long-run steady-state"
+  }
+}

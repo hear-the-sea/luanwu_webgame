@@ -293,6 +293,7 @@ class SmeltingProduction(models.Model):
     metal_key = models.CharField("金属key", max_length=64)
     metal_name = models.CharField("金属名称", max_length=64)
     quantity = models.PositiveIntegerField("冶炼数量", default=1)
+    output_is_bound = models.BooleanField("产物绑定", default=False)
     cost_type = models.CharField("消耗类型", max_length=32, default="silver")
     cost_amount = models.PositiveIntegerField("消耗数量", default=0)
     base_duration = models.PositiveIntegerField("基础时长(秒)")
@@ -334,6 +335,8 @@ class EquipmentProduction(models.Model):
     equipment_key = models.CharField("装备key", max_length=64)
     equipment_name = models.CharField("装备名称", max_length=64)
     quantity = models.PositiveIntegerField("锻造数量", default=1)
+    output_is_bound = models.BooleanField("产物绑定", default=False)
+    output_bound_quantity = models.PositiveIntegerField("产物绑定数量", default=0)
     material_costs = models.JSONField("材料消耗", default=dict)
     base_duration = models.PositiveIntegerField("基础时长(秒)")
     actual_duration = models.PositiveIntegerField("实际时长(秒)")
@@ -348,6 +351,12 @@ class EquipmentProduction(models.Model):
         ordering = ["-started_at"]
         indexes = [
             models.Index(fields=["status", "complete_at"], name="equipment_status_complete_idx"),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(output_bound_quantity__lte=models.F("quantity")),
+                name="equipment_bound_lte_total",
+            ),
         ]
 
     def __str__(self) -> str:

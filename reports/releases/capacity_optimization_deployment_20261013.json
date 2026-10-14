@@ -1,0 +1,375 @@
+{
+  "status": "deployed_and_verified",
+  "configuration_and_worker_release": {
+    "status": "deployed_and_verified",
+    "image": "webgame:capacity-optimization-20261013",
+    "files": {
+      "static/js/chat_widget.js": "14580039bf280cc0bb9821c03213cb8acb9162cf6b532ac4bb8eb3f827a4cad5",
+      "static/js/chat_widget_connection.js": "2a1149eb0f34eeef210b59c1bde86686366d8af5400529ebffe419015641c62f",
+      "static/js/notifications.js": "5cc5503f0fcd1a5043ce7f62165855ab0c1813249685aebfed279ea4e6c0cca5",
+      "static/js/online_stats.js": "759797ffd2a24c03ed51f6584e942d66c90de853db3e545522029d26cf23f6ad",
+      "static/js/websocket_reconnect.js": "d71512156eb1da60389a107ff96f351a8e285d3a7004fa8139eec7d91f8f10fd",
+      "websocket/consumers/session_guard.py": "d0a68e10059e5d948934aca18daf7f00fc403d7a24cef0ea2aaf18a470d9df0e",
+      "websocket/middleware/ip_capacity.py": "271bf42af15190d42835d9d8ba2523e36602363cdc78300a1d37ea3a5ecfd04b",
+      "gameplay/services/arena/virtual_reserve_pool.py": "c451ba6fa70d3ef14bd5679b1094f832f9805038147c83e6a895b69905f3ebc4",
+      "gameplay/tasks/arena.py": "eb6b56432bca5662acf66efdb52b2329889072122f2ac0becc3ec7a3c5fa3003",
+      "gameplay/tasks/virtual_players.py": "683f8c958b49509834d7f792274d4837df50c8927fbe898f6d497bb9ba529497",
+      "gameplay/services/virtual_player_core/maintenance.py": "f19b6eb53ad7bf2133652b7f2fc121633ea12a9d84f4a34ea626073fde2ff95a",
+      "gameplay/services/virtual_player_core/population_runtime.py": "5c69f2cd4514acfce67a65b5e50e4f59c28cf43ecbfbbc43c642045b76ddacf8",
+      "scripts/migrate_runtime_redis.py": "5aa0057f047140f54e2ea58ba48416e5d19e667636cf626ebe825d37e314fabc",
+      "scripts/collect_runtime_metrics.py": "e05a7332a62204acd9097e95aa2e1828461cffe0256bdca15ba2f05c6c32ccd6"
+    },
+    "web_memory_mb": 768,
+    "runtime_redis_maxmemory_mb": 256,
+    "runtime_redis_container_mb": 384,
+    "public_http": {
+      "/": 200,
+      "/accounts/login/": 200,
+      "/health/live": 200
+    },
+    "ready": {
+      "status": "ok",
+      "checks": {
+        "db": true,
+        "cache": true,
+        "channel_layer": true,
+        "celery_broker": true,
+        "celery_workers": true,
+        "celery_beat": true,
+        "celery_roundtrip": true
+      }
+    },
+    "redis_migration": {
+      "databases": [
+        1,
+        2
+      ],
+      "results": [
+        {
+          "source": {
+            "keys": 41,
+            "types": {
+              "zset": 41
+            },
+            "expiring": 41,
+            "permanent": 0,
+            "earliest_expiry_ms": 1791885994661,
+            "latest_expiry_ms": 1791972332072,
+            "binary_and_absolute_ttl_sha256": "7d0017f28785ef005e5bfe9426b217116304ca1582bba3f323a86b71ab98f2b3"
+          },
+          "target": {
+            "keys": 41,
+            "types": {
+              "zset": 41
+            },
+            "expiring": 41,
+            "permanent": 0,
+            "earliest_expiry_ms": 1791885994661,
+            "latest_expiry_ms": 1791972332072,
+            "binary_and_absolute_ttl_sha256": "7d0017f28785ef005e5bfe9426b217116304ca1582bba3f323a86b71ab98f2b3"
+          },
+          "applied": true
+        },
+        {
+          "source": {
+            "keys": 8617,
+            "types": {
+              "string": 8613,
+              "set": 1,
+              "zset": 3
+            },
+            "expiring": 7949,
+            "permanent": 668,
+            "earliest_expiry_ms": 1791885952724,
+            "latest_expiry_ms": 1793095484679,
+            "binary_and_absolute_ttl_sha256": "b1493029ffbae8ff258903cb04c87178823dae187b96f4b73b298bb0c769f611"
+          },
+          "target": {
+            "keys": 8617,
+            "types": {
+              "string": 8613,
+              "zset": 3,
+              "set": 1
+            },
+            "expiring": 7949,
+            "permanent": 668,
+            "earliest_expiry_ms": 1791885952724,
+            "latest_expiry_ms": 1793095484679,
+            "binary_and_absolute_ttl_sha256": "b1493029ffbae8ff258903cb04c87178823dae187b96f4b73b298bb0c769f611"
+          },
+          "applied": true
+        }
+      ]
+    },
+    "persistent_broker_kept": true,
+    "player_database_migrations": false,
+    "coordinated_writer_cutover": true,
+    "monitoring": "one minute; 14 full days plus current day",
+    "ip_connection_limit": 60,
+    "user_connection_limit": 12,
+    "release": "/root/code/releases/capacity-optimization-20261013",
+    "resources_after": "code-web-1 1.33% 126.2MiB / 768MiB\ncode-beat-1 0.00% 95.82MiB / 192MiB\ncode-worker_timer-1 0.43% 134.9MiB / 1GiB\ncode-worker_timer_scan-1 0.12% 162.9MiB / 256MiB\ncode-worker_battle-1 0.10% 117MiB / 256MiB\ncode-worker_timer_safety-1 0.21% 121.1MiB / 512MiB\ncode-worker_timer_maintenance-1 0.39% 131.4MiB / 768MiB\ncode-worker-1 0.36% 117.5MiB / 256MiB\ncode-redis_runtime-1 0.87% 6.523MiB / 384MiB\ncode-caddy-1 0.05% 114.7MiB / 256MiB\ncode-db-1 1.07% 1.776GiB / 2GiB\ncode-redis-1 0.75% 20.69MiB / 512MiB\ngongsi-deploy-caddy-1 0.06% 41.92MiB / 7.751GiB\ngongsi-deploy-web-1 0.00% 135MiB / 7.751GiB\nnagomi-web 0.00% 107.3MiB / 7.751GiB\n",
+    "host_memory_after": "               total        used        free      shared  buff/cache   available\nMem:            7937        3536         835           2        3565        4091\nSwap:              0           0           0\n",
+    "monitor_timer": "active",
+    "monitor_latest": {
+      "timestamp": "2026-10-13T10:07:29.933718+00:00",
+      "unix": 1791886049.9336991,
+      "probe_errors": [],
+      "memory_available_mb": 4112,
+      "metrics_disk_free_percent": 77.35,
+      "disk_counters": {
+        "reads": 8349644,
+        "read_ms": 2672508,
+        "writes": 156920980,
+        "write_ms": 102256296,
+        "busy_ms": 128898360,
+        "weighted_ms": 127091469
+      },
+      "disk_interval": {
+        "operations_per_second": 38.9,
+        "average_io_ms": 0.47,
+        "busy_percent": 2.57,
+        "average_queue_depth": 0.02
+      },
+      "access": {
+        "http_status": {
+          "200": 3
+        },
+        "websocket_status": {},
+        "endpoints": {
+          "/manor/api/recruitment/refresh/": {
+            "count": 1,
+            "p95_ms": 180.4,
+            "max_ms": 180.4,
+            "over_1s": 0
+          },
+          "/manor/api/buildings/upgrades/refresh/": {
+            "count": 1,
+            "p95_ms": 20.4,
+            "max_ms": 20.4,
+            "over_1s": 0
+          },
+          "/manor/api/technology/upgrades/refresh/": {
+            "count": 1,
+            "p95_ms": 21.4,
+            "max_ms": 21.4,
+            "over_1s": 0
+          }
+        },
+        "complete": true,
+        "first_run": false,
+        "bytes_read": 5875
+      },
+      "redis": {
+        "code-redis-1": {
+          "uptime_in_seconds": "2069349",
+          "connected_clients": "77",
+          "blocked_clients": "5",
+          "used_memory": "8504664",
+          "maxmemory": "268435456",
+          "aof_enabled": "1",
+          "aof_last_write_status": "ok",
+          "aof_delayed_fsync": "169",
+          "instantaneous_ops_per_sec": "11",
+          "rejected_connections": "0",
+          "evicted_keys": "0"
+        },
+        "code-redis_runtime-1": {
+          "uptime_in_seconds": "1084",
+          "connected_clients": "14",
+          "blocked_clients": "1",
+          "used_memory": "3657224",
+          "maxmemory": "268435456",
+          "aof_enabled": "0",
+          "aof_last_write_status": "ok",
+          "instantaneous_ops_per_sec": "76",
+          "rejected_connections": "0",
+          "evicted_keys": "0"
+        }
+      },
+      "queues": {
+        "default": 0,
+        "battle": 0,
+        "timer": 0,
+        "timer_scan": 0,
+        "timer_safety": 0,
+        "timer_maintenance": 0
+      },
+      "warnings": [
+        "code-db-1:memory_over_85_percent"
+      ]
+    },
+    "code-redis-1": {
+      "aof_enabled": "1",
+      "used_memory_human": "7.89M",
+      "maxmemory": "268435456",
+      "maxmemory_policy": "noeviction",
+      "evicted_keys": "0",
+      "rejected_connections": "0",
+      "aof_delayed_fsync": "169"
+    },
+    "code-redis_runtime-1": {
+      "aof_enabled": "0",
+      "used_memory_human": "3.38M",
+      "maxmemory": "268435456",
+      "maxmemory_policy": "noeviction",
+      "evicted_keys": "0",
+      "rejected_connections": "0",
+      "aof_delayed_fsync": null
+    },
+    "public_static_version_verified": true,
+    "migration_window": [
+      "{\"phase\": \"validating_current_release\", \"utc\": \"2026-10-13T10:05:34Z\"}",
+      "{\"phase\": \"maintenance_entry_enabled\", \"utc\": \"2026-10-13T10:05:34Z\"}",
+      "{\"phase\": \"stopping_producers_and_draining_workers\", \"utc\": \"2026-10-13T10:05:34Z\"}",
+      "{\"phase\": \"copying_and_verifying_cache_and_channel_state\", \"utc\": \"2026-10-13T10:05:43Z\"}",
+      "{\"phase\": \"migration_verified\", \"utc\": \"2026-10-13T10:05:51Z\", \"databases\": [{\"keys\": 41, \"types\": {\"zset\": 41}}, {\"keys\": 8617, \"types\": {\"string\": 8613, \"set\": 1, \"zset\": 3}}]}",
+      "{\"phase\": \"starting_all_apps_on_the_same_runtime_redis\", \"utc\": \"2026-10-13T10:05:51Z\"}",
+      "{\"phase\": \"waiting_for_readiness\", \"utc\": \"2026-10-13T10:05:53Z\"}",
+      "{\"phase\": \"restoring_public_entry\", \"utc\": \"2026-10-13T10:06:27Z\"}",
+      "{\"phase\": \"installing_bounded_host_monitoring\", \"utc\": \"2026-10-13T10:06:28Z\"}",
+      "{\"phase\": \"deployed_and_verified\", \"utc\": \"2026-10-13T10:06:29Z\"}"
+    ]
+  },
+  "final_web_release": {
+    "status": "deployed_and_verified",
+    "image": "webgame:capacity-http-types-20261013",
+    "files": {
+      "config/asgi.py": "afb3c566bf780ce4e29883d86a405f88e83aa899995081615dfcf7108f1e6572",
+      "core/middleware/http_admission.py": "2f39845d741ff4e4e0d44787dd54092b94e576951e40785f6451c61a320d0d24"
+    },
+    "phase": {
+      "operation": "59328c42a79f4abfb70942435a2ecd98",
+      "phase": "complete",
+      "candidate": "code-web-bg-59328c42a79f",
+      "image": "webgame:capacity-http-types-20261013",
+      "proxy": "web",
+      "override": "/root/code/.web-bg-59328c42a79f.json",
+      "updated_at": 1791888670.8416977
+    },
+    "public": {
+      "/": {
+        "status": 200,
+        "seconds": 0.07259
+      },
+      "/accounts/login/": {
+        "status": 200,
+        "seconds": 0.075617
+      },
+      "/health/live": {
+        "status": 200,
+        "seconds": 0.067824
+      }
+    },
+    "recent_errors": {
+      "Traceback (most recent call last)": 0,
+      "Timeout reading from socket": 0,
+      "Attempt to send on a closed protocol": 0,
+      "Internal Server Error": 0
+    },
+    "monitor_errors": [],
+    "monitor_warnings": [
+      "code-db-1:memory_over_85_percent"
+    ],
+    "queues": {
+      "default": 0,
+      "battle": 0,
+      "timer": 0,
+      "timer_scan": 0,
+      "timer_safety": 0,
+      "timer_maintenance": 0
+    },
+    "memory_available_mb": 3988,
+    "resources": "code-web-1 24.21% 147.3MiB / 768MiB\ncode-beat-1 0.00% 96.56MiB / 192MiB\ncode-worker_timer-1 0.36% 142.1MiB / 1GiB\ncode-worker_timer_scan-1 0.32% 166.8MiB / 256MiB\ncode-worker_battle-1 0.29% 191MiB / 256MiB\ncode-worker_timer_safety-1 0.21% 119.6MiB / 512MiB\ncode-worker_timer_maintenance-1 0.30% 119.3MiB / 768MiB\ncode-worker-1 0.35% 113.9MiB / 256MiB\ncode-redis_runtime-1 1.33% 7.301MiB / 384MiB\ncode-caddy-1 2.18% 120.1MiB / 256MiB\ncode-db-1 5.77% 1.774GiB / 2GiB\ncode-redis-1 0.87% 20.23MiB / 512MiB\ngongsi-deploy-caddy-1 3.24% 58.08MiB / 7.751GiB\ngongsi-deploy-web-1 0.00% 135MiB / 7.751GiB\nnagomi-web 0.00% 107.3MiB / 7.751GiB\n"
+  },
+  "recent_web_error_counts": {
+    "tracebacks": 0,
+    "redis_timeouts": 0,
+    "closed_protocol": 0,
+    "http_internal_server_error": 0
+  },
+  "recent_error_window_minutes": 5,
+  "owned_candidate_cleaned": true,
+  "database_migrations": false,
+  "git_commits": false,
+  "validation": {
+    "runtime_redis_and_collector_tests": 16,
+    "http_admission_and_asgi_tests": 22,
+    "http_burst_capacity_tests": 1,
+    "blue_green_state_machine_tests": 9,
+    "background_main_suite": 174,
+    "background_final_population_suite": 44,
+    "previous_runtime_backlog_suite": 151,
+    "previous_websocket_suite_including_real_redis": 146,
+    "previous_js_suite": 71,
+    "final_http_and_asgi_tests": 23,
+    "final_mypy_files_passed": 2
+  },
+  "known_workspace_check": {
+    "architecture_gate_passed": 45,
+    "architecture_gate_unrelated_failed": 1,
+    "reason": "Unreleased guests/admin.py reader absent from static allowlist; file excluded from deployment payload."
+  },
+  "initial_http_release": {
+    "status": "deployed_and_verified",
+    "web_image": "webgame:capacity-http-20261013",
+    "worker_image": "webgame:capacity-optimization-20261013",
+    "files": {
+      "config/asgi.py": "d32abe682bfe2a4b730f3002610cb7acef7ceb357f95e25285de2ddc1daca3ea",
+      "core/middleware/http_admission.py": "3b90e9e6bd8027a36cb84ea1ebd6c9099f67d74666ba9934cd253ce901d54f5d",
+      "scripts/collect_runtime_metrics.py": "f5ae74d4352d2ca2f5bebee0607dbb5182b954224408701ac8b8668569aac5d1"
+    },
+    "public": {
+      "/": {
+        "status": 200,
+        "seconds": 0.079826
+      },
+      "/accounts/login/": {
+        "status": 200,
+        "seconds": 0.066163
+      },
+      "/health/live": {
+        "status": 200,
+        "seconds": 0.05986
+      }
+    },
+    "http_limits": {
+      "executing": 24,
+      "waiting": 48,
+      "health": 2,
+      "health_waiting": 2,
+      "queue_timeout_seconds": 1
+    },
+    "monitor": {
+      "errors": [],
+      "warnings": [
+        "code-db-1:memory_over_85_percent"
+      ],
+      "queues": {
+        "default": 0,
+        "battle": 0,
+        "timer": 0,
+        "timer_scan": 0,
+        "timer_safety": 0,
+        "timer_maintenance": 0
+      },
+      "memory_available_mb": 4023,
+      "disk_interval": {
+        "operations_per_second": 71.28,
+        "average_io_ms": 0.18,
+        "busy_percent": 3.0,
+        "average_queue_depth": 0.02
+      }
+    },
+    "blue_green_phase": {
+      "operation": "0c9daa37f0ff48baa0d804ab7f75e8f6",
+      "phase": "complete",
+      "candidate": "code-web-bg-0c9daa37f0ff",
+      "image": "webgame:capacity-http-20261013",
+      "proxy": "web",
+      "override": "/root/code/.web-bg-0c9daa37f0ff.json",
+      "updated_at": 1791887710.4150949
+    },
+    "resources": "code-web-1 18.65% 137MiB / 768MiB\ncode-beat-1 0.00% 96.29MiB / 192MiB\ncode-worker_timer-1 0.09% 167.6MiB / 1GiB\ncode-worker_timer_scan-1 0.10% 118MiB / 256MiB\ncode-worker_battle-1 0.10% 187.9MiB / 256MiB\ncode-worker_timer_safety-1 0.19% 117.9MiB / 512MiB\ncode-worker_timer_maintenance-1 0.12% 121.7MiB / 768MiB\ncode-worker-1 0.10% 117.5MiB / 256MiB\ncode-redis_runtime-1 1.62% 7.133MiB / 384MiB\ncode-caddy-1 1.75% 116.9MiB / 256MiB\ncode-db-1 3.26% 1.774GiB / 2GiB\ncode-redis-1 0.66% 20.2MiB / 512MiB\ngongsi-deploy-caddy-1 2.24% 53.04MiB / 7.751GiB\ngongsi-deploy-web-1 0.00% 135MiB / 7.751GiB\nnagomi-web 0.00% 107.3MiB / 7.751GiB\n"
+  }
+}

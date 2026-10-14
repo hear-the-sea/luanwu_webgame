@@ -37,12 +37,12 @@ def _iter_root_requirements(requirements_file: Path, *, _seen_files: set[Path] |
                 )
             continue
         req = Requirement(line)
-        names.append(req.name)
+        names.append(str(req))
     return names
 
 
 def _iter_root_names(requirements_file: Path) -> list[str]:
-    return _iter_root_requirements(requirements_file)
+    return [Requirement(raw).name for raw in _iter_root_requirements(requirements_file)]
 
 
 def _dist_for_name(name: str) -> metadata.Distribution:
@@ -72,28 +72,45 @@ def main() -> int:
         else (Path(__file__).resolve().parent.parent / "requirements.txt")
     )
 
-    pending = list(_iter_root_names(requirements_file))
-    visited: set[str] = set()
+    pending = [Requirement(raw) for raw in _iter_root_requirements(requirements_file)]
+    visited: set[tuple[str, frozenset[str]]] = set()
     pinned: dict[str, str] = {}
+    extras: dict[str, set[str]] = {}
 
     while pending:
-        name = pending.pop()
-        key = name.lower()
-        if key in visited:
+        req = pending.pop()
+        if req.marker and not req.marker.evaluate(env):
             continue
-        visited.add(key)
-
+        name = req.name
+        key = (name.lower(), frozenset(req.extras))
         try:
             dist = _dist_for_name(name)
         except metadata.PackageNotFoundError:
             sys.stderr.write(f"Missing distribution for requirement: {name}\n")
             return 2
 
+        if not req.specifier.contains(dist.version, prereleases=True):
+            sys.stderr.write(f"Incompatible installed distribution: {req} (installed {dist.version})\n")
+            return 2
+        if key in visited:
+            continue
+        visited.add(key)
         pinned[dist.metadata["Name"]] = dist.version
-        pending.extend(_iter_deps(dist, env))
+        extras.setdefault(dist.metadata["Name"], set()).update(req.extras)
+        for raw in dist.requires or []:
+            dependency = Requirement(raw)
+            if dependency.marker and not any(
+                dependency.marker.evaluate({**env, "extra": extra}) for extra in {"", *req.extras}
+            ):
+                continue
+            # The selected parent's extras have already been evaluated.
+            dependency.marker = None
+            pending.append(dependency)
 
     for name in sorted(pinned, key=lambda n: n.lower()):
-        sys.stdout.write(f"{name}=={pinned[name]}\n")
+        selected_extras = extras.get(name, set())
+        suffix = f"[{','.join(sorted(selected_extras))}]" if selected_extras else ""
+        sys.stdout.write(f"{name}{suffix}=={pinned[name]}\n")
 
     return 0
 

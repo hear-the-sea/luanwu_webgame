@@ -249,6 +249,8 @@ def test_finalize_guild_mission_defers_report_messages_until_after_commit(django
 
 @pytest.mark.django_db(transaction=True)
 def test_finalize_guild_mission_forwards_expanded_battle_limits(django_user_model, monkeypatch):
+    # 显式提供敌方护院模板，避免依赖空库 YAML 回退及其他测试的缓存状态。
+    TroopTemplate.objects.update_or_create(key="archer", defaults={"name": "人数上限测试弓兵"})
     leader, leader_manor = create_user_with_manor(django_user_model, "guild_mission_expand_limits_leader")
     guild = Guild.objects.create(name="公会任务扩展人数帮", founder=leader, is_active=True)
     leader_member = GuildMember.objects.create(guild=guild, user=leader, position="leader")
@@ -315,6 +317,10 @@ def test_finalize_guild_mission_forwards_expanded_battle_limits(django_user_mode
     def _fake_execute_simulation(attacker_units, defender_units, options, config, rng, final_seed):
         captured["attacker_unit_count"] = len(attacker_units)
         captured["defender_unit_count"] = len(defender_units)
+        captured["defender_guests"] = [unit.template_key for unit in defender_units if unit.kind == "guest"]
+        captured["defender_troops"] = {
+            unit.template_key: unit.troop_strength for unit in defender_units if unit.kind == "troop"
+        }
         simulation = SimpleNamespace(
             losses={"attacker": {"casualties": []}, "defender": {}},
             drops={},
@@ -340,7 +346,10 @@ def test_finalize_guild_mission_forwards_expanded_battle_limits(django_user_mode
     assert options.limit == 6
     assert options.defender_limit == 7
     assert captured["attacker_unit_count"] == 6
-    assert captured["defender_unit_count"] == 7
+    # 门客限制不包含护院：7 名门客及一个 120 弓兵的战斗单位。
+    assert captured["defender_unit_count"] == 8
+    assert captured["defender_guests"] == [tpl.key for tpl in enemy_templates]
+    assert captured["defender_troops"] == {"archer": 120}
     assert options.defender_setup["troop_loadout"] == {"archer": 120}
     assert options.defender_setup["technology"]["guest_level"] == 60
     assert len(captured["raw_guest_keys"]) == 7

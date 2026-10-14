@@ -3,14 +3,35 @@ from __future__ import annotations
 import logging
 import sys
 import time
+from contextlib import ExitStack
 from typing import Any, Callable
 
 from django.conf import settings
+from django.db import connections
 from django.http import HttpRequest, HttpResponse
 
 from core.utils.network import get_client_ip
 
 logger = logging.getLogger("access")
+
+
+class _DatabaseExecutionTiming:
+    """只累计执行耗时，不保留 SQL 或参数；不包含提交、连接及结果读取耗时。"""
+
+    def __init__(self) -> None:
+        self.count = 0
+        self.total_seconds = 0.0
+        self.max_seconds = 0.0
+
+    def __call__(self, execute: Callable[..., Any], sql: Any, params: Any, many: bool, context: dict[str, Any]) -> Any:
+        started = time.perf_counter()
+        try:
+            return execute(sql, params, many, context)
+        finally:
+            elapsed = time.perf_counter() - started
+            self.count += 1
+            self.total_seconds += elapsed
+            self.max_seconds = max(self.max_seconds, elapsed)
 
 
 def _sanitize_log_value(value: Any, *, max_length: int = 2048) -> str:
@@ -36,9 +57,14 @@ class AccessLogMiddleware:
             return self.get_response(request)
 
         start = time.monotonic()
+        database_timing = _DatabaseExecutionTiming()
         response = None
         try:
-            response = self.get_response(request)
+            # 注册包装器不会打开连接或增加查询，覆盖同步请求线程内的模板查询。
+            with ExitStack() as stack:
+                for connection in connections.all():
+                    stack.enter_context(connection.execute_wrapper(database_timing))
+                response = self.get_response(request)
             return response
         finally:
             exc = sys.exc_info()[1]
@@ -53,8 +79,15 @@ class AccessLogMiddleware:
             log_ip = _sanitize_log_value(ip, max_length=128)
             log_request_id = _sanitize_log_value(request_id, max_length=128)
             exc_name = _sanitize_log_value(type(exc).__name__, max_length=64) if exc else ""
+            database_details = ""
+            if duration_ms >= 1000:
+                database_details = (
+                    f" db_execute_count={database_timing.count}"
+                    f" db_execute_ms={database_timing.total_seconds * 1000:.1f}"
+                    f" db_execute_max_ms={database_timing.max_seconds * 1000:.1f}"
+                )
             logger.info(
-                "method=%s path=%s status=%s duration_ms=%s user_id=%s ip=%s request_id=%s%s",
+                "method=%s path=%s status=%s duration_ms=%s user_id=%s ip=%s request_id=%s%s%s",
                 method,
                 log_path,
                 status_code,
@@ -63,4 +96,5 @@ class AccessLogMiddleware:
                 log_ip,
                 log_request_id,
                 f" exc={exc_name}" if exc else "",
+                database_details,
             )

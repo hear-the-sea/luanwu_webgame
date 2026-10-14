@@ -51,6 +51,8 @@
       const troopCapacity = loadoutForm.querySelector("[data-task-troop-capacity]");
       const capacityStatus = loadoutForm.querySelector("[data-task-capacity-status]");
       const submitButton = loadoutForm.querySelector("[data-task-submit]");
+      const quickButton = loadoutForm.querySelector("[data-task-quick-launch]");
+      const quickAllowed = Boolean(quickButton && !quickButton.disabled);
       const parseCount = (value) => Math.max(0, Number.parseInt(value, 10) || 0);
       const checkedGuests = () => guestInputs.filter((input) => input.checked);
       const currentCapacity = () => checkedGuests().reduce(
@@ -79,8 +81,16 @@
           capacityStatus.classList.toggle("is-over-limit", overCapacity);
           capacityStatus.setAttribute("role", overCapacity ? "alert" : "status");
         }
-        if (submitButton) submitButton.disabled = guestCount === 0 || troops > capacity;
+        if (submitButton) {
+          submitButton.disabled = guestCount === 0 || troops > capacity || loadoutForm.dataset.quickPending === "1";
+        }
+        if (quickButton) {
+          quickButton.disabled = !quickAllowed || maxSquadSize === 0
+            || !guestInputs.some((input) => !input.disabled) || loadoutForm.dataset.quickPending === "1";
+        }
       };
+
+      loadoutForm.addEventListener("task-loadout:restore", updateLoadout);
 
       const setTroopValue = (input, requested) => {
         const inventoryMax = parseCount(input.dataset.max);
@@ -150,6 +160,42 @@
         updateLoadout();
       });
 
+      quickButton?.addEventListener("click", async () => {
+        if (quickButton.disabled || loadoutForm.dataset.quickPending === "1") return;
+        const plannedGuests = guestInputs.filter((input) => !input.disabled).slice(0, maxSquadSize);
+        const plannedTroops = troopInputs.filter((input) => !input.disabled && parseCount(input.dataset.max) > 0);
+        loadoutForm.dataset.quickPending = "1";
+        updateLoadout();
+        let submitted = false;
+        try {
+          const message = loadoutForm.dataset.taskGuestOnly === "1"
+            ? `将自动选择 ${plannedGuests.length} 名门客出征，是否确认？`
+            : `将自动选择 ${plannedTroops.length} 种护院，每种携带 1 个（共 ${plannedTroops.length} 个），并派遣 ${plannedGuests.length} 名门客。是否确认出征？`;
+          const options = { title: "快速出征", okText: "确认出征" };
+          const confirmed = typeof window.gameConfirm === "function"
+            ? await window.gameConfirm(message, options)
+            : window.gameDialog?.confirm
+              ? await window.gameDialog.confirm(message, options)
+              : window.confirm(message);
+          if (!confirmed) return;
+          guestInputs.forEach((input) => {
+            input.checked = plannedGuests.includes(input);
+          });
+          troopInputs.forEach((input) => {
+            input.value = plannedTroops.includes(input) ? "1" : "0";
+          });
+          delete loadoutForm.dataset.quickPending;
+          updateLoadout();
+          if (!submitButton || submitButton.disabled) return;
+          loadoutForm.dataset.quickPending = "1";
+          loadoutForm.requestSubmit(submitButton);
+          submitted = true;
+        } finally {
+          if (!submitted) delete loadoutForm.dataset.quickPending;
+          updateLoadout();
+        }
+      });
+
       updateLoadout();
     }
 
@@ -206,4 +252,11 @@
 
   document.addEventListener("DOMContentLoaded", initTasksPage);
   document.addEventListener("partial-nav:loaded", initTasksPage);
+  window.addEventListener("pageshow", (event) => {
+    if (!event.persisted) return;
+    const form = document.querySelector("[data-task-loadout]");
+    if (!form) return;
+    delete form.dataset.quickPending;
+    form.dispatchEvent(new Event("task-loadout:restore"));
+  });
 })();

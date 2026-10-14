@@ -6,7 +6,7 @@ import random
 from typing import Any, Dict, Sequence, Tuple
 
 from django.db import transaction
-from django.db.models import Q, QuerySet
+from django.db.models import F, Q, QuerySet
 
 from core.utils import safe_positive_int
 
@@ -14,6 +14,7 @@ from ....models import BotProfile, InventoryItem, ItemTemplate, Manor, ResourceE
 from ...inventory.core import (
     GRAIN_ITEM_KEY,
     add_item_to_inventory_locked,
+    consume_inventory_item_locked,
     get_warehouse_grain_quantity_locked,
     set_warehouse_grain_quantity_locked,
 )
@@ -157,7 +158,7 @@ def _build_loot_item_queryset(defender: Manor, *, max_rarity: str | None = None)
     items = InventoryItem.objects.filter(
         manor=defender,
         template__tradeable=True,
-        quantity__gt=0,
+        quantity__gt=F("bound_quantity"),
         storage_location=InventoryItem.StorageLocation.WAREHOUSE,
     )
     if max_rarity is not None:
@@ -170,10 +171,10 @@ def _build_loot_item_queryset(defender: Manor, *, max_rarity: str | None = None)
 
 def _build_weighted_loot_candidates(base_qs: QuerySet[InventoryItem]) -> list[WeightedLootCandidate]:
     candidates: list[WeightedLootCandidate] = []
-    rows = base_qs.order_by("id").values("quantity", "template__key", "template__storage_space")
+    rows = base_qs.order_by("id").values("quantity", "bound_quantity", "template__key", "template__storage_space")
     for row in rows:
         item_key = str(row.get("template__key") or "").strip()
-        quantity = safe_positive_int(row.get("quantity"), 0)
+        quantity = max(0, safe_positive_int(row.get("quantity"), 0) - safe_positive_int(row.get("bound_quantity"), 0))
         if not item_key or quantity <= 0:
             continue
         candidates.append(
@@ -323,8 +324,19 @@ def _apply_loot(
 
     # 粮食虽然来自物品池，但仓库粮食行是唯一业务账本；兼容旧记录中的资源粮食字段。
     current_grain = get_warehouse_grain_quantity_locked(manor)
-    legacy_grain_deducted = min(current_grain, legacy_grain_requested)
-    remaining_grain = current_grain - legacy_grain_deducted
+    grain_row = (
+        InventoryItem.objects.select_for_update()
+        .filter(
+            manor=manor,
+            template__key=GRAIN_ITEM_KEY,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        )
+        .first()
+    )
+    grain_bound = int(grain_row.bound_quantity) if grain_row is not None else 0
+    available_grain = max(0, current_grain - grain_bound)
+    legacy_grain_deducted = min(available_grain, legacy_grain_requested)
+    remaining_grain = available_grain - legacy_grain_deducted
     item_grain_deducted = min(remaining_grain, item_grain_requested)
     total_grain_deducted = legacy_grain_deducted + item_grain_deducted
     if legacy_grain_deducted > 0:
@@ -333,6 +345,8 @@ def _apply_loot(
         actual_items[GRAIN_ITEM_KEY] = item_grain_deducted
     if total_grain_deducted > 0:
         set_warehouse_grain_quantity_locked(manor, current_grain - total_grain_deducted)
+        if grain_row is not None and grain_bound:
+            InventoryItem.objects.filter(pk=grain_row.pk).update(bound_quantity=grain_bound)
 
     resource_deductions = dict(actual_resources)
     if item_grain_deducted > 0:
@@ -361,14 +375,15 @@ def _apply_loot(
             )
         except InventoryItem.DoesNotExist:
             continue
-        deducted = min(item.quantity, qty)
+        available = item.unbound_quantity
+        if item_key == "gold_bar":
+            from trade.services.auction_service import get_frozen_gold_bars
+
+            available = max(0, available - get_frozen_gold_bars(manor))
+        deducted = min(available, qty)
         if deducted <= 0:
             continue
-        item.quantity -= deducted
-        if item.quantity <= 0:
-            item.delete()
-        else:
-            item.save(update_fields=["quantity", "updated_at"])
+        consume_inventory_item_locked(item, deducted, allow_bound=False)
         actual_items[item_key] = deducted
 
     return actual_resources, actual_items
@@ -463,4 +478,4 @@ def _grant_loot_items(manor: Manor, items: Dict[str, int]) -> None:
         template = templates.get(key)
         if not template:
             continue
-        add_item_to_inventory_locked(locked_manor, key, qty, template=template)
+        add_item_to_inventory_locked(locked_manor, key, qty, template=template, is_bound=False)

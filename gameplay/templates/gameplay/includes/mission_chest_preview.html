@@ -1,0 +1,25 @@
+<details class="tw-chest-preview">
+    <summary>{{ preview.name }}：奖励一览</summary>
+    <div class="tw-chest-preview-body">
+        {% if preview.guaranteed %}
+        <section>
+            <h6 class="tw-chest-preview-heading">必得：</h6>
+            <ul class="tw-chest-reward-list">
+                {% for reward in preview.guaranteed %}
+                <li>{{ reward }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endif %}
+        {% if preview.possible %}
+        <section>
+            <h6 class="tw-chest-preview-heading">可能获得：</h6>
+            <ul class="tw-chest-reward-list">
+                {% for reward in preview.possible %}
+                <li>{{ reward }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endif %}
+    </div>
+</details>

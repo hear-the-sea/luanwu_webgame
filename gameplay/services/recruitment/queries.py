@@ -12,6 +12,7 @@ from django.utils import timezone
 
 from battle.models import TroopTemplate
 from core.exceptions import TroopCapacityFullError
+from core.game_data.technology import troop_display_sort_key
 
 from ...models import Manor, PlayerTroop, TroopBankStorage, TroopRecruitment
 
@@ -95,4 +96,4 @@ def get_player_troops(manor: Manor, *, include_bank: bool = False) -> list[dict[
             row["bank_count"] = bank_troop.count
             row["count"] += bank_troop.count
 
-    return list(rows_by_key.values())
+    return sorted(rows_by_key.values(), key=lambda row: troop_display_sort_key(row["key"]))

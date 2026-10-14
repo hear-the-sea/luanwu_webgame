@@ -224,6 +224,7 @@ def calculate_battle_salvage(
     defender_guests: List[Guest] | None = None,
     *,
     equipment_casualty_side: str | None = None,
+    include_equipment_recovery: bool = True,
 ) -> Tuple[int, Dict[str, int]]:
     """
     根据战报计算“胜利方战斗回收”奖励（经验果 + 护院装备回收）。
@@ -232,6 +233,7 @@ def calculate_battle_salvage(
     - 经验果按战损与阵亡门客快照计算
     - 装备回收按阵亡护院配置与随机种子计算
     `equipment_casualty_side` 仅用于限定“装备回收”所依据的阵亡方，不影响经验果计算。
+    `include_equipment_recovery=False` 只计算经验果，不执行装备随机回收。
     """
     if report is None:
         raise AssertionError("invalid battle salvage report: None")
@@ -254,11 +256,15 @@ def calculate_battle_salvage(
         equipment_casualties = all_casualties
     else:
         equipment_casualties = _collect_casualties(report, side=normalized_equipment_side)
-    equipment_recovery = _calculate_equipment_recovery(
-        equipment_casualties,
-        rng,
-        guest_template_keys=guest_template_keys,
-        ignored_template_keys=ignored_template_keys,
+    equipment_recovery = (
+        _calculate_equipment_recovery(
+            equipment_casualties,
+            rng,
+            guest_template_keys=guest_template_keys,
+            ignored_template_keys=ignored_template_keys,
+        )
+        if include_equipment_recovery
+        else {}
     )
     guest_exp_fruit = _calculate_guest_recovery(report)
 

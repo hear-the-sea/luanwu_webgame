@@ -1,0 +1,104 @@
+{
+  "status": "deployed",
+  "release": "guest-capacity-20261002T161033Z-80485c7",
+  "image": "webgame:guest-capacity-20261002T161033Z-80485c7",
+  "image_id": "sha256:d2320477cb5bed68cf9afbba6dd697774bde627d36e2b38dc150c14533f4d935",
+  "services": {
+    "web": "running",
+    "worker": "running",
+    "worker_battle": "running",
+    "worker_timer": "running",
+    "worker_timer_scan": "running",
+    "worker_timer_safety": "running",
+    "worker_timer_maintenance": "running",
+    "beat": "running"
+  },
+  "backup_dir": "/root/code/releases/guest-capacity-20261002T161033Z-80485c7/backup-retry",
+  "verification": {
+    "capacity_by_level": {
+      "0": {
+        "guest_capacity": 5,
+        "max_squad_size": 5
+      },
+      "1": {
+        "guest_capacity": 6,
+        "max_squad_size": 6
+      },
+      "14": {
+        "guest_capacity": 19,
+        "max_squad_size": 19
+      },
+      "15": {
+        "guest_capacity": 20,
+        "max_squad_size": 20
+      }
+    },
+    "migration_applied": true,
+    "file_hashes": {
+      "core/config.py": "c5e6abec30c62c264049e11230ddfdef6102720d924d6901c13db07ea4f77edc",
+      "gameplay/models/manor.py": "7911d3d055648ec42191cd61edce231d448f6bf9cf748981942144fa0984a094",
+      "gameplay/constants.py": "8b08a5b370cec8abd1dd4fe85a638ecf0880707e38ff0cbb481e0e7a770b77de",
+      "gameplay/services/manor/provisioning.py": "29c6e39109949c02a3768bee626bfdf93f111df0543e1f5137195f8c9b222639",
+      "data/building_templates.yaml": "448fc80a95cf444e2af79fc8ce498788cc187a70efc9742f64187b981f111ad5",
+      "gameplay/templates/gameplay/guide.html": "52fe04f175923684f93d37530ab03c0c16376ca938ccc8868150026c262201a4",
+      "gameplay/migrations/0194_guest_capacity_building_descriptions.py": "9fb9fad43438e18a2b077924207d45f63db520f4194cec94c2a6ff6965dea8f1"
+    }
+  },
+  "buildings_preserved_during_migration": true,
+  "building_count": 2248,
+  "routing_before": {
+    "revision": 530,
+    "bootstrap_mode": "v2_active",
+    "maintenance_mode": "v2_paused",
+    "pause_reason": "heartbeat_incomplete:maintenance_attempt_emitter,heartbeat_incomplete:h01_callback_attempt_emitter,heartbeat_incomplete:arena_shortage_emitter,heartbeat_incomplete:safety_aggregator,heartbeat_incomplete:safety_monitor"
+  },
+  "routing_after": {
+    "revision": 530,
+    "bootstrap_mode": "v2_active",
+    "maintenance_mode": "v2_paused",
+    "pause_reason": "heartbeat_incomplete:maintenance_attempt_emitter,heartbeat_incomplete:h01_callback_attempt_emitter,heartbeat_incomplete:arena_shortage_emitter,heartbeat_incomplete:safety_aggregator,heartbeat_incomplete:safety_monitor"
+  },
+  "host": "154.201.68.231",
+  "capacity_commit": "80485c7",
+  "local_tests": {
+    "passed": 17,
+    "elapsed_seconds": 16.97
+  },
+  "health": {
+    "web": "healthy",
+    "worker_ping_count": 6,
+    "public_liveness": 200,
+    "public_home": 200,
+    "internal_readiness": "passed",
+    "public_readiness": 404,
+    "public_readiness_note": "Readiness is restricted to internal requests by HEALTH_CHECK_REQUIRE_INTERNAL."
+  },
+  "existing_state": {
+    "buildings_preserved_during_migration": true,
+    "building_count": 2248,
+    "guest_templates_unchanged": true,
+    "safety_pause_preserved": true
+  },
+  "actual_level_15_samples": {
+    "juxianzhuang": [
+      20,
+      20,
+      20
+    ],
+    "youxibaota": [
+      20,
+      20,
+      20
+    ]
+  },
+  "attempts": [
+    {
+      "status": "rolled_back_before_migration",
+      "reason": "One-off container did not forward stdin to snapshot script; corrected to python -c."
+    },
+    {
+      "status": "deployed_and_verified"
+    }
+  ],
+  "archive_transfer_sha256": "6fffb0e7f57f0e66657fe2538edd99f739677e2431cf6c57378af8735c117a6d"
+}

@@ -11,6 +11,47 @@ import gameplay.tasks.virtual_players as virtual_player_tasks
 from gameplay.services.virtual_player_core.config import MaintenanceMode
 
 
+def test_maintenance_task_records_independent_stage_durations(monkeypatch, caplog):
+    clock = iter([0.0, 7.0, 11.0, 29.0])
+    monkeypatch.setattr(virtual_player_tasks, "monotonic", lambda: next(clock))
+    monkeypatch.setattr(virtual_player_tasks, "scan_virtual_player_maintenance_completions", lambda **kwargs: [1, 2])
+    monkeypatch.setattr(virtual_player_tasks, "schedule_due_virtual_recruitments", lambda **kwargs: 3)
+    monkeypatch.setattr(virtual_player_tasks, "maintain_due_virtual_players", lambda **kwargs: 4)
+    caplog.set_level("INFO", logger=virtual_player_tasks.__name__)
+    assert virtual_player_tasks.scan_virtual_player_maintenance_task.run(limit=10) == 4
+    record = next(
+        record
+        for record in caplog.records
+        if getattr(record, "event", "") == "virtual_player_maintenance_scan_completed"
+    )
+    assert record.completion_reconciliation_duration_seconds == 7
+    assert record.recruitment_scan_duration_seconds == 4
+    assert record.maintenance_batch_duration_seconds == 18
+    assert record.task_duration_seconds == 29
+    assert (
+        "completion_seconds=7.000 recruitment_seconds=4.000 maintenance_seconds=18.000 total_seconds=29.000"
+        in record.getMessage()
+    )
+
+
+def test_population_task_messages_include_duration_and_budget(monkeypatch, caplog):
+    clock = iter([0.0, 0.0, 12.0, 13.0, 20.0, 28.0])
+    monkeypatch.setattr(virtual_player_tasks, "monotonic", lambda: next(clock))
+    monkeypatch.setattr(virtual_player_tasks, "roll_virtual_player_population", lambda **kwargs: 3)
+    monkeypatch.setattr(virtual_player_tasks, "scan_virtual_player_population_demands", lambda **kwargs: ())
+    caplog.set_level("INFO", logger=virtual_player_tasks.__name__)
+    assert virtual_player_tasks.roll_virtual_players_task.run() == 3
+    assert virtual_player_tasks.scan_virtual_player_population_demands_task.run() == []
+    roll = next(record for record in caplog.records if getattr(record, "event", "") == "virtual_player_roll_completed")
+    scan = next(
+        record
+        for record in caplog.records
+        if getattr(record, "event", "") == "virtual_player_population_scan_task_completed"
+    )
+    assert "population_seconds=12.000 total_seconds=13.000 budget_seconds=20.000" in roll.getMessage()
+    assert "total_seconds=8.000 budget_seconds=20.000" in scan.getMessage()
+
+
 @pytest.mark.parametrize(
     ("task", "stream"),
     (

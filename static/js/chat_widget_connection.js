@@ -42,6 +42,7 @@
     let stabilityTimer = null;
     let pingTimer = null;
     let disposed = false;
+    let suspended = false;
     let terminal = false;
     const pendingOperations = new Map();
 
@@ -89,7 +90,7 @@
     }
 
     function scheduleReconnect(closeCode) {
-      if (disposed || reconnectTimer !== null) return;
+      if (disposed || suspended || reconnectTimer !== null) return;
       if (!reconnectPolicy.shouldReconnect(closeCode)) {
         terminal = true;
         return;
@@ -97,7 +98,7 @@
       setStatus("重连中…", "connecting");
 
       const scheduledTimer = setTimeoutFn(() => {
-        if (disposed || reconnectTimer !== scheduledTimer) return;
+        if (disposed || suspended || reconnectTimer !== scheduledTimer) return;
         reconnectTimer = null;
         connect();
       }, reconnectPolicy.nextDelay(closeCode));
@@ -105,7 +106,8 @@
     }
 
     function connect() {
-      if (disposed || terminal) return;
+      if (disposed || suspended || terminal) return;
+      if (reconnectTimer !== null) return;
       if (socket && (socket.readyState === WebSocketCtor.OPEN || socket.readyState === WebSocketCtor.CONNECTING)) {
         return;
       }
@@ -182,7 +184,7 @@
     }
 
     function sendText(text) {
-      if (!text || terminal) return false;
+      if (!text || disposed || suspended || terminal) return false;
 
       if (!socket || socket.readyState !== WebSocketCtor.OPEN) {
         renderer.appendSystem("未连接到世界频道，正在重连…", { kind: "error" });
@@ -207,8 +209,9 @@
       }
     }
 
-    function teardown() {
-      disposed = true;
+    function suspend() {
+      if (suspended) return;
+      suspended = true;
       clearReconnectTimer();
       clearStabilityTimer();
       clearPingTimer();
@@ -227,8 +230,21 @@
       }
     }
 
+    function resume() {
+      if (disposed || !suspended) return;
+      suspended = false;
+      connect();
+    }
+
+    function teardown() {
+      disposed = true;
+      suspend();
+    }
+
     return {
       connect,
+      suspend,
+      resume,
       sendText,
       teardown,
     };

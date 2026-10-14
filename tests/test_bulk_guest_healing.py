@@ -101,6 +101,27 @@ def test_bulk_guest_healing_consumes_only_the_units_actually_used(manor_with_use
 
 
 @pytest.mark.django_db
+@pytest.mark.parametrize("defense_stat", [0, 100])
+def test_bulk_healing_sql_filter_matches_hp_floor_with_negative_bonus(manor_with_user, defense_stat):
+    manor, _client = manor_with_user
+    template = _guest_template()
+    patient = Guest.objects.create(
+        manor=manor, template=template, defense_stat=defense_stat, hp_bonus=-2000, current_hp=1
+    )
+    full = Guest.objects.create(manor=manor, template=template, defense_stat=defense_stat, hp_bonus=-2000)
+    item = _medicine(manor, heal_amount=patient.max_hp, quantity=2)
+
+    result = heal_all_guests_with_medicine(manor)
+
+    patient.refresh_from_db()
+    full.refresh_from_db()
+    item.refresh_from_db()
+    assert result["requested_count"] == 1
+    assert patient.current_hp == full.current_hp == patient.max_hp
+    assert item.quantity == 1
+
+
+@pytest.mark.django_db
 def test_bulk_guest_healing_prioritizes_injured_guest_when_stock_is_short(manor_with_user):
     manor, _client = manor_with_user
     template = _guest_template()
@@ -174,6 +195,22 @@ def test_bulk_guest_healing_rolls_back_hp_when_item_consumption_fails(manor_with
     assert guest.current_hp == 100
     assert guest.status == GuestStatus.INJURED
     assert item.quantity == 1
+
+
+@pytest.mark.django_db
+def test_bulk_healing_rejects_inventory_handler_that_does_not_debit(manor_with_user, monkeypatch):
+    manor, _client = manor_with_user
+    patient = Guest.objects.create(manor=manor, template=_guest_template(), defense_stat=0, current_hp=100)
+    item = _medicine(manor, heal_amount=900, quantity=2)
+    monkeypatch.setattr("gameplay.services.inventory.core.consume_inventory_item_locked", lambda *_a, **_k: 0)
+
+    with pytest.raises(AssertionError, match="consumption differed from its plan"):
+        heal_all_guests_with_medicine(manor)
+
+    patient.refresh_from_db()
+    item.refresh_from_db()
+    assert patient.current_hp == 100
+    assert item.quantity == 2
 
 
 @pytest.mark.django_db

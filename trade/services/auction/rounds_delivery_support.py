@@ -89,4 +89,5 @@ def grant_auction_item_directly_impl(
             item_template.key,
             quantity,
             template=item_template,
+            is_bound=False,
         )

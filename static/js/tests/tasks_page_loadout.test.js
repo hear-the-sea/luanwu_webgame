@@ -6,6 +6,7 @@ const vm = require("node:vm");
 
 function element({ dataset = {}, value = "", checked = false } = {}) {
   const classes = new Set();
+  const events = new EventTarget();
   return {
     dataset: { ...dataset },
     value,
@@ -21,8 +22,12 @@ function element({ dataset = {}, value = "", checked = false } = {}) {
         return classes.has(name);
       },
     },
-    addEventListener(type, handler) {
+    addEventListener(type, handler, options) {
       this[`on_${type}`] = handler;
+      events.addEventListener(type, handler, options);
+    },
+    dispatchEvent(event) {
+      return events.dispatchEvent(event);
     },
     setAttribute(name, value) {
       this[name] = value;
@@ -42,6 +47,7 @@ function createLoadoutHarness() {
   const troopCapacity = element();
   const capacityStatus = element();
   const submitButton = element();
+  const quickButton = element();
   const selectAllButton = element();
   const clearGuestsButton = element();
   const clearTroopsButton = element();
@@ -54,6 +60,7 @@ function createLoadoutHarness() {
     ["[data-task-troop-capacity]", troopCapacity],
     ["[data-task-capacity-status]", capacityStatus],
     ["[data-task-submit]", submitButton],
+    ["[data-task-quick-launch]", quickButton],
     ["[data-task-select-all]", selectAllButton],
     ["[data-task-clear-guests]", clearGuestsButton],
     ["[data-task-clear-troops]", clearTroopsButton],
@@ -82,12 +89,12 @@ function createLoadoutHarness() {
       return [];
     },
   };
-  const window = {
+  const window = Object.assign(new EventTarget(), {
     gameAlert(message) {
       alerts.push(message);
     },
-  };
-  vm.runInNewContext(source, { document, window }, { filename: "tasks-page.js" });
+  });
+  vm.runInNewContext(source, { document, window, Event }, { filename: "tasks-page.js" });
   documentListeners.get("DOMContentLoaded")();
 
   return {
@@ -100,12 +107,18 @@ function createLoadoutHarness() {
     guestInputs,
     minusTenButton,
     plusTenButton,
+    quickButton,
     selectAllButton,
     selectedCount,
     submitButton,
     troopCapacity,
     troopInput,
     troopTotal,
+    pageShow(persisted) {
+      const event = new Event("pageshow");
+      event.persisted = persisted;
+      window.dispatchEvent(event);
+    },
   };
 }
 
@@ -169,3 +182,40 @@ test("mission troop buttons respond before selecting guests and flag over-capaci
   assert.equal(harness.troopInput.value, "0");
   assert.equal(harness.submitButton.disabled, false);
 });
+
+test("ordinary pageshow preserves a pending launch and its disabled controls", () => {
+  const harness = createLoadoutHarness();
+  harness.guestInputs[0].checked = true;
+  harness.form.dataset.quickPending = "1";
+  harness.form.dispatchEvent(new Event("task-loadout:restore"));
+  assert.equal(harness.quickButton.disabled, true);
+  assert.equal(harness.submitButton.disabled, true);
+
+  harness.pageShow(false);
+
+  assert.equal(harness.form.dataset.quickPending, "1");
+  assert.equal(harness.quickButton.disabled, true);
+  assert.equal(harness.submitButton.disabled, true);
+});
+
+for (const [troops, overCapacity] of [[50, false], [200, true]]) {
+  test(`persisted pageshow clears pending launch and recomputes ${troops} troop loadout`, () => {
+    const harness = createLoadoutHarness();
+    harness.selectAllButton.on_click();
+    harness.form.dataset.quickPending = "1";
+    harness.form.dispatchEvent(new Event("task-loadout:restore"));
+    // Restored controls must be recalculated from current values, not stale counters.
+    harness.guestInputs[1].checked = false;
+    harness.troopInput.value = String(troops);
+
+    harness.pageShow(true);
+
+    assert.equal(harness.form.dataset.quickPending, undefined);
+    assert.equal(harness.quickButton.disabled, false);
+    assert.equal(harness.submitButton.disabled, overCapacity);
+    assert.equal(harness.selectedCount.textContent, "1");
+    assert.equal(harness.troopCapacity.textContent, "100");
+    assert.equal(harness.troopTotal.textContent, String(troops));
+    assert.equal(harness.capacityStatus.classList.contains("is-over-limit"), overCapacity);
+  });
+}

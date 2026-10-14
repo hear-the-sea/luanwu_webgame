@@ -279,7 +279,7 @@ def test_guild_warehouse_page_renders_production_items_without_item_templates(gu
     assert response.status_code == 200
     body = response.content.decode("utf-8")
     assert "帮会宗师秘匣" in body
-    assert "帮会满阶锻造工坊出品的秘匣，可开出一件高质量紫装。" in body
+    assert "宗师藏好的得意之作，打开随机获得一件紫色装备。" in body
     assert "<h3>guild_gear_box_master</h3>" not in body
     assert 'class="tw-guild-exchange-grid"' in body
     assert 'class="tw-guild-exchange-card' in body

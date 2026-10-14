@@ -65,3 +65,76 @@ def report_event_side(event: object, action: object = None, *, target: bool = Fa
                 return "defender" if side == "attacker" else "attacker"
             return str(side)
     return ""
+
+
+def group_action_recovery_events(events: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
+    """将行动前恢复和嗜血狂怒并入本次出手；只处理展示副本，保留原始战斗日志。"""
+    rows = list(events)
+    attached: dict[int, list[dict[str, Any]]] = {}
+    removed: set[int] = set()
+    for index, event in enumerate(rows):
+        if index in removed:
+            continue
+        if not (
+            (event.get("type") == "heal" and event.get("effect") == "五气朝元")
+            or (event.get("type") == "passive" and event.get("effect") in {"绝处逢生", "嗜血狂怒"})
+        ):
+            continue
+        unit = event.get("unit")
+        side = report_event_side(event)
+        if not unit:
+            continue
+        for action_index in range(index + 1, len(rows)):
+            following = rows[action_index]
+            following_side = report_event_side(following)
+            if side and following_side and side != following_side:
+                break
+            if following.get("type") in ("heal", "passive") and following.get("unit") == unit:
+                continue
+            if (
+                following.get("type") in (None, "attack")
+                and not following.get("status")
+                and following.get("actor") == unit
+            ):
+                attached.setdefault(action_index, []).extend(dict(row) for row in rows[index:action_index])
+                removed.update(range(index, action_index))
+            break
+    if not removed:
+        return rows
+
+    grouped: list[dict[str, Any]] = []
+    for index, event in enumerate(rows):
+        if index in removed:
+            continue
+        row = {**event, "order": len(grouped) + 1}
+        if index in attached:
+            recoveries: list[dict[str, Any]] = []
+            for recovery in attached[index]:
+                if recoveries and recovery.get("effect") == recoveries[-1].get("effect") == "绝处逢生":
+                    previous = recoveries[-1]
+                    healed = previous.get("healed", 0) + recovery.get("healed", 0)
+                    previous.update(recovery)
+                    previous["healed"] = healed
+                else:
+                    recoveries.append(recovery)
+            row["action_recovery_events_before"] = recoveries
+        grouped.append(row)
+    return grouped
+
+
+def reflect_effect_name(attack: Mapping[str, Any]) -> str:
+    """优先显示结算时记录的反伤来源；旧门客战报使用通用反震名称。"""
+    name = str(attack.get("reflect_effect") or "").strip()
+    if name:
+        return name
+    target_state = attack.get("target_state") or {}
+    if isinstance(target_state, Mapping) and target_state.get("kind") == "troop":
+        return "护身剑罡"
+    if (
+        attack.get("target_template_key")
+        or attack.get("target_guest_id")
+        or attack.get("target_is_boss")
+        or (isinstance(target_state, Mapping) and target_state.get("kind") == "guest")
+    ):
+        return "反震"
+    return "护身剑罡"

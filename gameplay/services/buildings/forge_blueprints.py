@@ -9,7 +9,7 @@ from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.models import Manor as ManorModel
 
 from .. import technology as technology_service
-from ..inventory.core import add_item_to_inventory_locked, consume_inventory_item_locked
+from ..inventory.core import add_items_to_inventory_locked, consume_inventory_item_locked
 from .forge_helpers import build_blueprint_synthesis_option, build_inventory_quantity_map, collect_recipe_related_keys
 
 
@@ -116,6 +116,7 @@ def get_blueprint_synthesis_options(
         .order_by("id")
     )
     quantities = build_inventory_quantity_map(inventory_items)
+    bound_quantities = {item.template.key: item.bound_quantity for item in inventory_items}
     forging_level = technology_service.get_player_technology_level(manor, "forging")
 
     options: list[dict[str, Any]] = []
@@ -127,6 +128,8 @@ def get_blueprint_synthesis_options(
             forging_level=forging_level,
         )
         if option is not None:
+            option["blueprint_bound_count"] = bound_quantities.get(recipe["blueprint_key"], 0)
+            option["blueprint_unbound_count"] = option["blueprint_count"] - option["blueprint_bound_count"]
             options.append(option)
 
     options.sort(key=lambda row: (row["required_forging"], row["result_name"]), reverse=True)
@@ -189,16 +192,28 @@ def synthesize_equipment_with_blueprint(
                 need_name = template_names.get(need_key, "所需材料")
                 raise ForgeOperationError(f"{need_name}不足")
 
+        # 同一图纸可能同时出现在主图纸和 costs 中，先汇总后各扣一次，
+        # 再按每次合成的图纸用量分配绑定产物，避免绑定图纸被重复分配。
+        bound_craft_count = 0
         for need_key, need_amount in consume_requirements.items():
-            consume_inventory_item_locked(locked_items[need_key], need_amount)
+            bound_used = consume_inventory_item_locked(locked_items[need_key], need_amount)
+            if (need_key == blueprint_key) or (need_key.startswith("blueprint_")):
+                per_craft = need_amount // quantity
+                bound_craft_count = max(bound_craft_count, (bound_used + per_craft - 1) // per_craft)
 
         output_quantity = recipe["quantity_out"] * quantity
-        add_item_to_inventory_locked(locked_manor, result_item_key, output_quantity)
+        add_items_to_inventory_locked(
+            locked_manor,
+            {result_item_key: output_quantity},
+            bound_quantities={result_item_key: bound_craft_count * recipe["quantity_out"]},
+        )
 
     return {
         "blueprint_key": blueprint_key,
         "result_key": result_item_key,
         "result_name": result_template.name,
         "quantity": output_quantity,
+        "bound_quantity": bound_craft_count * recipe["quantity_out"],
+        "unbound_quantity": output_quantity - bound_craft_count * recipe["quantity_out"],
         "craft_times": quantity,
     }

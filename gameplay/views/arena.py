@@ -5,6 +5,7 @@ import logging
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
 from django.db import DatabaseError
 from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect
@@ -33,6 +34,7 @@ logger = logging.getLogger(__name__)
 ARENA_TAB_REGISTRATION = "registration"
 ARENA_TAB_EVENTS = "events"
 ARENA_TAB_EXCHANGE = "exchange"
+ARENA_TAB_RING = "ring"
 
 
 def _get_registration_silver_cost() -> int:
@@ -101,6 +103,12 @@ class BaseArenaView(LoginRequiredMixin, TemplateView):
                 "active": self.active_tab == ARENA_TAB_REGISTRATION,
             },
             {
+                "key": ARENA_TAB_RING,
+                "label": "演武台",
+                "url": reverse("gameplay:arena_rings"),
+                "active": self.active_tab == ARENA_TAB_RING,
+            },
+            {
                 "key": ARENA_TAB_EVENTS,
                 "label": "赛事查看",
                 "url": reverse("gameplay:arena_events"),
@@ -143,7 +151,16 @@ class ArenaEventsView(BaseArenaView):
     show_arena_hero_card = False
 
     def _build_page_context(self, manor):
-        return get_arena_events_context(manor)
+        from gameplay.selectors.arena.rings import get_ring_event_rows
+
+        context = get_arena_events_context(manor)
+        context.update(get_ring_event_rows(manor, self.request.GET))
+        completed_rows = context["completed_event_card_rows"]
+        completed_rows.sort(key=lambda row: row["meta_datetime"], reverse=True)
+        event_page = Paginator(completed_rows, 30).get_page(self.request.GET.get("page", 1))
+        context["completed_event_card_rows"] = event_page
+        context["event_page"] = event_page
+        return context
 
 
 class ArenaExchangePageView(BaseArenaView):
@@ -346,8 +363,16 @@ def arena_exchange_view(request: HttpRequest) -> HttpResponse:
 @rate_limit_json("arena_runtime_refresh", limit=30, window_seconds=60, error_message="状态刷新过于频繁，请稍后再试")
 def refresh_arena_activity_api(request: HttpRequest) -> JsonResponse:
     manor = get_manor(request.user)
+
+    def refresh_all_arena_activity():
+        from gameplay.services.arena.ring import refresh_due_rings
+
+        result = arena_core.refresh_arena_activity(manor)
+        refresh_due_rings()
+        return result
+
     return run_refresh_api(
-        operation=lambda: arena_core.refresh_arena_activity(manor),
+        operation=refresh_all_arena_activity,
         logger_instance=logger,
         log_message="Unexpected arena refresh error: manor_id=%s user_id=%s",
         log_args=(

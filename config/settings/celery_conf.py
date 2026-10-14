@@ -107,6 +107,20 @@ HEALTH_CHECK_CELERY_BEAT_MAX_AGE_SECONDS = int(env("DJANGO_HEALTH_CHECK_CELERY_B
 HEALTH_CHECK_CELERY_ROUNDTRIP_TIMEOUT_SECONDS = float(env("DJANGO_HEALTH_CHECK_CELERY_ROUNDTRIP_TIMEOUT_SECONDS", "3"))
 
 CELERY_TASK_QUEUES = tuple(Queue(queue_name) for queue_name in _CELERY_QUEUE_NAMES)
+CELERY_WORKER_HEALTH_QUEUES = _CELERY_QUEUE_NAMES
+HEALTH_CHECK_WORKER_QUEUE_MAX_AGE_SECONDS = max(60, int(env("DJANGO_HEALTH_CHECK_WORKER_QUEUE_MAX_AGE_SECONDS", "180")))
+CELERY_WORKER_STALL_WATCHDOG_ENABLED = env("CELERY_WORKER_STALL_WATCHDOG_ENABLED", "1") == "1"
+CELERY_WORKER_STALL_WATCHDOG_QUEUES = (
+    CELERY_TIMER_QUEUE,
+    CELERY_TIMER_SCAN_QUEUE,
+    CELERY_TIMER_MAINTENANCE_QUEUE,
+    CELERY_TIMER_SAFETY_QUEUE,
+)
+CELERY_WORKER_STALL_WATCHDOG_STARTUP_GRACE = max(30, int(env("CELERY_WORKER_STALL_WATCHDOG_STARTUP_GRACE", "120")))
+CELERY_WORKER_STALL_WATCHDOG_TIMEOUT = max(60, int(env("CELERY_WORKER_STALL_WATCHDOG_TIMEOUT", "600")))
+CELERY_WORKER_STALL_WATCHDOG_FAILURES = max(2, int(env("CELERY_WORKER_STALL_WATCHDOG_FAILURES", "3")))
+CELERY_WORKER_STALL_WATCHDOG_INTERVAL = max(10, int(env("CELERY_WORKER_STALL_WATCHDOG_INTERVAL", "30")))
+CELERY_WORKER_STALL_WATCHDOG_SHUTDOWN_GRACE = max(30, int(env("CELERY_WORKER_STALL_WATCHDOG_SHUTDOWN_GRACE", "60")))
 
 # 批量扫描/维护任务与单记录完成任务分开消费，避免一个慢扫描阻塞到期状态推进。
 CELERY_TIMER_SCAN_TASKS = frozenset(
@@ -130,6 +144,7 @@ CELERY_TIMER_SCAN_TASKS = frozenset(
         "gameplay.scan_scout_records",
         "gameplay.scan_arena_tournaments",
         "gameplay.scan_arena_coop_events",
+        "gameplay.scan_arena_rings",
         "gameplay.scan_raid_runs",
         "guilds.scan_due_raids",
         "guilds.scan_due_missions",
@@ -174,7 +189,6 @@ CELERY_TIMER_MAINTENANCE_TASKS = frozenset(
 # below so adding a task cannot silently leave a stale second definition behind.
 CELERY_TIMER_DEFAULT_TASKS = frozenset(
     {
-        "core.record_celery_beat_heartbeat",
         "gameplay.complete_mission",
         "gameplay.complete_building_upgrade",
         "gameplay.complete_technology_upgrade",
@@ -208,6 +222,8 @@ CELERY_TIMER_DEFAULT_TASKS = frozenset(
 # long-running maintenance so queue delay cannot manufacture a safety gap.
 CELERY_TIMER_SAFETY_TASKS = frozenset(
     {
+        "core.record_celery_beat_heartbeat",
+        "core.record_worker_queue_heartbeat",
         "gameplay.heartbeat_virtual_player_maintenance_attempt_emitter",
         "gameplay.heartbeat_virtual_player_h01_callback_attempt_emitter",
         "gameplay.heartbeat_virtual_player_arena_shortage_emitter",
@@ -340,6 +356,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "gameplay.scan_arena_coop_events",
         "schedule": crontab(minute="*/1"),
     },
+    "scan-arena-rings": {
+        "task": "gameplay.scan_arena_rings",
+        "schedule": crontab(minute="*/1"),
+    },
     "scan-arena-virtual-reserves": {
         "task": "gameplay.scan_arena_virtual_reserves",
         "schedule": crontab(minute="*" if ARENA_LOW_POPULATION_MODE else "*/5"),
@@ -389,6 +409,7 @@ CELERY_BEAT_SCHEDULE = {
     "record-celery-beat-heartbeat": {
         "task": "core.record_celery_beat_heartbeat",
         "schedule": crontab(minute="*"),
+        "options": {"expires": 120},
     },
     "plan-virtual-players": {
         "task": "gameplay.plan_virtual_players",
@@ -447,3 +468,11 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(minute="*/5"),
     },
 }
+
+for _health_queue in CELERY_WORKER_HEALTH_QUEUES:
+    CELERY_BEAT_SCHEDULE[f"record-worker-queue-heartbeat-{_health_queue}"] = {
+        "task": "core.record_worker_queue_heartbeat",
+        "schedule": crontab(minute="*"),
+        "args": (_health_queue,),
+        "options": {"queue": _health_queue, "expires": 120},
+    }

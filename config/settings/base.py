@@ -68,7 +68,7 @@ ENABLE_BATTLE_DEBUGGER = DEBUG and env("DJANGO_ENABLE_DEBUGGER", "0") == "1"
 VIRTUAL_PLAYER_GATE_D2_ATTESTATION_KEYS = env_json_string_mapping("DJANGO_VIRTUAL_PLAYER_GATE_D2_ATTESTATION_KEYS_JSON")
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
+    "config.admin.GameAdminConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",

@@ -12,10 +12,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
+      force: 8
+      intellect: 54
+      defense: 14
+      agility: 24
   - key: hero_ilrock_03160
     name: 诸葛刚
     default_gender: male
@@ -26,10 +26,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 52
+      intellect: 6
+      defense: 28
+      agility: 14
   - key: hero_ilrock_03161
     name: 伊哭
     default_gender: male
@@ -40,10 +40,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 48
+      intellect: 6
+      defense: 20
+      agility: 26
   - key: hero_ilrock_03185
     name: 游龙生
     default_gender: male
@@ -54,10 +54,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 50
+      intellect: 6
+      defense: 22
+      agility: 22
   - key: hero_ilrock_03356
     name: 江玉郎
     default_gender: male
@@ -68,10 +68,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
+      force: 8
+      intellect: 54
+      defense: 14
+      agility: 24
   blue:
   - key: hero_ilrock_03154
     name: 百晓生
@@ -83,10 +83,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
+      force: 8
+      intellect: 62
+      defense: 16
+      agility: 14
   - key: hero_ilrock_03158
     name: 吕凤先
     default_gender: male
@@ -97,10 +97,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 54
+      intellect: 6
+      defense: 24
+      agility: 16
   - key: hero_ilrock_03159
     name: 西门柔
     default_gender: male
@@ -111,10 +111,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 46
+      intellect: 6
+      defense: 20
+      agility: 28
   - key: hero_ilrock_03165
     name: 林诗音
     default_gender: female
@@ -125,10 +125,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
+      force: 8
+      intellect: 52
+      defense: 24
+      agility: 16
   - key: hero_ilrock_03199
     name: 南宫灵
     default_gender: male
@@ -139,10 +139,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
+      force: 10
+      intellect: 56
+      defense: 18
+      agility: 16
   - key: hero_ilrock_03200
     name: 任慈
     default_gender: male
@@ -153,10 +153,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 48
+      intellect: 8
+      defense: 28
+      agility: 16
   - key: hero_ilrock_03211
     name: 高亚男
     default_gender: female
@@ -167,10 +167,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 46
+      intellect: 6
+      defense: 20
+      agility: 28
   - key: hero_ilrock_03228
     name: 秋灵素
     default_gender: female
@@ -181,10 +181,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
+      force: 8
+      intellect: 56
+      defense: 20
+      agility: 16
   - key: hero_ilrock_03246
     name: 柳无眉
     default_gender: female
@@ -195,10 +195,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
+      force: 8
+      intellect: 54
+      defense: 14
+      agility: 24
   - key: hero_ilrock_03349
     name: 张菁
     default_gender: female
@@ -209,10 +209,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 46
+      intellect: 6
+      defense: 20
+      agility: 28
   - key: hero_ilrock_03354
     name: 江琴
     default_gender: male
@@ -223,24 +223,24 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
+      force: 10
+      intellect: 56
+      defense: 18
+      agility: 16
   - key: hero_ilrock_03376
     name: 魏无牙
     default_gender: male
-    archetype: military
+    archetype: civil
     flavor: 十二星相中的鼠首，精通机关与独门武学，是古龙小说《绝代双骄》中诡谲危险的高手。魏无牙身形残缺，仍凭聪慧与狠辣统领手下，又收苏樱为养女。他倾慕邀月、怜星，却因求而不得积下怨恨，最终利用洞窟与机关将移花宫诸人困入绝境。暗道、石门和杀机重重的密室，处处留着这个偏执之人的布置。
     recruitable: true
     growth_range:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 8
+      intellect: 60
+      defense: 20
+      agility: 12
   - key: hero_ilrock_03384
     name: 顾人玉
     default_gender: male
@@ -251,7 +251,7 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      force: 50
+      intellect: 6
+      defense: 28
+      agility: 16

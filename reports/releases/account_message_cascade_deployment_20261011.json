@@ -1,0 +1,66 @@
+{
+  "status": "deployed_and_verified",
+  "image": "webgame:account-message-cascade-20261011",
+  "previous_web_image": "webgame:vacation-dismiss-20261010",
+  "files": {
+    "accounts/admin.py": "88b2043b9e513d0c555458dff5193ccd0f2445ea8a215c545f135c35a096843b",
+    "core/admin_cascade.py": "088e43e0eb7c96d256c30b65742cc086c49215050cfd0c580dd86d8620903c65",
+    "gameplay/admin/messages.py": "367fbfea381277db549d2cfcb8b8d99d654d18a9019392aaff8a86a2bd76478f"
+  },
+  "preview": {
+    "before": {
+      "target_found": true,
+      "real_account_deletion_executed": false,
+      "target_id": 330,
+      "message_count": 12,
+      "protected_message_count": 12,
+      "permissions_needed": [
+        "消息"
+      ],
+      "protected_relation_count": 0,
+      "account_still_exists": true,
+      "standalone_message_protection_retained": true
+    },
+    "after": {
+      "target_found": true,
+      "real_account_deletion_executed": false,
+      "target_id": 330,
+      "message_count": 12,
+      "protected_message_count": 12,
+      "permissions_needed": [],
+      "protected_relation_count": 0,
+      "account_still_exists": true,
+      "standalone_message_protection_retained": true
+    }
+  },
+  "regression_tests_passed": 96,
+  "real_account_deletion_executed": false,
+  "ready": {
+    "status": "ok",
+    "checks": {
+      "db": true,
+      "cache": true,
+      "channel_layer": true,
+      "celery_broker": true,
+      "celery_workers": true,
+      "celery_beat": true,
+      "celery_roundtrip": true
+    }
+  },
+  "other_services_kept_running": true,
+  "config_files": [
+    "/root/code/docker-compose.prod.yml",
+    "/root/code/docker-compose.prod.double-caddy.yml",
+    "/root/code/releases/spear-counter-20261005/compose.new.yml",
+    "/root/code/releases/asgiref-fix-20261005/compose.new.yml",
+    "/root/code/releases/reflect-names-20261005/compose.new.yml",
+    "/root/code/releases/lier-orange-20261006/compose.new.yml",
+    "/root/code/releases/pagination-20261007-b8d4/compose.new.yml",
+    "/root/code/releases/unique-shield-20261008-9e17/compose.new.yml",
+    "/root/code/releases/timer-recovery-20261008/compose.new.yml",
+    "/root/code/releases/all-updates-20261009T124924Z/compose.new.yml",
+    "/root/code/releases/quick-launch-confirm-20261009/compose.new.yml",
+    "/root/code/releases/vacation-dismiss-20261010/compose.new.yml"
+  ],
+  "release": "/root/code/releases/account-message-cascade-20261011"
+}

@@ -296,3 +296,47 @@ def test_synthesize_equipment_with_blueprint_rejects_malformed_recipe_contract(d
 
     with pytest.raises(AssertionError, match="invalid forge blueprint recipe required_forging"):
         forge_service.synthesize_equipment_with_blueprint(manor, "bp_bad_recipe", quantity=1)
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "missing,expected_message",
+    [
+        ("material_stock", "试炼铜矿不足"),
+        ("material_template", "所需材料不足"),
+        ("result_template", "图纸配置错误：产物不存在"),
+    ],
+)
+def test_blueprint_missing_input_or_output_keeps_chinese_error_and_stock(
+    django_user_model, monkeypatch, missing, expected_message
+):
+    manor = ensure_manor(django_user_model.objects.create_user(username="forge_missing_display"))
+    blueprint = _create_item_template("blueprint_display_guard", "试炼装备图纸", "tool")
+    stock = InventoryItem.objects.create(manor=manor, template=blueprint, quantity=1, bound_quantity=1)
+    if missing != "material_template":
+        _create_item_template("internal_missing_material", "试炼铜矿", "resource")
+    if missing != "result_template":
+        _create_item_template("internal_missing_result", "试炼装备", "equip_weapon")
+    monkeypatch.setattr("gameplay.services.technology.get_player_technology_level", lambda *_args: 8)
+    monkeypatch.setattr(
+        forge_service,
+        "_build_blueprint_recipe_index",
+        lambda: {
+            blueprint.key: {
+                "blueprint_key": blueprint.key,
+                "result_item_key": "internal_missing_result",
+                "required_forging": 1,
+                "quantity_out": 1,
+                "costs": {"internal_missing_material": 1},
+            }
+        },
+    )
+
+    with pytest.raises(ForgeOperationError) as error:
+        forge_service.synthesize_equipment_with_blueprint(manor, blueprint.key)
+
+    assert str(error.value) == expected_message
+    assert "internal_missing_" not in str(error.value)
+    stock.refresh_from_db()
+    assert (stock.quantity, stock.bound_quantity) == (1, 1)
+    assert not InventoryItem.objects.filter(manor=manor, template__key="internal_missing_result").exists()

@@ -18,10 +18,10 @@ from django.db import transaction
 
 from core.exceptions import GameError, ItemNotFoundError
 from core.utils.yaml_loader import load_yaml_data
-from gameplay.models import ItemTemplate, Manor
+from gameplay.models import InventoryItem, ItemTemplate, Manor
 from gameplay.services.buildings.forge import load_blueprint_catalog
 from gameplay.services.inventory.core import (
-    add_item_to_inventory_locked,
+    add_items_to_inventory_locked,
     consume_inventory_item_for_manor_locked,
     get_item_quantity,
 )
@@ -284,9 +284,12 @@ def purchase_luanwu_shop_item(
     quantity: int = 1,
     *,
     rng: Any | None = None,
+    allow_bound: bool = True,
 ) -> dict[str, object]:
     """购买乱舞商城商品，并原子扣除配置的商城货币、发放仓库奖励。"""
 
+    if not isinstance(allow_bound, bool):
+        raise GameError("请选择春秋币使用方式")
     shop_config = load_luanwu_shop_config()
     product = get_luanwu_shop_product(product_key)
     if product is None:
@@ -297,24 +300,36 @@ def purchase_luanwu_shop_item(
     total_cost = product.price * normalized_quantity
     # 先扣除并锁定货币，再执行随机奖励计算；随机配置异常时事务会整体回滚。
     # 这样余额不足或恶意超大请求都不会触发无意义的奖励池查询。
-    consume_inventory_item_for_manor_locked(
+    bound_cost = consume_inventory_item_for_manor_locked(
         locked_manor,
         shop_config.currency_item_key,
         total_cost,
+        allow_bound=allow_bound,
     )
 
+    # 按份计算绑定：一份兑换只要花费绑定币，该份所有奖励便绑定；
+    # 绑定币用完后的份数仍为非绑定，不把整次批量兑换一并绑定。
+    bound_purchase_quantity = min(normalized_quantity, (bound_cost + product.price - 1) // product.price)
     grants: dict[str, int] = {}
+    bound_grants: dict[str, int] = {}
     if product.is_random_device_blueprint:
-        for _ in range(normalized_quantity):
+        for index in range(normalized_quantity):
             selected_key = select_random_device_blueprint_key(rng=rng)
             grants[selected_key] = grants.get(selected_key, 0) + 1
+            if index < bound_purchase_quantity:
+                bound_grants[selected_key] = bound_grants.get(selected_key, 0) + 1
     elif product.item_key:
         grants[product.item_key] = product.reward_quantity * normalized_quantity
+        bound_grants[product.item_key] = product.reward_quantity * bound_purchase_quantity
     else:
         raise GameError("商城商品配置异常，请联系管理员")
 
-    for item_key, grant_quantity in grants.items():
-        add_item_to_inventory_locked(locked_manor, item_key, grant_quantity)
+    add_items_to_inventory_locked(
+        locked_manor,
+        grants,
+        is_bound=False,
+        bound_quantities=bound_grants,
+    )
 
     names = dict(ItemTemplate.objects.filter(key__in=grants).values_list("key", "name"))
     product_name = product.name or names.get(product.item_key or "") or product.key
@@ -324,6 +339,8 @@ def purchase_luanwu_shop_item(
         "quantity": normalized_quantity,
         "total_cost": total_cost,
         "granted_items": grants,
+        "bound_granted_items": {key: amount for key, amount in bound_grants.items() if amount},
+        "bound_currency_consumed": bound_cost,
         "granted_item_names": names,
         "reward_summary": _build_reward_summary(grants, names),
         "currency_remaining": get_item_quantity(locked_manor, shop_config.currency_item_key),
@@ -336,6 +353,16 @@ def build_luanwu_shop_context(manor: Manor) -> dict[str, object]:
     shop_config = load_luanwu_shop_config()
     currency_item_key = shop_config.currency_item_key
     currency_quantity = get_item_quantity(manor, currency_item_key)
+    bound_currency_quantity = (
+        InventoryItem.objects.filter(
+            manor=manor,
+            template__key=currency_item_key,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        )
+        .values_list("bound_quantity", flat=True)
+        .first()
+        or 0
+    )
     device_blueprints = get_device_blueprint_templates()
     templates = {
         template.key: template
@@ -390,6 +417,8 @@ def build_luanwu_shop_context(manor: Manor) -> dict[str, object]:
     return {
         "luanwu_shop_products": products,
         "chunqiu_coin_quantity": currency_quantity,
+        "chunqiu_coin_bound_quantity": bound_currency_quantity,
+        "chunqiu_coin_unbound_quantity": currency_quantity - bound_currency_quantity,
         "chunqiu_coin_item_key": currency_item_key,
         "device_blueprint_count": len(device_blueprints),
     }

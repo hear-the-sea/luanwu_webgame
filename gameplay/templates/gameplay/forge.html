@@ -39,6 +39,7 @@
     </section>
 
     {% if current_mode == 'synthesize' %}
+        <p class="production-option-detail">装备绑定由实际使用的图纸决定，优先消耗绑定图纸；其他材料的绑定不影响产物，无需图纸的装备为非绑定。</p>
         {% if active_forgings %}
         <section class="production-panel production-queue-panel">
             <div class="production-panel-heading">
@@ -50,6 +51,7 @@
                     <article class="production-queue-card">
                         <div class="production-queue-main">
                             <h3>{{ production.equipment_name }} <span>×{{ production.quantity }}</span></h3>
+                            <p class="production-option-detail">其中绑定 {{ production.output_bound_quantity }} 件</p>
                         </div>
                         <div class="production-queue-actions">
                             <span class="production-status production-status--active">
@@ -63,6 +65,7 @@
                                   data-confirm-message="取消后不会获得产物，已消耗的材料不会返还。确定取消吗？"
                                   data-confirm-ok-text="确认取消">
                                 {% csrf_token %}
+                            {% include "gameplay/partials/_forge_return_state.html" %}
                                 <input type="hidden" name="category" value="{{ current_category }}">
                                 <button type="submit" class="tw-btn-danger tw-btn-sm">取消锻造</button>
                             </form>
@@ -88,6 +91,7 @@
                             <div>
                                 <h3>{{ recipe.result_name }}</h3>
                                 <p class="production-option-detail">图纸 {{ recipe.blueprint_name }} · 持有 {{ recipe.blueprint_count }}</p>
+                                <p class="production-option-detail">绑定 {{ recipe.blueprint_bound_count }} · 非绑定 {{ recipe.blueprint_unbound_count }}</p>
                                 {% if recipe.result_effect_summary %}
                                 <p class="production-option-detail">装备属性：{{ recipe.result_effect_summary }}</p>
                                 {% endif %}
@@ -109,6 +113,7 @@
 
                         <form method="post" action="{% url 'gameplay:synthesize_blueprint_equipment' %}" class="tw-card-actions production-option-card__actions">
                             {% csrf_token %}
+                            {% include "gameplay/partials/_forge_return_state.html" %}
                             <input type="hidden" name="blueprint_key" value="{{ recipe.blueprint_key }}">
                             <input type="hidden" name="category" value="{{ current_category }}">
                             <input type="hidden" name="mode" value="{{ current_mode }}">
@@ -193,6 +198,7 @@
 
                         <form method="post" action="{% url 'gameplay:start_equipment_forging' %}" class="tw-card-actions production-option-card__actions">
                             {% csrf_token %}
+                            {% include "gameplay/partials/_forge_return_state.html" %}
                             <input type="hidden" name="equipment_key" value="{{ item.key }}">
                             <input type="hidden" name="category" value="{{ current_category }}">
                             <input type="hidden" name="mode" value="{{ current_mode }}">
@@ -262,6 +268,7 @@
 
                         <form method="post" action="{% url 'gameplay:decompose_equipment' %}" class="tw-card-actions production-option-card__actions js-decompose-form">
                             {% csrf_token %}
+                            {% include "gameplay/partials/_forge_return_state.html" %}
                             <input type="hidden" name="equipment_key" value="{{ equip.key }}">
                             <input type="hidden" name="category" value="{{ current_category }}">
                             <input type="hidden" name="mode" value="{{ current_mode }}">

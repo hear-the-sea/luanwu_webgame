@@ -164,7 +164,8 @@ def test_debugger_command_legacy_retaliation_uses_snapshot_or_neutral_side(snaps
     else:
         source = "防守方" if snapshot_side == "attacker" else "进攻方"
         victim = "进攻方" if snapshot_side == "attacker" else "防守方"
-        expected = f"{source}枪王爆发反戈一击，造成伤害20，伤害人数1，{victim}全军覆没"
+        expected = f"{source}枪王爆发反戈一击，造成伤害20，伤害人数1，{victim}刀圣全军覆没"
+        assert f"{victim}刀圣刀圣" not in text
     assert expected in text
 
 

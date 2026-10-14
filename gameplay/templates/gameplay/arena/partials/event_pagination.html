@@ -1,0 +1,7 @@
+{% if event_page.has_other_pages %}
+<nav class="flex items-center justify-between gap-3 mt-4" aria-label="赛事记录分页">
+    {% if event_page.has_previous %}<a href="?page={{ event_page.previous_page_number }}" class="tw-btn-secondary tw-btn-sm">上一页</a>{% endif %}
+    <span class="text-text-muted">第 {{ event_page.number }} / {{ event_page.paginator.num_pages }} 页</span>
+    {% if event_page.has_next %}<a href="?page={{ event_page.next_page_number }}" class="tw-btn-secondary tw-btn-sm">下一页</a>{% endif %}
+</nav>
+{% endif %}

@@ -161,7 +161,11 @@ def test_arena_pages_sync_resources_before_loading_context(arena_client, monkeyp
     )
     monkeypatch.setattr(
         f"gameplay.views.arena.{selector_attr}",
-        lambda current_manor: calls.append("context") or {"manor": current_manor},
+        lambda current_manor: calls.append("context")
+        or {
+            "manor": current_manor,
+            "completed_event_card_rows": [],
+        },
     )
 
     response = client.get(reverse(view_name))
@@ -177,7 +181,9 @@ def test_arena_events_view_renders(arena_client):
     response = client.get(reverse("gameplay:arena_events"))
 
     assert response.status_code == 200
-    assert "进行中的赛事" in response.content.decode("utf-8")
+    body = response.content.decode("utf-8")
+    assert "演武台守擂记录" in body
+    assert len(response.context["ring_history_groups"]) == 2
 
 
 @pytest.mark.django_db
@@ -224,11 +230,10 @@ def test_arena_events_view_lists_recent_completed_coop_event(arena_client):
 
     assert response.status_code == 200
     body = response.content.decode("utf-8")
-    assert "查看共斗详情" not in body
-    assert f"共斗 #{event.id}" not in body
-    assert f"围攻光明顶 #{event.id}" not in body
-    assert "最近结束的共斗" not in body
-    assert "首领：张无忌" not in body
+    assert "查看共斗详情" in body
+    assert f"围攻光明顶 #{event.id}" in body
+    assert "最近结束的赛事" in body
+    assert "首领：张无忌" in body
 
 
 @pytest.mark.django_db

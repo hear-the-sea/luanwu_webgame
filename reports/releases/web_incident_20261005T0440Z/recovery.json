@@ -1,0 +1,12 @@
+{
+  "homepage": 200,
+  "login": 200,
+  "internal_ready": true,
+  "web_health": "healthy",
+  "recovered_services": [
+    "web",
+    "worker_timer"
+  ],
+  "confirmed_cause": "asgiref 3.10.0 ThreadSensitiveContext shutdown waits for worker waiting on event loop",
+  "dependency_upgrade": "pending explicit confirmation"
+}

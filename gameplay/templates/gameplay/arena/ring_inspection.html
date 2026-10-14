@@ -1,0 +1,16 @@
+{% extends "gameplay/arena/base.html" %}
+{% load static %}
+{% block extra_head %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/arena-rings.css' %}">
+{% endblock %}
+{% block arena_body %}
+<div class="arena-rings">
+    <section class="ring-inspection">
+        <h2>{{ ring_inspection.tenure.ring.name }} · 阵容</h2>
+        <p>{{ ring_inspection.tenure.manor.display_name }} · {{ ring_inspection.created_at|date:'m-d H:i' }} 查看<br>仅展示当时阵容，换阵后需重新查看。</p>
+        {% include "gameplay/arena/partials/ring_lineup.html" with lineup=ring_inspected_lineup %}
+        <a href="{% url 'gameplay:arena_rings' %}#ring-{{ ring_inspection.tenure.ring.key }}">返回擂台 →</a>
+    </section>
+</div>
+{% endblock %}

@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import os
+from typing import cast
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 
 import logging  # noqa: E402
 import warnings  # noqa: E402
 
+from asgiref.typing import ASGI3Application  # noqa: E402
 from channels.auth import AuthMiddlewareStack  # noqa: E402
 from channels.routing import ProtocolTypeRouter, URLRouter  # noqa: E402
 from channels.security.websocket import AllowedHostsOriginValidator  # noqa: E402
@@ -15,6 +17,7 @@ from django.contrib.staticfiles.handlers import ASGIStaticFilesHandler  # noqa: 
 from django.core.asgi import get_asgi_application  # noqa: E402
 from django.core.exceptions import AppRegistryNotReady  # noqa: E402
 
+from core.middleware.http_admission import HTTPAdmissionMiddleware  # noqa: E402
 from websocket.middleware.ip_capacity import WebSocketIPCapacityMiddleware  # noqa: E402
 from websocket.routing_status import set_websocket_routing_status  # noqa: E402
 
@@ -48,10 +51,12 @@ if websocket_routing and getattr(websocket_routing, "websocket_urlpatterns", Non
 # -------------------------------
 # In production, static files should be served by a dedicated web server (Caddy, CDN)
 # or using WhiteNoise middleware. ASGIStaticFilesHandler is only for development.
-http_app = django_asgi_app
+http_app: ASGI3Application = cast(ASGI3Application, django_asgi_app)
 if settings.DEBUG:
     # Development mode: serve static files via ASGI for convenience
-    http_app = ASGIStaticFilesHandler(django_asgi_app)
+    http_app = cast(ASGI3Application, ASGIStaticFilesHandler(django_asgi_app))
+
+http_app = HTTPAdmissionMiddleware(http_app)
 
 # WebSocket Security
 # ------------------

@@ -21,6 +21,8 @@
   let socket;
   let reconnectTimer = null;
   let stabilityTimer = null;
+  let suspended = false;
+  let terminal = false;
   let currentUnreadCount = readCurrentUnreadCount();
   let refreshBannerShown = false; // 防止重复显示刷新提示
 
@@ -304,6 +306,8 @@
   }
 
   function connect() {
+    if (suspended || terminal) return;
+    if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) return;
     const currentSocket = new WebSocket(wsUrl);
     socket = currentSocket;
 
@@ -331,9 +335,11 @@
 
     currentSocket.onclose = (event) => {
       if (socket !== currentSocket) return;
+      socket = null;
       clearStabilityTimer();
       const closeCode = event && event.code;
       if (!reconnectPolicy.shouldReconnect(closeCode)) {
+        terminal = true;
         if (reconnectTimer !== null) {
           clearTimeout(reconnectTimer);
           reconnectTimer = null;
@@ -342,7 +348,7 @@
       }
       if (reconnectTimer !== null) return;
       const scheduledReconnectTimer = setTimeout(() => {
-        if (socket !== currentSocket || reconnectTimer !== scheduledReconnectTimer) return;
+        if (suspended || terminal || socket !== null || reconnectTimer !== scheduledReconnectTimer) return;
         reconnectTimer = null;
         connect();
       }, reconnectPolicy.nextDelay(closeCode));
@@ -355,9 +361,36 @@
     };
   }
 
+  function suspendConnection() {
+    if (suspended) return;
+    suspended = true;
+    if (reconnectTimer !== null) {
+      clearTimeout(reconnectTimer);
+      reconnectTimer = null;
+    }
+    clearStabilityTimer();
+    const currentSocket = socket;
+    socket = null;
+    if (currentSocket && (currentSocket.readyState === WebSocket.OPEN || currentSocket.readyState === WebSocket.CONNECTING)) {
+      try {
+        currentSocket.close();
+      } catch (_error) {
+        // The page has already released its reference and timers.
+      }
+    }
+  }
+
+  function restoreConnection() {
+    if (!suspended) return;
+    suspended = false;
+    connect();
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     // 连接 WebSocket
     connect();
   });
   document.addEventListener("partial-nav:loaded", renderUnreadCount);
+  window.addEventListener("pagehide", suspendConnection);
+  window.addEventListener("pageshow", restoreConnection);
 })();

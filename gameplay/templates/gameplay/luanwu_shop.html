@@ -12,6 +12,7 @@
             <span class="luanwu-shop__eyebrow">乱世珍藏 · 春秋秘市</span>
             <h1 id="luanwu-shop-title">乱舞商城</h1>
             <p>以春秋币换取行走乱世所需的稀罕物件，兑换后道具会直接送入仓库。</p>
+            <p>兑换时可选择允许使用绑定币，或仅使用非绑定币。允许使用绑定币时优先扣除绑定币；每份兑换只要使用了绑定币，该份所得物品均为绑定。</p>
         </div>
 
         <div class="luanwu-wallet" aria-label="春秋币余额">
@@ -20,6 +21,7 @@
                 <span class="luanwu-wallet__text">
                     <span class="luanwu-wallet__label">仓库春秋币</span>
                     <strong>{{ chunqiu_coin_quantity }}</strong>
+                    <small>绑定 {{ chunqiu_coin_bound_quantity }} · 非绑定 {{ chunqiu_coin_unbound_quantity }}</small>
                 </span>
             </div>
         </div>
@@ -69,9 +71,13 @@
                             </div>
 
                             {% if product.can_purchase %}
-                            <form method="post" action="{% url 'gameplay:purchase_luanwu_shop_item' %}" class="luanwu-purchase-form">
+                            <form method="post" action="{% url 'gameplay:purchase_luanwu_shop_item' %}" class="luanwu-purchase-form" data-bound-coins="{{ chunqiu_coin_bound_quantity }}" data-unbound-coins="{{ chunqiu_coin_unbound_quantity }}" data-price="{{ product.price }}" data-product-name="{{ product.name }}">
                                 {% csrf_token %}
                                 <input type="hidden" name="product_key" value="{{ product.key }}">
+                                <select name="currency_mode" class="luanwu-currency-mode" aria-label="春秋币使用方式">
+                                    <option value="unbound_only">仅使用非绑定币</option>
+                                    <option value="allow_bound">允许使用绑定币（优先扣除）</option>
+                                </select>
                                 <label for="luanwu-quantity-{{ product.key }}">兑换数量</label>
                                 <div class="luanwu-purchase-form__controls">
                                     <input id="luanwu-quantity-{{ product.key }}" name="quantity" type="number" min="1" max="{{ product.max_quantity }}" value="1" inputmode="numeric" autocomplete="off">
@@ -90,4 +96,8 @@
 
     </div>
 </section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/luanwu-shop.js' %}" defer></script>
 {% endblock %}

@@ -40,10 +40,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 50
-      intellect: 10
-      defense: 25
-      agility: 15
+      force: 40
+      intellect: 6
+      defense: 18
+      agility: 36
   - key: hero_ilrock_04846
     name: 杨雄
     default_gender: male
@@ -82,10 +82,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 45
-      intellect: 15
-      defense: 20
-      agility: 20
+      force: 46
+      intellect: 6
+      defense: 18
+      agility: 30
   - key: hero_ilrock_04849
     name: 解宝
     default_gender: male
@@ -96,10 +96,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 50
-      intellect: 10
-      defense: 25
-      agility: 15
+      force: 46
+      intellect: 6
+      defense: 18
+      agility: 30
   - key: hero_ilrock_04851
     name: 朱武
     default_gender: male
@@ -110,10 +110,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 10
-      intellect: 48
-      defense: 22
-      agility: 20
+      force: 8
+      intellect: 60
+      defense: 18
+      agility: 14
   - key: hero_ilrock_04852
     name: 黄信
     default_gender: male
@@ -125,9 +125,9 @@ heroes:
     - 7
     attribute_weights:
       force: 48
-      intellect: 12
-      defense: 25
-      agility: 15
+      intellect: 8
+      defense: 28
+      agility: 16
   - key: hero_ilrock_04853
     name: 孙立
     default_gender: male
@@ -138,10 +138,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 45
-      intellect: 15
-      defense: 20
-      agility: 20
+      force: 50
+      intellect: 8
+      defense: 26
+      agility: 16
   - key: hero_ilrock_04854
     name: 宣赞
     default_gender: male
@@ -166,10 +166,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 43
-      intellect: 12
-      defense: 20
-      agility: 25
+      force: 48
+      intellect: 8
+      defense: 24
+      agility: 20
   - key: hero_ilrock_04856
     name: 韩滔
     default_gender: male
@@ -222,10 +222,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 10
-      intellect: 48
-      defense: 22
-      agility: 20
+      force: 8
+      intellect: 60
+      defense: 18
+      agility: 14
   - key: hero_ilrock_04861
     name: 裴宣
     default_gender: male
@@ -236,10 +236,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 16
-      intellect: 46
-      defense: 18
-      agility: 20
+      force: 8
+      intellect: 58
+      defense: 24
+      agility: 10
   - key: hero_ilrock_04862
     name: 欧鹏
     default_gender: male
@@ -292,10 +292,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 16
-      intellect: 46
-      defense: 18
-      agility: 20
+      force: 8
+      intellect: 60
+      defense: 20
+      agility: 12
   - key: hero_ilrock_04866
     name: 蒋敬
     default_gender: male
@@ -306,10 +306,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 12
-      intellect: 52
+      force: 8
+      intellect: 62
       defense: 18
-      agility: 18
+      agility: 12
   - key: hero_ilrock_04867
     name: 吕方
     default_gender: male
@@ -334,10 +334,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 16
-      intellect: 46
-      defense: 18
-      agility: 20
+      force: 6
+      intellect: 58
+      defense: 24
+      agility: 12
   - key: hero_ilrock_04870
     name: 皇甫端
     default_gender: male
@@ -348,10 +348,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 12
-      intellect: 52
-      defense: 18
-      agility: 18
+      force: 8
+      intellect: 58
+      defense: 22
+      agility: 12
   - key: hero_ilrock_04871
     name: 扈三娘
     default_gender: female
@@ -362,10 +362,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 43
-      intellect: 12
+      force: 46
+      intellect: 6
       defense: 20
-      agility: 25
+      agility: 28
   - key: hero_ilrock_04872
     name: 鲍旭
     default_gender: male
@@ -391,23 +391,23 @@ heroes:
     - 7
     attribute_weights:
       force: 38
-      intellect: 16
+      intellect: 4
       defense: 12
-      agility: 34
+      agility: 46
   - key: hero_ilrock_04874
     name: 樊瑞
     default_gender: male
-    archetype: military
+    archetype: civil
     flavor: 芒砀山寨主，绰号“混世魔王”，善用法术，与项充、李衮聚众，曾扬言要吞并梁山。宋江领军来战，公孙胜以道术破去他的手段，他才归附山寨，并拜公孙胜为师。大聚义后列为步军将校，仍与旧日伙伴出阵。由争雄一方到重新问道学艺，他不只有好胜的心气，也肯在真正的高手面前低头求教。出自《水浒传》。
     recruitable: true
     growth_range:
     - 3
     - 7
     attribute_weights:
-      force: 45
-      intellect: 15
-      defense: 20
-      agility: 20
+      force: 8
+      intellect: 56
+      defense: 18
+      agility: 18
   - key: hero_ilrock_04875
     name: 孔明
     default_gender: male
@@ -474,10 +474,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 15
-      intellect: 50
-      defense: 20
-      agility: 15
+      force: 8
+      intellect: 58
+      defense: 22
+      agility: 12
   - key: hero_ilrock_04880
     name: 童威
     default_gender: male
@@ -488,10 +488,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 50
-      intellect: 10
-      defense: 25
-      agility: 15
+      force: 42
+      intellect: 6
+      defense: 18
+      agility: 34
   - key: hero_ilrock_04881
     name: 童猛
     default_gender: male
@@ -502,10 +502,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 43
-      intellect: 12
-      defense: 20
-      agility: 25
+      force: 42
+      intellect: 6
+      defense: 18
+      agility: 34
   - key: hero_ilrock_04882
     name: 孟康
     default_gender: male
@@ -516,10 +516,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 12
-      intellect: 52
-      defense: 18
-      agility: 18
+      force: 8
+      intellect: 56
+      defense: 24
+      agility: 12
   - key: hero_ilrock_04883
     name: 侯健
     default_gender: male
@@ -530,10 +530,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 15
-      intellect: 50
-      defense: 20
-      agility: 15
+      force: 8
+      intellect: 56
+      defense: 18
+      agility: 18
   - key: hero_ilrock_04884
     name: 陈达
     default_gender: male
@@ -586,10 +586,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 15
+      force: 12
       intellect: 50
-      defense: 20
-      agility: 15
+      defense: 28
+      agility: 10
   - key: hero_ilrock_04888
     name: 宋清
     default_gender: male
@@ -601,9 +601,9 @@ heroes:
     - 7
     attribute_weights:
       force: 10
-      intellect: 48
-      defense: 22
-      agility: 20
+      intellect: 50
+      defense: 26
+      agility: 14
   - key: hero_ilrock_04889
     name: 乐和
     default_gender: male
@@ -614,10 +614,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 16
-      intellect: 46
-      defense: 18
-      agility: 20
+      force: 8
+      intellect: 52
+      defense: 14
+      agility: 26
   - key: hero_ilrock_04890
     name: 龚旺
     default_gender: male
@@ -628,10 +628,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 50
-      intellect: 10
-      defense: 25
-      agility: 15
+      force: 46
+      intellect: 6
+      defense: 20
+      agility: 28
   - key: hero_ilrock_04891
     name: 丁得孙
     default_gender: male
@@ -642,10 +642,10 @@ heroes:
     - 3
     - 7
     attribute_weights:
-      force: 43
-      intellect: 12
+      force: 46
+      intellect: 6
       defense: 20
-      agility: 25
+      agility: 28
   - key: hero_ilrock_04892
     name: 穆春
     default_gender: male
@@ -713,9 +713,9 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 12
-      intellect: 52
-      defense: 18
+      force: 8
+      intellect: 58
+      defense: 16
       agility: 18
   - key: hero_ilrock_04850
     name: 燕青
@@ -727,10 +727,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 38
-      intellect: 16
-      defense: 12
-      agility: 34
+      force: 42
+      intellect: 6
+      defense: 16
+      agility: 36
   - key: hero_ilrock_04824
     name: 呼延灼
     default_gender: male
@@ -812,9 +812,9 @@ heroes:
     - 9
     attribute_weights:
       force: 50
-      intellect: 10
-      defense: 25
-      agility: 15
+      intellect: 6
+      defense: 18
+      agility: 26
   - key: hero_ilrock_04830
     name: 张清
     default_gender: male
@@ -867,10 +867,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 45
-      intellect: 15
+      force: 52
+      intellect: 6
       defense: 20
-      agility: 20
+      agility: 22
   - key: hero_ilrock_04834
     name: 戴宗
     default_gender: male
@@ -881,10 +881,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 38
-      intellect: 16
-      defense: 12
-      agility: 34
+      force: 36
+      intellect: 4
+      defense: 10
+      agility: 50
   - key: hero_ilrock_04835
     name: 刘唐
     default_gender: male
@@ -895,10 +895,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 43
-      intellect: 12
-      defense: 20
-      agility: 25
+      force: 48
+      intellect: 8
+      defense: 26
+      agility: 18
   - key: hero_ilrock_04836
     name: 李逵
     default_gender: male
@@ -979,10 +979,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 45
-      intellect: 15
-      defense: 20
-      agility: 20
+      force: 46
+      intellect: 8
+      defense: 24
+      agility: 22
   - key: hero_ilrock_04845
     name: 阮小七
     default_gender: male
@@ -993,10 +993,10 @@ heroes:
     - 5
     - 9
     attribute_weights:
-      force: 43
-      intellect: 12
-      defense: 20
-      agility: 25
+      force: 44
+      intellect: 6
+      defense: 18
+      agility: 32
   - key: hero_ilrock_04868
     name: 郭盛
     default_gender: male
@@ -1050,10 +1050,10 @@ heroes:
     - 6
     - 11
     attribute_weights:
-      force: 43
-      intellect: 12
-      defense: 20
-      agility: 25
+      force: 50
+      intellect: 8
+      defense: 26
+      agility: 16
   - key: hero_ilrock_04821
     name: 关胜
     default_gender: male
@@ -1064,10 +1064,10 @@ heroes:
     - 6
     - 11
     attribute_weights:
-      force: 46
-      intellect: 14
-      defense: 25
-      agility: 15
+      force: 52
+      intellect: 8
+      defense: 26
+      agility: 14
   - key: hero_ilrock_04822
     name: 吴用
     default_gender: male
@@ -1078,10 +1078,10 @@ heroes:
     - 6
     - 11
     attribute_weights:
-      force: 15
-      intellect: 50
-      defense: 20
-      agility: 15
+      force: 8
+      intellect: 62
+      defense: 18
+      agility: 12
   - key: hero_ilrock_04823
     name: 卢俊义
     default_gender: male
@@ -1092,10 +1092,10 @@ heroes:
     - 6
     - 11
     attribute_weights:
-      force: 45
-      intellect: 15
-      defense: 20
-      agility: 20
+      force: 54
+      intellect: 6
+      defense: 24
+      agility: 16
   - key: hero_ilrock_11683
     name: 宋江
     default_gender: male
@@ -1106,7 +1106,7 @@ heroes:
     - 6
     - 11
     attribute_weights:
-      force: 20
-      intellect: 45
-      defense: 20
-      agility: 15
+      force: 10
+      intellect: 54
+      defense: 22
+      agility: 14

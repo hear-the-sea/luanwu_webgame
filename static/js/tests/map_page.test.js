@@ -39,7 +39,8 @@ function createElement({ dataset = {}, value = "", textContent = "" } = {}) {
   };
 }
 
-async function loadMapPage({ searchQuery = "", results = [], total = 1, pageSize = 20, hasMore = false } = {}) {
+async function loadMapPage({ searchQuery = "", results = [], total = 1, pageSize = 20, hasMore = false,
+  fetchImpl = null, fakeTimers = false } = {}) {
   const scriptPath = path.resolve(__dirname, "..", "map-page.js");
   const scriptSource = fs.readFileSync(scriptPath, "utf8");
   const page = createElement({
@@ -66,6 +67,9 @@ async function loadMapPage({ searchQuery = "", results = [], total = 1, pageSize
   ]);
   const calls = [];
   const alerts = [];
+  const errors = [];
+  const timers = new Map();
+  let timerId = 0;
   const document = {
     cookie: "csrftoken=test-csrf-token",
     getElementById(id) {
@@ -91,10 +95,12 @@ async function loadMapPage({ searchQuery = "", results = [], total = 1, pageSize
     },
   };
   const context = {
-    console,
+    console: { ...console, error: (...args) => errors.push(args) },
+    AbortController,
     document,
     fetch: async (url, options) => {
       calls.push({ url, options });
+      if (fetchImpl) return fetchImpl(url, options);
       return {
         ok: true,
         json: async () => ({
@@ -113,7 +119,12 @@ async function loadMapPage({ searchQuery = "", results = [], total = 1, pageSize
       confirm() {
         return true;
       },
-      setTimeout,
+      setTimeout: fakeTimers ? (callback, delay) => {
+        const id = ++timerId;
+        timers.set(id, { callback, delay });
+        return id;
+      } : setTimeout,
+      clearTimeout: fakeTimers ? (id) => timers.delete(id) : clearTimeout,
     },
     encodeURIComponent,
     Number,
@@ -125,7 +136,7 @@ async function loadMapPage({ searchQuery = "", results = [], total = 1, pageSize
   vm.runInContext(scriptSource, context, { filename: "map-page.js" });
   await new Promise((resolve) => setImmediate(resolve));
   await new Promise((resolve) => setImmediate(resolve));
-  return { calls, alerts, elements };
+  return { calls, alerts, elements, timers, errors };
 }
 
 test("region search explicitly requests virtual-player backfill after loading its first page", async () => {
@@ -213,4 +224,50 @@ test("page jump accepts a page in range and rejects pages outside it", async () 
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(calls[2].url, "/manor/api/map/search/?type=region&region=north&page=3");
   assert.equal(input.validationMessage, "");
+});
+
+test("hung search times out instead of leaving the loading hint forever, then can retry", async () => {
+  let hung = true;
+  const { calls, elements, timers } = await loadMapPage({
+    searchQuery: "target", fakeTimers: true,
+    fetchImpl: async () => hung ? new Promise(() => {}) : {
+      ok: true, json: async () => ({ success: true, results: [] }),
+    },
+  });
+  assert.equal(elements.get("manor-list").childNodes[0].textContent, "正在加载...");
+  const timer = [...timers.values()][0];
+  assert.equal(timer.delay, 10000);
+  timer.callback();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(calls[0].options.signal.aborted, true);
+  assert.equal(elements.get("manor-list").childNodes[0].textContent, "搜索超时，请重试");
+  assert.equal(timers.size, 0);
+  hung = false;
+  elements.get("search-btn").listeners.get("click")();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(elements.get("manor-list").childNodes[0].textContent, "暂无庄园数据");
+});
+
+test("an old search cannot replace a newer search result", async () => {
+  const pending = [];
+  const { calls, elements } = await loadMapPage({
+    searchQuery: "old",
+    fetchImpl: () => new Promise((resolve) => pending.push(resolve)),
+  });
+  elements.get("manor-search").value = "new";
+  elements.get("search-btn").listeners.get("click")();
+  assert.equal(calls[0].options.signal.aborted, true);
+  pending[1]({ ok: true, json: async () => ({ success: true, results: [] }) });
+  await new Promise((resolve) => setImmediate(resolve));
+  pending[0]({ ok: true, json: async () => ({ success: false }) });
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(elements.get("manor-list").childNodes[0].textContent, "暂无庄园数据");
+});
+
+test("non-success HTTP response exits loading without parsing its body", async () => {
+  const { elements } = await loadMapPage({
+    searchQuery: "target",
+    fetchImpl: async () => ({ ok: false, status: 503, json: () => { throw new Error("must not parse"); } }),
+  });
+  assert.equal(elements.get("manor-list").childNodes[0].textContent, "加载失败，请稍后重试");
 });

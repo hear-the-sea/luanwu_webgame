@@ -1,0 +1,10 @@
+<input type="hidden" name="category" value="{{ selected_category|default:'all' }}">
+{% if current_tab == 'shop' %}
+<input type="hidden" name="buy_page" value="{{ shop_buy_page_obj.number|default:1 }}">
+<input type="hidden" name="sell_page" value="{{ shop_sell_page_obj.number|default:1 }}">
+{% elif current_tab == 'market' %}
+<input type="hidden" name="page" value="{{ page_obj.number|default:1 }}">
+{% if selected_rarity %}<input type="hidden" name="rarity" value="{{ selected_rarity }}">{% endif %}
+{% if selected_order %}<input type="hidden" name="order_by" value="{{ selected_order }}">{% endif %}
+{% if selected_status %}<input type="hidden" name="status" value="{{ selected_status }}">{% endif %}
+{% endif %}

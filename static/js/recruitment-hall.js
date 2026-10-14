@@ -6,6 +6,7 @@
   let selectedIds = new Set();
   let candidates = [];
   let candidateObserver = null;
+  let actionInFlight = false;
 
   const browserErrorMessage = (error, fallback = "请求失败，请重试") =>
     window.PlayerFacingCopy?.browserErrorMessage(error, fallback) || fallback;
@@ -324,6 +325,10 @@
   };
 
   const submitAjaxForm = async (form, submitter, options = {}) => {
+    if (actionInFlight) {
+      return null;
+    }
+    actionInFlight = true;
     const button = submitter || form.querySelector("button[type='submit']");
     const originalText = button ? button.textContent : "";
     const loadingText = options.loadingText || "处理中...";
@@ -356,17 +361,20 @@
         window.location.reload();
         return null;
       }
+      if (data.hall_pools_html) {
+        applyRecruitmentHallFragments(data);
+      }
       if (!response.ok || !data.success) {
         throw new Error(data.error || data.message || "操作失败");
       }
 
-      applyRecruitmentHallFragments(data);
       await showMessage(data.message, data.message_level || "success");
       return data;
     } catch (error) {
       await showMessage(browserErrorMessage(error), "error");
       return null;
     } finally {
+      actionInFlight = false;
       if (button && document.body.contains(button)) {
         button.disabled = false;
         button.textContent = originalText;

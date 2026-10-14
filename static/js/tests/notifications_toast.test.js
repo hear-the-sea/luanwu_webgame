@@ -80,6 +80,7 @@ function createNotificationsHarness({
   const clearedTimerIds = [];
   let nextTimerId = 1;
   const documentListeners = new Map();
+  const windowListeners = new Map();
   const navigation = {
     sidebar: withSidebarLink ? createElement("a") : null,
     top: withTopLink ? createElement("a") : null,
@@ -113,7 +114,12 @@ function createNotificationsHarness({
   };
 
   class FakeWebSocket {
+    static CONNECTING = 0;
+    static OPEN = 1;
+    static CLOSED = 3;
+
     constructor() {
+      this.readyState = FakeWebSocket.CONNECTING;
       this.closeCalls = 0;
       this.closed = false;
       FakeWebSocket.instances.push(this);
@@ -122,6 +128,8 @@ function createNotificationsHarness({
     close() {
       this.closeCalls += 1;
       this.closed = true;
+      this.readyState = FakeWebSocket.CLOSED;
+      if (this.onclose) this.onclose({ code: 1000 });
     }
   }
   FakeWebSocket.instances = [];
@@ -150,6 +158,9 @@ function createNotificationsHarness({
   const context = {
     document: documentObj,
     window: {
+      addEventListener(type, listener) {
+        windowListeners.set(type, listener);
+      },
       location: {
         protocol: "http:",
         host: "example.test",
@@ -177,6 +188,12 @@ function createNotificationsHarness({
 
   return {
     documentObj,
+    pagehide() {
+      windowListeners.get("pagehide")({ persisted: true });
+    },
+    pageshow() {
+      windowListeners.get("pageshow")({ persisted: true });
+    },
     activeTimers() {
       return timers.filter((timer) => timer.active);
     },
@@ -615,4 +632,57 @@ test("notification rendering errors are not swallowed", () => {
     () => harness.emit({ kind: "system", title: "通知", body: "正文" }),
     /render contract bug/,
   );
+});
+
+test("notifications release page connections and isolate stale callbacks after restore", () => {
+  const harness = createNotificationsHarness();
+  const first = harness.sockets[0];
+  first.onopen();
+  harness.pagehide();
+  harness.pagehide();
+  assert.equal(first.closeCalls, 1);
+  assert.equal(harness.activeTimers().length, 0);
+  harness.pageshow();
+  harness.pageshow();
+  assert.equal(harness.sockets.length, 2);
+  first.onopen();
+  first.onclose({ code: 1006 });
+  first.onerror();
+  first.onmessage({ data: JSON.stringify({ title: "stale" }) });
+  assert.equal(harness.activeTimers().length, 0);
+  assert.equal(harness.toastContainer.children.length, 0);
+  harness.sockets[1].onmessage({ data: JSON.stringify({ title: "current" }) });
+  assert.equal(harness.toastContainer.children.length, 1);
+});
+
+test("notifications cancel pending reconnects on pagehide without clearing terminal authentication", () => {
+  const harness = createNotificationsHarness();
+  harness.sockets[0].onclose({ code: 1006 });
+  const timer = harness.activeTimers()[0];
+  harness.pagehide();
+  timer.fn();
+  assert.equal(harness.sockets.length, 1);
+  harness.pageshow();
+  timer.fn();
+  assert.equal(harness.sockets.length, 2);
+  for (const code of [4401, 4403]) {
+    const terminalHarness = createNotificationsHarness();
+    terminalHarness.sockets[0].onclose({ code });
+    terminalHarness.pagehide();
+    terminalHarness.pageshow();
+    assert.equal(terminalHarness.sockets.length, 1);
+    assert.equal(terminalHarness.activeTimers().length, 0);
+  }
+});
+
+test("notification page restore preserves the exhausted fast retry budget", () => {
+  const harness = createNotificationsHarness({ random: 0.5 });
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    harness.sockets.at(-1).onclose({ code: 1006 });
+    harness.runTimer(harness.activeTimers()[0]);
+  }
+  harness.pagehide();
+  harness.pageshow();
+  harness.sockets.at(-1).onclose({ code: 4429 });
+  assert.equal(harness.activeTimers()[0].delay, 4000);
 });

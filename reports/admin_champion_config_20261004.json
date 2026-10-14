@@ -1,0 +1,548 @@
+{
+  "description": "8名敏捷先锋，20人均有主动技能；坦克吸引火力、群攻输出、4名号令支援",
+  "profiles": {
+    "role_01": {
+      "gear_keys": [
+        "equip_shendiao",
+        "equip_xuanwukui",
+        "equip_xuanwujia",
+        "equip_xuanwuxue",
+        "equip_xuanwuchui",
+        "equip_zhoutianxingpan",
+        "equip_hunyuansan",
+        "equip_xuanwuyufu",
+        "equip_xuanwujigui",
+        "equip_mojiajiguanren",
+        "equip_jiguanxiong"
+      ],
+      "skill_keys": [
+        "dragon_roar",
+        "iron_wall_heart",
+        "draw_enemy_blades"
+      ],
+      "leftover_attribute": "defense",
+      "role": "吸引火力的高血前排"
+    },
+    "role_02": {
+      "gear_keys": [
+        "equip_shendiao",
+        "equip_xuanwukui",
+        "equip_xuanwujia",
+        "equip_xuanwuxue",
+        "equip_xuanwuchui",
+        "equip_zhoutianxingpan",
+        "equip_hunyuansan",
+        "equip_xuanwuyufu",
+        "equip_xuanwujigui",
+        "equip_mojiajiguanren",
+        "equip_jiguanxiong"
+      ],
+      "skill_keys": [
+        "dragon_roar",
+        "iron_wall_heart",
+        "draw_enemy_blades"
+      ],
+      "leftover_attribute": "defense",
+      "role": "吸引火力的高血前排"
+    },
+    "role_03": {
+      "gear_keys": [
+        "equip_shendiao",
+        "equip_xuanwukui",
+        "equip_xuanwujia",
+        "equip_xuanwuxue",
+        "equip_xuanwuchui",
+        "equip_zhoutianxingpan",
+        "equip_hunyuansan",
+        "equip_xuanwuyufu",
+        "equip_xuanwujigui",
+        "equip_mojiajiguanren",
+        "equip_jiguanxiong"
+      ],
+      "skill_keys": [
+        "dragon_roar",
+        "bloodthirsty_fury",
+        "iron_wall_heart"
+      ],
+      "leftover_attribute": "defense",
+      "role": "续航前排"
+    },
+    "role_04": {
+      "gear_keys": [
+        "equip_shendiao",
+        "equip_xuanwukui",
+        "equip_xuanwujia",
+        "equip_xuanwuxue",
+        "equip_xuanwuchui",
+        "equip_zhoutianxingpan",
+        "equip_hunyuansan",
+        "equip_xuanwuyufu",
+        "equip_xuanwujigui",
+        "equip_mojiajiguanren",
+        "equip_jiguanxiong"
+      ],
+      "skill_keys": [
+        "dragon_roar",
+        "bloodthirsty_fury",
+        "iron_wall_heart"
+      ],
+      "leftover_attribute": "defense",
+      "role": "续航前排"
+    },
+    "role_05": {
+      "gear_keys": [
+        "equip_shendiao",
+        "equip_xuanwukui",
+        "equip_xuanwujia",
+        "equip_xuanwuxue",
+        "equip_xuanwuchui",
+        "equip_zhoutianxingpan",
+        "equip_hunyuansan",
+        "equip_xuanwuyufu",
+        "equip_xuanwujigui",
+        "equip_mojiajiguanren",
+        "equip_jiguanxiong"
+      ],
+      "skill_keys": [
+        "dragon_roar",
+        "bloodthirsty_fury",
+        "iron_wall_heart"
+      ],
+      "leftover_attribute": "defense",
+      "role": "力量群攻"
+    },
+    "role_06": {
+      "gear_keys": [
+        "equip_shendiao",
+        "equip_taixudiguan",
+        "equip_jinsirujia",
+        "equip_wujixingxue",
+        "equip_kongquelin",
+        "equip_zhoutianxingpan",
+        "equip_businiaoyu",
+        "equip_jianghuling",
+        "equip_chixiaojifeng",
+        "equip_feiyuan",
+        "equip_mojiajiguanren"
+      ],
+      "skill_keys": [
+        "hell_instant_formation",
+        "steadfast_planning",
+        "iron_wall_heart"
+      ],
+      "leftover_attribute": "agility",
+      "role": "敏捷先锋：敏捷群攻"
+    },
+    "role_07": {
+      "gear_keys": [
+        "equip_shendiao",
+        "equip_taixudiguan",
+        "equip_jinsirujia",
+        "equip_wujixingxue",
+        "equip_kongquelin",
+        "equip_zhoutianxingpan",
+        "equip_businiaoyu",
+        "equip_jianghuling",
+        "equip_chixiaojifeng",
+        "equip_feiyuan",
+        "equip_mojiajiguanren"
+      ],
+      "skill_keys": [
+        "hell_instant_formation",
+        "bloodthirsty_fury",
+        "iron_wall_heart"
+      ],
+      "leftover_attribute": "agility",
+      "role": "敏捷先锋：敏捷群攻"
+    },
+    "role_08": {
+      "gear_keys": [
+        "equip_taixudiguan",
+        "equip_huxianpao",
+        "equip_huxianxie",
+        "equip_huxianjian",
+        "equip_taiqingyuce",
+        "equip_fengshenbang",
+        "equip_heshibi",
+        "equip_feiyuan",
+        "equip_mojiajiguanren",
+        "equip_xuanwujigui",
+        "equip_shendiao"
+      ],
+      "skill_keys": [
+        "brahma_true_fire",
+        "comrade_command",
+        "iron_wall_heart"
+      ],
+      "leftover_attribute": "intellect",
+      "role": "法术与全队号令覆盖"
+    },
+    "role_09": {
+      "gear_keys": [
+        "equip_taixudiguan",
+        "equip_huxianpao",
+        "equip_huxianxie",
+        "equip_huxianjian",
+        "equip_taiqingyuce",
+        "equip_fengshenbang",
+        "equip_heshibi",
+        "equip_feiyuan",
+        "equip_mojiajiguanren",
+        "equip_xuanwujigui",
+        "equip_shendiao"
+      ],
+      "skill_keys": [
+        "brahma_true_fire",
+        "comrade_command",
+        "iron_wall_heart"
+      ],
+      "leftover_attribute": "intellect",
+      "role": "法术与全队号令覆盖"
+    },
+    "role_10": {
+      "gear_keys": [
+        "equip_feiyukui",
+        "equip_jinsirujia",
+        "equip_wujixingxue",
+        "equip_duomingfeidao",
+        "equip_shendiao",
+        "equip_businiaoyu",
+        "equip_zhoutianxingpan",
+        "equip_longjingzhu",
+        "equip_feiyuan",
+        "equip_chixiaojifeng",
+        "equip_qingji"
+      ],
+      "skill_keys": [
+        "brahma_true_fire",
+        "comrade_command",
+        "iron_wall_heart"
+      ],
+      "leftover_attribute": "agility",
+      "role": "敏捷先锋：法术与全队号令覆盖"
+    },
+    "role_11": {
+      "gear_keys": [
+        "equip_taixudiguan",
+        "equip_huxianpao",
+        "equip_huxianxie",
+        "equip_huxianjian",
+        "equip_taiqingyuce",
+        "equip_fengshenbang",
+        "equip_heshibi",
+        "equip_feiyuan",
+        "equip_mojiajiguanren",
+        "equip_xuanwujigui",
+        "equip_shendiao"
+      ],
+      "skill_keys": [
+        "brahma_true_fire",
+        "comrade_command",
+        "iron_wall_heart"
+      ],
+      "leftover_attribute": "intellect",
+      "role": "法术与全队号令覆盖"
+    },
+    "role_12": {
+      "gear_keys": [
+        "equip_taixudiguan",
+        "equip_huxianpao",
+        "equip_huxianxie",
+        "equip_huxianjian",
+        "equip_taiqingyuce",
+        "equip_fengshenbang",
+        "equip_heshibi",
+        "equip_feiyuan",
+        "equip_mojiajiguanren",
+        "equip_xuanwujigui",
+        "equip_shendiao"
+      ],
+      "skill_keys": [
+        "brahma_true_fire",
+        "bloodthirsty_fury",
+        "iron_wall_heart"
+      ],
+      "leftover_attribute": "intellect",
+      "role": "法术和血量真伤输出"
+    },
+    "role_13": {
+      "gear_keys": [
+        "equip_feiyukui",
+        "equip_jinsirujia",
+        "equip_wujixingxue",
+        "equip_duomingfeidao",
+        "equip_shendiao",
+        "equip_businiaoyu",
+        "equip_zhoutianxingpan",
+        "equip_longjingzhu",
+        "equip_feiyuan",
+        "equip_chixiaojifeng",
+        "equip_qingji"
+      ],
+      "skill_keys": [
+        "brahma_true_fire",
+        "steadfast_planning",
+        "iron_wall_heart"
+      ],
+      "leftover_attribute": "agility",
+      "role": "敏捷先锋：法术和血量真伤输出"
+    },
+    "role_14": {
+      "gear_keys": [
+        "equip_taixudiguan",
+        "equip_huxianpao",
+        "equip_huxianxie",
+        "equip_huxianjian",
+        "equip_taiqingyuce",
+        "equip_fengshenbang",
+        "equip_heshibi",
+        "equip_feiyuan",
+        "equip_mojiajiguanren",
+        "equip_xuanwujigui",
+        "equip_shendiao"
+      ],
+      "skill_keys": [
+        "brahma_true_fire",
+        "bloodthirsty_fury",
+        "iron_wall_heart"
+      ],
+      "leftover_attribute": "intellect",
+      "role": "法术和血量真伤输出"
+    },
+    "role_15": {
+      "gear_keys": [
+        "equip_feiyukui",
+        "equip_jinsirujia",
+        "equip_wujixingxue",
+        "equip_duomingfeidao",
+        "equip_shendiao",
+        "equip_businiaoyu",
+        "equip_zhoutianxingpan",
+        "equip_longjingzhu",
+        "equip_feiyuan",
+        "equip_chixiaojifeng",
+        "equip_qingji"
+      ],
+      "skill_keys": [
+        "brahma_true_fire",
+        "steadfast_planning",
+        "iron_wall_heart"
+      ],
+      "leftover_attribute": "agility",
+      "role": "敏捷先锋：法术和血量真伤输出"
+    },
+    "role_16": {
+      "gear_keys": [
+        "equip_feiyukui",
+        "equip_jinsirujia",
+        "equip_wujixingxue",
+        "equip_duomingfeidao",
+        "equip_shendiao",
+        "equip_businiaoyu",
+        "equip_zhoutianxingpan",
+        "equip_longjingzhu",
+        "equip_feiyuan",
+        "equip_chixiaojifeng",
+        "equip_qingji"
+      ],
+      "skill_keys": [
+        "brahma_true_fire",
+        "steadfast_planning",
+        "iron_wall_heart"
+      ],
+      "leftover_attribute": "agility",
+      "role": "敏捷先锋：法术和血量真伤输出"
+    },
+    "role_17": {
+      "gear_keys": [
+        "equip_taixudiguan",
+        "equip_huxianpao",
+        "equip_huxianxie",
+        "equip_huxianjian",
+        "equip_taiqingyuce",
+        "equip_fengshenbang",
+        "equip_heshibi",
+        "equip_feiyuan",
+        "equip_mojiajiguanren",
+        "equip_xuanwujigui",
+        "equip_shendiao"
+      ],
+      "skill_keys": [
+        "brahma_true_fire",
+        "bloodthirsty_fury",
+        "iron_wall_heart"
+      ],
+      "leftover_attribute": "intellect",
+      "role": "法术和血量真伤输出"
+    },
+    "role_18": {
+      "gear_keys": [
+        "equip_feiyukui",
+        "equip_jinsirujia",
+        "equip_wujixingxue",
+        "equip_xiuhuazhen",
+        "equip_shendiao",
+        "equip_zhoutianxingpan",
+        "equip_longjingzhu",
+        "equip_baguajing",
+        "equip_feiyuan",
+        "equip_chixiaojifeng",
+        "equip_qingji"
+      ],
+      "skill_keys": [
+        "brahma_true_fire",
+        "steadfast_planning",
+        "iron_wall_heart"
+      ],
+      "leftover_attribute": "agility",
+      "role": "敏捷先锋：专精高智法术"
+    },
+    "role_19": {
+      "gear_keys": [
+        "equip_feiyukui",
+        "equip_jinsirujia",
+        "equip_wujixingxue",
+        "equip_duomingfeidao",
+        "equip_shendiao",
+        "equip_zhoutianxingpan",
+        "equip_guanxingdeng",
+        "equip_baguajing",
+        "equip_feiyuan",
+        "equip_chixiaojifeng",
+        "equip_qingji"
+      ],
+      "skill_keys": [
+        "brahma_true_fire",
+        "steadfast_planning",
+        "iron_wall_heart"
+      ],
+      "leftover_attribute": "agility",
+      "role": "敏捷先锋：专精高智法术"
+    },
+    "role_20": {
+      "gear_keys": [
+        "equip_shendiao",
+        "equip_fenglingguan",
+        "equip_hundunlongpao",
+        "equip_wujixingxue",
+        "equip_fenglingshan",
+        "equip_fenghuangyu",
+        "equip_taiqingyuce",
+        "equip_fengshenbang",
+        "equip_feiyuan",
+        "equip_mojiajiguanren",
+        "equip_xuanwujigui"
+      ],
+      "skill_keys": [
+        "brahma_true_fire",
+        "steadfast_planning",
+        "iron_wall_heart"
+      ],
+      "leftover_attribute": "intellect",
+      "role": "专精高智法术"
+    }
+  },
+  "roster": [
+    {
+      "template_key": "hero_sao_di_seng",
+      "name": "扫地僧",
+      "profile": "role_01"
+    },
+    {
+      "template_key": "hist_sljnbc_0109",
+      "name": "周泰",
+      "profile": "role_02"
+    },
+    {
+      "template_key": "hero_xiao_feng",
+      "name": "乔峰",
+      "profile": "role_03"
+    },
+    {
+      "template_key": "hero_yan_nantian",
+      "name": "燕南天",
+      "profile": "role_04"
+    },
+    {
+      "template_key": "hist_qinhan_0023",
+      "name": "项羽",
+      "profile": "role_05"
+    },
+    {
+      "template_key": "hero_a_qing",
+      "name": "阿青",
+      "profile": "role_06"
+    },
+    {
+      "template_key": "hero_shi_zhongjian",
+      "name": "石破天",
+      "profile": "role_07"
+    },
+    {
+      "template_key": "hist_xianqin_0439",
+      "name": "帝舜",
+      "profile": "role_08"
+    },
+    {
+      "template_key": "hist_xianqin_0438",
+      "name": "帝尧",
+      "profile": "role_09"
+    },
+    {
+      "template_key": "hist_xianqin_0002",
+      "name": "姬昌",
+      "profile": "role_10"
+    },
+    {
+      "template_key": "hist_suitang_0003_wuzhao",
+      "name": "武曌",
+      "profile": "role_11"
+    },
+    {
+      "template_key": "hist_xianqin_0006",
+      "name": "孔丘",
+      "profile": "role_12"
+    },
+    {
+      "template_key": "hist_xianqin_0008",
+      "name": "孙武",
+      "profile": "role_13"
+    },
+    {
+      "template_key": "hist_xianqin_0435",
+      "name": "神农",
+      "profile": "role_14"
+    },
+    {
+      "template_key": "hist_xianqin_0433",
+      "name": "女娲",
+      "profile": "role_15"
+    },
+    {
+      "template_key": "hist_sljnbc_0002",
+      "name": "诸葛亮",
+      "profile": "role_16"
+    },
+    {
+      "template_key": "hist_xianqin_0434",
+      "name": "伏羲",
+      "profile": "role_17"
+    },
+    {
+      "template_key": "hist_qinhan_0006",
+      "name": "张良",
+      "profile": "role_18"
+    },
+    {
+      "template_key": "hero_wang_xu",
+      "name": "王诩",
+      "profile": "role_19"
+    },
+    {
+      "template_key": "hist_xianqin_0007",
+      "name": "李耳",
+      "profile": "role_20"
+    }
+  ],
+  "minimum_fast_guests": 8
+}

@@ -11,6 +11,7 @@ import math
 from typing import Any, Callable, Dict, List
 
 from django.db import transaction
+from django.db.models import F
 
 from common.utils.random_utils import weighted_random_choice
 from core.exceptions import (
@@ -33,6 +34,8 @@ from .core import (
     add_items_to_inventory_locked,
     consume_inventory_item_for_manor_locked,
     consume_inventory_item_locked,
+    inventory_use_source_is_bound,
+    validate_inventory_item_group,
 )
 from .guest_items import (  # noqa: F401
     use_guest_disguise_card,
@@ -217,24 +220,57 @@ def _ensure_guest_capacity(manor: Manor) -> None:
         raise GuestCapacityFullError()
 
 
-def _consume_required_items_locked(manor: Manor, payload: dict[str, Any]) -> None:
+def _consume_required_items_locked(
+    manor: Manor,
+    payload: dict[str, Any],
+    *,
+    bound_counts: dict[str, int] | None = None,
+    source_item: InventoryItem | None = None,
+) -> bool:
     required_items = payload.get("required_items")
     if required_items is None:
-        return
+        return False
     if not isinstance(required_items, dict):
         # Don't allow misconfigured costs to degrade to "free use".
         raise ItemNotConfiguredError("required_items 配置异常")
 
+    used_bound_material = False
     for item_key, raw_amount in required_items.items():
         normalized_key = _normalize_non_empty_string(item_key, field_name="required_items")
         amount = _normalize_positive_config_int(raw_amount, field_name="required_items")
-        consume_inventory_item_for_manor_locked(manor, normalized_key, amount)
+        if (
+            source_item is not None
+            and normalized_key == source_item.template.key
+            and source_item.storage_location == InventoryItem.StorageLocation.WAREHOUSE
+        ):
+            # 同库存行的配方成本必须保留玩家选中的那一份使用物品。
+            # 否则绑定优先扣材料会先耗掉最后一个绑定源，导致外层无法扣所选组。
+            from core.exceptions import InsufficientStockError
+
+            source_item.refresh_from_db(fields=["quantity", "bound_quantity"])
+            if source_item.quantity < amount + 1:
+                raise InsufficientStockError(source_item.template.name, amount + 1, source_item.quantity)
+            reserved_bound = int(inventory_use_source_is_bound(source_item))
+            bound_amount = min(max(0, source_item.bound_quantity - reserved_bound), amount)
+            bound_used = 0
+            if bound_amount:
+                bound_used = consume_inventory_item_locked(source_item, bound_amount, binding_mode="bound")
+            if amount > bound_amount:
+                consume_inventory_item_locked(source_item, amount - bound_amount, binding_mode="unbound")
+        else:
+            bound_used = consume_inventory_item_for_manor_locked(manor, normalized_key, amount)
+        if bound_counts is not None:
+            bound_counts[normalized_key] = bound_used
+        used_bound_material = bool(bound_used) or used_bound_material
+    return used_bound_material
 
 
 def _grant_item_resources(
     manor: Manor,
     payload: dict[str, int],
     note: str,
+    *,
+    is_bound: bool = False,
 ) -> tuple[dict[str, int], dict[str, int]]:
     if transaction.get_connection().in_atomic_block:
         credited_raw, overflow_raw = grant_resources_locked(
@@ -246,7 +282,19 @@ def _grant_item_resources(
         )
         credited = _normalize_granted_resource_mapping(credited_raw, contract_name="inventory resource grant result")
         overflow = _normalize_granted_resource_mapping(overflow_raw, contract_name="inventory resource overflow result")
+        # 粮食也有可交易的库存行；绑定资源包的实际入账数量必须继承绑定，
+        # 容量溢出的部分没有进入库存，不能增加绑定数量。
+        if is_bound and credited.get("grain", 0):
+            updated = InventoryItem.objects.filter(
+                manor=manor,
+                template__key="grain",
+                storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            ).update(bound_quantity=F("bound_quantity") + credited["grain"])
+            if updated != 1:
+                raise ItemNotConfiguredError("绑定粮食奖励缺少库存模板，物品已保留")
         return credited, overflow
+    if is_bound:
+        raise RuntimeError("bound item resource grants require transaction.atomic() and a Manor lock")
     credited_raw = grant_resources(
         manor,
         payload,
@@ -302,6 +350,7 @@ def _build_resource_overflow_confirmation_snapshot(
         "item_id": item.pk,
         "manor_id": item.manor_id,
         "item_quantity": item.quantity,
+        "source_binding_mode": getattr(item, "_use_binding_mode", None),
         "requested_resources": requested,
         "credited_resources": credited,
         "overflow_resources": overflow,
@@ -380,6 +429,7 @@ def _apply_resource_pack(item: InventoryItem) -> Dict[str, Any]:
         item.manor,
         normalized_payload,
         item.template.name,
+        is_bound=inventory_use_source_is_bound(item),
     )
     return {
         **granted_resources,
@@ -429,7 +479,7 @@ def _apply_item_synthesis(item: InventoryItem) -> Dict[str, Any]:
         payload.get("result_quantity", 1),
         field_name="result_quantity",
     )
-    result_template = ItemTemplate.objects.filter(key=result_key).only("key", "name").first()
+    result_template = ItemTemplate.objects.filter(key=result_key).only("key", "name", "effect_type").first()
     if result_template is None:
         raise ItemNotConfiguredError("result_item_key 配置异常")
 
@@ -446,8 +496,24 @@ def _apply_item_synthesis(item: InventoryItem) -> Dict[str, Any]:
         same_item_cost = _normalize_positive_config_int(required_items[item.template.key], field_name="required_items")
         if item.quantity < same_item_cost + 1:
             raise InsufficientStockError(item.template.name, same_item_cost + 1, item.quantity)
-    _consume_required_items_locked(item.manor, payload)
-    add_item_to_inventory_locked(item.manor, result_key, result_quantity, template=result_template)
+    source_is_bound = inventory_use_source_is_bound(item)
+    bound_counts: dict[str, int] = {}
+    used_bound_material = _consume_required_items_locked(
+        item.manor, payload, bound_counts=bound_counts, source_item=item
+    )
+    output_is_bound = source_is_bound or used_bound_material
+    if str(result_template.effect_type).startswith("equip_"):
+        # 装备图纸目录强制使用 blueprint_ 键；任意合成工具与材料不算图纸。
+        output_is_bound = (source_is_bound and item.template.key.startswith("blueprint_")) or any(
+            count for key, count in bound_counts.items() if key.startswith("blueprint_")
+        )
+    add_item_to_inventory_locked(
+        item.manor,
+        result_key,
+        result_quantity,
+        template=result_template,
+        is_bound=output_is_bound,
+    )
     return {
         "result_item_key": result_key,
         "result_quantity": result_quantity,
@@ -509,7 +575,7 @@ def _apply_guest_summon(item: InventoryItem) -> Dict[str, Any]:
             ).exists() or exclusive_template_ids & get_owned_non_repeatable_template_ids(manor.id):
                 raise GuestAlreadyOwnedError(template)
 
-    _consume_required_items_locked(manor, payload)
+    _consume_required_items_locked(manor, payload, source_item=item)
 
     summon_rng = inventory_random.Random()
     custom_name = build_recruitment_custom_name(template, summon_rng)
@@ -639,7 +705,12 @@ def _grant_blueprint_material_support(
             key = str(entry["item_key"])
             grants[key] = grants.get(key, 0) + amount
     if grants:
-        add_items_to_inventory_locked(item.manor, grants, templates=templates)
+        add_items_to_inventory_locked(
+            item.manor,
+            grants,
+            templates=templates,
+            is_bound=inventory_use_source_is_bound(item),
+        )
         rewards.append(
             "图纸配套材料：" + "、".join(f"{templates[key].name}×{amount}" for key, amount in grants.items())
         )
@@ -676,7 +747,12 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
     # 1. 固定资源掉落（可选）
     resources = _normalize_resource_reward_mapping(payload.get("resources"), field_name="resources")
     if resources:
-        result, _overflow = _grant_item_resources(manor, resources, item.template.name)
+        result, _overflow = _grant_item_resources(
+            manor,
+            resources,
+            item.template.name,
+            is_bound=inventory_use_source_is_bound(item),
+        )
         parts = _format_resource_parts(result)
         rewards.append("资源：" + "、".join(parts))
 
@@ -688,7 +764,7 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
         if quantity <= 0:
             continue
         try:
-            add_item_to_inventory(manor, item_key, quantity)
+            add_item_to_inventory(manor, item_key, quantity, is_bound=inventory_use_source_is_bound(item))
             reward_template = ItemTemplate.objects.filter(key=item_key).first()
             reward_name = reward_template.name if reward_template else "未知物品"
             rewards.append(f"物品【{reward_name}】×{quantity}")
@@ -726,7 +802,7 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
         if quantity <= 0:
             continue
         try:
-            add_item_to_inventory(manor, item_key, quantity)
+            add_item_to_inventory(manor, item_key, quantity, is_bound=inventory_use_source_is_bound(item))
             reward_template = ItemTemplate.objects.filter(key=item_key).first()
             reward_name = reward_template.name if reward_template else "未知物品"
             rewards.append(f"物品【{reward_name}】×{quantity}")
@@ -795,14 +871,14 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
 
         item_template = ItemTemplate.objects.filter(key=gear_key).first()
         if item_template and item_template.effect_type in EQUIP_SLOT_MAP:
-            add_item_to_inventory(manor, gear_key, 1)
+            add_item_to_inventory(manor, gear_key, 1, is_bound=inventory_use_source_is_bound(item))
             rewards.append(f"装备【{item_template.name}】")
         else:
             gear_template = GearTemplate.objects.filter(key=gear_key).first()
             if gear_template:
                 # Keep supporting legacy gear-only keys that do not have an
                 # ItemTemplate representation in the warehouse.
-                give_gear(manor, gear_template)
+                give_gear(manor, gear_template, is_bound=inventory_use_source_is_bound(item))
                 rewards.append(f"装备【{gear_template.name}】")
             else:
                 skipped_bonus_items.append(gear_key)
@@ -829,7 +905,7 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
         else:
             book_key = inventory_random.choice(skill_book_keys)
         try:
-            add_item_to_inventory(manor, book_key, 1)
+            add_item_to_inventory(manor, book_key, 1, is_bound=inventory_use_source_is_bound(item))
             book_template = ItemTemplate.objects.filter(key=book_key).first()
             book_name = book_template.name if book_template else "未知技能书"
             rewards.append(f"技能书【{book_name}】")
@@ -864,6 +940,7 @@ def use_inventory_item(
     manor: Manor | None = None,
     *,
     resource_overflow_confirmation: dict[str, object] | None = None,
+    binding_mode: str | None = None,
 ) -> Dict[str, Any]:
     """
     使用背包物品（仓库可用）。
@@ -908,6 +985,13 @@ def use_inventory_item(
     if locked_item.quantity <= 0:
         raise InsufficientStockError(locked_item.template.name, 1, locked_item.quantity)
 
+    validate_inventory_item_group(locked_item, 1, binding_mode)
+    setattr(locked_item, "_use_binding_mode", binding_mode)
+    setattr(
+        locked_item,
+        "_use_source_is_bound",
+        binding_mode == "bound" if binding_mode is not None else locked_item.bound_quantity > 0,
+    )
     template = locked_item.template
     if not template.is_usable:
         raise ItemNotUsableError(template.name, "not_warehouse_usable")
@@ -956,6 +1040,6 @@ def use_inventory_item(
             raise ItemNotUsableError(template.name, effect_type)
         raise ItemNotUsableError(template.name, "unknown_effect")
 
-    locked_item.refresh_from_db(fields=["quantity"])
-    consume_inventory_item_locked(locked_item, 1)
+    locked_item.refresh_from_db(fields=["quantity", "bound_quantity"])
+    consume_inventory_item_locked(locked_item, 1, binding_mode=binding_mode)
     return effect_summary

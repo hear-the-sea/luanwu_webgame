@@ -1,0 +1,117 @@
+{
+  "checked_at": "2026-10-10T11:26:32.069528+00:00",
+  "site": "https://luanwu.top",
+  "scope": "read-only performance and health audit; no configuration or application changes",
+  "initial_resources": {
+    "load_average": [
+      0.83,
+      0.76,
+      0.64
+    ],
+    "memory_available_mb": 3769,
+    "disk_used_percent": 40,
+    "web_memory_mib": 329.9,
+    "web_limit_mib": 384,
+    "initial_web_restarts": 0
+  },
+  "request_log_sample": {
+    "window": "last 30 minutes, application tail capped at 18000 lines",
+    "warehouse": {
+      "count": 336,
+      "p50_ms": 73,
+      "p95_ms": 109,
+      "max_ms": 561
+    },
+    "tasks": {
+      "count": 41,
+      "p50_ms": 62,
+      "p95_ms": 88,
+      "max_ms": 457
+    },
+    "home": {
+      "count": 186,
+      "p50_ms": 62,
+      "p95_ms": 105,
+      "max_ms": 433
+    },
+    "recruitment_refresh_max_ms": 629,
+    "note": "WebSocket durations describe connection lifetimes, not page response latency."
+  },
+  "websocket": {
+    "ip_capacity_rejections_in_sample": 5430,
+    "user_capacity_rejections_in_sample": 451,
+    "per_ip_limit": 20,
+    "connections_per_page": 3,
+    "confirmed_full_public_ip_groups": 2,
+    "top_client_rejection_counts_at_final_check": [
+      2899,
+      1677
+    ],
+    "top_client_live_slot_counts": [
+      20,
+      20
+    ],
+    "reason": "Two actual public client addresses matched their full Redis IP-capacity groups; not reverse proxy address misclassification."
+  },
+  "queues": {
+    "default": 0,
+    "battle": 0,
+    "timer": 0,
+    "timer_scan": 0,
+    "timer_safety": 0,
+    "timer_maintenance": 0,
+    "execution_heartbeat_age_seconds_range": [
+      33,
+      37.2
+    ]
+  },
+  "mysql": {
+    "threads_connected": 9,
+    "threads_running": 2,
+    "current_row_lock_waits": 0
+  },
+  "redis": {
+    "used_memory_mib": 13.42,
+    "evicted_keys": 0,
+    "rejected_connections": 0
+  },
+  "large_assets": {
+    "qinglong_ring_bytes": 3286937,
+    "baihu_ring_bytes": 3068726
+  },
+  "network_probe": {
+    "server_public_warm_health_total_seconds_range": [
+      0.060226,
+      0.121016
+    ],
+    "work_environment_public_health_total_seconds": 0.994014,
+    "work_environment_tls_seconds": 0.821425,
+    "note": "A probe from the work environment is not representative of all player networks."
+  },
+  "diagnostic_impact": {
+    "at_utc": "2026-10-10T11:18:13Z",
+    "description": "An additional Django diagnostic process executed inside the 384 MiB Web container triggered cgroup OOM; kernel killed Daphne and Docker automatically restarted Web once. This occurred during the audit, after initial restart count was zero.",
+    "web_restarts_after": 1,
+    "recovery": "Web healthy, all readiness checks passed; subsequent probes used lightweight CLI and host HTTP instead of Django setup."
+  },
+  "final_health": {
+    "db": true,
+    "cache": true,
+    "channel_layer": true,
+    "celery_broker": true,
+    "celery_workers": true,
+    "celery_beat": true,
+    "celery_roundtrip": true,
+    "virtual_player_maintenance_mode": "v2_active",
+    "virtual_player_revision": 728
+  },
+  "recommended_priorities": [
+    "Improve websocket page lifecycle release and reconnect behavior under IP capacity pressure; retain Origin validation.",
+    "Compress the two approximately 3 MB ring images for web delivery.",
+    "Raise Web memory headroom, for example 384 MiB to 768 MiB, in a separately authorized configuration update."
+  ],
+  "limitations": [
+    "Player-specific page and incident time have not been provided.",
+    "The confirmed WebSocket quota exhaustion explains realtime channel failures; it does not establish the cause of every reported page slowdown."
+  ]
+}

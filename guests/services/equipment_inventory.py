@@ -8,7 +8,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
-from django.db.models import Count, Exists, F, Min, OuterRef, Q
+from django.db.models import Count, Exists, Min, OuterRef, Q
 
 from core.exceptions import EquipmentError, ItemNotFoundError
 from core.game_data.troop_device_bonus_display import format_raw_troop_device_bonus
@@ -259,8 +259,10 @@ def resolve_equippable_gear_locked(
         inventory_item,
         expected_slot=slot,
     )
-    InventoryItem.objects.filter(pk=inventory_item.pk).update(quantity=F("quantity") - 1)
-    InventoryItem.objects.filter(pk=inventory_item.pk, quantity__lte=0).delete()
+    from gameplay.services.inventory.core import consume_inventory_item_locked
+
+    resolved.gear.is_bound = bool(consume_inventory_item_locked(inventory_item, 1))
+    resolved.gear.save(update_fields=["is_bound"])
     return ResolvedEquippableGear(gear=resolved.gear, consumed_inventory=True)
 
 
@@ -404,6 +406,7 @@ def consume_warehouse_item_for_gear(guest: Guest, gear: GearItem) -> bool:
     if not inventory_item:
         return False
 
-    InventoryItem.objects.filter(pk=inventory_item.pk).update(quantity=F("quantity") - 1)
-    InventoryItem.objects.filter(pk=inventory_item.pk, quantity__lte=0).delete()
+    from gameplay.services.inventory.core import consume_inventory_item_locked
+
+    gear.is_bound = bool(consume_inventory_item_locked(inventory_item, 1))
     return True

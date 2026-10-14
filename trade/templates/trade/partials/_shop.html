@@ -81,6 +81,7 @@
                         {% if item.available %}
                         <form method="post" action="{% url 'trade:shop_buy' %}" class="flex gap-2 items-center">
                             {% csrf_token %}
+                            {% include "trade/partials/_action_return_state.html" with current_tab="shop" %}
                             <input type="hidden" name="item_key" value="{{ item.key }}">
                             <input type="number" name="quantity" value="1" min="1" class="tw-quantity-input">
                             <button type="submit" class="tw-btn-trade" {% if manor.silver < item.price %}disabled title="银两不足"{% endif %}>购买</button>
@@ -185,13 +186,14 @@
                             </div>
                         </div>
                     </td>
-                    <td>{{ item.inventory_item.quantity }}</td>
+                    <td>{{ item.quantity }}</td>
                     <td class="tw-price">{{ item.sell_price }} 银两</td>
                     <td>
                         <form method="post" action="{% url 'trade:shop_sell' %}" class="shop-sell-form flex flex-wrap gap-2 items-center">
                             {% csrf_token %}
+                            {% include "trade/partials/_action_return_state.html" with current_tab="shop" %}
                             <input type="hidden" name="item_key" value="{{ item.inventory_item.template.key }}">
-                            <input type="number" name="quantity" value="1" min="1" max="{{ item.inventory_item.quantity }}" class="tw-quantity-input">
+                            <input type="number" name="quantity" value="1" min="1" max="{{ item.quantity }}" class="tw-quantity-input">
                             <div class="tw-shop-sell-actions">
                                 <button type="submit" class="tw-btn-trade">出售</button>
                                 <button
@@ -199,7 +201,7 @@
                                     class="tw-btn-trade tw-btn-trade--danger"
                                     data-shop-sell-all
                                     data-item-name="{{ item.inventory_item.template.name }}"
-                                    data-item-quantity="{{ item.inventory_item.quantity }}"
+                                    data-item-quantity="{{ item.quantity }}"
                                     aria-label="全部卖出{{ item.inventory_item.template.name }}"
                                 >全部卖出</button>
                             </div>

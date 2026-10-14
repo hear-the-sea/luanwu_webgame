@@ -539,7 +539,7 @@ def test_default_mission_templates_import_zhuolu_zhongyuan():
         "arrow_god": 900,
     }
     assert mission.enemy_technology == {"level": 10, "guest_level": 100, "guest_bonus": 0.62}
-    assert mission.drop_table == {"silver": 100000, "mission_chest_zhuolu_zhongyuan": 1}
+    assert mission.drop_table == {"silver": 100000, "mission_chest_v3_zhuolu_zhongyuan": 1}
     payload = mission_reward_payload(mission)
     assert_random_group(payload, 0.7, 4, {"experience_watermelon": 1})
     for key, chance in (

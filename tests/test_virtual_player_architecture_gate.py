@@ -131,6 +131,7 @@ BOT_PROFILE_DIRECT_IMPORTS = {
 }
 
 BOT_PROFILE_RELATION_READERS = {
+    "guests/admin.py": "label the existing GuestRecruitment bot_profile field in the read-only recruitment audit admin",
     "gameplay/services/virtual_player_core/recruitment.py": "exclude pending virtual recruitment through the Manor profile relation",
     "gameplay/management/commands/audit_virtual_player_baseline.py": "exclude virtual profiles from real samples",
     "gameplay/selectors/stats.py": "exclude virtual profiles from real-player activity counts",
@@ -483,6 +484,35 @@ def test_bot_profile_indirect_relation_reader_inventory_is_frozen() -> None:
     assert all(purpose.strip() for purpose in BOT_PROFILE_RELATION_READERS.values())
     for relative_path in READ_ONLY_VIRTUAL_PLAYER_OWNERS:
         _assert_model_read_only(PROJECT_ROOT / relative_path)
+
+
+def test_guest_admin_profile_relation_is_only_readonly_audit_field_metadata() -> None:
+    from django.contrib import admin
+
+    from core.admin_records import ReadOnlyAdmin
+    from guests.models import GuestRecruitment
+
+    source = (PROJECT_ROOT / "guests/admin.py").read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    references = [node for node in ast.walk(tree) if isinstance(node, ast.Constant) and node.value == "bot_profile"]
+    # This precise label is the sole newly registered indirect-reader marker.
+    # Query paths, imports or additional profile relation reads require review.
+    assert len(references) == 1
+    labels = [node for node in ast.walk(tree) if isinstance(node, ast.Dict) and references[0] in node.keys]
+    assert len(labels) == 1
+    assert any(
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "apply_common_field_labels"
+        and any(keyword.arg == "labels" and keyword.value is labels[0] for keyword in node.keywords)
+        for node in ast.walk(tree)
+    )
+    model_admin = admin.site._registry[GuestRecruitment]
+    assert isinstance(model_admin, ReadOnlyAdmin)
+    assert model_admin.actions is None
+    assert not model_admin.has_add_permission(None)
+    assert not model_admin.has_change_permission(None)
+    assert not model_admin.has_delete_permission(None)
 
 
 def test_gate_a_bot_profile_write_owner_ratchet_blocks_new_bypasses() -> None:

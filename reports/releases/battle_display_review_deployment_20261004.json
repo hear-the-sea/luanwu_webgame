@@ -1,0 +1,50 @@
+{
+  "release": "battle-display-review-20261003T233457Z",
+  "image": "webgame:battle-display-review-20261003T233457Z",
+  "base_image": "webgame:battle-text-troop-order-20261003T230857Z",
+  "base_image_id": "sha256:ebb0f2baadf8274ee762a8c4bb63eb2ca9c7b6afba8b5b93d48e0295e59b168a",
+  "files": {
+    "core/game_data/technology.py": "be73279b0ddb22d0cd5f1bcfec580479603befb447572ae0ac301cf7c85a4bc7",
+    "battle/view_helpers.py": "0c5049599122efeb9e2e5a0e28b0e6563b823713258c0469890be3f8871224fc",
+    "battle/templates/battle/partials/attack_action_details.html": "8b824f3395434e3d9cd29e49551be4c09495ee39e0cb5692180dc3aae577726a",
+    "battle/report_events.py": "5ea3b525b51449f590491a592fd3ba8870cafc67e129aa606c32591b99ae68c6",
+    "guilds/services/guild_pvp_queries.py": "293ac38364d6d9cf8fcdcf8380faade9acc275b399b298c45dda0a2ffbf53fbf",
+    "guilds/services/guild_mission_queries.py": "0f2ecc27e13c19d97731828a67de6091c4b078e8d6346b09171ec07d78748091"
+  },
+  "base_files": {
+    "core/game_data/technology.py": "d2f991a856d45cd7c88f0b3154f4265c5335f19e298c098c41ccadf53898aa3c",
+    "battle/view_helpers.py": "37ad8bc5c62829c56ff1a616efbb8f214da51df85d52552d2dfb8e77317dfc88",
+    "battle/templates/battle/partials/attack_action_details.html": "eeb380fddd6545117193c7a81b592df82554ba44beba587fbcffa8b9a724c4f5",
+    "battle/report_events.py": "541cdfe685ca332243d73930cd72bb74d2290bf515b7ff2e25528a86cc5fa54c",
+    "guilds/services/guild_pvp_queries.py": "c1b515844ceaf30482f83c307d9ed0c14a09f0b0e01da953b9b7683b3e5f1b9e",
+    "guilds/services/guild_mission_queries.py": "3050b70c2f653df799d57cbfa06043c9ed63f8f13310bd77e69f9a61444842e0"
+  },
+  "database_changes": false,
+  "services": [
+    "web"
+  ],
+  "status": "deployed_verified",
+  "image_id": "sha256:814b775fba43512b15fd2af62713fafffea8b4375129f7db662be841f9a009da",
+  "health": "healthy",
+  "backup_dir": "/root/code/releases/battle-display-review-20261003T233457Z/backup",
+  "workers_restarted": false,
+  "live_verification": {
+    "status": "verified",
+    "source_files_verified": 27,
+    "container_files_verified": 27,
+    "public_health_status": 200,
+    "historical_reports_checked": 30,
+    "raw_reports_unchanged": true,
+    "recovery_and_passive_order": true,
+    "per_target_status_order": true,
+    "casualty_order": true,
+    "cache_refresh": true,
+    "guild_display_order": true
+  },
+  "tests": {
+    "backend": 455,
+    "browser": 21,
+    "black": "passed",
+    "ruff": "passed"
+  }
+}

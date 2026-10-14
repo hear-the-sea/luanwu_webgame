@@ -186,6 +186,7 @@ def test_warehouse_categories_prioritize_equipment_then_common_items():
         ItemTemplate.EffectType.MEDICINE,
         ItemTemplate.EffectType.EXPERIENCE_ITEM,
         ItemTemplate.EffectType.SKILL_BOOK,
+        "mission_chest",
         "tool",
         ItemTemplate.EffectType.RESOURCE,
     ]
@@ -549,3 +550,78 @@ def test_get_warehouse_context_groups_loot_box_and_resource_pack_under_tool_cate
     assert any(category["key"] == "tool" for category in context["categories"])
     assert all(category["key"] != ItemTemplate.EffectType.LOOT_BOX for category in context["categories"])
     assert all(category["key"] != ItemTemplate.EffectType.RESOURCE_PACK for category in context["categories"])
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("storage_location", ["warehouse", "treasury"])
+def test_task_chest_category_separates_versions_and_preserves_pagination(storage_location):
+    user = User.objects.create_user(username=f"task_chest_category_{storage_location}")
+    manor = ensure_manor(user)
+    chest_keys = set()
+    for index in range(21):
+        key = f"mission_chest_{'v3_' if index % 2 else ''}category_{index}"
+        chest_keys.add(key)
+        template = ItemTemplate.objects.create(
+            key=key, name=f"任务宝箱{index:02d}", effect_type=ItemTemplate.EffectType.LOOT_BOX, is_usable=True
+        )
+        InventoryItem.objects.create(manor=manor, template=template, quantity=1, storage_location=storage_location)
+    for key in [
+        "mid_autumn_mooncake",
+        "passive_skill_book_box",
+        "civil_skill_book_box",
+        "saiwai_equipment_box",
+        "fengshen_equipment_box",
+        "huashan_wulin_chest",
+    ]:
+        chest_keys.add(key)
+        template = ItemTemplate.objects.create(key=key, name=key, effect_type="loot_box", is_usable=True)
+        InventoryItem.objects.create(manor=manor, template=template, quantity=1, storage_location=storage_location)
+    tool_keys = {
+        "work_chest_small",
+        "work_chest_medium",
+        "work_chest_large",
+        "guild_gear_box_master",
+        "category_resource_pack",
+        "mission_chest_not_a_box",
+    }
+    for key in tool_keys:
+        effect_type = (
+            ItemTemplate.EffectType.RESOURCE_PACK
+            if key == "category_resource_pack"
+            else ItemTemplate.EffectType.TOOL if key == "mission_chest_not_a_box" else ItemTemplate.EffectType.LOOT_BOX
+        )
+        template = ItemTemplate.objects.create(key=key, name=key, effect_type=effect_type)
+        InventoryItem.objects.create(manor=manor, template=template, quantity=1, storage_location=storage_location)
+    empty = ItemTemplate.objects.create(key="mission_chest_empty", name="已用完", effect_type="loot_box")
+    InventoryItem.objects.create(manor=manor, template=empty, quantity=0, storage_location=storage_location)
+
+    first = get_warehouse_context(manor, storage_location, "mission_chest", page=1)
+    second = get_warehouse_context(manor, storage_location, "mission_chest", page=2)
+    displayed = first["inventory_items"] + second["inventory_items"]
+    assert {item.template.key for item in displayed} == chest_keys
+    assert all(item.category_display == "任务宝箱" and item.template.is_usable for item in displayed)
+    assert first["selected_category"] == "mission_chest"
+    assert first["pagination"]["total_count"] == 27
+    assert len(first["inventory_items"]) == 20 and len(second["inventory_items"]) == 7
+    assert {"key": "mission_chest", "label": "任务宝箱"} in first["categories"]
+    for category in ["tool", "tools", "loot_box", "resource_pack"]:
+        tools = get_warehouse_context(manor, storage_location, category)
+        assert {item.template.key for item in tools["inventory_items"]} == tool_keys
+        assert all(item.category_display == "道具" for item in tools["inventory_items"])
+
+
+@pytest.mark.django_db
+def test_empty_task_chest_category_stays_selected_without_changing_inventory(client, django_user_model):
+    from django.urls import reverse
+
+    user = django_user_model.objects.create_user(username="empty_task_chest_category")
+    manor = ensure_manor(user)
+    client.force_login(user)
+    count_before = InventoryItem.objects.filter(manor=manor).count()
+    response = client.get(reverse("gameplay:warehouse"), {"category": "mission_chest"})
+    assert response.status_code == 200
+    assert response.context["selected_category"] == "mission_chest"
+    assert not response.context["inventory_items"]
+    assert response.context["pagination"]["total_count"] == 0
+    assert '<option value="mission_chest" selected>任务宝箱</option>' in response.content.decode()
+    assert InventoryItem.objects.filter(manor=manor).count() == count_before

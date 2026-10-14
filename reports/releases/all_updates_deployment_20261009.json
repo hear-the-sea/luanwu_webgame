@@ -1,0 +1,157 @@
+{
+  "status": "deployed_and_verified",
+  "verified_at": "2026-10-09T13:19:10.362321+00:00",
+  "site": "https://luanwu.top",
+  "admin": "https://luanwu.top/admin/",
+  "release": "/root/code/releases/all-updates-20261009T124924Z",
+  "image": "webgame:all-updates-20261009T124924Z",
+  "source_files_per_service": 1561,
+  "backup": {
+    "database": "/root/code/releases/all-updates-20261009T124924Z/backup/database-before.sql.gz",
+    "source": "/root/code/releases/all-updates-20261009T124924Z/backup/source-before.tar.gz",
+    "rollback_compose": "/root/code/releases/all-updates-20261009T124924Z/compose.rollback.yml"
+  },
+  "previous_images": {
+    "web": "webgame:timer-recovery-20261008-g0",
+    "worker": "webgame:timer-recovery-20261008-g1",
+    "worker_battle": "webgame:timer-recovery-20261008-g1",
+    "worker_timer": "webgame:timer-recovery-20261008-g1",
+    "worker_timer_scan": "webgame:timer-recovery-20261008-g1",
+    "worker_timer_safety": "webgame:timer-recovery-20261008-g1",
+    "worker_timer_maintenance": "webgame:timer-recovery-20261008-g1",
+    "beat": "webgame:timer-recovery-20261008-g1"
+  },
+  "checks": {
+    "mypy": "797 source files passed",
+    "javascript_tests": "38 passed",
+    "targeted_regression": {
+      "binding_and_battle": 105,
+      "release_and_workers": 120,
+      "battle_report_views": 32
+    },
+    "django_system_check": "0 issues",
+    "yaml_validation": "28 supported files passed",
+    "full_suite": "Interrupted after 1032 passed and 1 battle rendering failure; failure fixed and all 32 battle report view tests passed",
+    "admin_and_arena_regression": "99 passed",
+    "browser_regression": "54 passed"
+  },
+  "verification": {
+    "services": {
+      "web": {
+        "image": "webgame:all-updates-20261009T124924Z",
+        "state": "running",
+        "health": "healthy",
+        "restarts": 0
+      },
+      "worker": {
+        "image": "webgame:all-updates-20261009T124924Z",
+        "state": "running",
+        "health": null,
+        "restarts": 0
+      },
+      "worker_battle": {
+        "image": "webgame:all-updates-20261009T124924Z",
+        "state": "running",
+        "health": null,
+        "restarts": 0
+      },
+      "worker_timer": {
+        "image": "webgame:all-updates-20261009T124924Z",
+        "state": "running",
+        "health": null,
+        "restarts": 0
+      },
+      "worker_timer_scan": {
+        "image": "webgame:all-updates-20261009T124924Z",
+        "state": "running",
+        "health": null,
+        "restarts": 0
+      },
+      "worker_timer_safety": {
+        "image": "webgame:all-updates-20261009T124924Z",
+        "state": "running",
+        "health": null,
+        "restarts": 0
+      },
+      "worker_timer_maintenance": {
+        "image": "webgame:all-updates-20261009T124924Z",
+        "state": "running",
+        "health": null,
+        "restarts": 0
+      },
+      "beat": {
+        "image": "webgame:all-updates-20261009T124924Z",
+        "state": "running",
+        "health": null,
+        "restarts": 0
+      }
+    },
+    "source_verification": {
+      "web": {
+        "verified_files": 1561
+      },
+      "worker": {
+        "verified_files": 1561
+      },
+      "worker_battle": {
+        "verified_files": 1561
+      },
+      "worker_timer": {
+        "verified_files": 1561
+      },
+      "worker_timer_scan": {
+        "verified_files": 1561
+      },
+      "worker_timer_safety": {
+        "verified_files": 1561
+      },
+      "worker_timer_maintenance": {
+        "verified_files": 1561
+      },
+      "beat": {
+        "verified_files": 1561
+      }
+    },
+    "application": {
+      "admin_render": true,
+      "static_urls": {
+        "css/admin-operations.css": "/static/css/admin-operations.a7467533b684.css",
+        "js/admin-operations.js": "/static/js/admin-operations.a64f984459d4.js"
+      },
+      "queues": {
+        "default": 1791551820.076958,
+        "battle": 1791551820.024699,
+        "timer": 1791551820.077024,
+        "timer_scan": 1791551820.004827,
+        "timer_maintenance": 1791551820.030014,
+        "timer_safety": 1791551820.059698
+      },
+      "now": 1791551869.7372265,
+      "ready": {
+        "status": "ok",
+        "checks": {
+          "db": true,
+          "cache": true,
+          "channel_layer": true,
+          "celery_broker": true,
+          "celery_workers": true,
+          "celery_beat": true,
+          "celery_roundtrip": true
+        }
+      },
+      "routing": {
+        "revision": 705,
+        "maintenance_mode": "v2_active",
+        "pause_reason": ""
+      }
+    },
+    "public_http": {
+      "/": 200,
+      "/accounts/login/": 200,
+      "/admin/login/": 200,
+      "/health/live": 200,
+      "/static/css/admin-operations.a7467533b684.css": 200,
+      "/static/js/admin-operations.a64f984459d4.js": 200
+    }
+  }
+}

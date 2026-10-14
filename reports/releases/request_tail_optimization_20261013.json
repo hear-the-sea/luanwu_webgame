@@ -1,0 +1,69 @@
+{
+  "checked_at_utc": "2026-10-13T15:40:00.699451+00:00",
+  "phase": {
+    "operation": "0d73c41ff8aa43a2964133d42ff99120",
+    "phase": "complete",
+    "candidate": "code-web-bg-0d73c41ff8aa",
+    "image": "webgame:request-tail-optimization-20261013",
+    "proxy": "web",
+    "override": "/root/code/.web-bg-0d73c41ff8aa.json",
+    "updated_at": 1791905766.1883132
+  },
+  "web": {
+    "image": "webgame:request-tail-optimization-20261013",
+    "status": "running",
+    "health": "healthy",
+    "started_at": "2026-10-13T15:34:43.467188475Z",
+    "restart_count": 0,
+    "oom_killed": false
+  },
+  "hashes_match": true,
+  "manifest": {
+    "base_image": "webgame:capacity-http-types-20261013",
+    "files": [
+      "core/middleware/access_log.py",
+      "gameplay/services/utils/messages.py",
+      "guilds/views/technology.py",
+      "guilds/services/technology.py"
+    ],
+    "before": {
+      "core/middleware/access_log.py": "15f9d3d6fb4b628b4b87370cc5015d5bc1d2cc0cd3e7d6df1d350f6e88e87a3e",
+      "gameplay/services/utils/messages.py": "53849e4dbd5685c539cb2d5b4840b520b6fab5e5991a0f68c4776af5ef249867",
+      "guilds/views/technology.py": "10c0a818b0211faa6a953ca4982820326b6f3cf066663b520ec8dbea5850c749",
+      "guilds/services/technology.py": "5bcf2523f2b3f45d7f2ef2879e221f3dac8320bfd5293594bd5732d8c45c25ea"
+    },
+    "after": {
+      "core/middleware/access_log.py": "16cddb47e472bb7515959559dd7614034c8df2b0882d8125798995ff853e1390",
+      "gameplay/services/utils/messages.py": "67630e5e96473499000264d590b5192120749f494046d7855ab210cb44adf86a",
+      "guilds/views/technology.py": "d1042b2432e182077983ae6176cc1d3c183ab2458d1fb7983e67b6c3a7c2cfc0",
+      "guilds/services/technology.py": "a65a5eb715ea03b4003a542d0e325aa2eafc27a889b2a17c05326e2cc2d8087b"
+    },
+    "tests_passed": 93
+  },
+  "initial_request_status_counts": {},
+  "initial_slow_requests": [],
+  "monitor_timer": "active",
+  "public_readonly_probes": [
+    {
+      "path": "/health/live",
+      "result": "200 0.063072",
+      "exit_code": 0
+    },
+    {
+      "path": "/accounts/login/",
+      "result": "200 0.068357",
+      "exit_code": 0
+    }
+  ],
+  "internal_readiness_exit_code": 0,
+  "candidate_cleaned": true,
+  "additional_asgi_health_tests_passed": 29,
+  "local_validation": {
+    "focused_tests": 93,
+    "asgi_health_tests": 29,
+    "total": 122,
+    "black": "passed",
+    "ruff": "passed for access log and focused new tests",
+    "targeted_diff_check": "passed"
+  }
+}

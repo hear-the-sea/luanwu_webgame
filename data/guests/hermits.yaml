@@ -218,9 +218,9 @@ heroes:
     - 8
     - 13
     attribute_weights:
-      force: 30
-      intellect: 25
-      defense: 20
+      force: 35
+      intellect: 15
+      defense: 25
       agility: 25
     avatar: buyi.png
   - key: hero_huang_shigong

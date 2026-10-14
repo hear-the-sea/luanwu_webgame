@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 
 from core.exceptions import PeaceShieldUnavailableError
@@ -31,6 +32,13 @@ def activate_peace_shield(manor: Manor, duration_seconds: int) -> None:
     """
     with transaction.atomic():
         manor = Manor.objects.select_for_update().get(pk=manor.pk)
+
+        from guests.services.world_unique import WORLD_UNIQUE_LUBU_TEMPLATE_KEY
+
+        if manor.guests.filter(
+            Q(template__is_world_unique=True) | Q(template__key=WORLD_UNIQUE_LUBU_TEMPLATE_KEY)
+        ).exists():
+            raise PeaceShieldUnavailableError("world_unique_guest")
 
         # 检查是否有出征中的队伍
         active_raids = get_active_raid_count(manor)

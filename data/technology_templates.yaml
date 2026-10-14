@@ -223,7 +223,7 @@ technologies:
     name: 反戈一击
     category: martial
     troop_class: qiang
-    description: 你敢打我？我还手！礼尚往来懂不懂。升级提升反击概率
+    description: 你敢打我？我还手！礼尚往来懂不懂。升级提升反击概率，反击伤害最多按当前1000名护院计算
     effect_type: counter_attack_chance
     base_damage: 0.30
     effect_per_level: 0.10
@@ -338,7 +338,7 @@ technologies:
     name: 万宗归流
     category: martial
     troop_class: quan
-    description: 每级提升10%远程防御值；达到5级时额外减少10%受到的远程伤害，达到10级时累计减少20%
+    description: 拳系自带10%远程伤害减免；每级提升10%远程防御值；达到5级时科技额外减伤10%，达到10级时科技额外减伤20%，与基础减免相加后分别为20%和30%
     effect_type: ranged_defense
     effect_per_level: 0.10
     max_level: 10

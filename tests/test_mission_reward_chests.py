@@ -21,7 +21,9 @@ from gameplay.views.mission_helpers import build_chest_reward_preview
 DATA = Path(__file__).resolve().parents[1] / "data"
 ITEMS = {entry["key"]: entry for entry in yaml.safe_load((DATA / "item_templates.yaml").read_text())["items"]}
 MISSIONS = yaml.safe_load((DATA / "mission_templates.yaml").read_text())["missions"]
-BOXES = [entry for entry in ITEMS.values() if entry.get("effect_payload", {}).get("mission_reward_version") == 1]
+BOXES = [ITEMS[key] for mission in MISSIONS for key in mission["drop_table"] if key != "silver"]
+HISTORICAL_BOXES = [ITEMS["mission_chest_" + mission["key"]] for mission in MISSIONS]
+ALL_BOXES = BOXES + HISTORICAL_BOXES
 
 
 def _reward_keys(box):
@@ -39,6 +41,8 @@ def _reward_keys(box):
 
 def test_all_personal_missions_award_one_named_chest_without_scattered_items():
     assert len(MISSIONS) == len(BOXES) == 32
+    assert len(HISTORICAL_BOXES) == 32
+    assert len({box["key"] for box in ALL_BOXES}) == 64
     assert len({box["effect_payload"]["mission_key"] for box in BOXES}) == 32
     for mission in MISSIONS:
         drops = mission["drop_table"]
@@ -48,6 +52,11 @@ def test_all_personal_missions_award_one_named_chest_without_scattered_items():
         box = ITEMS[box_key]
         assert drops[box_key] == 1
         assert box["effect_payload"]["mission_key"] == mission["key"]
+        assert box["effect_payload"]["mission_reward_version"] == 1
+        assert box["effect_payload"]["reward_balance_version"] == 3
+        assert box["effect_payload"]["experience_fruit_source"] == "battle_salvage"
+        assert box_key == "mission_chest_v3_" + mission["key"]
+        assert "experience_fruit" not in _reward_keys(box)
         assert box["name"].endswith("宝箱")
         assert box["effect_type"] == "loot_box" and box["is_usable"]
         assert box["tradeable"] is False and box["storage_space"] == 5
@@ -58,7 +67,7 @@ def test_all_personal_missions_award_one_named_chest_without_scattered_items():
 
 def test_chest_rewards_are_complete_and_devices_have_craftable_blueprints_only():
     recipes = {x["blueprint_key"]: x for x in yaml.safe_load((DATA / "forge_blueprints.yaml").read_text())["recipes"]}
-    for box in BOXES:
+    for box in ALL_BOXES:
         payload = box["effect_payload"]
         assert not payload.get("resources") and "silver_min" not in payload
         assert not payload.get("gear_choices")
@@ -78,7 +87,24 @@ def test_chest_rewards_are_complete_and_devices_have_craftable_blueprints_only()
             assert all(choice["weight"] > 0 for choice in group["choices"])
 
 
-@pytest.mark.parametrize("box", BOXES, ids=lambda box: box["key"])
+def test_historical_boxes_keep_experience_fruit_and_the_same_remaining_reward_pools():
+    for box, historical in zip(BOXES, HISTORICAL_BOXES):
+        payload = box["effect_payload"]
+        old_payload = historical["effect_payload"]
+        assert payload["mission_key"] == old_payload["mission_key"]
+        assert "experience_fruit_source" not in old_payload
+        fruit_rewards = [row for row in old_payload["item_rewards"] if row["item_key"] == "experience_fruit"]
+        assert len(fruit_rewards) == 1
+        assert 1 <= fruit_rewards[0]["min_quantity"] == fruit_rewards[0]["max_quantity"]
+        assert payload["item_rewards"] == [
+            row for row in old_payload["item_rewards"] if row["item_key"] != "experience_fruit"
+        ]
+        for field in ("random_item_groups", "blueprint_material_support", "blueprint_forging_requirements"):
+            assert payload[field] == old_payload[field]
+        assert _reward_keys(historical) - _reward_keys(box) == {"experience_fruit"}
+
+
+@pytest.mark.parametrize("box", ALL_BOXES, ids=lambda box: box["key"])
 @pytest.mark.django_db
 def test_each_real_chest_opens_atomically_and_cannot_be_used_twice(box, django_user_model, monkeypatch):
     manor = ensure_manor(django_user_model.objects.create_user(username=box["key"][:100]))
@@ -102,6 +128,9 @@ def test_each_real_chest_opens_atomically_and_cannot_be_used_twice(box, django_u
             },
         )
     item = InventoryItem.objects.create(manor=manor, template=ItemTemplate.objects.get(key=box["key"]), quantity=1)
+    initial_fruit = sum(
+        InventoryItem.objects.filter(manor=manor, template__key="experience_fruit").values_list("quantity", flat=True)
+    )
     # 所有概率组都命中，覆盖普通物品、技能、图纸和特殊道具的真实发奖分支。
     monkeypatch.setattr(inventory_use.inventory_random, "random", lambda: 0.0)
     monkeypatch.setattr(inventory_use.inventory_random, "randint", lambda minimum, maximum: minimum)
@@ -112,6 +141,20 @@ def test_each_real_chest_opens_atomically_and_cannot_be_used_twice(box, django_u
         assert (
             InventoryItem.objects.get(manor=manor, template__key=reward["item_key"]).quantity >= reward["min_quantity"]
         )
+    expected_fruit = sum(
+        reward["min_quantity"]
+        for reward in box["effect_payload"]["item_rewards"]
+        if reward["item_key"] == "experience_fruit"
+    )
+    assert (
+        sum(
+            InventoryItem.objects.filter(manor=manor, template__key="experience_fruit").values_list(
+                "quantity", flat=True
+            )
+        )
+        - initial_fruit
+        == expected_fruit
+    )
     assert not InventoryItem.objects.filter(manor=manor, quantity__gt=0, template__effect_type="equip_device").exists()
     quantities = dict(InventoryItem.objects.filter(manor=manor).values_list("template__key", "quantity"))
     with pytest.raises(ItemNotFoundError):
@@ -122,6 +165,9 @@ def test_each_real_chest_opens_atomically_and_cannot_be_used_twice(box, django_u
 @pytest.mark.parametrize(
     "box_key,target",
     [
+        ("mission_chest_v3_jiguanshou_chuxian", "blueprint_jixiemao"),
+        ("mission_chest_v3_jiguan_chuniao", "blueprint_jiguanchuniao"),
+        ("mission_chest_v3_huashan_lunjian_advanced", "blueprint_taotieding"),
         ("mission_chest_jiguanshou_chuxian", "blueprint_jixiemao"),
         ("mission_chest_jiguan_chuniao", "blueprint_jiguanchuniao"),
         ("mission_chest_huashan_lunjian_advanced", "blueprint_taotieding"),
@@ -180,7 +226,7 @@ def test_new_chest_settlement_does_not_scatter_salvage(is_defense, monkeypatch):
     drops = {"silver": 7000, "mission_chest_jingyanggang": 1}
     report = SimpleNamespace(drops={} if is_defense else drops)
     run = SimpleNamespace(mission=SimpleNamespace(is_defense=is_defense, drop_table=drops))
-    salvage = Mock(side_effect=AssertionError("新任务不应额外散发回收道具"))
+    salvage = Mock(side_effect=AssertionError("历史v2任务不应额外散发回收道具"))
     monkeypatch.setattr("gameplay.services.battle_salvage.calculate_battle_salvage", salvage)
     assert (
         build_mission_drops_with_salvage(
@@ -197,7 +243,7 @@ def test_new_chest_settlement_does_not_scatter_salvage(is_defense, monkeypatch):
 
 @pytest.mark.parametrize("old_item", ["equip_hupixue", "huashan_wulin_chest"])
 def test_pending_legacy_report_keeps_original_rewards_and_salvage(monkeypatch, old_item):
-    run = SimpleNamespace(mission=SimpleNamespace(is_defense=False, drop_table={"mission_chest_jingyanggang": 1}))
+    run = SimpleNamespace(mission=SimpleNamespace(is_defense=False, drop_table={"mission_chest_v3_jingyanggang": 1}))
     report = SimpleNamespace(drops={"silver": 7000, old_item: 1})
     monkeypatch.setattr(
         "gameplay.services.battle_salvage.calculate_battle_salvage", lambda *a, **kw: (7, {"equip_tiejian": 2})
@@ -221,7 +267,26 @@ def test_lost_or_retreating_mission_does_not_award_a_chest(is_retreating, winner
     grant.assert_not_called()
 
 
-def test_chest_preview_shows_actual_weighted_probability_and_quantity():
+def test_all_current_and_legacy_task_chests_display_task_chest_category():
+    legacy_keys = {
+        "mid_autumn_mooncake",
+        "passive_skill_book_box",
+        "civil_skill_book_box",
+        "saiwai_equipment_box",
+        "fengshen_equipment_box",
+        "huashan_wulin_chest",
+    }
+    boxes = [entry for key, entry in ITEMS.items() if key.startswith("mission_chest_") or key in legacy_keys]
+    assert len(boxes) == 70
+    for entry in boxes:
+        template = ItemTemplate(key=entry["key"], effect_type=entry["effect_type"])
+        assert InventoryItem(template=template).category_display == "任务宝箱"
+    for key in ["work_chest_small", "work_chest_medium", "work_chest_large"]:
+        template = ItemTemplate(key=key, effect_type=ITEMS[key]["effect_type"])
+        assert InventoryItem(template=template).category_display == "道具"
+
+
+def test_chest_preview_sorts_across_groups_by_actual_probability_without_showing_it():
     box = SimpleNamespace(
         name="奖励箱",
         effect_payload={
@@ -232,15 +297,37 @@ def test_chest_preview_shows_actual_weighted_probability_and_quantity():
                     "min_quantity": 1,
                     "max_quantity": 1,
                     "choices": [{"item_key": "mount", "weight": 2}, {"item_key": "token", "weight": 5}],
-                }
+                },
+                {
+                    "chance": 0.60,
+                    "min_quantity": 2,
+                    "max_quantity": 4,
+                    "choices": [{"item_key": "book", "weight": 1}, {"item_key": "peach", "weight": 9}],
+                },
+                {
+                    "chance": 0.20,
+                    "min_quantity": 1,
+                    "max_quantity": 1,
+                    "choices": [{"item_key": "iron", "weight": 1}, {"item_key": "copper", "weight": 1}],
+                },
             ],
         },
     )
     preview = build_chest_reward_preview(
-        box, {"token": SimpleNamespace(name="战报"), "mount": SimpleNamespace(name="的卢")}
+        box,
+        {
+            "token": SimpleNamespace(name="战报"),
+            "mount": SimpleNamespace(name="的卢"),
+            "book": SimpleNamespace(name="技能书"),
+            "peach": SimpleNamespace(name="经验桃"),
+            "iron": SimpleNamespace(name="铁"),
+            "copper": SimpleNamespace(name="铜"),
+        },
     )
     assert preview["guaranteed"] == ["战报 ×1"]
-    assert preview["groups"] == [{"chance": "35%", "choices": ["的卢 ×1（10%）", "战报 ×1（25%）"]}]
+    assert preview["possible"] == ["经验桃 ×2—4", "战报 ×1", "的卢 ×1", "铁 ×1", "铜 ×1", "技能书 ×2—4"]
+    assert "groups" not in preview
+    assert "%" not in str(preview)
 
 
 @pytest.mark.django_db
@@ -250,7 +337,7 @@ def test_task_page_shows_named_box_and_opening_instructions(client, django_user_
     user = django_user_model.objects.create_user(username="mission_chest_preview_page")
     ensure_manor(user)
     client.force_login(user)
-    box = ITEMS["mission_chest_jingyanggang"]
+    box = ITEMS["mission_chest_v3_jingyanggang"]
     for key in _reward_keys(box) | {box["key"]}:
         entry = ITEMS[key]
         ItemTemplate.objects.update_or_create(
@@ -268,9 +355,16 @@ def test_task_page_shows_named_box_and_opening_instructions(client, django_user_
     response = client.get(reverse("gameplay:tasks"), {"mission": mission.key})
     assert response.status_code == 200
     body = response.content.decode()
-    assert "景阳冈宝箱：查看内容与概率" in body
-    assert "虎皮靴 ×1（25%）" in body and "虎纹盔 ×1（25%）" in body
-    assert "仓库点击使用后开启" in body
+    assert "景阳冈宝箱：奖励一览" in body
+    assert "虎皮靴 ×1" in body and "虎纹盔 ×1" in body
+    chest_preview_html = body.split("景阳冈宝箱：奖励一览", 1)[1].split("</details>", 1)[0]
+    assert "%" not in chest_preview_html
+    assert "可能获得：" in body
+    assert "仓库点击使用后开启" not in body
+    assert "经验果按本场战斗回收量" not in body
+    assert "以下各组独立抽取" not in body
+    assert "图纸配套材料" not in body
+    assert "奖励组（命中" not in body
     assert not response.context["selected_probability_drop_items"]
 
 
@@ -291,7 +385,10 @@ def test_opening_chest_keeps_existing_warehouse_overflow_policy(django_user_mode
 
 
 @pytest.mark.django_db
-def test_grant_failure_rolls_back_partial_rewards_and_keeps_whole_chest(django_user_model, monkeypatch):
+@pytest.mark.parametrize("source_is_bound", [False, True])
+def test_grant_failure_rolls_back_partial_rewards_and_keeps_whole_chest(
+    django_user_model, monkeypatch, source_is_bound
+):
     manor = ensure_manor(django_user_model.objects.create_user(username="mission_chest_atomic_failure"))
     first = ItemTemplate.objects.create(key="atomic_chest_first", name="第一项奖励")
     second = ItemTemplate.objects.create(key="atomic_chest_second", name="第二项奖励")
@@ -305,17 +402,24 @@ def test_grant_failure_rolls_back_partial_rewards_and_keeps_whole_chest(django_u
             "item_rewards": [{"item_key": first.key, "min_quantity": 2}, {"item_key": second.key, "min_quantity": 1}],
         },
     )
-    item = InventoryItem.objects.create(manor=manor, template=box, quantity=1)
+    item = InventoryItem.objects.create(manor=manor, template=box, quantity=1, bound_quantity=int(source_is_bound))
     original = inventory_use.add_item_to_inventory
+    grant_calls = []
 
-    def fail_second(owner, key, quantity):
+    def fail_second(owner, key, quantity, *, is_bound=None):
+        grant_calls.append((key, quantity, is_bound))
         if key == second.key:
             raise RuntimeError("模拟发奖中途失败")
-        return original(owner, key, quantity)
+        granted = original(owner, key, quantity, is_bound=is_bound)
+        assert granted.quantity == 2
+        assert granted.bound_quantity == (2 if source_is_bound else 0)
+        return granted
 
     monkeypatch.setattr(inventory_use, "add_item_to_inventory", fail_second)
     with pytest.raises(RuntimeError, match="模拟发奖中途失败"):
         inventory_use.use_inventory_item(item, manor)
     item.refresh_from_db()
     assert item.quantity == 1
+    assert item.bound_quantity == int(source_is_bound)
+    assert grant_calls == [(first.key, 2, source_is_bound), (second.key, 1, source_is_bound)]
     assert not InventoryItem.objects.filter(manor=manor, template__in=[first, second]).exists()

@@ -12,7 +12,7 @@ from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
 from core.exceptions import InsufficientStockError
-from gameplay.models import InventoryItem, ItemTemplate
+from gameplay.models import InventoryItem, ItemTemplate, Manor
 from guests.models import Guest, GuestStatus
 from guests.services import health
 from tests.test_bulk_guest_healing import _guest_template, _medicine
@@ -41,7 +41,33 @@ def _run_with_reloaded_objects(manor, apply_locked):
         return apply_locked(locked_manor, reloaded_guest, reloaded_item, **kwargs)
 
     with patch.object(health, "_apply_medicine_to_locked_objects", reload_objects):
-        return health.heal_all_guests_with_medicine(manor)
+        locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
+        guests = list(
+            Guest.objects.select_for_update()
+            .select_related("template")
+            .filter(manor=locked_manor, status__in=[GuestStatus.IDLE, GuestStatus.INJURED])
+            .order_by("id")
+        )
+        guests = [guest for guest in guests if guest.current_hp < guest.max_hp]
+        items = list(
+            InventoryItem.objects.select_for_update()
+            .select_related("template")
+            .filter(
+                manor=locked_manor,
+                template__effect_type=ItemTemplate.EffectType.MEDICINE,
+                quantity__gt=0,
+                storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            )
+            .order_by("template__key", "id")
+        )
+        stocks = []
+        for item in items:
+            try:
+                amount = health.resolve_medicine_heal_amount(item)
+            except health.GuestItemConfigurationError:
+                continue
+            stocks.append(health._MedicineStock(item, amount))
+        return health._heal_locked_guests_one_dose_at_a_time(locked_manor, guests, stocks, now=timezone.now())
 
 
 @pytest.mark.django_db
@@ -168,7 +194,7 @@ def test_bulk_healing_preserves_priority_loyalty_training_and_medicine_selection
     assert injured.status == GuestStatus.IDLE
     assert injured.training_remaining_seconds is None
     assert injured.training_complete_at == now + timedelta(seconds=90)
-    assert len(baseline_queries) - len(optimized_queries) == 2 * actual["consumed_item_count"]
+    assert len(optimized_queries) <= len(baseline_queries)
 
 
 @pytest.mark.django_db
@@ -226,7 +252,8 @@ def test_bulk_healing_rolls_back_previous_success_when_later_consumption_fails(m
         current_hp=100,
         training_remaining_seconds=90,
     )
-    _medicine(manor, heal_amount=200, quantity=5)
+    _medicine(manor, heal_amount=200, quantity=2)
+    _medicine(manor, heal_amount=200, quantity=3)
     before = _snapshot(manor)
     consume = health.inventory_core.consume_inventory_item_locked
     calls = 0

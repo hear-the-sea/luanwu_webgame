@@ -22,6 +22,7 @@ from .production import (
 from .registry import get_supported_yaml_configs, validate_all_configs
 from .rules import (
     validate_arena_rewards,
+    validate_arena_ring_rules,
     validate_arena_rules,
     validate_auction_items,
     validate_guild_rules,
@@ -57,6 +58,7 @@ __all__ = [
     "validate_jail_persuasion_profiles",
     # rules
     "validate_arena_rules",
+    "validate_arena_ring_rules",
     "validate_arena_rewards",
     "validate_trade_market_rules",
     "validate_warehouse_production",

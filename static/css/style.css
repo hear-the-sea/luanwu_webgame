@@ -1410,9 +1410,9 @@ table.table tbody tr+tr {
 
 .event-passive-name {
   min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow: visible;
+  overflow-wrap: anywhere;
 }
 
 .event-passive-tag {
@@ -1476,9 +1476,9 @@ table.table tbody tr+tr {
   flex: 0 1 auto;
   min-width: 2.5rem;
   max-width: 9rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .event-unit-summary > .event-unit-name {
@@ -1617,9 +1617,10 @@ table.table tbody tr+tr {
 
 .event-target-detail {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
 }
 
 @media (max-width: 640px) {
@@ -4383,3 +4384,104 @@ a.rarity-text:hover {
     align-self: center;
   }
 }
+
+/* 战报恢复与反伤：技能、数值分行，避免窄屏混排。 */
+.event-heal-effect,
+.event-retaliation-effect,
+.event-action-recovery {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  min-width: 0;
+  max-width: 100%;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.battle-report-page .event-heal-effect .tech-tag,
+.battle-report-page .event-action-recovery > .tech-tag {
+  margin: 0;
+  padding: 0.05rem 0.35rem;
+  color: #21613a;
+  background: rgba(39, 174, 96, 0.1);
+  border: 1px solid rgba(39, 174, 96, 0.2);
+}
+
+.event-effect-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.1rem 0.4rem;
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.event-effect-values > span {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.event-action-recovery,
+.reflect-text,
+.counter-text {
+  margin: 0.25rem 0;
+  padding: 0.3rem 0.5rem;
+  border-left: 2px solid currentColor;
+  border-radius: 0 4px 4px 0;
+}
+
+.event-action-recovery {
+  color: #21613a;
+  background: rgba(39, 174, 96, 0.05);
+}
+
+.reflect-text {
+  color: #744493;
+  background: rgba(116, 68, 147, 0.05);
+}
+
+.event-effect-source { font-weight: 600; }
+.event-effect-defeat { flex-basis: 100%; }
+
+@media (max-width: 640px) {
+  .event-retaliation-effect .event-effect-separator { display: none; }
+
+  .event-action-recovery > .event-passive-extra,
+  .event-heal-effect > .event-effect-values,
+  .event-retaliation-effect > .event-effect-values {
+    flex-basis: 100%;
+  }
+
+  .event-actor-settlement-summary.reflect-text {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.25rem 0.5rem;
+  }
+
+  .event-actor-settlement-summary.reflect-text > .event-unit-name {
+    max-width: 100%;
+    width: auto;
+  }
+
+  .event-actor-settlement-summary.reflect-text > .event-target-detail {
+    grid-column: 1 / -1;
+  }
+
+  .event-heal-summary { display: flex; flex-wrap: wrap; gap: 0.25rem 0.5rem; }
+  .event-heal-summary > .event-heal-effect { flex-basis: 100%; }
+}
+
+.battle-report-page .event-action-recovery .heal-text,
+.battle-report-page .event-heal-effect .heal-text {
+  color: #21613a;
+  font-size: 0.85rem;
+}
+
+
+/* 反伤提示使用连续句子，名字、技能与伤害同行，窄屏自然折行。 */
+.event-retaliation-effect,
+.event-retaliation-effect > .event-effect-values {
+  display: inline;
+}
+
+.event-retaliation-effect .event-effect-separator { display: inline; }

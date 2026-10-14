@@ -25,7 +25,7 @@ from core.utils.validation import safe_redirect_url
 from core.utils.view_error_mapping import flash_view_error, json_error_response_for_exception
 from gameplay.constants import UIConstants
 from gameplay.models import ResourceType
-from gameplay.models.items import normalize_message_attachment_buckets
+from gameplay.models.items import normalize_bound_message_items, normalize_message_attachment_buckets
 from gameplay.services.manor.core import get_manor
 from gameplay.services.resources import project_resource_production_for_read
 from gameplay.services.scout_reports import split_scout_report_details
@@ -69,6 +69,7 @@ def _build_attachment_details(message: Any) -> dict[str, list[dict[str, Any]]]:
             attachments = claimed
 
     resources, items = normalize_message_attachment_buckets(attachments)
+    bound_items = normalize_bound_message_items(attachments)
     resource_labels = dict(ResourceType.choices)
     for key, amount in resources.items():
         attachment_details["resources"].append(
@@ -79,24 +80,26 @@ def _build_attachment_details(message: Any) -> dict[str, list[dict[str, Any]]]:
             }
         )
 
-    item_keys = list(items.keys())
+    item_keys = list(items.keys() | bound_items.keys())
     if item_keys:
         from gameplay.utils.template_loader import get_item_templates_by_keys
 
         item_templates_map = get_item_templates_by_keys(item_keys)
     else:
         item_templates_map = {}
-    for item_key, quantity in items.items():
-        item_template = item_templates_map.get(item_key)
-        attachment_details["items"].append(
-            {
-                "key": item_key,
-                "name": item_template.name if item_template else "未知物品",
-                "icon": item_template.icon if item_template else None,
-                "image": item_template.image if item_template else None,
-                "quantity": quantity,
-            }
-        )
+    for bucket, is_bound in ((items, False), (bound_items, True)):
+        for item_key, quantity in bucket.items():
+            item_template = item_templates_map.get(item_key)
+            attachment_details["items"].append(
+                {
+                    "key": item_key,
+                    "name": item_template.name if item_template else "未知物品",
+                    "icon": item_template.icon if item_template else None,
+                    "image": item_template.image if item_template else None,
+                    "quantity": quantity,
+                    "is_bound": is_bound,
+                }
+            )
 
     return attachment_details
 
@@ -215,7 +218,13 @@ def _format_claimed_summary(claimed_summary: dict[str, int]) -> tuple[str, list[
     claimed_payload: list[dict[str, Any]] = []
 
     # 收集所有物品 key，批量查询
-    item_keys_to_lookup = [key[5:] for key in claimed_summary.keys() if key.startswith("item_")]
+    item_keys_to_lookup = list(
+        {
+            key[11:] if key.startswith("bound_item_") else key[5:]
+            for key in claimed_summary
+            if key.startswith(("item_", "bound_item_"))
+        }
+    )
     if item_keys_to_lookup:
         from gameplay.utils.template_loader import get_item_templates_by_keys
 
@@ -224,12 +233,17 @@ def _format_claimed_summary(claimed_summary: dict[str, int]) -> tuple[str, list[
         item_templates_map = {}
 
     for key, value in claimed_summary.items():
-        if key.startswith("item_"):
-            item_key = key[5:]  # 移除 "item_" 前缀
+        if key.startswith(("item_", "bound_item_")):
+            is_bound = key.startswith("bound_item_")
+            item_key = key[11:] if is_bound else key[5:]
             item_template = item_templates_map.get(item_key)
             item_name = item_template.name if item_template else "未知物品"
-            parts.append(f"{item_name}×{value}")
-            claimed_payload.append({"kind": "item", "key": item_key, "name": item_name, "amount": value})
+            binding_label = "（绑定）" if is_bound else ""
+            parts.append(f"{item_name}{binding_label}×{value}")
+            item_payload = {"kind": "item", "key": item_key, "name": item_name, "amount": value}
+            if is_bound:
+                item_payload["is_bound"] = True
+            claimed_payload.append(item_payload)
         else:
             label = resource_labels.get(key, "未知资源")
             parts.append(f"{label}×{value}")

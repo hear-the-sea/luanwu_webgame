@@ -1,16 +1,78 @@
 from datetime import timedelta
 
 import pytest
+from django.contrib import admin
 from django.contrib.admin.sites import AdminSite
 from django.test import RequestFactory
 from django.utils import timezone
 
 from accounts.models import User
-from gameplay.models import ItemTemplate
+from battle.models import TroopTemplate
+from gameplay.models import (
+    ArenaRing,
+    ArenaRingInspection,
+    ArenaRingTenure,
+    ItemTemplate,
+    Manor,
+    PlayerTechnology,
+    PlayerTroop,
+    TroopBankStorage,
+)
 from guilds.admin import GuildAdmin
 from guilds.models import Guild, GuildMember
 from trade.admin import AuctionRoundAdmin
 from trade.models import AuctionRound, AuctionSlot
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("row_count", [1, 5])
+@pytest.mark.parametrize("model", [PlayerTechnology, PlayerTroop, TroopBankStorage])
+def test_manor_inline_related_labels_use_one_query(model, row_count, django_assert_num_queries):
+    user = User.objects.create_user(username="inline_query_player")
+    for index in range(row_count):
+        if model is PlayerTechnology:
+            model.objects.create(manor=user.manor, tech_key=f"inline_tech_{index}")
+        else:
+            template = TroopTemplate.objects.create(key=f"inline_troop_{index}", name=f"测试护院{index}")
+            model.objects.create(manor=user.manor, troop_template=template, count=100)
+    request = RequestFactory().get("/admin/")
+    request.user = User(is_superuser=True, is_staff=True, is_active=True)
+    inline = next(
+        inline for inline in admin.site._registry[Manor].get_inline_instances(request) if inline.model is model
+    )
+    with django_assert_num_queries(1):
+        rows = list(inline.get_queryset(request).filter(manor=user.manor))
+        for row in rows:
+            str(row)
+            str(row.manor)
+            if model is not PlayerTechnology:
+                str(row.troop_template)
+    assert len(rows) == row_count
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("row_count", [1, 5])
+def test_ring_inspection_inline_buyer_labels_use_one_query(row_count, django_assert_num_queries):
+    user = User.objects.create_user(username="inspection_query_holder")
+    now = timezone.now()
+    ring = ArenaRing.objects.create(key="query_ring", name="查询擂台")
+    tenure = ArenaRingTenure.objects.create(
+        ring=ring,
+        manor=user.manor,
+        started_at=now,
+        ends_at=now + timedelta(hours=1),
+        settled_at=now,
+        lineup_updated_at=now,
+    )
+    for index in range(row_count):
+        buyer = User.objects.create_user(username=f"inspection_buyer_{index}")
+        ArenaRingInspection.objects.create(buyer=buyer.manor, tenure=tenure, version=1, created_at=now)
+    request = RequestFactory().get("/admin/")
+    request.user = User(is_superuser=True, is_staff=True, is_active=True)
+    inline = admin.site._registry[ArenaRingTenure].get_inline_instances(request)[0]
+    with django_assert_num_queries(1):
+        labels = [str(row.buyer) for row in inline.get_queryset(request).filter(tenure=tenure)]
+    assert len(labels) == row_count
 
 
 @pytest.mark.django_db

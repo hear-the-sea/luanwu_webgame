@@ -26,11 +26,17 @@ def determine_turn_order(
     ]
     if not participants:
         return []
+    # 按出战名单计算门客平均敏捷，不因阵亡或跳过行动而剔除门客。
+    average_guest_agility = {}
+    for side, team in (("attacker", attacker_team), ("defender", defender_team)):
+        guests = [unit for unit in team if unit.kind == "guest"]
+        average_guest_agility[side] = sum(unit.agility for unit in guests) / len(guests) if guests else 0
     return sorted(
         participants,
         key=lambda combatant: (
             1 if getattr(combatant, "battle_modifiers", {}).get("fixed_first") else 0,
             combatant.agility,
+            average_guest_agility[combatant.side],
             1 if combatant.side == "defender" else 0,
         ),
         reverse=True,

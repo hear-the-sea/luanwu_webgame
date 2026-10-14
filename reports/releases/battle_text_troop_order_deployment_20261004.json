@@ -1,0 +1,64 @@
+{
+  "release": "battle-text-troop-order-20261003T230857Z",
+  "image": "webgame:battle-text-troop-order-20261003T230857Z",
+  "base_image": "webgame:battle-defeat-names-20261003T222953Z",
+  "base_image_id": "sha256:c4d3423b089146ccbebca1061e8e76d91c5d676974a9c6faf31ea699feda9038",
+  "files": {
+    "core/game_data/technology.py": "d2f991a856d45cd7c88f0b3154f4265c5335f19e298c098c41ccadf53898aa3c",
+    "battle/view_helpers.py": "37ad8bc5c62829c56ff1a616efbb8f214da51df85d52552d2dfb8e77317dfc88",
+    "gameplay/selectors/arena/rings.py": "d5616ee168381ad82ac65355a1f07ecc3244f281ddcb30a71a1817db0fc0c04f",
+    "gameplay/services/recruitment/queries.py": "4005f513a05f5f770a85b2a740f9c6ad561e98a5adf77e67c081fd6e26e90c9d",
+    "gameplay/services/manor/troop_bank.py": "e278163e01c18727f93f48b83f142cddc332d00a08348240aee568e57fb05341",
+    "gameplay/selectors/home.py": "a0c08b4f1f8cb29587865d07ae7bd41084b3637750ffd542ba9a2afcfa343942",
+    "gameplay/selectors/troop_recruitment.py": "f05a521b2501b8521ac03d7749dcea14b859aab34ece7b715365350213a3533f",
+    "battle/templates/battle/partials/attack_damage_summary.html": "a226e642cb14236c944fa66a5c89c17d0bc36b75a7c5e6ec703672519024b604",
+    "battle/templates/battle/partials/attack_action_details.html": "eeb380fddd6545117193c7a81b592df82554ba44beba587fbcffa8b9a724c4f5",
+    "static/css/style.css": "0bd212c1f4b2ed600d968c656fb04ecd725ae862824f6af60dd2df15c216ef2e"
+  },
+  "base_files": {
+    "core/game_data/technology.py": "f2d59ac962c55a859f021fdabb33e31616eff7bbb42dcad0343f1da2aa8a6760",
+    "battle/view_helpers.py": "432bffa8149346d2dbfa85ca12643c1b9000256941ae40e7706ddc2c845b4912",
+    "gameplay/selectors/arena/rings.py": "283fccec6915f3d18c37438c1c725af32895aa7d74da1e328d9dce9576a6d0ec",
+    "gameplay/services/recruitment/queries.py": "3e4b3c07dafa487d898ded6f8ea1e762409e31aff52f91477f0a45ddcd7ebd1e",
+    "gameplay/services/manor/troop_bank.py": "4397ce3ee2839e63d2ff5cac45824974a20f11fff31eb5fba32abce3bc27382b",
+    "gameplay/selectors/home.py": "e9857dfded26bcae7f21ae452308d46c08b09f2dbbb01896849ad5eaca3dcb75",
+    "gameplay/selectors/troop_recruitment.py": "f37caf1e0a4b8ed0c677b65acfd1bb9b035410f4065604b1a7a4531c0bcf9456",
+    "battle/templates/battle/partials/attack_damage_summary.html": "18eff867149f2e7d2700070ac28e8cb2d2e777063f4cf4c5d8b32739d02907c4",
+    "battle/templates/battle/partials/attack_action_details.html": "aeb15b37e8ca7cb0b0a7ea647b6bef028f58d00ef1d0af4c6cd3b1c362b922c0",
+    "static/css/style.css": "81662db84a0f575daffb07af1b80a7f24fcdeea877e7c2606ddccc53c2122247"
+  },
+  "database_changes": false,
+  "services": [
+    "web"
+  ],
+  "status": "deployed_verified",
+  "image_id": "sha256:ebb0f2baadf8274ee762a8c4bb63eb2ca9c7b6afba8b5b93d48e0295e59b168a",
+  "health": "healthy",
+  "backup_dir": "/root/code/releases/battle-text-troop-order-20261003T230857Z/backup",
+  "workers_restarted": false,
+  "live_verification": {
+    "status": "verified",
+    "troop_classes": [
+      "gong",
+      "quan",
+      "qiang",
+      "jian",
+      "dao",
+      "scout"
+    ],
+    "troop_templates": 21,
+    "viewer_perspectives": 3,
+    "skill_on_dodge_preserved": true,
+    "secondary_status_shown": true,
+    "raw_reports_unchanged": true,
+    "public_health_status": 200,
+    "public_css_verified": true
+  },
+  "tests": {
+    "backend": 271,
+    "browser": 12,
+    "black": "passed",
+    "ruff": "passed",
+    "eslint": "passed"
+  }
+}

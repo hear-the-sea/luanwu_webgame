@@ -1,0 +1,42 @@
+{
+  "status": "deployed_and_verified",
+  "image": "webgame:vacation-dismiss-20261010",
+  "previous_web_image": "webgame:quick-launch-confirm-20261009",
+  "fix": "Vacation guests can be dismissed directly and gear returned transactionally",
+  "sha256": "efc1285ac511d1366bd5011733dffcac6adbf8bf64c543d4a76aa965a289c9b5",
+  "regression_tests_passed": 33,
+  "isolated_runtime_states_checked": 6,
+  "production_players_modified_for_testing": false,
+  "ready": {
+    "status": "ok",
+    "checks": {
+      "db": true,
+      "cache": true,
+      "channel_layer": true,
+      "celery_broker": true,
+      "celery_workers": true,
+      "celery_beat": true,
+      "celery_roundtrip": true
+    }
+  },
+  "public_http": {
+    "/": 200,
+    "/accounts/login/": 200,
+    "/health/live": 200
+  },
+  "other_services_kept_running": true,
+  "config_files": [
+    "/root/code/docker-compose.prod.yml",
+    "/root/code/docker-compose.prod.double-caddy.yml",
+    "/root/code/releases/spear-counter-20261005/compose.new.yml",
+    "/root/code/releases/asgiref-fix-20261005/compose.new.yml",
+    "/root/code/releases/reflect-names-20261005/compose.new.yml",
+    "/root/code/releases/lier-orange-20261006/compose.new.yml",
+    "/root/code/releases/pagination-20261007-b8d4/compose.new.yml",
+    "/root/code/releases/unique-shield-20261008-9e17/compose.new.yml",
+    "/root/code/releases/timer-recovery-20261008/compose.new.yml",
+    "/root/code/releases/all-updates-20261009T124924Z/compose.new.yml",
+    "/root/code/releases/quick-launch-confirm-20261009/compose.new.yml"
+  ],
+  "release": "/root/code/releases/vacation-dismiss-20261010"
+}

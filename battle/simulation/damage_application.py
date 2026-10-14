@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 
 
 _SWORD_REFLECT_PRE_HIT_HP_CAP_RATIO = 1.20
+_SPEAR_COUNTER_MAX_STRENGTH = 1000
 
 
 def _normalize_non_negative_int(value: object) -> int:
@@ -140,7 +141,11 @@ def _apply_counter(
         return _snapshot_zero_damage(actor, troop_unit_hp_fn)
 
     counter_mult = target.tech_effects.get("counter_attack_damage", 0.30)
-    counter_attack_value = effective_attack_value_fn(target, actor)
+    if target.kind == "troop" and target.troop_class == "qiang":
+        counter_strength = min(target.troop_strength, _SPEAR_COUNTER_MAX_STRENGTH)
+        counter_attack_value = effective_attack_value_fn(target, actor, troop_attack_strength=counter_strength)
+    else:
+        counter_attack_value = effective_attack_value_fn(target, actor)
     counter_damage = counter_attack_value * counter_mult
     return _apply_unit_damage(actor, counter_damage, troop_unit_hp_fn)
 
@@ -185,4 +190,15 @@ def apply_damage_results(
         target=target_application,
         reflect=reflect_application,
         counter=counter_application,
+        reflect_effect=(
+            (
+                "护身剑罡"
+                if not ranged_attack
+                and target.troop_class == "jian"
+                and target.tech_effects.get("damage_reflect", 0) > 0
+                else str(target.battle_modifiers.get("reflect_name") or "反震")
+            )
+            if reflect_application.raw_damage > 0
+            else ""
+        ),
     )

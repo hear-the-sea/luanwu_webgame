@@ -18,6 +18,7 @@ from core.utils import safe_int, sanitize_error_message
 from core.utils.rate_limit import rate_limit_redirect
 from gameplay.models import InventoryItem, Manor, PlayerTroop
 from gameplay.services.inventory.core import get_warehouse_grain_quantity
+from trade.services.auction.gold_bars import get_available_gold_bars
 
 from ..decorators import require_guild_member
 from ..models import GuildTroopStorage, GuildWarehouse
@@ -42,22 +43,33 @@ def _load_red_ruby_count(guild: Any) -> int:
 
 
 def _load_troop_storages(guild: Any) -> list[GuildTroopStorage]:
-    return list(
+    from core.game_data.technology import troop_display_sort_key
+
+    rows = list(
         GuildTroopStorage.objects.filter(guild=guild, count__gt=0)
         .select_related("troop_template")
         .order_by("-count", "troop_template__name")
     )
+    return sorted(rows, key=lambda storage: troop_display_sort_key(storage.troop_template.key))
 
 
 def _load_gold_bar_inventory(manor: Manor) -> int:
-    return int(
+    return get_available_gold_bars(manor)
+
+
+def _load_donatable_grain(manor: Manor) -> int:
+    quantity = get_warehouse_grain_quantity(manor)
+    bound_quantity = (
         InventoryItem.objects.filter(
             manor=manor,
-            template__key="gold_bar",
+            template__key="grain",
             storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-        ).aggregate(total=Sum("quantity"))["total"]
+        )
+        .values_list("bound_quantity", flat=True)
+        .first()
         or 0
     )
+    return max(0, quantity - bound_quantity)
 
 
 def _build_resource_page_context(member: Any, *, manor: Manor, page_mode: str) -> dict[str, Any]:
@@ -66,6 +78,9 @@ def _build_resource_page_context(member: Any, *, manor: Manor, page_mode: str) -
     player_troop_rows = list(
         PlayerTroop.objects.filter(manor=manor, count__gt=0).select_related("troop_template").order_by("-count", "id")
     )
+    from core.game_data.technology import troop_display_sort_key
+
+    player_troop_rows.sort(key=lambda troop: troop_display_sort_key(troop.troop_template.key))
     today = timezone.localdate()
     display_daily_donation_silver = int(member.daily_donation_silver)
     display_daily_donation_grain = int(member.daily_donation_grain)
@@ -89,7 +104,7 @@ def _build_resource_page_context(member: Any, *, manor: Manor, page_mode: str) -
             "label": "粮食",
             "unit": int(guild_constants.CONTRIBUTION_UNITS.get("grain", 1)),
             "rate": guild_constants.CONTRIBUTION_RATES.get("grain", 0),
-            "available": get_warehouse_grain_quantity(manor),
+            "available": _load_donatable_grain(manor),
             "donated_today": display_daily_donation_grain,
             "daily_limit": int(guild_constants.DAILY_DONATION_LIMITS.get("grain", 0)),
             "resource_type": "grain",

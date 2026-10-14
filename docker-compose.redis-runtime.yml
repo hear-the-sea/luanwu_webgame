@@ -1,0 +1,76 @@
+# Opt-in after a frozen-writer migration; load after production/image overrides.
+x-runtime-environment: &runtime-environment
+  REDIS_CACHE_URL: ${REDIS_RUNTIME_CACHE_URL:-redis://redis_runtime:6379/2}
+  REDIS_CHANNEL_URL: ${REDIS_RUNTIME_CHANNEL_URL:-redis://redis_runtime:6379/1}
+
+services:
+  redis_runtime:
+    image: redis:7-alpine
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env.docker}
+      REDIS_RUNTIME_MAXMEMORY: ${REDIS_RUNTIME_MAXMEMORY:-256mb}
+    command:
+      - sh
+      - -c
+      - |
+        exec redis-server \
+          --appendonly no \
+          --save "" \
+          --maxmemory "$$REDIS_RUNTIME_MAXMEMORY" \
+          --maxmemory-policy noeviction \
+          --requirepass "$$REDIS_PASSWORD";
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$REDIS_PASSWORD\" redis-cli ping | grep -q PONG"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    mem_limit: ${REDIS_RUNTIME_MEMORY_LIMIT:-384m}
+    mem_reservation: ${REDIS_RUNTIME_MEMORY_RESERVATION:-128m}
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+    restart: unless-stopped
+
+  web:
+    environment: *runtime-environment
+    mem_limit: ${WEB_MEMORY_LIMIT:-768m}
+    depends_on:
+      redis_runtime:
+        condition: service_healthy
+  worker:
+    environment: *runtime-environment
+    depends_on:
+      redis_runtime:
+        condition: service_healthy
+  worker_battle:
+    environment: *runtime-environment
+    depends_on:
+      redis_runtime:
+        condition: service_healthy
+  worker_timer:
+    environment: *runtime-environment
+    depends_on:
+      redis_runtime:
+        condition: service_healthy
+  worker_timer_scan:
+    environment: *runtime-environment
+    depends_on:
+      redis_runtime:
+        condition: service_healthy
+  worker_timer_safety:
+    environment: *runtime-environment
+    depends_on:
+      redis_runtime:
+        condition: service_healthy
+  worker_timer_maintenance:
+    environment: *runtime-environment
+    depends_on:
+      redis_runtime:
+        condition: service_healthy
+  beat:
+    environment: *runtime-environment
+    depends_on:
+      redis_runtime:
+        condition: service_healthy

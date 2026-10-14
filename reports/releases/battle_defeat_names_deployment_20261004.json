@@ -1,0 +1,36 @@
+{
+  "release": "battle-defeat-names-20261003T222953Z",
+  "image": "webgame:battle-defeat-names-20261003T222953Z",
+  "base_image": "webgame:battle-action-recovery-20261003T222213Z",
+  "base_image_id": "sha256:c921d500e8522c9853e4ac7cf315528b4a7eb72ef79911dd506aa0ab5afdef81",
+  "files": {
+    "battle/templates/battle/partials/target_defeat_summary.html": "426cf40900a9245c1c953f3a8b1bbdcde0f9c457b7e6a4c5434dc938d9bd5785",
+    "battle/templates/battle/partials/retaliation_damage_summary.html": "d04851bc285de6ac2a4241b2b389a34bf3f6e745e4036117cd97f5a31b382ea6"
+  },
+  "base_files": {
+    "battle/templates/battle/partials/target_defeat_summary.html": "78fddb71058c6655adb0e8712e1bd1033eae83ee3e40e2edd58b20d8715b9ebc",
+    "battle/templates/battle/partials/retaliation_damage_summary.html": "06040ef64d67bbf8f7f457da253e240e3c6543e1b3d9e1728ba951aa620f83c1"
+  },
+  "database_changes": false,
+  "services": [
+    "web"
+  ],
+  "status": "deployed_verified",
+  "image_id": "sha256:c4d3423b089146ccbebca1061e8e76d91c5d676974a9c6faf31ea699feda9038",
+  "health": "healthy",
+  "backup_dir": "/root/code/releases/battle-defeat-names-20261003T222953Z/backup",
+  "workers_restarted": false,
+  "live_verification": {
+    "status": "verified",
+    "viewer_perspectives": 3,
+    "scenarios": 18,
+    "troop_name_in_defeat": true,
+    "retaliation_name_verified": true,
+    "public_health_status": 200
+  },
+  "tests": {
+    "backend": 193,
+    "black": "passed",
+    "ruff": "passed"
+  }
+}

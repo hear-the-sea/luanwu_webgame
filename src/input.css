@@ -1497,6 +1497,49 @@
     @apply border-0 rounded-none bg-transparent p-0;
   }
 
+  .tw-task-launch-heading {
+    @apply flex items-center justify-between gap-3 mb-4;
+  }
+
+  .tw-task-launch-heading h4 {
+    @apply m-0 min-w-0;
+  }
+
+  /* 宝箱奖励分区排列，窄屏自动换行，保留概率排序的阅读顺序。 */
+  .tw-chest-preview {
+    @apply mt-3 min-w-0 rounded-md border border-border-light bg-bg-panel;
+  }
+
+  .tw-chest-preview > summary {
+    @apply cursor-pointer px-3 py-2 text-sm font-semibold text-text-primary;
+    min-height: 44px;
+    overflow-wrap: anywhere;
+  }
+
+  .tw-chest-preview > summary:focus-visible {
+    outline: 2px solid var(--border-primary);
+    outline-offset: 2px;
+  }
+
+  .tw-chest-preview-body {
+    @apply grid gap-3 border-t border-border-light p-3;
+  }
+
+  .tw-chest-preview-heading {
+    @apply m-0 mb-2 text-sm font-semibold text-text-secondary;
+  }
+
+  .tw-chest-reward-list {
+    @apply grid gap-1.5 m-0 p-0 list-none;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
+  }
+
+  .tw-chest-reward-list > li {
+    @apply min-w-0 rounded px-2 py-1.5 text-sm leading-relaxed text-text-primary;
+    background-color: var(--bg-hover);
+    overflow-wrap: anywhere;
+  }
+
   .tw-task-loadout-heading {
     @apply flex flex-wrap items-center justify-between gap-2 mb-3 pb-2
            border-b border-border-light;
@@ -2642,6 +2685,34 @@
     background: linear-gradient(180deg, #a63d32 0%, #7f241d 100%);
     border-color: #641c17;
     box-shadow: 0 2px 6px rgba(127, 36, 29, 0.2);
+  }
+
+  /* 集市购买筛选独立布局，避免表单最小宽度撑开页面。 */
+  .tw-market-content,
+  #market-buy-section {
+    @apply min-w-0 max-w-full;
+  }
+
+  .tw-market-buy-filters {
+    @apply grid w-full min-w-0 gap-3;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .tw-market-filter-field {
+    @apply flex min-w-0 flex-col gap-1;
+  }
+
+  .tw-market-buy-filters .tw-filter-select {
+    @apply w-full min-w-0 max-w-full;
+    min-height: 44px;
+  }
+
+  #market-buy-section .tw-shop-table-wrapper {
+    @apply min-w-0 max-w-full;
+  }
+
+  #market-buy-section .tw-pagination {
+    @apply flex-wrap gap-2;
   }
 
   .tw-btn-trade--danger:hover:not(:disabled) {
@@ -3798,6 +3869,70 @@
 
   .tw-modal-footer button {
     width: 100%;
+  }
+
+  /* 集市七列商品表改为手机卡片，标签与真实字段保持一致。 */
+  .tw-market-content > .tw-mode-switch {
+    flex-wrap: wrap;
+  }
+
+  .tw-market-content > .tw-mode-switch .tw-mode-btn {
+    min-width: 0;
+    padding: 0.5rem;
+    overflow-wrap: anywhere;
+  }
+
+  .tw-market-buy-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tw-market-filter-field:first-of-type {
+    grid-column: 1 / -1;
+  }
+
+  #market-buy-section .tw-shop-table-wrapper {
+    min-height: 0;
+  }
+
+  #market-buy-section .tw-shop-table tbody tr {
+    min-width: 0;
+  }
+
+  #market-buy-section .tw-shop-table tbody td {
+    display: grid;
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+    gap: 0.5rem;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  #market-buy-section .tw-shop-table tbody td::before {
+    content: attr(data-label);
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  #market-buy-section .tw-shop-table tbody td:first-child,
+  #market-buy-section .tw-shop-table tbody td:last-child {
+    display: block;
+  }
+
+  #market-buy-section .tw-shop-table tbody td:first-child::before,
+  #market-buy-section .tw-shop-table tbody td:last-child::before {
+    display: none;
+  }
+
+  #market-buy-section .tw-item-cell,
+  #market-buy-section .tw-item-name {
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  #market-buy-section .tw-btn-trade {
+    width: 100%;
+    min-height: 44px;
   }
 
   .tw-bid-kpi-grid {

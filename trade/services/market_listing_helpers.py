@@ -34,12 +34,13 @@ def lock_listing_inventory_item(*, inventory_item_model, locked_manor, item_temp
 
 
 def validate_listing_inventory(*, inventory_item, quantity: int) -> None:
-    if not inventory_item or inventory_item.quantity < quantity:
-        raise TradeValidationError("物品数量不足")
+    available = max(0, inventory_item.quantity - inventory_item.bound_quantity) if inventory_item else 0
+    if available < quantity:
+        raise TradeValidationError("非绑定物品数量不足，绑定物品不可交易")
 
 
 def validate_gold_bar_availability(*, inventory_item, quantity: int, frozen: int) -> None:
-    available = inventory_item.quantity - frozen
+    available = max(0, inventory_item.quantity - inventory_item.bound_quantity - frozen)
     if available < quantity:
         raise TradeValidationError(f"可用金条不足（当前可用 {available} 个，{frozen} 个被拍卖冻结）")
 
@@ -47,7 +48,7 @@ def validate_gold_bar_availability(*, inventory_item, quantity: int, frozen: int
 def decrement_listing_inventory(*, inventory_item_model, inventory_item, quantity: int) -> None:
     del inventory_item_model
     try:
-        consume_inventory_item_locked(inventory_item, quantity)
+        consume_inventory_item_locked(inventory_item, quantity, allow_bound=False)
     except InsufficientStockError as exc:
         raise TradeValidationError("物品数量不足或已被其他操作占用") from exc
 

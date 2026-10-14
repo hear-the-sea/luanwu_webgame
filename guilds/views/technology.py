@@ -68,24 +68,18 @@ def _build_tech_display_meta(tech: Any) -> dict[str, str]:
             "upgrade_cost": _format_upgrade_cost(tech),
         }
     if tech.tech_key == "guild_lineup_capacity":
-        next_capacity = min(
-            technology_service.MAX_GUILD_LINEUP_CAPACITY,
-            int(guild_constants.GUILD_BATTLE_LINEUP_LIMIT) + min(max_level, tech.level + 1),
-        )
+        next_capacity = technology_service.calculate_guild_lineup_capacity(min(max_level, tech.level + 1))
         return {
             "description": description,
-            "current_effect": f"{technology_service.get_guild_lineup_capacity(tech.guild)} 名",
+            "current_effect": f"{technology_service.calculate_guild_lineup_capacity(tech.level)} 名",
             "next_effect": f"{next_capacity} 名",
             "upgrade_cost": _format_upgrade_cost(tech),
         }
     if tech.tech_key == "guild_dispatch_capacity":
-        next_capacity = min(
-            technology_service.MAX_GUILD_DISPATCH_CAPACITY,
-            int(guild_constants.GUILD_DISPATCH_GUEST_BASE_LIMIT) + min(max_level, tech.level + 1),
-        )
+        next_capacity = technology_service.calculate_guild_dispatch_capacity(min(max_level, tech.level + 1))
         return {
             "description": description,
-            "current_effect": f"{technology_service.get_guild_dispatch_capacity(tech.guild)} 名",
+            "current_effect": f"{technology_service.calculate_guild_dispatch_capacity(tech.level)} 名",
             "next_effect": f"{next_capacity} 名",
             "upgrade_cost": _format_upgrade_cost(tech),
         }
@@ -136,7 +130,7 @@ def technology_list(request: Any) -> HttpResponse:
         ],
         guild_material_balances=get_guild_material_balances(member.guild),
         tech_names=guild_constants.TECH_NAMES,
-        tech_display_meta={tech.tech_key: _build_tech_display_meta(tech) for tech in technologies},
+        tech_display_meta={tech.tech_key: _build_tech_display_meta(tech) for tech in filtered_technologies},
     )
 
     return render(request, "guilds/technology.html", context)

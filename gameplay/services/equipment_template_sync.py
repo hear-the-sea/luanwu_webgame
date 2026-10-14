@@ -81,7 +81,8 @@ def _merge_inventory_rows(old_item: ItemTemplate, target_item: ItemTemplate) -> 
             old_row.save(update_fields=["template", "updated_at"])
         else:
             target_row.quantity += old_row.quantity
-            target_row.save(update_fields=["quantity", "updated_at"])
+            target_row.bound_quantity += old_row.bound_quantity
+            target_row.save(update_fields=["quantity", "bound_quantity", "updated_at"])
             old_row.delete()
         moved += 1
     return moved

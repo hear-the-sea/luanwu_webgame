@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from typing import Any
+from urllib.parse import urlencode
 
 from django.contrib import messages
 from django.db import DatabaseError
@@ -60,8 +61,12 @@ def _normalize_forge_mode(raw_mode: str | None, *, default: str = "synthesize") 
     return mode
 
 
-def _forge_redirect_url(category: str, mode: str) -> str:
-    return f"{reverse('gameplay:forge')}?mode={mode}&category={category}"
+def _forge_redirect_url(category: str, mode: str, request) -> str:
+    params: dict[str, str | int] = {"mode": mode, "category": category}
+    for key in ("page", "blueprint_page"):
+        if key in request.POST:
+            params[key] = safe_positive_int(request.POST.get(key), default=1)
+    return f"{reverse('gameplay:forge')}?{urlencode(params)}"
 
 
 def _build_decompose_reward_text(raw_result: object) -> str:
@@ -123,7 +128,17 @@ def _build_blueprint_synthesize_success_message(raw_result: object) -> str:
         contract_name="forge blueprint result quantity",
     )
     quantity_text = f"×{quantity}" if quantity > 1 else ""
-    return f"{result_name}{quantity_text} 合成完成"
+    binding_text = ""
+    if "bound_quantity" in raw_result:
+        bound_quantity = raw_result["bound_quantity"]
+        if (
+            isinstance(bound_quantity, bool)
+            or not isinstance(bound_quantity, int)
+            or not 0 <= bound_quantity <= quantity
+        ):
+            raise AssertionError(f"invalid forge blueprint bound quantity: {bound_quantity!r}")
+        binding_text = f"（绑定×{bound_quantity}，非绑定×{quantity - bound_quantity}）"
+    return f"{result_name}{quantity_text} 合成完成{binding_text}"
 
 
 def run_forge_post_action(
@@ -142,7 +157,7 @@ def run_forge_post_action(
 ) -> Any:
     quantity = _parse_positive_quantity(raw_quantity)
     mode = _normalize_forge_mode(raw_mode, default=default_mode)
-    redirect_url = _forge_redirect_url(category, mode)
+    redirect_url = _forge_redirect_url(category, mode, request)
 
     if not item_key:
         messages.error(request, missing_key_message)

@@ -11,7 +11,7 @@ from typing import Dict
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import QuerySet
+from django.db.models import F, QuerySet
 from django.utils import timezone
 
 from core.config import TRADE
@@ -167,7 +167,7 @@ def send_market_notification(user_id: int, payload: dict, *, log_context: str) -
 
 
 def grant_market_item_locked(locked_manor: Manor, *, item_key: str, quantity: int) -> None:
-    add_item_to_inventory_locked(locked_manor, item_key, quantity)
+    add_item_to_inventory_locked(locked_manor, item_key, quantity, is_bound=False)
 
 
 def load_market_item_template(item_key: str):
@@ -191,12 +191,16 @@ def decrement_market_listing_inventory(*, inventory_item, quantity: int) -> None
 
 
 def get_tradeable_inventory_queryset(manor: Manor):
-    return InventoryItem.objects.filter(
-        manor=manor,
-        template__tradeable=True,
-        quantity__gt=0,
-        storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-    ).select_related("template")
+    return (
+        InventoryItem.objects.filter(
+            manor=manor,
+            template__tradeable=True,
+            quantity__gt=F("bound_quantity"),
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        )
+        .select_related("template")
+        .order_by("id")
+    )
 
 
 def get_listing_fee(duration: int) -> int:

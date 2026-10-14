@@ -104,6 +104,8 @@ def build_blueprint_synthesis_option(
     for cost_key, cost_amount_raw in costs.items():
         cost_key_str = str(cost_key)
         cost_amount = int(cost_amount_raw or 0)
+        if cost_key_str == blueprint_key:
+            cost_amount += 1
         current_amount = quantities.get(cost_key_str, 0)
         cost_template = template_map.get(cost_key_str)
         costs_info.append(

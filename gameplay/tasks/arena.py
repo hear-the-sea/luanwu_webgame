@@ -5,6 +5,7 @@ from datetime import datetime
 from time import monotonic
 
 from celery import shared_task
+from django.conf import settings
 from django.utils import timezone
 
 import gameplay.services.arena.coop_core as arena_coop_core
@@ -25,6 +26,13 @@ from gameplay.services.arena.virtual_reserve_reconcile import reconcile_coop_dem
 from gameplay.services.arena.virtual_reserve_scan import scan_virtual_reserve_demands
 
 logger = logging.getLogger(__name__)
+
+
+@shared_task(name="gameplay.scan_arena_rings")
+def scan_arena_rings() -> dict[str, int]:
+    from gameplay.services.arena.ring import refresh_due_rings
+
+    return {"expired_tenures": refresh_due_rings()}
 
 
 @shared_task(name="gameplay.scan_arena_tournaments")
@@ -227,19 +235,27 @@ def collect_arena_fill_service_outcomes(limit: int = 100) -> dict[str, int]:
 def grow_arena_virtual_reserves(limit: int = 100) -> dict[str, int]:
     started_at = monotonic()
     grown = 0
+    budget_seconds = float(getattr(settings, "ARENA_RESERVE_GROWTH_TASK_BUDGET_SECONDS", 20))
 
     try:
-        grown = grow_due_virtual_reserves(limit=limit)
+        grown = grow_due_virtual_reserves(
+            limit=limit,
+            max_duration_seconds=budget_seconds,
+        )
     except DATABASE_INFRASTRUCTURE_EXCEPTIONS:
         logger.exception("arena virtual reserve growth stage failed")
         raise RuntimeError("arena virtual reserve growth failed: grow_due_virtual_reserves")
 
     logger.info(
-        "Completed arena virtual reserve growth task",
+        "Completed arena virtual reserve growth task: grown=%d budget_seconds=%.3f duration_seconds=%.3f",
+        int(grown),
+        budget_seconds,
+        max(0.0, monotonic() - started_at),
         extra={
             "event": "arena_virtual_growth_task_completed",
             "requested_limit": int(limit),
             "grown_count": int(grown),
+            "budget_seconds": budget_seconds,
             "task_duration_seconds": max(0.0, monotonic() - started_at),
         },
     )

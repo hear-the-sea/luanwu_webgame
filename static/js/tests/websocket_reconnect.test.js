@@ -130,3 +130,29 @@ test("transient delay resets only when marked stable", () => {
   policy.markStable();
   assert.equal(policy.nextDelay(SERVICE_UNAVAILABLE_CLOSE_CODE), 2000);
 });
+
+test("persistent abnormal and capacity failures reach a sixty second ceiling", () => {
+  for (const code of [1006, 4429]) {
+    const policy = policyApi.createReconnectPolicy({ randomFn: () => 0.5 });
+    assert.deepEqual(
+      Array.from({ length: 12 }, () => policy.nextDelay(code)),
+      [1500, 1500, 1500, 1500, 1500, 2000, 4000, 8000, 16000, 32000, 60000, 60000],
+    );
+    assert.equal(policy.nextDelay(SERVICE_UNAVAILABLE_CLOSE_CODE), 2000);
+    policy.markStable();
+    assert.equal(policy.nextDelay(code), 1500);
+    assert.equal(policy.nextDelay(SERVICE_UNAVAILABLE_CLOSE_CODE), 2000);
+  }
+});
+
+test("persistent jitter stays capped without raising the service unavailable ceiling", () => {
+  const policy = policyApi.createReconnectPolicy({ randomFn: () => 1 });
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    assert.ok(policy.nextDelay(1006) <= 60000);
+  }
+  assert.equal(policy.nextDelay(4429), 60000);
+  assert.deepEqual(
+    Array.from({ length: 6 }, () => policy.nextDelay(SERVICE_UNAVAILABLE_CLOSE_CODE)),
+    [2200, 4400, 8800, 15000, 15000, 15000],
+  );
+});

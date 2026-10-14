@@ -170,6 +170,7 @@ def partial_consume_frozen_gold_bars_impl(
             GOLD_BAR_ITEM_KEY,
             consume_amount,
             allow_frozen_gold_bars=True,
+            allow_bound=False,
         )
 
         locked_record.is_frozen = False

@@ -1,0 +1,10 @@
+{
+  "reclaimed_bytes": 1509900288,
+  "after_free_bytes": 19934842880,
+  "disk_used_percent": 36,
+  "running_containers_preserved": 14,
+  "homepage_status": 200,
+  "web_health": "unhealthy",
+  "readiness_failure": "celery_beat heartbeat missing; other readiness checks pass",
+  "cleanup": "Docker build cache and old archived journals; no images, volumes or release backups removed"
+}

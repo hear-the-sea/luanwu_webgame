@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import StrEnum
 from hashlib import sha256
+from time import monotonic
 from typing import Any, cast
 from uuid import UUID, uuid4
 
@@ -3611,9 +3612,12 @@ def _prepare_same_round_retry(*, member_id: int, now: datetime) -> bool:
     return True
 
 
-def grow_due_virtual_reserves(*, now=None, limit: int = 100) -> int:
+def grow_due_virtual_reserves(*, now=None, limit: int = 100, max_duration_seconds: float | None = None) -> int:
     """Process due reserve growth, filling arena round slots in order."""
 
+    started_at = monotonic()
+    budget_seconds = None if max_duration_seconds is None else max(0.0, float(max_duration_seconds))
+    deadline = None if budget_seconds is None else started_at + budget_seconds
     current_time = now or timezone.now()
     growth_engine_version = _reserve_growth_engine_version(now=current_time)
     if growth_engine_version is None:
@@ -3705,8 +3709,33 @@ def grow_due_virtual_reserves(*, now=None, limit: int = 100) -> int:
     )
 
     processed = 0
+    attempted_count = 0
     for member_id, _demand_id in selected_member_rows:
         for _attempt in range(ARENA_GROWTH_MAX_ATTEMPTS_PER_TASK):
+            # Yield only between complete claim/action/finalize steps. The
+            # previous step already persisted its next due time, so the
+            # ordinary minute scan resumes it without another dispatch lock.
+            # Always allow one attempt even when selection exceeded budget.
+            if attempted_count and deadline is not None and monotonic() >= deadline:
+                logger.info(
+                    "Arena virtual reserve growth yielded: budget_seconds=%.3f duration_seconds=%.3f "
+                    "attempted=%d processed=%d selected=%d",
+                    budget_seconds,
+                    max(0.0, monotonic() - started_at),
+                    attempted_count,
+                    processed,
+                    len(selected_member_rows),
+                    extra={
+                        "event": "arena_virtual_growth_budget_exhausted",
+                        "budget_seconds": budget_seconds,
+                        "task_duration_seconds": max(0.0, monotonic() - started_at),
+                        "attempted_count": attempted_count,
+                        "processed_count": processed,
+                        "selected_count": len(selected_member_rows),
+                    },
+                )
+                return processed
+            attempted_count += 1
             attempt_result = _grow_due_virtual_reserves_once(
                 now=current_time,
                 limit=1,

@@ -153,6 +153,7 @@ test("connection controller reconnects after close and reports disconnected send
   const sent = controller.sendText("offline");
   assert.equal(sent, false);
   assert.deepEqual(rendererMessages, ["未连接到世界频道，正在重连…"]);
+  assert.equal(FakeWebSocket.instances.length, 1);
 
   reconnectCallback();
   assert.equal(FakeWebSocket.instances.length, 2);
@@ -527,6 +528,34 @@ test("capacity close schedules one short reconnect", () => {
   assert.deepEqual(harness.reconnectTimers().map((timer) => timer.delay), [1000]);
 });
 
+test("offline sends and connect calls preserve the scheduled retry and growing backoff", () => {
+  const harness = createLifecycleHarness();
+  harness.controller.connect();
+  harness.sockets[0].emitClose(SERVICE_UNAVAILABLE_CLOSE_CODE);
+  const timer = harness.reconnectTimers()[0];
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    assert.equal(harness.controller.sendText("offline"), false);
+    harness.controller.connect();
+  }
+  assert.equal(harness.sockets.length, 1);
+  assert.deepEqual(harness.reconnectTimers(), [timer]);
+  harness.runTimer(timer);
+  assert.equal(harness.sockets.length, 2);
+  harness.sockets[1].emitClose(SERVICE_UNAVAILABLE_CLOSE_CODE);
+  assert.equal(harness.reconnectTimers()[0].delay, 4000);
+});
+
+test("page restoration preserves chat backoff until a stable connection", () => {
+  const harness = createLifecycleHarness();
+  harness.controller.connect();
+  harness.sockets[0].emitClose(SERVICE_UNAVAILABLE_CLOSE_CODE);
+  harness.controller.suspend();
+  harness.controller.resume();
+  harness.sockets[1].open();
+  harness.sockets[1].emitClose(SERVICE_UNAVAILABLE_CLOSE_CODE);
+  assert.equal(harness.reconnectTimers()[0].delay, 4000);
+});
+
 test("opening a chat socket does not reset transient backoff", () => {
   const harness = createLifecycleHarness();
   harness.controller.connect();
@@ -602,4 +631,63 @@ test("teardown clears reconnect ping and stability timers", () => {
   assert.equal(harness.activeTimeouts().length, 0);
   assert.equal(harness.intervals.filter((timer) => timer.active).length, 0);
   assert.equal(socket.readyState, FakeWebSocket.CLOSED);
+});
+
+test("suspend releases chat timers and resume resends pending messages with the same id", () => {
+  const harness = createLifecycleHarness();
+  harness.controller.connect();
+  const first = harness.sockets[0];
+  first.open();
+  assert.equal(harness.controller.sendText("pending before navigation"), true);
+  const originalPayload = JSON.parse(first.sent[0]);
+  harness.controller.suspend();
+  harness.controller.suspend();
+  assert.equal(first.readyState, FakeWebSocket.CLOSED);
+  assert.equal(harness.activeTimeouts().length, 0);
+  assert.equal(harness.intervals.filter((timer) => timer.active).length, 0);
+  assert.equal(harness.controller.sendText("suspended"), false);
+  harness.controller.connect();
+  assert.equal(harness.sockets.length, 1);
+  harness.controller.resume();
+  harness.controller.resume();
+  assert.equal(harness.sockets.length, 2);
+  first.open();
+  first.emitClose(1006);
+  first.emitMessage({ type: "send_ack", operation_id: originalPayload.operation_id });
+  harness.sockets[1].open();
+  assert.deepEqual(JSON.parse(harness.sockets[1].sent[0]), originalPayload);
+  assert.equal(harness.intervals.filter((timer) => timer.active).length, 1);
+});
+
+test("suspend cancels a queued chat reconnect and late timer callbacks", () => {
+  const harness = createLifecycleHarness();
+  harness.controller.connect();
+  harness.sockets[0].emitClose(1006);
+  const timer = harness.reconnectTimers()[0];
+  harness.controller.suspend();
+  timer.callback();
+  assert.equal(harness.sockets.length, 1);
+  harness.controller.resume();
+  timer.callback();
+  assert.equal(harness.sockets.length, 2);
+});
+
+test("resume cannot revive terminal or permanently torn down chat connections", () => {
+  for (const code of [4401, 4403]) {
+    const harness = createLifecycleHarness();
+    harness.controller.connect();
+    harness.sockets[0].emitClose(code);
+    harness.controller.suspend();
+    harness.controller.resume();
+    harness.controller.connect();
+    assert.equal(harness.sockets.length, 1);
+    assert.equal(harness.activeTimeouts().length, 0);
+  }
+  const harness = createLifecycleHarness();
+  harness.controller.connect();
+  harness.controller.teardown();
+  harness.controller.resume();
+  harness.controller.connect();
+  assert.equal(harness.controller.sendText("disposed"), false);
+  assert.equal(harness.sockets.length, 1);
 });

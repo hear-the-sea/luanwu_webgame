@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from battle.combatants_pkg.core import Combatant
 from battle.combatants_pkg.guest_builder import assign_agility_based_priorities
 from battle.simulation.turn_order import determine_turn_order
@@ -18,7 +20,7 @@ def make_combatant(name: str, side: str, agility: int) -> Combatant:
         agility=agility,
         priority=0,
         kind="guest",
-        troop_strength=0,
+        troop_strength=1,
         initial_hp=100,
     )
 
@@ -72,3 +74,71 @@ def test_assign_agility_based_priorities_prefers_defender_when_cutoff_ties():
 
     assert defender.priority == -1
     assert attacker.priority == 0
+
+
+@pytest.mark.parametrize(
+    ("attacker_agilities", "defender_agilities", "expected_sides"),
+    [
+        ([100, 200], [140], ["attacker", "defender"]),
+        ([140], [100, 200], ["defender", "attacker"]),
+        ([100, 200], [150], ["defender", "attacker"]),
+        ([100, 101], [100], ["attacker", "defender"]),
+        ([], [], ["defender", "attacker"]),
+        ([100], [], ["attacker", "defender"]),
+        ([], [100], ["defender", "attacker"]),
+    ],
+)
+def test_tied_troops_use_deployed_guest_average(attacker_agilities, defender_agilities, expected_sides):
+    attacker = make_combatant("攻方护院", "attacker", 120)
+    defender = make_combatant("守方护院", "defender", 120)
+    attacker.kind = defender.kind = "troop"
+    attacker_guests = [
+        make_combatant(f"攻方门客{idx}", "attacker", agility) for idx, agility in enumerate(attacker_agilities)
+    ]
+    defender_guests = [
+        make_combatant(f"守方门客{idx}", "defender", agility) for idx, agility in enumerate(defender_agilities)
+    ]
+
+    ordered = determine_turn_order([attacker, *attacker_guests], [defender, *defender_guests], NoRandomRng())
+
+    assert [unit.side for unit in ordered if unit.kind == "troop"] == expected_sides
+
+
+def test_guest_average_includes_dead_and_skipping_deployed_guests():
+    attacker = make_combatant("攻方护院", "attacker", 120)
+    defender = make_combatant("守方护院", "defender", 120)
+    attacker.kind = defender.kind = "troop"
+    dead_guest = make_combatant("阵亡门客", "attacker", 200)
+    dead_guest.hp = 0
+    skipping_guest = make_combatant("跳过行动门客", "attacker", 200)
+    skipping_guest.battle_modifiers["skip_turn"] = True
+    defender_guest = make_combatant("守方门客", "defender", 150)
+
+    ordered = determine_turn_order([attacker, dead_guest, skipping_guest], [defender, defender_guest], NoRandomRng())
+
+    assert [unit.name for unit in ordered] == ["守方门客", "攻方护院", "守方护院"]
+
+
+def test_fixed_first_takes_precedence_over_guest_average():
+    attacker = make_combatant("攻方护院", "attacker", 120)
+    defender = make_combatant("守方护院", "defender", 120)
+    attacker.kind = defender.kind = "troop"
+    defender.battle_modifiers["fixed_first"] = True
+    attacker_guest = make_combatant("攻方门客", "attacker", 200)
+
+    ordered = determine_turn_order([attacker, attacker_guest], [defender], NoRandomRng())
+
+    assert ordered[0] is defender
+
+
+def test_guest_average_excludes_troops_and_does_not_override_unit_agility():
+    attacker = make_combatant("攻方护院", "attacker", 120)
+    defender = make_combatant("守方护院", "defender", 120)
+    faster_troop = make_combatant("守方快护院", "defender", 1000)
+    attacker.kind = defender.kind = faster_troop.kind = "troop"
+    attacker_guest = make_combatant("攻方门客", "attacker", 200)
+    defender_guest = make_combatant("守方门客", "defender", 150)
+
+    ordered = determine_turn_order([attacker, attacker_guest], [defender, faster_troop, defender_guest], NoRandomRng())
+
+    assert [unit.name for unit in ordered] == ["守方快护院", "攻方门客", "守方门客", "攻方护院", "守方护院"]

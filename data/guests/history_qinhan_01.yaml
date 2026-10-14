@@ -39,6 +39,19 @@ heroes:
       intellect: 18
       defense: 26
       agility: 16
+  - key: hist_qinhan_0023
+    name: 项羽
+    default_gender: male
+    archetype: military
+    flavor: （前232年—前202年）西楚霸王，力拔山兮气盖世。他是楚国名将项燕之孙，目生重瞳，力能扛鼎。巨鹿之战，他破釜沉舟，九战九捷，以少胜多歼灭秦军主力，威震诸侯。入关后主持鸿门宴，分封天下十八路诸侯。然而他政治上缺乏远见，刚愎自用，不仅放走刘邦，更在楚汉战争中屡失良机。彭城之战虽以三万精骑大破刘邦五十六万联军，却最终在垓下之战中陷入十面埋伏。四面楚歌声中，他与虞姬诀别，不肯过江东，自刎于乌江。
+    growth_range:
+    - 8
+    - 14
+    attribute_weights:
+      force: 54
+      intellect: 8
+      defense: 26
+      agility: 12
   purple:
   - key: hist_qinhan_0005
     name: 吕雉
@@ -273,19 +286,6 @@ heroes:
       force: 46
       intellect: 16
       defense: 22
-      agility: 16
-  - key: hist_qinhan_0023
-    name: 项羽
-    default_gender: male
-    archetype: military
-    flavor: （前232年—前202年）西楚霸王，力拔山兮气盖世。他是楚国名将项燕之孙，目生重瞳，力能扛鼎。巨鹿之战，他破釜沉舟，九战九捷，以少胜多歼灭秦军主力，威震诸侯。入关后主持鸿门宴，分封天下十八路诸侯。然而他政治上缺乏远见，刚愎自用，不仅放走刘邦，更在楚汉战争中屡失良机。彭城之战虽以三万精骑大破刘邦五十六万联军，却最终在垓下之战中陷入十面埋伏。四面楚歌声中，他与虞姬诀别，不肯过江东，自刎于乌江。
-    growth_range:
-    - 7
-    - 12
-    attribute_weights:
-      force: 52
-      intellect: 8
-      defense: 24
       agility: 16
   - key: hist_qinhan_0026
     name: 叔孙通

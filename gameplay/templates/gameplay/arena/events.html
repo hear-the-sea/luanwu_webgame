@@ -1,16 +1,71 @@
 {% extends "gameplay/arena/base.html" %}
+{% load static %}
+
+{% block extra_head %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/arena-rings.css' %}">
+{% endblock %}
 
 {% block arena_body %}
+<section class="arena-rings ring-history" aria-label="演武台守擂记录">
+    <div class="ring-history-caption"><span>演武台守擂记录</span><small>最近 24 小时</small></div>
+    {% for group in ring_history_groups %}
+    <details class="ring-history-group ring-history-group--{{ group.ring.key }}" id="ring-history-{{ group.ring.key }}" {% if group.expanded %}open{% endif %}>
+        <summary>
+            <img src="{% static group.thumbnail %}" alt="" width="88" height="56" loading="lazy" decoding="async">
+            <span class="ring-history-heading"><strong>{{ group.ring.name }}</strong><span>{% if group.current_holder %}当前擂主 · {{ group.current_holder }}{% else %}空台待战{% endif %}</span></span>
+            <span class="ring-history-count"><b>{{ group.record_count }}</b><small>条记录</small></span>
+            <span class="ring-history-chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="ring-history-content">
+            <ol class="ring-history-list">
+                {% for record in group.records %}
+                <li class="ring-history-record">
+                    <div class="ring-history-player"><strong>{{ record.tenure.manor.display_name }}</strong>{% if record.is_mine %}<small>我</small>{% endif %}<span class="ring-history-status {% if record.active %}ring-history-status--active{% endif %}">{{ record.status }}</span></div>
+                    <p class="ring-history-time">{{ record.tenure.started_at|date:'m-d H:i' }} — {% if record.until %}{{ record.until|date:'m-d H:i' }}{% else %}至今{% endif %}</p>
+                    <p class="ring-history-score">守擂 <b>{{ record.held_minutes }}</b> 分钟 · 获胜 <b>{{ record.tenure.defenses }}</b> 次</p>
+                    <a class="ring-history-link" href="{{ record.detail_url }}">查看战报 <span aria-hidden="true">→</span></a>
+                </li>
+                {% empty %}<li class="ring-history-empty">最近 24 小时暂无守擂记录。</li>{% endfor %}
+            </ol>
+            {% if group.page.has_other_pages %}
+            <nav class="ring-history-pagination" aria-label="{{ group.ring.name }}记录分页">
+                {% if group.previous_url %}<a href="{{ group.previous_url }}">上一页</a>{% else %}<span></span>{% endif %}
+                <span>{{ group.page.number }} / {{ group.page.paginator.num_pages }}</span>
+                {% if group.next_url %}<a href="{{ group.next_url }}">下一页</a>{% else %}<span></span>{% endif %}
+            </nav>
+            {% endif %}
+        </div>
+    </details>
+    {% endfor %}
+</section>
+{% if running_tournament_card_rows or running_coop_card_rows %}
 <section class="tw-panel">
     <div class="tw-panel-header">进行中的赛事</div>
     <div class="tw-panel-content text-sm">
         <div class="space-y-2">
             {% for row in running_tournament_card_rows %}
             {% include "gameplay/arena/partials/event_list_card.html" with row=row %}
-            {% empty %}
-            <p class="tw-empty-hint">暂无进行中的赛事。</p>
+            {% endfor %}
+            {% for row in running_coop_card_rows %}
+            {% include "gameplay/arena/partials/event_list_card.html" with row=row %}
             {% endfor %}
         </div>
     </div>
 </section>
+{% endif %}
+{% if completed_event_card_rows %}
+<section class="tw-panel mt-4">
+    <div class="tw-panel-header">最近结束的赛事</div>
+    <div class="tw-panel-content text-sm">
+        <p class="text-text-muted mb-3">赛事结束后保留 24 小时，可查看赛事详情与战报。</p>
+        <div class="space-y-2">
+            {% for row in completed_event_card_rows %}
+            {% include "gameplay/arena/partials/event_list_card.html" with row=row %}
+            {% endfor %}
+        </div>
+        {% include "gameplay/arena/partials/event_pagination.html" %}
+    </div>
+</section>
+{% endif %}
 {% endblock %}

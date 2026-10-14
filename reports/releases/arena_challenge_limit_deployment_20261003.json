@@ -1,0 +1,53 @@
+{
+  "release": "arena-challenge-limit-20261003T151152Z",
+  "image": "webgame:arena-challenge-limit-20261003T151152Z",
+  "base_image": "webgame:arena-lineup-limit-20261003T145649Z",
+  "base_image_id": "sha256:8c4c55ced2e6e829218f9c9e7b2710a0a2ec056ecdc2572a656eccf5475d7b34",
+  "files": {
+    "gameplay/services/arena/ring.py": "551dffeefc901f91d382a57e50867570539e5163ee4626d265b76d41ef237320",
+    "gameplay/services/arena/ring_rules.py": "3448824b2faf899df1b3a9661836030851e2acd2deed33f5e3e88a8174807f05",
+    "gameplay/selectors/arena/rings.py": "eec57b57f76d88d20cb134641ad97f8164845281ebabb7334489c4a1c4b48fb1",
+    "data/arena_ring_rules.yaml": "e9ed9bbb6d4c88bb35ba98be21336f2db8736b5f16e4a40716a6fd03b1606475",
+    "gameplay/templates/gameplay/arena/rings.html": "1597566a71344c3a6a2a1894c214e0a6e183531e2cd5f1cc24144395c6068893",
+    "gameplay/templates/gameplay/arena/partials/ring_form.html": "1a718b73cc24d0ca72686f94f62de76ca232f6d8856582c5051b279b1eba5a91"
+  },
+  "base_files": {
+    "gameplay/services/arena/ring.py": "70f06dd827075c44a54f752348b519c47c92cd734c810ac5bdb9189e785d1ec9",
+    "gameplay/services/arena/ring_rules.py": "94ac0647cfc7d8e17e27601b40f09fd23eddf97daa23757e1d149f9c15bd98ee",
+    "gameplay/selectors/arena/rings.py": "1dd1eb2a839a6fd2f4fbb4d4680375e5db10f321179958906ca5ca134c588672",
+    "data/arena_ring_rules.yaml": "d62ccc3c5b9ab1fb38541ef603b47fde6242a7a1dbb18b3cb0ea3d4b661a7a8a",
+    "gameplay/templates/gameplay/arena/rings.html": "0211c0a505d77661952a39a496d4343a0fa5b1f58c4d606771f9c5c815a466f2",
+    "gameplay/templates/gameplay/arena/partials/ring_form.html": "2d744de579af9674a466072772832a61630a5d5ddcc545d877baafc09db25071"
+  },
+  "database_changes": false,
+  "services": [
+    "web"
+  ],
+  "status": "deployed_verified",
+  "image_id": "sha256:e05f1644a55d1fc39880292295169d89997812f44545b2244f13b0cc39044e9d",
+  "health": "healthy",
+  "backup_dir": "/root/code/releases/arena-challenge-limit-20261003T151152Z/backup",
+  "workers_restarted": false,
+  "live_verification": {
+    "status": "verified",
+    "max_tenure_challenges": 2,
+    "challenge_cooldown_seconds": 600,
+    "owner_updates_unrestricted": true,
+    "owner_views_verified": 2,
+    "challenger_views_verified": 2,
+    "render_status": 200
+  },
+  "tests": {
+    "backend": 63,
+    "browser": 6,
+    "formatting": "passed",
+    "ruff": "passed"
+  },
+  "arrow_god_verified": {
+    "engine": "3",
+    "attack_interval": 1000,
+    "strength": 4000,
+    "attacks": 5,
+    "group_size": 800
+  }
+}

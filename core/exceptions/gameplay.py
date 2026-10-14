@@ -151,6 +151,8 @@ class PeaceShieldUnavailableError(GameError):
         if message is None:
             if reason == "incoming_raids":
                 message = "有敌军来袭，无法使用免战牌"
+            elif reason == "world_unique_guest":
+                message = "拥有唯一门客的庄园无法使用免战牌"
             else:
                 message = "有出征中的队伍，无法使用免战牌"
         super().__init__(message, reason=reason)

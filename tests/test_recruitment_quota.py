@@ -98,3 +98,33 @@ def test_recruitment_card_view_consumes_card_and_returns_hall_fragments(game_dat
     assert "今日额度 +1" in payload["message"]
     assert "recruit-pools-section" in payload["hall_pools_html"]
     assert add_recruitment_extra_attempt(manor, pool) == 2
+
+
+@pytest.mark.django_db
+def test_exhausted_dianshi_error_returns_current_quota_without_consuming_card(
+    game_data, django_user_model, load_guest_data
+):
+    user = django_user_model.objects.create_user(username="recruitment_quota_stale", password="pass123")
+    manor = ensure_manor(user)
+    pool = RecruitmentPool.objects.get(key="dianshi")
+    now = timezone.now()
+    add_recruitment_extra_attempt(manor, pool, count=10)
+    GuestRecruitment.objects.bulk_create(
+        [
+            GuestRecruitment(manor=manor, pool=pool, status=GuestRecruitment.Status.COMPLETED, complete_at=now)
+            for _ in range(13)
+        ]
+    )
+    card = _create_recruitment_card(manor, quantity=1)
+    client = Client()
+    client.force_login(user)
+    response = client.post(reverse("guests:recruit"), {"pool": pool.pk}, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+    assert response.status_code == 400
+    payload = response.json()
+    assert payload["success"] is False
+    assert "13次" in payload["error"]
+    assert "今日剩余 0 次" in payload["hall_pools_html"]
+    assert 'data-pool-daily-limit="13"' in payload["hall_pools_html"]
+    assert GuestRecruitment.objects.filter(manor=manor, pool=pool).count() == 13
+    card.refresh_from_db()
+    assert card.quantity == 1

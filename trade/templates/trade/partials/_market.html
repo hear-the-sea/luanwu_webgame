@@ -1,7 +1,7 @@
 {% load static trade_filters %}
 
 <!-- 交易行内容 -->
-<div class="flex flex-col">
+<div class="tw-market-content flex flex-col">
     <!-- 子导航 -->
     <div class="tw-mode-switch mb-4">
         <a href="?tab=market&view=buy"
@@ -29,37 +29,43 @@
     <!-- 购买区 -->
     <div id="market-buy-section" class="tw-trade-card">
         <!-- 筛选区域 -->
-        <div class="flex flex-wrap gap-4 items-center mb-4">
-            <form method="get" class="tw-filter-form">
+        <div class="mb-4">
+            <form method="get" class="tw-market-buy-filters">
                 <input type="hidden" name="tab" value="market">
                 <input type="hidden" name="view" value="buy">
 
-                <label class="tw-filter-label">类别：</label>
-                <select name="category" class="tw-filter-select" data-trade-auto-submit>
-                    {% for cat in categories %}
-                    <option value="{{ cat.key }}" {% if selected_category == cat.key %}selected{% endif %}>
-                        {{ cat.label }}
-                    </option>
-                    {% endfor %}
-                </select>
+                <div class="tw-market-filter-field">
+                    <label for="market-buy-category" class="tw-filter-label">类别</label>
+                    <select id="market-buy-category" name="category" class="tw-filter-select" data-trade-auto-submit>
+                        {% for cat in categories %}
+                        <option value="{{ cat.key }}" {% if selected_category == cat.key %}selected{% endif %}>
+                            {{ cat.label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-                <label class="tw-filter-label ml-4">稀有度：</label>
-                <select name="rarity" class="tw-filter-select" data-trade-auto-submit>
-                    <option value="all">全部</option>
-                    <option value="orange" {% if selected_rarity == 'orange' %}selected{% endif %}>橙色</option>
-                    <option value="purple" {% if selected_rarity == 'purple' %}selected{% endif %}>紫色</option>
-                    <option value="blue" {% if selected_rarity == 'blue' %}selected{% endif %}>蓝色</option>
-                    <option value="green" {% if selected_rarity == 'green' %}selected{% endif %}>绿色</option>
-                    <option value="gray" {% if selected_rarity == 'gray' %}selected{% endif %}>灰色</option>
-                </select>
+                <div class="tw-market-filter-field">
+                    <label for="market-buy-rarity" class="tw-filter-label">稀有度</label>
+                    <select id="market-buy-rarity" name="rarity" class="tw-filter-select" data-trade-auto-submit>
+                        <option value="all">全部</option>
+                        <option value="orange" {% if selected_rarity == 'orange' %}selected{% endif %}>橙色</option>
+                        <option value="purple" {% if selected_rarity == 'purple' %}selected{% endif %}>紫色</option>
+                        <option value="blue" {% if selected_rarity == 'blue' %}selected{% endif %}>蓝色</option>
+                        <option value="green" {% if selected_rarity == 'green' %}selected{% endif %}>绿色</option>
+                        <option value="gray" {% if selected_rarity == 'gray' %}selected{% endif %}>灰色</option>
+                    </select>
+                </div>
 
-                <label class="tw-filter-label ml-4">排序：</label>
-                <select name="order_by" class="tw-filter-select" data-trade-auto-submit>
-                    <option value="-listed_at" {% if selected_order == '-listed_at' %}selected{% endif %}>最新上架</option>
-                    <option value="unit_price" {% if selected_order == 'unit_price' %}selected{% endif %}>价格↑</option>
-                    <option value="-unit_price" {% if selected_order == '-unit_price' %}selected{% endif %}>价格↓</option>
-                    <option value="expires_at" {% if selected_order == 'expires_at' %}selected{% endif %}>即将过期</option>
-                </select>
+                <div class="tw-market-filter-field">
+                    <label for="market-buy-order" class="tw-filter-label">排序</label>
+                    <select id="market-buy-order" name="order_by" class="tw-filter-select" data-trade-auto-submit>
+                        <option value="-listed_at" {% if selected_order == '-listed_at' %}selected{% endif %}>最新上架</option>
+                        <option value="unit_price" {% if selected_order == 'unit_price' %}selected{% endif %}>价格↑</option>
+                        <option value="-unit_price" {% if selected_order == '-unit_price' %}selected{% endif %}>价格↓</option>
+                        <option value="expires_at" {% if selected_order == 'expires_at' %}selected{% endif %}>即将过期</option>
+                    </select>
+                </div>
             </form>
         </div>
 
@@ -115,11 +121,11 @@
                                 </div>
                             </div>
                         </td>
-                        <td>{{ listing.quantity }}</td>
-                        <td class="tw-price">{{ listing.unit_price|floatformat:0 }}</td>
-                        <td class="tw-price">{{ listing.total_price|floatformat:0 }}</td>
-                        <td>{{ listing.seller.display_name }}</td>
-                        <td>
+                        <td data-label="数量">{{ listing.quantity }}</td>
+                        <td data-label="单价" class="tw-price">{{ listing.unit_price|floatformat:0 }}</td>
+                        <td data-label="总价" class="tw-price">{{ listing.total_price|floatformat:0 }}</td>
+                        <td data-label="卖家">{{ listing.seller.display_name }}</td>
+                        <td data-label="剩余时间">
                             <span class="tw-market-countdown"
                                   data-expires="{{ listing.expires_at.isoformat }}">
                                 {{ listing.time_remaining|format_countdown }}
@@ -128,6 +134,7 @@
                         <td>
                             <form method="post" action="{% url 'trade:market_purchase' listing.id %}">
                                 {% csrf_token %}
+                            {% include "trade/partials/_action_return_state.html" with current_tab="market" %}
                                 <button type="submit"
                                         class="tw-btn-trade"
                                         {% if not market_can_buy_or_list %}
@@ -353,6 +360,7 @@
                                   action="{% url 'trade:market_cancel' listing.id %}"
                                   class="market-cancel-form">
                                 {% csrf_token %}
+                            {% include "trade/partials/_action_return_state.html" with current_tab="market" %}
                                 <button type="submit" class="tw-btn-secondary tw-btn-sm">取消</button>
                             </form>
                             {% elif listing.status == 'sold' %}
@@ -403,6 +411,7 @@
 
         <form method="post" action="{% url 'trade:market_create_listing' %}" class="tw-modal-form">
             {% csrf_token %}
+                            {% include "trade/partials/_action_return_state.html" with current_tab="market" %}
             <input type="hidden" name="item_key" id="modal-item-key">
             <input type="hidden" id="modal-item-rarity" value="">
 

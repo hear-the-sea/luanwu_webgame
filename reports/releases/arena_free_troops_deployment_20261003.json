@@ -1,0 +1,80 @@
+{
+  "release": "arena-free-troops-20261003T141329Z",
+  "image": "webgame:arena-free-troops-20261003T141329Z",
+  "base_image": "webgame:arena-reset-20261003T124027Z",
+  "base_image_id": "sha256:b8639f8d69b801d5959f45061ff45c2717d6d8887c1ef167bcfbdf56c7627ec6",
+  "files": {
+    "gameplay/services/arena/ring.py": "ee1c1fa279f7e357f5e97e01555394b61d4255c4498780508ee77079d312ad4e",
+    "gameplay/services/arena/ring_snapshots.py": "4bce876078e05de658bc9f6e6e98a2a1a2ddb301702193d8bbc142942f12eb2a",
+    "gameplay/services/arena/ring_rules.py": "0ce48932dee3d07329448720cd1245080cb70eb1d6dfdb8cccffd5c5dccac012",
+    "gameplay/services/arena/ring_rewards.py": "7ca4cb3e50b03443336a602346c46ec932e644760953f879092ae7fb648be71d",
+    "gameplay/selectors/arena/rings.py": "2edfdbd3a0281d59370dd8bc6d7654a706067f03e10ce8a99cc8ee3106b7e554",
+    "data/arena_ring_rules.yaml": "57dc21097c3407368c6f3ffea485c48e76e9edbf7c3f0ecb4305a873ceda8869",
+    "gameplay/templates/gameplay/arena/rings.html": "1f92581bc3618f9c4a3d614c3bebddf2259f13ea43a59a381c30e6d890bfa0d7",
+    "gameplay/templates/gameplay/arena/partials/ring_form.html": "db3b397685eaf4d5b1817897a5b9c2521b4dde7f0ee3c2e137f4c8238d3fe10d",
+    "static/js/arena-rings.js": "67e41a61b66715e0657eeb168ca5b42eca5d3bf4845aa0be3177173190244756"
+  },
+  "base_files": {
+    "gameplay/services/arena/ring.py": "c9f43c1d6ef6a4beb2f089e9d0d191bcebabcdfaaa27140f51932bd63c85b5bc",
+    "gameplay/services/arena/ring_snapshots.py": "992e54f66404ead94a34ade7f080f3a4de4953abb34d10b727a432f690160aa4",
+    "gameplay/services/arena/ring_rules.py": "ec27b900b0b4d12e47a93efedceb12b31e0460b63c8bb86ab576a593468e5fd6",
+    "gameplay/services/arena/ring_rewards.py": "7bd090ee46b94ad3a98cb9b7e13fd895f12306c58622f75bc08440bb17d24103",
+    "gameplay/selectors/arena/rings.py": "7fc31a1039674bf6b67b1972ecc3005df1cd5a0081782de6597f22b10bc6f9a0",
+    "data/arena_ring_rules.yaml": "172f1a5c76b6d440121482616b98cc68f6aa222ec90bbbbda56a336d4b99984b",
+    "gameplay/templates/gameplay/arena/rings.html": "5a5b79a747962b8baab0b8f9fe3892b7105d5fa07e6065f8a0c2ef84d4cf871e",
+    "gameplay/templates/gameplay/arena/partials/ring_form.html": "f77a5ccefcb776dd8f23740f589af299c76a396465d56f9f66231f451900ff80",
+    "static/js/arena-rings.js": "38ed5c49681cfd1f8bb1d3597c7886c5202ed41d559f86619fd395ecf4123c17"
+  },
+  "database_changes": false,
+  "services": [
+    "web"
+  ],
+  "status": "deployed_verified",
+  "image_id": "sha256:36ba4f2de5f7642b6945102d089e9a58dd38d8624dadfe69452a312b2a392268",
+  "health": "healthy",
+  "backup_dir": "/root/code/releases/arena-free-troops-20261003T141329Z/backup",
+  "workers_restarted": false,
+  "public_checks": [
+    {
+      "path": "/health/live",
+      "status": 200
+    },
+    {
+      "path": "/manor/arena/rings/",
+      "status": 200
+    },
+    {
+      "path": "/static/js/arena-rings.f19ca4c1636a.js",
+      "status": 200,
+      "matches_release": true
+    }
+  ],
+  "live_render_verification": {
+    "status": 200,
+    "cooldown_seconds": 600,
+    "max_guests": 20,
+    "all_catalog_troops_available": true,
+    "full_martial_technology": true,
+    "chunqiu_tiers": [
+      [
+        3,
+        3
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        10,
+        12
+      ]
+    ],
+    "daily_chunqiu_limit": 21,
+    "mysql_reward_limit_query": true
+  },
+  "verification": {
+    "backend_suite": "49 passed before parameter expansion; both real battle quantities subsequently passed",
+    "browser": "3 passed (320px, 390px, 1280px)",
+    "ruff": "passed"
+  }
+}

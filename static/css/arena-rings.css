@@ -1,0 +1,195 @@
+/* 演武台：纸色底、青龙青与白虎铜，规则按需展开。 */
+.arena-rings, .ring-loadout-overlay {
+  --ring-ink: #403223;
+  --ring-muted: #796b57;
+  --ring-line: #d8c7a5;
+  --ring-paper: #fff9ec;
+  color: var(--ring-ink);
+}
+
+.dashboard:has(.arena-rings) .tw-troop-subtab { white-space: nowrap; }
+
+.ring-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.ring-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.ring-tags span { padding: 3px 7px; font-size: 11px; border: 1px solid var(--ring-line); border-radius: 3px; }
+.ring-daily-maximum { font-size: 12px; color: var(--ring-muted); }
+.ring-daily-maximum b { color: #906020; font-size: 18px; }
+
+.ring-rewards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: var(--ring-paper); border: 1px solid var(--ring-line); border-radius: 6px; }
+.ring-rewards > div { padding: 12px 16px; }
+.ring-rewards > div + div { border-left: 1px solid var(--ring-line); }
+.ring-rewards span { display: block; font-size: 13px; color: var(--ring-muted); }
+.ring-rewards strong { display: block; margin-top: 5px; font-size: 30px; line-height: 1.2; font-weight: 600; }
+.ring-rewards small { margin-left: 8px; font-size: 12px; font-weight: 400; color: var(--ring-muted); }
+.ring-daybar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding: 12px 0 20px; font-size: 12px; color: var(--ring-muted); }
+.ring-daybar b { color: var(--ring-ink); font-weight: 500; }
+.ring-daybar > span:last-child { margin-left: auto; }
+
+.ring-stage-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 20px; }
+.ring-stage { --ring-accent: #315f59; overflow: hidden; border: 1px solid var(--ring-line); border-radius: 8px; background: var(--ring-paper); min-width: 0; }
+.ring-stage--baihu { --ring-accent: #875027; }
+.ring-stage-art { position: relative; isolation: isolate; height: 180px; background: #ddd0b5; }
+.ring-stage-art::after { content: ""; position: absolute; inset: 30% 0 0; z-index: 0; background: linear-gradient(transparent, rgba(23, 28, 24, .86)); pointer-events: none; }
+.ring-stage-art img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ring-status { position: absolute; top: 14px; right: 14px; padding: 6px 10px; border: 1px solid rgba(255, 249, 236, .6); border-radius: 3px; background: rgba(255, 249, 236, .92); font-size: 12px; color: var(--ring-accent); }
+.ring-stage-title { position: absolute; bottom: 20px; left: 22px; z-index: 1; color: #fff9ec; }
+.ring-stage-title h3 { margin: 0; color: inherit; font-size: 30px; font-weight: 600; line-height: 1.2; letter-spacing: .14em; }
+.ring-stage-title p { margin: 7px 0 0; font-size: 12px; color: #eee2cc; }
+.ring-stage-body { padding: 16px 18px; }
+.ring-holder { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.ring-holder > span { font-size: 12px; color: var(--ring-muted); }
+.ring-holder strong { font-size: 17px; overflow-wrap: anywhere; }
+.ring-stage-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 17px 0 12px; }
+.ring-stage-stats b { display: block; font-size: 26px; line-height: 1.2; font-weight: 600; }
+.ring-stage-stats small { margin-left: 5px; font-size: 12px; font-weight: 400; color: var(--ring-muted); }
+.ring-stage-stats span { display: block; margin-top: 3px; font-size: 11px; color: var(--ring-muted); }
+.ring-end { margin: 0 0 18px; font-size: 12px; color: var(--ring-muted); }
+.ring-end .countdown { color: var(--ring-accent); }
+.ring-vacant { display: flex; flex-direction: column; justify-content: center; min-height: 120px; }
+.ring-vacant strong { font-size: 17px; font-weight: 500; }
+.ring-vacant p { margin: 8px 0 20px; color: var(--ring-muted); font-size: 12px; }
+
+.ring-entry-button, .ring-submit { display: flex; justify-content: center; align-items: center; min-height: 42px; width: 100%; padding: 9px 14px; border: 1px solid var(--ring-accent); border-radius: 4px; background: var(--ring-accent); color: #fff9ec; font: inherit; font-size: 14px; cursor: pointer; }
+.ring-quick-rules > summary::-webkit-details-marker { display: none; }
+.ring-secondary-actions { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
+.ring-secondary-actions > a, .ring-secondary-actions > form { flex: 1; min-width: 0; }
+.ring-secondary-actions a, .ring-secondary-actions button { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 44px; padding: 7px 8px; border: 1px solid var(--ring-line); border-radius: 4px; background: transparent; color: var(--ring-accent); font: inherit; font-size: 12px; text-decoration: none; cursor: pointer; }
+.ring-secondary-actions button:disabled, .ring-submit:disabled, .ring-entry-button:disabled { cursor: not-allowed; opacity: .5; }
+
+.ring-history { margin-bottom: 24px; }
+.ring-history-caption { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 10px; color: var(--ring-ink); font-size: 14px; }
+.ring-history-caption small { color: var(--ring-muted); font-size: 12px; }
+.ring-history-group { --history-accent: #315f59; margin-top: 10px; border: 1px solid var(--ring-line); border-left: 3px solid var(--history-accent); border-radius: 6px; background: var(--ring-paper); overflow: hidden; }
+.ring-history-group--baihu { --history-accent: #875027; }
+.ring-history-group > summary { display: flex; align-items: center; gap: 16px; padding: 12px 16px; cursor: pointer; list-style: none; }
+.ring-history-group > summary::-webkit-details-marker { display: none; }
+.ring-history-group > summary:focus-visible { outline: 2px solid var(--history-accent); outline-offset: -3px; }
+.ring-history-group > summary img { flex-shrink: 0; width: 88px; height: 56px; object-fit: cover; border-radius: 3px; }
+.ring-history-heading { display: flex; flex: 1; flex-direction: column; gap: 4px; min-width: 0; }
+.ring-history-heading strong { color: var(--history-accent); font-size: 20px; font-weight: 600; letter-spacing: .1em; }
+.ring-history-heading > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ring-muted); font-size: 12px; }
+.ring-history-count { display: flex; align-items: baseline; gap: 6px; flex-shrink: 0; color: var(--ring-muted); }
+.ring-history-count b { color: var(--ring-ink); font-size: 22px; font-weight: 500; }
+.ring-history-count small { font-size: 12px; }
+.ring-history-chevron { width: 8px; height: 8px; margin: 0 3px 4px; border-right: 1px solid var(--history-accent); border-bottom: 1px solid var(--history-accent); transform: rotate(45deg); flex-shrink: 0; }
+.ring-history-group[open] .ring-history-chevron { transform: rotate(225deg); margin-bottom: -4px; }
+.ring-history-content { border-top: 1px solid var(--ring-line); padding: 0 16px; }
+.ring-history-list { list-style: none; padding: 0; margin: 0; }
+.ring-history-record { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 16px; padding: 14px 0; }
+.ring-history-record + .ring-history-record { border-top: 1px solid var(--ring-line); }
+.ring-history-player { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.ring-history-player strong { font-size: 14px; font-weight: 500; overflow-wrap: anywhere; }
+.ring-history-player small { color: var(--history-accent); font-size: 11px; }
+.ring-history-status { font-size: 11px; color: var(--ring-muted); }
+.ring-history-status--active { padding: 2px 6px; background: #e5eee6; color: #315f59; border-radius: 3px; }
+.ring-history-time, .ring-history-score { margin: 0; color: var(--ring-muted); font-size: 12px; }
+.ring-history-time { grid-column: 1; }
+.ring-history-score { grid-column: 1; }
+.ring-history-score b { font-weight: 500; color: var(--ring-ink); }
+.ring-history-link { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; grid-column: 2; grid-row: 1 / 4; align-self: center; color: var(--history-accent); font-size: 12px; text-decoration: none; padding: 10px 0 10px 10px; }
+.ring-history-link:hover { text-decoration: underline; }
+.ring-history-empty { padding: 22px 0; color: var(--ring-muted); font-size: 13px; }
+.ring-history-pagination { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--ring-line); font-size: 12px; color: var(--ring-muted); }
+.ring-history-pagination a { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 0; color: var(--history-accent); }
+@media (max-width: 480px) {
+  .ring-history-group > summary { gap: 10px; padding: 12px; }
+  .ring-history-group > summary img { width: 56px; height: 44px; }
+  .ring-history-heading strong { font-size: 18px; }
+  .ring-history-count { flex-direction: column; gap: 0; align-items: center; }
+  .ring-history-count b { font-size: 20px; line-height: 1.2; }
+  .ring-history-count small { font-size: 10px; }
+  .ring-history-content { padding: 0 12px; }
+}
+.ring-fee, .ring-form-note { margin: 10px 0 0; font-size: 11px; color: var(--ring-muted); line-height: 1.6; }
+.ring-own-lineup { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--ring-line); font-size: 12px; }
+.ring-own-lineup > summary { cursor: pointer; }
+.ring-own-lineup > div { margin-top: 12px; }
+.ring-notice { font-size: 12px; color: var(--ring-muted); }
+
+.ring-snapshot-note { margin: 0 0 12px; font-size: 12px; color: var(--ring-muted); }
+.ring-form-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 16px 0 8px; }
+.ring-form-heading:first-of-type { margin-top: 0; }
+.ring-form-heading p { margin: 0; font-size: 13px; font-weight: 600; }
+.ring-form-heading button { border: 0; padding: 6px 10px; background: transparent; color: var(--ring-accent); font: inherit; font-size: 12px; cursor: pointer; }
+.ring-form-heading > span { font-size: 11px; color: var(--ring-muted); }
+.ring-guest-options { max-height: 280px; overflow-y: auto; }
+.ring-troop-options { margin-top: 10px; }
+.ring-loadout-modal { height: 85vh; height: min(85dvh, 850px); width: min(760px, calc(100% - 24px)); max-width: 760px; max-height: min(85dvh, 850px); margin: auto; padding: 0; color: var(--ring-ink); background: var(--ring-paper); border-color: var(--ring-line); }
+dialog.ring-loadout-modal:not([open]) { display: none; }
+.ring-loadout-overlay.ring-loadout-overlay--baihu { --ring-accent: #875027; }
+.ring-loadout-overlay { --ring-accent: #315f59; position: fixed; inset: 0; z-index: 9500; align-items: center; justify-content: center; background: rgba(25, 22, 17, .58); }
+.ring-loadout-modal .tw-modal-header { flex-shrink: 0; padding: 14px 18px; }
+.ring-loadout-modal .tw-modal-body { min-height: 0; padding: 16px 18px; overscroll-behavior: contain; }
+.ring-loadout-modal .tw-raid-guest-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ring-loadout-modal .tw-raid-troop-row { flex-wrap: wrap; gap: 10px; }
+.ring-loadout-modal .tw-raid-troop-controls { flex-wrap: nowrap; }
+.ring-modal-footer { flex-shrink: 0; padding: 10px 18px 16px; border-top: 1px solid var(--ring-line); }
+.ring-modal-footer .ring-capacity { margin: 0 0 8px; }
+.ring-modal-footer .ring-form-note { margin: 0 0 8px; }
+.ring-modal-actions { display: flex; gap: 10px; }
+.ring-modal-cancel { min-width: 80px; border: 1px solid var(--ring-line); border-radius: 4px; background: transparent; color: var(--ring-muted); cursor: pointer; }
+.ring-capacity { margin: 12px 0; color: var(--ring-muted); font-size: 11px; line-height: 1.5; }
+.ring-form-error { margin: 8px 0; color: #a33623; font-size: 12px; }
+.ring-quick-rules { margin-top: 22px; border-top: 1px solid var(--ring-line); font-size: 12px; }
+.ring-quick-rules > summary { display: flex; justify-content: space-between; align-items: center; min-height: 44px; padding: 10px 0; list-style: none; cursor: pointer; }
+.ring-quick-rules > summary span { color: var(--ring-muted); font-size: 11px; }
+.ring-quick-rules > div { padding: 0 0 8px; color: var(--ring-muted); line-height: 1.8; }
+.ring-quick-rules p { margin: 6px 0; }
+.arena-rings :is(a, button, summary, input):focus-visible, .ring-loadout-overlay :is(button, input):focus-visible { outline: 2px solid #906020; outline-offset: 3px; }
+.arena-rings :is(.ring-entry-button, .ring-submit):hover { filter: brightness(1.08); }
+.ring-secondary-actions :is(a, button):hover:not(:disabled) { background: #f3ecda; }
+
+/* 观战和阵容页保留相同的视觉层级。 */
+.ring-detail-header { display: grid; grid-template-columns: minmax(0, 1fr) 240px; overflow: hidden; border: 1px solid var(--ring-line); border-radius: 6px; margin-bottom: 20px; background: var(--ring-paper); }
+.ring-detail-copy { padding: 22px; }
+.ring-detail-copy h2 { margin: 0 0 10px; font-size: 26px; }
+.ring-detail-copy p { margin: 6px 0; font-size: 13px; color: var(--ring-muted); }
+.ring-detail-header img { width: 100%; height: 100%; max-height: 220px; object-fit: cover; }
+.ring-detail-copy > a { display: inline-block; margin-top: 10px; color: #875027; font-size: 13px; }
+.ring-records { background: var(--ring-paper); border: 1px solid var(--ring-line); border-radius: 6px; padding: 18px; }
+.ring-records h3 { margin: 0 0 12px; font-size: 16px; }
+.ring-records .ring-table-scroll { overflow-x: auto; }
+.ring-records table { width: 100%; font-size: 12px; }
+.ring-records th, .ring-records td { padding: 12px 8px; border-bottom: 1px solid var(--ring-line); text-align: left; white-space: nowrap; }
+.ring-records th { font-weight: 400; color: var(--ring-muted); }
+.ring-records th:last-child, .ring-records td:last-child { text-align: right; }
+.ring-records a { color: #875027; }
+.ring-inspection { padding: 22px; background: var(--ring-paper); border: 1px solid var(--ring-line); border-radius: 6px; }
+.ring-inspection h2 { margin: 0 0 8px; font-size: 24px; }
+.ring-inspection > p { margin: 0 0 18px; color: var(--ring-muted); font-size: 12px; }
+.ring-inspection > a { display: inline-block; margin-top: 20px; color: #875027; font-size: 13px; }
+
+@media (max-width: 780px) {
+  .dashboard:has(.arena-rings) .tw-troop-subtabs { gap: 5px; }
+  .dashboard:has(.arena-rings) .tw-troop-subtab { flex: 1; padding: 9px 6px; font-size: 12px; text-align: center; }
+  .ring-stage-grid { grid-template-columns: 1fr; gap: 16px; }
+  .ring-stage-art { height: 160px; }
+  .ring-tags span { font-size: 10px; padding: 3px 6px; }
+  .ring-rewards > div { padding: 12px 10px; }
+  .ring-rewards span { font-size: 11px; }
+  .ring-rewards strong { font-size: 26px; }
+  .ring-rewards small { display: block; margin: 4px 0 0; font-size: 10px; }
+  .ring-daybar { gap: 6px 12px; font-size: 11px; padding-bottom: 16px; }
+  .ring-daybar > span:last-child { display: none; }
+  .ring-stage-body { padding: 16px; }
+  .ring-stage-title { left: 16px; bottom: 16px; }
+  .ring-vacant { min-height: 120px; }
+  .ring-detail-header { grid-template-columns: minmax(0, 1fr) 100px; }
+  .ring-detail-copy { padding: 16px; }
+  .ring-detail-copy h2 { font-size: 22px; }
+  .ring-detail-copy p { font-size: 12px; }
+  .ring-inspection, .ring-records { padding: 16px; }
+}
+
+@media (max-width: 480px) {
+  .ring-loadout-modal .tw-raid-guest-grid { grid-template-columns: 1fr; }
+  .ring-loadout-modal .tw-modal-header, .ring-loadout-modal .tw-modal-body, .ring-modal-footer { padding-left: 12px; padding-right: 12px; }
+  .ring-loadout-modal .tw-raid-troop-controls { width: 100%; justify-content: space-between; gap: 4px; }
+  .ring-loadout-modal .tw-raid-troop-input { width: 64px; min-width: 0; }
+  .ring-loadout-modal .tw-raid-step-btn { padding: 5px; min-width: 32px; }
+}
+
+.ring-streak { margin: -4px 0 10px; font-size: 12px; color: var(--ring-accent); }
+.ring-streak-rewards { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 14px; padding: 10px 12px; border: 1px solid var(--ring-line); border-radius: 4px; font-size: 12px; }
+.ring-streak-rewards > span:first-child { color: var(--ring-muted); }
+.ring-streak-rewards strong { color: #906020; }

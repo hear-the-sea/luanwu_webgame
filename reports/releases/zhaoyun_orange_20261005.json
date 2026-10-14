@@ -1,0 +1,15 @@
+{
+  "release": "/root/code/releases/zhaoyun-orange-20261005",
+  "result": {
+    "message_id": 167202,
+    "manor_id": 11,
+    "attachments": {
+      "items": {
+        "zhaoyun_guest_scroll": 1
+      }
+    },
+    "claimed": false,
+    "owners_rebased": 3,
+    "migration_applied": true
+  }
+}

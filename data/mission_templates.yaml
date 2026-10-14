@@ -167,7 +167,7 @@ missions:
 
     drop_table:
       silver: 40000
-      mission_chest_mid_autumn_moon_palace_trial: 1
+      mission_chest_v3_mid_autumn_moon_palace_trial: 1
     daily_limit: 3
 
   # ========================================
@@ -207,7 +207,7 @@ missions:
 
     drop_table:
       silver: 40000
-      mission_chest_kasukabe_daisakusen: 1
+      mission_chest_v3_kasukabe_daisakusen: 1
     daily_limit: 3
 
   # ========================================
@@ -239,7 +239,7 @@ missions:
 
     drop_table:
       silver: 8000
-      mission_chest_huashan_lunjian: 1
+      mission_chest_v3_huashan_lunjian: 1
     daily_limit: 3
 
   # ========================================
@@ -278,7 +278,7 @@ missions:
 
     drop_table:
       silver: 40000
-      mission_chest_wagangzhai_nixi: 1
+      mission_chest_v3_wagangzhai_nixi: 1
     base_travel_time: 1800
     daily_limit: 3
 
@@ -306,7 +306,7 @@ missions:
 
     drop_table:
       silver: 7000
-      mission_chest_jingyanggang: 1
+      mission_chest_v3_jingyanggang: 1
     daily_limit: 3
 
   - key: wulongshan
@@ -333,7 +333,7 @@ missions:
 
     drop_table:
       silver: 15000
-      mission_chest_wulongshan: 1
+      mission_chest_v3_wulongshan: 1
     daily_limit: 3
 
   - key: wagangzhai
@@ -358,7 +358,7 @@ missions:
 
     drop_table:
       silver: 20000
-      mission_chest_wagangzhai: 1
+      mission_chest_v3_wagangzhai: 1
     daily_limit: 3
 
   - key: fugui_shanzhuang
@@ -381,7 +381,7 @@ missions:
 
     drop_table:
       silver: 14000
-      mission_chest_fugui_shanzhuang: 1
+      mission_chest_v3_fugui_shanzhuang: 1
     daily_limit: 3
 
   - key: shizipo_heidian
@@ -410,7 +410,7 @@ missions:
 
     drop_table:
       silver: 30000
-      mission_chest_shizipo_heidian: 1
+      mission_chest_v3_shizipo_heidian: 1
     daily_limit: 3
 
   - key: shanhaiguan
@@ -437,7 +437,7 @@ missions:
 
     drop_table:
       silver: 40000
-      mission_chest_shanhaiguan: 1
+      mission_chest_v3_shanhaiguan: 1
     daily_limit: 3
 
   - key: shiren_daochang
@@ -471,7 +471,7 @@ missions:
 
     drop_table:
       silver: 20000
-      mission_chest_shiren_daochang: 1
+      mission_chest_v3_shiren_daochang: 1
     daily_limit: 3
 
   - key: jiguanshou_chuxian
@@ -507,7 +507,7 @@ missions:
 
     drop_table:
       silver: 24000
-      mission_chest_jiguanshou_chuxian: 1
+      mission_chest_v3_jiguanshou_chuxian: 1
     daily_limit: 2
     mission_card_daily_limit: 1
 
@@ -531,7 +531,7 @@ missions:
 
     drop_table:
       silver: 20000
-      mission_chest_biwu_zhaoqin: 1
+      mission_chest_v3_biwu_zhaoqin: 1
     daily_limit: 3
 
   - key: tianpeng_dijiao_1
@@ -567,7 +567,7 @@ missions:
 
     drop_table:
       silver: 50000
-      mission_chest_tianpeng_dijiao_1: 1
+      mission_chest_v3_tianpeng_dijiao_1: 1
     daily_limit: 3
 
   - key: tianpeng_dijiao_2
@@ -609,7 +609,7 @@ missions:
       guest_bonus: 0.20
 
     drop_table:
-      mission_chest_tianpeng_dijiao_2: 1
+      mission_chest_v3_tianpeng_dijiao_2: 1
     daily_limit: 3
 
   - key: jiguan_chuniao
@@ -641,7 +641,7 @@ missions:
 
     drop_table:
       silver: 30000
-      mission_chest_jiguan_chuniao: 1
+      mission_chest_v3_jiguan_chuniao: 1
     daily_limit: 3
 
   - key: dongtian_fudi
@@ -668,7 +668,7 @@ missions:
 
     drop_table:
       silver: 50000
-      mission_chest_dongtian_fudi: 1
+      mission_chest_v3_dongtian_fudi: 1
     daily_limit: 3
 
   - key: jiufeng_feihuan
@@ -702,7 +702,7 @@ missions:
 
     drop_table:
       silver: 20000
-      mission_chest_jiufeng_feihuan: 1
+      mission_chest_v3_jiufeng_feihuan: 1
     daily_limit: 3
 
   - key: taozi_fenban
@@ -741,7 +741,7 @@ missions:
       guest_bonus: 0.06
 
     drop_table:
-      mission_chest_taozi_fenban: 1
+      mission_chest_v3_taozi_fenban: 1
     daily_limit: 1
     mission_card_daily_limit: 0
 
@@ -777,7 +777,7 @@ missions:
 
     drop_table:
       silver: 50000
-      mission_chest_simian_chuge: 1
+      mission_chest_v3_simian_chuge: 1
     daily_limit: 3
 
   - key: manzu_ruqin
@@ -804,7 +804,7 @@ missions:
 
     drop_table:
       silver: 50000
-      mission_chest_manzu_ruqin: 1
+      mission_chest_v3_manzu_ruqin: 1
     daily_limit: 3
 
   - key: zhuiji_manzu
@@ -832,7 +832,7 @@ missions:
 
     drop_table:
       silver: 40000
-      mission_chest_zhuiji_manzu: 1
+      mission_chest_v3_zhuiji_manzu: 1
     daily_limit: 3
 
   - key: liangshanbo_zhuyingtai
@@ -863,7 +863,7 @@ missions:
 
     drop_table:
       silver: 10000
-      mission_chest_liangshanbo_zhuyingtai: 1
+      mission_chest_v3_liangshanbo_zhuyingtai: 1
     base_travel_time: 1800
     daily_limit: 3
 
@@ -896,7 +896,7 @@ missions:
 
     drop_table:
       silver: 60000
-      mission_chest_biyou_candeng: 1
+      mission_chest_v3_biyou_candeng: 1
     base_travel_time: 1800
     daily_limit: 3
 
@@ -934,7 +934,7 @@ missions:
 
     drop_table:
       silver: 80000
-      mission_chest_shier_xianyin: 1
+      mission_chest_v3_shier_xianyin: 1
     base_travel_time: 1800
     daily_limit: 2
 
@@ -971,7 +971,7 @@ missions:
 
     drop_table:
       silver: 100000
-      mission_chest_fengbang_tianmen: 1
+      mission_chest_v3_fengbang_tianmen: 1
     base_travel_time: 1800
     daily_limit: 1
 
@@ -1006,7 +1006,7 @@ missions:
 
     drop_table:
       silver: 100000
-      mission_chest_zhuolu_zhongyuan: 1
+      mission_chest_v3_zhuolu_zhongyuan: 1
     base_travel_time: 1800
     daily_limit: 1
 
@@ -1039,7 +1039,7 @@ missions:
 
     drop_table:
       silver: 120000
-      mission_chest_guandu_zhizhan: 1
+      mission_chest_v3_guandu_zhizhan: 1
     base_travel_time: 2400
     daily_limit: 1
 
@@ -1112,7 +1112,7 @@ missions:
 
     drop_table:
       silver: 120000
-      mission_chest_huashan_lunjian_advanced: 1
+      mission_chest_v3_huashan_lunjian_advanced: 1
     base_travel_time: 2400
     daily_limit: 1
 
@@ -1145,7 +1145,7 @@ missions:
 
     drop_table:
       silver: 90000
-      mission_chest_sishui_huaxiong_chengwei: 1
+      mission_chest_v3_sishui_huaxiong_chengwei: 1
     base_travel_time: 2400
     daily_limit: 1
 
@@ -1184,7 +1184,7 @@ missions:
 
     drop_table:
       silver: 110000
-      mission_chest_hulao_qunying_zhan_lvbu: 1
+      mission_chest_v3_hulao_qunying_zhan_lvbu: 1
     base_travel_time: 2400
     daily_limit: 1
 
@@ -1231,7 +1231,7 @@ missions:
 
     drop_table:
       silver: 180000
-      mission_chest_baimenlou_mingyun_jueze: 1
+      mission_chest_v3_baimenlou_mingyun_jueze: 1
     base_travel_time: 2700
     daily_limit: 1
 

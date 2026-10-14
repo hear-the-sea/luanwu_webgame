@@ -1,0 +1,53 @@
+{
+  "status": "deployed_and_verified",
+  "image": "webgame:quick-launch-confirm-20261009",
+  "previous_web_image": "webgame:all-updates-20261009T124924Z",
+  "web_health": "healthy",
+  "other_services_kept_running": true,
+  "browser_tests_passed": 17,
+  "verification": {
+    "template_and_script_verified": true,
+    "static_urls": {
+      "js/tasks-page.js": "/static/js/tasks-page.6085954c221b.js",
+      "css/tailwind.css": "/static/css/tailwind.e0d913cb3752.css"
+    },
+    "ready": {
+      "status": "ok",
+      "checks": {
+        "db": true,
+        "cache": true,
+        "channel_layer": true,
+        "celery_broker": true,
+        "celery_workers": true,
+        "celery_beat": true,
+        "celery_roundtrip": true
+      }
+    }
+  },
+  "public_http": {
+    "/": 200,
+    "/accounts/login/": 200,
+    "/health/live": 200,
+    "/static/js/tasks-page.6085954c221b.js": 200,
+    "/static/css/tailwind.e0d913cb3752.css": 200
+  },
+  "files": {
+    "gameplay/templates/gameplay/tasks.html": "392be5e2f6a1102a478b33ccba4490e11008e0e94838fcc9f662e64b8b884238",
+    "static/js/tasks-page.js": "348247757ad4adbf31acd65aeff3bb7e2c890c48e9a354ab49f009f192bc9df8",
+    "src/input.css": "7f22daeed8f19f891cf706251ddbe1e0c1190b4297cf30dc5a2e50cec2ab8c0b",
+    "static/css/tailwind.css": "18cd266e730b08bd90077082994cf3382ac0be03991deb654a5ed523ac43afef"
+  },
+  "config_files": [
+    "/root/code/docker-compose.prod.yml",
+    "/root/code/docker-compose.prod.double-caddy.yml",
+    "/root/code/releases/spear-counter-20261005/compose.new.yml",
+    "/root/code/releases/asgiref-fix-20261005/compose.new.yml",
+    "/root/code/releases/reflect-names-20261005/compose.new.yml",
+    "/root/code/releases/lier-orange-20261006/compose.new.yml",
+    "/root/code/releases/pagination-20261007-b8d4/compose.new.yml",
+    "/root/code/releases/unique-shield-20261008-9e17/compose.new.yml",
+    "/root/code/releases/timer-recovery-20261008/compose.new.yml",
+    "/root/code/releases/all-updates-20261009T124924Z/compose.new.yml"
+  ],
+  "release": "/root/code/releases/quick-launch-confirm-20261009"
+}

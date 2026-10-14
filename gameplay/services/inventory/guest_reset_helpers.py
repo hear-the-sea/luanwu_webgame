@@ -22,7 +22,7 @@ from guests.constants import RARITY_CONVERSION_TEMPLATE_KEY_PREFIX
 from guests.models import Guest, GuestRarity, GuestStatus, GuestTemplate
 from guests.rarity import GUEST_RARITY_ORDER
 
-from .core import add_item_to_inventory_locked
+from .core import add_item_to_inventory_locked, validate_inventory_item_group
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +75,7 @@ def validate_guest_item_use(
     action: str,
     *,
     allowed_statuses: Collection[str] | None = None,
+    binding_mode: str | None = None,
 ) -> tuple[InventoryItem, Guest]:
     """Validate guest-target item usage prerequisites and lock related rows."""
     if not item.pk:
@@ -95,6 +96,13 @@ def validate_guest_item_use(
 
     if locked_item.quantity <= 0:
         raise InsufficientStockError(locked_item.template.name, 1, locked_item.quantity)
+
+    validate_inventory_item_group(locked_item, 1, binding_mode)
+    setattr(
+        locked_item,
+        "_use_source_is_bound",
+        binding_mode == "bound" if binding_mode is not None else locked_item.bound_quantity > 0,
+    )
 
     guest = Guest.objects.select_for_update().select_related("template").filter(id=guest_id, manor=manor).first()
     if not guest:
@@ -129,7 +137,9 @@ def detach_guest_gears_for_reset(guest: Guest, *, action_label: str, manor: Mano
             )
         updated = guest.gear_items.filter(pk=gear.pk, guest_id=guest.pk).update(guest=None)
         if updated:
-            restore_gear_to_warehouse(restore_manor, gear.template.key)
+            if restore_gear_to_warehouse(restore_manor, gear.template.key, is_bound=gear.is_bound):
+                gear.inventory_backed = True
+                gear.save(update_fields=["inventory_backed"])
             unequipped_count += 1
         else:
             logger.warning(
@@ -142,18 +152,20 @@ def detach_guest_gears_for_reset(guest: Guest, *, action_label: str, manor: Mano
     return unequipped_count
 
 
-def restore_gear_to_warehouse(manor: Manor, gear_template_key: str) -> None:
+def restore_gear_to_warehouse(manor: Manor, gear_template_key: str, *, is_bound: bool = False) -> bool:
     item_template = ItemTemplate.objects.filter(key=gear_template_key).first()
     if not item_template:
         logger.warning("强制卸装后未找到回仓模板: manor_id=%s, gear_key=%s", manor.pk, gear_template_key)
-        return
+        return False
 
     add_item_to_inventory_locked(
         manor,
         item_template.key,
         1,
         template=item_template,
+        is_bound=is_bound,
     )
+    return True
 
 
 def prepare_guest_for_reset(

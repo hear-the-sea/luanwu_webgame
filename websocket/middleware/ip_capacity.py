@@ -191,7 +191,10 @@ class WebSocketIPCapacityMiddleware:
 
         if decision.result is not IPCapacityResult.ACQUIRED:
             logger.info(
-                "WebSocket IP capacity rejected connection",
+                "WebSocket IP capacity rejected connection: reason=%s active_slots=%s limit=%s",
+                decision.result.value,
+                decision.active_count,
+                settings.WEBSOCKET_MAX_CONNECTIONS_PER_IP,
                 extra={
                     "client_ip_id": _client_ip_log_id(client_ip),
                     "path": scope.get("path"),

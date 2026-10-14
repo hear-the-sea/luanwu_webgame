@@ -71,7 +71,7 @@ def test_get_available_gold_bars_calculates_correctly():
     """Test that available = total - frozen."""
     manor = MagicMock()
 
-    with patch.object(gold_bars, "get_total_gold_bars", return_value=100):
+    with patch.object(gold_bars, "get_unbound_gold_bars", return_value=100):
         with patch.object(gold_bars, "get_frozen_gold_bars", return_value=30):
             result = gold_bars.get_available_gold_bars(manor)
 
@@ -82,7 +82,7 @@ def test_get_available_gold_bars_never_negative():
     """Test that available gold bars is never negative."""
     manor = MagicMock()
 
-    with patch.object(gold_bars, "get_total_gold_bars", return_value=10):
+    with patch.object(gold_bars, "get_unbound_gold_bars", return_value=10):
         with patch.object(gold_bars, "get_frozen_gold_bars", return_value=50):
             result = gold_bars.get_available_gold_bars(manor)
 
@@ -93,7 +93,7 @@ def test_get_available_gold_bars_all_frozen():
     """Test that available is 0 when all are frozen."""
     manor = MagicMock()
 
-    with patch.object(gold_bars, "get_total_gold_bars", return_value=50):
+    with patch.object(gold_bars, "get_unbound_gold_bars", return_value=50):
         with patch.object(gold_bars, "get_frozen_gold_bars", return_value=50):
             result = gold_bars.get_available_gold_bars(manor)
 

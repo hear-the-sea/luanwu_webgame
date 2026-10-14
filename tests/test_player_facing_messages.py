@@ -141,7 +141,8 @@ def test_message_attachment_labels_hide_unknown_keys(monkeypatch):
     assert [entry["name"] for entry in payload] == ["未知资源", "未知物品"]
 
 
-def test_loot_box_reward_message_hides_unknown_item_key(monkeypatch):
+@pytest.mark.parametrize("source_is_bound", [False, True])
+def test_loot_box_reward_message_hides_unknown_item_key(monkeypatch, source_is_bound):
     from gameplay.services.inventory import use as inventory_use
 
     empty_query = SimpleNamespace(first=lambda: None)
@@ -150,10 +151,17 @@ def test_loot_box_reward_message_hides_unknown_item_key(monkeypatch):
         "ItemTemplate",
         SimpleNamespace(objects=SimpleNamespace(filter=lambda **_kwargs: empty_query)),
     )
-    monkeypatch.setattr(inventory_use, "add_item_to_inventory", lambda *_args, **_kwargs: None)
+    grants = []
+
+    def _grant_item(manor, item_key, quantity, *, is_bound=None):
+        grants.append((manor.id, item_key, quantity, is_bound))
+
+    monkeypatch.setattr(inventory_use, "add_item_to_inventory", _grant_item)
     monkeypatch.setattr(inventory_use.inventory_random, "randint", lambda _minimum, _maximum: 2)
     item = SimpleNamespace(
         id=1,
+        quantity=1,
+        bound_quantity=int(source_is_bound),
         manor=SimpleNamespace(id=1),
         template=SimpleNamespace(
             name="测试宝箱",
@@ -165,6 +173,8 @@ def test_loot_box_reward_message_hides_unknown_item_key(monkeypatch):
 
     assert result["rewards"] == ["物品【未知物品】×2"]
     assert result["_message"] == "打开宝箱获得：物品【未知物品】×2"
+    assert grants == [(1, "future_item", 2, source_is_bound)]
+    assert "future_item" not in result["_message"]
 
 
 def test_guild_technology_cost_hides_unknown_resource_key(monkeypatch):

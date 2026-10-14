@@ -10,9 +10,12 @@ from datetime import datetime, timedelta
 from fractions import Fraction
 from typing import TYPE_CHECKING, Any, Dict
 
-from django.db import transaction
+from django.db import connection, transaction
+from django.db.models import BigIntegerField, F, Value
+from django.db.models.functions import Cast, Greatest
 from django.utils import timezone
 
+from core.config import GUEST
 from core.exceptions import (
     GuestFullHpError,
     GuestItemConfigurationError,
@@ -324,7 +327,7 @@ def recover_guest_hp_for_guest(
     return after_state != before_state
 
 
-def heal_guest(guest: Guest, heal_amount: int) -> dict:
+def heal_guest(guest: Guest, heal_amount: int, *, now: datetime | None = None) -> dict:
     """
     为门客治疗，恢复生命值。
 
@@ -351,7 +354,7 @@ def heal_guest(guest: Guest, heal_amount: int) -> dict:
     if guest.current_hp >= guest.max_hp:
         raise GuestFullHpError(guest)
 
-    now = timezone.now()
+    now = now or timezone.now()
     injury_decay_intervals = apply_injury_loyalty_decay(guest, now=now)
     old_hp = guest.current_hp
     new_hp = min(guest.max_hp, guest.current_hp + heal_amount)
@@ -458,6 +461,7 @@ def _apply_medicine_to_locked_objects(
     *,
     expected_quote: MedicineUseQuote | None = None,
     expected_heal_amount: int | None = None,
+    now: datetime | None = None,
 ) -> Dict[str, Any]:
     """复用当前事务内已锁定的门客和库存，执行相同的单次用药规则。"""
     if not transaction.get_connection().in_atomic_block:
@@ -471,7 +475,11 @@ def _apply_medicine_to_locked_objects(
     if expected_quote is not None:
         validate_medicine_use_quote(expected_quote, quote)
 
-    raw_result = heal_guest(locked_guest, quote.heal_amount)
+    raw_result = (
+        heal_guest(locked_guest, quote.heal_amount)
+        if now is None
+        else heal_guest(locked_guest, quote.heal_amount, now=now)
+    )
     healed = _normalize_non_negative_health_int(
         raw_result.get("healed"),
         contract_name="medicine healed",
@@ -593,61 +601,99 @@ def _batch_healing_guest_sort_key(guest: Guest) -> tuple[int, Fraction, int, int
     )
 
 
-@transaction.atomic
-def heal_all_guests_with_medicine(manor: Manor) -> dict[str, int]:
-    """使用仓库药品批量治疗庄园内可治疗的门客。
+@dataclass(frozen=True, slots=True)
+class _BatchHealingPlan:
+    guest_healing: dict[int, int]
+    item_consumption: dict[int, int]
+    summary: dict[str, int]
 
-    批量操作始终先锁庄园，再锁住参与治疗的门客和药品；庄园父行锁会
-    与单个药品使用串行化，避免重复扣减。每位门客会被持续治疗到满血
-    或药品耗尽；药品不足时按“重伤优先、缺血比例优先”部分完成，并
-    把未完成数量返回给调用方。
-    """
 
-    from gameplay.models import InventoryItem, ItemTemplate
-    from gameplay.models import Manor as ManorModel
-
-    locked_manor = ManorModel.objects.select_for_update().get(pk=manor.pk)
-    locked_guests = list(
-        Guest.objects.select_for_update()
-        .select_related("template")
-        .filter(
-            manor_id=locked_manor.pk,
-            status__in=[GuestStatus.IDLE, GuestStatus.INJURED],
-        )
-        .order_by("id")
+def _plan_batch_healing(guests: list[Guest], stocks: list[_MedicineStock]) -> _BatchHealingPlan:
+    """只修改规划副本；按药品块计算，循环次数不随用药瓶数增长。"""
+    planning_stocks = [_MedicineStock(copy(stock.item), stock.heal_amount) for stock in stocks]
+    healing: dict[int, int] = {}
+    consumption: dict[int, int] = {}
+    healed_count = 0
+    partial_count = 0
+    for guest in sorted(guests, key=_batch_healing_guest_sort_key):
+        missing_hp = int(guest.max_hp) - int(guest.current_hp)
+        original_missing = missing_hp
+        while missing_hp > 0:
+            stock = _select_batch_medicine_stock(planning_stocks, missing_hp=missing_hp)
+            if stock is None:
+                break
+            # 留下最后的收尾选择，仍按旧规则挑选溢出最少的一瓶。
+            quantity = (
+                1
+                if stock.heal_amount >= missing_hp
+                else min(int(stock.item.quantity), (missing_hp - 1) // stock.heal_amount)
+            )
+            item_id = int(stock.item.pk)
+            stock.item.quantity -= quantity
+            consumption[item_id] = consumption.get(item_id, 0) + quantity
+            missing_hp -= min(missing_hp, stock.heal_amount * quantity)
+        healed = original_missing - missing_hp
+        if healed:
+            healing[int(guest.pk)] = healed
+        if missing_hp == 0:
+            healed_count += 1
+        elif healed:
+            partial_count += 1
+    return _BatchHealingPlan(
+        healing,
+        consumption,
+        {
+            "requested_count": len(guests),
+            "healed_count": healed_count,
+            "partial_count": partial_count,
+            "unhealed_count": len(guests) - healed_count,
+            "consumed_item_count": sum(consumption.values()),
+            "healed_hp": sum(healing.values()),
+        },
     )
-    healable_guests = [guest for guest in locked_guests if int(guest.current_hp) < int(guest.max_hp)]
-    requested_count = len(healable_guests)
-    if not healable_guests:
-        return {
-            "requested_count": 0,
-            "healed_count": 0,
-            "partial_count": 0,
-            "unhealed_count": 0,
-            "consumed_item_count": 0,
-            "healed_hp": 0,
-        }
 
-    locked_items = list(
-        InventoryItem.objects.select_for_update()
-        .select_related("template")
-        .filter(
-            manor_id=locked_manor.pk,
-            quantity__gt=0,
-            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-            template__effect_type=ItemTemplate.EffectType.MEDICINE,
-        )
-        .order_by("template__key", "id")
-    )
-    stocks: list[_MedicineStock] = []
-    for item in locked_items:
-        try:
-            heal_amount = resolve_medicine_heal_amount(item)
-        except GuestItemConfigurationError:
-            # 单个异常配置不应阻断其它正常药品的批量治疗。
+
+def _apply_batch_healing_plan(
+    guests: list[Guest], stocks: list[_MedicineStock], plan: _BatchHealingPlan, *, now: datetime
+) -> None:
+    """从原始锁定对象的副本提交，保存点失败不会污染重试输入。"""
+    for guest in sorted(guests, key=_batch_healing_guest_sort_key):
+        amount = plan.guest_healing.get(int(guest.pk), 0)
+        if not amount:
             continue
-        stocks.append(_MedicineStock(item=item, heal_amount=heal_amount))
+        attempted = copy(guest)
+        result = heal_guest(attempted, amount, now=now)
+        healed = _normalize_non_negative_health_int(result.get("healed"), contract_name="batch medicine healed")
+        new_hp = int(guest.current_hp) + amount
+        injury_cured = guest.status == GuestStatus.INJURED and _guest_health_rules.should_clear_injured_status(
+            current_hp=new_hp, max_hp=int(guest.max_hp)
+        )
+        expected_status = GuestStatus.IDLE if injury_cured else guest.status
+        if (
+            healed != amount
+            or int(attempted.current_hp) != new_hp
+            or attempted.status != expected_status
+            or bool(result.get("injury_cured", False)) != injury_cured
+        ):
+            raise AssertionError("batch medicine application differed from its plan")
+    for stock in stocks:
+        amount = plan.item_consumption.get(int(stock.item.pk), 0)
+        if amount:
+            attempted = copy(stock.item)
+            inventory_core.consume_inventory_item_locked(attempted, amount)
+            remaining = int(attempted.quantity) if attempted.pk else 0
+            remaining_bound = int(attempted.bound_quantity) if attempted.pk else 0
+            if remaining != int(stock.item.quantity) - amount or remaining_bound != max(
+                0, int(stock.item.bound_quantity) - amount
+            ):
+                raise AssertionError("batch medicine consumption differed from its plan")
 
+
+def _heal_locked_guests_one_dose_at_a_time(
+    locked_manor: Manor, healable_guests: list[Guest], stocks: list[_MedicineStock], *, now: datetime
+) -> dict[str, int]:
+    """异常库存的兼容路径：沿用逐瓶保存点和失败药品跳过规则。"""
+    requested_count = len(healable_guests)
     healed_count = 0
     partial_count = 0
     consumed_item_count = 0
@@ -671,6 +717,7 @@ def heal_all_guests_with_medicine(manor: Manor) -> dict[str, int]:
                         attempted_guest,
                         attempted_item,
                         expected_heal_amount=stock.heal_amount,
+                        now=now,
                     )
             except (GuestFullHpError, GuestItemConfigurationError, GuestItemOwnershipError, GuestNotIdleError):
                 # 状态变化或库存配置变化时跳过当前药品，继续尝试其它库存。
@@ -712,3 +759,72 @@ def heal_all_guests_with_medicine(manor: Manor) -> dict[str, int]:
         "consumed_item_count": consumed_item_count,
         "healed_hp": healed_hp,
     }
+
+
+@transaction.atomic
+def heal_all_guests_with_medicine(manor: Manor) -> dict[str, int]:
+    """按既有优先级配药，正常路径每门客写一次、每库存扣一次。
+
+    Manor -> InventoryItem -> Guest 的锁序与单人疗伤一致。疗伤、绑定药
+    扣减和恢复训练仍在同一事务完成；库存发生可恢复错误时，回滚本轮
+    并沿用原有逐瓶容错，保留异常路径的药品跳过与部分治疗语义。
+    """
+    from gameplay.models import InventoryItem, ItemTemplate
+    from gameplay.models import Manor as ManorModel
+
+    locked_manor = ManorModel.objects.select_for_update().get(pk=manor.pk)
+    now = timezone.now()
+    # 关联模板只读；支持 OF 的数据库仅锁库存/门客，避免不同庄园争用共享模板。
+    lock_targets = ("self",) if connection.features.has_select_for_update_of else ()
+    items = list(
+        InventoryItem.objects.select_for_update(of=lock_targets)
+        .select_related("template")
+        .filter(
+            manor_id=locked_manor.pk,
+            quantity__gt=0,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            template__effect_type=ItemTemplate.EffectType.MEDICINE,
+        )
+        .order_by("template__key", "id")
+    )
+    # 与 Guest.max_hp 的规则一致，在数据库中排除满血门客，缩小锁范围。
+    max_hp = Greatest(
+        Value(GUEST.MIN_HP_FLOOR),
+        Cast(F("template__base_hp"), BigIntegerField())
+        + F("hp_bonus")
+        + Cast(F("defense_stat"), BigIntegerField()) * GUEST.DEFENSE_TO_HP_MULTIPLIER,
+        output_field=BigIntegerField(),
+    )
+    guests = list(
+        Guest.objects.select_for_update(of=lock_targets)
+        .select_related("template")
+        .filter(
+            manor_id=locked_manor.pk,
+            status__in=[GuestStatus.IDLE, GuestStatus.INJURED],
+            current_hp__lt=max_hp,
+        )
+        .order_by("id")
+    )
+    stocks = []
+    for item in items:
+        try:
+            amount = resolve_medicine_heal_amount(item)
+        except GuestItemConfigurationError:
+            continue
+        stocks.append(_MedicineStock(item, amount))
+    plan = _plan_batch_healing(guests, stocks)
+    if not plan.guest_healing:
+        return plan.summary
+    try:
+        with transaction.atomic():
+            _apply_batch_healing_plan(guests, stocks, plan, now=now)
+    except (
+        GuestFullHpError,
+        GuestItemConfigurationError,
+        GuestItemOwnershipError,
+        GuestNotIdleError,
+        GuestOwnershipError,
+        InsufficientStockError,
+    ):
+        return _heal_locked_guests_one_dose_at_a_time(locked_manor, guests, stocks, now=now)
+    return plan.summary

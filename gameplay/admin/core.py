@@ -2,11 +2,52 @@ from django.contrib import admin
 
 from common.constants.resources import ResourceType
 
-from ..models import Manor, ResourceEvent
+from ..models import Manor, PlayerTechnology, PlayerTroop, ResourceEvent, TroopBankStorage
+
+
+class ManorRecordInline(admin.TabularInline):
+    extra = 0
+    can_delete = False
+    classes = ("collapse",)
+    related_fields: tuple[str, ...] = ("manor__user",)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related(*self.related_fields)
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+class PlayerTechnologyInline(ManorRecordInline):
+    model = PlayerTechnology
+    fields = ("tech_key", "level", "is_upgrading", "upgrade_complete_at")
+    readonly_fields = fields
+
+
+class PlayerTroopInline(ManorRecordInline):
+    model = PlayerTroop
+    fields = ("troop_template", "count", "updated_at")
+    readonly_fields = fields
+    related_fields = ("manor__user", "troop_template")
+
+
+class TroopBankStorageInline(ManorRecordInline):
+    model = TroopBankStorage
+    fields = ("troop_template", "count", "updated_at")
+    readonly_fields = fields
+    related_fields = ("manor__user", "troop_template")
 
 
 @admin.register(Manor)
 class ManorAdmin(admin.ModelAdmin):
+    list_select_related = ("user",)
+    inlines = (PlayerTechnologyInline, PlayerTroopInline, TroopBankStorageInline)
     list_display = (
         "user",
         "name",

@@ -163,10 +163,13 @@ def test_defense_details_include_relevant_martial_technologies_and_city_levels_w
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("dispatch_level", [49, 150])
-def test_dispatch_level_is_frozen_but_target_data_is_collected_on_arrival(scout_world, monkeypatch, dispatch_level):
+@pytest.mark.parametrize("dispatch_level,expected_rate", [(1, 0.01), (49, 0.01), (150, 0.95)])
+def test_dispatch_level_is_frozen_but_target_data_is_collected_on_arrival(
+    scout_world, monkeypatch, dispatch_level, expected_rate
+):
     attacker, defender, troop, _guest = scout_world
     technology = PlayerTechnology.objects.create(manor=attacker, tech_key="scout_art", level=dispatch_level)
+    PlayerTechnology.objects.create(manor=defender, tech_key="scout_art", level=100)
     scout_template, _ = TroopTemplate.objects.get_or_create(key=PVPConstants.SCOUT_TROOP_KEY, defaults={"name": "探子"})
     PlayerTroop.objects.update_or_create(manor=attacker, troop_template=scout_template, defaults={"count": 1})
     monkeypatch.setattr(scout_service, "can_attack_target", lambda *args, **kwargs: (True, ""))
@@ -175,6 +178,7 @@ def test_dispatch_level_is_frozen_but_target_data_is_collected_on_arrival(scout_
     monkeypatch.setattr(scout_service.scout_followups, "schedule_scout_return_completion", lambda *args, **kwargs: None)
     monkeypatch.setattr(scout_service, "_roll_scout_success", lambda: 0)
     record = scout_service.start_scout(attacker, defender)
+    assert record.success_rate == pytest.approx(expected_rate)
     assert record.intel_data == {"intel_schema_version": SCOUT_INTEL_SCHEMA_VERSION, "scout_level": dispatch_level}
     technology.level = 200
     technology.save(update_fields=["level"])
@@ -183,6 +187,7 @@ def test_dispatch_level_is_frozen_but_target_data_is_collected_on_arrival(scout_
     arrived_at = timezone.now() + timedelta(minutes=1)
     scout_service.finalize_scout(record, now=arrived_at)
     record.refresh_from_db()
+    assert record.success_rate == pytest.approx(expected_rate)
     assert record.intel_data["scout_level"] == dispatch_level
     assert record.intel_data["scouted_at"] == arrived_at.isoformat()
     assert "city_defenses" not in record.intel_data

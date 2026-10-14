@@ -5,6 +5,7 @@ from datetime import datetime
 from time import monotonic
 
 from celery import shared_task
+from django.conf import settings
 from django.db import DatabaseError
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -98,21 +99,35 @@ def scan_virtual_player_maintenance_task(limit: int | None = None) -> int:
 
     started_at = monotonic()
     completion_results = scan_virtual_player_maintenance_completions(limit=COMPLETION_RECONCILE_BATCH_SIZE)
+    completions_finished_at = monotonic()
     recruitments_started = schedule_due_virtual_recruitments(limit=VIRTUAL_RECRUITMENT_SCAN_BATCH_SIZE)
+    recruitments_finished_at = monotonic()
     maintenance_limit = SCHEDULED_MAINTENANCE_DEFAULT_BATCH_SIZE if limit is None else max(0, int(limit))
-    maintained = maintain_due_virtual_players(limit=maintenance_limit)
+    maintained = maintain_due_virtual_players(
+        limit=maintenance_limit,
+        max_duration_seconds=float(getattr(settings, "VIRTUAL_PLAYER_MAINTENANCE_TASK_BUDGET_SECONDS", 20)),
+    )
+    maintenance_finished_at = monotonic()
     logger.info(
-        "Completed virtual player maintenance scan: reconciled=%d recruitments_started=%d maintained=%d",
+        "Completed virtual player maintenance scan: reconciled=%d recruitments_started=%d maintained=%d "
+        "completion_seconds=%.3f recruitment_seconds=%.3f maintenance_seconds=%.3f total_seconds=%.3f",
         len(completion_results),
         recruitments_started,
         maintained,
+        max(0.0, completions_finished_at - started_at),
+        max(0.0, recruitments_finished_at - completions_finished_at),
+        max(0.0, maintenance_finished_at - recruitments_finished_at),
+        max(0.0, maintenance_finished_at - started_at),
         extra={
             "event": "virtual_player_maintenance_scan_completed",
             "completion_reconciled_count": len(completion_results),
             "recruitments_started_count": recruitments_started,
             "requested_maintenance_limit": maintenance_limit,
             "maintained_count": maintained,
-            "task_duration_seconds": max(0.0, monotonic() - started_at),
+            "completion_reconciliation_duration_seconds": max(0.0, completions_finished_at - started_at),
+            "recruitment_scan_duration_seconds": max(0.0, recruitments_finished_at - completions_finished_at),
+            "maintenance_batch_duration_seconds": max(0.0, maintenance_finished_at - recruitments_finished_at),
+            "task_duration_seconds": max(0.0, maintenance_finished_at - started_at),
         },
     )
     return maintained
@@ -128,16 +143,24 @@ def roll_virtual_players_task(limit: int | None = None) -> int:
     """Apply a small rolling slice of virtual-player population changes."""
     started_at = monotonic()
     population_started_at = monotonic()
-    population_processed = roll_virtual_player_population(limit=limit)
+    budget_seconds = float(getattr(settings, "VIRTUAL_PLAYER_POPULATION_TASK_BUDGET_SECONDS", 20))
+    population_processed = roll_virtual_player_population(
+        limit=limit,
+        max_duration_seconds=budget_seconds,
+    )
     population_duration = max(0.0, monotonic() - population_started_at)
+    task_duration = max(0.0, monotonic() - started_at)
     logger.info(
-        "Completed virtual player roll: population_processed=%d",
+        "Completed virtual player roll: population_processed=%d population_seconds=%.3f total_seconds=%.3f budget_seconds=%.3f",
         population_processed,
+        population_duration,
+        task_duration,
+        budget_seconds,
         extra={
             "event": "virtual_player_roll_completed",
             "population_processed_count": population_processed,
             "population_roll_duration_seconds": population_duration,
-            "task_duration_seconds": max(0.0, monotonic() - started_at),
+            "task_duration_seconds": task_duration,
         },
     )
     return population_processed
@@ -154,6 +177,7 @@ def reconcile_virtual_player_population_cell_task(
         region=region,
         prestige_band=prestige_band,
         limit=limit,
+        max_duration_seconds=float(getattr(settings, "VIRTUAL_PLAYER_POPULATION_TASK_BUDGET_SECONDS", 20)),
     ).to_payload()
 
 
@@ -164,21 +188,29 @@ def scan_virtual_player_population_demands_task(
 ) -> list[dict]:
     """Recover due or expired durable population claims."""
     started_at = monotonic()
+    budget_seconds = float(getattr(settings, "VIRTUAL_PLAYER_POPULATION_TASK_BUDGET_SECONDS", 20))
     results = [
         result.to_payload()
         for result in scan_virtual_player_population_demands(
             limit=limit,
             cell_limit=cell_limit,
+            max_duration_seconds=budget_seconds,
         )
     ]
+    task_duration = max(0.0, monotonic() - started_at)
     logger.info(
-        "Completed virtual-player population demand scan task",
+        "Completed population demand scan: selected=%d limit=%d cell_limit=%d total_seconds=%.3f budget_seconds=%.3f",
+        len(results),
+        int(limit),
+        int(cell_limit),
+        task_duration,
+        budget_seconds,
         extra={
             "event": "virtual_player_population_scan_task_completed",
             "requested_limit": int(limit),
             "cell_limit": int(cell_limit),
             "selected_count": len(results),
-            "task_duration_seconds": max(0.0, monotonic() - started_at),
+            "task_duration_seconds": task_duration,
         },
     )
     return results

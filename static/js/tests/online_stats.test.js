@@ -252,3 +252,46 @@ test("page suspension closes the socket and restores exactly one connection", ()
 
   assert.equal(harness.sockets.length, 2);
 });
+
+test("statistics restore does not revive terminal authentication connections", () => {
+  for (const code of [4401, 4403]) {
+    const harness = createOnlineStatsHarness();
+    harness.sockets[0].closeWith(code);
+    harness.pagehide();
+    harness.pageshow();
+    harness.pageshow();
+    assert.equal(harness.sockets.length, 1);
+    assert.equal(harness.activeTimers().length, 0);
+  }
+});
+
+test("statistics page restore preserves failure backoff instead of starting a fresh retry cycle", () => {
+  const harness = createOnlineStatsHarness();
+  harness.sockets[0].closeWith(SERVICE_UNAVAILABLE_CLOSE_CODE);
+  harness.pagehide();
+  harness.pageshow();
+  harness.sockets[1].open();
+  harness.sockets[1].message({ online_count: 7, total_count: 19 });
+  harness.sockets[1].closeWith(SERVICE_UNAVAILABLE_CLOSE_CODE);
+  assert.equal(harness.reconnectTimers()[0].delay, 4000);
+});
+
+test("statistics page suspension cancels reconnects and isolates old socket callbacks", () => {
+  const harness = createOnlineStatsHarness();
+  const first = harness.sockets[0];
+  first.closeWith(1006);
+  const timer = harness.reconnectTimers()[0];
+  harness.pagehide();
+  timer.fn();
+  assert.equal(harness.sockets.length, 1);
+  harness.pageshow();
+  timer.fn();
+  first.open();
+  first.message({ online_count: 99, total_count: 100 });
+  first.closeWith(1006);
+  assert.equal(harness.sockets.length, 2);
+  assert.equal(harness.activeTimers().length, 0);
+  assert.equal(harness.elements["online-user-count"].textContent, "0");
+  harness.sockets[1].message({ online_count: 7, total_count: 19 });
+  assert.equal(harness.elements["online-user-count"].textContent, 7);
+});

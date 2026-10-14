@@ -1,0 +1,40 @@
+{% extends "gameplay/arena/base.html" %}
+{% load static %}
+{% block extra_head %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/arena-rings.css' %}">
+{% endblock %}
+{% block arena_body %}
+<div class="arena-rings">
+    <section class="ring-detail-header">
+        <div class="ring-detail-copy">
+            <p class="ring-eyebrow">擂台观战</p>
+            <h2>{{ ring_tenure.ring.name }}</h2>
+            <p>擂主 <strong>{{ ring_tenure.manor.display_name }}</strong> · 守擂获胜 {{ ring_tenure.defenses }} 次</p>
+            <p>{% if ring_tenure.ended_at %}已于 {{ ring_tenure.ended_at|date:'m-d H:i' }} 下台{% else %}本任结束 {{ ring_tenure.ends_at|date:'H:i' }}{% endif %}</p>
+            <a href="{% url 'gameplay:arena_rings' %}#ring-{{ ring_tenure.ring.key }}">返回擂台 →</a>
+            {% if ring_is_mine %}<details class="ring-own-lineup"><summary>我的守擂阵容</summary><div>{% include "gameplay/arena/partials/ring_lineup.html" with lineup=ring_own_lineup %}</div></details>{% endif %}
+        </div>
+        <img src="{% static ring_image %}" alt="{{ ring_tenure.ring.name }}" width="1672" height="941" decoding="async">
+    </section>
+    <section class="ring-records">
+        <h3>挑战记录</h3>
+        <div class="ring-table-scroll">
+            <table>
+                <thead><tr><th>挑战者</th><th>擂主</th><th>结果</th><th>时间</th><th>战报</th></tr></thead>
+                <tbody>
+                    {% for match in ring_event_matches %}
+                    <tr>
+                        <td>{{ match.attacker.display_name }}</td><td>{{ match.defender.display_name }}</td>
+                        <td>{% if match.winner_id == match.attacker_id %}夺擂成功{% elif match.winner_id == match.defender_id %}守擂成功{% else %}平局留任{% endif %}</td>
+                        <td>{{ match.created_at|date:'H:i' }}</td>
+                        <td>{% if match.battle_report_id %}<a href="{% url 'battle:report_detail' match.battle_report_id %}">观战 →</a>{% else %}—{% endif %}</td>
+                    </tr>
+                    {% empty %}<tr><td colspan="5">暂无挑战，等你出手。</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% include "gameplay/arena/partials/event_pagination.html" %}
+    </section>
+</div>
+{% endblock %}
