@@ -3,7 +3,7 @@ from django.urls import path
 from .views.equipment import equip_view, gear_options_view, unequip_view
 from .views.items import heal_all_guests_view, use_medicine_item_view
 from .views.recruit import RecruitView, accept_candidate_view, use_magnifying_glass_view, use_recruitment_card_view
-from .views.roster import GuestDetailView, RosterView, dismiss_guest_view
+from .views.roster import GuestDetailView, RosterView, dismiss_guest_view, switch_avatar_view
 from .views.salary import pay_all_salaries_view, pay_salary_view
 from .views.skills import forget_skill_view, learn_skill_view
 from .views.training import allocate_points_view, check_training_view, use_experience_item_view
@@ -13,6 +13,7 @@ app_name = "guests"
 urlpatterns = [
     path("", RosterView.as_view(), name="roster"),
     path("<int:pk>/", GuestDetailView.as_view(), name="detail"),
+    path("<int:pk>/switch-avatar/", switch_avatar_view, name="switch_avatar"),
     path("<int:pk>/dismiss/", dismiss_guest_view, name="dismiss"),
     path("<int:pk>/learn-skill/", learn_skill_view, name="learn_skill"),
     path("<int:pk>/forget-skill/", forget_skill_view, name="forget_skill"),

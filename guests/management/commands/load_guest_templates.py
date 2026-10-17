@@ -806,6 +806,8 @@ class Command(BaseCommand):
             return
         if Guest.objects.filter(avatar_asset_key=old_name).exists():
             return
+        if Guest.objects.filter(original_avatar_asset_key=old_name).exists():
+            return
         template.avatar.storage.delete(old_name)
 
     def _build_avatar_catalog(self, image_source_dir: Path) -> dict[tuple[str, str], list[str]]:

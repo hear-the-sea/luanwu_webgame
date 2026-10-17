@@ -2,6 +2,7 @@ heroes:
   blue:
   - key: hist_qinhan_0100
     name: 丙吉
+    avatar: pig/文014.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前55年）西汉名臣，曾任廷尉、丞相。巫蛊之祸时，丙吉在郡邸狱中保护尚在襁褓中的皇曾孙刘询；刘询即位后，他直到宫女上书才说明此事。任丞相时，丙吉又因“问牛”典故闻名。
@@ -15,6 +16,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0101
     name: 东方朔
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （前154年—前93年）西汉文学家、宫廷侍臣，汉武帝时以诙谐机智闻名。东方朔常在宴饮和应对中借笑语进谏，也曾上书陈述民间疾苦；他多次得到汉武帝召见，却始终未获重用，晚年失意而终。
@@ -28,6 +30,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0102
     name: 于定国
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前40年）西汉丞相，字曼倩，父亲于公也是以断狱闻名的官员。于定国任廷尉时重视证据，主张疑案从轻、审理从慎，史载百姓称“民自以不冤”。他后来升任丞相，仍以宽平断狱著称。
@@ -41,6 +44,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0103
     name: 京房
+    avatar: monkey/其他随机角色/文039_男.png
     default_gender: male
     archetype: civil
     flavor: （前77年—前37年）西汉易学家，研习《易经》、阴阳五行和音律，纳甲筮法常与其名相连。京房曾以灾异上书批评权臣石显，因而遭到石显排挤，最终被下狱处死。
@@ -54,6 +58,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0104
     name: 卓文君
+    avatar: monkey_wen_female5.png
     default_gender: female
     archetype: civil
     flavor: （生卒年不详）西汉临邛富家之女。卓文君与司马相如相识后离家相随，曾在临邛开酒店、当垆卖酒；父亲卓王孙后来接济二人，使他们得以返回成都。她与司马相如的婚事，留下“凤求凰”“白头吟”等传说。
@@ -67,6 +72,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0105
     name: 卫子夫
+    avatar: monkey_wen_female9.png
     default_gender: female
     archetype: civil
     flavor: （生年不详—前91年）西汉皇后，原为平阳公主府歌伎。卫子夫入宫后得到汉武帝宠幸，生下太子刘据，后来被立为皇后；她的弟弟卫青、外甥霍去病也因军功显贵。巫蛊之祸爆发后，卫子夫被迫自尽，卫氏家族随之失势。
@@ -80,6 +86,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0106
     name: 召信臣
+    avatar: pig/文034.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）西汉循吏，字翁卿，九江人。任南阳太守时，召信臣兴修水利，建造水排、水门，开垦良田数万顷；他还禁止婚丧嫁娶铺张，提倡节俭。百姓感念其政绩，尊称他为“召父”。
@@ -93,6 +100,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0107
     name: 司马相如
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （约前179年—前118年）西汉辞赋家，著有《子虚赋》《上林赋》。司马相如早年客游梁地，后来与卓文君相识并结为夫妻；汉武帝读到他的文章后召入朝廷，曾派他出使西南夷。晚年他因病辞官，仍以辞赋和文章闻名。
@@ -106,6 +114,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0108
     name: 尉缭
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）秦代军政人物，姓名与兵书《尉缭子》相连。传说他受秦王政召见，曾向秦王分析六国强弱和用兵办法；《尉缭子》还记载了军队训练、赏罚和行军等内容。关于他在秦廷任职的细节，史料记载不一。
@@ -119,6 +128,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0109
     name: 文翁
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）西汉循吏，庐江人。任蜀郡守时，文翁在成都兴办学校，招收地方子弟，又选拔优秀学生送往长安学习。蜀郡后来有许多学子入仕，文翁也因此被称为“文翁化蜀”。
@@ -132,6 +142,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0110
     name: 晁错
+    avatar: monkey_wen_male7.png
     default_gender: male
     archetype: civil
     flavor: （前200年—前154年）西汉政务官员，主张削弱诸侯王权。晁错任御史大夫时，多次上书建议削藩；七国之乱爆发后，汉景帝为安抚诸侯，采纳袁盎等人的建议处死晁错。晁错死后，叛乱仍由周亚夫率军平定。
@@ -145,6 +156,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0111
     name: 杜诗
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—38年）东汉官员，曾任南阳太守。杜诗任职时推广水力鼓风机“水排”，用于冶铁；他还兴修水利、平反冤狱、整顿吏治，百姓将他与召信臣并称为“杜母”。
@@ -158,6 +170,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0112
     name: 淳于意
+    avatar: pig/文040.png
     default_gender: male
     archetype: civil
     flavor: （生于前205年，卒年不详）西汉名医，号仓公，缇萦之父。淳于意行医时记录病人的脉象、病因、用药和转归，留下多份医案；后来他因事获罪将受刑，女儿缇萦上书请求代父受刑，汉文帝因此下诏改革肉刑。
@@ -171,6 +184,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0113
     name: 甘英
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）东汉使者，受班超派遣出使西域。甘英一路西行，抵达条支附近的海边，原想继续前往大秦，却因听说海上航行危险而返回。他将沿途见闻带回西域都护府，后来被记入西域史料。
@@ -184,6 +198,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0114
     name: 窦漪房
+    avatar: monkey_wen_female7.png
     default_gender: female
     archetype: civil
     flavor: （生年不详—前135年）西汉窦太后，文帝皇后、景帝之母。窦漪房早年入宫，先侍奉吕后，后来成为代王刘恒的王后；刘恒即位后，她被立为皇后。她喜好黄老之学，常劝文帝、景帝节俭宽刑，武帝即位初年仍参与朝政。
@@ -197,6 +212,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0116
     name: 许平君
+    avatar: monkey_wen_female7.png
     default_gender: female
     archetype: civil
     flavor: （前90年—前71年）西汉宣帝皇后。刘病已流落民间时，许平君与他结为夫妻并生下刘奭；刘病已即位后，仍将她立为皇后。许平君后来被霍显派人毒杀，年仅二十余岁，谥为恭哀皇后。
@@ -210,6 +226,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0119
     name: 赵合德
+    avatar: monkey/其他随机角色/文064_女.png
     default_gender: female
     archetype: civil
     flavor: （生年不详—前7年）汉成帝昭仪，赵飞燕之妹。赵合德入宫后与姐姐一同受宠，长期陪伴成帝；史载成帝死于她宫中，宫人因此指责她与皇帝服食药物有关。成帝死后，赵合德自杀。
@@ -223,6 +240,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0120
     name: 赵飞燕
+    avatar: monkey_wen_female9.png
     default_gender: female
     archetype: civil
     flavor: （前45年—前1年）西汉成帝宠妃，后被立为皇后，以善舞和身姿轻盈著称。赵飞燕入宫后长期受宠，妹妹赵合德也随之得幸；成帝死后，她被贬为孝成皇后，哀帝即位后又被废，最终自杀。
@@ -236,6 +254,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0125
     name: 魏相
+    avatar: pig/文014.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前59年）西汉丞相，早年任扬州刺史等职，以刚正严毅著称。汉宣帝即位后，魏相入朝任御史大夫、丞相，曾上书限制霍氏势力，整顿吏治，并劝宣帝谨慎用兵。他与丙吉共同辅政，直到病逝。
@@ -249,6 +268,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0126
     name: 黄霸
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （前130年—前51年）西汉官员，以治理郡县、安抚百姓著称。黄霸任颍川太守时，重视教化，整顿属吏，劝民务农，盗贼因而减少；他后来升任丞相，仍以宽厚慎刑闻名。
@@ -262,6 +282,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0127
     name: 傅介子
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: （生年不详—前65年）西汉使者。楼兰王曾杀害汉使，傅介子奉命出使楼兰，借宴会接近楼兰王，率随从将其刺杀，并带回首级。汉廷随后另立楼兰王，傅介子因功封义阳侯。
@@ -275,6 +296,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0129
     name: 冯辽
+    avatar: monkey_wen_female7.png
     default_gender: female
     archetype: military
     flavor: （生卒年不详）西汉女官，随解忧公主远嫁乌孙，人称“冯夫人”。冯辽知书善辩，曾持汉节往来乌孙及西域诸国，替解忧公主传达汉廷诏令、调解部族纷争；她晚年随公主归汉，受到朝廷礼遇。
@@ -288,6 +310,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0134
     name: 季布
+    avatar: monkey/其他随机角色/武038_男.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）楚地游侠、项羽部将，以守信著称。项羽败亡后，季布被刘邦通缉，朱家出面收留并向夏侯婴求情，季布因此获赦。归汉后，他任郎中、河东守，曾劝吕后不要出兵匈奴。
@@ -301,6 +324,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0136
     name: 崔寔
+    avatar: pig/文033.png
     default_gender: male
     archetype: military
     flavor: （生年不详—170年）东汉学者、官员，著有《四民月令》。该书按月份记录农事、家政、祭祀和生产安排，内容来自崔寔对庄园生活的观察。崔寔曾任郡守、边郡长史，晚年因党锢之祸被禁锢，仍坚持著述。
@@ -314,6 +338,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0137
     name: 张纲
+    avatar: pig/武049.png
     default_gender: male
     archetype: military
     flavor: （108年—143年）东汉官员，张良后裔。任御史时，张纲因不愿向梁冀行贿，将车轮埋在洛阳都亭并上书弹劾梁冀；后来任广陵太守，他只带一辆车进入张婴营中，以劝说促成叛军归降。张纲英年早逝，百姓为他立祠。
@@ -327,6 +352,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0147
     name: 解忧公主
+    avatar: monkey_wen_female7.png
     default_gender: female
     archetype: military
     flavor: （前120年—前49年）西汉和亲公主，细君公主去世后，她续嫁乌孙，先后经历多位昆莫。解忧公主在乌孙生活多年，曾派冯辽持节往来汉廷与西域，并把自己的子女送往长安；晚年归汉，受到朝廷礼遇。
@@ -340,6 +366,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0148
     name: 赵破奴
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: （生年不详—前91年）西汉将领，早年曾在匈奴，后来归汉从军。赵破奴随霍去病出征，攻破楼兰、车师等地，因军功封侯；后来在对匈奴作战中兵败被俘，获释归汉后又卷入巫蛊之祸，最终被诛。
@@ -353,6 +380,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0142
     name: 班勇
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: （生年不详—卒于127年以后）东汉将领，班超之子。班勇任西域长史时，率五百人击破匈奴呼衍王，平定车师，重新恢复汉朝在西域的据点；他还撰写《西域记》，后来因行期等事受责下狱。
@@ -366,6 +394,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0115
     name: 袁安
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—92年）东汉名臣，汝南袁氏先祖。袁安任河南尹时，以清正严明著称；窦宪掌权后，他曾上书劝谏，反对窦氏兄弟继续掌兵。袁安后来任司徒，在朝中保持谨慎刚直的作风。
@@ -379,6 +408,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0122
     name: 郦食其
+    avatar: pig/文034.png
     default_gender: male
     archetype: civil
     flavor: （前268年—前203年）楚汉之际说客，人称“高阳酒徒”。郦食其投奔刘邦后，曾劝降陈留、筹集粮草；后来他奉命游说齐王田广归汉，韩信却同时出兵攻齐，郦食其被齐王烹杀。
@@ -392,6 +422,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0123
     name: 陆贾
+    avatar: monkey/其他随机角色/文041_男.png
     default_gender: male
     archetype: civil
     flavor: （约前240年—前170年）西汉谋士、说客。陆贾曾两次出使南越，劝赵佗接受汉朝册封；他还向刘邦进言“马上得之，安可马上治之”，并著《新语》十二篇。惠帝、吕后时期，他又出使南越，促成赵佗重新归附。
@@ -405,6 +436,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0140
     name: 来歙
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
     flavor: （生年不详—35年）东汉将领、使者。来歙奉刘秀之命出使陇右，后来奇袭略阳、斩杀隗嚣守将；征讨公孙述时，他在军中被刺客刺伤，仍坚持写完奏章、安排后事，最终伤重而死。
@@ -419,6 +451,7 @@ heroes:
   purple:
   - key: hist_qinhan_0133
     name: 夏侯婴
+    avatar: monkey/秦汉/夏侯婴.png
     default_gender: male
     archetype: military
     flavor: （生年不详—前172年）汉初功臣，汝阴侯，官至太仆。他是刘邦同乡与近侍，早年以御者身份随军，乱世中靠的是“离君主最近的忠诚与执行”。彭城战败突围时，史载刘邦几欲弃儿女以求脱身，夏侯婴三次抱起，才使惠帝与鲁元公主得以保全，这段故事让楚汉战争的残酷与人性的摇摆显得格外真实。夏侯婴的价值不只在一时救急，更在他能在开国后继续立足：从战时随从转为制度内重臣，靠的正是分寸感——对人有情，对事有度，把近侍的忠诚磨成可以长期使用的资历，而不是短暂的邀功资本。
@@ -432,6 +465,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0135
     name: 岑彭
+    avatar: monkey/秦汉/岑彭.png
     default_gender: male
     archetype: military
     flavor: （生年不详—35年）东汉开国将领，擅长水陆协同作战。史载其原出王莽部下，归汉后在征南战线上发挥重要作用，率水军沿江推进，攻取要地，直逼巴蜀。岑彭的胜利并非只靠勇气，而在于他能把船只、粮运、渡口与地方豪强关系串成一套可执行的行动：水战的关键往往不是杀伤，而是能否持续供给与控制通道。其后遭刺客暗杀，恰好暴露攻坚阶段的脆弱——再强的军队也可能被一次渗透击穿。岑彭之死让战局与人心同时受挫，说明在统一战争里，指挥官不仅是军事资源，也是政治信心的一部分。
@@ -445,6 +479,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0117
     name: 许慎
+    avatar: monkey/秦汉/许慎.png
     default_gender: male
     archetype: civil
     flavor: （58年—147年）东汉经学家、文字学家，字叔重，以《说文解字》奠定汉字学传统的关键基础。许慎的工作并非单纯“编字典”，而是一种制度化的知识整理：他用部首分类、字形分析与训诂解释，把散落在经传、碑刻与日用书写里的文字材料重新编排，使“读经”与“治礼”有了更稳的文字依据。书中对字源、义项的推演未必尽合现代语言学，但它在当时起到统一解释框架的作用，让学术讨论不至于各说各话。许慎的意义，正在于把文字从工具抬升为可研究、可传承的对象；对两汉学术而言，这种“把基础打牢”的工作往往比一时名声更耐久。
@@ -458,6 +493,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0118
     name: 贾谊
+    avatar: monkey/秦汉/贾谊.png
     default_gender: male
     archetype: civil
     flavor: （前200年—前168年）西汉前期杰出的政论家与辞赋家，少年成名，相关事迹见于《史记》《汉书》。他提出的《治安策》等议论直指汉初制度隐患，如诸侯王势力、边防与民生根基，文字锋利而视野宏阔。贾谊仕途却并不顺遂，屡遭迁谪，使他的作品呈现强烈的“理想与现实对撞”：既有国家治理的冷静分析，也有身世沉浮带来的抑郁与自伤。后来《吊屈原赋》等写法，正把政治失意与文化自况叠在一起。贾谊之所以动人，不仅因“怀才不遇”，更因他把一个新王朝必须回答的问题写得过早、过直，以至于时代尚未准备好完全接纳。
@@ -471,6 +507,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0121
     name: 邓禹
+    avatar: monkey/秦汉/邓禹.png
     default_gender: male
     archetype: civil
     flavor: （2年—58年）东汉开国功臣，云台二十八将首功之一。刘秀尚未显达时邓禹便追随其左右，既能出谋划策，也能统兵办事；更重要的是，他在建立新政权的过程中善于举荐与安置人才，使“打天下”能够转化为“治天下”。史书多称邓禹功高而能自守，不以权势逼主，这在开国功臣普遍难以拿捏的环境中尤显可贵。邓禹的价值不只是战场成绩，而是他把自己的存在变成“可被信任的支点”：既让皇帝放心，也让官僚体系能运转下去。写邓禹，最能看出东汉开国的难处并非只在征讨，而在如何避免功臣集团内耗、如何让胜利之后的权力重新回到制度之中。
@@ -484,6 +521,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0124
     name: 陈平
+    avatar: monkey/秦汉/陈平.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前178年）西汉开国功臣，著名谋士。他早年家贫，好读书。初事魏王咎，后从项羽，终归刘邦。他以足智多谋著称，六出奇计：离间项羽范增、解白登之围、甚至在吕后时期也能保全自己。他曾建议刘邦伪游云梦擒韩信，又建议贿赂匈奴阏氏以解围。汉文帝时任丞相，与周勃合谋平定诸吕之乱，迎立文帝。他虽私德有亏（盗嫂受金传闻），但大节不亏，善于谋国谋身。
@@ -497,6 +535,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0128
     name: 冯异
+    avatar: monkey/秦汉/冯异.png
     default_gender: male
     archetype: military
     flavor: （生年不详—34年）东汉开国名将，号“大树将军”，以谦退不伐著称。史载诸将争功时他独坐树下少言，但在战事关键处却能扛住局面：平定关中、击破赤眉、收复长安皆属大功。冯异的难处不在打一仗，而在“打完仗怎么办”——战后要安抚百姓、恢复赋役、稳定郡县，稍有失措就会让新政权的控制力重新松动。冯异的克制与不争功，恰好减少了开国军中最常见的裂痕，让统一与重建可以接续进行。他的早逝之所以令人惋惜，正因为这种既能打仗又能收拾残局的将领，在战后更稀缺。
@@ -510,6 +549,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0130
     name: 吴汉
+    avatar: monkey/秦汉/吴汉.png
     default_gender: male
     archetype: military
     flavor: （生年不详—44年）东汉开国名将，位至大司马，以勇猛与执行力著称。史书对吴汉的评价并不单色：他攻城略地、功勋卓著，同时也留下手段严酷的争议记载。吴汉的形象折射统一战争的一个现实面——在反复割据与叛乱的环境中，统治者往往更偏好“能迅速结束战事的人”，而这种效率常伴随高烈度的暴力与惩罚。吴汉临终仍谈军事，建议“慎无赦”，说明他把秩序建立理解为威慑与纪律优先。吴汉很难只用“忠”或“酷”概括；他更像一把在战乱中被反复使用的刀，锋利有效，也带着不可忽视的代价。
@@ -523,6 +563,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0131
     name: 周亚夫
+    avatar: monkey/秦汉/周亚夫.png
     default_gender: male
     archetype: military
     flavor: （前199年—前143年）西汉名将，丞相，绛侯周勃之子。他治军严整，驻军细柳时，汉文帝亲临慰劳，亦不得入营，被誉为“真将军”。汉景帝时，吴楚七国之乱爆发，他率军平叛，坚壁清野，断敌粮道，仅三月便平定叛乱，维护了西汉统一。后任丞相，因性格耿直，不阿附权贵，且反对废栗太子，逐渐失宠。最终因其子私买御用甲盾被诬谋反，绝食吐血而死。他是西汉军事统帅的巅峰代表。
@@ -536,6 +577,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0132
     name: 呼韩邪
+    avatar: monkey/秦汉/呼韩邪.png
     default_gender: male
     archetype: military
     flavor: （生年不详—前31年）匈奴单于。匈奴内乱、诸部并起之际，呼韩邪在竞争中受挫，转而采纳归附汉朝的策略，亲至长安朝见汉宣帝，成为汉匈关系史上的重要转折。呼韩邪的选择并非单纯“向强者低头”，更像草原政治的一种自救：借汉廷的承认与支持稳住内部，同时以和好争取喘息空间。昭君出塞的叙事多被后世诗化，但它确实象征双方关系从长期对抗转向阶段性稳定。呼韩邪的意义在于证明，边疆格局并不总由战场决定，有时也由一位统治者对“成本与生存”的重新计算决定；而这种计算一旦改变，数十年的边境气氛也会随之改变。
@@ -549,6 +591,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0138
     name: 彭越
+    avatar: monkey/秦汉/彭越.png
     default_gender: male
     archetype: military
     flavor: （生年不详—前196年）游击战始祖，梁王。他在巨野泽捕鱼起家，秦末大乱时聚众起义。在楚汉战争中，他在楚军后方开展游击战，断绝粮道，“往来苦楚”，令项羽疲于奔命。他与韩信、英布并称汉初三大名将。然而功高震主，被吕后骗入洛阳，剁成肉酱分赐诸侯。他的死，是汉初功臣悲剧的顶点。彭越的成名不只是勇猛，更来自对水泽地形与人群网络的熟悉：能隐蔽、能机动、能就地取给，才能把游击打成长期消耗。可天下既定后，这种自成体系的军功反而最易引发猜忌；他被诛并非战场失败，而是功臣与皇权之间结构性紧张的一次血腥结算。
@@ -562,6 +605,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0139
     name: 李陵
+    avatar: monkey/秦汉/李陵.png
     default_gender: male
     archetype: military
     flavor: 史载他以少数步卒深入敌境，鏖战多日而矢尽粮绝，最终投降；这既是战场判断的结局，也是后方支援与战略预期落空的结果。更沉重的代价发生在战场之外：武帝盛怒，牵连家族，李陵自此难以回归；司马迁为其辨解而遭极刑，使李陵的名字同时牵动“忠与降”“功与罪”的长久争论。其命运提醒后世，边战决策常在忠义伦理与现实生存之间撕裂。
@@ -575,6 +619,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0141
     name: 樊哙
+    avatar: monkey/秦汉/樊哙.png
     default_gender: male
     archetype: military
     flavor: （前242年—前189年）西汉开国元勋，大将军，舞阳侯。出身狗屠，娶吕后之妹吕媭，与刘邦关系极亲密。他在鸿门宴上持盾闯帐，怒斥项羽，勇救刘邦，展现了非凡的胆识与忠诚。随刘邦征战多年，勇猛无敌，率先登城陷阵。晚年刘邦病重时，曾疑其欲杀赵王如意，命陈平去斩他，幸得陈平保护。刘邦死后，吕后释之。他是汉初最勇猛的战将之一。
@@ -588,6 +633,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0143
     name: 老上
+    avatar: monkey/秦汉/老上.png
     default_gender: male
     archetype: military
     flavor: （生年不详—前161年）匈奴单于，名稽粥，冒顿单于之子。史载其继位后任用中行说等人，政策更趋强硬，对汉朝劫掠与施压频繁，使汉初边境长期处于紧张状态。其时期匈奴对西方诸部的冲击加深，月氏西迁等事件也常被系于这一阶段（史载与后世叙述并存）。老上的统治之所以重要，不只在几次胜负，而在他把匈奴的军事优势与政治动员结合得更紧：对外以战利品维系部众，对内以威望压服贵族，从而把草原联盟推向更具侵略性的方向。对汉廷而言，老上代表“必须先忍耐、先积蓄”的对手——和亲、边防与财赋政策的调整，都在这种压力下被迫加速。
@@ -601,6 +647,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0144
     name: 耿弇
+    avatar: monkey/秦汉/耿弇.png
     default_gender: male
     archetype: military
     flavor: （3年—58年）东汉名将，以机动与谋略见长。史载他在平定齐地的战事中善用“围点打援”等思路，利用敌我心理与地形节奏各个击破，使局面迅速逆转。耿弇的可贵处不在一次神勇，而在他能把军事行动与政治整合连起来：齐地富庶、人心复杂，打下来只是第一步，如何接管郡县、安置降附、稳定财赋才是长期收益。耿弇的战例之所以常被提起，正因为它把“用兵”从单纯决战扩展到组织能力与治理预案——胜利不仅要赢，还要能被长期维持。
@@ -614,6 +661,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0145
     name: 苏武
+    avatar: monkey/秦汉/苏武.png
     default_gender: male
     archetype: military
     flavor: （前140年—前60年）西汉使者与大臣，字子卿，因出使匈奴被扣留十九年而成为“持节不屈”的象征。史载匈奴以威逼利诱与流放相逼，苏武守节不降，其坚持并非武勇的胜利，而是一场漫长的心理与制度对抗：使者代表的是国家信用，一旦轻易屈服，后续外交便失去底线。苏武能活下来并归国，也与汉匈关系的阶段性变化有关，说明个人命运常被大国关系的潮汐推着走。苏武的故事之所以长久流传，正在于它把“忠”从口号写成了日常消耗：在孤绝处守住一个姿态，比在战场上冲锋更难，也更寂寞。
@@ -627,6 +675,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0146
     name: 英布
+    avatar: monkey/秦汉/英布.png
     default_gender: male
     archetype: military
     flavor: （生年不详—前196年）汉初名将，九江王，因受黥刑又称黥布。英布出身刑徒而能跻身诸侯，说明秦末汉初社会秩序崩裂后，军功成为最直接的上升通道；但同一条通道也把人推入极不稳定的权力竞争。英布早随项羽，后被随何说降归汉，成为牵制项羽的重要力量。汉朝建立后，功臣相继被诛的风声与现实让他心生恐惧，最终起兵反叛而败亡。英布的结局揭示开国之后的另一种残酷：皇权要稳，必须收束武人的独立性；而武人若不愿被收束，就只能选择冒险。在他身上，功臣身份的变质格外直接——战时被倚重，战后被疑惧，恐惧与野心互相催逼，最后把人推到一条几乎没有退路的路上。

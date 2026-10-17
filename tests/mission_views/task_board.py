@@ -78,7 +78,8 @@ class TestTaskBoardPage:
         response = client.get(reverse("gameplay:tasks") + "?mission=huashan_lunjian")
         assert response.status_code == 200
 
-    def test_task_board_detail_query_count_does_not_grow_per_guest(self, manor_with_user):
+    @pytest.mark.parametrize("use_original_avatar", [False, True])
+    def test_task_board_detail_query_count_does_not_grow_per_guest(self, manor_with_user, use_original_avatar):
         manor, client = manor_with_user
         mission = MissionTemplate.objects.create(
             key="task_board_query_count",
@@ -92,7 +93,11 @@ class TestTaskBoardPage:
             archetype="civil",
             rarity="gray",
         )
-        Guest.objects.create(manor=manor, template=template, status=GuestStatus.IDLE)
+        avatar_fields = {
+            "use_original_avatar": use_original_avatar,
+            "original_avatar_asset_key": "guests/task-board-original.webp" if use_original_avatar else None,
+        }
+        Guest.objects.create(manor=manor, template=template, status=GuestStatus.IDLE, **avatar_fields)
         url = reverse("gameplay:tasks") + f"?mission={mission.key}"
 
         client.get(url)  # Warm process-level template and configuration caches.
@@ -100,7 +105,7 @@ class TestTaskBoardPage:
             client.get(url)
 
         for _ in range(6):
-            Guest.objects.create(manor=manor, template=template, status=GuestStatus.IDLE)
+            Guest.objects.create(manor=manor, template=template, status=GuestStatus.IDLE, **avatar_fields)
         with CaptureQueriesContext(connection) as seven_guest_queries:
             response = client.get(url)
 

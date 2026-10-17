@@ -83,6 +83,8 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
             "custom_name",
             "avatar_override_key",
             "avatar_asset_key",
+            "original_avatar_asset_key",
+            "use_original_avatar",
             "hp_bonus",
             "defense_stat",
             "troop_capacity_bonus",

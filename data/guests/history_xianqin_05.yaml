@@ -2,6 +2,7 @@ heroes:
   purple:
   - key: hist_xianqin_0222
     name: 干将
+    avatar: monkey/先秦与神话/干将.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）铸剑大师，干将莫邪。他是春秋时期吴国著名铸剑师，受吴王之命铸造宝剑。传说他采五山之铁精、六合之金英，却久铸不成。其妻莫邪问："铁汁不下，何也？"干将答："须以人祭炉。"莫邪遂投身炉中，刹那间铁汁涌流，神剑铸成。他铸成雌雄双剑，以妻为名曰"莫邪"，自己则得名"干将"。他献莫邪于吴王而私藏干将，被吴王所杀。其子赤眉长大后取干将剑报仇。这段铸剑传奇融合了工匠技艺、夫妻深情与复仇悲歌，成为中国古代最动人的神话之一。
@@ -15,6 +16,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0223
     name: 莫邪
+    avatar: monkey/先秦与神话/莫邪.png
     default_gender: female
     archetype: civil
     flavor: （生卒年不详）投身炉中，成就神剑。她是铸剑师干将的妻子，美丽贤淑、深明大义。当丈夫为吴王铸剑屡铸不成时，她毅然投身熔炉，以血肉之躯祭炼神兵。传说她投炉之时，火焰由红转青，铁汁如泉涌出，神剑终于铸成。干将为纪念爱妻，将雌剑命名为"莫邪"。她的牺牲不仅成就了绝世神兵，更成为中国古代工匠精神与夫妻深情的象征。后世将"干将莫邪"并称，既指这对神剑，也颂扬这段可歌可泣的爱情。莫邪之名，因铸剑传奇而永垂不朽。
@@ -29,6 +31,7 @@ heroes:
   blue:
   - key: hist_xianqin_0224
     name: 欧冶子
+    avatar: monkey_wu_male7.png
     default_gender: male
     archetype: military
     flavor: （约前550年—?）春秋越国铸剑师。欧冶子为越王勾践铸造湛卢、纯钧、鱼肠、巨阙等剑，又与干将合铸龙渊、泰阿；传说他善于辨矿、炼铁和淬火。
@@ -42,6 +45,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0226
     name: 庖丁
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）战国厨师，见于《庄子·养生主》。庖丁为梁惠王解牛，沿着骨节间隙运刀，所用刀十九年仍锋利；他向梁惠王解释，自己追求的是顺应牛体结构的“道”。
@@ -55,6 +59,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0204
     name: 姬职
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （约前335年—前279年）战国燕国君主，名职。燕昭王即位时燕国刚遭齐国攻破，他采纳郭隗建议筑黄金台、厚礼贤士，任用乐毅为将；五国伐齐时，乐毅攻下齐国七十余城，燕昭王死于灭齐之前。
@@ -68,6 +73,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0212
     name: 嬴驷
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （前356年—前311年）战国秦惠文王，秦孝公之子，秦国首位称王的君主。嬴驷即位后处死商鞅，却保留其变法；他任用张仪连横、司马错伐蜀，扩张秦国疆域，晚年出兵攻楚、韩、魏。
@@ -81,6 +87,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0213
     name: 嬴稷
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （前325年—前251年）战国秦昭襄王，秦惠文王之子，在位五十六年。嬴稷早年由宣太后、魏冉辅政，亲政后任用范雎、白起，参与伊阙、长平等战事；晚年罢免白起，死于咸阳。
@@ -94,6 +101,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0214
     name: 嬴渠梁
+    avatar: monkey_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （前381年—前338年）战国秦孝公，秦献公之子。嬴渠梁即位后发布求贤令，任用入秦的卫鞅主持变法，支持其推行县制、奖励军功和开垦田地；他死后，卫鞅仍继续执掌秦国政务。
@@ -107,6 +115,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0202
     name: 田因齐
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （?—前320年）战国齐威王，田齐第四代君主。田因齐即位初期少理政务，淳于髡以“三年不鸣”的隐语劝他振作；他后来任用邹忌、孙膑，整顿吏治并在桂陵、马陵等战事中击败魏军。
@@ -120,6 +129,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0207
     name: 魏罃
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （约前400年—前319年）战国魏惠王，名罃，魏武侯之子。魏罃即位后将都城迁到大梁，曾在桂陵、马陵两次败于齐军；晚年与孟子谈论治国，死后由太子嗣位。
@@ -133,6 +143,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0208
     name: 赵何
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （约前310年—前266年）战国赵惠文王，名何。赵何任用廉颇、蔺相如和赵奢，经历完璧归赵、渑池会盟及阏与之战；他晚年接受秦国与齐国交涉，死后由太子孝成王继位。
@@ -146,6 +157,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0210
     name: 熊槐
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （?—前296年）战国楚怀王，名槐。熊槐受张仪欺骗，与齐国断交后未得到秦国许诺的土地；他两次入秦，第二次被秦昭襄王扣留，最终死于咸阳。其在楚国任用靳尚，屈原因此被疏远。
@@ -159,6 +171,7 @@ heroes:
       agility: 22
   - key: hist_xianqin_0200
     name: 樊于期
+    avatar: pig_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （?—前227年）战国秦国将领，因得罪秦王政逃往燕国。樊于期得知荆轲需要自己的首级才能接近秦王后，在燕国自杀，将首级交给荆轲作为刺秦的凭信。
@@ -172,6 +185,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0201
     name: 田辟疆
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （?—前301年）战国齐宣王，名辟疆。田辟疆在位时延续稷下学宫，喜欢听三百人合奏竽乐；他曾出兵攻燕，短暂占领燕地，后来被诸侯联军击退，也曾与孟子讨论齐桓公、晋文公之事。
@@ -185,6 +199,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0203
     name: 田地
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （?—前284年）战国齐湣王，名地。田地即位后灭宋，与秦昭襄王并称东西帝；燕昭王联合五国伐齐，乐毅攻下齐国七十余城，田地出逃到莒，最终被楚将淖齿杀死。
@@ -198,6 +213,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0206
     name: 韩昭侯
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （?—前333年）战国韩昭侯，韩国君主。韩昭侯任用申不害为相，允许他主持韩国政务十五年；申不害死后，他仍继续任用其旧臣，晚年死于新郑。
@@ -211,6 +227,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0209
     name: 赵丹
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （?—前245年）战国赵孝成王，赵惠文王之子，名丹。长平之战时，赵丹听信反间，任用赵括取代廉颇；赵军被秦军包围后，赵括战死，四十余万赵军投降。秦军围攻邯郸时，他听从平原君等人的主张守城，魏国信陵君率军救赵，秦军退去。
@@ -224,6 +241,7 @@ heroes:
       agility: 22
   - key: hist_xianqin_0211
     name: 熊横
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （?—前263年）战国楚顷襄王，楚怀王之子，名横。熊横即位后，秦将白起攻破楚都郢，楚王室迁都陈；他后来任用庄辛等人，收复部分失地，在陈去世。
@@ -237,6 +255,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0218
     name: 郑国
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）战国韩国水工。韩国派郑国入秦修渠，本想让秦国耗费财力；秦王政起初得知后想杀他，郑国说明工程尚未完成且能灌溉关中，秦王便让他继续主持，郑国渠最终修成。
@@ -250,6 +269,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0228
     name: 郭隗
+    avatar: pig_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）战国燕国谋士。燕昭王向郭隗询问招贤之策时，他讲述买千里马骨的故事，并劝昭王先礼遇自己；昭王为他筑黄金台，乐毅、剧辛、邹衍等人随后来到燕国。
@@ -263,6 +283,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0238
     name: 庆父
+    avatar: pig/武051.png
     default_gender: male
     archetype: military
     flavor: （?—前660年）春秋鲁国公子，鲁庄公之弟。庆父与哀姜合谋，在庄公死后先后杀死公子般、鲁闵公，试图夺取君位；鲁国大夫季友拥立僖公后，他逃往莒国，最终被迫自缢。
@@ -276,6 +297,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0242
     name: 夷吾
+    avatar: monkey_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （?—前637年）春秋晋惠公，名夷吾，晋献公之子。骊姬之乱后，夷吾在秦穆公支持下回国即位，却没有兑现割地许诺；韩原之战中他被秦军俘获，获释回国后杀死里克、丕郑等拥立功臣。
@@ -289,6 +311,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0243
     name: 里克
+    avatar: pig_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （?—前650年）春秋晋国大夫。骊姬之乱后，里克先后杀死奚齐、卓子和骊姬，准备迎立重耳；重耳不肯回国，他便改立夷吾为晋惠公。惠公即位后以弑君之罪逼里克自杀。
@@ -302,6 +325,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0232
     name: 钟离春
+    avatar: monkey_wen_female5.png
     default_gender: female
     archetype: civil
     flavor: （生卒年不详）战国齐国女子，名钟离春，齐宣王时人。钟离春主动求见齐宣王，指出齐国不用贤才、拒绝谏言等问题；传说齐宣王采纳她的劝告，并将她立为王后。
@@ -316,6 +340,7 @@ heroes:
   green:
   - key: hist_xianqin_0205
     name: 姬戎人
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （？—前272年，一说前271年）姬戎人即燕惠王，燕昭王之子。即位后以骑劫代替乐毅，乐毅出奔赵国；田单随后反攻，齐国收复失地。其事迹主要见于《史记》等战国史料。
@@ -329,6 +354,7 @@ heroes:
       agility: 22
   - key: hist_xianqin_0215
     name: 魏遬
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （？—前277年）魏遬即魏昭王，魏襄王之子。其在位时魏国受到齐、秦等国进逼，曾割让安邑向秦求和；关于其具体施政，传世记载较少。
@@ -342,6 +368,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0216
     name: 韩然
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （？—前239年）韩然即韩桓惠王，战国末年韩国君主。秦军夺取野王后，他曾准备将上党交给秦国；上党太守冯亭转而将十七城献给赵国，最终引发长平之战。
@@ -355,6 +382,7 @@ heroes:
       agility: 22
   - key: hist_xianqin_0217
     name: 冯亭
+    avatar: pig/武049.png
     default_gender: male
     archetype: military
     flavor: （？—前260年）冯亭，战国时期韩国上党太守。秦军取野王后，上党与韩国本土隔绝，他将十七城转献赵国，引发赵秦冲突；后来参加赵军抵抗秦军并战死。
@@ -368,6 +396,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0219
     name: 郑安平
+    avatar: pig_wu_male5.png
     default_gender: male
     archetype: military
     flavor: （？—前255年）郑安平，战国时期魏人，曾救助遭魏齐迫害的范雎。范雎入秦为相后推荐他为将；他率秦军攻邯郸失败并降赵，范雎也因此受到政治牵连。
@@ -381,6 +410,7 @@ heroes:
       agility: 22
   - key: hist_xianqin_0220
     name: 白圭
+    avatar: pig/文035.png
     default_gender: male
     archetype: civil
     flavor: （约前370年—约前300年）白圭，战国时期商人，司马迁称其为“治生之祖”。他主张“人弃我取，人取我与”，重视根据年景和市场经营。与治水人物白圭是否为一人，文献有异说。
@@ -394,6 +424,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0221
     name: 卓氏
+    avatar: monkey/其他随机角色/文064_女.png
     default_gender: female
     archetype: civil
     flavor: （生卒年不详）卓氏，战国末年迁入蜀地的冶铁家族，《史记·货殖列传》所载富商。秦并巴蜀后，卓氏凭冶铁经营致富；传世资料以家族记载为主，个人生平不详。
@@ -407,6 +438,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0225
     name: 匠石
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）匠石，《庄子》寓言中的工匠，见于“运斤成风”故事。传说他能挥斧削去郢人鼻尖白垩而不伤其人，借此表现技艺纯熟与知音难遇；除寓言文本外缺少可考生平。
@@ -420,6 +452,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0227
     name: 轮扁
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）轮扁，《庄子·天道》寓言中的造车轮工匠。他以制作车轮的经验说明技艺难以完全用文字传授，并借此评论齐桓公所读圣人之言；其形象主要属于先秦寓言和工匠文化。
@@ -433,6 +466,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0229
     name: 剧辛
+    avatar: monkey/其他随机角色/武037_男.png
     default_gender: male
     archetype: military
     flavor: （？—前243年）剧辛，战国时期赵人，燕昭王招贤时与乐毅一同入燕，任燕将。燕昭王死后，他率军攻赵，被赵将李牧击败并战死。
@@ -446,6 +480,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0230
     name: 骑劫
+    avatar: monkey_wu_male10.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）骑劫，战国时期燕将。燕惠王以他代替乐毅主持伐齐，齐国田单据守即墨、莒等地后反攻，骑劫在即墨之战中战死，燕军此前取得的齐地大多失守。
@@ -459,6 +494,7 @@ heroes:
       agility: 22
   - key: hist_xianqin_0231
     name: 夏姬
+    avatar: monkey/其他随机角色/文078_女.png
     default_gender: female
     archetype: civil
     flavor: （约前640年—？）夏姬，春秋时期陈国贵族女子，陈灵公时为大夫夏御叔之妻，后卷入夏徵舒弑君、楚国灭陈等事件。她的婚姻与情事多见于带有礼法评价的史传，后世“美人祸国”等说法含有叙事偏向。
@@ -472,6 +508,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0234
     name: 息妫
+    avatar: monkey_wen_female7.png
     default_gender: female
     archetype: civil
     flavor: （生卒年不详）息妫，春秋时期陈国公主，嫁息侯；楚文王灭息后将她纳入楚宫，后世称“桃花夫人”。“三年不语”等情节兼见史传与传说，主要反映诸侯兼并下贵族女性的处境。
@@ -485,6 +522,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0235
     name: 宣姜
+    avatar: monkey/其他随机角色/文064_女.png
     default_gender: female
     archetype: civil
     flavor: （？—前692年）宣姜，春秋时期齐国女子，原与卫太子伋有婚约，后成为卫宣公夫人。她与太子伋、太子寿及公子朔的继承纠纷相连，相关记载见于《左传》等并带有礼法评判。
@@ -498,6 +536,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0236
     name: 文姜
+    avatar: monkey_wen_female7.png
     default_gender: female
     archetype: civil
     flavor: （？—前673年）文姜，春秋时期齐国公主，鲁桓公夫人。她与兄长齐襄公的关系见于史传，鲁桓公赴齐后遇害，文姜此后长期参与齐鲁两国的政治往来；相关叙事兼有史传和道德评判。
@@ -511,6 +550,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0237
     name: 哀姜
+    avatar: monkey_wen_female7.png
     default_gender: female
     archetype: civil
     flavor: （？—前659年）哀姜，齐国公主、鲁庄公夫人。鲁庄公死后鲁国发生庆父之乱，哀姜与相关政治活动见于史传；齐桓公介入后，她被召回齐国并遭处置。
@@ -524,6 +564,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0239
     name: 共叔段
+    avatar: pig/武046.png
     default_gender: male
     archetype: military
     flavor: （？—前722年）共叔段，郑武公之子、郑庄公之弟，受封于京邑。因扩张封邑、积聚势力与庄公发生冲突，起兵失败后出奔；“多行不义必自毙”即出自这段史事。
@@ -537,6 +578,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0240
     name: 姜纠
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: （？—前685年）姜纠，即公子纠，齐襄公之弟，曾在鲁国受到管仲、召忽辅佐，与公子小白争夺齐国君位。小白先归齐即位为齐桓公，鲁国随后杀死公子纠，管仲转而辅佐桓公。
@@ -550,6 +592,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0241
     name: 姬申生
+    avatar: monkey_wu_male10.png
     default_gender: male
     archetype: military
     flavor: （？—前656年）姬申生，即申生，晋献公嫡长子。因骊姬谗毁和继承斗争，被怀疑在祭祀中谋害父亲，最终自杀；其死成为晋国骊姬之乱和重耳、夷吾出奔的关键事件。
@@ -563,6 +606,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0244
     name: 荀息
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （？—前651年）荀息，春秋时期晋国大夫，晋献公重臣。曾参与假道伐虢，并受命辅佐幼主奚齐；献公死后奚齐、卓子相继被杀，荀息亦自杀。
@@ -576,6 +620,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0245
     name: 士蒍
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）士蒍，春秋时期晋国大夫，晋献公时参与国政。史传记载他曾以“蜂虿有毒”等比喻劝告国君警惕骊姬势力，并参与晋国对外谋略。
@@ -589,6 +634,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0246
     name: 叔詹
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）叔詹，春秋时期郑国大夫。晋公子重耳流亡经过郑国时，他曾建议郑文公厚待或除去重耳，但意见未被采纳；重耳即位为晋文公后，郑国受到晋国压力。
@@ -602,6 +648,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0247
     name: 壶叔
+    avatar: pig_wu_male5.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）壶叔，春秋时期晋国公子重耳流亡时的随从。传世文献对他的个人履历记载很少，可确认其属于陪伴重耳辗转列国的从者。
@@ -615,6 +662,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0248
     name: 头须
+    avatar: monkey/其他随机角色/武037_男.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）头须，春秋时期晋国人物，曾任公子重耳流亡时的御者。有关其生平和复国后的封赏，史料记载简略。
@@ -628,6 +676,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0249
     name: 魏犨
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）魏犨，春秋时期晋国武臣，曾随重耳流亡，晋文公复国后任将。史传称其勇力刚烈，后代魏氏成为晋国卿族并建立魏国，但家族发展不等同于魏犨个人功业。

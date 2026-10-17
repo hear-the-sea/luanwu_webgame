@@ -1,0 +1,104 @@
+{
+  "status": "checked_resume_blocked",
+  "checked_at": "2026-10-15 01:19:25.806900+00:00",
+  "routing": {
+    "bootstrap_mode": "v2_active",
+    "maintenance_mode": "v2_paused",
+    "calibration_routes": [],
+    "revision": 843,
+    "last_hourly_safety_window_end_at": "2026-10-15 01:00:00+00:00",
+    "last_daily_safety_window_end_at": "2026-10-15 00:00:00+00:00",
+    "last_pause_window_id": "daily:20261013T000000Z",
+    "pause_reason": "duplicate_or_partial_commit",
+    "paused_from_maintenance_mode": "v2_active",
+    "persisted": true
+  },
+  "monitor_preflight": {
+    "allowed": true,
+    "reason": "",
+    "checked_at": "2026-10-15 01:19:25.806900+00:00",
+    "monitor_heartbeat_at": "2026-10-15 01:19:00+00:00"
+  },
+  "active_v2_profiles": 998,
+  "last_execution_at": "2026-10-13 06:09:29.160376+00:00",
+  "executions_last_10m": 0,
+  "pause_window": "daily:20261013T000000Z",
+  "uncertain_commits": 1,
+  "started_without_terminal": 12,
+  "matching_execution_receipts": 0,
+  "recovery_assessment": {
+    "allowed": false,
+    "revision": 843,
+    "pause_reason": "duplicate_or_partial_commit",
+    "blockers": [
+      "pause_contains_non_arena_warning",
+      "duplicate_or_partial_commit"
+    ],
+    "checked_window_ids": [
+      "hourly:20261015T000000Z",
+      "hourly:20261014T230000Z",
+      "hourly:20261014T220000Z",
+      "daily:20261014T000000Z",
+      "daily:20261013T000000Z"
+    ],
+    "preflight": {
+      "allowed": true,
+      "reason": "",
+      "checked_at": "2026-10-15T01:19:25.806900+00:00",
+      "monitor_heartbeat_at": "2026-10-15T01:19:00+00:00"
+    },
+    "window_evidence": {
+      "hourly": {
+        "latest_mature_window_end": "2026-10-15T01:00:00+00:00",
+        "cursor_end": "2026-10-15T01:00:00+00:00",
+        "cursor_caught_up": true,
+        "expected_count": 3,
+        "found_count": 3,
+        "window_ids": [
+          "hourly:20261015T000000Z",
+          "hourly:20261014T230000Z",
+          "hourly:20261014T220000Z"
+        ],
+        "complete": true
+      },
+      "daily": {
+        "latest_mature_window_end": "2026-10-15T00:00:00+00:00",
+        "cursor_end": "2026-10-15T00:00:00+00:00",
+        "cursor_caught_up": true,
+        "expected_count": 2,
+        "found_count": 2,
+        "window_ids": [
+          "daily:20261014T000000Z",
+          "daily:20261013T000000Z"
+        ],
+        "complete": true
+      }
+    },
+    "reserve_lease": {
+      "ready": 20,
+      "training": 0,
+      "exhausted": 0,
+      "paused_training": 0,
+      "active_claims": 0
+    },
+    "runtime_budget": {
+      "materialization": {
+        "status": "ok",
+        "entry_count": 0,
+        "updated_at": "2026-09-13T15:41:56.735834+00:00"
+      },
+      "training": {
+        "status": "ok",
+        "entry_count": 0,
+        "updated_at": "2026-09-13T15:41:56.737096+00:00"
+      },
+      "growth": {
+        "status": "ok",
+        "entry_count": 2,
+        "updated_at": "2026-10-13T06:09:03.095037+00:00"
+      }
+    }
+  },
+  "writes_executed": false,
+  "reason": "Existing hard-safety pause cannot be safely cleared without reconciling uncertain operations; frozen evidence retained."
+}

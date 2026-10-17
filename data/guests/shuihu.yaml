@@ -4,6 +4,7 @@ heroes:
   green:
   - key: hero_ilrock_04838
     name: 穆弘
+    avatar: monkey_wu_male12.png
     default_gender: male
     archetype: military
     flavor: 揭阳镇的富户好汉，绰号“没遮拦”，与弟弟穆春在当地颇有声势。起初因薛永受赏之事与宋江结怨，追赶到江边，得李俊说明原委才化敌为友。后来参与江州劫法场，随众上梁山，列马军八骠骑。骄横的乡间豪强从此把一身胆气带上战阵，与旧日兄弟共同冲锋。出自《水浒传》。
@@ -18,6 +19,7 @@ heroes:
       agility: 20
   - key: hero_ilrock_04842
     name: 张横
+    avatar: pig/文045.png
     default_gender: male
     archetype: military
     flavor: 浔阳江上的船家，人称“船火儿”，是张顺的兄长。曾在江心威逼宋江交出财物，幸得李俊赶来相认，这场险遇才转成江湖交情。参与江州救援后，他随众投奔梁山，成为水军头领。撑船渡江、驾舟迎敌都是熟门熟路，江面上的风浪和暗流，也比陆上的规矩更合他的性子。出自《水浒传》。
@@ -32,6 +34,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04844
     name: 张顺
+    avatar: pig/武011.png
     default_gender: male
     archetype: military
     flavor: 张横之弟，生得白净，练就一身惊人的水下本领，绰号“浪里白条”。在江州与李逵争执时，他将对方引入水中，轻易占了上风，后来却又成了共同救援宋江的伙伴。上梁山后担任水军头领，还曾远赴建康请来安道全。舟船受阻、陆路难行之处，往往正是他潜渡传信的用武之地。出自《水浒传》。
@@ -46,6 +49,7 @@ heroes:
       agility: 36
   - key: hero_ilrock_04846
     name: 杨雄
+    avatar: pig/武053.png
     default_gender: male
     archetype: military
     flavor: 面色微黄，因此得名“病关索”，原在蓟州兼做刽子手，刀下营生之外也有一身武艺。受石秀相助后与其结为兄弟，却因妻子潘巧云与裴如海私通而闹出杀人风波。二人离开蓟州，又卷入祝家庄争斗，终于投奔梁山。此后列入步军头领，与石秀并肩出阵，江湖交情也经受了刀兵考验。出自《水浒传》。
@@ -60,6 +64,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04847
     name: 石秀
+    avatar: pig/武021.png
     default_gender: male
     archetype: military
     flavor: 江南出身的好汉，因遇事敢拼、舍身不退，人称“拼命三郎”。流落蓟州时帮助杨雄，又察觉潘巧云与裴如海私通，几番追查才使真相大白。投奔梁山后，他在大名府见卢俊义即将被斩，独自从楼上跃入法场救人。胆量之外还有观察与应变的心思，危急时总肯先把自己的安危抛开。出自《水浒传》。
@@ -74,6 +79,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04848
     name: 解珍
+    avatar: pig_wu_male2.png
     default_gender: male
     archetype: military
     flavor: 登州猎户，解宝的兄长，身形瘦长，绰号“两头蛇”。兄弟奉命打虎，猎物落入毛太公庄院，反被夺去功劳、诬陷入狱。顾大嫂等亲友联手劫牢，才把二人救出，随后一同归入梁山。常年追踪野兽、翻越山岭，练出矫健身手和吃苦的筋骨；列入步军头领后，仍敢沿险径深入敌境。出自《水浒传》。
@@ -88,6 +94,7 @@ heroes:
       agility: 30
   - key: hero_ilrock_04849
     name: 解宝
+    avatar: monkey/其他随机角色/武064_男_.png
     default_gender: male
     archetype: military
     flavor: 与兄长解珍在登州以打猎为生，性情急烈，绰号“双尾蝎”。为民除虎却被毛太公侵吞猎物，又遭陷害下狱，原本守法谋生的猎户就此走投无路。经孙新、顾大嫂等人营救，他随兄长离开故乡，投奔梁山。上山后列入步军头领，把惯于奔走山野的本领带进军中，兄弟始终相随出战。出自《水浒传》。
@@ -102,6 +109,7 @@ heroes:
       agility: 30
   - key: hero_ilrock_04851
     name: 朱武
+    avatar: monkey/其他随机角色/文041_男.png
     default_gender: male
     archetype: civil
     flavor: 少华山三位寨主之一，绰号“神机军师”，虽不以蛮勇见长，却熟悉阵法与兵谋。陈达冒犯史家庄被擒时，他与杨春上门请罪，反与史进结成深交，后来随众上梁山。聚义后参赞军务，征战时又辅佐卢俊义，善于辨认敌阵、筹划进退。别人争一合枪刀之胜，他更关心整支军马如何脱困破局。出自《水浒传》。
@@ -116,6 +124,7 @@ heroes:
       agility: 14
   - key: hero_ilrock_04852
     name: 黄信
+    avatar: pig/武016.png
     default_gender: male
     archetype: military
     flavor: 青州兵马都监，因夸口要镇服清风山、二龙山、桃花山，得了“镇三山”的名号。他是秦明的弟子，曾参与拘捕宋江、花荣，押解途中却遇上清风山众人劫夺。后来随秦明归附梁山，成为马军小彪将，负责出哨与征战。昔日在官府阵前追缉山寨，后来也与那些好汉一同披甲上马。出自《水浒传》。
@@ -130,6 +139,7 @@ heroes:
       agility: 16
   - key: hero_ilrock_04853
     name: 孙立
+    avatar: pig/武062.png
     default_gender: male
     archetype: military
     flavor: 登州兵马提辖，绰号“病尉迟”，善用长枪与铁鞭，军官出身，临阵沉稳。为营救解珍、解宝，他与弟弟孙新等人劫牢出走，随后投奔梁山。在祝家庄战事中，他利用与栾廷玉的同门关系带人入庄，里应外合，助宋江攻破强敌。聚义后列马军小彪将，枪马功夫之外，也有敢入险地的胆识。出自《水浒传》。
@@ -144,6 +154,7 @@ heroes:
       agility: 16
   - key: hero_ilrock_04854
     name: 宣赞
+    avatar: monkey/其他随机角色/武052_男.png
     default_gender: male
     archetype: military
     flavor: 原是朝廷武官，善于射箭，因容貌丑异，人称“丑郡马”。梁山兵临大名府时，他举荐关胜统兵，自己与郝思文随军同行；征讨失利被擒，受宋江礼遇后转而入伙。上山后列入马军小彪将，仍与关胜等旧日伙伴协同作战。面貌常招人轻视，骑射与军中历练却让他在战阵中自有立足之处。出自《水浒传》。
@@ -158,6 +169,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04855
     name: 郝思文
+    avatar: pig/武015.png
     default_gender: male
     archetype: military
     flavor: 关胜的结义兄弟，通晓武艺，绰号“井木犴”。传说母亲梦见井木犴投胎而生下他，这个星宿名便伴着他闯荡江湖。关胜奉命征讨梁山时，他与宣赞同为辅将，战败后一道归入山寨。聚义后列马军小彪将，仍随旧日兄弟出阵，在枪马交锋和骑兵征战中效力，并不因换了旗号而割舍原有情义。出自《水浒传》。
@@ -172,6 +184,7 @@ heroes:
       agility: 20
   - key: hero_ilrock_04856
     name: 韩滔
+    avatar: pig/武023.png
     default_gender: male
     archetype: military
     flavor: 原任陈州团练使，善使枣木槊，绰号“百胜将”。呼延灼领兵征讨梁山时，他担任正先锋，与彭玘分领前军，曾倚仗连环马压迫山寨。官军失利后，他离开旧营归入梁山，列马军小彪将。惯经军阵的他仍常与彭玘并肩出战，既能在前锋迎敌，也能随大队骑兵推进，旧日同僚成了聚义伙伴。出自《水浒传》。
@@ -186,6 +199,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04858
     name: 单廷珪
+    avatar: monkey/其他随机角色/武男22.png
     default_gender: male
     archetype: military
     flavor: 凌州团练使，绰号“圣水将”，善于以水攻配合兵马作战，部下军士常着黑衣黑甲。与魏定国奉命抵御关胜时，他出阵交锋，被擒后得以释放，终于折服归附。加入梁山后列马军小彪将，又帮助劝说魏定国入伙。枪马本领之外，他尤其熟悉水势与战场布置，和神火将的用兵手段各有长处。出自《水浒传》。
@@ -200,6 +214,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04859
     name: 魏定国
+    avatar: pig/武016.png
     default_gender: male
     archetype: military
     flavor: 与单廷珪同任凌州团练使，军中善用火攻，人称“神火将”。奉命抵抗梁山兵马时，他布置火器，曾使关胜陷入困境；城池失守后仍不肯轻易服输，最终在单廷珪等人的劝说下归附。聚义后成为马军小彪将，把原有火攻本领带入山寨。遇阵势胶着，除了刀枪迎敌，他也能借烈焰扰乱敌军进退。出自《水浒传》。
@@ -214,6 +229,7 @@ heroes:
       agility: 20
   - key: hero_ilrock_04860
     name: 萧让
+    avatar: pig/文041.png
     default_gender: male
     archetype: civil
     flavor: 济州一带的书法能手，绰号“圣手书生”，熟悉多种字体，善于摹写笔迹。宋江在江州陷入死罪时，他曾与金大坚合作仿造蔡京家书，试图从官府手中救人，却因印信细节露出破绽。后来留在梁山，掌管行文走檄、调兵遣将所需的文书。案头笔墨不如阵前刀枪醒目，却承载着各营往来的军令。出自《水浒传》。
@@ -228,6 +244,7 @@ heroes:
       agility: 14
   - key: hero_ilrock_04861
     name: 裴宣
+    avatar: pig/文050.png
     default_gender: male
     archetype: civil
     flavor: 原任京兆府孔目，熟悉刑名文案，因秉公办事而受奸官排挤，流落饮马川落草。人称“铁面孔目”的他，与邓飞、孟康结伴，经戴宗等人联络后归入梁山。聚义分工时，他掌管定功赏罚，核查各营功过、主持军纪。离开官府并未丢下旧日的认真，面对山寨兄弟，仍愿把赏罚分明地写在册上。出自《水浒传》。
@@ -242,6 +259,7 @@ heroes:
       agility: 10
   - key: hero_ilrock_04862
     name: 欧鹏
+    avatar: monkey_wu_male12.png
     default_gender: male
     archetype: military
     flavor: 绰号“摩云金翅”，原在黄门山与蒋敬、马麟、陶宗旺聚义，身手轻捷，惯使刀枪。宋江等人救出江州众好汉后经过黄门山，他迎接结交，从此带着旧寨伙伴归入梁山。大聚义时列马军小彪将，承担征战与远探出哨的职分。比起在厅上筹谋，他更习惯跨马提兵，与同伴一道奔赴前阵。出自《水浒传》。
@@ -256,6 +274,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04863
     name: 邓飞
+    avatar: pig/武011.png
     default_gender: male
     archetype: military
     flavor: 双眼红赤，故称“火眼狻猊”，惯使一条铁链，原与孟康在饮马川聚众。遇上受冤的裴宣后，他尊其为首领，后来又经戴宗、杨林引荐，带着伙伴投奔梁山。上山后列马军小彪将，随众出哨、征战。铁链挥起，打法与常见枪刀颇有不同；旧寨相处的情分，也随着几人的马蹄一同进入山寨。出自《水浒传》。
@@ -270,6 +289,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04864
     name: 燕顺
+    avatar: monkey_wu_male4.png
     default_gender: male
     archetype: military
     flavor: 原在清风山做寨主，赤发黄须，形貌威猛，绰号“锦毛虎”。宋江落入寨中时，他得知来人身份，立刻改以礼相待；此后又卷入清风寨的恩怨，与王英、郑天寿等伙伴一道投奔梁山。大聚义后列马军小彪将，执行出哨与骑兵征战。江湖上认得情义，也敢执兵迎敌，清风山的旧交始终随他同行。出自《水浒传》。
@@ -284,6 +304,7 @@ heroes:
       agility: 20
   - key: hero_ilrock_04865
     name: 凌振
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: 东京火药局出身的军官，绰号“轰天雷”，精于造炮与施放，能借火药将炮石送往远处。随呼延灼进攻梁山时，他在岸上架炮轰击，后来被水军诱入湖荡擒住，转而加入山寨。聚义后专造大小号炮，遇到攻城、破阵等硬仗便有用武之地。刀枪尚未接敌，炮声已经先一步震动城头。出自《水浒传》。
@@ -298,6 +319,7 @@ heroes:
       agility: 12
   - key: hero_ilrock_04866
     name: 蒋敬
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: 原是读书人，精通书算，也习枪棒，因仕途无成而在黄门山聚众，绰号“神算子”。与欧鹏等人结交宋江后，他一同归入梁山，掌管钱粮支出与收纳。兵马越多，粮草账目越繁，他便把细致的计算用于军中供给。并非每次立功都在两军交锋之处，库中一笔一笔清楚的账，也能让将士安心出征。出自《水浒传》。
@@ -312,6 +334,7 @@ heroes:
       agility: 12
   - key: hero_ilrock_04867
     name: 吕方
+    avatar: pig/武016.png
     default_gender: male
     archetype: military
     flavor: 因喜爱吕布而仿其装束，使一杆方天画戟，绰号“小温侯”，原在对影山聚众。与郭盛较量时，双戟缨络纠缠不解，花荣一箭射断，才使两人停斗结交。此后随宋江投奔梁山，聚义后与郭盛同守中军。对影山相争的两杆画戟，从此成为相互照应的兵器，在帅旗近旁护住将令与阵脚。出自《水浒传》。
@@ -326,6 +349,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04869
     name: 安道全
+    avatar: pig_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: 建康府的名医，内外科皆有心得，因医术精湛得了“神医”的称号。宋江背上生疮、病势危急时，张顺远行请他救治，他随之入山，施药使宋江脱险。大聚义后，他专治梁山众人的诸般疾病。军中刀伤、行路积劳与寻常病痛，都需要细心诊察；比起争夺战功，他更关心眼前病人能否撑过这一夜。出自《水浒传》。
@@ -340,6 +364,7 @@ heroes:
       agility: 12
   - key: hero_ilrock_04870
     name: 皇甫端
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: 东昌府兽医，碧眼紫髯，形貌与常人不同，人称“紫髯伯”。随张清归附梁山后，他专管医治军马，熟悉马匹患病时的症候与照护办法。山寨骑兵众多，远途行军、连番征战都离不开健壮坐骑，他的手艺也因此格外要紧。将领忙着磨刀备阵时，他常要先看一看马厩，确保那些无言的战伴仍能负重奔驰。出自《水浒传》。
@@ -354,6 +379,7 @@ heroes:
       agility: 12
   - key: hero_ilrock_04871
     name: 扈三娘
+    avatar: monkey/其他随机角色/武083_女_.png
     default_gender: female
     archetype: military
     flavor: 扈家庄的女将，绰号“一丈青”，使一对日月双刀，也善用绳索擒人。祝家庄战事中，她曾生擒王英，与梁山众将交锋，后来被林冲拿下。家庄破败后，她归入梁山，又奉宋江之命与王英成婚。聚义时专掌三军内探事，出阵仍以双刀与拿人本领见长，身世的骤变也未消去她临敌时的锋芒。出自《水浒传》。
@@ -368,6 +394,7 @@ heroes:
       agility: 28
   - key: hero_ilrock_04872
     name: 鲍旭
+    avatar: pig/武091.png
     default_gender: male
     archetype: military
     flavor: 枯树山的寨主，惯使一口阔剑，性情凶猛，绰号“丧门神”。李逵与焦挺来到山寨后，他与二人结交，又随众参与凌州一带的战事，随后归入梁山。大聚义时列为步军将校，常与李逵、项充、李衮一同冲阵。剑势沉重，遇敌直进，他习惯在混战里与伙伴相互策应，把勇力用在最先接敌之处。出自《水浒传》。
@@ -382,6 +409,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04873
     name: 时迁
+    avatar: pig/武056.png
     default_gender: male
     archetype: military
     flavor: 能飞檐走壁、潜入高处，人称“鼓上蚤”，早年在江湖间做过偷盗营生。随杨雄、石秀经过祝家庄时因偷鸡被拿，引出攻庄风波；后来潜入东京盗走徐宁的雁翎甲，为梁山引来钩镰枪教头。聚义后负责走报机密，也常深入敌营放火传信。正面大军尚难越过的墙垣，往往挡不住他轻巧的脚步。出自《水浒传》。
@@ -396,6 +424,7 @@ heroes:
       agility: 46
   - key: hero_ilrock_04874
     name: 樊瑞
+    avatar: monkey_wu_male4.png
     default_gender: male
     archetype: civil
     flavor: 芒砀山寨主，绰号“混世魔王”，善用法术，与项充、李衮聚众，曾扬言要吞并梁山。宋江领军来战，公孙胜以道术破去他的手段，他才归附山寨，并拜公孙胜为师。大聚义后列为步军将校，仍与旧日伙伴出阵。由争雄一方到重新问道学艺，他不只有好胜的心气，也肯在真正的高手面前低头求教。出自《水浒传》。
@@ -410,6 +439,7 @@ heroes:
       agility: 18
   - key: hero_ilrock_04875
     name: 孔明
+    avatar: monkey_wu_male13.png
     default_gender: male
     archetype: military
     flavor: 孔家庄的青年好汉，绰号“毛头星”，孔亮的兄长，曾留宋江在家中作客，向他学些枪棒。叔父被青州官府拘禁时，兄弟聚众前往救人，孔明反被呼延灼擒住；后来经三山好汉攻打青州才得脱身，随众上梁山。大聚义后与弟弟同守中军，从乡间练武到跟随军马，兄弟的进退始终紧紧相连。出自《水浒传》。
@@ -424,6 +454,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04876
     name: 孔亮
+    avatar: pig/武053.png
     default_gender: male
     archetype: military
     flavor: 孔明之弟，绰号“独火星”，与兄长一起在孔家庄习练枪棒，曾拜宋江为师。武松醉后误打他，随后经宋江说明，两人才化解争执。青州官府拘押亲人后，他与兄长举兵相救，又在三山聚义时奔走求援。归入梁山后，兄弟二人同任中军护卫，既守帅阵，也带着早年对师长和亲人的那份牵挂。出自《水浒传》。
@@ -438,6 +469,7 @@ heroes:
       agility: 25
   - key: hero_ilrock_04877
     name: 项充
+    avatar: pig/武052.png
     default_gender: male
     archetype: military
     flavor: 芒砀山三位首领之一，绰号“八臂哪吒”，善使团牌，背后又藏飞刀，能守能攻。与樊瑞、李衮对抗梁山失败后，他随众归附，大聚义时列入步军将校。出阵常与李衮持牌掩护李逵、鲍旭，挡开兵刃，再寻机投刀。手中团牌护的是自己的身形，也能替同伴撑出向前冲杀的空隙。出自《水浒传》。
@@ -452,6 +484,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04878
     name: 李衮
+    avatar: pig/武008.png
     default_gender: male
     archetype: military
     flavor: 芒砀山的好汉，绰号“飞天大圣”，与樊瑞、项充同据山寨，惯用团牌，兼善投掷标枪。被梁山击败后，他随伙伴一同归附，聚义后成为步军将校。常与项充成对出战，以团牌遮护、投枪制敌，再配合李逵等人突进。看准来势、守住空当，是他在乱军中协助同伴的本领，并非只凭一股蛮勇。出自《水浒传》。
@@ -466,6 +499,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04879
     name: 金大坚
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: 济州的金石雕刻能手，绰号“玉臂匠”，善刻碑文，也能制作印信。宋江在江州获罪时，他被请来与萧让合作，仿制蔡京家书所需的印章，后来留在梁山。大聚义后，专掌兵符印信的制作，把精细手艺用于军令往来。每一方印面都关乎真伪与传令，刀锋落在金石之间，也须像临阵使刀一样准确。出自《水浒传》。
@@ -480,6 +514,7 @@ heroes:
       agility: 12
   - key: hero_ilrock_04880
     name: 童威
+    avatar: monkey/其他随机角色/武064_男_.png
     default_gender: male
     archetype: military
     flavor: 浔阳江一带的好汉，绰号“出洞蛟”，与弟弟童猛一起追随李俊，早年做过贩运私盐的营生。宋江遭逢揭阳镇与江州劫难时，他随同伴参与救援，后来一并投奔梁山。大聚义后列水军头领，熟悉江河航路，惯于船上行动。李俊筹划水上接应时，身边总少不了这对懂船、识水、肯随他赴险的兄弟。出自《水浒传》。
@@ -494,6 +529,7 @@ heroes:
       agility: 34
   - key: hero_ilrock_04881
     name: 童猛
+    avatar: pig/武008.png
     default_gender: male
     archetype: military
     flavor: 童威之弟，绰号“翻江蜃”，在浔阳江边与李俊相交，往来舟船之间，也参与过私盐买卖。随着李俊结识宋江，他与兄长加入江州救援，随后归入梁山水军。熟悉船只操持和江面风浪，是他立足军中的本领。水寨出兵时，兄弟可以并肩驾舟、协助接应，旧日在江边谋生的经验，也随之变成迎敌的身手。出自《水浒传》。
@@ -508,6 +544,7 @@ heroes:
       agility: 34
   - key: hero_ilrock_04882
     name: 孟康
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: 身材高大，绰号“玉幡竿”，原是为官府造船的工匠。受督办官员欺压后，他杀死对方逃入江湖，与邓飞在饮马川聚众，后来又迎裴宣主持寨事。归附梁山后，他专管监造大小战船，把木作与舟船技艺用于水军。湖荡中的兵马要进退自如，先得有稳妥耐用的船身，这正是他熟悉而看重的工夫。出自《水浒传》。
@@ -522,6 +559,7 @@ heroes:
       agility: 12
   - key: hero_ilrock_04883
     name: 侯健
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: 洪都出身的裁缝，身形轻捷，绰号“通臂猿”，也曾跟随薛永学习枪棒。流落江州为黄文炳家做针线时，他得知梁山众人前来报仇，协助探明家中情形，随后归入山寨。大聚义后专造旌旗袍袄，为众军制备衣物与标识。布料到了他手中，不只是谋生的针线活，也成了将士列阵时一眼可认的旗号。出自《水浒传》。
@@ -536,6 +574,7 @@ heroes:
       agility: 18
   - key: hero_ilrock_04884
     name: 陈达
+    avatar: pig/武077.png
     default_gender: male
     archetype: military
     flavor: 少华山的寨主之一，绰号“跳涧虎”，惯使出白点钢枪，与朱武、杨春聚众。曾不听同伴劝阻，领人侵犯史家庄，被史进当场擒下；朱武、杨春登门相救，反使双方结成朋友。此后随众投奔梁山，列马军小彪将。冲动让他吃过苦头，旧寨伙伴却未弃他，从少华山到梁山，几人的交情始终相随。出自《水浒传》。
@@ -550,6 +589,7 @@ heroes:
       agility: 20
   - key: hero_ilrock_04885
     name: 杨春
+    avatar: pig/武091.png
     default_gender: male
     archetype: military
     flavor: 少华山寨主之一，绰号“白花蛇”，使一口大杆刀，与朱武、陈达相交甚厚。陈达冒犯史家庄被擒，他与朱武不肯独自苟安，前往请求史进饶命，反而赢得了对方敬重。后来同旧寨伙伴归入梁山，列马军小彪将，承担征战与出哨。比起独自逞强，他更愿护住共同闯荡的兄弟，把情分落实在同行同战之中。出自《水浒传》。
@@ -564,6 +604,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04886
     name: 郑天寿
+    avatar: monkey/其他随机角色/武男22.png
     default_gender: male
     archetype: military
     flavor: 原做银匠，因面貌白净、身材修长，绰号“白面郎君”，早年与燕顺、王英同据清风山。宋江落入寨中后，三人相认结交，后来又与花荣、秦明等人卷入青州争斗，终于一同上梁山。大聚义时列为步军将校，凭学得的枪棒参加征战。清风山的旧伙伴各有去处，他仍带着那段患难交情随军出阵。出自《水浒传》。
@@ -578,6 +619,7 @@ heroes:
       agility: 25
   - key: hero_ilrock_04887
     name: 陶宗旺
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: 庄户出身，绰号“九尾龟”，有一身气力，惯使铁锹，原与欧鹏等人在黄门山聚众。结交宋江后，他随同伴上梁山，聚义分工时专管营造城垣。无需争夺阵前最响亮的名声，他的长处在土石与工事之间：掘土、筑墙、整修守备，都离不开扎实的力气。众军远征时，山寨的防护也需要有人认真照料。出自《水浒传》。
@@ -592,6 +634,7 @@ heroes:
       agility: 10
   - key: hero_ilrock_04888
     name: 宋清
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: 宋江的弟弟，绰号“铁扇子”，原与父亲宋太公在郓城乡间生活，始终惦记流落在外的兄长。宋江归入梁山后，家人也被迎上山寨，他便在聚义厅内外照料日常事务。大聚义时专掌排设筵宴，为头领聚会与军中宴饮安排供给。兄长在江湖间奔走结交，他则把一家人的相守，延续成厅堂里的烟火与人情。出自《水浒传》。
@@ -606,6 +649,7 @@ heroes:
       agility: 14
   - key: hero_ilrock_04889
     name: 乐和
+    avatar: monkey/其他随机角色/文039_男.png
     default_gender: male
     archetype: civil
     flavor: 登州牢子，孙立妻子的弟弟，善唱曲子，绰号“铁叫子”。解珍、解宝被冤下狱时，他从狱中传出消息，帮助顾大嫂等人筹划营救，随后与登州众人一同离开官府、投奔梁山。聚义后负责走报机密，既能在人群中周旋，也能以歌声引人注意。牢门内外奔走的经历，使他懂得一句话何时该说、该递给谁。出自《水浒传》。
@@ -620,6 +664,7 @@ heroes:
       agility: 26
   - key: hero_ilrock_04890
     name: 龚旺
+    avatar: pig_wu_male2.png
     default_gender: male
     archetype: military
     flavor: 原是东昌府张清的副将，颈项刺有虎纹，绰号“花项虎”，善使飞枪。张清与梁山军交锋时，他在旁策应，后来被擒，随主将和丁得孙一同归附。聚义后列为步军将校，继续以投掷兵器和近身武艺迎敌。东昌府的败阵改变了他的归宿，却未拆散原来的同伴，几人仍在梁山旗下一起应战。出自《水浒传》。
@@ -634,6 +679,7 @@ heroes:
       agility: 28
   - key: hero_ilrock_04891
     name: 丁得孙
+    avatar: monkey_wu_male13.png
     default_gender: male
     archetype: military
     flavor: 东昌府张清麾下的副将，面颊与身上留有伤疤，人称“中箭虎”，善于掷出飞叉。抵御梁山进攻时，他与龚旺共同策应张清，战败被擒后随众入伙。大聚义时列入步军将校，把旧日练就的身手带入新的军阵。飞叉离手，要在混战里判断远近与来势；原有伙伴还在身旁，他也仍肯随众向前迎敌。出自《水浒传》。
@@ -648,6 +694,7 @@ heroes:
       agility: 28
   - key: hero_ilrock_04892
     name: 穆春
+    avatar: pig/武056.png
     default_gender: male
     archetype: military
     flavor: 揭阳镇富户子弟，穆弘的弟弟，绰号“小遮拦”，性情急躁，原在乡里颇有威势。因宋江赏钱给卖艺的薛永，他心生不满，纠集兄长追赶，直到李俊出面才知道来人身份，转而赔礼结交。后来参与江州救援，与穆弘同上梁山，列步军将校。少年的骄横受过江湖教训，也随着兄长走进了真正的刀兵之地。出自《水浒传》。
@@ -662,6 +709,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04893
     name: 曹正
+    avatar: pig/武008.png
     default_gender: male
     archetype: military
     flavor: 出身屠户，杀猪宰羊的手艺纯熟，绰号“操刀鬼”，又曾拜林冲学习枪棒。经营酒店时与杨志相识，随后帮助杨志、鲁智深设计夺取二龙山，后来随三山好汉归入梁山。大聚义后专掌屠宰牲口，供给军中食用，也能随步军出战。同一双握刀的手，既能料理案上肉食，也肯在旧交遇险时提兵相助。出自《水浒传》。
@@ -676,6 +724,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04894
     name: 宋万
+    avatar: monkey/其他随机角色/武052_男.png
     default_gender: male
     archetype: military
     flavor: 绰号“云里金刚”，是王伦时期的梁山头领，与杜迁等人守着小小山寨，见证了林冲上山。王伦不肯接纳晁盖等人，引来林冲火并，宋万此后留在新寨主麾下，经历山寨日渐壮大。大聚义时列为步军将校，随众征战。聚义厅的座次与旗号几经更换，他从早期守寨的好汉，成了大队军马中的一员。出自《水浒传》。
@@ -690,6 +739,7 @@ heroes:
       agility: 20
   - key: hero_ilrock_04895
     name: 杜迁
+    avatar: pig/武056.png
     default_gender: male
     archetype: military
     flavor: 因身材高大，绰号“摸着天”，与王伦、宋万共同占据梁山，是山寨早期的头领。林冲来投时，他参与接待；后来林冲杀死王伦、晁盖入主山寨，他也留下追随新的聚义众人。大聚义后列步军将校，承担征战职分。梁山由几处寨栅变成号令众军的地方，他亲历其中的变化，也始终在山寨里保有自己的位置。出自《水浒传》。
@@ -705,6 +755,7 @@ heroes:
   blue:
   - key: hero_ilrock_04817
     name: 公孙胜
+    avatar: pig/文036.png
     default_gender: male
     archetype: civil
     flavor: 蓟州道士，绰号“入云龙”，道号一清，既习武艺，也精通道术。得知生辰纲消息后，他与晁盖、吴用等人结义夺纲，随后入梁山辅佐军机。曾离寨归山修行，又在高唐州之战中回援，以五雷天罡正法破去高廉妖术。征战之余，他仍遵奉罗真人的教诲，后来传艺樊瑞，最终回到山林继续修道。出自《水浒传》。
@@ -719,6 +770,7 @@ heroes:
       agility: 18
   - key: hero_ilrock_04850
     name: 燕青
+    avatar: pig/武016.png
     default_gender: male
     archetype: military
     flavor: 卢俊义的家仆，人称“浪子”，又唤燕小乙，聪明灵巧，善相扑、弩射，也通晓吹唱。主人被李固陷害时，他奔走营救，始终不肯抛下旧日恩义。上梁山后列步军头领，又借市井交游帮助打通招安门路。能在比武场上取胜，也能在筵席之间察言观色；征战结束后，他不恋官爵，带着清醒离开纷扰江湖。出自《水浒传》。
@@ -733,6 +785,7 @@ heroes:
       agility: 36
   - key: hero_ilrock_04824
     name: 呼延灼
+    avatar: monkey/其他随机角色/武038_男.png
     default_gender: male
     archetype: military
     flavor: 原任汝宁郡都统制，使两条钢鞭，人称“双鞭”，奉命率领连环马征讨梁山。阵势被徐宁所授钩镰枪法击破后，他转往青州，又与三山好汉交锋，最终归附山寨。大聚义时列马军五虎将，兼有军官的统兵经历和阵前武艺。由官军主将到聚义骑将，他仍凭双鞭和披甲军马，在正面交锋中承担重任。出自《水浒传》。
@@ -747,6 +800,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04825
     name: 花荣
+    avatar: pig/武005.png
     default_gender: male
     archetype: military
     flavor: 清风寨武知寨，因箭术精湛，人称“小李广”，与宋江交情深厚。清风寨风波中，他为宋江挺身相助，后来与秦明等人一起投奔梁山，列马军八骠骑。对影山一箭分开双戟、射雁显艺，都见出他不凡的眼力与手劲。枪马交锋之外，他能用远射掩护伙伴、压住敌将，把一张弓运用得沉着而准确。出自《水浒传》。
@@ -761,6 +815,7 @@ heroes:
       agility: 25
   - key: hero_ilrock_04826
     name: 柴进
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: 后周皇室后裔，绰号“小旋风”，家中有丹书铁券，常以财力接济落难的江湖人物，林冲、武松都曾受他照应。后来因高唐州的争端身陷牢狱，得梁山营救才免于死难，随之入伙。聚义后与李应掌管钱粮。旧朝留下的凭据未能替他挡住权势欺压，那些曾受他一饭之恩的人，却在困厄中赶来相救。出自《水浒传》。
@@ -775,6 +830,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04827
     name: 李应
+    avatar: pig/武016.png
     default_gender: male
     archetype: military
     flavor: 李家庄庄主，绰号“扑天雕”，善使浑铁点钢枪，背藏五口飞刀。祝家庄战事中，他为释放被拘的时迁与祝氏交恶，又被梁山设局引离旧庄，最终带着家眷归入山寨。大聚义后与柴进掌管钱粮，将经营庄院的历练用于军需调配。平日能料理家业、接待宾朋，真到阵前，也有枪与飞刀护住自身。出自《水浒传》。
@@ -789,6 +845,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04828
     name: 朱仝
+    avatar: monkey/其他随机角色/武男22.png
     default_gender: male
     archetype: military
     flavor: 原是郓城县马兵都头，长髯丰美，绰号“美髯公”，曾暗中放走晁盖、宋江，也帮助雷横脱身。为救人受累后刺配沧州，得知府信任照看小衙内，却因梁山设计逼他入伙而失去这份安稳。最终上山列马军八骠骑。厚道重义使他屡次为旁人担险，枪马本领之外，也背着不愿轻易说出口的悲愤。出自《水浒传》。
@@ -803,6 +860,7 @@ heroes:
       agility: 20
   - key: hero_ilrock_04829
     name: 董平
+    avatar: pig/武058.png
     default_gender: male
     archetype: military
     flavor: 东平府兵马都监，惯使两杆长枪，绰号“双枪将”，又以勇猛自负闻名。梁山攻城时，他与宋江军交锋，被诱擒后归附，转而帮助攻破东平府。大聚义时列马军五虎将，冲锋迅疾，常在两军交接处抢先挺枪。武艺与胆气让他跻身主要战将，急烈好胜的脾性，也让他的进退少了几分从容。出自《水浒传》。
@@ -817,6 +875,7 @@ heroes:
       agility: 26
   - key: hero_ilrock_04830
     name: 张清
+    avatar: pig_wu_male9.png
     default_gender: male
     archetype: military
     flavor: 东昌府将领，绰号“没羽箭”，擅以飞石击人，石子脱手能在阵前接连打伤对手。梁山攻城时，众将轮番出阵都吃过他的亏，后来被擒，带着龚旺、丁得孙一同归附。聚义后列马军八骠骑，枪马之外，飞石仍是最醒目的绝技。寻常武将还在估量刀枪距离，他已看准空当，将石子送向敌将面门。出自《水浒传》。
@@ -831,6 +890,7 @@ heroes:
       agility: 25
   - key: hero_ilrock_04831
     name: 杨志
+    avatar: pig/武056.png
     default_gender: male
     archetype: military
     flavor: 杨家将后人，面上有青色胎记，人称“青面兽”，原做过殿司制使。失陷花石纲后流落东京，卖刀时杀死泼皮，又被发配大名府；得到梁中书重用后押运生辰纲，却因失纲再度失去前程。后来与鲁智深夺取二龙山，再随众上梁山，列马军八骠骑。一心想凭本领取功名，却屡被官场与江湖风波逼回险途。出自《水浒传》。
@@ -845,6 +905,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04832
     name: 徐宁
+    avatar: pig/武013.png
     default_gender: male
     archetype: military
     flavor: 东京禁军金枪班教头，绰号“金枪手”，善使金枪与钩镰枪，珍爱家传的雁翎甲。梁山为破解呼延灼的连环马，命时迁盗甲，再借汤隆将他引上山寨。他随后教众军习练钩镰枪，使官军重骑阵势失去优势。聚义后列马军八骠骑，既能独自临阵迎敌，也能把一家绝艺变成众人协同破阵的本领。出自《水浒传》。
@@ -859,6 +920,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04833
     name: 索超
+    avatar: monkey_wu_male13.png
     default_gender: male
     archetype: military
     flavor: 大名府军官，惯使金蘸斧，因性急好战、临阵争先，人称“急先锋”。杨志在大名府比武时，他不服对方本领，主动上场较量，由此惺惺相惜。后来抵御梁山攻城，受伤又被擒，最终归入山寨，列马军八骠骑。沉重的斧头与急烈脾性一样鲜明，战阵刚开，他往往已催马冲向最先交锋的地方。出自《水浒传》。
@@ -873,6 +935,7 @@ heroes:
       agility: 22
   - key: hero_ilrock_04834
     name: 戴宗
+    avatar: pig/武016.png
     default_gender: male
     archetype: military
     flavor: 原是江州两院押牢节级，绰号“神行太保”，能借神行法迅速奔走。结识被发配的宋江后，他曾为营救对方远行传书，却因伪造家书一事败露，同陷死罪，幸得梁山与江州好汉劫法场相救。上山后总探声息，往来联络各路人物。脚下的神速不只用于赶路，也把远处的消息和援手及时带回山寨。出自《水浒传》。
@@ -887,6 +950,7 @@ heroes:
       agility: 50
   - key: hero_ilrock_04835
     name: 刘唐
+    avatar: pig/武056.png
     default_gender: male
     archetype: military
     flavor: 鬓边生着朱砂记，绰号“赤发鬼”，早年漂泊江湖，惯使朴刀。得知梁中书押送生辰纲的消息后，他特来寻找晁盖，几经误会，终于与吴用、公孙胜等人结盟，在黄泥冈智取财宝。事发后随众投奔梁山，后来列步军头领。比起官府章程，他更信任结交的兄弟，遇险便肯提刀共进退。出自《水浒传》。
@@ -901,6 +965,7 @@ heroes:
       agility: 18
   - key: hero_ilrock_04836
     name: 李逵
+    avatar: pig/武047.png
     default_gender: male
     archetype: military
     flavor: 沂州出身，原做江州牢子，绰号“黑旋风”，又唤铁牛，使两柄板斧。结识宋江后极为敬服，江州劫法场时拼命冲杀，随后归入梁山，列步军头领。他性情直率，重情义却少顾后果，既会为母亲痛哭，也常因鲁莽误伤无辜。斧头挥起无人愿近，真正难约束的，却是那股一旦发作便不肯收住的急烈。出自《水浒传》。
@@ -915,6 +980,7 @@ heroes:
       agility: 10
   - key: hero_ilrock_04837
     name: 史进
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: military
     flavor: 史家庄少庄主，身刺九条龙，绰号“九纹龙”。禁军教头王进避祸经过庄上，受其款待，便把枪棒本领传授给他；后来他与少华山朱武等人结交，因官府追捕离家，四处寻找恩师。几经风波后归入梁山，列马军八骠骑。少年时只盼练成好武艺，真正走出庄门后，才在救人赴险中逐渐尝到江湖的滋味。出自《水浒传》。
@@ -929,6 +995,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04839
     name: 雷横
+    avatar: monkey/其他随机角色/武064_男_.png
     default_gender: male
     archetype: military
     flavor: 原任郓城县步兵都头，膂力过人，善于跃过阔涧，绰号“插翅虎”，与朱仝同在县中当差。因白秀英与老母发生争执，他愤而杀人，被拘押解，经朱仝私放才得脱身，随后投奔梁山。大聚义时列步军头领，常凭气力与身手参与冲阵。孝心、怒气与同僚情义纠缠在一起，使他从官府差役走上了聚义之路。出自《水浒传》。
@@ -943,6 +1010,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04840
     name: 李俊
+    avatar: monkey/其他随机角色/武066_男_.png
     default_gender: male
     archetype: military
     flavor: 浔阳江边的好汉，绰号“混江龙”，水性精熟，早年与童威、童猛相交，做过私盐买卖。宋江在揭阳岭和江面上遇险时，他屡次出面相救，后来参与江州劫法场，带着伙伴归入梁山。聚义后担任水军头领，熟悉舟船调度与江河航路。征战结束后，他不再追逐朝廷官爵，与旧日兄弟另寻海上的出路。出自《水浒传》。
@@ -957,6 +1025,7 @@ heroes:
       agility: 25
   - key: hero_ilrock_04841
     name: 阮小二
+    avatar: pig/武009.png
     default_gender: male
     archetype: military
     flavor: 石碣村渔民，阮氏三兄弟中的长兄，绰号“立地太岁”，常年在湖泊间捕鱼谋生。吴用前来邀约夺取生辰纲，他与两个弟弟应允，与晁盖等人结义，事发后共同投奔梁山。聚义时列水军头领，驾舟、泅水和水面交战都是本领。湖荡曾是谋生的地方，也成了可以迎敌守寨的屏障，兄弟仍在同一片风浪里相互照应。出自《水浒传》。
@@ -971,6 +1040,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04843
     name: 阮小五
+    avatar: pig/武080.png
     default_gender: male
     archetype: military
     flavor: 石碣村的打鱼汉，绰号“短命二郎”，与兄长阮小二、弟弟阮小七同在湖边生活，胸前刺有豹子。受吴用邀请，三人参与智取生辰纲，后来一同上梁山，列水军头领。熟悉舟船、水路，也敢在水上近身迎敌。乡间渔船换成军中战船，生活变了模样，兄弟之间那份不肯舍弃的信任，却随着橹声一道留下。出自《水浒传》。
@@ -985,6 +1055,7 @@ heroes:
       agility: 22
   - key: hero_ilrock_04845
     name: 阮小七
+    avatar: pig/武032.png
     default_gender: male
     archetype: military
     flavor: 阮氏三兄弟中最年幼的一人，绰号“活阎罗”，在石碣村以打鱼为生，性情直爽而桀骜。与兄长参加智取生辰纲后上梁山，成为水军头领，熟悉湖荡中的驾船与交锋。朝廷使者前来招安时，他也不肯轻易低头，酒与御赐之物都曾惹出风波。面对官府的威势，他常把不平直接说出口，如在浪中操舟一般痛快。出自《水浒传》。
@@ -999,6 +1070,7 @@ heroes:
       agility: 32
   - key: hero_ilrock_04868
     name: 郭盛
+    avatar: pig/武016.png
     default_gender: male
     archetype: military
     flavor: 嘉陵人，原做贩运水银的生意，船只失事后流落江湖，因善使画戟、喜作薛仁贵装束，绰号“赛仁贵”。到对影山与吕方比试时，双戟缠住，被花荣一箭分开，二人反而结成伙伴。后来一同上梁山，聚义后共同守护中军。原本争锋的画戟转为相互策应，护在帅阵左右，也护住一路患难结下的交情。出自《水浒传》。
@@ -1014,6 +1086,7 @@ heroes:
   purple:
   - key: hero_ilrock_04818
     name: 鲁达
+    avatar: monkey/水浒/鲁达.png
     default_gender: male
     archetype: military
     flavor: 原是渭州提辖，为救金翠莲父女，三拳打死镇关西，逃亡后在五台山出家，法号智深，人称“花和尚”。他曾倒拔垂杨柳，又在野猪林救下遭陷害的林冲，后来占据二龙山，随众上梁山，列步军头领。性情粗豪，遇到欺压却不肯旁观；酒肉与禅门规矩常使他受责，扶危救人的心意却始终坦荡。出自《水浒传》。
@@ -1028,6 +1101,7 @@ heroes:
       agility: 10
   - key: hero_ilrock_04819
     name: 武松
+    avatar: monkey/水浒/武松.png
     default_gender: male
     archetype: military
     flavor: 清河县人，因景阳冈醉后打虎扬名，做了阳谷县都头。兄长武大郎被害后，他追查真相，手刃仇人，刺配孟州，又经历醉打蒋门神、血溅鸳鸯楼等风波，改作行者装束逃亡，后来归入梁山。他恩怨分明，既记一饭相助，也不肯放过陷害自己的恶人。拳脚勇力之外，那股不愿忍受欺辱的刚烈，始终左右着他的去路。出自《水浒传》。
@@ -1042,6 +1116,7 @@ heroes:
       agility: 15
   - key: hero_ilrock_04820
     name: 林冲
+    avatar: monkey/水浒/林冲.png
     default_gender: male
     archetype: military
     flavor: 东京八十万禁军枪棒教头，绰号“豹子头”，本有安稳家室和一身好武艺，却遭高俅父子陷害，误入白虎堂后刺配沧州。他一度忍让，只盼保全生活，直到草料场被纵火，才在风雪中杀死仇敌、投奔梁山。后来火并王伦，迎晁盖入主，列马军五虎将。枪棒沉稳，性情克制，深重的冤屈却最终逼出了锋芒。出自《水浒传》。
@@ -1056,6 +1131,7 @@ heroes:
       agility: 16
   - key: hero_ilrock_04821
     name: 关胜
+    avatar: monkey/水浒/关胜.png
     default_gender: male
     archetype: military
     flavor: 关羽后裔，原任蒲东巡检，使青龙偃月刀，绰号“大刀”。朝廷命他救援大名府时，他主张先攻梁山、迫使对方回兵，后来中计被擒，受到宋江礼遇而归附。聚义后列马军五虎将，又劝服单廷珪、魏定国入伙。长刀之下有强悍武艺，领兵时也懂得判断敌我进退，在山寨骑将中兼具统兵经历与阵前威望。出自《水浒传》。
@@ -1070,6 +1146,7 @@ heroes:
       agility: 14
   - key: hero_ilrock_04822
     name: 吴用
+    avatar: monkey/水浒/吴用.png
     default_gender: male
     archetype: civil
     flavor: 郓城乡间的教书先生，字学究，号加亮先生，因足智多谋，人称“智多星”。与晁盖等人结义后，他在黄泥冈安排酒局，智取生辰纲，随后上梁山辅佐军机。招揽好汉、营救同伴、攻城破阵，都少不了他的筹划。他善于把握人的处境与心思，使看似零散的消息成为计策，也常为达成目的，让旁人卷入难以回头的局面。出自《水浒传》。
@@ -1084,6 +1161,7 @@ heroes:
       agility: 12
   - key: hero_ilrock_04823
     name: 卢俊义
+    avatar: monkey/水浒/卢俊义.png
     default_gender: male
     archetype: military
     flavor: 大名府富户，棍棒武艺出众，人称“玉麒麟”。吴用设局引他离家，随后遭家仆李固与妻子贾氏陷害，身陷牢狱；燕青奔走相救，梁山又攻打大名府，才使他脱离死地。上山后坐第二把交椅，与宋江分领军马，征战时屡担攻坚重任。昔日家业不足以护住性命，辗转患难后，他凭一身武艺在聚义众人中重新立足。出自《水浒传》。
@@ -1098,6 +1176,7 @@ heroes:
       agility: 16
   - key: hero_ilrock_11683
     name: 宋江
+    avatar: monkey/水浒/宋江.png
     default_gender: male
     archetype: civil
     flavor: 郓城县押司，字公明，重义疏财，人称“及时雨”，又号“呼保义”。曾为晁盖传递消息，后来杀死阎婆惜、流亡江湖，在江州因题反诗获罪，得众好汉劫法场相救后归入梁山。他善于结交、安抚人心，后来统领聚义军马，始终盼着招安报国。兄弟情义与朝廷功名交织，使他的每次抉择都牵动整座山寨。出自《水浒传》。

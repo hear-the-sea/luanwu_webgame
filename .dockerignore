@@ -22,6 +22,10 @@ htmlcov/
 .env
 .env.docker
 .local/
+.local_preview_media/
+config/local_preview_urls.py
+config/settings/local_preview.py
+scripts/guest_avatar_preview.html
 *.sqlite3
 *.sqlite3-journal
 node_modules/

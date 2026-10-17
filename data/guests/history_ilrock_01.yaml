@@ -4,6 +4,7 @@ heroes:
   blue:
   - key: hist_ilrock_27657
     name: 张志聪
+    avatar: pig/文040.png
     default_gender: male
     archetype: civil
     flavor: 明清之际医家，字隐庵。早年由儒学转入医学，钻研《黄帝内经》与张仲景的医书，在杭州建立侣山堂，召集同道和门人共同讲论医理。他参与编写《素问集注》《灵枢集注》，另著《侣山堂类辩》《本草崇原》。从经典注释到药物研究，他的著述与讲学相互配合，把研读医书变成了一项持续的师生共同工作。
@@ -18,6 +19,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27658
     name: 余霖
+    avatar: pig_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: 清代医家，字师愚，安徽桐城人。行医时关注瘟疫与发疹病证，认为治疗须先辨明热毒的变化，尤其重视石膏等药物的运用。他把观察和诊治心得写成《疫疹一得》，提出清瘟败毒饮。书中既论病情，也讨论误治的后果，展现了清代医家面对疫病时寻找有效治法的尝试，其经验随后在温病研究中受到重视。
@@ -32,6 +34,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27659
     name: 孙一奎
+    avatar: pig_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （1522年—1619年）明代新安医家，字文垣，号东宿。长期行医并研读前人著述，将各科诊治知识汇为《赤水玄珠》，又以《医旨绪余》讨论医学理论。他对命门与元气的关系提出见解，关注人体生命活动的根本及疾病中的变化。除了理论论述，还留下记录具体病人诊治经过的医案，使其学说有临床经验可以参照。
@@ -46,6 +49,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27663
     name: 朱肱
+    avatar: pig/文040.png
     default_gender: male
     archetype: civil
     flavor: 北宋医家，字翼中，号无求子，晚号大隐翁。出身吴兴儒学家庭，中进士后仍潜心研究医学，尤重张仲景的《伤寒论》。他将症状、脉象与相应处方联系起来，编成《类证活人书》，帮助医者辨认病情并选择治法。朱肱还研究酿酒，著有《北山酒经》，从救治病人到记录酿造方法，都体现了他对实际经验的整理。
@@ -60,6 +64,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27666
     name: 曾懿
+    avatar: monkey/其他随机角色/文059_女.png
     default_gender: female
     archetype: civil
     flavor: 清末女医家、诗人，字伯渊，又名朗秋。因自身疾病而研习医理，逐渐积累诊治伤寒、温病的经验，将心得编为《医学篇》。她关注女子教育与家庭生活，还撰有《女学篇》《中馈录》，与医学著作合刊为《古欢室医书三种》。这些文字涉及治病、卫生、教养和饮食，呈现了一位女医者对日常生活与女性处境的思考。
@@ -74,6 +79,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27668
     name: 吴谦
+    avatar: pig_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （约1689年—1748年）清代医家，字六吉，曾在太医院任职。乾隆年间奉命主持编纂《医宗金鉴》，与同僚整理宫廷藏书、民间医籍及诊治经验。全书涵盖伤寒、内外各科、针灸和正骨，并用歌诀与图解帮助学习。面对数量庞杂的医书，他着力校订、取舍和归纳，使这部综合医书后来成为太医院教学与考核的重要依据。
@@ -88,6 +94,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27676
     name: 郭玉
+    avatar: pig_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: 东汉医家，广汉人，汉和帝时任太医丞。《后汉书》记载他学习诊脉和针刺之术，治病常有成效。对于贵人和普通百姓诊治效果的差别，他提出身份拘束、生活习惯与行医条件都会影响治疗。郭玉的事迹留下了汉代医者观察病人处境的一个侧面：医术需要准确的判断，也需要病人与医者能够配合。
@@ -102,6 +109,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27693
     name: 许叔微
+    avatar: pig/文040.png
     default_gender: male
     archetype: civil
     flavor: 南宋医家，字知可，重视张仲景医书与实际诊治的结合。他在《伤寒九十论》中记录病人的症状、脉象、用方和治疗经过，说明自己为何作出相应判断；《普济本事方》则收集各类有效方药，并附相关经验。阅读他的医案，可以看到医者如何从相似症状中辨认差别，再根据病情选择处方，而非仅记下药物名称。
@@ -116,6 +124,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27695
     name: 王履
+    avatar: pig/文040.png
     default_gender: male
     archetype: civil
     flavor: 元末明初医家兼画家，字安道，号畸叟，又号抱独老人。著有《医经溯洄集》，结合病因与季节讨论伤寒、温病，强调不同疾病应采用相应治法。在绘画上，他曾亲登华山，观察山峰、道路和树石，留下《华山图册》。医学辨病与山水写生虽各有方法，却都能看到他重视亲身观察、反复思考的治学取向。
@@ -130,6 +139,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27697
     name: 危亦林
+    avatar: pig_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: 元代医家，字达斋，出身江西南丰的世医家庭。他承接家传医术，汇集各科方药和自己的诊治经验，编成《世医得效方》。书中涉及内科、妇科、儿科、外科与正骨，其中骨折、脱位等伤科治疗的记录尤受后世关注。从疾病诊察到伤肢处理，他的著作保存了元代综合医疗实践的丰富内容，也使家传经验得以广泛流传。
@@ -144,6 +154,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27698
     name: 忽思慧
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: 元代饮膳太医，著有《饮膳正要》。他把宫廷膳食经验与医药知识结合起来，记录食材性质、饮食搭配、养生方法和相关禁忌。书中收录多种食品与饮料，也可见元代不同民族饮食文化的交流。相比只在患病后用药，他更关注日常饮食与身体状态的联系，让膳食安排成为养护身体的一部分。
@@ -158,6 +169,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27699
     name: 王好古
+    avatar: pig/文040.png
     default_gender: male
     archetype: civil
     flavor: 金元之际医家，字进之，号海藏。承接张元素、李杲一系的医学传统，研究病情、脏腑与药物作用之间的联系，著有《汤液本草》《阴证略例》等书。他特别重视寒冷、虚弱等病证的辨认，讨论药物如何配合不同治法。其著述将药性与具体病情相联系，为易水医家关于用药规律的研究留下了清晰的记录。
@@ -172,6 +184,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27700
     name: 罗天益
+    avatar: pig/文040.png
     default_gender: male
     archetype: civil
     flavor: 元代医家，字谦甫，师从李杲。学习期间整理老师的见解，又结合自己的行医经验撰成《卫生宝鉴》。书中关注饮食、劳倦对脾胃的损伤，讨论如何根据病情调养和用药，也收录多科方药与医案。罗天益的工作使老师的学说有了更丰富的临床记录，后人也能从具体诊治经过中了解易水医家的思路。
@@ -186,6 +199,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27703
     name: 陈自明
+    avatar: pig/文040.png
     default_gender: male
     archetype: civil
     flavor: 南宋医家，字良甫，江西临川人。广泛搜集前人妇科方书与诊治经验，编成《妇人大全良方》，系统整理女子月经、妊娠、分娩及产后疾病的诊治方法。书中既保存方药，也讨论病情与护理，并关注妇女一生不同阶段的身体变化。这部专书长期流传，成为后世医者学习妇产科的重要参考。
@@ -200,6 +214,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27706
     name: 薛己
+    avatar: pig/文040.png
     default_gender: male
     archetype: civil
     flavor: 明代医家，字新甫，号立斋，曾在太医院任职。诊治与著述涉及内科、外科、妇科、儿科等多个领域，留下《内科摘要》等医书，并校注前人著作。他重视脾胃、气血与身体恢复能力，常用具体医案说明判断和处方的依据。其文字记录同一种疾病在不同病人身上的变化，体现了随人、随病调整治疗的临床思路。
@@ -214,6 +229,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27708
     name: 高武
+    avatar: pig_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: 明代针灸医家，字梅孤。研读前代针灸文献，编成《针灸聚英》，整理经脉、穴位、病证与针灸方法，另著《针灸节要》。他关注针刺和艾灸各自的适用情形，也讨论选穴与操作中的问题。通过把分散的资料分类汇集，学习者可以较方便地查找穴位和治法，其著作成为明代针灸知识整理的重要成果。
@@ -228,6 +244,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27711
     name: 方有执
+    avatar: pig_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: 明代医家，字中行，著有《伤寒论条辨》。他长期研读张仲景的医书，认为传世条文的次序会影响读者理解疾病变化，因此重新辨析、编排有关症状与治法。在注释中，他着力说明条文之间的联系及处方的使用情形。这种整理方式引起后世医家的持续讨论，也使《伤寒论》的研究出现新的解读路径。
@@ -242,6 +259,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27714
     name: 吴昆
+    avatar: pig/文040.png
     default_gender: male
     archetype: civil
     flavor: 明代新安医家，字山甫，号鹤皋。年轻时学医，随后游历求教，积累不同医家的诊治经验。著有《医方考》，按病证分类介绍方剂，并解释药物配伍和用方理由；另有《素问吴注》《针方六集》等著作，涉及经典注释与针灸。其写作着重讲清处方为何适用于某类病情，使学习医方与理解治病思路能够相互配合。
@@ -256,6 +274,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27717
     name: 尤怡
+    avatar: pig_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: 清代医家，字在泾。潜心研究张仲景医书，撰成《金匮要略心典》《伤寒贯珠集》，从疾病表现与治疗方法的联系入手解释经典。他将复杂条文分门别类，尽量说明前后关系及方药的适用条件，使读者能沿着病情变化理解治法。其注释兼顾医理与实际诊治，对后世学习伤寒和杂病提供了较为清晰的引导。
@@ -270,6 +289,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27718
     name: 薛雪
+    avatar: pig_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: 清代医家，字生白，长期生活于江南。关注当地湿热病证，将观察和治法整理为《湿热病篇》，讨论湿与热相合时病情如何变化，以及应当如何判断和用药。他还研习诗文，与当时江南士人往来。其医学见解与叶桂等人的温病研究相映照，为清代医家理解湿热疾病留下了具有地方经验特色的论述。
@@ -284,6 +304,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27719
     name: 徐大椿
+    avatar: pig/文040.png
     default_gender: male
     archetype: civil
     flavor: 清代医家，字灵胎，晚号洄溪老人。博览医书并从事诊治，著有《医学源流论》《兰台轨范》等。他重视经典的本来含义，也以实际病情检验处方，批评拘守成见和滥用药物。其著述经常直接讨论行医中的疑问，分析不同治法的得失。从医理到用药，他希望医者说明判断的依据，并对治疗后果负责。
@@ -298,6 +319,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27723
     name: 施毓黔
+    avatar: pig_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （1881年—1969年）近代医家，后以施今墨之名行医。参与创办华北国医学院，致力于诊治、教学和中医改革，主张借助现代科学研究传统医学。他关注药物之间的配合，临床经验中常以成对用药协同发挥作用。面对近代医学环境的变化，他既培养学生，也参与维护中医教育与行医事业，使经验传承与医学改革并行。
@@ -312,6 +334,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27724
     name: 唐宗海
+    avatar: pig_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （1846年—1897年）清末医家，字容川。著有《血证论》，系统讨论吐血等出血疾病及相关治法，重视血液与人体各部分功能的联系。面对西医知识传入，他又撰写《中西汇通医经精义》，尝试比较传统医理与新的身体知识。他的探索覆盖临床诊治与医学理论，呈现了清末医者面对知识变化时主动理解和沟通的尝试。
@@ -326,6 +349,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27727
     name: 王士雄
+    avatar: pig/文040.png
     default_gender: male
     archetype: civil
     flavor: 清代医家，字孟英，号梦隐。长期关注温热、湿热与疫病，编成《温热经纬》，汇集前代医家的论述并加入自己的评议。他还撰有《随息居重订霍乱论》《随息居饮食谱》，把研究延伸到急性疾病与日常饮食。其著述从病中治疗谈到生活调养，既保存温病学说，也记录医者应对现实疾病的经验。
@@ -340,6 +364,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27728
     name: 喻昌
+    avatar: pig_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: 明清之际医家，字嘉言。深入研读张仲景的医书，结合诊治经历撰有《尚论篇》《寓意草》《医门法律》。他关注病情判断、处方选择及医者的责任，常以具体病例说明治疗中的得失。《医门法律》还讨论各类疾病的诊治准则，希望行医有明确依据，减少凭习惯用药带来的误治。
@@ -354,6 +379,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27729
     name: 张璐
+    avatar: pig/文040.png
     default_gender: male
     archetype: civil
     flavor: 清代医家，字路玉，号石顽。广泛研读历代医书，结合自己的诊治经验，编成《张氏医通》，涉及内科杂病及多科医疗知识；另著《本经逢原》，讨论药物性质与用途。他的写作把前人理论、方药和临床经验汇集在一起，便于读者按病证查考，也留下清代医家理解古方、运用药材的具体思路。
@@ -368,6 +394,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27732
     name: 赵献可
+    avatar: pig/文040.png
     default_gender: male
     archetype: civil
     flavor: 明代医家，字养葵，著有《医贯》。他重视人体生命活动的根本，尤其关注肾与命门的作用，常从身体温养力量和水液状态的失衡解释疾病。其治疗见解强调根据病情调养根本，成为明代温补医学中的一支。通过对病因和用药的论述，他把命门理论与实际诊治联系起来，影响了后世相关学说的发展。
@@ -382,6 +409,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_08659
     name: 李延寿
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: 唐代史学家，字遐龄。继承父亲李大师整理南北朝历史的计划，在史馆参与编修，并汇集前代各朝史料，完成《南史》《北史》。两书以南北两条历史脉络贯通多个王朝，将人物生平和时代变迁放在更长的时间里叙述。面对频繁改朝换代的历史，他的编纂使读者能够越过一朝一代的界限，通观南北政局的演变。
@@ -396,6 +424,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_11710
     name: 胡三省
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （1230年—1302年）宋元之际史学家，原名满孙，字身之，号梅涧。长期研读《资治通鉴》，为书中人名、地名、字音和历史制度作详细注释，并结合史事评议政治得失。其《资治通鉴音注》帮助读者理解文字背后的时代背景，也订正前人注解中的问题。历经宋元变迁，他把多年读史与考证的积累留在这部注本中。
@@ -411,6 +440,7 @@ heroes:
   purple:
   - key: hist_ilrock_27653
     name: 刘完素
+    avatar: monkey/其他历史人物/刘完素.png
     default_gender: male
     archetype: civil
     flavor: （约1120年—1200年）金代医家，字守真，因居河间而被称为刘河间。研读《黄帝内经》，尤其关注发热等病证与人体内部变化的关系，主张运用寒凉药物处理相应病情。著有《素问玄机原病式》等书，其学术传承被称为河间学派。作为金元四大家之一，他提出的见解推动了当时医家对病因和治法的重新讨论。
@@ -425,6 +455,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27654
     name: 张从正
+    avatar: monkey/其他历史人物/张从正.png
     default_gender: male
     archetype: civil
     flavor: （1156年—1228年）金代医家，字子和，号戴人。重视汗、吐、下三种治法，认为许多疾病应先去除致病因素，再考虑身体调养。他在诊治中关注病情变化，对一味进补的用药习惯提出批评。其理论与医疗经验见于《儒门事亲》，由门人整理传世。后世将其列入金元四大家，通常以攻邪派概括他的医学主张。
@@ -439,6 +470,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27655
     name: 李杲
+    avatar: monkey/其他历史人物/李杲.png
     default_gender: male
     archetype: civil
     flavor: （1180年—1251年）金代医家，字明之，号东垣，师从张元素。关注饮食失宜和长期劳累对身体的影响，认为脾胃受损会牵动多种疾病，应从恢复脾胃功能入手治疗。著有《脾胃论》《内外伤辨惑论》等书，形成后世称为补土派的医学传统。他是金元四大家之一，李东垣的称呼也随着其著述与方药广为流传。
@@ -453,6 +485,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27656
     name: 朱震亨
+    avatar: monkey/其他历史人物/朱震亨.png
     default_gender: male
     archetype: civil
     flavor: （1281年—1358年）元代医家，字彦修，因居处而被称为朱丹溪。师从罗知悌，研习前代医家学说，关注人体津液的养护与热病的变化，倡导滋阴降火的治疗思路。著有《格致余论》等书，并强调根据具体病情选择治法。他的学术传统被称为养阴派，与刘完素、张从正、李杲并列金元四大家。
@@ -467,6 +500,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27660
     name: 滑寿
+    avatar: monkey/其他历史人物/滑寿.png
     default_gender: male
     archetype: civil
     flavor: （约1304年—1386年）元末明初医家，字伯仁，晚号撄宁生。兼研医理、诊法与针灸，著有《十四经发挥》《难经本义》《诊家枢要》等书。他系统整理经脉循行与穴位知识，也讨论诊脉及相关经典中的疑难问题。其著述把不同领域的医学知识相互联系，为后世学习针灸和诊察方法提供了较清晰的文献依据。
@@ -481,6 +515,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27669
     name: 王惟一
+    avatar: monkey/其他历史人物/王惟一.png
     default_gender: male
     archetype: civil
     flavor: 北宋医家，擅长针灸。奉诏考订经络与穴位，编成《铜人腧穴针灸图经》，并主持设计铸造针灸铜人。文字、图谱与人体模型配合，使学习者能够更直观地认识穴位，也能用于针刺操作的考核。铜人把原本依靠图画和讲授的知识化为立体器具，他的工作由此成为北宋针灸教学和医学制度中的重要创举。
@@ -495,6 +530,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27690
     name: 唐慎微
+    avatar: monkey/其他历史人物/唐慎微.png
     default_gender: male
     archetype: civil
     flavor: 北宋医家，字审元，蜀地人。广泛搜集历代本草、方书及其他文献中的药物资料，编成《经史证类备急本草》，记录药材来源、用途和实际用药经验。他将分散的记载汇集起来，保留了许多前代药物文献的内容。这部著作后来成为官修本草的重要基础，也让医者查考药材时能够参考更丰富的文字与方药记录。
@@ -509,6 +545,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27694
     name: 成无己
+    avatar: monkey/其他历史人物/成无己.png
     default_gender: male
     archetype: civil
     flavor: 宋金之际医家，长期钻研张仲景的《伤寒论》，著有《注解伤寒论》《伤寒明理论》。他以《黄帝内经》等经典解释疾病变化，联系症状、治疗方法与方药，逐条说明仲景医书中的含义。其注释帮助后人理解简练而难读的条文，使学习者能从文字进入治病思路，也为后世伤寒研究提供了影响深远的基础。
@@ -523,6 +560,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_27702
     name: 张元素
+    avatar: monkey/其他历史人物/张元素.png
     default_gender: male
     archetype: civil
     flavor: 金代医家，字洁古，易水学派的重要开创者。诊治时关注不同脏腑的功能变化，强调根据寒热、虚实等病情选择药物，并研究药物主要作用于人体哪些部位。他的用药见解影响了学生李杲及后来的易水医家。围绕病情与药性的联系，这一学术传承逐渐形成鲜明的治疗思路，在金元医学的发展中占据重要位置。
@@ -537,6 +575,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_01451
     name: 李冰
+    avatar: monkey/其他历史人物/李冰.png
     default_gender: male
     archetype: civil
     flavor: 战国时期秦国蜀郡守，主持修筑都江堰。他利用岷江的水势与地形，将分水、排沙和引水结合起来，使防洪与灌溉相互配合，减轻洪水危害并向成都平原输送水源。工程长期服务当地农业，也为聚落与城市的发展提供条件。都江堰历经后世维护延续至今，李冰因这项水利事业成为四川历史中广受纪念的人物。
@@ -551,6 +590,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_11805
     name: 李诫
+    avatar: monkey/其他历史人物/李诫.png
     default_gender: male
     archetype: civil
     flavor: （约1065年—1110年）北宋官员，字明仲，主持编修《营造法式》。他整理木作、石作、瓦作等建筑工艺，记录构件尺度、用料和所需工时，使官府营造有较明确的技术与管理依据。书中配有图样，把工匠经验与制度规定结合起来。这部著作保存了宋代建筑的许多细节，后世研究古代木构建筑时仍常借助其中的记录。
@@ -565,6 +605,7 @@ heroes:
       agility: 12
   - key: hist_ilrock_11840
     name: 郑樵
+    avatar: monkey/其他历史人物/郑樵.png
     default_gender: male
     archetype: civil
     flavor: （1104年—1162年）南宋史学家，字渔仲，号夹漈。长期读书著述，编成《通志》，尝试贯通历代历史，系统整理人物与制度。书中的二十略涉及氏族、文字、礼制、艺文等领域，体现了他对知识分类和相互联系的重视。他认为理解历史应兼顾前后变化，将散见于各朝史书的材料汇合起来，从更长的脉络考察人事与制度。

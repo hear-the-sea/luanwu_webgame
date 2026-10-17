@@ -2,6 +2,7 @@ heroes:
   blue:
   - key: hist_xianqin_0045
     name: 许行
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: （约前390年—约前315年）战国农家学者，楚国人。许行主张贤者应与民并耕而食，曾率弟子到滕国，劝滕文公实行农家主张；孟子在滕国与其辩论，批评其学说。
@@ -15,6 +16,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0046
     name: 杨朱
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: （约前440年—约前360年）战国思想家，主张贵生、重己。杨朱之学曾与墨家并称显学，孟子以其主张的“为我”加以批评；他的言论主要见于《列子》《淮南子》等后世记载。
@@ -28,6 +30,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0047
     name: 邓析
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （前545年—前501年）春秋郑国大夫，善于辩说和诉讼。邓析私造竹刑，教人辩讼；子产执政时将他处死，郑国后来仍采用他的刑书。
@@ -41,6 +44,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0048
     name: 尹文
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （约前360年—约前280年）战国齐国稷下学者，与宋钘并称。尹文主张以名分辨是非、以宽柔待人，曾在稷下讲学；《尹文子》记录了后人整理的相关学说。
@@ -54,6 +58,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0049
     name: 宋钘
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （约前370年—约前291年）战国思想家，常与尹文并称。宋钘主张寡欲、非斗，曾游说诸侯停止战争；庄子记载他以禁攻寝兵为外在主张，以节制情欲为内在修养。
@@ -67,6 +72,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0050
     name: 甘德
+    avatar: monkey/其他随机角色/文_男123.png
     default_gender: male
     archetype: civil
     flavor: （约前400年—约前340年）战国天文学家，与石申并称甘石。甘德观测木星、土星等五大行星，撰有《天文星占》；后世辑录其星占内容为《甘氏星经》。
@@ -80,6 +86,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0051
     name: 石申
+    avatar: monkey/其他随机角色/文_男123.png
     default_gender: male
     archetype: civil
     flavor: （约前400年—约前340年）战国天文学家，与甘德合称甘石。石申撰《天文》八卷，观测五大行星和恒星位置；后世辑录其观测与星占内容为《石氏星经》。
@@ -93,6 +100,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0052
     name: 智瑶
+    avatar: pig_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （?—前453年）春秋末晋国智氏家主，名瑶。智瑶向韩、赵、魏索地，率三家围攻晋阳；赵襄子联合韩、魏反攻，引晋水灌智军，智瑶兵败被杀。
@@ -106,6 +114,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0053
     name: 田骈
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （约前370年—约前290年）战国齐国稷下学者，主张“齐物”。田骈与慎到、宋钘等人同在稷下讲学，讨论名、道、法诸家学说；他的著作已经散佚，后世只能从诸子记载中考见其思想。
@@ -119,6 +128,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0054
     name: 公羊高
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）战国初期齐国学者，相传为《春秋公羊传》的传授者。公羊高以口授方式讲解《春秋》，其学由子孙和弟子传承，西汉景帝时由公羊寿整理成书。
@@ -132,6 +142,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0067
     name: 孙膑
+    avatar: monkey/其他随机角色/文041_男.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）战国齐国军师，孙武后裔。孙膑遭庞涓陷害受膑刑，逃到齐国后得到田忌礼遇；他先后设计围魏救赵、增兵减灶，在马陵击败魏军，著《孙膑兵法》。
@@ -145,6 +156,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0068
     name: 夫差
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
     flavor: （约前528年—前473年）吴王阖闾之子，继位后攻破越国，迫勾践称臣。夫差北上与齐、晋争霸，黄池会盟时自称霸主；勾践灭吴后，他退守姑苏，自杀而死。
@@ -158,6 +170,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0069
     name: 阖闾
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （?—前496年）春秋吴王，名光。阖闾借专诸刺杀吴王僚后即位，任用伍子胥、孙武整军，攻入楚都郢；与越军交战时受伤，死于回师途中。
@@ -171,6 +184,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0070
     name: 荆轲
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: （?—前227年）战国末卫国游侠，好读书击剑。荆轲受燕太子丹礼遇，携督亢地图和匕首赴秦刺杀秦王政；图穷匕见后未能刺中，最终被秦王侍卫击杀。
@@ -184,6 +198,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0071
     name: 妇好
+    avatar: monkey/其他随机角色/武083_女_.png
     default_gender: female
     archetype: military
     flavor: （?—约前1200年）商王武丁的王后，甲骨文所见的商代将领。妇好曾率军征伐羌方、土方等方国，也主持祭祀；她死后葬于殷墟，墓中出土大量青铜器和玉器。
@@ -197,6 +212,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0072
     name: 蹇叔
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: （约前690年—约前610年）春秋秦国大夫，秦穆公重臣。蹇叔与百里奚共同辅政；秦穆公准备袭郑时，他认为军队远行必败，哭送出征的儿子，崤山之战后退居乡里。
@@ -210,6 +226,7 @@ heroes:
       agility: 12
   - key: hist_xianqin_0073
     name: 由余
+    avatar: pig/文010.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）春秋戎族谋士，原为晋国人。由余出使秦国后受到秦穆公重用，向秦穆公讲述戎地形势；秦军随后攻灭西戎诸国，由余也留在秦国任职。
@@ -223,6 +240,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0074
     name: 赵鞅
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: （约前517年—前476年）春秋末晋国卿，赵简子。范氏、中行氏作乱时，赵鞅据守晋阳，任董安于修筑城防；他改革田赋、扩充赵氏势力，为赵氏后来与韩魏共分晋国打下基础。
@@ -236,6 +254,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0075
     name: 赵无恤
+    avatar: pig_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （?—前425年）赵鞅之子，赵襄子。晋阳之战中，他联合韩、魏攻灭智瑶；随后出兵击败代国，扩展赵氏领地。赵无恤死后，赵国由其子孙继续经营。
@@ -249,6 +268,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0076
     name: 魏斯
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （前472年—前396年）战国魏文侯，魏国君主。魏斯任用李悝主持变法、吴起训练魏武卒、西门豹治理邺地；他还礼遇子夏等学者，使魏国在诸侯竞争中率先强盛。
@@ -262,6 +282,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0077
     name: 魏击
+    avatar: pig/武051.png
     default_gender: male
     archetype: military
     flavor: （?—前370年）战国魏武侯，魏文侯之子。魏击继位后任用吴起，出兵攻秦、伐齐，守住魏国西河等地；晚年与吴起失和，魏国逐渐失去西部重镇。
@@ -275,6 +296,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0078
     name: 李悝
+    avatar: pig/文048.png
     default_gender: male
     archetype: civil
     flavor: （前455年—前395年）战国魏国大臣，法家政治家。魏文侯任其为相时，李悝编定《法经》，推行尽地力、平籴等措施，改革世卿世禄；商鞅后来入秦变法，曾参考魏国旧法。
@@ -288,6 +310,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0079
     name: 西门豹
+    avatar: pig/文031.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）战国魏国官员，任邺令。西门豹借查访河伯娶妇之事惩治巫觋和地方豪强，又开渠引漳水灌溉农田，使邺地恢复生产；离任后，当地百姓为他立祠。
@@ -301,6 +324,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0080
     name: 乐羊
+    avatar: monkey/其他随机角色/武037_男.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）战国魏国将领，曾率军攻灭中山国。中山国君杀乐羊之子并将肉羹送给他，乐羊仍统军进攻；灭中山后，魏文侯封他于灵寿，乐毅相传是其后裔。
@@ -314,6 +338,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0081
     name: 季梁
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: （?—约前699年）春秋随国大夫。楚武王伐随时，季梁劝随侯以民为本、谨慎应战，并主张先稳住国内再与楚交涉；他死后，随国仍多次受到楚国进逼。
@@ -327,6 +352,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0082
     name: 羊舌肸
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: （?—前514年）春秋晋国大夫，字叔向。羊舌肸与郑国子产交好，常讨论诸侯政局；他曾劝晋平公慎用刑罚，也因直言反对叔孙豹厚葬而闻名，后任太傅。
@@ -340,6 +366,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0083
     name: 赵武
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （约前591年—前541年）春秋晋国卿，赵朔之子，名武。赵武幼年在程婴等人保护下幸存，成年后恢复赵氏家业；他曾参与晋楚弭兵会，主持赵氏先人的祭祀。
@@ -353,6 +380,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0084
     name: 程婴
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）春秋晋国赵氏家臣。赵氏遇难时，程婴与公孙杵臼谋划，以自己的孩子替代赵武，护送赵武逃生；赵武成年、赵氏复兴后，程婴自杀以报公孙杵臼。
@@ -366,6 +394,7 @@ heroes:
       agility: 12
   - key: hist_xianqin_0085
     name: 公孙杵臼
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）春秋晋国赵氏家臣。赵氏遭屠岸贾追杀时，公孙杵臼与程婴以计救出赵武，自己留在宫中冒充赵武而死；赵氏复兴后，程婴告知赵武真相并自杀相报。
@@ -379,6 +408,7 @@ heroes:
       agility: 12
   - key: hist_xianqin_0086
     name: 魏绛
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）春秋晋国大夫，晋悼公时任中军将。魏绛劝晋悼公与戎狄通使、互市，列举和戎五利；晋国采纳后，北方边境较为安定，他也因此受到重用。
@@ -392,6 +422,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0087
     name: 祁黄羊
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）春秋晋国大夫，名祁奚。祁黄羊任中军尉时，向晋平公推荐仇人解狐出任南阳守；解狐死后，他又推荐儿子祁午接任，认为荐才应以能力为先。
@@ -405,6 +436,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0088
     name: 董狐
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）春秋晋国史官。晋灵公被杀后，董狐在史书中写下“赵盾弑其君”；赵盾认为自己没有弑君，他仍坚持按史官职责记载，孔子称赞他为古代良史。
@@ -418,6 +450,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0089
     name: 解狐
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）春秋晋国大夫。解狐与祁黄羊有私怨，却被祁黄羊推荐为南阳守；他接受任命后尽职理政，未因旧怨拒绝举荐，后不久病逝。
@@ -431,6 +464,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0090
     name: 冉求
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （前522年—?）孔子弟子，字子有。冉求长期任季氏家臣，曾为季氏征收田赋；鲁哀公时，他率鲁军在郎地击败齐军。孔子称其长于政事，但批评他为季氏聚敛。
@@ -444,6 +478,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0091
     name: 宰予
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: （前522年—前458年）孔子弟子，字子我，长于言语。宰予因白天睡觉受到孔子批评，也曾质疑守丧三年的礼制；齐国田常之乱时，他在临淄被杀。
@@ -457,6 +492,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0092
     name: 卜商
+    avatar: pig/文034.png
     default_gender: male
     archetype: civil
     flavor: （前507年—?）孔子弟子，字子夏，长于文学。孔子去世后，卜商在西河讲学，魏文侯曾向他问政；相传魏国大臣李悝、吴起等人都曾受其学派影响。
@@ -470,6 +506,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0093
     name: 言偃
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （前506年—?）孔子弟子，字子游，长于文学。言偃出任鲁国武城宰，以礼乐教民；孔子听说武城弦歌之声，曾以“割鸡焉用牛刀”称许其用礼乐治理小邑。
@@ -483,6 +520,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0094
     name: 有若
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: （前518年—?）孔子弟子，字子有。孔子去世后，部分弟子因有若容貌似孔子，推举他暂代老师；有若不能回答曾子等人的问题，弟子便不再奉他为师，后以传习《论语》闻名。
@@ -497,6 +535,7 @@ heroes:
   purple:
   - key: hist_xianqin_0055
     name: 谷梁赤
+    avatar: monkey/先秦与神话/谷梁赤.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）《榖梁传》作者，春秋学大师。他与公羊高同传《春秋》，但解经风格不同。《榖梁传》偏重礼义，文辞简约，与《公羊传》《左传》并称春秋三传。榖梁学派虽不如公羊学盛行，但也是经学的重要组成部分。作为《榖梁传》作者，春秋学大师，榖梁赤的表达重心并不局限于个人情绪，往往还能映照先秦时期的公共议题。
@@ -510,6 +549,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0056
     name: 乐毅
+    avatar: monkey/先秦与神话/乐毅.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）燕国名将，攻齐破城。他辅佐燕昭王，率五国联军伐齐，连下七十余城，几乎灭亡齐国。然而功高震主，燕惠王继位后猜忌不用，乐毅出奔赵国。他留书燕王，言辞恳切，不卑不亢，成为后世忠臣自辩的典范。诸葛亮自比管仲乐毅，可见其在后世心目中的地位。虽功败垂成，未能灭齐，但其运筹帷幄的军事才能，忠而见疑的悲剧命运，令人唏嘘。
@@ -523,6 +563,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0058
     name: 晏婴
+    avatar: monkey/先秦与神话/晏婴.png
     default_gender: male
     archetype: civil
     flavor: （?—前500年）晏子使楚，不辱使命。他身材矮小，却有巨人之志；出使楚国，以机智的言辞化解楚王的刁难，维护了齐国尊严。他辅佐齐国三代君主，节俭爱民，敢于直谏，被称为春秋贤相。一件狐裘穿三十年，却能使齐国政清人和。晏子之才，孔子亦赞之；晏子之廉，后世争相效仿。这位春秋名相，以智慧和品格，书写了士人的典范。
@@ -536,6 +577,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0059
     name: 蔺相如
+    avatar: monkey/先秦与神话/蔺相如.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）完璧归赵，渑池抗秦。他本是赵国宦者令门客，却因完璧归赵一事名震天下。渑池之会，他以死相逼，迫使秦王为赵王击缶，不辱使命。官拜上卿后，廉颇不服，他以"先国家之急而后私仇"的胸襟，令廉颇负荆请罪，成就将相和的佳话。他的勇气与智慧、胸襟与格局，都是士人的典范。虽为文臣，却有武将之勇。
@@ -549,6 +591,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0060
     name: 苏秦
+    avatar: monkey/先秦与神话/苏秦.png
     default_gender: male
     archetype: civil
     flavor: （?—前284年）身佩六国相印，纵横天下无双。他师从鬼谷子，以合纵之策游说六国，使六国结盟抗秦，自己则成为六国丞相。悬梁刺股的故事，正是他苦读时的写照。苏秦之才，在于审时度势、因势利导，以三寸不烂之舌胜过百万雄师。然而合纵终归瓦解，苏秦也死于间谍生涯中的阴谋。纵横家的传奇，至此落幕。
@@ -562,6 +605,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0061
     name: 张仪
+    avatar: monkey/先秦与神话/张仪.png
     default_gender: male
     archetype: civil
     flavor: （?—前309年）连横破纵，巧舌如簧。他与苏秦同出鬼谷门下，却走上了相反的道路。以连横之策为秦国服务，瓦解六国合纵，为秦国东出扫清障碍。他戏弄楚怀王的故事，虽不光彩，却尽显其诡谲之术。一怒而诸侯惧，安居则天下熄——张仪之才，足以搅动天下风云。纵横家的另一面，由张仪书写。
@@ -575,6 +619,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0062
     name: 吕不韦
+    avatar: monkey/先秦与神话/吕不韦.png
     default_gender: male
     archetype: civil
     flavor: （前292年—前235年）奇货可居，一字千金。他本是商人，却看中了落魄质子嬴异人，以商人的眼光投资帝王家业。辅佐异人登基，自己成为一人之下万人之上的相国。他组织门客编纂《吕氏春秋》，欲以杂家思想治国。然而与秦始皇的权力博弈中，他终究落败，饮鸩自尽。从商人到相国，从权臣到逆臣，吕不韦的一生，是一场惊心动魄的政治赌博。
@@ -588,6 +633,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0064
     name: 田单
+    avatar: monkey/先秦与神话/田单.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）火牛阵破敌，复国功臣。燕军攻齐，连下七十余城，唯即墨未下。田单以火牛阵大破燕军，收复齐国失地，立下不世之功。他不是将门出身，却能在绝境中逆转乾坤；他不以正兵取胜，却创造了军事史上的奇迹。火牛阵的故事，至今仍为后世津津乐道。田单之才，在于临危不乱、出奇制胜。
@@ -601,6 +647,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0065
     name: 范雎
+    avatar: monkey/先秦与神话/范雎.png
     default_gender: male
     archetype: civil
     flavor: （?—前255年）远交近攻，布衣卿相。他本是魏国门客，遭主人迫害，差点死于厕中。后辗转入秦，向秦昭襄王献上"远交近攻"的战略，被拜为相国。他为人睚眦必报，有恩必还，有仇必报。范雎的崛起，是布衣跃居卿相的传奇；他的战略，则奠定了秦国统一天下的大方向。
@@ -614,6 +661,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0066
     name: 赵雍
+    avatar: monkey/先秦与神话/赵雍.png
     default_gender: male
     archetype: military
     flavor: （约前340年—前295年）胡服骑射，变革图强。他是赵武灵王，以非凡的魄力推行胡服骑射改革，使赵国军力大增。灭中山、击林胡、收河套，赵国一跃成为北方强国。然而他在继位问题上的摇摆，导致沙丘之变，自己被困饿死。雄主晚年的糊涂，令人唏嘘。胡服骑射的改革，是中原民族学习胡人的先河，影响深远。

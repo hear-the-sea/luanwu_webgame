@@ -1,0 +1,3760 @@
+{
+  "reference": "data/images/guests/monkey/其他随机角色/文037_男.png",
+  "reference_box": [
+    66,
+    50,
+    388,
+    415
+  ],
+  "target_height": 365,
+  "max_width": 392,
+  "baseline": 415,
+  "count": 117,
+  "backup": "reports/guest_portrait_normalization_20261017/originals.zip",
+  "records": [
+    {
+      "index": 1,
+      "path": "data/images/guests/monkey/其他随机角色/文-女.png",
+      "group": "monkey",
+      "before_size": [
+        312,
+        309
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        40,
+        19,
+        281,
+        274
+      ],
+      "after_box": [
+        54,
+        49,
+        400,
+        415
+      ],
+      "scale": 1.4313725490196079,
+      "offset": [
+        -3,
+        23
+      ],
+      "before_sha256": "da467eb782db438e80b550240cb4bc95a86922281e050499d025608fe7c5e528",
+      "after_sha256": "e91eb08554762ec418b940a71678db1786e00a918c075089fc46fc1a1d874ab2"
+    },
+    {
+      "index": 2,
+      "path": "data/images/guests/monkey/其他随机角色/文037_男.png",
+      "group": "monkey",
+      "before_size": [
+        448,
+        448
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        66,
+        50,
+        388,
+        415
+      ],
+      "after_box": [
+        66,
+        50,
+        388,
+        415
+      ],
+      "scale": 1,
+      "offset": [
+        0,
+        0
+      ],
+      "before_sha256": "5fa623cc8856e96d13180e94688e642cc2d8ceb0e590c594cb6769ca7a30cff3",
+      "after_sha256": "5fa623cc8856e96d13180e94688e642cc2d8ceb0e590c594cb6769ca7a30cff3"
+    },
+    {
+      "index": 3,
+      "path": "data/images/guests/monkey/其他随机角色/文039_男.png",
+      "group": "monkey",
+      "before_size": [
+        448,
+        448
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        60,
+        74,
+        406,
+        414
+      ],
+      "after_box": [
+        41,
+        51,
+        413,
+        415
+      ],
+      "scale": 1.0735294117647058,
+      "offset": [
+        -23,
+        -29
+      ],
+      "before_sha256": "630c37cc264b91b8b61c0feadf021ca4b60f4ec7d23e2fcad35835b8a485019c",
+      "after_sha256": "b46520e8e7790880de6efe320acedba6ff25500f6aec901ec091475fd36260c8"
+    },
+    {
+      "index": 4,
+      "path": "data/images/guests/monkey/其他随机角色/文041_男.png",
+      "group": "monkey",
+      "before_size": [
+        448,
+        448
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        52,
+        51,
+        397,
+        410
+      ],
+      "after_box": [
+        52,
+        51,
+        402,
+        415
+      ],
+      "scale": 1.0167130919220055,
+      "offset": [
+        -1,
+        -1
+      ],
+      "before_sha256": "625fcc83f6c2ab3ad14f53414bf8c724ca070a4a0fee9bf6e19624bb971a17cd",
+      "after_sha256": "51408034dc1d6c7e1dd071b52b006ef4bbe57ce1f26d3d6113020e4fcfe9d44c"
+    },
+    {
+      "index": 5,
+      "path": "data/images/guests/monkey/其他随机角色/文049_男.png",
+      "group": "monkey",
+      "before_size": [
+        448,
+        448
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        76,
+        57,
+        391,
+        400
+      ],
+      "after_box": [
+        59,
+        50,
+        395,
+        415
+      ],
+      "scale": 1.064139941690962,
+      "offset": [
+        -22,
+        -11
+      ],
+      "before_sha256": "0939856b2b8bede048689f75c8a501ba8d98ea0f5753cd83d776de5488729972",
+      "after_sha256": "3ebe688f779d0565ffc5456920fbdffb0b015cb58e92a1afb472d33e634257b8"
+    },
+    {
+      "index": 6,
+      "path": "data/images/guests/monkey/其他随机角色/文052_男.png",
+      "group": "monkey",
+      "before_size": [
+        448,
+        448
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        88,
+        35,
+        382,
+        378
+      ],
+      "after_box": [
+        70,
+        49,
+        383,
+        415
+      ],
+      "scale": 1.064139941690962,
+      "offset": [
+        -24,
+        12
+      ],
+      "before_sha256": "416cb9fd52240743fa248f1503955f499801c4d85887cffc4ccdd4953451ac64",
+      "after_sha256": "e7bc6ae3575d9590a3651a228e7aff6516b13500d08625cee16d028635e381bf"
+    },
+    {
+      "index": 7,
+      "path": "data/images/guests/monkey/其他随机角色/文059_女.png",
+      "group": "monkey",
+      "before_size": [
+        448,
+        448
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        88,
+        79,
+        360,
+        370
+      ],
+      "after_box": [
+        56,
+        50,
+        398,
+        415
+      ],
+      "scale": 1.254295532646048,
+      "offset": [
+        -54,
+        -49
+      ],
+      "before_sha256": "08dcb91c95117943df63013767dbd55a9ee5be8d533c5b0e56b0c63ccdc99095",
+      "after_sha256": "d1102daaffd2194cd6558142da1221865af9cdcd8ac428d580369a163c1439ec"
+    },
+    {
+      "index": 8,
+      "path": "data/images/guests/monkey/其他随机角色/文061_男.png",
+      "group": "monkey",
+      "before_size": [
+        448,
+        448
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        87,
+        57,
+        371,
+        351
+      ],
+      "after_box": [
+        51,
+        50,
+        403,
+        415
+      ],
+      "scale": 1.2414965986394557,
+      "offset": [
+        -57,
+        -21
+      ],
+      "before_sha256": "a711f4f348fc3cd4aa4f9762d048d82a3cb9c49259ffb881ec6ac4486c52be6c",
+      "after_sha256": "b7d16d596dda33664054a03fcf9150e0b3622c533a70592467501219e7800e74"
+    },
+    {
+      "index": 9,
+      "path": "data/images/guests/monkey/其他随机角色/文064_女.png",
+      "group": "monkey",
+      "before_size": [
+        448,
+        448
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        89,
+        65,
+        362,
+        355
+      ],
+      "after_box": [
+        55,
+        51,
+        399,
+        415
+      ],
+      "scale": 1.2586206896551724,
+      "offset": [
+        -57,
+        -31
+      ],
+      "before_sha256": "a02e6064dc047453c4bfa1aa95c145f356f050f0fa70782592f5a2d118d810d8",
+      "after_sha256": "957b129b0dca208544527c3ac5dece892e520ee841c291909a7e77375c1700f0"
+    },
+    {
+      "index": 10,
+      "path": "data/images/guests/monkey/其他随机角色/文065_女.png",
+      "group": "monkey",
+      "before_size": [
+        448,
+        448
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        81,
+        65,
+        373,
+        359
+      ],
+      "after_box": [
+        46,
+        50,
+        409,
+        415
+      ],
+      "scale": 1.2414965986394557,
+      "offset": [
+        -54,
+        -31
+      ],
+      "before_sha256": "9a95d0b17f4ea408bdede4f6d80d9442722edd37785906d118624eba5693e9fe",
+      "after_sha256": "06c8ae978ac9248f5b91a9ec66296ef2ff80e23c8d2fd96cd6dcaea609bf8eda"
+    },
+    {
+      "index": 11,
+      "path": "data/images/guests/monkey/其他随机角色/文078_女.png",
+      "group": "monkey",
+      "before_size": [
+        448,
+        448
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        86,
+        80,
+        366,
+        369
+      ],
+      "after_box": [
+        51,
+        50,
+        404,
+        415
+      ],
+      "scale": 1.2629757785467128,
+      "offset": [
+        -58,
+        -51
+      ],
+      "before_sha256": "96d1d23ca30632bfa8537dc765b04b3d2e8b1778a24d67a016ec0fd984bdf9a3",
+      "after_sha256": "6c916f09f5d30db5e2f17069de8953b5f49e76738786d1b3e896496c401382cd"
+    },
+    {
+      "index": 12,
+      "path": "data/images/guests/monkey/其他随机角色/文084_女.png",
+      "group": "monkey",
+      "before_size": [
+        448,
+        448
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        109,
+        86,
+        349,
+        360
+      ],
+      "after_box": [
+        67,
+        49,
+        387,
+        415
+      ],
+      "scale": 1.332116788321168,
+      "offset": [
+        -78,
+        -65
+      ],
+      "before_sha256": "1d6e1cb9163f42dbe114b866cdf608e52179eab82a212e6cc36bd67fd60d02e7",
+      "after_sha256": "cee15245d63ffc3b5cc1864b0ed88d4384a3292817f19dd92c3732eaf4028dd3"
+    },
+    {
+      "index": 13,
+      "path": "data/images/guests/monkey/其他随机角色/文101_男.png",
+      "group": "monkey",
+      "before_size": [
+        448,
+        448
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        119,
+        98,
+        361,
+        371
+      ],
+      "after_box": [
+        65,
+        49,
+        389,
+        415
+      ],
+      "scale": 1.336996336996337,
+      "offset": [
+        -94,
+        -81
+      ],
+      "before_sha256": "02a448e3cf62b11dbc1f110c5dced9f2d27fc25aba0b722c88ce618fcfc27180",
+      "after_sha256": "4ce980cd91cbe99a5be9f461a348922ce2f9419c076c7494336f6db4993de05c"
+    },
+    {
+      "index": 14,
+      "path": "data/images/guests/monkey/其他随机角色/文_男.png",
+      "group": "monkey",
+      "before_size": [
+        310,
+        314
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        43,
+        31,
+        291,
+        311
+      ],
+      "after_box": [
+        66,
+        50,
+        389,
+        415
+      ],
+      "scale": 1.3035714285714286,
+      "offset": [
+        10,
+        10
+      ],
+      "before_sha256": "952df0a633ecae9623a6fedad4fc175f8530385edcea8ff40a11e90c039c5a38",
+      "after_sha256": "831717b4cd26d1dc319627e2369585538e31da429cb2c2a52879fbb02dfbf836"
+    },
+    {
+      "index": 15,
+      "path": "data/images/guests/monkey/其他随机角色/文_男123.png",
+      "group": "monkey",
+      "before_size": [
+        258,
+        255
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        18,
+        36,
+        248,
+        244
+      ],
+      "after_box": [
+        30,
+        59,
+        424,
+        415
+      ],
+      "scale": 1.7043478260869565,
+      "offset": [
+        0,
+        -2
+      ],
+      "before_sha256": "475afc18416a721b51a6aa3e3437544dbe582882ebbf20a6d40aa613f7eec3a5",
+      "after_sha256": "4e7a6a3653e6859ecb81554f0250a2c310fc42ab8d4b877897341ac46e91f8c1"
+    },
+    {
+      "index": 16,
+      "path": "data/images/guests/monkey/其他随机角色/文男.png",
+      "group": "monkey",
+      "before_size": [
+        251,
+        257
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        24,
+        28,
+        240,
+        235
+      ],
+      "after_box": [
+        36,
+        50,
+        417,
+        415
+      ],
+      "scale": 1.7632850241545894,
+      "offset": [
+        -6,
+        1
+      ],
+      "before_sha256": "c51fe77434e51607411047112a3c7ee915b37b6114844196e523219f75b21643",
+      "after_sha256": "234aed2c167748fd0baa0b7951f86800cf1f454c458ac7bc2426cadc55821976"
+    },
+    {
+      "index": 17,
+      "path": "data/images/guests/monkey/其他随机角色/文男213.png",
+      "group": "monkey",
+      "before_size": [
+        249,
+        248
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        24,
+        17,
+        228,
+        220
+      ],
+      "after_box": [
+        43,
+        49,
+        411,
+        415
+      ],
+      "scale": 1.7980295566502462,
+      "offset": [
+        0,
+        19
+      ],
+      "before_sha256": "30dcc08a5156feddc401595a0246519f9a40ec763a2e4fc1a7298be425713f66",
+      "after_sha256": "618070a0c04afdf68d6be5021261349fd0359dba89f796247353259c9d619524"
+    },
+    {
+      "index": 18,
+      "path": "data/images/guests/monkey/其他随机角色/武037_男.png",
+      "group": "monkey",
+      "before_size": [
+        448,
+        448
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        70,
+        40,
+        398,
+        415
+      ],
+      "after_box": [
+        68,
+        50,
+        387,
+        415
+      ],
+      "scale": 0.9733333333333334,
+      "offset": [
+        0,
+        11
+      ],
+      "before_sha256": "cea387ac4631d4c5b1700848095d4b0de0e6343647f27dfdf051a7e6e6ebb38d",
+      "after_sha256": "01cfa78174e687948701696da5b15ac8dcf29ee89efb6e0bf11bbd87fe4c5e73"
+    },
+    {
+      "index": 19,
+      "path": "data/images/guests/monkey/其他随机角色/武038_男.png",
+      "group": "monkey",
+      "before_size": [
+        448,
+        448
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        47,
+        43,
+        407,
+        415
+      ],
+      "after_box": [
+        50,
+        49,
+        404,
+        415
+      ],
+      "scale": 0.9811827956989247,
+      "offset": [
+        4,
+        7
+      ],
+      "before_sha256": "28cfd661a4c038774c12886b56acc6083ec4148e391a072073fbb6969f539404",
+      "after_sha256": "fca997ed5f5c853bafec1f3c187409e43c07f08f5da3a1e57e306650bd64ae52"
+    },
+    {
+      "index": 20,
+      "path": "data/images/guests/monkey/其他随机角色/武044_男_.png",
+      "group": "monkey",
+      "before_size": [
+        448,
+        448
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        56,
+        35,
+        392,
+        392
+      ],
+      "after_box": [
+        55,
+        50,
+        399,
+        415
+      ],
+      "scale": 1.022408963585434,
+      "offset": [
+        -2,
+        14
+      ],
+      "before_sha256": "38101ce9baace0d1366e79384c056eb6271d37eb278a80e25a743e04080e65ae",
+      "after_sha256": "105c6319a9c08aa6fcc818db9c7dae5cf007f02dc5c220c31a4abf1b557e77c3"
+    },
+    {
+      "index": 21,
+      "path": "data/images/guests/monkey/其他随机角色/武047_男.png",
+      "group": "monkey",
+      "before_size": [
+        448,
+        448
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        70,
+        61,
+        409,
+        413
+      ],
+      "after_box": [
+        51,
+        49,
+        403,
+        415
+      ],
+      "scale": 1.0369318181818181,
+      "offset": [
+        -21,
+        -14
+      ],
+      "before_sha256": "675d1b96e1490bea4e1119172c6a2fe35b0dc9713011159de9f9586700eebcdb",
+      "after_sha256": "353e6eab6ea77b129d3574414caff3c3c77bf0ff2d75e4344b0757ba52945a34"
+    },
+    {
+      "index": 22,
+      "path": "data/images/guests/monkey/其他随机角色/武052_男.png",
+      "group": "monkey",
+      "before_size": [
+        448,
+        448
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        56,
+        36,
+        403,
+        381
+      ],
+      "after_box": [
+        43,
+        50,
+        410,
+        415
+      ],
+      "scale": 1.0579710144927537,
+      "offset": [
+        -16,
+        12
+      ],
+      "before_sha256": "5dd7d04fa21fe834c6cf728aa705ce507c333eb82619f43ac7a4df4c96387d8c",
+      "after_sha256": "f2ac10669f5983a5dc504a0e8c56cea951fd46d0f0b496b639498b832c40c8f1"
+    },
+    {
+      "index": 23,
+      "path": "data/images/guests/monkey/其他随机角色/武064_男_.png",
+      "group": "monkey",
+      "before_size": [
+        448,
+        448
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        80,
+        113,
+        359,
+        394
+      ],
+      "after_box": [
+        45,
+        49,
+        409,
+        415
+      ],
+      "scale": 1.298932384341637,
+      "offset": [
+        -58,
+        -97
+      ],
+      "before_sha256": "6ecc2d665640c5aeb00fd44a1142239babfad1f591993557c95b17a49f5b3996",
+      "after_sha256": "1e59123114f1e11953716bda847ddbd1063b3a2cc698b034c6808653efb47f5b"
+    },
+    {
+      "index": 24,
+      "path": "data/images/guests/monkey/其他随机角色/武066_男_.png",
+      "group": "monkey",
+      "before_size": [
+        448,
+        448
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        82,
+        90,
+        365,
+        368
+      ],
+      "after_box": [
+        42,
+        50,
+        413,
+        415
+      ],
+      "scale": 1.3129496402877698,
+      "offset": [
+        -66,
+        -68
+      ],
+      "before_sha256": "025236cd6595d2d43f6ba3b633dc72770015258b475e0c3d142820e712803551",
+      "after_sha256": "0ec80619a46388af868042c1e98f0defca8fd70d9a142dd534197673fcc9b6ec"
+    },
+    {
+      "index": 25,
+      "path": "data/images/guests/monkey/其他随机角色/武083_女_.png",
+      "group": "monkey",
+      "before_size": [
+        448,
+        448
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        101,
+        124,
+        343,
+        382
+      ],
+      "after_box": [
+        56,
+        50,
+        397,
+        415
+      ],
+      "scale": 1.4147286821705427,
+      "offset": [
+        -88,
+        -126
+      ],
+      "before_sha256": "d283732dab61cb514760b9d49fa613c3f006737ea82aea7bec85b64e54525c58",
+      "after_sha256": "d74dedbcca59a7c63f2ec467234407a66e13fcaf266d73d5c663a59c5233d5a0"
+    },
+    {
+      "index": 26,
+      "path": "data/images/guests/monkey/其他随机角色/武男22.png",
+      "group": "monkey",
+      "before_size": [
+        252,
+        247
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        18,
+        20,
+        231,
+        219
+      ],
+      "after_box": [
+        32,
+        50,
+        422,
+        415
+      ],
+      "scale": 1.8341708542713568,
+      "offset": [
+        -1,
+        14
+      ],
+      "before_sha256": "3eeb5a2f0bb56a62d7f0949549c6c08b39da67a2263b85fc60f269c03a5dc86a",
+      "after_sha256": "c2c4c42c4cd7e8e592c2cf4eea68619ec832f1767385527e37631e84479e79f7"
+    },
+    {
+      "index": 27,
+      "path": "data/images/guests/pig/文010.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        50,
+        62,
+        379,
+        399
+      ],
+      "after_box": [
+        49,
+        50,
+        405,
+        415
+      ],
+      "scale": 1.083086053412463,
+      "offset": [
+        -5,
+        -17
+      ],
+      "before_sha256": "effbca22a549e4961717f545ef3a728c49ca38925b8ebe105276b7acbe671c96",
+      "after_sha256": "633ebd3f0f0830eaf409828e87ceb4f31c3ce321da00e53b0fb4f92be42b852a"
+    },
+    {
+      "index": 28,
+      "path": "data/images/guests/pig/文011.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        80,
+        43,
+        386,
+        399
+      ],
+      "after_box": [
+        70,
+        50,
+        384,
+        415
+      ],
+      "scale": 1.0252808988764044,
+      "offset": [
+        -12,
+        6
+      ],
+      "before_sha256": "c79fe231f1aa00107e653ef379a5ac55e7d9a79fff047b3dd6b31329d7564e92",
+      "after_sha256": "3f6d64df01c8569d8fde68e6e7a6fc8362291e5918534c02b789e1869532d511"
+    },
+    {
+      "index": 29,
+      "path": "data/images/guests/pig/文014.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        69,
+        30,
+        395,
+        391
+      ],
+      "after_box": [
+        62,
+        50,
+        391,
+        415
+      ],
+      "scale": 1.0110803324099722,
+      "offset": [
+        -8,
+        20
+      ],
+      "before_sha256": "c71ec40893fb6c56496d576c6aadfb83f14737537ff36be6810f376ea7c66224",
+      "after_sha256": "14c3637f25ab6cdab8b7ed610031b4c1db6b3a244d5abc72d0b0b10f8a0b933c"
+    },
+    {
+      "index": 30,
+      "path": "data/images/guests/pig/文016.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        38,
+        33,
+        393,
+        370
+      ],
+      "after_box": [
+        35,
+        51,
+        420,
+        415
+      ],
+      "scale": 1.083086053412463,
+      "offset": [
+        -6,
+        15
+      ],
+      "before_sha256": "5b23f22381fd14f5423dc94bca860374f96ec22e822c081900b72b7d1c920ee6",
+      "after_sha256": "d38ce0e06e572249c05f6fdbda4df329b9fb13c1f6b6060396f213eff049b643"
+    },
+    {
+      "index": 31,
+      "path": "data/images/guests/pig/文018.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        77,
+        21,
+        400,
+        381
+      ],
+      "after_box": [
+        64,
+        49,
+        391,
+        415
+      ],
+      "scale": 1.0138888888888888,
+      "offset": [
+        -14,
+        28
+      ],
+      "before_sha256": "4ff86849f153f8e0135ce82fde1576b09fc6ebaa9640ffb5ff18550c3f7b8e66",
+      "after_sha256": "04a1fac51b9939e78608abe6e278d5dd2b4cebf87d70574c9703559d6d7d5ecc"
+    },
+    {
+      "index": 32,
+      "path": "data/images/guests/pig/文021.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        34,
+        21,
+        405,
+        368
+      ],
+      "after_box": [
+        32,
+        49,
+        422,
+        415
+      ],
+      "scale": 1.0518731988472623,
+      "offset": [
+        -4,
+        27
+      ],
+      "before_sha256": "27257c0d3129fe55d96328f59e5524a7e3e5756ef6a6b53a5ebcdb577b909c36",
+      "after_sha256": "d521ec56e96390ebd4439aebf9c79bbd9c016c99469cd45e1df34179413cd71d"
+    },
+    {
+      "index": 33,
+      "path": "data/images/guests/pig/文028.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        52,
+        46,
+        408,
+        402
+      ],
+      "after_box": [
+        45,
+        50,
+        409,
+        415
+      ],
+      "scale": 1.0252808988764044,
+      "offset": [
+        -9,
+        3
+      ],
+      "before_sha256": "b24f16bdc2033abd6a1d47a13b1a78f5c2ee522e9abfe1184193d31303df28ab",
+      "after_sha256": "90adee9997cd5717b44485148fbc73dfe2dd8ae73e671231b0eaa33e009596c3"
+    },
+    {
+      "index": 34,
+      "path": "data/images/guests/pig/文029.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        48,
+        47,
+        401,
+        403
+      ],
+      "after_box": [
+        46,
+        50,
+        408,
+        415
+      ],
+      "scale": 1.0252808988764044,
+      "offset": [
+        -4,
+        2
+      ],
+      "before_sha256": "39342c86f0e4e9196b4c865a79bdc78432d8b466ece086e632224fd9d8c21674",
+      "after_sha256": "b5c71044c306ae559d2d4839ab3fab2403bbb8d7b18048ac756a0a5bb0c7d611"
+    },
+    {
+      "index": 35,
+      "path": "data/images/guests/pig/文030.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        42,
+        43,
+        389,
+        403
+      ],
+      "after_box": [
+        50,
+        50,
+        403,
+        415
+      ],
+      "scale": 1.0138888888888888,
+      "offset": [
+        8,
+        6
+      ],
+      "before_sha256": "065593c9c7d0e9204084789cb7ebfd248ce2bd58cd89fc7e5f8258cb4f3f697e",
+      "after_sha256": "4b7e28def335ea91d008662e1486a4ca9e133e2e33228f84216b145efdda3b8e"
+    },
+    {
+      "index": 36,
+      "path": "data/images/guests/pig/文031.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        39,
+        27,
+        405,
+        393
+      ],
+      "after_box": [
+        45,
+        50,
+        410,
+        415
+      ],
+      "scale": 0.9972677595628415,
+      "offset": [
+        6,
+        23
+      ],
+      "before_sha256": "37e3bc66840c358680cda1a40a855f32f63f637d28087055bfdcac4bc32a8f9d",
+      "after_sha256": "4de36e1dc6ddd02c3d1374d7f6d85bd4ce1b955f5cc89a1c3d600ef6b3760c78"
+    },
+    {
+      "index": 37,
+      "path": "data/images/guests/pig/文032.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        41,
+        30,
+        402,
+        398
+      ],
+      "after_box": [
+        49,
+        51,
+        406,
+        415
+      ],
+      "scale": 0.9918478260869565,
+      "offset": [
+        8,
+        21
+      ],
+      "before_sha256": "70a529d2f23cd36509d102d55b6418079da4bc45e76953d0662c4fb3165f1470",
+      "after_sha256": "2d3daae7681102c382343b54f5014a1d33176acc2b0cfde2e00100d7bed2fe89"
+    },
+    {
+      "index": 38,
+      "path": "data/images/guests/pig/文033.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        42,
+        32,
+        391,
+        391
+      ],
+      "after_box": [
+        50,
+        50,
+        404,
+        415
+      ],
+      "scale": 1.0167130919220055,
+      "offset": [
+        7,
+        18
+      ],
+      "before_sha256": "d649813b2485c5bd1fd61bd9d61f3a5d27cecdec6dc8ef3b92f453197568a14e",
+      "after_sha256": "e61f9c73421372d6a50be34422863d10697e14bcfd7215af8171ab9bdb4fbdfd"
+    },
+    {
+      "index": 39,
+      "path": "data/images/guests/pig/文034.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        46,
+        23,
+        399,
+        372
+      ],
+      "after_box": [
+        42,
+        50,
+        412,
+        415
+      ],
+      "scale": 1.0458452722063036,
+      "offset": [
+        -6,
+        26
+      ],
+      "before_sha256": "35ef43a6eb3ce6dee79b4d94b7d23742e1e01648f2c513112dd2ecb59ec71b7a",
+      "after_sha256": "9ffa09cdc2ec742596c68636e672b7ba1a853bf5c132e33b16cecfe69acff0cf"
+    },
+    {
+      "index": 40,
+      "path": "data/images/guests/pig/文035.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        48,
+        38,
+        408,
+        374
+      ],
+      "after_box": [
+        32,
+        49,
+        423,
+        415
+      ],
+      "scale": 1.0863095238095237,
+      "offset": [
+        -20,
+        8
+      ],
+      "before_sha256": "620270aedf6a1fde0bc0fe7ee2a0ab61c87e02ca72fd11c35019658efeca16cd",
+      "after_sha256": "8c11cbdc3d60823099ca161ff9ad971a96ab36c41136c98f1f0b8a5d9fbaa47d"
+    },
+    {
+      "index": 41,
+      "path": "data/images/guests/pig/文036.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        34,
+        23,
+        400,
+        381
+      ],
+      "after_box": [
+        40,
+        50,
+        414,
+        415
+      ],
+      "scale": 1.0195530726256983,
+      "offset": [
+        5,
+        26
+      ],
+      "before_sha256": "78df874b1b713a54db6ceef9afbc20b7c707053cd403e8d6d6c80e9ce0afb635",
+      "after_sha256": "fbaff2617b9108cbb48571ab79a3e7e46b5ee26f15986f112cb2b1baf8235873"
+    },
+    {
+      "index": 42,
+      "path": "data/images/guests/pig/文037.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        46,
+        56,
+        410,
+        398
+      ],
+      "after_box": [
+        33,
+        51,
+        421,
+        415
+      ],
+      "scale": 1.067251461988304,
+      "offset": [
+        -16,
+        -9
+      ],
+      "before_sha256": "bfcb471010163e66bea262c0423a5b1bc20f0640c876cbe2f09c4e61c1f38da2",
+      "after_sha256": "a6f30432f4fd93873b7abdbf946ba2a1287cea2938237cc55dd4fcd5b6b5b92b"
+    },
+    {
+      "index": 43,
+      "path": "data/images/guests/pig/文038.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        59,
+        59,
+        406,
+        403
+      ],
+      "after_box": [
+        42,
+        50,
+        411,
+        415
+      ],
+      "scale": 1.061046511627907,
+      "offset": [
+        -20,
+        -13
+      ],
+      "before_sha256": "d386f44864102918b6098e02d8185868d0b3e00d320fd9747179a0537c1c1c57",
+      "after_sha256": "dea8d35b503571cf347ea9b02abcbf71362056296e7aae672f70f5ce545db644"
+    },
+    {
+      "index": 44,
+      "path": "data/images/guests/pig/文039.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        55,
+        64,
+        401,
+        401
+      ],
+      "after_box": [
+        39,
+        51,
+        414,
+        415
+      ],
+      "scale": 1.083086053412463,
+      "offset": [
+        -20,
+        -19
+      ],
+      "before_sha256": "b6c1329e55da3b3b3fb3a74e0c5e8aae838723dd0a3fb4e79ceea4708a951744",
+      "after_sha256": "47049c89603525f5f2ccb6bb1f060398847568131ca6b3d4b1d88ff5f01c7900"
+    },
+    {
+      "index": 45,
+      "path": "data/images/guests/pig/文040.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        52,
+        41,
+        399,
+        389
+      ],
+      "after_box": [
+        45,
+        50,
+        409,
+        415
+      ],
+      "scale": 1.0488505747126438,
+      "offset": [
+        -9,
+        7
+      ],
+      "before_sha256": "b74373d77c83602024ba6ba6f7aa5bf146aa61e818141bcb36e5d92c910d0bb3",
+      "after_sha256": "aa9247aaeb0eb78852019aa5b6aa8a37f927aeac592e4bdc0953c1852f14a231"
+    },
+    {
+      "index": 46,
+      "path": "data/images/guests/pig/文041.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        50,
+        56,
+        392,
+        397
+      ],
+      "after_box": [
+        43,
+        50,
+        410,
+        415
+      ],
+      "scale": 1.0703812316715542,
+      "offset": [
+        -10,
+        -10
+      ],
+      "before_sha256": "a124eca865d6a72beabb5282d096461a8565f37a7519b93c31c9539afe07dbb2",
+      "after_sha256": "790a46bb4fe7b49230988a9221b4c4795215254657d3ee919391d3773e820ba5"
+    },
+    {
+      "index": 47,
+      "path": "data/images/guests/pig/文042.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        49,
+        48,
+        396,
+        391
+      ],
+      "after_box": [
+        43,
+        49,
+        412,
+        415
+      ],
+      "scale": 1.064139941690962,
+      "offset": [
+        -10,
+        -2
+      ],
+      "before_sha256": "fe8b6580420f90e613020a32b8d19d966b7537deadc520b97cb80fe955c67a48",
+      "after_sha256": "818012b385e150573f9fe7ad84de5bc1d77558b4c887c6eaa13a644cbb9e98c2"
+    },
+    {
+      "index": 48,
+      "path": "data/images/guests/pig/文043.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        45,
+        45,
+        403,
+        370
+      ],
+      "after_box": [
+        31,
+        59,
+        423,
+        415
+      ],
+      "scale": 1.094972067039106,
+      "offset": [
+        -18,
+        10
+      ],
+      "before_sha256": "38f250fae54b549824e9f35f78cc875a0409db5cc694a4e7ed210e7ae99223cd",
+      "after_sha256": "fb9748f0c9df02c53517ea9f61cc6d4ebd2464a42d7e93246c6dc8fd8caddc4a"
+    },
+    {
+      "index": 49,
+      "path": "data/images/guests/pig/文044.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        49,
+        43,
+        394,
+        372
+      ],
+      "after_box": [
+        36,
+        50,
+        419,
+        415
+      ],
+      "scale": 1.1094224924012157,
+      "offset": [
+        -18,
+        2
+      ],
+      "before_sha256": "f295a4a1400e6e29c7862bb1efd67a6e9842d129fd93f137a9414a766741ca89",
+      "after_sha256": "40b38836ab0c4b6b834c70bc804ab34bddcf9b3dabb39ffa829b515eb7c39636"
+    },
+    {
+      "index": 50,
+      "path": "data/images/guests/pig/文045.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        37,
+        28,
+        386,
+        374
+      ],
+      "after_box": [
+        43,
+        50,
+        411,
+        415
+      ],
+      "scale": 1.0549132947976878,
+      "offset": [
+        4,
+        20
+      ],
+      "before_sha256": "839d434f4d93a4296f3c07714154bf82bd965c0ab189410a9ebf8d03f78bb58a",
+      "after_sha256": "06662b2331c11cbece7e061997466ac41ef34280c776e4adf5754bf4bb084d79"
+    },
+    {
+      "index": 51,
+      "path": "data/images/guests/pig/文046.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        70,
+        44,
+        404,
+        367
+      ],
+      "after_box": [
+        38,
+        49,
+        416,
+        415
+      ],
+      "scale": 1.130030959752322,
+      "offset": [
+        -41,
+        0
+      ],
+      "before_sha256": "02258f795611e643698ac081c41fc476507b43f5f7f6bbd0bef7281b4b2ba5f3",
+      "after_sha256": "fdbd9255262dd9dfd503fc77ee6225a9c1a5681d5ec005eee1ea317e261bc5fb"
+    },
+    {
+      "index": 52,
+      "path": "data/images/guests/pig/文048.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        38,
+        24,
+        405,
+        397
+      ],
+      "after_box": [
+        47,
+        50,
+        407,
+        415
+      ],
+      "scale": 0.9785522788203753,
+      "offset": [
+        10,
+        26
+      ],
+      "before_sha256": "1abd461e609f190826e4574317527b3e2a856672ef0f53769e2c079a9717b786",
+      "after_sha256": "80c55b48d07a4f06f126a741229f08c320b455df4af2879f86c1d75a1cbb8ff5"
+    },
+    {
+      "index": 53,
+      "path": "data/images/guests/pig/文049.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        37,
+        32,
+        399,
+        396
+      ],
+      "after_box": [
+        45,
+        50,
+        408,
+        415
+      ],
+      "scale": 1.0027472527472527,
+      "offset": [
+        8,
+        18
+      ],
+      "before_sha256": "6e38898ee16b91b776d6a47bacf8f7912be82e64103185695a4632d1ae277926",
+      "after_sha256": "759b4a9dee388681e004bc29dc13398a55b76a6e01132a41687a4c310afb7b2e"
+    },
+    {
+      "index": 54,
+      "path": "data/images/guests/pig/文050.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        52,
+        20,
+        404,
+        369
+      ],
+      "after_box": [
+        42,
+        50,
+        411,
+        415
+      ],
+      "scale": 1.0458452722063036,
+      "offset": [
+        -12,
+        29
+      ],
+      "before_sha256": "6d6301b084a160baaa7fff056abc5acf6b3db912d210c12411bd3ed4dec8a257",
+      "after_sha256": "4817936556ea34d8c9e68dca69b747dac8b2fea833c73eec1023ada8b337dd5f"
+    },
+    {
+      "index": 55,
+      "path": "data/images/guests/pig/武005.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        60,
+        64,
+        400,
+        403
+      ],
+      "after_box": [
+        44,
+        51,
+        411,
+        415
+      ],
+      "scale": 1.0766961651917404,
+      "offset": [
+        -20,
+        -18
+      ],
+      "before_sha256": "6ba973e4e9245f6eb4a608e79e115a53bb77e60cd4beaa59600248c5eb187181",
+      "after_sha256": "564de444f456a6b2b6b6503cdb91561417744bde8fb144f2525a45449c7e7965"
+    },
+    {
+      "index": 56,
+      "path": "data/images/guests/pig/武007.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        35,
+        43,
+        411,
+        383
+      ],
+      "after_box": [
+        30,
+        60,
+        423,
+        415
+      ],
+      "scale": 1.0425531914893618,
+      "offset": [
+        -6,
+        15
+      ],
+      "before_sha256": "a80a5017ab704a0867b1706f50b6bb60586dee7cd56b0f195c39907bdc7fc0ea",
+      "after_sha256": "6430022496ba824415be6898f1f41d3aebe3ad4850d35ddf9ee64cc9af219fd4"
+    },
+    {
+      "index": 57,
+      "path": "data/images/guests/pig/武008.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        25,
+        26,
+        407,
+        365
+      ],
+      "after_box": [
+        32,
+        68,
+        423,
+        415
+      ],
+      "scale": 1.0261780104712042,
+      "offset": [
+        6,
+        41
+      ],
+      "before_sha256": "6107e71af688f56d126e835c80bd9bd507b37f51076bb90c33ce0d32864408d2",
+      "after_sha256": "473493cba10e10cffe06f72005fe582b3c5f855e13981fdf02f4f85490a5f9ba"
+    },
+    {
+      "index": 58,
+      "path": "data/images/guests/pig/武009.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        40,
+        18,
+        394,
+        380
+      ],
+      "after_box": [
+        48,
+        50,
+        406,
+        415
+      ],
+      "scale": 1.0082872928176796,
+      "offset": [
+        8,
+        31
+      ],
+      "before_sha256": "ff2c219c081406b05b7eddd353637d5b1b539dfbb2ed0c85ed3c14ca4cf3560f",
+      "after_sha256": "20fdf1beb9ca53f3b08f9101a692f126fe946509d9669616a75b64bebeb6c726"
+    },
+    {
+      "index": 59,
+      "path": "data/images/guests/pig/武010.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        36,
+        20,
+        408,
+        415
+      ],
+      "after_box": [
+        55,
+        50,
+        399,
+        415
+      ],
+      "scale": 0.9240506329113924,
+      "offset": [
+        22,
+        32
+      ],
+      "before_sha256": "70580e29104cb829ad1d147b60ddc89672b09bc0ec5fcdc979241afd47ec3b2f",
+      "after_sha256": "fa8f7b8edec6ffbe57cb86eab334a086e89cbdf59cd17b9d68e1fae950351d13"
+    },
+    {
+      "index": 60,
+      "path": "data/images/guests/pig/武011.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        42,
+        35,
+        409,
+        415
+      ],
+      "after_box": [
+        50,
+        50,
+        403,
+        415
+      ],
+      "scale": 0.9605263157894737,
+      "offset": [
+        10,
+        16
+      ],
+      "before_sha256": "49595893c9a042dd699060faec821b620e17b7ecc75f1b25171ac8c017383f47",
+      "after_sha256": "b4eed57c431edd361013eafbec8c76ee136f966fd64215c23ef10cf2532e1071"
+    },
+    {
+      "index": 61,
+      "path": "data/images/guests/pig/武013.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        32,
+        39,
+        403,
+        395
+      ],
+      "after_box": [
+        37,
+        50,
+        417,
+        415
+      ],
+      "scale": 1.0252808988764044,
+      "offset": [
+        4,
+        10
+      ],
+      "before_sha256": "35309e83ed9d3a14602b315b64554b52aa83da60a21ba0ee4f36300eb9fcb8f1",
+      "after_sha256": "1047423f3be623ba5a482ca9fe4a38f0bf56954dbe4a72a07e558ff639474d0a"
+    },
+    {
+      "index": 62,
+      "path": "data/images/guests/pig/武014.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        28,
+        31,
+        402,
+        396
+      ],
+      "after_box": [
+        40,
+        50,
+        414,
+        415
+      ],
+      "scale": 1.0,
+      "offset": [
+        12,
+        19
+      ],
+      "before_sha256": "81334ec522b074925339ab87c0afa06ae3a06da5a78721ada1d6ae6f16a60315",
+      "after_sha256": "f3b397e446f63b4e94d7d04f9308304874719a3cd6b4a50d76869edd18b282be"
+    },
+    {
+      "index": 63,
+      "path": "data/images/guests/pig/武015.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        37,
+        35,
+        410,
+        396
+      ],
+      "after_box": [
+        38,
+        50,
+        416,
+        415
+      ],
+      "scale": 1.0110803324099722,
+      "offset": [
+        1,
+        15
+      ],
+      "before_sha256": "344237e08a9b12a36e4d06b1a5e832ed26045003c099a97a540e6cb92bf779ec",
+      "after_sha256": "2cae1682064bd92c8270cd8d404edb47edf8620619e30c392918393d7fd7c20a"
+    },
+    {
+      "index": 64,
+      "path": "data/images/guests/pig/武016.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        29,
+        10,
+        396,
+        394
+      ],
+      "after_box": [
+        53,
+        51,
+        402,
+        415
+      ],
+      "scale": 0.9505208333333334,
+      "offset": [
+        26,
+        41
+      ],
+      "before_sha256": "8f1cf0f523884e0e9822b44ac759901b7424c7f2ff450366d25af41dff3956ee",
+      "after_sha256": "1b37ffc2e2338bcca2a62971dc1464bb2711e4e5cb830a80fb01c5b1b926f48d"
+    },
+    {
+      "index": 65,
+      "path": "data/images/guests/pig/武017.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        47,
+        6,
+        392,
+        400
+      ],
+      "after_box": [
+        67,
+        51,
+        387,
+        415
+      ],
+      "scale": 0.9263959390862944,
+      "offset": [
+        24,
+        45
+      ],
+      "before_sha256": "88e0e5745008b7238f5d15557923d22e174943e54351ac586186dc2d971690a5",
+      "after_sha256": "2d651d24963fc7d444fa0cf7d0e70098fbf1e86b54b932c48d85639739ae8218"
+    },
+    {
+      "index": 66,
+      "path": "data/images/guests/pig/武021.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        67,
+        55,
+        402,
+        402
+      ],
+      "after_box": [
+        51,
+        49,
+        403,
+        415
+      ],
+      "scale": 1.0518731988472623,
+      "offset": [
+        -20,
+        -9
+      ],
+      "before_sha256": "5e130cfb24b497ddde253a6f805e56840c1f8e2866e302013a2f084c86d4877d",
+      "after_sha256": "fcd1380a3f2ced13dd89a7fb1fbd8c3b38174df854a5784bdfbf9b210f98c2cc"
+    },
+    {
+      "index": 67,
+      "path": "data/images/guests/pig/武023.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        36,
+        27,
+        404,
+        380
+      ],
+      "after_box": [
+        37,
+        49,
+        417,
+        415
+      ],
+      "scale": 1.0339943342776203,
+      "offset": [
+        0,
+        22
+      ],
+      "before_sha256": "46ff1180f5876988477011febe0f1e49661a2116256c3ff8b7858ef56ed83a63",
+      "after_sha256": "91b6fe99936cfea16b255abbd5e3ac9d70d015504afe55e2e8975b625b9e2bcc"
+    },
+    {
+      "index": 68,
+      "path": "data/images/guests/pig/武026.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        48,
+        23,
+        398,
+        374
+      ],
+      "after_box": [
+        46,
+        50,
+        409,
+        415
+      ],
+      "scale": 1.03988603988604,
+      "offset": [
+        -4,
+        26
+      ],
+      "before_sha256": "12dd88c66a9cbb4fc40913f261d746d41c7a4ee0f38137f4d5fbeb18bbddd34a",
+      "after_sha256": "0ae7cf7755174f6679fa135b9326ce91df569cfdf242730775ff67f88f7d4b25"
+    },
+    {
+      "index": 69,
+      "path": "data/images/guests/pig/武028.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        32,
+        43,
+        411,
+        403
+      ],
+      "after_box": [
+        34,
+        51,
+        419,
+        415
+      ],
+      "scale": 1.0138888888888888,
+      "offset": [
+        2,
+        7
+      ],
+      "before_sha256": "e201920e0c4e849f8768d666738465ed27fe6a25bc82ebdd7c6756bd7656273c",
+      "after_sha256": "8096a8062336f189e0d2ca9e9e0777c40c00e5d499e0c0be50352136aaaea142"
+    },
+    {
+      "index": 70,
+      "path": "data/images/guests/pig/武030.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        45,
+        39,
+        401,
+        391
+      ],
+      "after_box": [
+        42,
+        50,
+        411,
+        415
+      ],
+      "scale": 1.0369318181818181,
+      "offset": [
+        -4,
+        9
+      ],
+      "before_sha256": "64a0e13f448cb4a065193777994c788608d42dddafd628bef8e4f6785e0cc6e8",
+      "after_sha256": "ceba58abe94c3b37076c0e4732b4c3c81f4522f4f47129298a8195d07ba3ca8c"
+    },
+    {
+      "index": 71,
+      "path": "data/images/guests/pig/武032.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        36,
+        36,
+        403,
+        395
+      ],
+      "after_box": [
+        41,
+        51,
+        414,
+        415
+      ],
+      "scale": 1.0167130919220055,
+      "offset": [
+        4,
+        14
+      ],
+      "before_sha256": "832b6f51a7bcf0372cb11ff172378f6a90e6a37988ec434e3d950afd328afa4b",
+      "after_sha256": "e33e1e65bb9564a5aece8b1e1c997324500e807756564fbf4db3f89fcd2af5b9"
+    },
+    {
+      "index": 72,
+      "path": "data/images/guests/pig/武046.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        40,
+        47,
+        410,
+        390
+      ],
+      "after_box": [
+        30,
+        52,
+        423,
+        415
+      ],
+      "scale": 1.0594594594594595,
+      "offset": [
+        -12,
+        2
+      ],
+      "before_sha256": "be58f030ce29412373530b979d247518ccb053c6a4ea3a6df2840c9d989d14f1",
+      "after_sha256": "88843092e40f7d198e4e60a9c760e8710d0ef0c505aacb8b5469569af6d5c69e"
+    },
+    {
+      "index": 73,
+      "path": "data/images/guests/pig/武047.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        35,
+        99,
+        395,
+        388
+      ],
+      "after_box": [
+        30,
+        100,
+        423,
+        415
+      ],
+      "scale": 1.0888888888888888,
+      "offset": [
+        -8,
+        -8
+      ],
+      "before_sha256": "9eb211191011c9ddfb3cd9439d711acc0db4a73a3982ae298138e37f839706f5",
+      "after_sha256": "6df38897e222add47dc18255addf35351c0a9a8d1e2f731ef4d9d2e01df84441"
+    },
+    {
+      "index": 74,
+      "path": "data/images/guests/pig/武048.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        46,
+        52,
+        398,
+        389
+      ],
+      "after_box": [
+        36,
+        50,
+        417,
+        415
+      ],
+      "scale": 1.083086053412463,
+      "offset": [
+        -14,
+        -6
+      ],
+      "before_sha256": "fd96def6180e8f7223ceaa79bfd7b727de4cb955258f144955285650f09ca802",
+      "after_sha256": "890278396eeed92b5eb2d1c0446bf64932437f471fc192455f6ffcad0b75055d"
+    },
+    {
+      "index": 75,
+      "path": "data/images/guests/pig/武049.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        60,
+        36,
+        397,
+        377
+      ],
+      "after_box": [
+        46,
+        51,
+        407,
+        415
+      ],
+      "scale": 1.0703812316715542,
+      "offset": [
+        -18,
+        12
+      ],
+      "before_sha256": "5a653afa0fed2f46245bd3bf02f1408a0c50d2849190d03fa84896b8e4d63a0f",
+      "after_sha256": "7695ef0534bb9a6b4aa4d8adf8fa93090ad9d10ab28cdc66e2f088e334971285"
+    },
+    {
+      "index": 76,
+      "path": "data/images/guests/pig/武050.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        46,
+        43,
+        399,
+        374
+      ],
+      "after_box": [
+        33,
+        49,
+        422,
+        415
+      ],
+      "scale": 1.1027190332326284,
+      "offset": [
+        -18,
+        2
+      ],
+      "before_sha256": "be0ab815eddc1f3aa3c05a11fb78ac9ae7d5dfe63efda3a7bcfdc4687c7c55e9",
+      "after_sha256": "b5dc351375913431ffe07271390c1b2a83322b751e5e4a0bbcb045f7d74c3da8"
+    },
+    {
+      "index": 77,
+      "path": "data/images/guests/pig/武051.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        44,
+        27,
+        396,
+        377
+      ],
+      "after_box": [
+        43,
+        50,
+        411,
+        415
+      ],
+      "scale": 1.042857142857143,
+      "offset": [
+        -3,
+        22
+      ],
+      "before_sha256": "64ad7b6555ee5829c3436486aa63f959e0a1a7f3b2c4efa639182eb2a1825411",
+      "after_sha256": "39f3584a13e793fb0b0790d9ef9203348e73d311ee8daa98f1ed644f50912c7a"
+    },
+    {
+      "index": 78,
+      "path": "data/images/guests/pig/武052.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        43,
+        30,
+        414,
+        351
+      ],
+      "after_box": [
+        31,
+        76,
+        423,
+        415
+      ],
+      "scale": 1.0566037735849056,
+      "offset": [
+        -15,
+        44
+      ],
+      "before_sha256": "6c059c8b31140f31a2e701485678a67e1becae6e7a6bb9d66e1f424fa6edcbbb",
+      "after_sha256": "3c5d6fada81431775c3ada4556be38bf8d270211548bdf749a7a0f5aca4e4177"
+    },
+    {
+      "index": 79,
+      "path": "data/images/guests/pig/武053.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        56,
+        41,
+        395,
+        358
+      ],
+      "after_box": [
+        32,
+        49,
+        423,
+        415
+      ],
+      "scale": 1.1514195583596214,
+      "offset": [
+        -32,
+        2
+      ],
+      "before_sha256": "732966fd8e6f93b75fddf79f2744a1cef8e1eec87ace41bfe1ab0ad193f5e293",
+      "after_sha256": "03a1d1b1c100b29d519b9b4c674766e455cb0447d55569a6233fd51c353d4fd3"
+    },
+    {
+      "index": 80,
+      "path": "data/images/guests/pig/武054.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        41,
+        30,
+        396,
+        357
+      ],
+      "after_box": [
+        31,
+        54,
+        423,
+        415
+      ],
+      "scale": 1.1042253521126761,
+      "offset": [
+        -14,
+        21
+      ],
+      "before_sha256": "905cebc3c63715b33e77b4d84490d4b6320609b73d9dc36a09c477859b7754ea",
+      "after_sha256": "f418145f48163702def48eabe1aa5e76434c8a159fc7b33c67230c3138d4de97"
+    },
+    {
+      "index": 81,
+      "path": "data/images/guests/pig/武055.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        30,
+        71,
+        411,
+        380
+      ],
+      "after_box": [
+        31,
+        97,
+        423,
+        415
+      ],
+      "scale": 1.0288713910761156,
+      "offset": [
+        0,
+        24
+      ],
+      "before_sha256": "82d7fb78136e6182f91b76d703b5b5a12a849cba93d8819cfdda5b5d197099d6",
+      "after_sha256": "8ebc2841c31a0c956a4776ff471315208e6d6bb797ca0084c17a68df01e4ef3f"
+    },
+    {
+      "index": 82,
+      "path": "data/images/guests/pig/武056.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        35,
+        72,
+        411,
+        384
+      ],
+      "after_box": [
+        30,
+        89,
+        423,
+        415
+      ],
+      "scale": 1.0425531914893618,
+      "offset": [
+        -6,
+        14
+      ],
+      "before_sha256": "17126aac6d8d398ec4df70aa6b059a090fbb22ec566b59b5c8dab3b45f35f514",
+      "after_sha256": "e3b5fed8f4fcad8dbc8d70f41870aa3d4a3a9250870d0428b5903be78f9d0a5e"
+    },
+    {
+      "index": 83,
+      "path": "data/images/guests/pig/武057.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        63,
+        71,
+        404,
+        390
+      ],
+      "after_box": [
+        32,
+        51,
+        422,
+        415
+      ],
+      "scale": 1.1442006269592477,
+      "offset": [
+        -40,
+        -31
+      ],
+      "before_sha256": "972ae914c766b3463cf5dc88f69494cbb94ddad7ca27e63bf750de82c2c92b1a",
+      "after_sha256": "6b6c4c106152485bdb1a6ef30cfc548ec84cd99068c882184ea84c84d494db04"
+    },
+    {
+      "index": 84,
+      "path": "data/images/guests/pig/武058.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        55,
+        47,
+        412,
+        376
+      ],
+      "after_box": [
+        31,
+        53,
+        423,
+        415
+      ],
+      "scale": 1.0980392156862746,
+      "offset": [
+        -29,
+        2
+      ],
+      "before_sha256": "807b5801129d0fa72560edcac2e9119054b398155283a9220b570dac78b8f75c",
+      "after_sha256": "1312977d7fa8d38c8b138926fe9cdc30d5eb93c2761aaf232e670f9955a1febc"
+    },
+    {
+      "index": 85,
+      "path": "data/images/guests/pig/武059.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        72,
+        48,
+        391,
+        373
+      ],
+      "after_box": [
+        48,
+        48,
+        406,
+        415
+      ],
+      "scale": 1.123076923076923,
+      "offset": [
+        -33,
+        -5
+      ],
+      "before_sha256": "9a203c1e2408c54422099bdd1894e5b182065082e5c31cada0fa6e49838621de",
+      "after_sha256": "d90254feb719b984d137b366feb77d419470d58ce92f20bc2a087167ba9ceb71"
+    },
+    {
+      "index": 86,
+      "path": "data/images/guests/pig/武060.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        67,
+        41,
+        400,
+        383
+      ],
+      "after_box": [
+        50,
+        51,
+        404,
+        415
+      ],
+      "scale": 1.067251461988304,
+      "offset": [
+        -22,
+        7
+      ],
+      "before_sha256": "c886e2c5c3b8844e9004c10d1ce9bc36be2aef2ac1c0dfa347225d938daf10d3",
+      "after_sha256": "73549de6caab1aa2155f6e06406c5f85fa7240b905082546d39ebe02f7785712"
+    },
+    {
+      "index": 87,
+      "path": "data/images/guests/pig/武061.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        44,
+        31,
+        408,
+        352
+      ],
+      "after_box": [
+        32,
+        69,
+        423,
+        415
+      ],
+      "scale": 1.0769230769230769,
+      "offset": [
+        -16,
+        36
+      ],
+      "before_sha256": "22f5eb604da3820f5dbe9d16e6c812d9d66e2ad6a67b561e4e0f96a4e952b063",
+      "after_sha256": "371468d35eab0ac3f282da4618f6bee3932af226358a73eb1d3f225cd7cfa0a9"
+    },
+    {
+      "index": 88,
+      "path": "data/images/guests/pig/武062.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        31,
+        32,
+        410,
+        353
+      ],
+      "after_box": [
+        31,
+        83,
+        423,
+        415
+      ],
+      "scale": 1.0343007915567282,
+      "offset": [
+        -1,
+        50
+      ],
+      "before_sha256": "164c58ff0643a62a648dc20fc7ccac082efab4f915a7f42c6e7ee988fc2a6781",
+      "after_sha256": "77cd200fd692459dbb7cbabd3cc7e454281a4a0863b46cfee944456d92dd5c31"
+    },
+    {
+      "index": 89,
+      "path": "data/images/guests/pig/武063.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        52,
+        55,
+        398,
+        360
+      ],
+      "after_box": [
+        30,
+        69,
+        423,
+        415
+      ],
+      "scale": 1.1329479768786128,
+      "offset": [
+        -28,
+        7
+      ],
+      "before_sha256": "459089f5b13b81e2177720609956d5423e772aaa12501cd05fdf75c847d86fe8",
+      "after_sha256": "fe24306c08cfe822d4fe145ce3e364977398f894a43e686a0600d83c6e0d0b59"
+    },
+    {
+      "index": 90,
+      "path": "data/images/guests/pig/武064.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        47,
+        65,
+        413,
+        402
+      ],
+      "after_box": [
+        31,
+        55,
+        423,
+        415
+      ],
+      "scale": 1.0710382513661203,
+      "offset": [
+        -19,
+        -15
+      ],
+      "before_sha256": "4fcc36f56293c044d481f1856ba9f7709a572655481e6344495e26728b8353f5",
+      "after_sha256": "4eb48c6f7a68b54883d3b70cb34d20065915f72e721a34339cf726eaa7577e53"
+    },
+    {
+      "index": 91,
+      "path": "data/images/guests/pig/武065.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        22,
+        62,
+        411,
+        394
+      ],
+      "after_box": [
+        31,
+        80,
+        422,
+        415
+      ],
+      "scale": 1.0077120822622108,
+      "offset": [
+        8,
+        18
+      ],
+      "before_sha256": "e6718801ba9f6d11e8207cef5c5a17d23bbb77f67c29c44d57dc36643c911517",
+      "after_sha256": "9d22f0a3a0331a3b60ca9c635dcf07587ffd2741500bad5d2ca83a38d0e82f46"
+    },
+    {
+      "index": 92,
+      "path": "data/images/guests/pig/武066.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        33,
+        65,
+        402,
+        401
+      ],
+      "after_box": [
+        31,
+        58,
+        423,
+        415
+      ],
+      "scale": 1.062330623306233,
+      "offset": [
+        -4,
+        -11
+      ],
+      "before_sha256": "da15e4cbefbb7b277a239f4c000139338e4c3f5e7ef519dff6b9b282059e0794",
+      "after_sha256": "54ea119371479fdbeb07275b85abac433b66d40ac6b2789f00cf9ed5c6d7253c"
+    },
+    {
+      "index": 93,
+      "path": "data/images/guests/pig/武067.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        45,
+        44,
+        416,
+        395
+      ],
+      "after_box": [
+        34,
+        51,
+        420,
+        415
+      ],
+      "scale": 1.03988603988604,
+      "offset": [
+        -13,
+        5
+      ],
+      "before_sha256": "60343f78fdfbe6667da95d1e2b4450387a870ab2d62ad80a6e5885c85e011f89",
+      "after_sha256": "8182f7ee8660c7e9fb5db0d6697c445631834d000e724ec0e8b83d9065a1704f"
+    },
+    {
+      "index": 94,
+      "path": "data/images/guests/pig/武068.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        39,
+        32,
+        409,
+        395
+      ],
+      "after_box": [
+        41,
+        50,
+        413,
+        415
+      ],
+      "scale": 1.0055096418732783,
+      "offset": [
+        2,
+        18
+      ],
+      "before_sha256": "d800999bd5d1cd6270e52f4a753c0cafa0974649e197b13a006e7c2a06312c90",
+      "after_sha256": "0e23f36ecec4a4df1debe84f429de0f2e005ef62a6970a481d66222f27bd9468"
+    },
+    {
+      "index": 95,
+      "path": "data/images/guests/pig/武069.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        47,
+        34,
+        411,
+        394
+      ],
+      "after_box": [
+        42,
+        51,
+        411,
+        415
+      ],
+      "scale": 1.0138888888888888,
+      "offset": [
+        -6,
+        16
+      ],
+      "before_sha256": "8791c152326e924ff093fb3bca4b2f7a35a605824ba84e21aba6f27534a74008",
+      "after_sha256": "191c7e9bb932195ce918b6773650437467b639e7fc459b6a5375f3ccbeea10a0"
+    },
+    {
+      "index": 96,
+      "path": "data/images/guests/pig/武070.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        46,
+        37,
+        414,
+        374
+      ],
+      "after_box": [
+        31,
+        56,
+        423,
+        415
+      ],
+      "scale": 1.065217391304348,
+      "offset": [
+        -18,
+        17
+      ],
+      "before_sha256": "12a8dc07c5945998ca7b34e01e0b10376464b45ae0b4e960cee855eeb603b175",
+      "after_sha256": "7e59f9e27106443807121679021c8178fe1fd625bf5f56311620e3c81ba6dee9"
+    },
+    {
+      "index": 97,
+      "path": "data/images/guests/pig/武071.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        53,
+        40,
+        402,
+        378
+      ],
+      "after_box": [
+        38,
+        49,
+        415,
+        415
+      ],
+      "scale": 1.0798816568047338,
+      "offset": [
+        -20,
+        6
+      ],
+      "before_sha256": "644a60283fdb9106c0251841550cbc6dec499f979c5ddd075908895a093ada76",
+      "after_sha256": "f9e793629f63aa198e6bca1b1f316411180d088f53a418cbcded00563009e67d"
+    },
+    {
+      "index": 98,
+      "path": "data/images/guests/pig/武072.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        41,
+        21,
+        402,
+        392
+      ],
+      "after_box": [
+        49,
+        50,
+        404,
+        415
+      ],
+      "scale": 0.9838274932614556,
+      "offset": [
+        8,
+        29
+      ],
+      "before_sha256": "4397214a40cfd6e680fd810c5a5195c1dd04e49643eaec370c2436a15a757668",
+      "after_sha256": "9c9fd5e59beb031cb822c8e02d93f701171ecc2c55e3352d5ce67899d54c44a6"
+    },
+    {
+      "index": 99,
+      "path": "data/images/guests/pig/武073.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        45,
+        56,
+        403,
+        402
+      ],
+      "after_box": [
+        38,
+        50,
+        415,
+        415
+      ],
+      "scale": 1.0549132947976878,
+      "offset": [
+        -10,
+        -9
+      ],
+      "before_sha256": "85d4eb66bcf25fe1eae0a7eb9bcc201a7393563cf891ca1ad0124c1576413804",
+      "after_sha256": "d671839ce505ded27df5528708e4302a5fe363f988cf3cd2212709aeed683e7a"
+    },
+    {
+      "index": 100,
+      "path": "data/images/guests/pig/武074.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        46,
+        53,
+        406,
+        398
+      ],
+      "after_box": [
+        36,
+        50,
+        417,
+        415
+      ],
+      "scale": 1.0579710144927537,
+      "offset": [
+        -12,
+        -6
+      ],
+      "before_sha256": "766bca4fea4dd3028b593bd3783c8afc8a5c51e10b1192d26e625f75aafe1b9a",
+      "after_sha256": "c2937fe8f4ae96243fb3c62358fa7cf183817084210e302a2b39b77e55c4b21e"
+    },
+    {
+      "index": 101,
+      "path": "data/images/guests/pig/武075.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        22,
+        45,
+        405,
+        395
+      ],
+      "after_box": [
+        31,
+        57,
+        422,
+        415
+      ],
+      "scale": 1.0234986945169713,
+      "offset": [
+        8,
+        11
+      ],
+      "before_sha256": "8ea0d5f7434ad1cf4044fb5e1c55957b5f3db8c597e6feb095775864d0ef3693",
+      "after_sha256": "056c3193474578a089263a7ced24def2ba2617d83c6fa891e7f265b6b6c89029"
+    },
+    {
+      "index": 102,
+      "path": "data/images/guests/pig/武076.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        44,
+        26,
+        411,
+        378
+      ],
+      "after_box": [
+        37,
+        50,
+        417,
+        415
+      ],
+      "scale": 1.0369318181818181,
+      "offset": [
+        -9,
+        23
+      ],
+      "before_sha256": "41d21ccdc2e1d1e54671f7bf55aa6a362be356ded18ed303c7d8754cddf431fb",
+      "after_sha256": "6a340c540a86bea523b1f20d07f4d93f43eef1edc4a9825dd3d1777db73c108a"
+    },
+    {
+      "index": 103,
+      "path": "data/images/guests/pig/武077.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        30,
+        41,
+        408,
+        387
+      ],
+      "after_box": [
+        31,
+        57,
+        423,
+        415
+      ],
+      "scale": 1.037037037037037,
+      "offset": [
+        0,
+        14
+      ],
+      "before_sha256": "ab29f3cad770f6309f9fc3515533d26212ab8878555d3e38a4c395f8b36a2db9",
+      "after_sha256": "3292942f1043c1f900c187a1eef2af77e9c47add7cd86d6ae603b632f3430b64"
+    },
+    {
+      "index": 104,
+      "path": "data/images/guests/pig/武078.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        39,
+        51,
+        399,
+        378
+      ],
+      "after_box": [
+        30,
+        59,
+        423,
+        415
+      ],
+      "scale": 1.0888888888888888,
+      "offset": [
+        -12,
+        3
+      ],
+      "before_sha256": "4378ea417ea97fc6a8f7fce8221dfedb699837d706f6a1a17cb44bbcc66a1b7e",
+      "after_sha256": "a00a53c42562ea30ca77e067f9e395dbc3ff029b4450fd85d48fcae1a3848da1"
+    },
+    {
+      "index": 105,
+      "path": "data/images/guests/pig/武079.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        32,
+        32,
+        397,
+        362
+      ],
+      "after_box": [
+        31,
+        60,
+        422,
+        415
+      ],
+      "scale": 1.073972602739726,
+      "offset": [
+        -4,
+        26
+      ],
+      "before_sha256": "8638e7b1f947754d820e3898ee4efd60768d91f631cd23bee4c9936d80986afb",
+      "after_sha256": "4325aa01f233b40401ecfe15db0c59c5f87ed32218edce35e12d528928af1d3e"
+    },
+    {
+      "index": 106,
+      "path": "data/images/guests/pig/武080.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        32,
+        19,
+        397,
+        373
+      ],
+      "after_box": [
+        39,
+        49,
+        416,
+        415
+      ],
+      "scale": 1.0310734463276836,
+      "offset": [
+        6,
+        30
+      ],
+      "before_sha256": "c49c9480d700ea5e0eabcb82b31881fb3bee6e7c956d1c6a541ed0c494658fe5",
+      "after_sha256": "d9c23215ef1de4cfa37688d7c20042ac3b671012a2611519ead9dc8ac922741f"
+    },
+    {
+      "index": 107,
+      "path": "data/images/guests/pig/武081.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        32,
+        26,
+        401,
+        369
+      ],
+      "after_box": [
+        31,
+        51,
+        423,
+        415
+      ],
+      "scale": 1.062330623306233,
+      "offset": [
+        -3,
+        23
+      ],
+      "before_sha256": "1dc9967a43aa107fdf7fb43196e5bc55fc7b7cc36ac10e1348d6c4cf5a415633",
+      "after_sha256": "b1705c17ea2d0bd533831ab9f057c0fc5c5d7e78e138c1e006d85b951890f6a1"
+    },
+    {
+      "index": 108,
+      "path": "data/images/guests/pig/武082.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        49,
+        44,
+        412,
+        405
+      ],
+      "after_box": [
+        44,
+        50,
+        411,
+        415
+      ],
+      "scale": 1.0110803324099722,
+      "offset": [
+        -6,
+        5
+      ],
+      "before_sha256": "7d0f66efda52be28a1ffa96c38f6ef470a793178acc29d3f95af84d7e114a262",
+      "after_sha256": "522454140fe688e28f8c11e6aa9cf78655ed5885f70936bbba486f7e74d84dd2"
+    },
+    {
+      "index": 109,
+      "path": "data/images/guests/pig/武083.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        62,
+        97,
+        410,
+        405
+      ],
+      "after_box": [
+        31,
+        68,
+        423,
+        415
+      ],
+      "scale": 1.1264367816091954,
+      "offset": [
+        -39,
+        -41
+      ],
+      "before_sha256": "2847101be9804102ba1982c360fd67461e99c9b320ffe89b393c10e99556d1e1",
+      "after_sha256": "1e3086914d00674648838da8c42cbba039acabca1a32249ac4d5177e421e33ed"
+    },
+    {
+      "index": 110,
+      "path": "data/images/guests/pig/武084.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        50,
+        64,
+        398,
+        408
+      ],
+      "after_box": [
+        42,
+        49,
+        412,
+        415
+      ],
+      "scale": 1.061046511627907,
+      "offset": [
+        -11,
+        -19
+      ],
+      "before_sha256": "6342d43892d0e51bfed025311f99f29dc2bbe85f3567e375c525d7701990a10b",
+      "after_sha256": "ae648c8120b038fb4bb2b541232bd8a094e329060108601cd75c4e0af7c4b4bb"
+    },
+    {
+      "index": 111,
+      "path": "data/images/guests/pig/武085.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        61,
+        58,
+        411,
+        385
+      ],
+      "after_box": [
+        32,
+        49,
+        423,
+        415
+      ],
+      "scale": 1.1162079510703364,
+      "offset": [
+        -36,
+        -16
+      ],
+      "before_sha256": "c48ea95643f130dfeda6b44e29f95fcfc2af9dc0a059284860932faacfb1bcba",
+      "after_sha256": "8ad0a0e6f57c368866cd31e9f3abe1c1897c62d234538f4f1c949d171e0a1604"
+    },
+    {
+      "index": 112,
+      "path": "data/images/guests/pig/武086.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        42,
+        57,
+        406,
+        385
+      ],
+      "after_box": [
+        31,
+        62,
+        423,
+        415
+      ],
+      "scale": 1.0769230769230769,
+      "offset": [
+        -14,
+        1
+      ],
+      "before_sha256": "db9f99af11c69491d9d344d7b53d7c5a771ade4a64dbba4c44c15e151151be40",
+      "after_sha256": "e4f3088b5df4478431073c2d76b625f31bd1efb3d9094599c3688ce62fea1c4d"
+    },
+    {
+      "index": 113,
+      "path": "data/images/guests/pig/武087.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        74,
+        63,
+        411,
+        389
+      ],
+      "after_box": [
+        39,
+        51,
+        416,
+        415
+      ],
+      "scale": 1.1196319018404908,
+      "offset": [
+        -44,
+        -20
+      ],
+      "before_sha256": "251718b3f3fff9c1c534bef4a09606837cb7cf60ae46ad58f4c4bfc2dc92c199",
+      "after_sha256": "b372b5135c292d962973add3cfeefa49e4778a07334594a47637507fc4df3027"
+    },
+    {
+      "index": 114,
+      "path": "data/images/guests/pig/武088.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        32,
+        48,
+        412,
+        357
+      ],
+      "after_box": [
+        31,
+        95,
+        423,
+        415
+      ],
+      "scale": 1.0315789473684212,
+      "offset": [
+        -2,
+        46
+      ],
+      "before_sha256": "664369891a2b89c2b16654c62014a8650dce451f9f6d4ff9d16f015180f85fd9",
+      "after_sha256": "8597c504a726cf2346f94d031ad73c0336ba11bee7a4e9cc98c87d1d7aeaa458"
+    },
+    {
+      "index": 115,
+      "path": "data/images/guests/pig/武089.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        71,
+        48,
+        406,
+        363
+      ],
+      "after_box": [
+        32,
+        51,
+        421,
+        415
+      ],
+      "scale": 1.1587301587301588,
+      "offset": [
+        -50,
+        -5
+      ],
+      "before_sha256": "c0bcdb0a8ef1df87370a584bdb683bef06df29807fa346e9e2c931e935b6fe9a",
+      "after_sha256": "6769c791c0bc5fef39d348cba348421d0850434e7feff3330c4b805ebfe70700"
+    },
+    {
+      "index": 116,
+      "path": "data/images/guests/pig/武090.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        53,
+        63,
+        409,
+        392
+      ],
+      "after_box": [
+        31,
+        52,
+        423,
+        415
+      ],
+      "scale": 1.101123595505618,
+      "offset": [
+        -27,
+        -17
+      ],
+      "before_sha256": "fbc0a212e23cb46e92a4d7f2b6d9ef2c74572df6088e457ee328b5d73ffba206",
+      "after_sha256": "1a8eaf34001dc38d5a414363ee4f598ffd35d730bd97d1c71ea7490a80294c97"
+    },
+    {
+      "index": 117,
+      "path": "data/images/guests/pig/武091.png",
+      "group": "pig",
+      "before_size": [
+        435,
+        435
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        46,
+        63,
+        409,
+        396
+      ],
+      "after_box": [
+        31,
+        55,
+        424,
+        415
+      ],
+      "scale": 1.0798898071625345,
+      "offset": [
+        -18,
+        -13
+      ],
+      "before_sha256": "4e15022349958f2c4754ae2e61f0a3a45ab2c47dbd43ce938f008d225032db59",
+      "after_sha256": "16ddcd75f19799cbd194a42c31edf07968ddb202805e7810e5e727191966b544"
+    }
+  ]
+}

@@ -79,11 +79,12 @@ def make_target(*, hp: int = 1_000_000) -> Combatant:
         (2000, [8004, 8004, 7992]),
     ],
 )
-def test_troop_attacks_use_current_strength_split_and_single_bonus(count, expected_damage):
+@pytest.mark.parametrize("engine_version", ["3", "4"])
+def test_troop_attacks_use_current_strength_split_and_single_bonus(count, expected_damage, engine_version):
     actor = make_troop(count)
     target = make_target()
 
-    event = perform_attack(actor, [actor], [target], FixedRng())
+    event = perform_attack(actor, [actor], [target], FixedRng(), battle_engine_version=engine_version)
 
     assert event is not None
     attacks = [event, *event.get("additional_attacks", [])]
@@ -148,7 +149,7 @@ def test_troop_rechecks_damage_bonus_after_reflection_reduces_strength():
 
 @pytest.mark.parametrize(
     ("engine_version", "expected_reflect"),
-    [(PREVIOUS_BATTLE_ENGINE_VERSION, 1998), (CURRENT_BATTLE_ENGINE_VERSION, 0)],
+    [(PREVIOUS_BATTLE_ENGINE_VERSION, 1998), ("3", 0), (CURRENT_BATTLE_ENGINE_VERSION, 0)],
 )
 def test_previous_engine_preserves_ranged_sword_reflection(engine_version, expected_reflect):
     actor = make_troop(999)
@@ -165,7 +166,7 @@ def test_previous_engine_preserves_ranged_sword_reflection(engine_version, expec
 
 @pytest.mark.parametrize(
     ("engine_version", "expected_counter"),
-    [(PREVIOUS_BATTLE_ENGINE_VERSION, 300), (CURRENT_BATTLE_ENGINE_VERSION, 0)],
+    [(PREVIOUS_BATTLE_ENGINE_VERSION, 300), ("3", 0), (CURRENT_BATTLE_ENGINE_VERSION, 0)],
 )
 def test_previous_engine_preserves_ranged_spear_counter(engine_version, expected_counter):
     actor = make_troop(999)
@@ -182,7 +183,7 @@ def test_previous_engine_preserves_ranged_spear_counter(engine_version, expected
 
 @pytest.mark.parametrize(
     ("engine_version", "expected_damage"),
-    [(PREVIOUS_BATTLE_ENGINE_VERSION, 9990), (CURRENT_BATTLE_ENGINE_VERSION, 6993)],
+    [(PREVIOUS_BATTLE_ENGINE_VERSION, 9990), ("3", 6993), (CURRENT_BATTLE_ENGINE_VERSION, 6993)],
 )
 def test_previous_engine_ignores_new_ranged_damage_reduction(engine_version, expected_damage):
     actor = make_troop(999)

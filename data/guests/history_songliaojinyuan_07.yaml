@@ -2,6 +2,7 @@ heroes:
   blue:
   - key: hist_songliaojinyuan_0318
     name: 李继迁
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: （963年—1004年）党项首领，李元昊之祖。李继迁起兵反宋，曾攻占灵州，后来接受辽朝册封为西平王；他在攻打吐蕃时病逝。
@@ -15,6 +16,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0337
     name: 完颜宗望
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: （？—1127年）金太祖次子、金朝将领，参与灭辽、攻宋。完颜宗望率军攻陷燕京和开封，俘获宋徽宗、宋钦宗；靖康二年病逝于军中。
@@ -28,6 +30,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0338
     name: 完颜宗翰
+    avatar: monkey_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （1080年-1137年）金朝开国名将，与完颜宗望并称。他策划并实施了靖康之变，攻破北宋首都。他是金朝建立初期最重要的军事统帅之一。完颜宗翰战场表现在不同文献中呈现差异化叙述，值得结合成书背景一并辨析。
@@ -41,6 +44,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0340
     name: 完颜雍
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （1123年—1189年）金世宗，名完颜雍，金太祖之孙。完颜雍即位后整顿吏治、减轻赋税，任用完颜希尹等人修订女真字书；他与南宋议和，在位二十九年，死于上京附近。
@@ -54,6 +58,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0341
     name: 元好问
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （1190年—1257年）金末元初文学家、史家，字裕之，号遗山。金亡后，元好问拒绝出仕，寓居忻州、苏门山，编纂金史材料，著有《遗山集》《中州集》；《摸鱼儿·雁丘词》为其名作。
@@ -68,6 +73,7 @@ heroes:
   green:
   - key: hist_songliaojinyuan_0309
     name: 萧干
+    avatar: pig_wu_male8.png
     default_gender: male
     archetype: military
     flavor: 萧干（？—1122），辽末奚族将领。天祚帝西逃后，他拥立耶律淳在燕京建立北辽，任北院枢密使；曾击退宋军。北辽失败后西走，最终被部下杀死。
@@ -81,6 +87,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0310
     name: 耶律燕山
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: 辽末人物。《辽史》载康国元年（1124）耶律燕山被任为都部署，事见耶律大石西迁时期记载；其生卒及后续事迹不详。
@@ -94,6 +101,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0311
     name: 萧昱
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: 萧昱，辽末驸马。萧奉先曾诬称他与耶律余睹谋立晋王，事发后萧昱被杀；现存《辽史》对其家世和官职记载较少。
@@ -107,6 +115,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0312
     name: 刘六符
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: 刘六符，辽朝汉臣、使者，善辞令。重熙年间多次出使北宋，参与索地、岁币等交涉，后任枢密使、中书政事令，官至同中书门下平章事。
@@ -120,6 +129,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0313
     name: 耶律化哥
+    avatar: pig_wu_male9.png
     default_gender: male
     archetype: military
     flavor: 耶律化哥，辽朝契丹将领，善骑射。统和四年（986）南侵宋朝时据平州击败宋军，后历任上京留守、北院大王、北院枢密使，并征讨阻卜、达旦；晚年因误掠属部被夺爵。
@@ -133,6 +143,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0314
     name: 萧得里底
+    avatar: pig/武060.png
     default_gender: male
     archetype: military
     flavor: 萧得里底，辽末将领，曾任先锋都统，参与对金作战；天祚帝时又与牛温舒出使北宋，商议西夏与宋朝关系。
@@ -146,6 +157,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0315
     name: 耶律涅里
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: 耶律涅里，又名泥礼、泥里，唐中期契丹迭剌部首领。735年起兵杀李过折，拥立迪辇俎里为阻午可汗，自任夷离堇，整顿部落、建立制度，后与唐军交战；为辽太祖耶律阿保机高祖。
@@ -159,6 +171,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0316
     name: 张孝杰
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: 张孝杰，辽朝汉臣，辽道宗时进士，累官北府宰相。受道宗宠信，曾参与处理萧观音案件并卷入党争，后失势；史料对其政治评价多有争议。
@@ -172,6 +185,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0317
     name: 耶律俨
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: 耶律俨（？—1113），字若思，本姓李，辽朝析津府人，咸雍进士。曾任枢密院事，主持修《皇朝实录》七十卷；辽道宗临终受顾命辅佐天祚帝，后与萧奉先结党。
@@ -185,6 +199,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0319
     name: 李德明
+    avatar: pig_wu_male9.png
     default_gender: male
     archetype: military
     flavor: 李德明（981—1032），李继迁之子、李元昊之父。继承党项政权后与宋朝周旋，接受宋封号并经营城寨、农牧，扩大部众与疆域，为西夏建国奠定基础。
@@ -198,6 +213,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0320
     name: 李谅祚
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
     flavor: 李谅祚（1047—1068），西夏毅宗。幼年即位，母没藏太后、舅没藏讹庞摄政；亲政后调整官制，增用汉人，推动西夏吸收宋制，二十二岁病逝。
@@ -211,6 +227,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0321
     name: 野利仁荣
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: 野利仁荣（？—1042），西夏开国重臣、党项野利部人。李元昊时期主持创制西夏文字，设蕃学并参与翻译汉文典籍，后获封广惠王、追赠富平侯。
@@ -224,6 +241,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0322
     name: 李乾顺
+    avatar: pig/武060.png
     default_gender: male
     archetype: military
     flavor: 李乾顺（1083—1139），西夏崇宗，在位五十四年。幼年由梁太后摄政，亲政后整顿内政、兴办学校，在辽、宋、金之间周旋，使西夏维持相对稳定。
@@ -237,6 +255,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0323
     name: 李仁孝
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: 李仁孝（1124—1193），西夏仁宗。颁行《天盛改旧新定律令》，兴学养士，推动西夏法制与文教发展；晚年受制于金朝，并面对任得敬分国之谋。
@@ -250,6 +269,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0324
     name: 任得敬
+    avatar: monkey/其他随机角色/武037_男.png
     default_gender: male
     archetype: military
     flavor: 任得敬（？—1170），原宋朝边将，降西夏后以外戚身份得势，封楚王、任太师。乾祐元年（1170）逼李仁孝分国并求金册立，谋划败露后被诛。
@@ -263,6 +283,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0325
     name: 李安全
+    avatar: pig/武046.png
     default_gender: male
     archetype: military
     flavor: 李安全（？—1211），西夏襄宗。通过政变杀害桓宗李纯祐即位；在位时蒙古兴起，西夏对外战争与宫廷政变交织，国势转衰。
@@ -276,6 +297,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0326
     name: 李遵顼
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: 李遵顼（1163—1226），西夏神宗，西夏少有的状元皇帝。即位后多次出兵攻蒙古，战事失利、国力受损；乾定五年（1223）退位为太上皇，次年去世。
@@ -289,6 +311,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0327
     name: 李睍
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
     flavor: 李睍（？—1227），西夏末帝，献宗李德旺死后即位。蒙古军围中兴府时据城守战，城破后出降，旋被蒙古杀死，西夏灭亡。
@@ -302,6 +325,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0328
     name: 嵬名安惠
+    avatar: pig/武076.png
     default_gender: male
     archetype: military
     flavor: 嵬名安惠，西夏皇族，历仕毅宗、惠宗、崇宗三朝，官至尚父、太师、尚书令、知枢密院事，封梁国正献王，死后陪葬西夏皇陵。
@@ -315,6 +339,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0329
     name: 斡道冲
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: 斡道冲（？—1183），西夏仁宗时期重臣、学者，精通儒学，曾任中书令，参与法典与文教建设，敢于直谏并反对任得敬分国，乾祐十四年去世。
@@ -328,6 +353,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0330
     name: 李秉常
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: 李秉常（1061—1086），西夏惠宗，七岁即位，生母梁太后摄政。梁氏、梁乙埋长期掌政并对宋用兵；李秉常成年后谋求亲政而被囚，后忧愤而死。
@@ -341,6 +367,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0331
     name: 梁太后
+    avatar: monkey_wen_female7.png
     default_gender: female
     archetype: civil
     flavor: 梁太后（？—1085），西夏毅宗李谅祚皇后、惠宗李秉常生母，即大梁太后。惠宗即位后摄政，曾对宋用兵并参与永乐城之战，后幽禁谋求亲政的李秉常；此处不指惠宗皇后小梁氏。
@@ -354,6 +381,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0332
     name: 没藏讹庞
+    avatar: pig/武076.png
     default_gender: male
     archetype: military
     flavor: 没藏讹庞（？—？），西夏国相、权臣，没藏太后之兄。李元昊死后辅佐幼主李谅祚，长期掌政；后因牵涉政变与李谅祚矛盾，被诛杀。
@@ -367,6 +395,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0333
     name: 野利遇乞
+    avatar: monkey/其他随机角色/武037_男.png
     default_gender: male
     archetype: military
     flavor: 野利遇乞，西夏名将，野利仁荣之兄。李元昊时统军对宋，屡有战功；后因宋廷离间及元昊猜疑，被赐死。
@@ -380,6 +409,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0334
     name: 李察哥
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: 李察哥（？—1156），西夏宗室、名将，李乾顺之弟。统军参加对宋战争，统安城之战击败刘法；后任枢密等职，封晋王，是西夏中期重要将领。
@@ -393,6 +423,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0336
     name: 李彦宗
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: 李彦宗，西夏宗室、将领与使臣，李乾顺之子，封齐王。曾统军参与对宋、金作战，也多次出使宋朝，见于西夏中期外交与军事史料。
@@ -406,6 +437,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0339
     name: 完颜亮
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: 完颜亮（1122—1161），金海陵王。即位后迁都燕京，改革官制并加强中央集权；正隆六年（1161）大举南侵，在采石战败，随后被部下弑杀。
@@ -419,6 +451,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0342
     name: 完颜陈和尚
+    avatar: pig_wu_male8.png
     default_gender: male
     archetype: military
     flavor: 完颜陈和尚（1192—1232），本名彝，字良佐，金末名将。统领忠孝军，多次击退蒙古军；三峰山战败后退守钧州，城破被俘，拒降而死。
@@ -432,6 +465,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0343
     name: 完颜守绪
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: 完颜守绪（1198—1234），金哀宗，金朝第九位皇帝。即位后停止侵宋、与西夏修好，集中抗蒙；汴京失守后退守蔡州，蒙宋联军破城前传位完颜承麟，自缢而死。
@@ -445,6 +479,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0344
     name: 完颜吴乞买
+    avatar: pig/武060.png
     default_gender: male
     archetype: military
     flavor: 完颜吴乞买（1075—1135），汉名完颜晟，金太祖阿骨打之弟，金朝第二位皇帝。任内两次南侵，攻陷汴京并导致北宋灭亡；同时建立三省等中原式官制，推进金朝制度建设。
@@ -458,6 +493,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0345
     name: 完颜亶
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: 完颜亶（1119—1150），金熙宗，金朝第三位皇帝。即位后废勃极烈制、建中央官制，推行女真小字并废伪齐；晚年猜忌嗜杀，皇统十年被完颜亮等弑杀。
@@ -471,6 +507,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0346
     name: 完颜璟
+    avatar: pig/文029.png
     default_gender: male
     archetype: civil
     flavor: 完颜璟（1168—1208），金章宗，金世宗之孙。即位后修律令、礼制，尊孔兴学，编修《大金集礼》等；明昌、承安时期文化兴盛，但水患、财政与军政问题加重。
@@ -484,6 +521,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0347
     name: 完颜珣
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
     flavor: 完颜珣（1163—1224），金宣宗。即位时蒙古已南下，贞祐二年迁都汴京；后对宋开战并进攻西夏，金朝陷入多线战争，国势日衰，元光二年病逝。
@@ -497,6 +535,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0348
     name: 完颜永济
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: 完颜永济（？—1213），金卫绍王，金章宗之弟。即位后蒙古南侵、中都告急，金军屡败；在位期间被权臣纥石烈胡沙虎发动政变杀害。
@@ -510,6 +549,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0349
     name: 完颜娄室
+    avatar: pig_wu_male8.png
     default_gender: male
     archetype: military
     flavor: 完颜娄室（1077—1130），字斡里衍，金初名将。早年随阿骨打起兵，参与灭辽、擒辽天祚帝；后随完颜宗翰南下攻宋，屡立战功，天会八年病卒军中。
@@ -523,6 +563,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0350
     name: 完颜斡鲁
+    avatar: pig_wu_male8.png
     default_gender: male
     archetype: military
     flavor: 完颜斡鲁，金初将领，早年随阿骨打起兵，参与攻辽、追击天祚帝及招降奚部等战事；其生卒年及部分早年经历不详。
@@ -536,6 +577,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0351
     name: 完颜杲
+    avatar: monkey_wu_male10.png
     default_gender: male
     archetype: military
     flavor: 完颜杲（1068—1123），女真名斜也，金世祖完颜劾里钵之子、阿骨打同母弟。金初任都统，参与攻辽中京、追击天祚帝；金太宗时经略中原，天会元年病卒。
@@ -549,6 +591,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0352
     name: 完颜银术可
+    avatar: monkey_wu_male7.png
     default_gender: male
     archetype: military
     flavor: 完颜银术可（？—1140），金初开国将领。曾向阿骨打报告辽国形势，参与达鲁古城等战役；与完颜娄室冲击辽军中坚，为金灭辽建国立功，后从完颜宗弼攻宋。
@@ -562,6 +605,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0353
     name: 完颜昂
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: 完颜昂（？—1162），金朝宗室、将领。曾参与灭辽及皇统九年弑杀金熙宗的政变，完颜亮即位后掌兵南侵；完颜亮在瓜洲被杀时，完颜昂亦死于乱军。
@@ -575,6 +619,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0354
     name: 完颜合达
+    avatar: pig_wu_male1.png
     default_gender: male
     archetype: military
     flavor: 完颜合达（？—1232），金末名将，本名瞻，字景山。三峰山之战统军迎击蒙古，金军主力溃败，钧州城破后被杀。
@@ -588,6 +633,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0355
     name: 完颜仲德
+    avatar: pig/武076.png
     default_gender: male
     archetype: military
     flavor: 完颜仲德（？—1234），金末重臣，任尚书右丞，随金哀宗退守蔡州并主持城防。蒙宋联军破城后，他率军巷战，投汝水而死。
@@ -601,6 +647,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0356
     name: 完颜承裔
+    avatar: pig_wu_male8.png
     default_gender: male
     archetype: military
     flavor: 完颜承裔（？—1230），金末将领，金末帝完颜承麟之兄。蒙古攻金期间在河北等地领兵拒战，后战死；现存史料对其具体战事记载不多。
@@ -614,6 +661,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0357
     name: 蒲察官奴
+    avatar: pig_wu_male8.png
     default_gender: male
     archetype: military
     flavor: 蒲察官奴（？—1233），金末将领，曾任忠孝军统制。金哀宗困守归德时，他率部击退蒙古军；后因恃功骄横、擅杀朝臣，被哀宗设计诛杀。

@@ -2,6 +2,7 @@ heroes:
   orange:
   - key: hist_xianqin_0434
     name: 伏羲
+    avatar: monkey/orange/伏羲.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）上古圣王，华夏人文始祖。传说他与女娲是兄妹或夫妻关系，共同创造并教化人类。他观天察地，创画八卦，开创了华夏易学文化的源头。他教人结网捕鱼、驯养牲畜，使人类从渔猎走向畜牧。他制定婚姻制度，规范人伦关系。八卦是中国古代最重要的哲学符号，后来发展为《易经》，影响华夏文明数千年。伏羲被尊为"人文始祖"，与女娲并列为华夏民族的精神图腾。天水、淮阳等地至今保存着伏羲庙，每年祭祀不断。
@@ -15,6 +16,7 @@ heroes:
       agility: 12
   - key: hist_xianqin_0435
     name: 神农
+    avatar: monkey/orange/神农.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）上古圣王，农业与医药之神。他又称炎帝，与黄帝并称"炎黄"，是华夏民族的共同始祖。传说他遍尝百草，发明医药，曾一日遇七十毒，最后因尝断肠草而死。他发明耒耜，教民农耕，使人类从采集走向农业文明。他还开创集市贸易，促进社会发展。"神农尝百草"的故事体现了先民探索自然、造福人类的精神。他是中国传统医学的精神象征，被尊为"药王"。农业、医药、市场——神农的三大贡献奠定了华夏文明的基础。
@@ -28,9 +30,10 @@ heroes:
       agility: 12
   - key: hist_xianqin_0438
     name: 帝尧
+    avatar: yao.png
     default_gender: male
     archetype: civil
-    flavor: （约前2377年—约前2259年）上古圣王，五帝之一。他名放勋，号陶唐氏，是中国古代圣王的典范。他在位时政治清明、百姓安居，史载"日出而作，日入而息，凿井而饮，耕田而食，帝力于我何有哉"。他以公心治天下，不传位给不肖之子丹朱，而是禅让给贤能的舜。"尧舜禅让"成为儒家推崇的政治理想，代表了"天下为公"的最高境界。他开创了四岳议政的会议制度，被视为民主政治的萌芽。他是中国古代政治理想的人格化象征。
+    flavor: "上古传说中的帝王，号陶唐氏。典籍中的他敬慎节俭、关心民生，命人观察天象与时令，帮助百姓安排农事。洪水肆虐之时，他听取诸臣意见，寻求治水之才；年事渐高，又不愿只凭血缘决定天下归属，转而考察舜的品行与才干，让其在实际政务中经受历练。尧舜禅让的故事由此流传，成为后世传贤任能的典范。比起显赫的宫室与武功，他更看重百姓能否安居、继承者能否任事，以一份慎重而宽厚的公心，留下圣王之名。"
     growth_range:
     - 8
     - 14
@@ -41,6 +44,7 @@ heroes:
       agility: 12
   - key: hist_xianqin_0433
     name: 女娲
+    avatar: monkey/orange/女娲.png
     default_gender: female
     archetype: civil
     flavor: （生卒年不详）上古女神，华夏人类的始祖母。传说她用黄土捏人，创造了人类。后来共工撞断天柱，天穹破裂，洪水泛滥。她炼五色石补天，斩断鳌足撑起四方，使天地恢复秩序。她还创造了笙簧等乐器，教化人民。她与伏羲被尊为华夏民族的始祖，是中国神话中地位最崇高的女性神祇。"女娲补天"的故事象征着女性的伟大与坚韧，体现了母性的慈爱与担当。她是中华民族母性精神的化身，受到千年祭祀与崇拜。
@@ -54,9 +58,10 @@ heroes:
       agility: 14
   - key: hist_xianqin_0436
     name: 轩辕
+    avatar: monkey/orange/轩辕.png
     default_gender: male
     archetype: military
-    flavor: （生卒年不详）上古圣王，华夏人文初祖。他就是黄帝，因居于轩辕之丘而得名。他统一中原各部落，在涿鹿之战中击败蚩尤，在阪泉之战中战胜炎帝，成为天下共主。他时代的发明创造极其丰富：嫘祖养蚕织丝、仓颉造字、伶伦制乐律、大挠作甲子历、隶首发明算数。他被尊为"人文初祖"，中华民族自称"炎黄子孙"即源于此。河南新郑的黄帝故里、陕西黄陵的黄帝陵至今香火鼎盛，每年清明都有盛大祭祀活动。他是中华民族精神统一的最高象征。
+    flavor: "中国上古传说中的黄帝，号轩辕氏，被奉为人文初祖之一。他与炎帝战于阪泉，又在涿鹿迎战蚩尤，联结诸部，成为众人共同尊奉的领袖。传说在他的时代，嫘祖养蚕织丝，仓颉造字，伶伦制乐，历法与器用也逐渐完备，先民由此开辟出更有秩序的生活。从战场上的征伐到衣食住行的创造，轩辕身边汇聚着诸多文明起源的故事。后世以炎黄追认共同祖先，又在陵庙与祭典中延续这份记忆，使他的名字始终与开创、凝聚和传承相连。"
     growth_range:
     - 8
     - 14
@@ -67,9 +72,10 @@ heroes:
       agility: 16
   - key: hist_xianqin_0439
     name: 帝舜
+    avatar: shun.png
     default_gender: male
     archetype: civil
-    flavor: （约前2277年—约前2178年）上古圣王，五帝之一。他名重华，出身卑微，父亲瞽叟和继母弟弟多次加害于他，他却以德报怨，孝行感天动地。尧帝闻其贤名，将两个女儿娥皇、女英嫁给他，又经过多年考察，最终禅让帝位。他任用禹治水、皋陶掌法、后稷管农业、契主教化，使天下大治。他巡狩天下，死于苍梧之野，葬于九嶷山。"二十四孝"之首即是舜的故事。他以孝悌著称，以禅让传贤，是儒家理想人格的最高典范。
+    flavor: "上古传说中的帝王，名重华。他出身平凡，虽遭家庭困厄，仍以勤劳、孝行与宽厚赢得声望，因而受到尧的考察与任用。参与治理之后，他选贤任能，安排禹治水、后稷掌农事、契主教化、皋陶掌刑法，使众人各展所长。承接尧位后，又继续举用人才，将治理天下的重任逐步交托给禹。艰难出身没有使他失去温厚，掌握权力也没有使他忘记任人以能。尧舜禹的故事代代相传，而舜始终以能自持、能容人、能识贤的形象，位列历代传颂的圣王之中。"
     growth_range:
     - 8
     - 14
@@ -81,6 +87,7 @@ heroes:
   purple:
   - key: hist_xianqin_0412
     name: 后羿
+    avatar: monkey/先秦与神话/后羿.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）夏朝时期传奇人物，射日神话的原型。他是东夷部落有穷氏的首领，善射，箭术冠绝天下。神话传说中，他射落九日、为民除害，是英雄的象征。然而历史上的后羿却是个复杂人物：他趁夏朝内乱，驱逐夏帝太康，掌控朝政，后又废立夏君，实际控制夏朝。他沉迷于田猎，不理政事，最终被心腹寒浞所杀，身死族灭。他既是神话中的英雄，也是历史上的篡臣；既有射日的壮举，也有玩物丧志的悲剧。这种矛盾的形象，使他成为上古时期最具争议的人物之一。
@@ -108,6 +115,7 @@ heroes:
       agility: 26
   - key: hist_xianqin_0425
     name: 蚩尤
+    avatar: monkey/先秦与神话/蚩尤.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）上古战神，九黎部落首领。他是炎黄时代最强大的部落领袖之一，据说铜头铁额、能呼风唤雨。他与黄帝争夺天下霸权，双方在涿鹿展开了惊天动地的大战。传说蚩尤作大雾困住黄帝军队，黄帝发明指南车破雾；蚩尤请来风伯雨师助阵，黄帝召唤女魃止雨。最终黄帝获胜，蚩尤战死。然而后世并未将他完全妖魔化，反而尊其为"战神"——秦始皇、汉高祖都曾祭祀蚩尤。他代表了与炎黄并立的另一支华夏先民，是中华文明多元起源的见证。
@@ -121,6 +129,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0424
     name: 仓颉
+    avatar: monkey/先秦与神话/仓颉.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）造字之圣，中国文字的传说创造者。相传他是黄帝的史官，观察鸟兽足迹和自然万象，受到启发而创造文字。他有"四目"的神异形象，象征着他比常人更能洞察事物的本质。传说他造字成功之日，天雨粟、鬼夜哭——上天降下谷子以示嘉奖，鬼怪哭泣因为从此无处藏匿。虽然文字的产生是一个漫长的集体创造过程，但仓颉作为文字发明者的象征地位已深入人心。他被尊为"字圣"，是华夏文明走向文字时代的精神象征。历代文人祭祀仓颉，感念文字传承文明的伟大功绩。
@@ -134,6 +143,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0426
     name: 少昊
+    avatar: monkey/先秦与神话/少昊.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）上古帝王，东夷族群的始祖。他是五帝之一，以鸟为图腾，建立了以鸟命官的独特制度：凤鸟氏掌管历法，玄鸟氏掌管春分秋分，等等。他的部落居住在东方沿海地区，创造了灿烂的东夷文化。传说他在位时天下大治，鸟兽驯服。他是东方各部族共同尊奉的祖先，齐国、莒国等东方诸侯国都自称其后裔。他的鸟图腾崇拜与中原的龙图腾并行，共同构成华夏文化的丰富内涵。曲阜的少昊陵至今犹存，是中国古代帝王陵墓中最古老的之一。
@@ -147,6 +157,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0427
     name: 帝喾
+    avatar: monkey/先秦与神话/帝喾.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）上古帝王，五帝之一。他是商周共同的祖先——后稷和契都是他的儿子，因此周人和商人都尊他为先祖。据《史记》记载，他"生而神灵，自言其名"，刚出生就会说话。他在位时"日月所照，风雨所至，莫不从服"，天下归心。他有四位著名的妃子：姜嫄生后稷（周之祖），简狄生契（商之祖），庆都生尧，常仪生挚。通过他的后代，华夏文明的几大支脉得以形成。他是联系五帝与三代的关键人物，也是商周两大王朝共同追溯的远祖。
@@ -160,6 +171,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0428
     name: 帝颛顼
+    avatar: monkey/先秦与神话/帝颛顼.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）上古帝王，五帝之一。他是黄帝的孙子，少昊的侄子，因辅佐少昊有功，继承帝位。他最著名的事迹是"绝地天通"——在此之前，巫觋之术泛滥，人人都可与天神沟通，造成政令混乱。他命重、黎二人分掌天地之事，使天神与人间相隔绝，只有专门的祭司才能通天，从此祭祀权归于君主。这一改革确立了宗教权力的等级秩序，对后世影响深远。楚国尊奉他为始祖，"帝高阳之苗裔"是楚人的骄傲。他是华夏政治文明进步的重要推动者。
@@ -174,6 +186,7 @@ heroes:
   blue:
   - key: hist_xianqin_0410
     name: 少康
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）夏朝君主，夏帝相之子。寒浞篡夏后，少康在有虞氏任厨正，得到虞思支持后招募部众；他先后击败寒浞之子浇、豷，灭寒浞，恢复夏朝，后传位给杼。
@@ -187,6 +200,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0418
     name: 伯益
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）上古东夷首领，大禹治水时的助手。大禹晚年曾让伯益摄行政务，禹死后，诸侯多朝拜启，伯益退让；关于他后来是隐居还是被启所杀，古籍记载不一。秦、赵两国王族都自称出自伯益一支。
@@ -200,6 +214,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0419
     name: 皋陶
+    avatar: pig/文034.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）传说中的上古大理，舜帝时掌管刑狱。皋陶相传以明德慎罚处理案件，又辅佐大禹治水；后世把獬豸辨罪的故事和皋陶联系起来，并尊他为狱神。
@@ -213,6 +228,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0431
     name: 祝融
+    avatar: monkey_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）上古传说中的火官，颛顼之后。祝融相传掌管火政，曾与共工争斗；楚国王族自称出自祝融一系，后世又把他奉为火神。
@@ -226,6 +242,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0432
     name: 共工
+    avatar: monkey_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）上古传说中的水神和部落首领。共工与祝融争斗失败后怒触不周山，女娲补天等神话都把这场灾变作为情节背景；古籍对共工治水和争帝的事迹记载并不一致。
@@ -239,6 +256,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0437
     name: 嫘祖
+    avatar: monkey/其他随机角色/文064_女.png
     default_gender: female
     archetype: civil
     flavor: （生卒年不详）传说中的西陵氏之女，黄帝正妃。嫘祖相传发现蚕丝并教人养蚕、缫丝和织绸；她生下玄嚣、昌意，后世祭祀她为先蚕。
@@ -252,6 +270,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0444
     name: 岐伯
+    avatar: pig/文034.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）传说中的黄帝医官。岐伯与黄帝问答的内容被编入《黄帝内经》，涉及脏腑、经脉、病因和诊治；古籍因此常把岐伯与黄帝并称“岐黄”。
@@ -265,6 +284,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0451
     name: 宋玉
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: （生卒年约前3世纪）战国末楚国辞赋家，屈原后学。宋玉曾在楚襄王朝廷任职，相传创作《九辩》《风赋》《高唐赋》等辞赋；《高唐赋》写巫山神女，《九辩》多叙身世感慨。
@@ -279,6 +299,7 @@ heroes:
   green:
   - key: hist_xianqin_0400
     name: 姬林
+    avatar: pig_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （？—前697年）姬林，周桓王，东周君主，周平王之孙。前707年在繻葛之战中被郑军击败并受伤，显示东迁后周王室权威下降。
@@ -292,6 +313,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0401
     name: 虢公石父
+    avatar: monkey/其他随机角色/武038_男.png
     default_gender: male
     archetype: military
     flavor: （？—前771年）虢公石父，西周末虢国国君或重臣，见于周幽王时期史传。传统叙事称其参与废太子、助长幽王失政，后与幽王一同死于犬戎之乱；“烽火戏诸侯”细节有后世增饰。
@@ -305,6 +327,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0402
     name: 姬友
+    avatar: pig_wu_male5.png
     default_gender: male
     archetype: military
     flavor: （？—前771年）姬友，郑桓公，周厉王之子、周宣王之弟，郑国始封君。任周王室司徒时预见王室动荡，迁徙族人与财产至虢、郐之间；犬戎灭西周时死于骊山。
@@ -318,6 +341,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0403
     name: 姬掘突
+    avatar: monkey_wu_male7.png
     default_gender: male
     archetype: military
     flavor: （？—前744年）姬掘突，郑武公，郑桓公之子。周平王东迁时护送王室，因功任卿士；后灭郐、虢，扩大郑国疆域。
@@ -331,6 +355,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0404
     name: 子庄
+    avatar: monkey_wu_male10.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）子庄，传统商王世系中的商代君主。古籍将其与早商都邑迁徙相联系，但相关年代、世系和事迹缺乏同时代文字材料，具体身份存在文献差异。
@@ -344,6 +369,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0405
     name: 子旬
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: （？—约前1210年）子旬，商王盘庚，商代君主。传统记载称他将都城迁至殷，并以诰辞说服贵族和民众；殷墟证明商后期都城长期在安阳一带，具体诰辞成文年代另有讨论。
@@ -357,6 +383,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0406
     name: 子昭
+    avatar: pig_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （约前1250年—约前1192年）子昭，商王武丁，商代后期君主。甲骨卜辞显示其长期主持对外征伐、祭祀和农事，并重用傅说；武丁时期材料丰富，后世称其为商代中兴之主。
@@ -370,6 +397,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0407
     name: 子受
+    avatar: pig_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （？—前1046年）子受，商王帝辛，后世称纣王，商代末代君主。传统史书多记其晚年与周人作战，前1046年在牧野败亡，商朝灭亡；酒池肉林等细节多有后世增饰。
@@ -383,6 +411,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0408
     name: 姒启
+    avatar: monkey_wu_male7.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）姒启，传统夏代世系中的夏王，大禹之子。古籍以他继位的故事说明禅让向世袭的转变，又记载他讨伐有扈氏；年代与具体事迹主要来自后世文献，尚难逐项考证。
@@ -396,6 +425,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0409
     name: 姒相
+    avatar: monkey_wu_male16.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）姒相，传统夏代世系中的夏王。后羿、寒浞掌权时，夏王统受到冲击，姒相被杀；其妃缗逃亡并生少康的故事，构成少康复国传说的一部分。
@@ -409,6 +439,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0411
     name: 寒浞
+    avatar: pig_wu_male9.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）寒浞，上古传说中的人物，传说为后羿近臣，后杀后羿并夺取政权，又追杀夏王姒相一支；少康复国后，寒浞政权覆亡。相关年代与细节主要见于后世文献。
@@ -422,6 +453,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0414
     name: 姒杼
+    avatar: monkey/其他随机角色/武037_男.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）姒杼，传统夏代世系中的夏王，少康之子。古籍称其向东夷用兵、扩展夏的势力，并将甲、矛等发明归于其名下；具体战事和功绩缺少同时代材料。
@@ -435,6 +467,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0415
     name: 姒桀
+    avatar: monkey_wu_male16.png
     default_gender: male
     archetype: military
     flavor: （？—约前1600年）姒桀，传统夏代末王，后世称夏桀。史传称商汤在鸣条击败夏军，夏朝由此灭亡；与妹喜、酒池等相关的细节多属后世亡国叙事，不能全部视为同时代史实。
@@ -448,6 +481,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0416
     name: 妹喜
+    avatar: monkey/其他随机角色/文084_女.png
     default_gender: female
     archetype: civil
     flavor: （生卒年不详）妹喜，传说中的夏桀妃子，有施氏女。关于她的身世、入宫和结局，主要见于后世史传；撕帛、酒池等故事常被用于解释夏亡，带有以女色归因的寓言性，不能据此重建确切生平。
@@ -461,6 +495,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0417
     name: 关龙逢
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）关龙逢，上古传说中的夏桀大夫，传统上被视为死谏之臣。古籍称他因劝谏桀而死，持黄图玉版等细节多属后世忠臣叙事，缺少可独立核验的史料。
@@ -474,6 +509,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0421
     name: 姬弃
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）姬弃，传统称后稷，周族始祖、农耕文化传说人物。古籍称其为帝喾之子、姜嫄所生，并有弃而不死、鸟兽相护等神话；其教民稼穑的形象寄托了周人对农业起源的解释。
@@ -487,6 +523,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0422
     name: 子契
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）子契，传统商族始祖、传说人物。古籍称其为帝喾之子，因简狄吞玄鸟卵而生，并曾任司徒、受封于商；这些内容属于商族起源神话与古代世系传说。
@@ -500,6 +537,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0423
     name: 夔
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）夔，上古传说中的舜时乐官或乐正。古籍记载舜命其掌乐、教导贵族子弟，并有“百兽率舞”的叙述；其是否对应可考的历史人物已无法确认。
@@ -513,6 +551,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0429
     name: 娥皇
+    avatar: monkey/其他随机角色/文078_女.png
     default_gender: female
     archetype: civil
     flavor: （生卒年不详）娥皇，尧女、舜妻的传说人物，常与女英并称“娥皇女英”。舜南巡死于苍梧、娥皇女英泪染斑竹等故事，主要见于后世神话、祭祀和文学传统。
@@ -526,6 +565,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0430
     name: 女英
+    avatar: monkey_wen_female2.png
     default_gender: female
     archetype: civil
     flavor: （传说人物）女英，尧女、舜妃的传说人物，常与娥皇并称“娥皇女英”。后世传说称她随舜至苍梧、泪染斑竹并成为湘水神女；相关形象由神话、祭祀与诗歌共同形成。
@@ -539,6 +579,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0440
     name: 鲧
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）鲧，上古治水传说中的人物，传统为禹之父。古籍称其奉命治洪而采用堙塞之法，九年未成，后被诛于羽山；鲧、禹治水的对照主要属于古代神话和历史传说。
@@ -552,6 +593,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0441
     name: 伶伦
+    avatar: monkey/其他随机角色/文039_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）伶伦，黄帝时代音律创制传说中的人物。古籍称其取竹制十二律管、据凤凰鸣声定律；音律制度经历长期发展，相关功绩不能视为一人可考的历史成就。
@@ -565,6 +607,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0442
     name: 大挠
+    avatar: monkey/其他随机角色/文_男123.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）大挠，上古历法传说人物。后世把天干地支相配、形成六十甲子之法归于他名下；干支制度应是长期演变的成果，大挠主要代表古人对时间记录起源的解释。
@@ -578,6 +621,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0443
     name: 隶首
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）隶首，上古算术、计量传说人物。古籍将算数、算筹或度量衡的创制与他相联系，但这些制度经历长期发展，具体功绩无法全部归于隶首。
@@ -591,6 +635,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0445
     name: 风后
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）风后，黄帝臣下的传说人物。古籍和后世传说将他与涿鹿之战、指南车、阵法等联系起来，体现上古对军师和辨向智慧的想象；具体事迹缺少可考史料。
@@ -604,6 +649,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0446
     name: 力牧
+    avatar: monkey_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）力牧，黄帝麾下的传说战将，常与风后并称。古籍和后世传说称其辅佐黄帝征伐四方，但具体身份、年代和战事无法由现存史料核定。
@@ -617,6 +663,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0447
     name: 应龙
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: （神话人物）应龙，中国上古神话中的有翼龙神。传说他参与黄帝与蚩尤之战，又曾帮助大禹治水；这些故事来自神话体系，不是可考的历史战功。
@@ -630,6 +677,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0448
     name: 女魃
+    avatar: monkey/其他随机角色/武083_女_.png
     default_gender: female
     archetype: military
     flavor: （生卒年不详）女魃，上古神话中的旱神，传说为黄帝之女。涿鹿之战传说中，她以旱力制止蚩尤一方的风雨；其形象后来又与旱灾相联系，属于神话和民俗文化。
@@ -643,6 +691,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0449
     name: 精卫
+    avatar: monkey/其他随机角色/文078_女.png
     default_gender: female
     archetype: civil
     flavor: （神话人物）精卫，《山海经》中的神话形象。传说炎帝之女女娃溺水后化为精卫鸟，衔西山木石投入东海，形成“精卫填海”的故事，后世常用来象征坚持不懈。

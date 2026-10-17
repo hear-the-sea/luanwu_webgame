@@ -4,6 +4,7 @@ heroes:
   green:
   - key: hero_ilrock_03155
     name: 龙小云
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: 兴云庄的少主人，古龙小说《多情剑客无情剑》中龙啸云与林诗音之子。自幼备受宠爱，年纪虽小，却已学会装出可怜模样，暗中伤人。他与李寻欢结下冲突，又被父亲争名夺利的打算推入险局。母亲的忧虑、父亲的算计与庄中的纷争围绕着他，使那张稚气未脱的脸上，早早有了成年人的狠毒。
@@ -18,6 +19,7 @@ heroes:
       agility: 24
   - key: hero_ilrock_03160
     name: 诸葛刚
+    avatar: pig/武015.png
     default_gender: male
     archetype: military
     flavor: 金刚铁拐沉重凌厉，曾为诸葛刚赢得兵器谱上的声名。在古龙小说《多情剑客无情剑》中，他投身金钱帮，凭武功与上官金虹的势力横行江湖，出手少留余地。面对郭嵩阳时，他仍倚仗铁拐威势迎战，却被对方的铁剑破去攻势，连兵器也遭斩断。这位一度不可一世的高手，最终殒命于郭嵩阳剑下。
@@ -32,6 +34,7 @@ heroes:
       agility: 14
   - key: hero_ilrock_03161
     name: 伊哭
+    avatar: monkey/其他随机角色/武066_男_.png
     default_gender: male
     archetype: military
     flavor: 一双青魔手令人闻名色变，古龙小说《多情剑客无情剑》里的伊哭，以奇门兵器与阴狠手段跻身江湖高手之列。他与林仙儿纠葛颇深，容易被她的言语和姿态牵动，在梅花盗疑云中卷入争夺，也与李寻欢、阿飞的处境相连。平日凶厉的目光，一旦落到林仙儿身上，便添了难以掩饰的欲念与猜忌。
@@ -46,6 +49,7 @@ heroes:
       agility: 26
   - key: hero_ilrock_03185
     name: 游龙生
+    avatar: monkey/其他随机角色/武男22.png
     default_gender: male
     archetype: military
     flavor: 藏剑山庄少庄主，手中夺情剑是一口名动江湖的宝剑。古龙在《多情剑客无情剑》中写他年少俊秀，带着世家子弟的骄傲与自信，却深深迷恋林仙儿。梅花盗风波渐起，他也随之卷入真话与谎言交织的争斗。曾经足以令人艳羡的出身与佩剑，伴他踏入险局，却未能替他看清身旁那个笑意盈盈的女子。
@@ -60,6 +64,7 @@ heroes:
       agility: 22
   - key: hero_ilrock_03356
     name: 江玉郎
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: 江琴之子，从父亲那里学得伪装与算计，是古龙小说《绝代双骄》中小鱼儿的难缠对手。江玉郎年轻俊秀，开口时常显得恭顺，心中却时时盘算脱身与反击。他与小鱼儿几度被迫同行，既利用对方的机智求生，也趁机设下暗算；即便暂时携手闯过险境，笑容背后仍藏着新的谎言，难有片刻真诚相待。
@@ -75,6 +80,7 @@ heroes:
   blue:
   - key: hero_ilrock_03154
     name: 百晓生
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: 江湖通称百晓生的博闻之士，在古龙小说《多情剑客无情剑》中编成兵器谱，为各路高手与独门兵刃排定高下。一纸名次传遍武林，引来无数争胜之心，也让他掌握了影响江湖声名的分量。他能辨兵器、论武功，却并非远离纷争的公正旁观者；少林寺中的阴谋逐渐浮现时，他与其中人物的牵连也随之显露。
@@ -89,6 +95,7 @@ heroes:
       agility: 14
   - key: hero_ilrock_03158
     name: 吕凤先
+    avatar: pig_wu_male7.png
     default_gender: male
     archetype: military
     flavor: 以银戟温侯之名跻身兵器谱第五，吕凤先是古龙小说《多情剑客无情剑》中锐意争胜的高手。他不肯永远屈居他人之后，舍弃成名的银戟，苦练双手上的功夫，盼凭赤手再争高下。对武道的骄傲使他敢于挑战强敌，对声名的执念也令他难以退让；遇上林仙儿之后，这份好胜与自负又被卷进更险恶的人心较量。
@@ -103,6 +110,7 @@ heroes:
       agility: 16
   - key: hero_ilrock_03159
     name: 西门柔
+    avatar: pig/武009.png
     default_gender: male
     archetype: military
     flavor: 神鞭西门柔以长蛇鞭列于兵器谱第七，见于古龙小说《多情剑客无情剑》。柔韧的长鞭一旦展开，便能在远近变化之间制敌，与刀剑硬拼另有一番路数。他身在高手争逐的江湖，却不是逢人便要比出胜负的狂徒。面对强者与复杂局势，往往先看清彼此分量，再决定是否出手，名号之外还保有老江湖的审慎。
@@ -117,6 +125,7 @@ heroes:
       agility: 28
   - key: hero_ilrock_03165
     name: 林诗音
+    avatar: monkey_wen_female5.png
     default_gender: female
     archetype: civil
     flavor: 兴云庄中那个沉静的女子，曾是李寻欢的表妹与恋人，后来成为龙啸云的妻子、龙小云的母亲。古龙小说《多情剑客无情剑》中，旧日感情并未随婚姻消散，李寻欢归来又掀动她压在心底的伤痛。她要面对丈夫的野心，也要护住年幼的儿子；每一次相见与别离，都牵着难以说出口的怨怼、挂念和旧情。
@@ -131,6 +140,7 @@ heroes:
       agility: 16
   - key: hero_ilrock_03199
     name: 南宫灵
+    avatar: pig/文021.png
     default_gender: male
     archetype: civil
     flavor: 年轻的丐帮帮主，任慈亲手养大的后辈，在古龙小说《楚留香传奇》中卷入天一神水引发的连环命案。他的生父是天枫十四郎，生母是石观音，无花则是他的兄长。这段深藏的身世，与夺取帮主之位的阴谋紧紧相连。楚留香追索命案时，他努力维持青年领袖的风度，却越来越难掩住权欲与亲情背后的秘密。
@@ -145,6 +155,7 @@ heroes:
       agility: 16
   - key: hero_ilrock_03200
     name: 任慈
+    avatar: pig/武071.png
     default_gender: male
     archetype: military
     flavor: 执掌丐帮多年的任慈，在古龙小说《楚留香传奇》中以宽厚待人，深得帮众敬重。他接纳遭到毁容的秋灵素，与她结为夫妻，也将南宫灵收为养子，寄望后辈接续帮中事业。家中的信任却被人利用，毒害与夺权悄然逼近。任慈遇害后，妻子留下的线索引来楚留香追查，使丐帮内外那场隐秘的背叛渐渐暴露。
@@ -159,6 +170,7 @@ heroes:
       agility: 16
   - key: hero_ilrock_03211
     name: 高亚男
+    avatar: monkey/其他随机角色/武083_女_.png
     default_gender: female
     archetype: military
     flavor: 清风女剑客高亚男出身华山，师承枯梅大师，是古龙小说《楚留香传奇》中爽利明快的女侠。她剑法不俗，行走江湖自有胆识，面对胡铁花也不肯把情意藏进含糊的言语。两人之间时近时远的纠葛，常在朋友相聚时添出波折。门派中的风波来临，她又必须面对师门与故交，把儿女心事收起，提剑走入险局。
@@ -173,6 +185,7 @@ heroes:
       agility: 28
   - key: hero_ilrock_03228
     name: 秋灵素
+    avatar: monkey_wen_female10.png
     default_gender: female
     archetype: civil
     flavor: 曾以容貌名动江湖，却遭石观音妒恨毁容；古龙小说《楚留香传奇》里的秋灵素，此后与丐帮帮主任慈相守。她不轻易向外人诉说昔日苦痛，对丈夫却有深厚的信任。任慈遭害后，她在悲伤中察觉阴谋，向楚留香交代往事和疑点。毁去的容颜掩在帷幕之后，留下的记忆与清醒判断，仍足以指向凶手藏身的暗处。
@@ -187,6 +200,7 @@ heroes:
       agility: 16
   - key: hero_ilrock_03246
     name: 柳无眉
+    avatar: monkey/其他随机角色/文078_女.png
     default_gender: female
     archetype: civil
     flavor: 石观音门下的女子，后来嫁给拥翠山庄的李玉函，见于古龙小说《楚留香传奇》。柳无眉逃离师门后，始终认定自己遭师父下毒，病痛与恐惧使她四处寻找解药。为求活命，她与丈夫以画眉鸟的名号布置诡计，将楚留香引进杀局。夫妻间的深情与对旧日师父的畏惧缠在一起，让她一次次向更危险的交易靠近。
@@ -201,6 +215,7 @@ heroes:
       agility: 24
   - key: hero_ilrock_03349
     name: 张菁
+    avatar: monkey_wu_female.png
     default_gender: female
     archetype: military
     flavor: 红衣、快马与长鞭，是古龙小说《绝代双骄》中小仙女张菁的鲜明身影。她是张三娘之女，性情火爆，见到不顺眼的人事便直言相向，出手也毫不含糊。与小鱼儿初识时冲突不断，几经周旋才渐渐认清他的为人。到了温和的顾人玉面前，这位平日不肯服软的姑娘，又会显出藏在凌厉鞭影之后的羞涩与柔情。
@@ -215,6 +230,7 @@ heroes:
       agility: 28
   - key: hero_ilrock_03354
     name: 江琴
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: 江枫昔日的家仆，出卖旧主后改名江别鹤，以江南大侠的名号在武林立足。古龙小说《绝代双骄》中，江琴善于做出谦和仁义的姿态，结交名门，积攒声望，暗处却谋财害命，处处为自己的前程打算。他又将这套心术传给儿子江玉郎。小鱼儿循着旧事追查，才把名侠面目下藏了多年的背叛与罪行逐一揭开。
@@ -229,6 +245,7 @@ heroes:
       agility: 16
   - key: hero_ilrock_03376
     name: 魏无牙
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: 十二星相中的鼠首，精通机关与独门武学，是古龙小说《绝代双骄》中诡谲危险的高手。魏无牙身形残缺，仍凭聪慧与狠辣统领手下，又收苏樱为养女。他倾慕邀月、怜星，却因求而不得积下怨恨，最终利用洞窟与机关将移花宫诸人困入绝境。暗道、石门和杀机重重的密室，处处留着这个偏执之人的布置。
@@ -243,6 +260,7 @@ heroes:
       agility: 12
   - key: hero_ilrock_03384
     name: 顾人玉
+    avatar: pig_wu_male4.png
     default_gender: male
     archetype: military
     flavor: 玉面神拳顾人玉是古龙小说《绝代双骄》中温厚的年轻侠客，身怀顾家武学，却少有争强逞狠的脾气。他与慕容家有亲缘往来，常被朋友打趣为顾小妹，听到嘲弄也不急着翻脸。遇上火爆直率的张菁，他更能耐心相待，在一场场江湖风波中逐渐与她相知。真正需要出手时，那副腼腆模样下的拳头却毫不软弱。

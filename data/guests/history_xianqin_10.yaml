@@ -3,6 +3,7 @@ heroes:
   blue:
   - key: hist_xianqin_0456
     name: 卞庄子
+    avatar: pig/文034.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）春秋鲁国勇士，名庄子。卞庄子准备刺杀两只争食的老虎时，门客劝他等一虎杀死另一虎后再动手；他随后刺杀胜虎，取得一举两得的结果。
@@ -16,6 +17,7 @@ heroes:
       agility: 19
   - key: hist_xianqin_0492
     name: 韩厥
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）春秋晋国大夫，韩氏宗主。韩厥在鞍之战中任晋军司马，后来赵氏遇难时，他暗中保护赵武，并向晋景公说明赵氏无罪，促成赵氏复兴。
@@ -29,6 +31,7 @@ heroes:
       agility: 6
   - key: hist_xianqin_0506
     name: 柳下惠
+    avatar: pig/文034.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）春秋鲁国大夫，名获，食邑柳下，谥惠。柳下惠曾多次被鲁国罢免，却不肯离开鲁国；传说寒夜收留受冻女子时，他守礼相待，因此得到“坐怀不乱”的称誉。
@@ -42,6 +45,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0513
     name: 吴王僚
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详—前515年）春秋吴王，吴王余眛之子。吴王僚即位后与公子光争夺君位，公子光派专诸在宴席上以鱼肠剑刺杀他；其子庆忌逃亡，公子光随后即位为吴王阖闾。
@@ -56,6 +60,7 @@ heroes:
   green:
   - key: hist_xianqin_0452
     name: 伯舆
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）伯舆，春秋时期周王室卿士。其家臣与王叔陈生的家臣曾因王室卿士地位和朝政问题争论，相关事迹见《左传》，个人生卒年不详。
@@ -69,6 +74,7 @@ heroes:
       agility: 22
   - key: hist_xianqin_0453
     name: 北宫喜
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）北宫喜，即北宫贞子，春秋时期卫国卿。前515年，他与宋国乐祁犁谋求送鲁昭公回鲁国，后又见于卫国卿族政局。
@@ -82,6 +88,7 @@ heroes:
       agility: 6
   - key: hist_xianqin_0454
     name: 北宫结
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）北宫结，春秋时期卫国卿，与公叔戌关系密切。前496年卫灵公驱逐公叔戌，北宫结随后出奔鲁国。
@@ -95,6 +102,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0455
     name: 北宫遗
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）北宫遗，春秋时期卫国大夫，北宫氏成员。卫国政变后，他与宁喜被晋国拘捕，由女齐押送回晋，相关事迹见《左传》。
@@ -108,6 +116,7 @@ heroes:
       agility: 12
   - key: hist_xianqin_0458
     name: 鲍牵
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）鲍牵，春秋时期齐国大夫，鲍叔牙曾孙、鲍国之兄。前574年他见庆克与声孟子私通，告知国佐；后来被齐灵公刖足并逐出齐国。
@@ -121,6 +130,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0459
     name: 长沮
+    avatar: pig/文037.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）长沮，《论语·微子》中的隐者，与桀溺并耕。子路问津时，他以“执舆者为谁”反问孔子；其形象主要通过这段对话保存，缺少可考生平。
@@ -134,6 +144,7 @@ heroes:
       agility: 13
   - key: hist_xianqin_0460
     name: 陈逆
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）陈逆，字子行，春秋时期齐国陈氏人物，陈恒族人。阚止与陈氏冲突时，陈逆曾劝陈恒先行防备；其事迹见于齐国卿族政争记载。
@@ -147,6 +158,7 @@ heroes:
       agility: 13
   - key: hist_xianqin_0461
     name: 鉏麑
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）鉏麑，春秋时期晋国力士，受晋灵公命刺杀赵盾。到赵盾家后因不愿杀害忠臣、又不愿违背君命而触槐自杀，事见《左传》。
@@ -160,6 +172,7 @@ heroes:
       agility: 15
   - key: hist_xianqin_0462
     name: 杜原款
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）杜原款，春秋时期晋国大臣、太子申生的师傅。晋献公欲杀申生时，他临死托人传话，劝申生自尽以保全自身和君父名誉。
@@ -173,6 +186,7 @@ heroes:
       agility: 8
   - key: hist_xianqin_0463
     name: 公之
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）公之，春秋时期鲁国季氏人物，姬姓，季悼子之子、季平子之弟。见于鲁国季氏家族内争材料，个人官职与生卒年不详。
@@ -186,6 +200,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0464
     name: 公何藐
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）公何藐，春秋时期鲁国政治人物，季孙氏族人。其姓名见于鲁国季氏内争记载，个人官职和其他生平事迹传世不多。
@@ -199,6 +214,7 @@ heroes:
       agility: 10
   - key: hist_xianqin_0465
     name: 公父文伯
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）公父文伯，春秋时期鲁国公父氏人物，敬姜之子。传世材料较多记其母敬姜以礼法、勤俭教诫他的故事，关于他本人的政治事迹记载较少。
@@ -212,6 +228,7 @@ heroes:
       agility: 10
   - key: hist_xianqin_0466
     name: 公父穆伯
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）公父穆伯，春秋时期鲁国三桓季悼子之子、季平子之弟。其姓名主要见于鲁国季氏家族内争材料，个人职事记载有限。
@@ -225,6 +242,7 @@ heroes:
       agility: 17
   - key: hist_xianqin_0467
     name: 公鉏极
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）公鉏极，春秋时期鲁国季氏分支公鉏氏成员，季武子长子公弥的曾孙。关于其个人官职和具体事迹，传世记载较少。
@@ -238,6 +256,7 @@ heroes:
       agility: 7
   - key: hist_xianqin_0468
     name: 国佐
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）国佐，春秋时期齐国大夫、国氏成员。前574年齐国内乱时杀庆克，后因齐灵公猜忌，于前573年被杀。
@@ -251,6 +270,7 @@ heroes:
       agility: 13
   - key: hist_xianqin_0469
     name: 国子高
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）国子高，春秋时期齐国政治人物，国懿伯之孙、国贞孟之子，谥成，亦称成伯高父。关于丧葬礼的言论见于先秦礼学材料。
@@ -264,6 +284,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0470
     name: 国昭子
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）国昭子，春秋时期齐国政治人物，国氏，名不详，谥昭。母亲去世时曾向子张询问葬礼，相关记载见于先秦礼学材料。
@@ -277,6 +298,7 @@ heroes:
       agility: 15
   - key: hist_xianqin_0471
     name: 国胜
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）国胜，春秋时期齐国国氏人物，国佐之子、国弱之兄。前573年国佐被杀后，国胜也被齐灵公下令杀害。
@@ -290,6 +312,7 @@ heroes:
       agility: 8
   - key: hist_xianqin_0473
     name: 国弱
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）国弱，又名国景子，春秋时期齐国大夫，国佐之子。前573年国佐被杀后，国弱出奔鲁国；其子国夏后来成为齐国卿。
@@ -303,6 +326,7 @@ heroes:
       agility: 11
   - key: hist_xianqin_0474
     name: 子尾
+    avatar: pig/文034.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）子尾，春秋时期齐国公族大夫，本名高虿，齐惠公后裔，以父亲字为氏并为高氏、子尾氏始祖。曾与子雅等参与齐国政务，前534年卒。
@@ -316,6 +340,7 @@ heroes:
       agility: 21
   - key: hist_xianqin_0475
     name: 姬亥
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）姬亥，先秦姬姓人物，姓名见于周王室或诸侯谱系的零星材料。关于其国别、官职和具体事迹，现存记载不足。
@@ -329,6 +354,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0476
     name: 季公鸟
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）季公鸟，春秋时期鲁国季氏人物，季武子幼子、季平子之弟。其家族内争见于《左传》，关于本人官职和其他事迹记载较少。
@@ -342,6 +368,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0477
     name: 季冶
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）季冶，春秋时期鲁国三桓季氏族人，字公冶，后世公冶氏与其有关。其具体官职和生卒年，传世记载不详。
@@ -355,6 +382,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0478
     name: 高偃
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）高偃，春秋时期齐国大夫，高氏成员。前530年代，他曾率军护送北燕伯复位；其世系与具体官职在传世材料中有异文。
@@ -368,6 +396,7 @@ heroes:
       agility: 11
   - key: hist_xianqin_0479
     name: 高倾子
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）高倾子，春秋时期齐国高氏人物，高偃的祖先。其姓名主要见于齐国高氏世系及卿族材料，个人事迹记载有限。
@@ -381,6 +410,7 @@ heroes:
       agility: 10
   - key: hist_xianqin_0480
     name: 高厚
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）高厚，春秋时期齐国大夫，高固之子、高傒后裔。其姓名见于齐国卿族和礼学材料，具体官职与事迹记载不多。
@@ -394,6 +424,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0481
     name: 高固
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）高固，谥高宣子，春秋时期齐国大夫，高庄子之孙。鞍之战中他曾攻入晋军，携晋军俘虏回齐营，相关事迹见《左传》。
@@ -407,6 +438,7 @@ heroes:
       agility: 17
   - key: hist_xianqin_0482
     name: 高弱
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）高弱，春秋时期齐国公族、高氏人物。鲁成公十七年，他据卢邑反齐，齐国派国佐围攻；后来高弱向齐军投降，后事不详。
@@ -420,6 +452,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0483
     name: 高无丕
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）高无丕，春秋时期齐国高氏人物。前484年，他与国书率齐军攻打鲁国至清地；其余个人事迹记载较少。
@@ -433,6 +466,7 @@ heroes:
       agility: 13
   - key: hist_xianqin_0484
     name: 高止
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）高止，春秋时期齐国公族、高氏人物。鲁襄公二十九年被齐国诸卿驱逐，出奔北燕；其子高竖后来据卢邑反齐。
@@ -446,6 +480,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0485
     name: 高无咎
+    avatar: pig/文034.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）高无咎，春秋时期齐国大夫，高固之子、高氏成员。齐灵公听信声孟子之言后，他被逐出齐国，出奔莒国。
@@ -459,6 +494,7 @@ heroes:
       agility: 11
   - key: hist_xianqin_0486
     name: 高竖
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）高竖，春秋时期齐国公族，高止之子。父亲出奔后，他据卢邑反齐，齐国派兵围攻，后向齐军投降；此后事迹不详。
@@ -472,6 +508,7 @@ heroes:
       agility: 4
   - key: hist_xianqin_0487
     name: 高齮
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）高齮，春秋时期齐国高氏人物，姓名见于齐国卿族材料。关于其个人职务、生卒年和具体事迹，传世记载简略。
@@ -485,6 +522,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0488
     name: 赇伯
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）赇伯，先秦人物，姓名见于古籍片段。现存材料不足以确认其国别、身份和具体事迹，不能据名补写生平。
@@ -498,6 +536,7 @@ heroes:
       agility: 7
   - key: hist_xianqin_0489
     name: 韩不信
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）韩不信，春秋末晋国韩氏宗主，谥简子，韩须之后。韩氏在晋国六卿格局中逐渐壮大，其后发展为战国韩国；关于韩不信本人的施政和征伐，史料记载较少。
@@ -511,6 +550,7 @@ heroes:
       agility: 12
   - key: hist_xianqin_0490
     name: 韩万
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）韩万，春秋早期晋国韩氏先祖。曲沃武公伐翼时，他任御戎并追获翼侯，因功受封于韩原，韩氏由此形成。
@@ -524,6 +564,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0491
     name: 韩须
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）韩须，春秋时期晋国韩氏宗主，韩起之子、韩不信之父。前540年，他曾到齐国迎接齐女少姜；传世材料对其其他政绩记载不多。
@@ -537,6 +578,7 @@ heroes:
       agility: 21
   - key: hist_xianqin_0493
     name: 韩无忌
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）韩无忌，春秋时期晋国公族大夫，韩厥长子。因自知有疾，他不承袭卿位而推让给弟弟韩起，史传以此称许其让德。
@@ -550,6 +592,7 @@ heroes:
       agility: 13
   - key: hist_xianqin_0494
     name: 季寤
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）季寤，春秋时期鲁国季氏人物，姓名见于贵族谱系或古籍片段。关于其具体官职和事迹，现存材料记载有限。
@@ -563,6 +606,7 @@ heroes:
       agility: 15
   - key: hist_xianqin_0495
     name: 季甲
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）季甲，春秋时期鲁国三桓季氏人物，季公鸟之子。其姓名见于季氏家族内争材料，个人官职和具体事迹记载较少。
@@ -576,6 +620,7 @@ heroes:
       agility: 15
   - key: hist_xianqin_0496
     name: 季鲂侯
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）季鲂侯，春秋时期鲁国三桓季氏人物，季平子之子、季桓子之弟。关于其个人官职和事迹，传世记载有限。
@@ -589,6 +634,7 @@ heroes:
       agility: 21
   - key: hist_xianqin_0497
     name: 桀溺
+    avatar: monkey_wen_male8.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）桀溺，《论语·微子》中的隐者，与长沮并耕。子路问津时，他认为天下动荡、无人能够改变，劝孔子避开仕途；其形象主要通过这段对话保存。
@@ -602,6 +648,7 @@ heroes:
       agility: 7
   - key: hist_xianqin_0498
     name: 椒鸣
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）椒鸣，又称伍鸣，春秋时期楚国大臣，伍举之子、伍奢之兄、伍子胥之伯父。相关事迹主要见于楚国伍氏家族材料。
@@ -615,6 +662,7 @@ heroes:
       agility: 12
   - key: hist_xianqin_0499
     name: 桓叔捷
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）桓叔捷，姬姓，春秋时期晋襄公之子。晋灵公即位后，他为避祸出奔周地，死后谥号“桓”；相关记载见于晋国公族世系。
@@ -628,6 +676,7 @@ heroes:
       agility: 17
   - key: hist_xianqin_0500
     name: 孔婴齐
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）孔婴齐，春秋时期孔氏人物，见于《左传》相关记载。孔氏支脉和同名情况较多，关于其具体职务与事迹应与其他孔氏人物区分。
@@ -641,6 +690,7 @@ heroes:
       agility: 12
   - key: hist_xianqin_0501
     name: 阚止
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）阚止，又作监止，字子我，春秋末期齐国大夫，得到齐简公信任，与田常争夺政权。田常发动政变时，阚止被杀，齐简公随后遇害，田氏因此进一步控制齐国。
@@ -654,6 +704,7 @@ heroes:
       agility: 11
   - key: hist_xianqin_0502
     name: 孔鲤
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: （前532年—前483年）孔鲤，字伯鱼，孔子之子、子思之父。传世最著名的事迹是孔子以学诗、学礼训诫他；他在儒家谱系中承接孔子与子思。
@@ -667,6 +718,7 @@ heroes:
       agility: 8
   - key: hist_xianqin_0503
     name: 伶州鸠
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）伶州鸠，周景王时期乐官，见于《国语·周语》。周景王询问乐律时，他以四时、五声和十二律作答，是先秦乐律思想的重要记载人物。
@@ -680,6 +732,7 @@ heroes:
       agility: 13
   - key: hist_xianqin_0504
     name: 卢蒲嫳
+    avatar: pig/文032.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）卢蒲嫳，春秋时期齐国大臣，卢蒲氏人物。传世记载中，他与卢蒲癸等人在齐国庆氏政变中相关，个人其他事迹记载较少。
@@ -693,6 +746,7 @@ heroes:
       agility: 11
   - key: hist_xianqin_0505
     name: 栾灶
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）栾灶，字子雅，春秋时期齐国公族大夫，齐惠公之孙、公子坚之子。曾与子尾参与齐国政务，前539年去世。
@@ -706,6 +760,7 @@ heroes:
       agility: 12
   - key: hist_xianqin_0507
     name: 栾施
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）栾施，字子旗，春秋时期齐国公族大夫。与高强共同执掌齐政，齐昭公时期攻打公宫虎门失败，随后出奔鲁国。
@@ -719,6 +774,7 @@ heroes:
       agility: 8
   - key: hist_xianqin_0508
     name: 卢蒲癸
+    avatar: pig/文014.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）卢蒲癸，春秋时期齐国大臣。前545年，他与子雅、子尾等人在太庙祭祀时杀死庆舍，庆封随后出逃鲁国。
@@ -732,6 +788,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0509
     name: 管至父
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）管至父，春秋时期齐国大夫。与连称戍守葵丘，因齐襄公未按约换防而积怨，遂与连称、公孙无知合谋弑杀齐襄公，后随公孙无知政权覆亡。
@@ -745,6 +802,7 @@ heroes:
       agility: 15
   - key: hist_xianqin_0511
     name: 连称
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）连称，春秋时期齐国大夫，与管至父同戍葵丘。因齐襄公失约不换防，他参与管至父、公孙无知合谋的弑君行动；公孙无知被杀后，连称亦被清算。
@@ -758,6 +816,7 @@ heroes:
       agility: 13
   - key: hist_xianqin_0512
     name: 黎鉏
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）黎鉏，即犁弥、王猛，春秋时期齐国客卿。孔子在鲁国执政时，他建议齐国送女乐、文马离间鲁定公与孔子，孔子遂离鲁。
@@ -771,6 +830,7 @@ heroes:
       agility: 5
   - key: hist_xianqin_0514
     name: 孟之侧
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）孟之侧，又称孟之反，春秋时期鲁国三桓孟氏支子。鲁军败退时，他留在全军最后，并以马不肯前行为自己辩解，相关事迹见《论语》。
@@ -784,6 +844,7 @@ heroes:
       agility: 4
   - key: hist_xianqin_0515
     name: 孟公期
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）孟公期，春秋时期鲁国三桓孟氏支子。其姓名见于鲁国孟氏谱系和春秋人物材料，个人官职与具体事迹记载较少。
@@ -797,6 +858,7 @@ heroes:
       agility: 10
   - key: hist_xianqin_0516
     name: 孟公绰
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）孟公绰，春秋时期鲁国三桓孟氏族人，见于《论语》《左传》。孔子认为他适合担任赵、魏两家家臣，却不适合主持滕、薛等小国，评价其才性有所长短。
@@ -810,6 +872,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0517
     name: 闵子马
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）闵子马，又作闵马父，春秋时期鲁国人。前520年，他根据周王室局势判断王子朝难以取胜，相关言论见于《左传》。
@@ -823,6 +886,7 @@ heroes:
       agility: 12
   - key: hist_xianqin_0518
     name: 潘党
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）潘党，春秋时期楚国大夫，潘尫之子，见于邲之战后的史传。楚军获胜后，他建议筑京观展示战功，楚庄王以“武有七德”拒绝。
@@ -836,6 +900,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0519
     name: 庆佐
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）庆佐，春秋时期齐国执政大臣，庆封之弟、庆克之子。前552年齐庄公任命他为大夫，他参与讨伐公子牙一族。
@@ -849,6 +914,7 @@ heroes:
       agility: 9
   - key: hist_xianqin_0520
     name: 庆舍
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）庆舍，春秋时期齐国执政大臣庆封之子。庆封掌政时让他参与国政；前545年，卢蒲癸等人在太庙将其杀死。
@@ -862,6 +928,7 @@ heroes:
       agility: 5
   - key: hist_xianqin_0521
     name: 庆郑
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）庆郑，春秋时期晋国大夫。韩原之战前，他劝晋惠公使用本国马匹，惠公不听而败；战后庆郑因直言获罪被杀。

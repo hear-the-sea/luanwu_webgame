@@ -2,6 +2,7 @@ heroes:
   blue:
   - key: hist_songliaojinyuan_0209
     name: 姜夔
+    avatar: monkey/其他随机角色/文039_男.png
     default_gender: male
     archetype: civil
     flavor: （约1155年—1221年）南宋词人、音乐家，字尧章，号白石道人。姜夔长期以布衣身份游历江浙，精通音律，所作《白石道人歌曲》保存多首附工尺谱的词曲；他还作有《扬州慢》《暗香》等词。
@@ -15,6 +16,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0211
     name: 赵鼎
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （1085年—1147年）南宋大臣，字元镇。赵鼎两度任相，主张抗金，反对秦桧议和；他先后被贬潮州、吉阳军，绍兴十七年绝食而死。
@@ -28,6 +30,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0222
     name: 王坚
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: （1198年—1264年）南宋将领，曾任合州知州。王坚主持修筑钓鱼城，1259年率军抵御蒙古军，蒙哥汗在城下病死；他后来任四川制置使，病逝于任所。
@@ -42,6 +45,7 @@ heroes:
   green:
   - key: hist_songliaojinyuan_0210
     name: 史弥远
+    avatar: pig/文014.png
     default_gender: male
     archetype: civil
     flavor: 史弥远（1164—1233），字同叔，南宋宰相、权臣。开禧北伐后参与诛杀韩侂胄，转向对金和议；宁宗死后联合杨皇后废赵竑、拥立宋理宗，长期掌握朝政。
@@ -55,6 +59,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0212
     name: 胡铨
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: 胡铨（1102—1180），字邦衡，南宋政治家、文学家。绍兴八年上书请求斩秦桧、王伦、孙近，因而长期被贬；孝宗时复起，官至资政殿学士，号澹庵。
@@ -68,6 +73,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0213
     name: 王淮
+    avatar: pig/文032.png
     default_gender: male
     archetype: civil
     flavor: 王淮（1126—1189），字季海，南宋宰相。孝宗、光宗时期历任参知政事、右丞相等职，主持政务多年；他重视整军、理财与边防，曾荐用朱熹等人。
@@ -81,6 +87,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0214
     name: 周必大
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: 周必大（1126—1204），字子充，南宋政治家、文学家、刻书家。历仕高宗至宁宗，官至左丞相；主持刊刻《文苑英华》《欧阳文忠公集》等，卒谥文忠。
@@ -94,6 +101,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0215
     name: 赵汝愚
+    avatar: pig/文014.png
     default_gender: male
     archetype: civil
     flavor: 赵汝愚（1140—1196），南宋宗室、宰相。绍熙内禅时与韩侂胄等拥立宋宁宗，任相后与韩氏争权；后被排挤贬谪而死，谥忠定。
@@ -107,6 +115,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0216
     name: 叶适
+    avatar: pig/文029.png
     default_gender: male
     archetype: civil
     flavor: 叶适（1150—1223），字正则，号水心，南宋思想家、文学家，永嘉学派代表。强调经世致用，重视财赋、军政和民生，著有《水心文集》。
@@ -120,6 +129,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0217
     name: 陈亮
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: 陈亮（1143—1194），字同甫，号龙川，南宋思想家、文学家，永康学派代表。主张恢复中原，多次陈述抗金方略，并与朱熹展开王霸义利之辩，著有《龙川文集》。
@@ -133,6 +143,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0218
     name: 魏了翁
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: 魏了翁（1178—1237），字华父，号鹤山，南宋学者、政治家，蜀学代表。曾在四川讲学并创办书院，历任地方及中枢官职，多次上书论政，著有《鹤山集》。
@@ -146,6 +157,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0219
     name: 真德秀
+    avatar: pig/文032.png
     default_gender: male
     archetype: civil
     flavor: 真德秀（1178—1235），字希元，号西山，南宋理学家、政治家。学宗朱熹，著《大学衍义》以经史论述修身治国，历任地方及中枢官职，卒谥文忠。
@@ -159,6 +171,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0220
     name: 刘克庄
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: 刘克庄（1187—1269），字潜夫，号后村，南宋诗人、词人，江湖诗派代表。其诗词多写时事与民生，词风兼有豪放与沉郁，著有《后村先生大全集》。
@@ -172,6 +185,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0221
     name: 吴潜
+    avatar: pig/文014.png
     default_gender: male
     archetype: civil
     flavor: 吴潜（1195—1262），字毅夫，号履斋，南宋状元、宰相。理宗时两度入相，面对蒙古压力主张整军备战；后与贾似道等政见不合，被贬并死于谪所。
@@ -185,6 +199,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0223
     name: 曹友闻
+    avatar: monkey_wu_male16.png
     default_gender: male
     archetype: military
     flavor: 曹友闻（？—1236），字允叔，南宋将领。蒙古军攻蜀时，他在仙人关、阳平关等地组织防御，率军作战，最终战死，谥毅节。
@@ -198,6 +213,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0224
     name: 杨存中
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: 杨存中（1102—1166），原名杨沂中，字正甫，南宋将领。曾参与平定苗刘兵变并多次抗金，历任殿前副都指挥使、殿前都指挥使，封恭国公，谥武恭。
@@ -211,6 +227,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0226
     name: 刘宝
+    avatar: monkey_wu_male16.png
     default_gender: male
     archetype: military
     flavor: 刘宝，南宋将领，绍兴、隆兴年间任殿前司及镇江军职，曾任镇江府驻扎御前诸军都统制。现存百科与史料对其生平记载较简略，勿与抗金水师将领李宝混淆。
@@ -224,6 +241,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0227
     name: 毕再遇
+    avatar: monkey/其他随机角色/武037_男.png
     default_gender: male
     archetype: military
     flavor: 毕再遇，字德卿，南宋将领。开禧北伐时在泗州、六合、楚州等地多次击退金军，善用奇兵；后任淮东将领，卒谥忠毅。
@@ -237,6 +255,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0228
     name: 赵范
+    avatar: monkey/其他随机角色/武038_男.png
     default_gender: male
     archetype: military
     flavor: 赵范，字武仲，南宋将领，赵方之子、赵葵之兄。理宗时期任京湖制置等职，反对贸然联合蒙古灭金，端平入洛后参与处理河南、京湖军务。
@@ -250,6 +269,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0229
     name: 高达
+    avatar: monkey_wu_male3.png
     default_gender: male
     archetype: military
     flavor: 高达，南宋末年将领，曾任湖北制置副使，参与襄阳、鄂州等地防务。德祐元年元军攻江陵时，他开城降元，后入元任职。
@@ -263,6 +283,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0230
     name: 向士璧
+    avatar: monkey_wu_male10.png
     default_gender: male
     archetype: military
     flavor: 向士璧，字君玉，南宋将领。长期任职湖南、四川等地，参与抗蒙；史载他曾自捐家财充军费并率军救援，后因军政纠纷受处分。
@@ -276,6 +297,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0231
     name: 姜才
+    avatar: monkey/其他随机角色/武037_男.png
     default_gender: male
     archetype: military
     flavor: 姜才（？—1276），南宋末年将领，隶属李庭芝。元军围扬州时率部出战、坚守，城破被俘后拒绝投降，最终遇害。
@@ -289,6 +311,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0232
     name: 夏贵
+    avatar: monkey/其他随机角色/武037_男.png
     default_gender: male
     archetype: military
     flavor: 夏贵，字用和，南宋末年将领，长期镇守淮西，曾多次参与抗蒙；德祐二年临安失守后降元，后在元朝任职。
@@ -302,6 +325,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0233
     name: 吕文德
+    avatar: pig_wu_male9.png
     default_gender: male
     archetype: military
     flavor: 吕文德，南宋将领，长期镇守京湖、四川等地，参与抵抗蒙古军；与王坚、高达等承担襄阳、合州方向防务，后期战事评价有争议。
@@ -315,6 +339,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0234
     name: 吕文焕
+    avatar: pig/武046.png
     default_gender: male
     archetype: military
     flavor: 吕文焕，吕文德之弟，南宋襄阳守将。襄阳、樊城被元军围困多年，至元十年樊城失守后降元，随后参与招降南宋沿江州郡。
@@ -328,6 +353,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0235
     name: 史嵩之
+    avatar: pig/文028.png
     default_gender: male
     archetype: civil
     flavor: 史嵩之（1189—1257），字子申，史弥远之侄，南宋宰相。曾任参知政事、右丞相，主张对蒙古议和；夺情起复后遭朝野弹劾，退居多年。
@@ -341,6 +367,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0236
     name: 陈文龙
+    avatar: pig/文049.png
     default_gender: male
     archetype: civil
     flavor: 陈文龙（1232—1277），字君贲，南宋状元、官员。任兴化知军时组织抗元，城破被俘后绝食不屈而死，后世以忠烈著称。
@@ -354,6 +381,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0237
     name: 谢枋得
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: 谢枋得（1226—1289），字君直，号叠山，南宋遗民、文学家。宋亡后拒绝仕元，所编《文章轨范》影响科举文章；被征至大都后绝食而死，私谥文节。
@@ -367,6 +395,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0238
     name: 邓剡
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: 邓剡（1232—约1303），字光荐，南宋遗民、文学家。与文天祥交厚，宋亡后拒仕元，著有《中斋集》，晚年出家。
@@ -380,6 +409,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0239
     name: 王应麟
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: 王应麟（1223—1296），字伯厚，号深宁，南宋经史学家、文字学家。著有《玉海》《困学纪闻》等，广泛考订经史制度；宋亡后闭门著述。
@@ -393,6 +423,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0240
     name: 黄震
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: 黄震（1213—1280），字东发，南宋末年学者、官员，东发学派代表。著《黄氏日抄》，考辨经义并批评民穷、兵弱、财匮等时弊；宋亡后隐居不仕。
@@ -406,6 +437,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0241
     name: 文及翁
+    avatar: pig/文032.png
     default_gender: male
     archetype: civil
     flavor: 文及翁，字时学，号本心，南宋官员、状元。曾任签书枢密院事，宋亡后拒绝仕元，闭户校书；其《贺新郎·游西湖》借湖山寄寓故国之思。
@@ -419,6 +451,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0242
     name: 史达祖
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: 史达祖，号梅溪，南宋词人，曾任韩侂胄幕僚。词作多咏物写景，风格精工婉约，有《梅溪词》传世，生卒年说法不一。
@@ -432,6 +465,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0243
     name: 吴文英
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: 吴文英，字君特，号梦窗，南宋词人。长期以游幕为生，词作意象密集、辞藻精丽，今有《梦窗词》传世，是南宋词坛重要作家。
@@ -445,6 +479,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0244
     name: 蒋捷
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: 蒋捷（约1245—约1305），字胜欲，号竹山，宋末元初词人。宋亡后不仕，词多写身世与故国之思，代表作有《虞美人·听雨》。
@@ -458,6 +493,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0245
     name: 张炎
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: 张炎（1248—约1320），字叔夏，号玉田，宋末元初词人、词论家。著《词源》，论述词的音律、作法和审美，提出清空等主张。
@@ -471,6 +507,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0246
     name: 周密
+    avatar: pig/文041.png
     default_gender: male
     archetype: civil
     flavor: 周密（1232—1298），字公谨，南宋文学家、词人、书画鉴赏家。宋亡后不仕元，著《武林旧事》《齐东野语》《癸辛杂识》，保存大量南宋社会史料。
@@ -484,6 +521,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0247
     name: 刘过
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: 刘过（1154—1206），字改之，号龙洲道人，南宋诗人、词人。与辛弃疾、陆游、陈亮等交游唱和，多主张抗金复国，著有《龙洲集》。
@@ -497,6 +535,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0248
     name: 尤袤
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: 尤袤（1127—1194），字延之，号遂初居士，南宋诗人、藏书家，与杨万里、范成大、陆游并称南宋四大诗人；编有《遂初堂书目》。
@@ -510,6 +549,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0249
     name: 洪迈
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: 洪迈（1123—1202），字景卢，南宋学者、文学家，洪皓之子。著《容斋随笔》考论经史诗文，另有《夷坚志》记录宋代传闻与志怪。
@@ -523,6 +563,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0250
     name: 洪适
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: 洪适（1117—1184），字景伯，南宋文学家、金石学家，与洪遵、洪迈并称三洪。著《隶释》《隶续》，系统著录和考释汉魏碑刻。
@@ -536,6 +577,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0251
     name: 朱松
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: 朱松（1097—1143），字乔年，号韦斋，南宋理学家，朱熹之父。受二程学说影响，曾任地方及馆阁官职，著有《韦斋集》，对朱熹早年学术有影响。
@@ -549,6 +591,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0252
     name: 吕祖谦
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: 吕祖谦（1137—1181），字伯恭，号东莱，南宋理学家、史学家，金华学派代表。与朱熹、张栻并称东南三贤，重视经史和制度，参与编纂《近思录》《宋文鉴》。
@@ -562,6 +605,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0253
     name: 张栻
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: 张栻（1133—1180），字敬夫，号南轩，南宋理学家，湖湘学派代表，张浚之子。主持岳麓书院，重视居敬穷理与践履，曾与朱熹交游论学。
@@ -575,6 +619,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0254
     name: 陆九龄
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: 陆九龄（1132—1180），字子寿，号复斋，陆九渊之兄，南宋理学家。重视道德涵养与躬行践履，曾与弟陆九渊讲学，是陆氏心学形成中的重要人物。
@@ -588,6 +633,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0255
     name: 李侗
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: 李侗（1093—1163），字愿中，号延平，南宋学者。承接二程洛学，长期讲学而少仕宦；朱熹曾从其问学，后世尊称延平先生。
@@ -601,6 +647,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0256
     name: 刘子翚
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: 刘子翚（1101—1147），字彦冲，号屏山、病翁，南宋学者、诗人。曾任兴化军通判，后居武夷山讲学，朱熹曾从其学习，著有《屏山集》。
@@ -614,6 +661,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0257
     name: 胡宏
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: 胡宏（1105—1161），字仁仲，号五峰，胡安国之子，南宋理学家、湖湘学派奠基者。隐居衡山讲学，著《知言》，其弟子包括张栻等。
@@ -627,6 +675,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0258
     name: 胡安国
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: 胡安国（1074—1138），字康侯，号武夷先生，南宋理学家、经学家。著《春秋传》，以经史阐释君臣、名分与华夷之辨，对湖湘学派及宋代《春秋》学影响深远。

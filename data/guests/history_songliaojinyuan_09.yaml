@@ -2,6 +2,7 @@ heroes:
   blue:
   - key: hist_songliaojinyuan_0411
     name: 孛儿只斤·铁穆耳
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （1265年—1307年）元成宗，忽必烈之孙，名铁穆耳。铁穆耳即位后停止大规模远征，与察合台、窝阔台等汗国议和；他任用哈剌哈孙整顿朝政，后在大都病逝。
@@ -15,6 +16,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0413
     name: 孛儿只斤·爱育黎拔力八达
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （1285年—1320年）元仁宗，答剌麻八剌之子，1311年即位。仁宗任用汉臣，恢复科举，整顿国子学与赋税；延祐七年病逝。
@@ -28,6 +30,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0415
     name: 孛儿只斤·妥懽帖睦尔
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （1320年—1370年）元顺帝，明宗长子，1333年即位。妥懽帖睦尔后期任用脱脱修治黄河，红巾军起后撤离大都，北返草原，1370年病逝。
@@ -41,6 +44,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0416
     name: 安童
+    avatar: pig/文048.png
     default_gender: male
     archetype: civil
     flavor: （1245年—1293年）元代大臣，木华黎曾孙。安童幼年入侍忽必烈，历任中书右丞相，曾因与阿合马等权臣冲突被罢职，后来复相，至元三十年病逝。
@@ -54,6 +58,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0417
     name: 史天泽
+    avatar: monkey_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （1202年—1275年）元代汉军将领，真定史氏首领。史天泽早年随蒙古军攻金，后参加襄阳、樊城和临安战事；元世祖时任中书右丞相，主持汉地军政，死后追封镇阳王。
@@ -67,6 +72,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0421
     name: 刘整
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: （1212年—1275年）南宋将领，后降元。刘整向忽必烈建议先取襄阳、樊城，并在元军中训练水军、建造战船；襄阳陷落后，他任万户，继续参加元军南征。
@@ -80,6 +86,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0431
     name: 廉希宪
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: （1231年—1280年）元代大臣，维吾尔族，字善甫。廉希宪早年入忽必烈幕府，参与平定阿里不哥，历任中书平章政事、云南平章，反对滥杀，至元十七年病逝。
@@ -94,6 +101,7 @@ heroes:
   green:
   - key: hist_songliaojinyuan_0409
     name: 海都
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
     flavor: 海都（约1235—1301），窝阔台之孙，窝阔台系诸王领袖。阿里不哥败后联合察合台系诸王长期与元廷对抗，曾进逼和林；大德五年（1301）与元军交战后负伤而死。
@@ -107,6 +115,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0410
     name: 乃颜
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: 乃颜（？—1287），成吉思汗弟别里古台的后裔，东道蒙古宗王。至元二十四年（1287）起兵反元，忽必烈亲征后在辽东战败，被处死；其乱促使元廷加强对东道诸王的控制。
@@ -120,6 +129,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0412
     name: 孛儿只斤·海山
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: 孛儿只斤·海山（1281—1311），元武宗，答剌麻八剌之子。大德年间出镇漠北，曾与海都、笃哇交战；即位后设尚书省，推行至大钞，厚赏宿卫，造成财政压力。
@@ -133,6 +143,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0414
     name: 孛儿只斤·图帖睦尔
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: 孛儿只斤·图帖睦尔（1304—1332），元文宗，两度即位。崇尚汉学，设奎章阁，命儒臣编修《经世大典》；其在位时权臣燕帖木儿执政，朝局受到牵制。
@@ -146,6 +157,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0418
     name: 董文炳
+    avatar: pig_wu_male5.png
     default_gender: male
     archetype: military
     flavor: 董文炳（1217—1278），字彦明，真定藁城人，元初将领。参与攻宋，至元十三年（1276）率军进临安并受降宋恭帝，后任江淮行省平章政事等职。
@@ -159,6 +171,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0419
     name: 张柔
+    avatar: pig_wu_male1.png
     default_gender: male
     archetype: military
     flavor: 张柔（1190—1268），字德刚，易州定兴人，金末元初将领。金末组织乡兵，后归附蒙古，参与灭金并攻破汴京，收得《金实录》；元初为汉军世侯，其子张弘范亦为元将。
@@ -172,6 +185,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0420
     name: 严实
+    avatar: pig/武046.png
     default_gender: male
     archetype: military
     flavor: 严实（1182—1240），字武叔，金末元初汉人世侯。金兴定年间任长清令，后归附蒙古，统辖东平等地，拥有军民财权；蒙古建汉军后，其部隶属史天泽。
@@ -185,6 +199,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0422
     name: 张禧
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
     flavor: 张禧（约1217—1291），安次人，元初将领。参与攻取樊城、襄阳，授水军万户；后随元军渡江作战，官至昭勇大将军，所部以军纪严整著称。
@@ -198,6 +213,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0423
     name: 郭侃
+    avatar: pig_wu_male9.png
     default_gender: male
     archetype: military
     flavor: 郭侃（1217—1277），字仲和，华州郑县人，元初汉人将领。随旭烈兀西征，参与攻陷巴格达及进攻叙利亚诸城；归朝后任万户，官至陕西行省平章政事。
@@ -211,6 +227,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0424
     name: 李璮
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: 李璮（？—1262），潍州人，元初山东益都世侯。中统三年（1262）起兵反元，将海州、涟水等地献给南宋；后据济南抵抗，城破被杀，其乱促使元廷削弱汉人世侯兵权。
@@ -224,6 +241,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0425
     name: 王文统
+    avatar: pig/文029.png
     default_gender: male
     archetype: civil
     flavor: 王文统，元初政治人物，李璮幕僚并为其岳父。曾任中书平章政事，主持财政，推行盐课、交钞等改革；中统三年李璮反元后，因涉嫌通谋被忽必烈处死。
@@ -237,6 +255,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0426
     name: 姚枢
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: 姚枢（1203—1280），字公茂，营州柳城人，元初政治家、理学家。曾任蒙古军前书记，后辅佐忽必烈，荐举许衡、郝经等儒士，参与元初典制建设。
@@ -250,6 +269,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0427
     name: 郝经
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: 郝经（1223—1275），字伯常，泽州陵川人，元初学者、使臣。中统元年（1260）奉命出使南宋，至真州后被贾似道扣留十六年；获释北归后病卒，著有《陵川集》《续后汉书》。
@@ -263,6 +283,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0428
     name: 窦默
+    avatar: pig_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: 窦默（1196—1280），字汉卿，金末元初医家、理学家。精通针灸与医术，兼传程朱理学，受忽必烈召用；至元十七年加昭文馆大学士。
@@ -276,6 +297,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0429
     name: 赵复
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: 赵复（？—约1256），字仁甫，德安人，宋末元初理学家。1235年被蒙古军俘获，北上后讲授程朱理学，编《传道图》《希贤录》《师友图》等，推动理学北传。
@@ -289,6 +311,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0430
     name: 杨惟中
+    avatar: pig/文048.png
     default_gender: male
     archetype: civil
     flavor: 杨惟中（1205—1259），字彦诚，弘州人，蒙古帝国大臣。参与攻宋时搜求儒士与经书，建太极书院并聘赵复讲学；历任中书令等职，推动蒙古政权吸收中原典章。
@@ -302,6 +325,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0432
     name: 阿合马
+    avatar: pig/文029.png
     default_gender: male
     archetype: civil
     flavor: 阿合马（？—1282），元朝色目大臣，忽必烈朝长期主持财政。整顿税制、推行专卖与交钞，增加国用；因苛征和专权引发怨恨，至元十九年被王著刺杀。
@@ -315,6 +339,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0433
     name: 卢世荣
+    avatar: pig/文029.png
     default_gender: male
     archetype: civil
     flavor: 卢世荣（？—1285），元世祖时期理财官。阿合马死后主持财政，提出盐法、贸易、钞法等改革；因触犯权贵遭弹劾，至元二十二年被处死。
@@ -328,6 +353,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0434
     name: 桑哥
+    avatar: monkey_wen_male7.png
     default_gender: male
     archetype: civil
     flavor: 桑哥（？—1291），藏族，元朝宰相。忽必烈时主持财政，整顿钱粮、推行改革；因专权、征敛等遭弹劾，至元二十八年被处死。
@@ -341,6 +367,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0435
     name: 虞集
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: 虞集（1272—1348），字伯生，号道园，元代文学家、学者。任奎章阁侍书学士，参与编修《经世大典》；与杨载、范梈、揭傒斯并称元诗四大家，著《道园学古录》。
@@ -354,6 +381,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0436
     name: 揭傒斯
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: 揭傒斯（1274—1344），字曼硕，龙兴富州人，元代文学家、书法家、史学家。历任翰林待制、集贤学士，著《揭文安公集》，与虞集、杨载、范梈并称元诗四大家。
@@ -367,6 +395,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0437
     name: 范梈
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: 范梈（1272—1330），字亨父，又字德机，清江人，元代诗人。工于诗，与虞集、杨载、揭傒斯齐名，被誉为元诗四大家之一。
@@ -380,6 +409,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0438
     name: 杨载
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: 杨载（1271—1323），字仲弘，浦城人，元代进士、诗人。参与修《武宗实录》，著《诗法家数》《杨仲宏集》等，与虞集、范梈、揭傒斯并称元诗四大家。
@@ -393,6 +423,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0439
     name: 萨都剌
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: 萨都剌，字天锡，号直斋，元代色目诗人、画家、书法家，一说为回回人。泰定四年进士，历官江南诸道行台侍御史等，著有《雁门集》。
@@ -406,6 +437,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0440
     name: 张可久
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: 张可久，字小山，庆元人，元代散曲家，清丽派代表。长期任小吏，仕途不显；散曲作品今存甚多，后人辑为《小山乐府》，与乔吉并称“张乔”。
@@ -419,6 +451,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0441
     name: 乔吉
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: 乔吉（约1280—1345），字梦符，号笙鹤翁，太原人，寓居杭州，元代杂剧、散曲作家。著有《两世姻缘》等杂剧，散曲清丽，与张可久并称“张乔”。
@@ -432,6 +465,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0442
     name: 贯云石
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: 贯云石（1286—1324），维吾尔族，号酸斋，元代散曲家、诗人。作品有《酸斋乐府》，与号甜斋的徐再思齐名，后人合辑二人散曲为《酸甜乐府》。
@@ -445,6 +479,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0443
     name: 徐再思
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: 徐再思（约1280—1330），字德可，号甜斋，元代散曲家。作品清丽，多作小令；其《甜斋乐府》与贯云石《酸斋乐府》因字号相对，后人合辑为《酸甜乐府》。
@@ -458,6 +493,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0444
     name: 睢景臣
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: 睢景臣，字景贤，元代散曲、杂剧作家。现存散曲以套曲《哨遍·高祖还乡》最为知名，借乡民视角描写刘邦还乡，具有讽刺意味。
@@ -471,6 +507,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0445
     name: 纪君祥
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: 纪君祥，元代大都人，杂剧作家。著有《赵氏孤儿冤报冤》，简称《赵氏孤儿》，取材于《左传》《史记》等关于赵氏孤儿的记载，是其现存代表作。
@@ -484,6 +521,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0446
     name: 宫天挺
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: 宫天挺，元代杂剧作家。现存《死生交范张鸡黍》《严子陵垂钓七里滩》等剧，前者歌颂范式、张劭守信重义的友情，作品多寓托古讽今之意。
@@ -497,6 +535,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0447
     name: 郑德辉
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: 郑德辉，即郑光祖，平阳人，元代杂剧、散曲作家，元曲四大家之一。曾任杭州路吏，代表作有《倩女离魂》《王粲登楼》，散曲今存小令六首、套数二套。
@@ -510,6 +549,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0448
     name: 李好古
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: 李好古，元代杂剧作家，属山东作家群。所作杂剧三种，现存《沙门岛张生煮海》一剧，写书生张羽与东海龙女相恋的故事。
@@ -523,6 +563,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0449
     name: 尚仲贤
+    avatar: pig/文034.png
     default_gender: male
     archetype: civil
     flavor: 尚仲贤，元代杂剧作家。根据唐代李朝威传奇《柳毅传》改编创作《洞庭湖柳毅传书》，写柳毅为龙女传书、相助的故事，是元杂剧神话剧代表作。
@@ -536,6 +577,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0450
     name: 石君宝
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: 石君宝，平阳人，元代杂剧作家。代表作《鲁大夫秋胡戏妻》取材于《列女传》中的秋胡故事，写秋胡与妻子罗梅英的婚姻纠葛，现存作品不多。
@@ -549,6 +591,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0451
     name: 康进之
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: 康进之，棣州人，元代杂剧作家，擅写水浒题材。现存《梁山泊李逵负荆》，写李逵因误会负荆请罪，是现存水浒题材元杂剧中较有代表性的作品。
@@ -562,6 +605,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0452
     name: 高文秀
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: 高文秀，元代东平路人，杂剧作家，生卒年不详。所作杂剧三十余种，多取《水浒》人物李逵为题材，传有《黑旋风双献功》等剧。
@@ -575,6 +619,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0453
     name: 吴澄
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: 吴澄（1249—1333），元代理学家、经学家，江西崇仁人。与许衡并称“北许南吴”，著有《吴文正集》《易纂言》等，长期讲学，对元代南北学术交流有影响。
@@ -588,6 +633,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0454
     name: 刘因
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: 刘因（1249—1293），字梦吉，号静修，元代理学家、诗人。曾应召入仕，后辞归隐居，以讲学、著述为业，著有《静修集》，诗文兼具理学思考与时事感怀。
@@ -601,6 +647,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0455
     name: 胡祗遹
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: 胡祗遹（1227—1295），磁州武安人，金末元初官员、文学家。历任翰林文字、太常博士、济宁路总管及山东按察使等，诗文散曲兼长，著有《紫山大全集》。
@@ -614,6 +661,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0456
     name: 卢挚
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: 卢挚（1243—约1315），字处道，号疏斋，涿郡人，元代文学家、散曲家。官至翰林学士，散曲今存一百二十余首，与姚燧齐名，时称“姚卢”。
@@ -627,6 +675,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0457
     name: 姚燧
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: 姚燧（1238—1313），字端甫，号牧庵，元代文学家。早年从许衡游，历任陕西汉中道提刑按察副使等职，擅长制诰与古文，著有《牧庵集》，与卢挚并称“姚卢”。
@@ -640,6 +689,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0458
     name: 任仁发
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: 任仁发（1254—1327），字子明，号月山道人，松江青龙镇人，元代官员、水利家、画家。主持吴淞江、通惠河等水利工程，擅画鞍马，著有《水利集》。

@@ -2,6 +2,7 @@ heroes:
   blue:
   - key: hist_mingqing_0365
     name: 刘瑾
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: （1451年—1510年）明武宗正德年间的司礼监掌印太监。刘瑾与张永等八名宦官随朱厚照即位，后来掌握内廷和司礼监，排斥异己；正德五年，刘瑾被捕处死，家产被抄没。
@@ -16,6 +17,7 @@ heroes:
   green:
   - key: hist_mingqing_0412
     name: 乌思道
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）清代幕友，浙江慈溪人，曾入河南巡抚田文镜幕府，负责查对文书、核算钱谷。关于他后来入雍正帝潜邸并参与夺嫡谋划的故事，主要见于野史和文学作品，正史记载十分简略。
@@ -29,6 +31,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0366
     name: 李世熊
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: 明末清初遗民、学者，福建宁化人。南明隆武帝曾荐为翰林博士，因奉养父亲辞不就；著《寒支集》《钱神志》《宁化县志》。
@@ -42,6 +45,7 @@ heroes:
       agility: 14
   - key: hist_mingqing_0409
     name: 曾纪芬
+    avatar: monkey_wen_female10.png
     default_gender: female
     archetype: civil
     flavor: （1852年—1942年）号崇德老人，曾国藩季女，晚清至民国女性。著《崇德老人八十自订年谱》等，记录家族生活、家训与时代变迁。
@@ -55,6 +59,7 @@ heroes:
       agility: 8
   - key: hist_mingqing_0413
     name: 徐崧
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: 清代学者、地方文献家，曾与张大纯合辑《百城烟水》九卷，记载苏州府及所属诸县的山川、名胜、人物与题咏。
@@ -68,6 +73,7 @@ heroes:
       agility: 7
   - key: hist_mingqing_0414
     name: 余怀
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （1616年—1696年）字澹心，号无怀，明末清初文学家。著《板桥杂记》，追忆南京旧院风物、名伎与晚明士人交游，兼寄易代之感。

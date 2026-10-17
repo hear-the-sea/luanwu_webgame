@@ -1,0 +1,37 @@
+{
+  "status": "deployed_and_verified",
+  "checked_at_utc": "2026-10-14T14:27:54.836822+00:00",
+  "image": "webgame:market-overflow-20261014",
+  "previous_web_image": "webgame:request-tail-optimization-20261013",
+  "files": {
+    "trade/services/market_service.py": "32565079a1382f0dc0b00f4a2585a9bf49f6c24c63fb4500359c7b5fca2832f5",
+    "trade/services/market_commands.py": "896235a6b05efb7e49cd6f968e43b7245eb64166684048d332e58f49ab2c270f",
+    "trade/services/market_notification_helpers.py": "a74547aba36c720debe99ad6eb12c6e220663d7e1d0888dfdf6690b891531972"
+  },
+  "tests_passed": 112,
+  "django_check": "passed",
+  "readiness": "passed",
+  "phase": {
+    "operation": "94eaf9e1bdc04cca9eb8a9ee0b141d37",
+    "phase": "complete",
+    "candidate": "code-web-bg-94eaf9e1bdc0",
+    "image": "webgame:market-overflow-20261014",
+    "proxy": "web",
+    "override": "/root/code/.web-bg-94eaf9e1bdc0.json",
+    "updated_at": 1791988072.7977498
+  },
+  "public": {
+    "/health/live": {
+      "status": 200,
+      "seconds": 0.067625
+    },
+    "/accounts/login/": {
+      "status": 200,
+      "seconds": 0.097829
+    }
+  },
+  "other_services_kept_running": true,
+  "database_migrations": false,
+  "static_assets_unchanged": true,
+  "release": "/root/code/releases/market-overflow-20261014"
+}

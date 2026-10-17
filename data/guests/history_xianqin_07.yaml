@@ -2,6 +2,7 @@ heroes:
   blue:
   - key: hist_xianqin_0300
     name: 姬诡诸
+    avatar: pig_wu_male5.png
     default_gender: male
     archetype: military
     flavor: （?—前651年）春秋晋献公，名诡诸。姬诡诸任用士蒍等人整顿晋国，先后灭掉虢国、虞国；晚年宠爱骊姬，废太子申生，逼得重耳、夷吾出逃，死后晋国陷入继位争斗。
@@ -15,6 +16,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0308
     name: 崔杼
+    avatar: monkey_wu_male10.png
     default_gender: male
     archetype: military
     flavor: （?—前546年）春秋齐国大夫。崔杼的妻子棠姜与齐庄公私通，齐庄公到崔家时，他设伏将其杀死，拥立齐景公并任右相；后来崔氏与庆封争权，崔杼家族内乱，他自杀身亡。
@@ -28,6 +30,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0310
     name: 田乞
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: （?—前485年）春秋齐国大夫，田氏宗主。田乞在齐景公死后拥立悼公，借粮时用大斗、收粮时用小斗，以此争取齐国民众；他还联合鲍牧等人压制国、高两氏，死后由儿子田常继承势力。
@@ -41,6 +44,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0311
     name: 田常
+    avatar: monkey_wu_male16.png
     default_gender: male
     archetype: military
     flavor: （?—前405年）春秋齐国大夫，名常，又称田成子。田常继承父亲田乞的势力，杀死齐简公，拥立齐平公；他继续以大斗借粮、小斗收粮笼络民众，并让田氏子弟控制齐国官职。
@@ -54,6 +58,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0317
     name: 士会
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （约前620年—约前556年）春秋晋国大夫，字季，谥武，范氏始祖。士会曾因政争逃到秦国，秦穆公任用他为谋士；晋国召回他后，他历任中军将、执政，主持晋国军政，晚年退居随地。
@@ -67,6 +72,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0325
     name: 韩虎
+    avatar: pig_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）春秋末韩氏宗主，名虎，又称韩康子。智瑶围攻晋阳时，韩虎与魏驹共同出兵；赵襄子派张孟谈游说二人后，韩虎倒向赵氏，参与反杀智瑶，韩氏由此保全。
@@ -80,6 +86,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0326
     name: 魏驹
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）春秋末魏氏宗主，名驹，又称魏桓子。智瑶围攻晋阳时，魏驹与韩虎随军；赵襄子派张孟谈游说后，他与韩虎一起掘开堤坝，反攻智瑶军，魏氏因此保住封地。
@@ -93,6 +100,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0330
     name: 熊弃疾
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （?—前516年）春秋楚平王，名弃疾，楚共王之子。熊弃疾夺位后迎娶太子建的未婚妻，并听信费无极谗言，杀死伍奢、伍尚，逼太子建出逃；伍子胥后来投吴，率军攻入楚都。
@@ -106,6 +114,7 @@ heroes:
       agility: 22
   - key: hist_xianqin_0336
     name: 沈诸梁
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: （约前550年—约前470年）春秋楚国大夫，封于叶，名诸梁，称叶公。白公胜在楚国起兵时，沈诸梁率叶地军队入郢平乱，杀死白公胜并迎回楚惠王；他晚年退居叶地。
@@ -119,6 +128,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0344
     name: 费无极
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: （?—前519年）春秋楚平王宠臣。费无极因太子建聘娶秦女而劝楚平王夺婚，又诬告太子太傅伍奢谋反；伍奢、伍尚被杀，伍子胥逃往吴国。费无极后来被楚国大夫郤宛等人诛杀。
@@ -133,6 +143,7 @@ heroes:
   green:
   - key: hist_xianqin_0301
     name: 姬圉
+    avatar: monkey/其他随机角色/武038_男.png
     default_gender: male
     archetype: military
     flavor: （？—前636年）姬圉，晋惠公之子，春秋时期晋怀公。曾在秦国为质，父死后回国即位；秦穆公支持重耳返晋后，怀公出逃，最终在高梁被杀。
@@ -146,6 +157,7 @@ heroes:
       agility: 22
   - key: hist_xianqin_0302
     name: 吕甥
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）吕甥，春秋时期晋国大夫，史称阴饴甥。韩原之战晋惠公被秦军俘获后，他奉命赴秦交涉，促成秦晋议和，使惠公得以归国。
@@ -159,6 +171,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0303
     name: 郤芮
+    avatar: monkey_wu_male7.png
     default_gender: male
     archetype: military
     flavor: （？—前636年）郤芮，春秋时期晋国大夫，晋惠公旧臣。重耳返晋后，他与吕甥谋划焚宫杀君，事败逃往秦国，后被秦穆公诱杀。
@@ -172,6 +185,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0304
     name: 勃鞮
+    avatar: pig/武060.png
     default_gender: male
     archetype: military
     flavor: （即寺人披，生卒年不详）勃鞮，春秋时期晋国宦官。曾奉命追杀流亡的重耳，并在蒲地斩断其衣袖；晋文公即位后，他告发郤芮、吕甥谋反，获赦免。
@@ -185,6 +199,7 @@ heroes:
       agility: 22
   - key: hist_xianqin_0305
     name: 羊舌赤
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （生卒年及事迹多不详）羊舌赤，字伯华，春秋时期晋国羊舌氏成员，叔向、叔虎之兄。关于其个人官职与事迹，史料少于其弟叔向。
@@ -198,6 +213,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0306
     name: 羊舌虎
+    avatar: monkey/其他随机角色/武037_男.png
     default_gender: male
     archetype: military
     flavor: （？—前552年）羊舌虎，春秋时期晋国大夫，叔向之弟。因与栾盈关系密切，卷入栾盈之乱，最终被杀；其事迹主要见于晋国卿族政治的相关记载。
@@ -211,6 +227,7 @@ heroes:
       agility: 22
   - key: hist_xianqin_0307
     name: 州绰
+    avatar: pig_wu_male9.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）州绰，春秋时期齐国勇士，崔杼家臣。齐庄公与棠姜的关系引发崔杼弑君时，州绰参与其中；关于他具体杀伤对象，传世记载有差异。
@@ -224,6 +241,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0309
     name: 庆封
+    avatar: pig/武051.png
     default_gender: male
     archetype: military
     flavor: （？—前538年）庆封，春秋时期齐国卿大夫。与崔杼共同弑杀齐庄公后，他借崔氏内乱逼崔杼自杀并掌握齐政；后被齐国诸卿驱逐，逃往吴国，最终为楚军所获而死。
@@ -237,6 +255,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0312
     name: 鲍牧
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）鲍牧，春秋时期齐国大夫，鲍氏成员。关于其个人职务和事迹，传世记载较少；他所处的鲍氏是齐国旧卿族，后来与田氏崛起的政治变化相连。
@@ -250,6 +269,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0313
     name: 国夏
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）国夏，春秋时期齐国大夫，国氏卿族成员。国氏与高氏长期支持齐国公室，国夏的个人事迹记载不多，主要可置于姜齐旧贵族与田氏势力消长的背景中。
@@ -263,6 +283,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0314
     name: 高张
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）高张，春秋时期齐国大夫，高氏卿族成员。高氏与国氏同为齐国旧卿族，个人行迹传世不多，主要见于齐国公室、旧贵族与田氏势力变化的记载。
@@ -276,6 +297,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0315
     name: 灵辄
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）灵辄，春秋时期晋国甲士。赵盾出游时曾救济饥饿的他；晋灵公派人刺杀赵盾时，灵辄认出赵盾，转而保护并帮助其脱险。此事见于《左传》。
@@ -289,6 +311,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0316
     name: 提弥明
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: （？—前607年）提弥明，春秋时期晋国大夫赵盾的车右。晋灵公设伏杀赵盾时，他拔剑迎战并战死，为赵盾争取脱身时间，事见《左传》。
@@ -302,6 +325,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0318
     name: 士燮
+    avatar: pig/文034.png
     default_gender: male
     archetype: civil
     flavor: （？—前574年）士燮，春秋时期晋国大夫，士会之子，史称范文子，曾任晋国执政。其任内参与晋国政务与诸侯外交，具体事迹见于《左传》。
@@ -315,6 +339,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0319
     name: 士匄
+    avatar: monkey_wu_male10.png
     default_gender: male
     archetype: military
     flavor: （？—前548年）士匄，春秋时期晋国卿大夫，士燮之子，史称范宣子。曾任晋国执政，参与晋楚弭兵及诸侯会盟；范氏后来在晋国卿族斗争中衰落。
@@ -328,6 +353,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0320
     name: 荀吴
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: （生卒年及名号多有异文）荀吴，春秋末晋国卿，史称中行穆子，曾任中行氏宗主。与范氏联合对抗赵鞅，失败后出奔，晋国卿族格局由此改变。
@@ -341,6 +367,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0321
     name: 士吉射
+    avatar: pig/武046.png
     default_gender: male
     archetype: military
     flavor: （？—前490年）士吉射，春秋末晋国卿，范氏宗主。与中行氏联合攻赵鞅，兵败后出奔齐国，范氏由此失去晋国卿位。
@@ -354,6 +381,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0322
     name: 荀首
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: （？—前583年）荀首，春秋时期晋国大夫，荀林父之弟，智氏始祖。其封邑和后代以“智”为氏，智罃、智瑶等均出自其家族。
@@ -367,6 +395,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0323
     name: 荀罃
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: （？—约前560年）荀罃，春秋时期晋国卿大夫，荀首之子，史称智武子。曾在晋楚战争中被楚国俘获，后获释归晋并任执政，重建智氏在晋国的地位。
@@ -380,6 +409,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0324
     name: 荀跞
+    avatar: pig_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （？—前493年）荀跞，春秋末晋国卿，史称智庄子，智氏宗主。范氏、中行氏败退后，智、赵、韩、魏成为晋国主要卿族；荀跞是智氏强盛时期的重要宗主。
@@ -393,6 +423,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0327
     name: 绛灌
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）绛灌，先秦人物，传世材料仅存姓名，国别、官职和具体事迹难以确认。现有资料不足以支持更详细的个人生平。
@@ -406,6 +437,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0328
     name: 熊审
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: （约前590年—约前560年）熊审，楚共王，楚庄王之子，春秋时期楚国君主。在位期间晋楚争霸，鄢陵之战楚军败北，他在战斗中受伤失去一目，后继续维持楚国政局。
@@ -419,6 +451,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0329
     name: 熊围
+    avatar: monkey/其他随机角色/武037_男.png
     default_gender: male
     archetype: military
     flavor: （？—前529年）熊围，楚灵王，楚共王之子，春秋时期楚国君主。曾修章华台并对陈、蔡用兵，后因国内政变失位，逃亡中自缢。
@@ -432,6 +465,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0331
     name: 熊轸
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: （？—前489年）熊轸，楚昭王，楚平王之子。吴军攻入郢都后，他出奔求援，申包胥赴秦请兵；楚昭王复国后整顿政局，恢复楚国统治。
@@ -445,6 +479,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0332
     name: 熊章
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: （？—前432年）熊章，楚惠王，楚昭王之子。继位后继续恢复吴军入郢造成的损失，晚年发生白公胜之乱，叶公沈诸梁平乱后复位。
@@ -458,6 +493,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0333
     name: 子西
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （？—前479年）子西，楚国令尹，楚平王之子、楚昭王叔父。吴军入郢后随昭王出奔，复国后主持政务；白公胜之乱中被杀。
@@ -471,6 +507,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0334
     name: 子期
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （？—前479年）子期，楚国司马，楚平王之子、子西之弟。楚国复国后掌军事，参与恢复国力；白公胜发动政变时与子西一同被杀。
@@ -484,6 +521,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0335
     name: 白公胜
+    avatar: monkey_wu_male7.png
     default_gender: male
     archetype: military
     flavor: （？—前479年）白公胜，楚平王之孙、太子建之子，封于白地。因父亲被害、楚国拒绝伐郑，前479年发动政变，杀子西、子期并劫持楚惠王，后被叶公击败，自杀。
@@ -497,6 +535,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0337
     name: 申无宇
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）申无宇，春秋时期楚国大夫，以直谏见于《左传》。楚灵王修章华台、谋求扩张时，他曾劝谏劳民伤财，具体生卒年不详。
@@ -510,6 +549,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0338
     name: 伯州犁
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （？—前549年）伯州犁，春秋时期晋国伯宗之子，后奔楚并任楚国大夫。晋楚争霸期间曾参与楚国外交和政务，后卷入楚国贵族政治而死。
@@ -523,6 +563,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0339
     name: 阳匄
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）阳匄，春秋时期楚国大夫，令尹子南之子。有关他的个人职务与事迹记载很少，主要见于楚国公族、卿族相关史料。
@@ -536,6 +577,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0340
     name: 伍参
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）伍参，春秋时期楚国大夫，伍举之父、伍奢之祖。其后代伍氏历任楚国重臣，伍子胥因家族被害出奔吴国。
@@ -549,6 +591,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0341
     name: 伍举
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）伍举，春秋时期楚国大夫，伍参之子、伍奢之父。楚庄王即位初年，他以“三年不鸣”的譬喻劝谏君主，见于《史记》等文献。
@@ -562,6 +605,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0342
     name: 伍奢
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: （？—前522年）伍奢，春秋时期楚国太子太傅，伍子胥之父。因费无极进谗被楚平王杀害，伍尚随父遇害，伍子胥逃往吴国。
@@ -575,6 +619,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0343
     name: 伍尚
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: （？—前522年）伍尚，春秋时期楚国太子太傅伍奢之长子。楚平王以伍奢为诱饵召他回国，他与父亲一同被害；其弟伍子胥因此出奔吴国。
@@ -588,6 +633,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0345
     name: 熊建
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: （？—前516年）熊建，楚平王太子，史称太子建。因费无极进谗、楚平王夺其婚配而被废，先后逃往宋、郑，最终在郑国被杀。其子熊胜后来发动白公胜之乱。
@@ -601,6 +647,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0346
     name: 熊胜
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （生卒年及身份记载有异）熊胜，史籍中常与白公胜相联系，通常认为是太子建之子；关于其身份与姓名，传世材料有异文。若指白公胜，他曾以父仇发动政变，后败死。
@@ -614,6 +661,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0347
     name: 郧公辛
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）郧公辛，春秋时期楚国封君。吴军攻破郢都、楚昭王出奔时，他随行护送；关于其封地和后续事迹，传世记载较少。
@@ -627,6 +675,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0348
     name: 囊瓦
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
     flavor: （即子常，？—前506年）囊瓦，春秋时期楚国令尹，柏举之战楚军主帅。前506年吴军攻楚，楚军在柏举败北，囊瓦出奔，郢都失守。
@@ -640,6 +689,7 @@ heroes:
       agility: 22
   - key: hist_xianqin_0349
     name: 斗辛
+    avatar: pig/武046.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）斗辛，春秋时期楚国斗氏大夫。柏举之战后楚军败退、郢都危急，他收拢残部抵抗，为楚昭王撤离争取时间；其余事迹记载不多。

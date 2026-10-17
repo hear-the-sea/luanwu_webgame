@@ -103,15 +103,15 @@ def test_non_repeatable_rarities_excludes_gray_and_black():
 
 
 def test_recruitment_weights_match_production_rhythm_config():
-    # 正式概率：橙 0.02%、紫 0.08%、蓝 0.3%、绿 1%、隐士 0.05%。
+    # 正式概率：橙 0.015%、紫 0.06%、蓝 0.25%、绿 0.7%、隐士 0.03%。
     weight_map = dict(RARITY_WEIGHTS)
-    assert weight_map[HERMIT_RARITY] == 500
+    assert weight_map[HERMIT_RARITY] == 300
     assert weight_map[GuestRarity.RED] == 0
-    assert weight_map[GuestRarity.BLUE] == 3000
-    assert weight_map[GuestRarity.PURPLE] == 800
-    assert weight_map[GuestRarity.ORANGE] == 200
-    assert weight_map[GuestRarity.GREEN] == 10000
-    assert weight_map[GuestRarity.GRAY] == 90000
+    assert weight_map[GuestRarity.BLUE] == 2500
+    assert weight_map[GuestRarity.PURPLE] == 600
+    assert weight_map[GuestRarity.ORANGE] == 150
+    assert weight_map[GuestRarity.GREEN] == 7000
+    assert weight_map[GuestRarity.GRAY] == 50000
 
 
 def test_recruitment_rarity_distribution_keeps_total_weight():

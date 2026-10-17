@@ -2,6 +2,7 @@ heroes:
   blue:
   - key: hist_sljnbc_0511
     name: 刘繇
+    avatar: pig/武049.png
     default_gender: male
     archetype: military
     flavor: （156年—197年）东汉宗室、官员，字正礼，齐悼王刘肥后裔。刘繇曾任扬州刺史，驻曲阿与袁术、孙策交战；孙策攻破曲阿后，他退往豫章，病死于当地。
@@ -15,6 +16,7 @@ heroes:
       agility: 9
   - key: hist_sljnbc_0539
     name: 沙摩柯
+    avatar: monkey_wu_male16.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东汉末五溪蛮首领。章武年间，沙摩柯率部响应刘备，参加夷陵之战；蜀军败后，他被吴将潘璋追击杀死。
@@ -28,6 +30,7 @@ heroes:
       agility: 9
   - key: hist_sljnbc_0552
     name: 文丑
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）文丑为袁绍帐下名将，与颜良并称河北双壁，勇名久震北方。白马、延津之间，曹袁争锋正烈，他提兵而出，几乎就是袁氏军威最锋利的一角。虽败亡甚速，但这位猛将留下的，不只是“勇”字本身，更是官渡前夕河北霸主那种压得人透不过气的锋芒。
@@ -41,6 +44,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0563
     name: 袁熙
+    avatar: monkey_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （？—207年）袁熙为袁绍次子，曾镇守幽州，居北地重镇，也因甄氏婚事而常被后人提及。袁氏兄弟兵戎相向后，他这一支随河北豪门由盛转衰的潮流崩散，最终败给了再难收束的离心之势。
@@ -54,6 +58,7 @@ heroes:
       agility: 12
   - key: hist_sljnbc_0568
     name: 杨奉
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）杨奉起自白波军，后卷入献帝东归、关中争夺与河洛形势之中，一时护驾，一时拥兵，行止多变却并非无足轻重。汉末朝廷将倾未倾之际，正是这类人左右着皇权最后的残火。他身上既有草莽武人的粗砺，也有乱世弄潮者的机心，是东汉崩解过程里极典型的一张侧脸。
@@ -67,6 +72,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0586
     name: 韩嵩
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）韩嵩为荆州士人，先事刘表，后归曹魏，长于政务筹议，也熟于大势消长。他总能在纷乱局面中把话说到利害处、把事办到分寸间；荆襄士族在政权更替中的克制与老练，从韩嵩身上都能看见。
@@ -80,6 +86,7 @@ heroes:
       agility: 15
   - key: hist_sljnbc_0515
     name: 李傕
+    avatar: duck_wu_male2.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）李傕本为董卓部将，董卓死后，他与郭汜等反攻长安，挟天子、据朝廷，把关中搅成血色泥潭。西凉军的悍烈、武人夺权的野蛮，在他身上显得毫无遮掩。若说董卓是掀翻洛阳旧秩序的巨手，李傕便是把那片废墟继续踩得更深的人，令东汉最后一点朝仪都蒙上铁骑与刀兵的尘土。
@@ -93,6 +100,7 @@ heroes:
       agility: 14
   - key: hist_sljnbc_0523
     name: 孟达
+    avatar: pig/武060.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）孟达先依刘璋，后事刘备，又降曹魏，末了再与诸葛亮暗通消息，终于兵败身死。其人并非无能，相反颇有才用，故每到边郡要地，常有人想借他一手稳局。只是他始终站在魏蜀之间那道最薄的冰面上，心机太深，立场太轻，遂成三国夹缝政治里最鲜活也最危险的注脚。
@@ -106,6 +114,7 @@ heroes:
       agility: 23
   - key: hist_sljnbc_0560
     name: 颜良
+    avatar: pig_wu_male9.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）颜良为袁绍麾下骁将，与文丑并称，白马城下尤见其锋。曹营闻其来，多有惮色，足见这位河北猛将在当时分量极重。后来虽为关羽斩于阵前，结局快得像一抹寒光，但也正因此，颜良的名字始终带着战阵最前沿那种骤起骤灭的锐意，像一柄刚出鞘便见血的长刀。
@@ -119,6 +128,7 @@ heroes:
       agility: 9
   - key: hist_sljnbc_0504
     name: 轲比能
+    avatar: monkey/其他随机角色/武038_男.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）轲比能为鲜卑首领，能整合诸部，号令草原，势力一度雄踞塞北，并与曹魏长期角逐。他并非只会纵马弯弓的部落酋长，更懂得联盟、统摄与借势，因此才能在北疆风雪之间坐大声名。若从更远处看，此人已不只是边患之主，更是三国北方民族政治重新聚合时绕不开的一座高坡。
@@ -132,6 +142,7 @@ heroes:
       agility: 18
   - key: hist_sljnbc_0512
     name: 刘虞
+    avatar: monkey_wu_male16.png
     default_gender: male
     archetype: military
     flavor: （？—193年）刘虞为汉室宗亲，历任幽州牧，以宽和安边闻名，胡汉多归其心。群雄竞起之际，他仍想依凭名义、教化与仁厚，把北疆秩序拢在汉家旗帜之下。只是这份温和终究敌不过刀马横行，竟死于公孙瓒之手。其人身后清名愈重，也愈让人看清乱世对“正人”二字究竟何其苛薄。
@@ -145,6 +156,7 @@ heroes:
       agility: 19
   - key: hist_sljnbc_0531
     name: 麴义
+    avatar: monkey/其他随机角色/武066_男_.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）麴义为袁绍部将，以所领先登营精悍善战著称，界桥一役大破公孙瓒白马义从，最能见他用兵之狠与准。河北群雄互吞的年月里，他是真正在战场上替袁绍抢下局面的硬手。后来失宠被诛，结局颇凉，可那一场踏碎白马精骑的锋锐，仍足够让他在乱世名将之列占一席冷亮的位置。
@@ -158,6 +170,7 @@ heroes:
       agility: 17
   - key: hist_sljnbc_0562
     name: 袁尚
+    avatar: monkey/其他随机角色/武038_男.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）袁尚为袁绍幼子，因受偏爱而得继嗣之势，也因此把袁氏兄弟之争彻底点燃。邺城风雨、兄弟兵戈、外敌压境，这些最坏的局面几乎都压在他身上。若说袁绍留下的是北方最雄厚的家业，那么袁尚接到的却已是一艘开始进水的大船；他越挣扎，越把袁氏覆亡的纹路显得清楚。
@@ -172,6 +185,7 @@ heroes:
   green:
   - key: hist_sljnbc_0501
     name: 胡车儿
+    avatar: pig/武051.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）胡车儿是张绣麾下悍将，史书写他，多落在“力能负重、奔走如飞”的惊人勇力上。宛城风雨骤起时，他的名字紧挨着曹军受创的记忆出现。此人未必有统军定策之名，却把汉末乱军里“猛将可改一夜胜负”的凶险意味，写得格外分明。
@@ -185,6 +199,7 @@ heroes:
       agility: 11
   - key: hist_sljnbc_0489
     name: 步阐
+    avatar: pig/武076.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东吴丞相步骘之子，历任西陵督。孙皓时因自认为失职且惧谗祸，据西陵降晋；晋军援救未至，西陵城破后被杀。
@@ -198,6 +213,7 @@ heroes:
       agility: 16
   - key: hist_sljnbc_0490
     name: 爨谷
+    avatar: pig_wu_male9.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）三国末至西晋初爨氏首领，建宁郡同乐县人。264年霍弋荐为交趾太守，率军援助吕兴，未抵交趾便去世。
@@ -211,6 +227,7 @@ heroes:
       agility: 16
   - key: hist_sljnbc_0491
     name: 虞察
+    avatar: pig/武060.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东吴征虏将军，会稽余姚人，虞喜、虞预之父。东吴灭亡后，他坚守城池、拒绝投降，最终殉国。
@@ -224,6 +241,7 @@ heroes:
       agility: 17
   - key: hist_sljnbc_0493
     name: 丁原
+    avatar: pig/武049.png
     default_gender: male
     archetype: military
     flavor: （？—189年）字建阳，东汉末并州刺史、执金吾。入洛阳后与董卓争夺兵权，董卓诱使其部将吕布将他刺杀。
@@ -237,6 +255,7 @@ heroes:
       agility: 18
   - key: hist_sljnbc_0495
     name: 公孙脩
+    avatar: monkey/其他随机角色/武038_男.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）辽东公孙氏成员，公孙渊之子。公孙渊反魏时随父起兵，司马懿平定辽东后，公孙脩与父亲一同被杀。
@@ -250,6 +269,7 @@ heroes:
       agility: 14
   - key: hist_sljnbc_0497
     name: 顾容
+    avatar: monkey_wu_male7.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东吴将领，吴郡吴县人，官至荆州刺史。交趾之乱时驻军合浦，晋军进攻后战败，吴将刘俊、修则在此役中阵亡。
@@ -263,6 +283,7 @@ heroes:
       agility: 16
   - key: hist_sljnbc_0499
     name: 公孙晃
+    avatar: pig/武046.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）公孙康嫡子、公孙渊之兄，因任子制入洛阳为官。公孙晃曾上表预言公孙渊将反魏，公孙渊败亡后，他与家属被赐死。
@@ -276,6 +297,7 @@ heroes:
       agility: 21
   - key: hist_sljnbc_0503
     name: 柯吾
+    avatar: monkey_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）三国时期羌族首领，活动于曹魏与蜀汉对峙的凉州地区。诸葛亮北伐后，柯吾曾率部反抗曹魏，史料所载事迹较少。
@@ -289,6 +311,7 @@ heroes:
       agility: 13
   - key: hist_sljnbc_0505
     name: 李勖
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东吴监军使者。269年，孙皓命他与徐存率军由建安海路出发，赴合浦讨伐交趾叛军；此后因军务获罪被处死。
@@ -302,6 +325,7 @@ heroes:
       agility: 14
   - key: hist_sljnbc_0506
     name: 娄圭
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）字子伯，荆州人，东汉末归附曹操，曾参与西方军务筹划。因言语触怒曹操获罪，最终被杀。
@@ -315,6 +339,7 @@ heroes:
       agility: 13
   - key: hist_sljnbc_0508
     name: 吕威璜
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东汉末年袁绍部将，曾与淳于琼等守卫乌巢粮营。曹操夜袭乌巢时，吕威璜在战乱中被杀。
@@ -328,6 +353,7 @@ heroes:
       agility: 18
   - key: hist_sljnbc_0509
     name: 令狐浚
+    avatar: pig_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （？—249年）本名令狐浚，字公治，后以令狐愚行世，曹魏将领。与王凌谋立楚王曹彪，事发前病死，死后仍被追究。
@@ -341,6 +367,7 @@ heroes:
       agility: 11
   - key: hist_sljnbc_0513
     name: 吕旷
+    avatar: monkey_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东平人，袁绍部将，与弟吕翔同随袁尚。袁氏势败后，吕旷以阳平率众投降曹操，被封为列侯。
@@ -354,6 +381,7 @@ heroes:
       agility: 11
   - key: hist_sljnbc_0516
     name: 李邹
+    avatar: monkey_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东汉末年人物，姓名见于三国史料。现存百科与史籍对其官职、籍贯及具体事迹记载极少，生平难以详考。
@@ -367,6 +395,7 @@ heroes:
       agility: 17
   - key: hist_sljnbc_0517
     name: 梁纲
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东汉末袁术部将。197年袁术弃军逃走，梁纲与桥蕤、李丰、乐就留守拒曹，后被于禁生擒并斩首。
@@ -380,6 +409,7 @@ heroes:
       agility: 14
   - key: hist_sljnbc_0519
     name: 雷薄
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东汉末袁术部下，后与陈兰据灊山自立。袁术败亡后，雷薄的活动见于淮南地方武装记录，具体结局不详。
@@ -393,6 +423,7 @@ heroes:
       agility: 15
   - key: hist_sljnbc_0520
     name: 毛炅
+    avatar: monkey_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）原为蜀汉南中都督霍弋帐下牙门将，蜀亡后随霍弋降魏，西晋代魏后归晋。交趾之乱中，他奉命守交趾抵御吴军。
@@ -406,6 +437,7 @@ heroes:
       agility: 13
   - key: hist_sljnbc_0522
     name: 马遵
+    avatar: pig/武076.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）曹魏天水太守。诸葛亮首次北伐时，马遵怀疑姜维等人通蜀，弃冀县东走，姜维因此无法归魏，转而投蜀。
@@ -419,6 +451,7 @@ heroes:
       agility: 16
   - key: hist_sljnbc_0524
     name: 马休
+    avatar: monkey/其他随机角色/武037_男.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）马腾之子、马超之弟。马腾入朝后，马休留在邺城；马超起兵反曹后，曹操诛杀马腾及其家属，马休同时遇害。
@@ -432,6 +465,7 @@ heroes:
       agility: 17
   - key: hist_sljnbc_0526
     name: 马铁
+    avatar: pig/武051.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）马腾之子、马超之弟，与马休同留邺城。马超起兵后，曹操诛杀马腾及其在邺城的家属，马铁因此遇害。
@@ -445,6 +479,7 @@ heroes:
       agility: 18
   - key: hist_sljnbc_0527
     name: 牛辅
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）董卓女婿，东汉末中郎将，曾统兵驻守陕地。董卓死后军营发生骚乱，牛辅出逃时被亲信攴胡赤儿等杀死。
@@ -458,6 +493,7 @@ heroes:
       agility: 13
   - key: hist_sljnbc_0528
     name: 桥瑁
+    avatar: pig/武076.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东汉末东郡太守，曾伪作三公檄书号召各州讨伐董卓。后与兖州刺史刘岱交恶，被刘岱杀害。
@@ -471,6 +507,7 @@ heroes:
       agility: 25
   - key: hist_sljnbc_0529
     name: 桥蕤
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: （？—197年）东汉末袁术部将，袁术封其为大将军。袁术败退时，桥蕤留守拒曹，后被于禁生擒并斩首。
@@ -484,6 +521,7 @@ heroes:
       agility: 21
   - key: hist_sljnbc_0530
     name: 阙宣
+    avatar: pig_wu_male9.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东汉末下邳人，193年自称天子，曾与陶谦攻占泰山华、费并劫掠任城。后来被陶谦杀害，部众被陶谦收编。
@@ -497,6 +535,7 @@ heroes:
       agility: 24
   - key: hist_sljnbc_0532
     name: 修则
+    avatar: monkey/其他随机角色/武038_男.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东吴将领，官至交州刺史、前部督。交趾之乱时随刘俊进攻晋军，古城一战吴军败退，修则与刘俊战死。
@@ -510,6 +549,7 @@ heroes:
       agility: 14
   - key: hist_sljnbc_0533
     name: 申耽
+    avatar: pig/武076.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）上庸豪强，曾与张鲁往来，后受曹操任命为上庸都尉、太守。219年率全郡降蜀，220年又随孟达等归魏，后被夺军权迁居南阳。
@@ -523,6 +563,7 @@ heroes:
       agility: 14
   - key: hist_sljnbc_0534
     name: 宋建
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东汉末凉州枹罕割据者，自号“河首平汉王”，改元置百官，割据三十余年。214年夏侯渊西征攻破枹罕，宋建被斩。
@@ -536,6 +577,7 @@ heroes:
       agility: 18
   - key: hist_sljnbc_0535
     name: 单经
+    avatar: pig/武049.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东汉末公孙瓒部将，曾被公孙瓒任命为兖州刺史，参与幽州、冀州一带的军事行动。
@@ -549,6 +591,7 @@ heroes:
       agility: 11
   - key: hist_sljnbc_0537
     name: 宋宪
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）吕布部将。198年曹操围攻下邳时，宋宪与魏续擒获陈宫、高顺，开城投降，吕布随后败亡；此后正史不再见其事迹。
@@ -562,6 +605,7 @@ heroes:
       agility: 18
   - key: hist_sljnbc_0538
     name: 审荣
+    avatar: pig_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）袁尚部将，审配之侄，任邺城东门校尉。204年曹操攻邺时，审荣夜间打开东门放入曹军，导致邺城陷落。
@@ -575,6 +619,7 @@ heroes:
       agility: 15
   - key: hist_sljnbc_0541
     name: 眭固
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: （？—199年）张杨部将。张杨死后，眭固杀杨丑、据河内并欲联结袁绍，后在射犬被曹操军击败，战死。
@@ -588,6 +633,7 @@ heroes:
       agility: 18
   - key: hist_sljnbc_0542
     name: 苏飞
+    avatar: monkey_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）刘表部将，任江夏都督，与甘宁交好，曾多次向黄祖推荐甘宁并助其投奔孙权。苏飞兵败被俘后，因甘宁求情获赦。
@@ -601,6 +647,7 @@ heroes:
       agility: 14
   - key: hist_sljnbc_0543
     name: 苏由
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东汉末袁尚部将，曾负责守卫邺城。曹操攻邺时，苏由所部发生叛变并向曹操献城，苏由随后出奔。
@@ -614,6 +661,7 @@ heroes:
       agility: 15
   - key: hist_sljnbc_0545
     name: 田畴
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: （169—214年）字子泰，右北平无终人，东汉末名士。曹操北征乌桓时，田畴提供道路与军情并引军走险道；曹操欲封赏，他多次辞让。
@@ -627,6 +675,7 @@ heroes:
       agility: 15
   - key: hist_sljnbc_0546
     name: 卫温
+    avatar: pig_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （？—231年）东吴将军。230年与诸葛直率万人出海寻找夷洲、亶洲，带数千夷洲人返吴；因未完成任务，次年与诸葛直一同下狱处死。
@@ -640,6 +689,7 @@ heroes:
       agility: 18
   - key: hist_sljnbc_0547
     name: 吴匡
+    avatar: pig/武060.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东汉末将领，何进部属。何进遇害后，吴匡与袁绍等攻入宫中诛杀宦官，随后又卷入洛阳的外戚与军阀冲突。
@@ -653,6 +703,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0548
     name: 万彧
+    avatar: pig/武049.png
     default_gender: male
     archetype: military
     flavor: （235—273年）字文彬，东吴末期大臣，曾任左典军。因与孙皓有旧并参与推举其即位，受重用，266年官至右丞相。
@@ -666,6 +717,7 @@ heroes:
       agility: 14
   - key: hist_sljnbc_0551
     name: 吴巨
+    avatar: pig/武076.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东汉末刘表部下，任苍梧太守，长沙人，与刘备相识。后因与交州刺史赖恭不和而逐之，210年被孙权所任步骘诱杀。
@@ -679,6 +731,7 @@ heroes:
       agility: 18
   - key: hist_sljnbc_0556
     name: 夏侯威
+    avatar: monkey_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）字季权，曹魏将领，夏侯渊第四子。曾任兖州刺史等职，善于识鉴人物；任州牧后不久病逝，谥穆侯。
@@ -692,6 +745,7 @@ heroes:
       agility: 17
   - key: hist_sljnbc_0557
     name: 杨稷
+    avatar: pig_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （？—271年）原蜀汉将领，后归晋。霍弋派他援助交趾，后任交趾太守，多次击败吴军；271年交趾城破被擒，途中病死，晋武帝追封交州刺史。
@@ -705,6 +759,7 @@ heroes:
       agility: 18
   - key: hist_sljnbc_0558
     name: 虞昺
+    avatar: pig/武088.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）字世文，虞翻第八子，孙吴政治、军事人物。吴亡时任武昌以上诸军都督，归降西晋后任济阴太守，并著《穹天论》。
@@ -718,6 +773,7 @@ heroes:
       agility: 13
   - key: hist_sljnbc_0559
     name: 袁遗
+    avatar: pig/武049.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）袁绍从兄，曾任山阳太守并参与讨董，后被袁绍任为扬州刺史。192年袁术击败袁遗，袁遗逃亡途中被杀。
@@ -731,6 +787,7 @@ heroes:
       agility: 9
   - key: hist_sljnbc_0564
     name: 严白虎
+    avatar: pig/武028.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东汉末盘踞吴郡的地方军阀，山贼出身，严舆之兄。孙策进军江东时与许贡等抵抗，败后逃往余杭，投奔许昭。
@@ -744,6 +801,7 @@ heroes:
       agility: 12
   - key: hist_sljnbc_0565
     name: 严纲
+    avatar: pig/武076.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）公孙瓒部将，曾任公孙瓒所署冀州刺史。界桥之战中，袁绍部将麴义击败公孙瓒军，严纲被阵斩。
@@ -757,6 +815,7 @@ heroes:
       agility: 15
   - key: hist_sljnbc_0566
     name: 严舆
+    avatar: pig_wu_male9.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东汉末吴郡乌程人，严白虎之弟，地方武装首领。孙策进攻吴郡时，严舆奉兄求和，在会面中被孙策杀死。
@@ -770,6 +829,7 @@ heroes:
       agility: 13
   - key: hist_sljnbc_0567
     name: 尹楷
+    avatar: monkey_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东汉末袁尚部将，任武安长。曾屯兵毛城以保障上党至邺城的粮道，后被曹操击败，结局不详。
@@ -783,6 +843,7 @@ heroes:
       agility: 14
   - key: hist_sljnbc_0569
     name: 杨祚
+    avatar: pig/武046.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东汉末至三国人物，姓名仅见于零散军务记录。现有百科与史料未能确定其完整官职、籍贯及主要事迹。
@@ -796,6 +857,7 @@ heroes:
       agility: 15
   - key: hist_sljnbc_0570
     name: 杨丑
+    avatar: pig_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）张杨部将。张杨死后，杨丑杀主据有河内，旋即被眭固所杀，河内兵权因此再次易手。
@@ -809,6 +871,7 @@ heroes:
       agility: 14
   - key: hist_sljnbc_0571
     name: 乐就
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）袁术部将。197年袁术弃军逃走，乐就与桥蕤、李丰、梁纲留守拒曹，后被于禁生擒并斩首。
@@ -822,6 +885,7 @@ heroes:
       agility: 17
   - key: hist_sljnbc_0574
     name: 雍闿
+    avatar: pig_wu_male9.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）益州郡南中豪帅。223年与高定、朱褒起兵反蜀，杀益州太守正昂并擒张裔；后与孙吴联络，最终被高定部下杀死。
@@ -835,6 +899,7 @@ heroes:
       agility: 14
   - key: hist_sljnbc_0575
     name: 曹彦
+    avatar: pig/文014.png
     default_gender: male
     archetype: civil
     flavor: （？—249年）曹真之子、曹爽之弟，曹魏宗室，官至散骑常侍。高平陵之变后，曹爽兄弟被司马懿诛杀，曹彦亦死于此难。
@@ -848,6 +913,7 @@ heroes:
       agility: 8
   - key: hist_sljnbc_0576
     name: 曹羲
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）曹真之子、曹爽之弟，曹魏中领军。249年高平陵之变中，司马懿控制洛阳并接管其军营；曹爽兄弟随后被诛，曹羲亦死。
@@ -861,6 +927,7 @@ heroes:
       agility: 18
   - key: hist_sljnbc_0579
     name: 陈声
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）东吴末期官员，曾任尚书。孙皓在位时，陈声获罪被杀；除相关政务与刑罚记载外，现存史料对其生平记载很少。
@@ -874,6 +941,7 @@ heroes:
       agility: 5
   - key: hist_sljnbc_0582
     name: 傅肜
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: （？—222年）蜀汉将领。221年随刘备伐吴，夷陵败退时奉命断后，拒绝投降，力战而死。
@@ -887,6 +955,7 @@ heroes:
       agility: 19
   - key: hist_sljnbc_0583
     name: 范粲
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）魏晋间名士，以清介自守著称。曹芳出城时，他穿白衣送行以示忠魏；司马师辅政后多次不赴朝会，朝廷因其声望而容忍。
@@ -900,6 +969,7 @@ heroes:
       agility: 9
   - key: hist_sljnbc_0584
     name: 国渊
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）字子尼，乐安益县人，曹魏官吏。归曹后参与屯田与地方治理，负责分配屯田土地、配置属吏，数年后使仓廪充实。
@@ -913,6 +983,7 @@ heroes:
       agility: 9
   - key: hist_sljnbc_0585
     name: 贺邵
+    avatar: pig/文050.png
     default_gender: male
     archetype: civil
     flavor: （？—275年）东吴重臣，历任吴郡太守、中书令、太子太傅。孙皓暴虐时多次上疏直谏，后因中风被孙皓疑忌拷打杀害，家属被流徙临海。
@@ -926,6 +997,7 @@ heroes:
       agility: 12
   - key: hist_sljnbc_0587
     name: 纪陟
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）东吴文臣，孙休时任中书令，孙皓时任光禄大夫。曾奉使出访魏国，处理吴魏之间的外交往来。
@@ -939,6 +1011,7 @@ heroes:
       agility: 7
   - key: hist_sljnbc_0588
     name: 顾谭
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （205—246年）顾雍之孙、顾邵之子，东吴名臣，曾任太子中庶子。二宫之争中支持太子孙和，受牵连徙交州，死于交州。
@@ -952,6 +1025,7 @@ heroes:
       agility: 5
   - key: hist_sljnbc_0492
     name: 程喜
+    avatar: monkey/其他随机角色/武038_男.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）字申伯，曹魏将领。魏明帝时任青州刺史，魏齐王曹芳时任征北将军；曾因与田豫不和而在军务中相互掣肘。
@@ -965,6 +1039,7 @@ heroes:
       agility: 6
   - key: hist_sljnbc_0496
     name: 吕兴
+    avatar: pig/武008.png
     default_gender: male
     archetype: military
     flavor: （？—264年）东吴交趾郡吏。263年因交趾征调等事，杀交趾太守孙谞等吴官并起兵，占据交趾，随后归魏，被授安南将军、督交州诸军事。
@@ -978,6 +1053,7 @@ heroes:
       agility: 18
   - key: hist_sljnbc_0498
     name: 顾承
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东吴顾氏子弟，曾任军政职务。二宫之争中支持太子孙和，与兄顾谭一同受全氏构陷，徙交州。
@@ -991,6 +1067,7 @@ heroes:
       agility: 14
   - key: hist_sljnbc_0502
     name: 贾范
+    avatar: pig_wu_male5.png
     default_gender: male
     archetype: military
     flavor: （？—238年）公孙渊部将、将军。公孙渊谋求自立时，贾范与参军伦直一同进谏，触怒公孙渊，二人被杀。
@@ -1004,6 +1081,7 @@ heroes:
       agility: 11
   - key: hist_sljnbc_0507
     name: 吕翔
+    avatar: pig_wu_male5.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）一作高翔，东平人，袁绍部将，与兄吕旷同随袁尚。袁氏势败后，吕翔以阳平率众投降曹操，被封列侯。
@@ -1017,6 +1095,7 @@ heroes:
       agility: 7
   - key: hist_sljnbc_0510
     name: 伦直
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: （？—238年）公孙渊部下参军。公孙渊谋求自立时，伦直与贾范共同进谏，公孙渊大怒，将二人一同杀害。
@@ -1030,6 +1109,7 @@ heroes:
       agility: 14
   - key: hist_sljnbc_0521
     name: 芒中
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）三国时期烧当羌王。238年与注诣等反魏，凉州刺史率军讨伐，注诣被斩，芒中的后续事迹不见于史料。
@@ -1043,6 +1123,7 @@ heroes:
       agility: 16
   - key: hist_sljnbc_0525
     name: 马延
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东汉末袁尚部下。204年袁尚率军救邺时，马延与张顗临阵倒戈，导致袁尚军溃败；此后马延下落不明。
@@ -1056,6 +1137,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0536
     name: 孙歆
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
     flavor: （249年前—280年）东吴宗室将领，孙贲之孙、孙邻之子，曾任乐乡督。280年晋军夜袭乐乡，孙歆战败被俘，押送洛阳处死。
@@ -1069,6 +1151,7 @@ heroes:
       agility: 13
   - key: hist_sljnbc_0540
     name: 眭元进
+    avatar: monkey_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）袁绍部将，官渡之战中与淳于琼等守卫乌巢粮营。曹操夜袭并焚毁粮仓时，眭元进战死。
@@ -1082,6 +1165,7 @@ heroes:
       agility: 11
   - key: hist_sljnbc_0549
     name: 魏续
+    avatar: pig_wu_male5.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）吕布部将，吕布亲属。下邳被围时，魏续与宋宪等擒陈宫并开城投降；吕布败亡后，正史不再记载其事迹。
@@ -1095,6 +1179,7 @@ heroes:
       agility: 8
   - key: hist_sljnbc_0550
     name: 伍习
+    avatar: monkey_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东汉末郭汜部将。195年奉郭汜命焚烧学舍以威逼汉献帝，后在郿县反叛并率军袭杀郭汜，此后下落不明。
@@ -1108,6 +1193,7 @@ heroes:
       agility: 11
   - key: hist_sljnbc_0553
     name: 魏攸
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东汉末刘虞部下，任东曹掾。刘虞准备讨伐公孙瓒时，魏攸劝其暂缓，认为公孙瓒仍有利用价值；魏攸死后，刘虞才出兵。
@@ -1121,6 +1207,7 @@ heroes:
       agility: 17
   - key: hist_sljnbc_0555
     name: 许昭
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东汉末将领，曾在盛宪手下任职，后任营帅。孙策清剿江东势力时，许昭收留败退的严白虎，孙策因重其义而未进攻；其是否为刺杀孙策者，史家有疑。
@@ -1134,6 +1221,7 @@ heroes:
       agility: 15
   - key: hist_sljnbc_0561
     name: 郁筑鞬
+    avatar: pig_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）三国时期鲜卑首领之一，活动于曹魏北方边疆。史料主要在鲜卑部落与曹魏关系的记载中提及其名，个人事迹记载不多。
@@ -1147,6 +1235,7 @@ heroes:
       agility: 18
   - key: hist_sljnbc_0572
     name: 虞耸
+    avatar: pig_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）字世龙，会稽余姚人，虞翻第六子。孙吴时任越骑校尉、湘东太守，入晋后任河间相，并著《穹天论》。
@@ -1160,6 +1249,7 @@ heroes:
       agility: 14
   - key: hist_sljnbc_0573
     name: 阎宇
+    avatar: monkey_wu_male7.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）蜀汉后期将领，258年任右大将军、永安都督，率军增守巴东。263年魏灭蜀时奉命救援成都，留罗宪守永安，此后史书不再载其事。
@@ -1173,6 +1263,7 @@ heroes:
       agility: 16
   - key: hist_sljnbc_0577
     name: 曹训
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）曹真之子、曹爽之弟，曹魏武卫将军。249年随曹芳、曹爽祭扫高平陵，司马懿发动政变后被免职，随后与曹爽兄弟一同被诛。
@@ -1186,6 +1277,7 @@ heroes:
       agility: 13
   - key: hist_sljnbc_0578
     name: 曹遵
+    avatar: monkey_wu_male7.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）曹魏将领，曹真同宗族人。少年时与曹真一同辅佐曹操，后来早卒；关于其官职和战事，史料记载很少。
@@ -1199,6 +1291,7 @@ heroes:
       agility: 15
   - key: hist_sljnbc_0580
     name: 范慎
+    avatar: pig/文034.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）字孝敬，广陵人，东吴后期重臣。曾任东宫宾客、侍中、武昌左部督，271年官至太尉，著有《矫非》二十篇。
@@ -1212,6 +1305,7 @@ heroes:
       agility: 16
   - key: hist_sljnbc_0581
     name: 傅巽
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）荆州士人，刘表在世时任幕府属官。刘表死后，傅巽与蒯越劝刘琮降曹，随后入魏任职，并参与劝曹丕接受汉献帝禅让。

@@ -230,6 +230,22 @@ class Guest(models.Model):
         help_text="按文武和性别选择的受控头像资源路径，空值表示使用门客模板头像",
     )
     super_disguise_applied = models.BooleanField("超级易容效果已生效", default=False)
+    original_avatar_asset_key = models.CharField(
+        "易容前头像资源",
+        max_length=255,
+        blank=True,
+        null=True,
+        default=None,
+        help_text="NULL 表示尚未易容，空字符串表示原图使用门客模板头像",
+    )
+    use_original_avatar = models.BooleanField("显示原形象", default=False)
+
+    @property
+    def can_switch_avatar(self) -> bool:
+        return (
+            self.original_avatar_asset_key is not None or self.super_disguise_applied or bool(self.avatar_override_key)
+        )
+
     force = models.PositiveIntegerField("武力", default=80)
     intellect = models.PositiveIntegerField("智力", default=80)
     defense_stat = models.PositiveIntegerField("防御", default=80)
@@ -659,6 +675,14 @@ class GuestSkill(models.Model):
             raise ValidationError("技能位已满，无法继续学习新的技能。")
 
 
+class RecruitmentPity(models.Model):
+    """按候选人数累计的玩家招募保底；上线后从零开始。"""
+
+    manor = models.OneToOneField("gameplay.Manor", on_delete=models.CASCADE, related_name="recruitment_pity")
+    purple_misses = models.PositiveIntegerField(default=0)
+    orange_misses = models.PositiveIntegerField(default=0)
+
+
 class RecruitmentCandidate(models.Model):
     manor = models.ForeignKey("gameplay.Manor", on_delete=models.CASCADE, related_name="candidates")
     pool = models.ForeignKey(RecruitmentPool, on_delete=models.CASCADE)
@@ -667,6 +691,13 @@ class RecruitmentCandidate(models.Model):
     rarity = models.CharField(max_length=16, choices=GuestRarity.choices)
     archetype = models.CharField(max_length=16, choices=GuestArchetype.choices)
     rarity_revealed = models.BooleanField(default=False, verbose_name="稀有度已显示")
+    pity_rarity = models.CharField(
+        "保底类型",
+        max_length=16,
+        blank=True,
+        default="",
+        choices=[("purple", "紫色及以上"), ("orange", "橙色")],
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

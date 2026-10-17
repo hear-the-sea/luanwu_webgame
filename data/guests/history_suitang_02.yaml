@@ -2,6 +2,7 @@ heroes:
   blue:
   - key: hist_suitang_0061_gaoxianzhi
     name: 高仙芝
+    avatar: monkey/其他随机角色/武038_男.png
     default_gender: male
     archetype: military
     flavor: （生年不详—756年）唐代将领，高句丽人后裔，长期镇守安西。高仙芝曾远征小勃律、怛罗斯，怛罗斯战败后回到安西；安史之乱初期，他与封常清守潼关失利，被唐玄宗下令处死。
@@ -15,6 +16,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0062_chenziaang
     name: 陈子昂
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （659年—700年）唐代诗人、官员，梓州射洪人。陈子昂进士及第后任麟台正字，随武攸宜出征契丹时因进谏被排斥；回乡后受县令段简陷害入狱，死于狱中。《登幽州台歌》为其名作。
@@ -28,6 +30,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0064_wangchangling
     name: 王昌龄
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: （698年—756年）唐代诗人，进士及第，曾任秘书省校书郎、江宁丞，后贬龙标尉。安史之乱后，他返乡途中经过亳州，被刺史闾丘晓杀害；《出塞》《芙蓉楼送辛渐》传世。
@@ -41,6 +44,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0065_gaoshi
     name: 高适
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: （704年—765年）唐代诗人、官员，曾任封丘尉、河西节度使掌书记。安史之乱时，高适入蜀辅佐唐玄宗，后任淮南节度使、刑部侍郎，封渤海县侯；其边塞诗以沉雄质朴见长。
@@ -54,6 +58,7 @@ heroes:
       agility: 10
   - key: hist_suitang_0066_censhen
     name: 岑参
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: （约715年—约770年）唐代诗人，曾两次随军出任安西、北庭判官，写下《白雪歌送武判官归京》等边塞诗；入朝后任库部郎中，晚年任嘉州刺史，卒于成都。
@@ -67,6 +72,7 @@ heroes:
       agility: 18
   - key: hist_suitang_0067_anlushan
     name: 安禄山
+    avatar: monkey_wu_male7.png
     default_gender: male
     archetype: military
     flavor: （703年—757年）唐玄宗时节度使，出身营州杂胡，因善逢迎受宠，兼领范阳、平卢、河东三镇。天宝十四载，安禄山以讨杨国忠为名起兵，攻占洛阳、长安，自称大燕皇帝；后因失明等病被儿子安庆绪杀死。
@@ -80,6 +86,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0069_zhangxun
     name: 张巡
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （708年—757年）唐代将领，安史之乱时与许远守睢阳。城中粮尽，他仍拒绝投降，率军坚守数月；睢阳陷落后，张巡被叛军杀害。
@@ -93,6 +100,7 @@ heroes:
       agility: 10
   - key: hist_suitang_0070_liuzongyuan
     name: 柳宗元
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （773年—819年）唐代文学家、官员，永贞革新失败后被贬永州，后任柳州刺史。柳宗元在永州写《永州八记》，在柳州兴修水利、释放奴婢；卒于任上。
@@ -106,6 +114,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0071_lishangyin
     name: 李商隐
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: （813年—858年）晚唐诗人，字义山，进士及第后历任幕职，因卷入牛李党争长期不得志。李商隐擅长七律和近体诗，著有《李义山诗集》，与杜牧并称“小李杜”。
@@ -119,6 +128,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0072_dumu
     name: 杜牧
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （803年—852年）晚唐诗人、官员，字牧之，进士及第，历任黄州、池州、睦州刺史。杜牧擅长咏史绝句与散文，著有《樊川文集》，与李商隐并称“小李杜”。
@@ -132,6 +142,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0073_liugongquan
     name: 柳公权
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: （778年—865年）唐代书法家、官员，字诚悬，楷书自成“柳体”。柳公权历仕穆宗、敬宗、文宗等朝，官至太子少师；传世《玄秘塔碑》《神策军碑》体现其书法风格。
@@ -145,6 +156,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0074_huaisu
     name: 怀素
+    avatar: pig/武072.png
     default_gender: male
     archetype: civil
     flavor: （737年—799年）唐代僧人、书法家，长沙人，法名怀素。怀素以狂草闻名，曾师从邬彤，得到颜真卿指点；传世《自叙帖》《苦笋帖》等书迹。
@@ -158,6 +170,7 @@ heroes:
       agility: 18
   - key: hist_suitang_0075_lichunfeng
     name: 李淳风
+    avatar: monkey/其他随机角色/文_男123.png
     default_gender: male
     archetype: civil
     flavor: （602年—670年）唐代天文学家、历算家，曾任太史令。李淳风参与修订《麟德历》、编撰《晋书》天文志，并著有《乙巳占》；民间把《推背图》托名于他，缺少可靠依据。
@@ -171,6 +184,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0076_jianzhen
     name: 鉴真
+    avatar: pig/武066.png
     default_gender: male
     archetype: civil
     flavor: （688年—763年）唐代高僧，扬州大明寺住持，律宗高僧。鉴真应日本僧人邀请六次东渡，途中失明，天平胜宝五年抵达日本；他在奈良建唐招提寺、传授戒律和医药知识。
@@ -184,6 +198,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0077_heyong
     name: 李克用
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: （856年—908年）唐末沙陀族将领、晋王，李存勖之父。李克用曾率军镇压黄巢、收复长安，后据太原与朱温长期交战；他去世后，李存勖继承晋国。
@@ -197,6 +212,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0078_licunxu
     name: 李存勖
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （885年—926年）后唐庄宗，李克用之子。李存勖继承晋王后在柏乡等战役击败后梁，923年攻灭后梁、建立后唐；即位后宠信伶人，兴教门之变中被乱兵杀死。
@@ -210,6 +226,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0079_fengdao
     name: 冯道
+    avatar: pig/文048.png
     default_gender: male
     archetype: civil
     flavor: （882年—954年）五代官员，历仕后唐、后晋、后汉、后周，几度任宰相。冯道主持刻印《九经》，又曾在战乱中抚恤百姓；后周显德元年病逝，谥文懿。
@@ -223,6 +240,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0080_qianliu
     name: 钱镠
+    avatar: pig/文034.png
     default_gender: male
     archetype: civil
     flavor: （852年—932年）五代吴越国创建者，字具美，杭州临安人。钱镠平定两浙后建吴越，修筑海塘、治理水利；他向后唐称臣，保住江浙局面，卒后谥武肃。
@@ -236,6 +254,7 @@ heroes:
       agility: 8
   - key: hist_suitang_0081_luobinwang
     name: 骆宾王
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: （约619年—约687年）初唐诗人，“初唐四杰”之一。骆宾王曾任侍御史，因事入狱，出狱后随徐敬业起兵，撰写《讨武曌檄》；兵败后下落不明。
@@ -249,6 +268,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0082_yangjiong
     name: 杨炯
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: （650年—692年）初唐诗人，“初唐四杰”之一，曾任盈川令。杨炯擅长五言律诗和边塞诗，任盈川令时卒于任上；其诗文收于《杨盈川集》。
@@ -262,6 +282,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0083_luzhaolin
     name: 卢照邻
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （约634年—约686年）初唐诗人，“初唐四杰”之一，曾任新都尉。卢照邻因病长期卧床，辞官后居太白山，晚年投颍水自尽；《长安古意》为其名篇。
@@ -275,6 +296,7 @@ heroes:
       agility: 18
   - key: hist_suitang_0084_hezzhang
     name: 贺知章
+    avatar: pig/文041.png
     default_gender: male
     archetype: civil
     flavor: （659年—744年）唐代诗人、书法家，字季真，号四明狂客。贺知章进士及第后长期任秘书监，晚年请为道士、回乡越州；他曾在长安赏识李白，著有《回乡偶书》。
@@ -288,6 +310,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0085_wangzhihuan
     name: 王之涣
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （688年—742年）盛唐诗人，曾任冀州衡水主簿、文安县尉。王之涣与王昌龄、高适交游，擅长边塞诗；《登鹳雀楼》《凉州词》传世。
@@ -301,6 +324,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0086_zhangruoxu
     name: 张若虚
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （约660年—约720年）唐代诗人，扬州人，曾任兖州兵曹。张若虚与贺知章、张旭、包融并称“吴中四士”，传世诗作不多，《春江花月夜》最为著名。
@@ -314,6 +338,7 @@ heroes:
       agility: 18
   - key: hist_suitang_0087_cuihao
     name: 崔颢
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （约704年—754年）唐代诗人，开元年间进士，曾任许州司勋员外郎、监察御史。崔颢早年诗风绮丽，后来转写边塞，传世《黄鹤楼》为其名作。
@@ -327,6 +352,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0088_yuanzhen
     name: 元稹
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: （779年—831年）唐代诗人、官员，进士及第，曾任监察御史、宰相。元稹与白居易共同倡导新乐府，著有《元氏长庆集》《莺莺传》；晚年任武昌军节度使，卒于任上。
@@ -340,6 +366,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0089_lihe
     name: 李贺
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: （790年—816年）唐代诗人，字长吉，福昌人。李贺因父名“晋肃”避讳，未能参加进士考试，后来任奉礼郎；他擅长写奇崛诗句，二十七岁病逝。
@@ -353,6 +380,7 @@ heroes:
       agility: 18
   - key: hist_suitang_0090_mengjiao
     name: 孟郊
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （751年—814年）唐代诗人，字东野，长期参加科举，四十六岁中进士。孟郊历任溧阳尉、兴元府参军，著有《孟东野诗集》，《游子吟》为其名作；元和九年病逝。
@@ -366,6 +394,7 @@ heroes:
       agility: 18
   - key: hist_suitang_0068_liguangbi
     name: 李光弼
+    avatar: monkey_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （708年—764年）唐代将领，契丹族，安史之乱中与郭子仪并称名将。李光弼曾守太原、收复洛阳，击败史思明；乱后任河南副元帅，因与朝廷和藩镇不和，晚年奔徐州病逝。
@@ -379,6 +408,7 @@ heroes:
       agility: 6
   - key: hist_suitang_0046_wangbo
     name: 王勃
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （650年—676年）初唐诗人，“初唐四杰”之一，十六岁应幽素科入仕。王勃因《檄英王鸡》被逐出沛王府，后任虢州参军，探父渡海时溺亡；《滕王阁序》传世。
@@ -392,6 +422,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0047_liuyuxi
     name: 刘禹锡
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （772年—842年）唐代诗人、官员，进士及第，参与永贞革新，失败后长期贬谪。刘禹锡历任苏州、和州等地刺史，晚年回朝任主客郎中，著有《刘梦得文集》。
@@ -405,6 +436,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0048_wentlingyun
     name: 温庭筠
+    avatar: pig/文034.png
     default_gender: male
     archetype: civil
     flavor: （约812年—约870年）晚唐诗人、词人，字飞卿。温庭筠才思敏捷，曾任方城尉、国子助教，因科场违规和性情不羁多次被贬；他的词作成为花间词的重要作品。
@@ -418,6 +450,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0049_xuetao
     name: 薛涛
+    avatar: monkey/其他随机角色/文064_女.png
     default_gender: female
     archetype: civil
     flavor: （约768年—约831年）唐代女诗人，字洪度，长安人，后居成都。薛涛早年入乐籍，脱籍后与元稹、白居易等诗人唱和，晚年居碧鸡坊；相传她改制深红小笺，后称“薛涛笺”。
@@ -431,6 +464,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0050_yuxuanji
     name: 鱼玄机
+    avatar: monkey/其他随机角色/文064_女.png
     default_gender: female
     archetype: civil
     flavor: （约844年—871年）晚唐女诗人、女道士，初名鱼幼薇。鱼玄机曾在咸宜观修道，与温庭筠交往；因杀害婢女绿翘被捕，咸通十二年被处死。
@@ -445,6 +479,7 @@ heroes:
   purple:
   - key: hist_suitang_0055_yuchigong
     name: 尉迟恭
+    avatar: monkey/隋唐与五代/尉迟恭.png
     default_gender: male
     archetype: military
     flavor: （585年-658年）唐初名将，出身行伍，辗转归附秦王，因勇烈与忠诚被重用。玄武门事变中他以武力护卫太宗立足，奠定功臣地位；其后参与征战与镇抚，战场上强悍，朝廷上却懂得收敛锋芒。晚年避开权力旋涡，闭门自守而得善终。后世将其与秦琼并奉为门神，不尽是史实，却说明民间对"护国护门"的武将形象有着长久需要。
@@ -458,6 +493,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0056_qinqiong
     name: 秦琼
+    avatar: monkey/隋唐与五代/秦琼.png
     default_gender: male
     archetype: military
     flavor: （571年-638年）唐初将领，早年事隋，隋末辗转瓦岗与诸军，终归唐以战功闻名。其不以奇谋取胜，却以冲锋陷阵与坚忍守阵受人信赖，在统一与平叛战争中多次出力。晚年多病，史载其体弱而仍奉命从征，显示开国功臣的消耗。民间把他塑造成门神之一，既是对其忠勇的赞誉，也折射乱世之后百姓对安定与守护的朴素愿望；传说虽非史笔，却说明其形象深入人心。
@@ -471,6 +507,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0057_chengzhijie
     name: 程知节
+    avatar: monkey/隋唐与五代/程知节.png
     default_gender: male
     archetype: military
     flavor: （589年-665年）唐初将领，性情豪爽直率，历经隋末战乱而归入唐军。史书中的他并非只靠戏曲里的"三板斧"，而是能在多次战役中担任先锋与统兵任务的老将：敢冲阵，也能带兵守纪。其行事有时粗豪，却在功臣群体中进退有度，高龄善终尤为难得。程知节更像一位"能打也能活"的乱世幸存者，留下的是开国武人的粗砺与韧性。
@@ -484,6 +521,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0058_lixiaogong
     name: 李孝恭
+    avatar: monkey/隋唐与五代/李孝恭.png
     default_gender: male
     archetype: military
     flavor: （591年-640年）唐宗室名将，开国时期长期镇抚南方。其率军平定萧铣、辅公祏等势力，使江汉与江南纳入唐廷版图，军事与行政并举。作为宗室，他既享血缘优势，也更需谨慎避免"宗王拥兵"的疑忌，因此治军与治地方多强调安抚与整饬。凌烟阁功臣中宗室并不多，他以实绩证明宗亲也能成为制度化军政的一部分，是唐初统一进程的重要执行者。
@@ -497,6 +535,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0059_lixiuming
     name: 李秀宁
+    avatar: monkey/隋唐与五代/李秀宁.png
     default_gender: female
     archetype: military
     flavor: （？-623年）李渊之女，史称平阳公主。隋末起兵之际，她在关中招集义军并协助攻取要地，"娘子军"由此成为开国记忆的一部分。正史对其军旅细节记载有限，但其确为唐初政治号召的重要象征：以宗室女性身份参与战争，提升起兵合法性并凝聚地方人心。她早逝却获厚葬，说明功绩当时已被认可；后世尊其为巾帼英雄，也是在纪念开国的艰难与代价。
@@ -510,6 +549,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0060_xurengui
     name: 薛仁贵
+    avatar: monkey/隋唐与五代/薛仁贵.png
     default_gender: male
     archetype: military
     flavor: （614年-683年）唐代名将，出身并不显赫而以战功起。史载其在东北与西北战事中屡有表现，善骑射、敢冲阵，成为军中可倚之将。民间"白袍将军""三箭定天山"等传说夸饰甚多，但也反映他确以勇武闻名。其仕途数起数落，既受赏识也遭疑忌，显示边将并不总能掌握命运。真实的薛仁贵是边防体系里的硬将，传说的薛仁贵则成了大众对英雄的投射。

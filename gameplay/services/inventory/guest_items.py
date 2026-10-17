@@ -121,6 +121,9 @@ def use_super_guest_disguise_card(
 
     current_hp = max(0, int(guest.current_hp or 0))
     was_at_full_hp = current_hp >= guest.max_hp
+    if guest.original_avatar_asset_key is None:
+        guest.original_avatar_asset_key = guest.avatar_asset_key
+    guest.use_original_avatar = False
     guest.avatar_override_key = avatar_key
     guest.super_disguise_applied = True
     guest.hp_bonus += hp_bonus
@@ -130,6 +133,8 @@ def use_super_guest_disguise_card(
     guest.save(
         update_fields=[
             "avatar_override_key",
+            "original_avatar_asset_key",
+            "use_original_avatar",
             "super_disguise_applied",
             "hp_bonus",
             "force",
@@ -194,8 +199,11 @@ def use_guest_disguise_card(
     if guest.super_disguise_applied or guest.avatar_override_key:
         raise GuestItemConfigurationError("该门客已经使用过特殊易容效果")
 
+    if guest.original_avatar_asset_key is None:
+        guest.original_avatar_asset_key = guest.avatar_asset_key
+    guest.use_original_avatar = False
     guest.avatar_asset_key = avatar_asset_key
-    guest.save(update_fields=["avatar_asset_key"])
+    guest.save(update_fields=["avatar_asset_key", "original_avatar_asset_key", "use_original_avatar"])
     consume_inventory_item_locked(locked_item, 1, binding_mode=binding_mode)
 
     return {

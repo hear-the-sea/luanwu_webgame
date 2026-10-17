@@ -9,7 +9,7 @@ heroes:
     default_gender: male
     default_morality: 80
     recruitable: true
-    avatar: pig_wu_male2.png
+    avatar: monkey/隋唐演义/秦叔宝.png
     growth_range:
     - 7
     - 11
@@ -20,6 +20,7 @@ heroes:
       agility: 15
   - key: hero_luo_cheng
     name: 罗成
+    avatar: monkey/隋唐演义/罗成.png
     archetype: military
     flavor: 银枪白马，骁勇善战，身法迅捷如风，冲阵时如银电贯空。年少英气逼人，却又心思谨慎，擅长以奇招克敌。其名号在沙场上令人闻风，亦有侠义之名流传江湖。出自《隋唐演义》。罗成之所以动人，不只在勇武，更在少年将领对荣誉与情义的执拗守护。
     default_gender: male
@@ -36,6 +37,7 @@ heroes:
   blue:
   - key: hero_cheng_yaojin
     name: 程咬金
+    avatar: monkey_wen_male3.png
     archetype: military
     flavor: 号混世魔王，性格豪爽直率，言行不拘小节，笑骂皆真。其人武力刚猛，冲锋时气势如虹，常凭一股蛮劲破敌阵。虽粗中有细，关键时刻能护住同伴，令人又敬又服。出自《隋唐演义》。其关键决断对政局节奏产生了放大效应，也因此成为研究隋唐时期政治机制时难以绕开的节点。
     default_gender: male

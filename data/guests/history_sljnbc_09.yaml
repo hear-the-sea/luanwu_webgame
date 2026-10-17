@@ -17,6 +17,7 @@ heroes:
   green:
   - key: hist_sljnbc_0401
     name: 姚兴
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （366年—416年）十六国时期后秦皇帝，姚苌长子。即位后攻灭前秦残部，夺取洛阳等地，曾与北魏、东晋交战；迎鸠摩罗什入长安译经，重视佛教与儒学。
@@ -30,6 +31,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0402
     name: 范缜
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （450年—510年）南齐、南梁思想家与官员，出身贫寒而博学。著《神灭论》，主张形体与精神相依，形亡则神灭，反对神不灭说；梁武帝未因此治罪，授其国子博士。
@@ -43,6 +45,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0403
     name: 江淹
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （444年—505年）南朝宋、齐、梁官员、文学家，字文通。早年以《恨赋》《别赋》知名，历仕三朝，官至散骑常侍、左卫将军；“江郎才尽”是后世关于其文思衰退的传说。
@@ -56,6 +59,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0404
     name: 陈叔宝
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （553年—604年）陈朝末代皇帝，582—589年在位，史称陈后主。长于诗文，统治后期沉溺宫廷游宴；589年隋军攻陷建康，他与张丽华等被俘，陈朝灭亡。
@@ -69,6 +73,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0405
     name: 徐陵
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: （507年—583年）南北朝南朝文学家、政治家，与庾信并称“徐庾”。历仕梁、陈，主持编纂《玉台新咏》，任陈朝尚书左仆射，擅长宫体诗。
@@ -82,6 +87,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0406
     name: 宇文护
+    avatar: pig/武049.png
     default_gender: male
     archetype: military
     flavor: （513年—572年）西魏、北周权臣，宇文泰侄，北周初摄政十六年，先后废杀孝闵帝、明帝并杀魏恭帝，掌握军政大权；572年被周武帝宇文邕诛杀。
@@ -95,6 +101,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0407
     name: 杨忠
+    avatar: pig/武046.png
     default_gender: male
     archetype: military
     flavor: （507年—568年）西魏、北周将领，隋文帝杨坚之父。随独孤信、宇文泰征战，参与攻取江陵、征伐北齐，官至柱国大将军、随国公，隋朝建立后追尊为武元皇帝。
@@ -108,6 +115,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0408
     name: 高洋
+    avatar: pig/武076.png
     default_gender: male
     archetype: military
     flavor: （529年—559年）东魏权臣高欢次子，550年取代东魏建立北齐，史称文宣帝。在位前期推行均田、整顿吏治并扩张边境，后期统治日趋严酷，559年病逝。
@@ -121,6 +129,7 @@ heroes:
       agility: 18
   - key: hist_sljnbc_0409
     name: 吕虔
+    avatar: pig/武051.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）三国曹魏将领，历任泰山太守、威虏将军，封万年亭侯，以恩威并施平定地方盗乱。史载其佩刀赠王祥，形成“吕虔佩刀”典故。
@@ -134,6 +143,7 @@ heroes:
       agility: 14
   - key: hist_sljnbc_0410
     name: 胡质
+    avatar: monkey_wen_male7.png
     default_gender: male
     archetype: civil
     flavor: （？—250年）东汉末至曹魏官员，字文德，历任常山、东莞太守及荆州刺史，曾率军援救樊城；以清廉著称，去世时家无余财。
@@ -147,6 +157,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0411
     name: 审配
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （？—204年）东汉末袁绍部下，字正南，曾主持邺城防务。曹操攻邺时，他坚守至城破被擒，拒绝招降，最终被曹操处死。
@@ -160,6 +171,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0412
     name: 郭图
+    avatar: monkey/其他随机角色/文041_男.png
     default_gender: male
     archetype: civil
     flavor: （？—205年）东汉末袁绍谋士，参与韩馥让出冀州。官渡之战中主张进攻曹军营寨，袁绍败后辅佐袁谭参与南皮之战，205年城破后被曹操处死。
@@ -173,6 +185,7 @@ heroes:
       agility: 12
   - key: hist_sljnbc_0413
     name: 逢纪
+    avatar: pig/文010.png
     default_gender: male
     archetype: civil
     flavor: （？—202年）东汉末袁绍谋士，曾参与夺取冀州并统领军务。袁绍死后支持袁尚，与审配共同掌政；袁谭攻冀州时将其杀死。
@@ -186,6 +199,7 @@ heroes:
       agility: 12
   - key: hist_sljnbc_0414
     name: 赵累
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）三国蜀汉将领，任关羽亲兵侍卫都督。219年荆州失陷后随关羽退守麦城并突围，后被东吴军队擒获，正史未详其最终结局。
@@ -199,6 +213,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0415
     name: 向宠
+    avatar: monkey_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （？—240年）三国蜀汉将领，向朗之侄。夷陵之战后所部保存完整，受刘备称许；诸葛亮在《出师表》中推荐其统领宿卫，后任中领军，征讨汉嘉时战死。
@@ -212,6 +227,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0416
     name: 虞翻
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （164年—233年）东汉末至三国东吴经学家、官员，精通《周易》，多次直谏孙权，后被流放交州；在交州仍授徒讲学，著有《周易注》等。
@@ -225,6 +241,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0417
     name: 石崇
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: （249年—300年）西晋官员、富豪，石苞第六子，曾任荆州刺史。因劫掠商旅聚财，筑金谷园与王恺斗富；八王之乱中卷入权力斗争，被司马伦集团处死。
@@ -238,6 +255,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0418
     name: 慧远
+    avatar: pig/武066.png
     default_gender: male
     archetype: civil
     flavor: （334年—416年）东晋高僧，俗姓贾，并州雁门楼烦人。居庐山东林寺，参与创建白莲社，倡导净土信仰，兼通儒道，是东晋佛教中国化的重要人物。
@@ -251,6 +269,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0419
     name: 李雄
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （274年—334年）十六国时期成汉开国皇帝，巴氐人，李特第三子。304年据成都称王，306年称帝，国号大成；在位期间攻取汉中等地，并以宽免赋役安定益州。
@@ -264,6 +283,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0420
     name: 石虎
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （295年—349年）后赵第三位皇帝，石勒之侄。333年石勒死后掌握政权，后废黜石弘即位；在位时大兴宫室、征发民众并施行严酷统治，349年病死。
@@ -277,6 +297,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0421
     name: 王僧辩
+    avatar: monkey_wu_male16.png
     default_gender: male
     archetype: military
     flavor: （？—555年）南梁将领，侯景之乱中与陈霸先等收复建康、诛灭侯景。梁元帝死后主张迎立北齐支持的萧渊明，因与陈霸先决裂，被其部下袭杀。
@@ -290,6 +311,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0422
     name: 周文育
+    avatar: monkey/其他随机角色/武038_男.png
     default_gender: male
     archetype: military
     flavor: （509年—559年）南陈开国将领，原名项猛奴，幼年被周荟收养改姓周。随陈霸先平定侯景之乱，后讨萧勃、王琳等；559年被熊昙朗在宴席上杀害。
@@ -303,6 +325,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0423
     name: 侯安都
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: （520年—563年）南陈将领，陈霸先旧部，参与平定侯景之乱并拥立陈文帝。陈文帝在位时任司空等职，因骄横与朝廷发生冲突，563年被收捕后赐死。
@@ -316,6 +339,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0424
     name: 萧皇后
+    avatar: monkey_wen_female7.png
     default_gender: female
     archetype: civil
     flavor: （567年—647年）西梁明帝萧岿之女，隋炀帝杨广皇后。隋亡后先后为宇文化及、窦建德所控制，后随突厥北迁；唐太宗时期归唐，卒于长安。
@@ -329,6 +353,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0426
     name: 焦触
+    avatar: monkey/其他随机角色/武男22.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东汉末袁绍部将。袁绍死后与张南攻逐袁尚、袁熙，随后自称幽州刺史并归降曹操，获封列侯；曹魏时期官至征虏将军、封都亭侯。
@@ -342,6 +367,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0427
     name: 郤俭
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （？—188年）东汉益州刺史。中平五年，马相、赵祗等以黄巾名义在绵竹起兵，攻破雒县并杀害郤俭；其沉重赋役是起事背景之一。
@@ -355,6 +381,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0428
     name: 刘焉
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （？—194年）东汉宗室、益州牧，字君郎。曾建议以州牧统领地方，入蜀后整顿吏治、打击豪强并收编东州兵，形成益州割据基础；卒后其子刘璋继任。
@@ -368,6 +395,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0429
     name: 张方
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （？—304年）西晋河间王司马颙部将，参与八王之乱。率军攻入洛阳，劫持晋惠帝迁往长安，并大肆掠夺宫城；后因司马颙猜忌被杀。
@@ -381,6 +409,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0430
     name: 刘曜
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （？—329年）十六国前赵皇帝，刘渊族子、养子，善射且通文史。靳准之乱后在长安即位，改国号为赵，曾攻取洛阳、长安；329年败于后赵石勒，被俘后处死。
@@ -394,6 +423,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0431
     name: 苻融
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: （？—383年）前秦宗室、将领，苻坚之弟。淝水之战前与王猛等劝苻坚不要贸然伐晋；战事开始后仍任前锋，前秦败退时阵亡。
@@ -407,6 +437,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0432
     name: 乞伏国仁
+    avatar: monkey_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （？—388年）十六国时期陇西鲜卑乞伏部首领，前秦前将军。淝水之战后据陇西扩充部众，385年自称大都督、大单于，奠定西秦政权基础，定都勇士城；死后由弟乞伏乾归继位。
@@ -420,6 +451,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0433
     name: 刘义符
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （406年—424年）南朝宋第二位皇帝，宋武帝刘裕长子，史称宋少帝。422年即位，因沉溺游乐、疏于政务，424年被徐羡之、傅亮、谢晦等废黜并杀害。
@@ -433,6 +465,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0434
     name: 刘劭
+    avatar: monkey_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （424年—453年）南朝宋太子，宋文帝刘义隆长子。因巫蛊案与父亲冲突，453年发动政变弑父即位，史称元凶；不久被刘骏讨伐，兵败被杀。
@@ -446,6 +479,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0435
     name: 刘骏
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （430年—464年）南朝宋皇帝，宋文帝第三子，因讨伐弑父的刘劭而即位，史称孝武帝。统治期间加强皇权、整顿户籍并压制宗室，曾平定宗王叛乱。
@@ -459,6 +493,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0436
     name: 刘子业
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （449年—465年）南朝宋前废帝，宋孝武帝刘骏长子。465年即位后诛杀顾命大臣、宗室及近臣，统治严酷；同年被阮佃夫等策划的政变杀死。
@@ -472,6 +507,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0437
     name: 刘彧
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （439年—472年）南朝宋皇帝，史称宋明帝。465年在刘子业遇弑后即位，平定刘子勋等人的起兵；为巩固皇位大规模诛杀宗室与功臣，削弱刘宋宗室势力。
@@ -485,6 +521,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0438
     name: 褚渊
+    avatar: pig/文031.png
     default_gender: male
     archetype: civil
     flavor: （435年—482年）南朝宋、齐大臣，字彦回，出身河南阳翟褚氏，娶宋文帝之女。曾任尚书令等要职，参与萧道成代宋建齐，封南昌县公；因支持禅让受到后世议论。
@@ -498,6 +535,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0439
     name: 王俭
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: （452年—489年）南齐大臣、文学家，出身琅琊王氏，早年以才学知名。参与萧道成代宋建齐，任尚书令，主持礼制、官制等制度建设，并撰有文集。
@@ -511,6 +549,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0440
     name: 萧宝卷
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （483年—501年）南齐第六位皇帝，齐明帝萧鸾次子，原名萧明贤。即位后大兴土木、宠信潘玉儿并诛杀宗室；501年在萧衍攻入建康后被杀，死后被贬称东昏侯。
@@ -524,6 +563,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0441
     name: 潘玉儿
+    avatar: monkey_wen_female7.png
     default_gender: female
     archetype: civil
     flavor: （生卒年不详—501年）南齐东昏侯萧宝卷宠妃，本名俞尼子，后改姓潘。萧宝卷为她营建宫室，史籍以“步步生莲”等记载其受宠；萧宝卷死后，潘玉儿亦被处死。
@@ -537,6 +577,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0442
     name: 萧纲
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （503年—551年）南梁太子、梁简文帝，梁武帝萧衍之子，长于诗赋。侯景攻陷台城后被拥立为帝，受侯景控制；551年被废为晋安王，随后遇害。
@@ -550,6 +591,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0443
     name: 萧绎
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （508年—555年）南梁皇帝，梁武帝第七子，史称梁元帝。侯景之乱后据江陵称帝，重视文学与藏书；555年西魏攻破江陵，他焚毁部分典籍后被俘杀。
@@ -563,6 +605,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0444
     name: 阳休之
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （509年—582年）北朝文臣、学者，历仕北魏、北齐、北周、隋，曾任北齐吏部尚书、尚书右仆射。著有《幽州古今人物志》，并编纂陶渊明集。
@@ -576,6 +619,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0445
     name: 陆法和
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）南北朝时期南梁、北齐居士，侯景之乱时参与讨伐侯景，曾协助王僧辩。梁陈政局变化后北归北齐；关于其方术、神异事迹，多见于史传记载。
@@ -589,6 +633,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0446
     name: 高敖曹
+    avatar: monkey_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （501年—538年）东魏将领，高昂字敖曹，高欢麾下悍将。随高欢征战，屡任前锋；538年沙苑之战东魏败退时突围，后为西魏军所杀。
@@ -602,6 +647,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0447
     name: 窦泰
+    avatar: pig/武060.png
     default_gender: male
     archetype: military
     flavor: （？—537年）北魏、东魏将领，高欢姊夫。曾随尔朱荣征战，后任东魏大都督；537年率军进攻潼关，在小关遭宇文泰伏击，兵败自杀。
@@ -615,6 +661,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0448
     name: 彭乐
+    avatar: monkey_wu_male7.png
     default_gender: male
     archetype: military
     flavor: （？—551年）东魏、北齐将领，随高欢征战，参加沙苑、韩陵等战役，以勇猛著称。北齐建立后封陈留王、任太尉；晚年因与权贵冲突失势，卒于551年。
@@ -628,6 +675,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0449
     name: 贺拔岳
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: （？—534年）北魏末年将领，贺拔胜之弟。参与平定关陇与万俟丑奴，控制关中军政并任用宇文泰；534年被部将侯莫陈悦设宴诱杀，死后其部众拥立宇文泰。
@@ -641,6 +689,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0450
     name: 卢思道
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （535年—586年）北齐、北周、隋诗人、文臣，字子行，范阳涿县人，以“八米卢郎”著称。历仕三朝，任北周仪同三司、隋散骑常侍，擅长边塞诗和应诏文章。

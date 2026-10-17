@@ -1,0 +1,137 @@
+{
+  "samples": 5000000,
+  "per_seed": [
+    {
+      "seed": 20261017,
+      "draws": 1000000,
+      "counts": {
+        "black": 899454,
+        "gray": 89915,
+        "green": 7048,
+        "purple": 588,
+        "blue": 2539,
+        "orange": 164,
+        "hermit": 292
+      }
+    },
+    {
+      "seed": 20261018,
+      "draws": 1000000,
+      "counts": {
+        "black": 899495,
+        "gray": 90232,
+        "hermit": 282,
+        "green": 6801,
+        "blue": 2447,
+        "purple": 587,
+        "orange": 156
+      }
+    },
+    {
+      "seed": 20261019,
+      "draws": 1000000,
+      "counts": {
+        "black": 899128,
+        "gray": 90348,
+        "green": 7058,
+        "orange": 142,
+        "blue": 2450,
+        "purple": 581,
+        "hermit": 293
+      }
+    },
+    {
+      "seed": 20261020,
+      "draws": 1000000,
+      "counts": {
+        "black": 899601,
+        "gray": 89647,
+        "green": 7052,
+        "blue": 2539,
+        "purple": 671,
+        "hermit": 321,
+        "orange": 169
+      }
+    },
+    {
+      "seed": 20261021,
+      "draws": 1000000,
+      "counts": {
+        "black": 899030,
+        "gray": 90433,
+        "orange": 160,
+        "green": 6967,
+        "blue": 2516,
+        "purple": 583,
+        "hermit": 311
+      }
+    }
+  ],
+  "distribution": [
+    {
+      "rarity": "orange",
+      "expected_percent": 0.015,
+      "observed_percent": 0.01582,
+      "expected_count": 749.9999999999999,
+      "observed_count": 791,
+      "standard_deviations": 1.4972206196051776
+    },
+    {
+      "rarity": "hermit",
+      "expected_percent": 0.03,
+      "observed_percent": 0.029980000000000003,
+      "expected_count": 1499.9999999999998,
+      "observed_count": 1499,
+      "standard_deviations": -0.025823762829695614
+    },
+    {
+      "rarity": "purple",
+      "expected_percent": 0.06,
+      "observed_percent": 0.0602,
+      "expected_count": 2999.9999999999995,
+      "observed_count": 3010,
+      "standard_deviations": 0.18262898275065953
+    },
+    {
+      "rarity": "red",
+      "expected_percent": 0.0,
+      "observed_percent": 0.0,
+      "expected_count": 0.0,
+      "observed_count": 0,
+      "standard_deviations": 0
+    },
+    {
+      "rarity": "blue",
+      "expected_percent": 0.25,
+      "observed_percent": 0.24982,
+      "expected_count": 12500.0,
+      "observed_count": 12491,
+      "standard_deviations": -0.08059925931113611
+    },
+    {
+      "rarity": "green",
+      "expected_percent": 0.7000000000000001,
+      "observed_percent": 0.6985199999999999,
+      "expected_count": 35000.0,
+      "observed_count": 34926,
+      "standard_deviations": -0.3969383620919557
+    },
+    {
+      "rarity": "gray",
+      "expected_percent": 9.0,
+      "observed_percent": 9.0115,
+      "expected_count": 450000.0,
+      "observed_count": 450575,
+      "standard_deviations": 0.8985471926321162
+    },
+    {
+      "rarity": "black",
+      "expected_percent": 89.945,
+      "observed_percent": 89.93415999999999,
+      "expected_count": 4497250.0,
+      "observed_count": 4496708,
+      "standard_deviations": -0.8059994284530504
+    }
+  ],
+  "scope": "Actual choose_rarity draws before template availability fallback; no game data mutated"
+}

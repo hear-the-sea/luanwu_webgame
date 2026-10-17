@@ -2,6 +2,7 @@ heroes:
   blue:
   - key: hist_suitang_0091_jiadao
     name: 贾岛
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: （779年—843年）唐代诗人，早年出家，法号无本，后还俗参加科举。贾岛一生屡试不第，曾任长江主簿、普州司仓参军；“推敲”典故与其琢磨诗句有关，晚年任文州司户参军，卒于任所。
@@ -15,6 +16,7 @@ heroes:
       agility: 18
   - key: hist_suitang_0092_weizhuang
     name: 韦庄
+    avatar: pig/文034.png
     default_gender: male
     archetype: civil
     flavor: （约836年—910年）晚唐五代诗人、词人，字端己，长安杜陵人。韦庄乾宁元年进士及第，入蜀后任掌书记，后来辅佐王建建立前蜀，官至宰相；《菩萨蛮·人人尽说江南好》传世。
@@ -28,6 +30,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0093_luoyin
     name: 罗隐
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: （833年—909年）晚唐诗人，字昭谏，原名横，十余次参加进士试不第。罗隐曾在钱镠幕府任职，后任钱塘令、著作郎等；其诗文多用讽刺笔法，著有《谗书》《甲乙集》。
@@ -41,6 +44,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0094_lishi
     name: 李适
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （742年—805年）唐德宗，唐代第九位皇帝。李适即位后任用杨炎推行两税法，并多次出兵平定藩镇；建中四年泾原兵变，他逃往奉天，晚年倚重宦官，卒于长安。
@@ -54,6 +58,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0098_liang
     name: 李昂
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （809年—840年）唐文宗，唐穆宗次子，827年即位。李昂与宰相李训、郑注谋划诛杀宦官，甘露之变失败后被仇士良等宦官控制，晚年郁郁而终。
@@ -67,6 +72,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0099_liyan
     name: 李炎
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （814年—846年）唐武宗，唐穆宗第五子，840年即位。会昌年间，李炎下令拆毁寺院、没收寺产，史称“会昌灭佛”；他又任用李德裕击败回鹘，846年病逝。
@@ -80,6 +86,7 @@ heroes:
       agility: 10
   - key: hist_suitang_0101_lixi
     name: 李儇
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （862年—888年）唐僖宗，唐懿宗第五子，873年即位。黄巢起义后，李儇出奔成都，受宦官田令孜控制；中和年间回到长安，888年病逝。
@@ -93,6 +100,7 @@ heroes:
       agility: 22
   - key: hist_suitang_0102_liye
     name: 李晔
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: （867年—904年）唐昭宗，唐懿宗第七子，888年即位。李晔曾借朱温等外镇力量诛除宦官、迁都洛阳，后来被朱温控制，904年在洛阳被杀。
@@ -106,6 +114,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0109_zhangliang
     name: 张亮
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: （？—646年）唐初将领，早年随李密作战，后来归附唐朝，因战功受到李世民任用。张亮曾任刑部尚书、洛州都督，后因被告发谋反，与养子谋反案牵连，贞观二十年被处死。
@@ -119,6 +128,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0095_lishu
     name: 李诵
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: （761年—806年）唐顺宗，唐德宗长子，805年即位，在位仅数月。李诵任用王叔文、王伾等推行永贞革新，因病不能亲政，宦官俱文珍等迫使他禅位于太子李纯，次年病逝。
@@ -132,6 +142,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0097_lizhan
     name: 李湛
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （809年—827年）唐敬宗，唐穆宗长子，824年即位。李湛喜好击球、夜猎和宴游，宝历二年被宦官刘克明等人在宫中杀害，年仅十八岁。
@@ -145,6 +156,7 @@ heroes:
       agility: 20
   - key: hist_suitang_0100_lipi
     name: 李漼
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （833年—873年）唐懿宗，唐宣宗长子，859年即位。李漼曾举行迎佛骨仪式，长期宠信宦官、生活奢侈；咸通十四年病逝，庙号懿宗。
@@ -158,6 +170,7 @@ heroes:
       agility: 20
   - key: hist_suitang_0103_lizhu
     name: 李柷
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （892年—908年）唐哀帝，唐昭宗之子，904年即位。朱温控制朝廷后，李柷于907年被迫禅位，降封济阴王；次年在曹州被杀。
@@ -171,6 +184,7 @@ heroes:
       agility: 22
   - key: hist_suitang_0104_tangjian
     name: 唐俭
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: （571年—640年）唐初大臣，字茂约，晋阳起兵时归附李渊。唐俭曾出使突厥，与颉利可汗交涉，后任民部尚书、天策府长史，封莒国公。
@@ -184,6 +198,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0105_duanzhixuan
     name: 段志玄
+    avatar: monkey_wu_male16.png
     default_gender: male
     archetype: military
     flavor: （？—？）唐初将领，随李渊起兵，参加攻取长安及平定王世充、刘黑闼等战事。段志玄后来任右卫大将军，封褒国公，列入凌烟阁功臣。
@@ -197,6 +212,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0107_yinkaishan
     name: 殷开山
+    avatar: pig/武060.png
     default_gender: male
     archetype: military
     flavor: （？—622年）唐初将领，随李渊在太原起兵，参与攻取长安；后来与李世民征讨薛举，因军功封爵，最终卒于军中。
@@ -210,6 +226,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0108_liuzhenghui
     name: 刘政会
+    avatar: pig/文014.png
     default_gender: male
     archetype: civil
     flavor: （？—635年）唐初大臣，晋阳起兵时任太原留守府司马，后来归附李渊。刘政会曾任黄门侍郎、刑部尚书，封邢国公，参与处理唐初政务与军务。
@@ -223,6 +240,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0110_gaoshilian
     name: 高士廉
+    avatar: pig/文032.png
     default_gender: male
     archetype: civil
     flavor: （？—647年）唐初大臣，长孙皇后的舅父，曾任吏部尚书、尚书右仆射。高士廉参与修订《氏族志》，封申国公，晚年任开府仪同三司。
@@ -236,6 +254,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0111_wenyanbo
     name: 温彦博
+    avatar: pig/文032.png
     default_gender: male
     archetype: civil
     flavor: （573年—640年）唐初大臣，曾任中书令、尚书右仆射。温彦博在太宗朝主持政务，曾负责安置归附唐朝的突厥部众；贞观十四年病逝，谥恭。
@@ -249,6 +268,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0112_cenwenben
     name: 岑文本
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: （595年—645年）唐初大臣、文学家，初仕萧铣，归唐后任中书舍人。岑文本参与起草诏令，后任中书令；贞观十九年随唐太宗征辽东，途中病逝。
@@ -262,6 +282,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0096_liliheng
     name: 李恒
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （795年—824年）唐穆宗，唐宪宗长子，820年即位。在位期间，李恒多次游宴、击球，任用裴度等大臣处理政务；长庆四年病逝，太子李湛继位。
@@ -275,6 +296,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0113_xujingzong
     name: 许敬宗
+    avatar: pig/文014.png
     default_gender: male
     archetype: civil
     flavor: （592年—672年）唐初大臣、史官，隋末曾入瓦岗军，后来归附唐朝。许敬宗参与撰修《武德实录》《贞观实录》《晋书》，唐高宗时支持武后，官至中书令。
@@ -288,6 +310,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0114_shangguanyi
     name: 上官仪
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （608年—665年）唐代诗人、宰相，进士及第，曾任秘书郎、弘文馆学士，官至西台侍郎、同东西台三品。上官仪奉唐高宗命起草废后诏书，后与儿子上官庭芝一同被武后诬陷处死。
@@ -301,6 +324,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0115_liyifu
     name: 李义府
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （614年—666年）唐高宗时期宰相，因支持武后而获重用，官至中书令。李义府后来因贪赃、结党获罪，被流放巂州，死于流放地。
@@ -314,6 +338,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0116_peiyan
     name: 裴炎
+    avatar: pig/文028.png
     default_gender: male
     archetype: civil
     flavor: （？—684年）唐代宰相，曾受唐高宗遗诏辅政。唐中宗即位后，裴炎反对皇后干政，与武后发生冲突；光宅元年因谋反罪被处死。
@@ -327,6 +352,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0117_xujingye
     name: 徐敬业
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （？—684年）唐代将领，英国公李勣之孙。武则天称帝后，徐敬业在扬州起兵，以匡复唐室为名，骆宾王为其作《讨武曌檄》；兵败后被部将王那相杀害。
@@ -340,6 +366,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0120_yuwentong
     name: 宇文融
+    avatar: pig/文029.png
     default_gender: male
     archetype: civil
     flavor: （？—733年）唐代财政官员，开元年间任监察御史、御史中丞，主持括户、检田，扩充户籍与税收。宇文融后来因与张说等人争执被贬，赴贬所途中病卒。
@@ -353,6 +380,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0121_liyuanhong
     name: 李元纮
+    avatar: pig/文049.png
     default_gender: male
     archetype: civil
     flavor: （？—733年）唐代宰相，曾任雍州长史、吏部侍郎，开元初年任同中书门下平章事。李元纮以清俭持重著称，后来出任蒲州刺史，卒于任所。
@@ -366,6 +394,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0122_zhangjiazhen
     name: 张嘉贞
+    avatar: pig/文031.png
     default_gender: male
     archetype: civil
     flavor: （666年—729年）唐代宰相，因奏对得到唐玄宗赏识，曾任中书侍郎、同中书门下平章事。张嘉贞后来出任幽州都督、益州长史，开元十七年病逝。
@@ -379,6 +408,7 @@ heroes:
       agility: 10
   - key: hist_suitang_0123_zhangrenyuan
     name: 张仁愿
+    avatar: monkey_wu_male16.png
     default_gender: male
     archetype: military
     flavor: （？—714年）唐代将领，曾任朔方总管。张仁愿在黄河以北筑成三座受降城，作为驻军和防御据点；后来任左卫大将军，卒于任所。
@@ -392,6 +422,7 @@ heroes:
       agility: 10
   - key: hist_suitang_0124_wangmaozhong
     name: 王毛仲
+    avatar: pig_wu_male5.png
     default_gender: male
     archetype: military
     flavor: （？—731年）唐代将领，曾参与李隆基诛除韦后、太平公主的行动，后来掌握禁军，官至辅国大将军。王毛仲开元十九年因与唐玄宗争权失势，被贬后赐死。
@@ -405,6 +436,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0125_zhangshugua
     name: 张守珪
+    avatar: pig_wu_male5.png
     default_gender: male
     archetype: military
     flavor: （？—739年）唐代边将，曾任幽州长史、营州都督，击退契丹、奚等部。张守珪提拔安禄山，后因安禄山兵败及军中失误受贬，开元二十七年病逝。
@@ -418,6 +450,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0126_anqingxu
     name: 安庆绪
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: （？—759年）安禄山次子。安禄山死后，安庆绪在洛阳即位称帝；唐军与史思明夹击时，他失守洛阳，逃至晋州，后来被史思明擒杀。
@@ -431,6 +464,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0127_shichaoyi
     name: 史朝义
+    avatar: pig_wu_male9.png
     default_gender: male
     archetype: military
     flavor: （？—763年）史思明长子，安庆绪死后继承燕政权。史朝义杀父后即位，退守莫州；唐军收复洛阳后，他北逃至广阳，最终自缢身亡。
@@ -444,6 +478,7 @@ heroes:
       agility: 18
   - key: hist_suitang_0128_puguhuaien
     name: 仆固怀恩
+    avatar: pig/武060.png
     default_gender: male
     archetype: military
     flavor: （？—765年）唐代将领，出身铁勒仆固部。仆固怀恩在安史之乱中参与收复长安、洛阳，后来因与朝廷关系紧张而起兵，并联合回纥、吐蕃进攻；他最终病死于鸣沙。
@@ -457,6 +492,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0129_lisiye
     name: 李嗣业
+    avatar: monkey/其他随机角色/武038_男.png
     default_gender: male
     archetype: military
     flavor: （？—763年）唐代将领，以陌刀军闻名。安史之乱中，李嗣业参加收复长安、洛阳等战事，常率陌刀军冲击叛军；后来在战斗中受伤，最终死于军中。
@@ -470,6 +506,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0130_guoxin
     name: 郭昕
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: （718年—？）唐代将领，郭子仪从弟，曾任安西副大都护。吐蕃占据河西后，郭昕据守安西，长期未得朝廷援军；后世称其坚守西域多年，具体年代和细节仍有争议。
@@ -483,6 +520,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0131_duanxiushi
     name: 段秀实
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: （719年—783年）唐代将领，曾任泾原节度使、司农卿。朱泚之乱时，段秀实以笏击打朱泚，试图阻止叛乱，受伤后被叛军杀害。
@@ -496,6 +534,7 @@ heroes:
       agility: 8
   - key: hist_suitang_0132_masui
     name: 马燧
+    avatar: pig/武051.png
     default_gender: male
     archetype: military
     flavor: （726年—795年）唐代将领，曾任河东节度使。马燧参与平定田悦、李怀光等藩镇叛乱，后来入朝任司徒，封北平郡王。
@@ -509,6 +548,7 @@ heroes:
       agility: 8
   - key: hist_suitang_0133_hunjian
     name: 浑瑊
+    avatar: pig/武060.png
     default_gender: male
     archetype: military
     flavor: （732年—799年）唐代将领，出身铁勒浑部，曾参与收复长安、讨伐朱泚及对吐蕃作战。浑瑊后来任朔方节度使，长期驻守边地，贞元十五年病逝。
@@ -522,6 +562,7 @@ heroes:
       agility: 8
   - key: hist_suitang_0134_luqi
     name: 卢杞
+    avatar: duck_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （？—785年）唐代宰相，德宗时任门下侍郎、同中书门下平章事。卢杞在任时参与处理杨炎、颜真卿等人的案件，因用人和决策失当被贬为澧州别驾，赴贬所途中病死。
@@ -536,6 +577,7 @@ heroes:
   purple:
   - key: hist_suitang_0106_qututong
     name: 屈突通
+    avatar: monkey/隋唐与五代/屈突通.png
     default_gender: male
     archetype: military
     flavor: （557年-628年）隋末唐初名将，早年为隋守将，曾在关中与唐军对峙，展现顽强的守御能力。隋亡大势既定后，他转而归唐，并在新政治环境中继续从军效力，成为旧朝名将如何融入新朝的典型。屈突通的价值不只在战功，更在其立场转变背后的现实：在鼎革之际，忠于旧主与保全百姓、家族常难两全。史书对他有褒有贬，但其经历真实反映隋唐转折期将领的艰难选择——多数人只能在大势里寻找可活的路径。
@@ -549,6 +591,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0118_hanxiu
     name: 韩休
+    avatar: monkey/隋唐与五代/韩休.png
     default_gender: male
     archetype: civil
     flavor: （？-740年）唐代宰相，以直言敢谏著称。史载其进谏不避权贵，言辞往往刺耳，却能迫使朝廷正视问题。韩休与玄宗之间的关系常被描写为君臣互相忍耐：皇帝需要这样的制衡者，又常被其直言所触怒。正因敢言，韩休在开元政治中扮演类似刹车的角色，使盛世不至完全滑向恣意。这也提醒：再强盛的时代也需要制度性的反对意见，否则错误会被赞美包裹。韩休并非完人，但他以个人风险换取公共纠错空间，是盛唐政治难得的硬度。
@@ -562,6 +605,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0119_peiyaoqing
     name: 裴耀卿
+    avatar: monkey/隋唐与五代/裴耀卿.png
     default_gender: male
     archetype: civil
     flavor: （681年-743年）唐代大臣，重视财政与漕运，在开元时期推动粮运与供给体系优化。都城与边防长期依赖南北运输，漕运一旦阻塞，政治与军事实力都会受影响；裴耀卿的工作正是把看不见的运输线变成可持续的国家血管。其改革多涉及制度细节：仓储、转运、官吏考核与成本控制，听来琐碎，却决定盛世能否真正运转。裴耀卿用理财与行政把繁荣落到地面，而不是停留在诗文赞颂里，证明治理不仅是战略决断，也是一套精细工程。

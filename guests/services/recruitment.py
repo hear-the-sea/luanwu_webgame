@@ -23,7 +23,7 @@ from gameplay.services.action_points import consume_action_points_for_expedition
 from gameplay.services.inventory import core as inventory_core
 from gameplay.services.resources import spend_resources
 
-from ..models import GuestRecruitment, RecruitmentCandidate, RecruitmentPool
+from ..models import GuestRecruitment, RecruitmentCandidate, RecruitmentPity, RecruitmentPool
 from ..utils.name_generator import generate_random_name
 from . import recruitment_candidates as _recruitment_candidates
 from . import recruitment_flow as _recruitment_flow
@@ -114,6 +114,7 @@ def recruit_guest(manor: Manor, pool: RecruitmentPool, seed: int | None = None) 
     )
 
 
+@transaction.atomic
 def _build_recruitment_candidates(
     manor: Manor,
     pool: RecruitmentPool,
@@ -123,6 +124,11 @@ def _build_recruitment_candidates(
     clear_existing: bool = True,
 ) -> List[RecruitmentCandidate]:
     """生成候选门客（不处理资源扣除）。"""
+    from gameplay.models import Manor as ManorModel
+
+    # 所有生成入口先锁庄园；计数、候选与批次状态在同一事务提交。
+    ManorModel.objects.select_for_update().get(pk=manor.pk)
+    pity, _ = RecruitmentPity.objects.select_for_update().get_or_create(manor_id=manor.pk)
     if clear_existing:
         _recruitment_flow.clear_manor_candidates(manor)
 
@@ -147,14 +153,17 @@ def _build_recruitment_candidates(
         hermit_templates=context["hermit_templates"],
         generate_random_name=generate_random_name,
         non_repeatable_rarities=_recruitment_shared.NON_REPEATABLE_RARITIES,
+        pity=pity,
     )
 
-    return _recruitment_candidates.persist_candidate_batch(
+    candidates = _recruitment_candidates.persist_candidate_batch(
         recruitment_candidate_model=RecruitmentCandidate,
         manor=manor,
         candidates_to_create=candidates_to_create,
         invalidate_cache=_recruitment_shared.invalidate_recruitment_hall_cache,
     )
+    pity.save(update_fields=["purple_misses", "orange_misses"])
+    return candidates
 
 
 def _schedule_guest_recruitment_completion(recruitment: GuestRecruitment, eta_seconds: int) -> None:

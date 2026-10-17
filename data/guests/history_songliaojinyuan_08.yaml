@@ -2,6 +2,7 @@ heroes:
   blue:
   - key: hist_songliaojinyuan_0388
     name: 哲别
+    avatar: monkey_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （？—约1224年）蒙古将领，原为泰赤乌部将领。哲别曾射伤铁木真，归降后随其征伐金国、西辽和花剌子模，追击摩诃末苏丹；他在西征途中病逝。
@@ -15,6 +16,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0390
     name: 木华黎
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: （1170年—1223年）蒙古将领，札剌亦儿部人，成吉思汗开国功臣，封太师国王。木华黎长期统军攻打金朝北方，任用史天泽等汉将；他在攻占闻喜后病逝。
@@ -28,6 +30,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0391
     name: 窝阔台
+    avatar: pig_wu_male9.png
     default_gender: male
     archetype: military
     flavor: （1186年—1241年）成吉思汗第三子，1229年继任大汗。窝阔台任用耶律楚材，灭金，营建哈拉和林，并派拔都等率军西征；乃马真后在他死后摄政。
@@ -41,6 +44,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0394
     name: 旭烈兀
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
     flavor: （1217年—1265年）拖雷之子，忽必烈之弟。旭烈兀奉蒙哥命西征，1258年攻陷巴格达，后在伊朗建立伊儿汗国，定都大不里士；1265年病逝。
@@ -54,6 +58,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0395
     name: 拔都
+    avatar: monkey_wu_male16.png
     default_gender: male
     archetype: military
     flavor: （1209年—1255年）术赤之子，蒙古西征将领。拔都在1236年后统率长子西征，攻占伏尔加河流域、俄罗斯诸公国及波兰、匈牙利，返回后以萨莱为中心经营钦察汗国。
@@ -67,6 +72,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0396
     name: 黄道婆
+    avatar: monkey/其他随机角色/文064_女.png
     default_gender: female
     archetype: civil
     flavor: （约1245年—约1330年）元代棉纺织技术改良者，松江乌泥泾人。黄道婆早年流落海南，向黎族学习纺织，晚年返乡传授擀、弹、纺、织技术，改进工具；卒后乡人立祠纪念。
@@ -81,6 +87,7 @@ heroes:
   green:
   - key: hist_songliaojinyuan_0359
     name: 挞懒
+    avatar: monkey_wu_male7.png
     default_gender: male
     archetype: military
     flavor: 挞懒，即完颜昌，金初宗室、将领。早年参与伐辽、攻宋，金熙宗时主张将河南、陕西归还南宋以议和；后被完颜宗弼等诬为通宋谋反，遭杀。
@@ -94,6 +101,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0360
     name: 撒离喝
+    avatar: pig_wu_male8.png
     default_gender: male
     archetype: military
     flavor: 撒离喝（？—1150），金初名将，参与灭辽、攻宋，经营陕西，多次击败宋军并攻取金州、洋州等地；海陵王时因功高见忌，被诬谋反杀害，大定初复官爵。
@@ -107,6 +115,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0362
     name: 张浩
+    avatar: pig/文034.png
     default_gender: male
     archetype: civil
     flavor: 张浩（1085—1156），本姓高，辽阳渤海人，金朝汉臣。历仕太祖至海陵王，参与金初官制、礼仪与科举建设，官至尚书令，曾任左丞相。
@@ -120,6 +129,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0363
     name: 韩昉
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: 韩昉（1081—1149），字公美，燕京人，金朝大臣、文学家。入金后任礼部尚书、翰林学士、参知政事，参与修《金先朝实录》《国史》，推动金初汉制、礼仪和文教。
@@ -133,6 +143,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0364
     name: 刘豫
+    avatar: pig/文028.png
     default_gender: male
     archetype: civil
     flavor: 刘豫（1073—1146），原北宋官员，济南失守后降金。1130年被金册立为“大齐”皇帝，定都大名、后迁汴京，代金统治黄河以南；1138年齐国被废，刘豫降封蜀王，后卒于金。
@@ -146,6 +157,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0365
     name: 苏天爵
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: 苏天爵（1294—1352），字伯修，真定人，元朝政治人物、史学家。历任监察御史、江浙行省参知政事等职，编撰《国朝名臣事略》《元文类》，卒于军中。
@@ -159,6 +171,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0366
     name: 蔡松年
+    avatar: pig/文048.png
     default_gender: male
     archetype: civil
     flavor: 蔡松年（1107—1159），字伯坚，北宋遗臣蔡靖之子，入金后仕至右丞相。其词与吴激并称“吴蔡体”，有《萧闲公集》传世，是金初文坛重要作家。
@@ -172,6 +185,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0367
     name: 赵秉文
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: 赵秉文（1159—1232），字周臣，磁州滏阳人，金大定进士。历任礼部尚书、翰林学士、修国史，诗文书画皆有声名，著有《闲闲老人滏水文集》，卒于汴京围城期间。
@@ -185,6 +199,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0368
     name: 王若虚
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: 王若虚（1174—1243），字从之，号慵夫，晚号滹南遗老，金代学者、文学批评家。官至翰林直学士，著《滹南遗老集》，主张文章求真、平易，兼辨经史。
@@ -198,6 +213,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0369
     name: 李纯甫
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: 李纯甫（1185—1231），字之纯，号屏山居士，金代学者、文学家，承安二年进士。著《鸣道集说》，主张三教合一，诗文奇崛，与赵秉文、元好问交游。
@@ -211,6 +227,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0370
     name: 党怀英
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: 党怀英，字世杰，号竹溪，金代文学家、书法家。与辛弃疾曾同学，工篆籀，官至翰林学士承旨，参与修《辽史》，著有《竹溪集》。
@@ -224,6 +241,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0371
     name: 王庭筠
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: 王庭筠（1151—1202），字子端，号黄华老人，金代文学家、书画家，金大定进士。官至翰林修撰，诗文书画皆工，尤善墨竹山水，书法受米芾、苏轼等影响。
@@ -237,6 +255,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0372
     name: 赵沨
+    avatar: monkey_wen_male7.png
     default_gender: male
     archetype: civil
     flavor: 赵沨，字文孺，号黄山，东平人，金大定进士，官至礼部郎中。能诗善画，山水画与王庭筠齐名；作品多已散佚，生平主要见于金代文人交游资料。
@@ -250,6 +269,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0373
     name: 辛愿
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: 辛愿，字敬之，号女几野人、溪南诗老，福昌人。金代诗人，世代务农，熟读经史佛典，诗风严整有气骨，元好问曾为其作传。
@@ -263,6 +283,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0374
     name: 李俊民
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: 李俊民（1176—1260），字用章，号鹤鸣道人，泽州晋城人，金承安五年进士第一。曾任翰林文字，金亡后隐居教授，拒绝忽必烈征召，著有《庄靖集》。
@@ -276,6 +297,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0375
     name: 刘祁
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: 刘祁（1203—1250），字京叔，浑源人，金末元初文人、史家。著《归潜志》十四卷，记录金末人物、轶事及汴京陷落，元修《金史》多取其材料。
@@ -289,6 +311,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0376
     name: 刘从益
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: 刘从益，字云卿，浑源人，金朝进士、经学家。大安元年（1209）进士，官至监察御史，因事罢官，晚年寓居淮阳；著有《蓬门集》，刘祁为其子。
@@ -302,6 +325,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0377
     name: 杨伯仁
+    avatar: pig/文030.png
     default_gender: male
     archetype: military
     flavor: 杨伯仁，金朝官员、文学家。天德二年（1150）入翰林，历任侍讲、礼部侍郎、左谏议大夫、翰林待制等，曾领修起居注；文辞典丽，受到金世宗称许。
@@ -315,6 +339,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0378
     name: 郭虾蟆
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: 郭虾蟆，本名郭斌，金末会州人、将领。与兄郭禄大善射，曾抗击西夏并收复会州；金亡后仍拒绝归附蒙古，坚守孤城，城破时自焚，部众无一投降。
@@ -328,6 +353,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0379
     name: 移剌蒲阿
+    avatar: monkey/其他随机角色/武038_男.png
     default_gender: male
     archetype: military
     flavor: 移剌蒲阿（？—1232），契丹族，金末将领，曾任枢密副使，与完颜陈和尚统领忠孝军。三峰山之战败退途中被蒙古俘获，拒降而死。
@@ -341,6 +367,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0380
     name: 温迪罕达
+    avatar: pig/武013.png
     default_gender: male
     archetype: military
     flavor: 温迪罕达，字子达，本名谋古鲁，金朝女真人。明昌五年进士，历任监察御史、户部侍郎、陕西元帅府经历官等；兴定元年论伐宋与边防，后任河南统军使、昌武军节度使，因奏报灾情处置失当，惭愧成疾而卒。
@@ -354,6 +381,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0381
     name: 仆散揆
+    avatar: pig/武008.png
     default_gender: male
     archetype: military
     flavor: 仆散揆（？—1207），仆散忠义之子，金章宗时重臣。韩侂胄北伐时任右副元帅，率军反击南宋，渡淮取安丰、和州等地，后病卒军中。
@@ -367,6 +395,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0382
     name: 纥石烈志宁
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
     flavor: 纥石烈志宁（？—1178），金朝将领，金世宗时任枢密使。曾参与镇压移剌窝斡叛乱，率军击败南宋李显忠部，符离之战后促成宋金议和。
@@ -380,6 +409,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0383
     name: 仆散忠义
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: 仆散忠义（？—1166），本名乌者，金朝名将、世宗朝重臣。大定初统军平定移剌窝斡叛乱，后主持对宋战事，参与宿州等战役，促成隆兴和议，官至右丞相。
@@ -393,6 +423,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0384
     name: 徒单克宁
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: 徒单克宁（？—1191），原名习显，金朝女真大臣。参与平定移剌窝斡叛乱及对宋战事，历任平章、左丞相、尚书令；金世宗死后辅佐金章宗即位，谥忠烈。
@@ -406,6 +437,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0385
     name: 张万公
+    avatar: monkey_wen_male7.png
     default_gender: male
     archetype: civil
     flavor: 张万公（？—1207），字良辅，东平东阿人，金朝大臣。历任御史、提刑、参知政事、平章政事等，直言劝谏、反对无益征发，曾主持地方赈济，谥文贞。
@@ -419,6 +451,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0386
     name: 完颜匡
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: 完颜匡（？—1160），本名撒速，金朝宗室。完颜亮弑金熙宗后，他因非议暴政被诬谋反而死；其事见于《金史》宗室传。
@@ -432,6 +465,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0387
     name: 萧仲恭
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: 萧仲恭（1090—1150），契丹萧氏，辽末后族大臣，降金后成为将领。天会四年（1126）出使宋朝并献蜡丸书，后历任尚书右丞、平章政事、右丞相，封越国王。
@@ -445,6 +479,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0389
     name: 博尔术
+    avatar: pig/武060.png
     default_gender: male
     archetype: military
     flavor: 博尔术，阿鲁剌惕部人，蒙古开国功臣，与木华黎、博尔忽、赤老温并称“四杰”。早年与铁木真结为安答，长期随其征战，世任怯薛长，封右手万户。
@@ -458,6 +493,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0392
     name: 察合台
+    avatar: monkey_wu_male8.png
     default_gender: male
     archetype: military
     flavor: 察合台（约1184—1242），成吉思汗与孛儿帖次子，蒙古早期宗王。以严格遵守札撒和蒙古习俗著称，参与征服花剌子模；受封中亚领地，成为察合台汗国始祖。
@@ -471,6 +507,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0393
     name: 术赤
+    avatar: pig_wu_male1.png
     default_gender: male
     archetype: military
     flavor: 术赤（约1182—约1225），成吉思汗与孛儿帖长子，蒙古早期军事统帅。参与征服花剌子模并经营蒙古西部封地，死后其子拔都继承领地，形成钦察汗国基础。
@@ -484,6 +521,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0397
     name: 阿里海牙
+    avatar: pig/武060.png
     default_gender: male
     archetype: military
     flavor: 阿里海牙（1227—1286），畏兀儿人，元初军事家、政治人物。随忽必烈攻宋，至元十年（1273）攻取樊城、襄阳并招降吕文焕；后参与平定南方，官至湖广行省左丞相。
@@ -497,6 +535,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0398
     name: 张弘范
+    avatar: monkey_wu_male16.png
     default_gender: male
     archetype: military
     flavor: 张弘范（1238—1280），字仲畴，元初汉人将领，张柔之子。至元十六年（1279）率元军在厓山海战击败南宋水师，宋朝灭亡，官至蒙古汉军都元帅。
@@ -510,6 +549,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0399
     name: 王恂
+    avatar: monkey/其他随机角色/文_男123.png
     default_gender: male
     archetype: civil
     flavor: 王恂（1235—1281），字敬甫，元代数学家、天文学家。任太史令，与郭守敬、许衡共同修订《授时历》，参与实测推算及天元术研究，历法于1281年施行。
@@ -523,6 +563,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0400
     name: 赤老温
+    avatar: monkey/其他随机角色/武037_男.png
     default_gender: male
     archetype: military
     flavor: 赤老温，蒙古速勒都思氏，锁儿罕失剌之子。与博尔术、木华黎、博尔忽并称“四杰”，追随铁木真统一蒙古，因战功获“把阿秃儿”称号，后封千户。
@@ -536,6 +577,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0401
     name: 者勒蔑
+    avatar: monkey_wu_male10.png
     default_gender: male
     archetype: military
     flavor: 者勒蔑，兀良哈氏，蒙古开国将领。早年侍奉铁木真，曾在其负伤时救护；建国后任千户，为蒙古“四狗”之一、十大功臣。
@@ -549,6 +591,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0402
     name: 忽必来
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: 忽必来，蒙古巴鲁剌思氏名将，成吉思汗“四狗”之一。参与统一蒙古及征服西辽属部，1210年出兵使葛逻禄首领归顺，次年回师后病逝。
@@ -562,6 +605,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0404
     name: 合撒儿
+    avatar: monkey_wu_male5.png
     default_gender: male
     archetype: military
     flavor: 合撒儿，铁木真同胞弟，蒙古开国宗王、将领，以善射著称。参与统一蒙古诸部，建国后受封领地；其后裔成为蒙古诸王的重要支系。
@@ -575,6 +619,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0405
     name: 别里古台
+    avatar: pig/武051.png
     default_gender: male
     archetype: military
     flavor: 别里古台，成吉思汗异母弟，蒙古开国大将。以忠厚、勇武和善于统军著称，建国后受封并参与宗室事务；其后裔成为元代宗王。
@@ -588,6 +633,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0406
     name: 帖木格
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: 帖木格，又称铁木哥斡赤斤，成吉思汗幼弟。受封东道诸王之首，成吉思汗西征时留守漠北，掌管本部；窝阔台时期因卷入宗室权力斗争被处死。
@@ -601,6 +647,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0407
     name: 贵由
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: 贵由（1206—1248），窝阔台长子，蒙古帝国第三任大汗。1246年即位，与拔都关系紧张；1248年出兵西征途中病逝，在位仅约两年。
@@ -614,6 +661,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0408
     name: 阿里不哥
+    avatar: pig_wu_male1.png
     default_gender: male
     archetype: military
     flavor: 阿里不哥（约1219—1266），拖雷幼子、忽必烈弟。蒙哥死后，他于1260年在和林被部分宗王拥立为大汗，与忽必烈争位；1264年兵败归降，后失势而死。

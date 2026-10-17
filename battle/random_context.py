@@ -7,8 +7,11 @@ from dataclasses import dataclass
 from typing import Any, cast
 
 CURRENT_RNG_VERSION = 1
-CURRENT_BATTLE_ENGINE_VERSION = "3"
+CURRENT_BATTLE_ENGINE_VERSION = "4"
+# 保留既有版本 2 兼容入口；版本 3 的规则另按下面的版本集合启用。
 PREVIOUS_BATTLE_ENGINE_VERSION = "2"
+# 版本 3 引入的分队攻击、远程与攻城规则在版本 4 中继续生效。
+GROUPED_ATTACK_ENGINE_VERSIONS = frozenset({"3", "4"})
 LEGACY_RNG_VERSION = 0
 LEGACY_BATTLE_ENGINE_VERSION = "legacy"
 MAX_PERSISTED_SEED = 2_147_483_647

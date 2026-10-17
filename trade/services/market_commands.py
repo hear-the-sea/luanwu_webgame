@@ -127,7 +127,7 @@ def purchase_market_listing(
         seller_received = listing.total_price - tax_amount
 
         if seller_locked is not None:
-            settle_market_sale_proceeds(
+            seller_received = settle_market_sale_proceeds(
                 seller_locked,
                 item_name=listing.item_template.name,
                 silver_amount=seller_received,

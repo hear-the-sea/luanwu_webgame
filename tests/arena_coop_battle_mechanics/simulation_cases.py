@@ -6,6 +6,7 @@ import pytest
 
 from battle.arena_coop import configure_arena_coop_enemy_guest
 from battle.combatants_pkg import assign_agility_based_priorities, build_guest_combatants, build_named_ai_guests
+from battle.combatants_pkg.cache import clear_guest_template_cache
 from battle.simulation.battle_flow import simulate_battle
 from guests.models import Guest, GuestTemplate, Skill
 
@@ -375,6 +376,8 @@ def test_full_arena_coop_simulation_runs_phase_mechanics_end_to_end():
         guest.current_hp = guest.max_hp
         attackers.append(guest)
 
+    # 本测试新建了模板，不能沿用之前测试留下的模板键缓存。
+    clear_guest_template_cache()
     defender_guests = build_named_ai_guests(
         [
             {"key": "arena_gl_top_zhang_wuji_boss", "label": "张无忌"},

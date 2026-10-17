@@ -2,6 +2,7 @@ heroes:
   blue:
   - key: hist_mingqing_0216
     name: 朱彝尊
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: （1629年—1709年）清初文学家、史学家、藏书家，字锡鬯，号竹垞。朱彝尊曾参与《明史》纂修，编有《词综》，又收藏古籍、金石；康熙年间入值南书房，晚年辞官回乡，著有《曝书亭集》。
@@ -15,6 +16,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0234
     name: 李定国
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: （1621年—1662年）南明将领，字宁宇，号鸿远，原为张献忠部将，后来归附永历帝。李定国在桂林击杀清将孔有德，又在衡阳击败尼堪；永历帝被吴三桂杀害后，他退守缅甸边境，听闻消息后病死。
@@ -28,6 +30,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0237
     name: 秦良玉
+    avatar: monkey_wu_female5.png
     default_gender: female
     archetype: military
     flavor: （1574年—1648年）明末女将，字贞素，四川石砫人，统领白杆兵。秦良玉参加平定播州、奢安之乱和抗清战事，曾任总兵、都督佥事；明亡后她守住石砫，顺治五年病逝，南明追赠太子太保。
@@ -41,6 +44,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0239
     name: 赵翼
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: （1727年—1814年）清代史学家、文学家，字云崧，号瓯北。赵翼历任广西镇安知府、贵西兵备道等职，晚年辞官主讲阳湖书院；他著有《廿二史札记》《瓯北诗集》，诗句“江山代有才人出”出自其作品。
@@ -54,6 +58,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0240
     name: 袁枚
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （1716年—1797年）清代文学家，字子才，号简斋，晚年居南京随园。袁枚乾隆年间任江宁知县、陕西道监察御史，三十八岁辞官归隐；他著有《随园诗话》《子不语》和《随园食单》，在随园收徒授诗。
@@ -67,6 +72,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0251
     name: 王世贞
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （1526年—1590年）明代官员、文学家，字元美，号凤洲，“后七子”代表人物。王世贞历任山东按察使、南京刑部尚书等职，因父亲被严嵩党羽害死而长期与严氏对立；他著有《弇州山人四部稿》《艺苑卮言》，晚年辞官回太仓。
@@ -80,6 +86,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0256
     name: 李东阳
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: （1447年—1516年）明代内阁大臣、文学家，字宾之，号西涯，茶陵诗派代表人物。李东阳历事英宗、宪宗、孝宗、武宗四朝，曾任礼部尚书、内阁首辅；他主持文臣诗文唱和，著有《怀麓堂集》，正德十一年病逝。
@@ -93,6 +100,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0230
     name: 祖大寿
+    avatar: pig_wu_male9.png
     default_gender: male
     archetype: military
     flavor: （生年不详—1656年）明末辽东将领，吴襄部将，长期镇守宁远、大凌河等地。祖大寿在宁远、宁锦战役中多次击退清军，大凌河被围后首次降清，后来又返回明军；松山失守后再次降清，入关后任清廷左都督，顺治十三年病死。
@@ -107,6 +115,7 @@ heroes:
   green:
   - key: hist_mingqing_0208
     name: 姚际恒
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （约1639年—1718年）清初学者、古籍辨伪家。著《古今伪书考》《九经通论》等，常从版本、文体与传承考察经典真伪。
@@ -120,6 +129,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0209
     name: 赵秉忠
+    avatar: pig/文031.png
     default_gender: male
     archetype: civil
     flavor: （1573年—1626年）明代官员，万历二十六年状元，官至礼部尚书。其殿试卷现存，是明代状元殿试卷的重要实物。
@@ -133,6 +143,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0210
     name: 骆腾凤
+    avatar: monkey/其他随机角色/文_男123.png
     default_gender: male
     archetype: civil
     flavor: 清代数学家，字鸣冈，嘉庆年间举人。著《开方释例》《游艺录》等，研究方程、开方及传统算学。
@@ -146,6 +157,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0211
     name: 刘纶
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （1711年—1773年）清代官员、学者，历任内阁、军机等中枢职务。参与乾隆朝政务与文献事务，官至协办大学士。
@@ -159,6 +171,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0212
     name: 裘曰修
+    avatar: pig/文031.png
     default_gender: male
     archetype: civil
     flavor: （1712年—1773年）清代官员、水利专家。历任工部尚书等职，长期参与河工治理与漕运事务，并参与四库文献整理。
@@ -172,6 +185,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0213
     name: 董邦达
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: （1699年—1769年）字孚存，清代官员、山水画家。官至礼部尚书，供职内廷，山水画承继文人传统并服务宫廷绘画。
@@ -185,6 +199,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0214
     name: 钱维城
+    avatar: pig/文041.png
     default_gender: male
     archetype: civil
     flavor: （1720年—1772年）清代状元、官员、画家。乾隆十年状元，历任刑部侍郎等职，山水画受到乾隆帝赏识。
@@ -198,6 +213,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0215
     name: 李钟伦
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: 清初学者，公开百科资料对其生卒、官历及著述记载较少，现有材料多将其列入清初经史文献人物，具体生平仍需据专门谱录核实。
@@ -211,6 +227,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0217
     name: 张惠言
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （1761年—1802年）字皋文，清代文学家、经学家，常州词派先声。编《词选》，著《茗柯词》，重视词体寄托与学术根柢。
@@ -224,6 +241,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0218
     name: 曹文埴
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （1735年—1798年）清代官员、学者，官至户部尚书、协办大学士，参与《四库全书》编纂；曹振镛之父。
@@ -237,6 +255,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0219
     name: 汪由敦
+    avatar: pig/文041.png
     default_gender: male
     archetype: civil
     flavor: （1692年—1758年）字师茗，清代大臣、书法家。历任吏部尚书、协办大学士，擅长馆阁体书法，著有《松泉集》。
@@ -250,6 +269,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0220
     name: 纪容舒
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: 清代官员、学者，纪昀之父，曾任云南姚安知府。重视经史与音韵考证，著有《唐韵考》等文献研究。
@@ -263,6 +283,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0221
     name: 陆锡熊
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （1734年—1792年）清代学者、官员，《四库全书》总纂官之一。长期负责校勘、辑录与编纂，后因劳累卒于文溯阁工程期间。
@@ -276,6 +297,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0222
     name: 孙士毅
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: military
     flavor: （1720年—1796年）清代官员、经略。曾参与平定林爽文、安南等军务，官至文华殿大学士，后因安南战事受议。
@@ -289,6 +311,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0223
     name: 伍拉纳
+    avatar: pig/文031.png
     default_gender: male
     archetype: civil
     flavor: 清代官员，曾任闽浙总督。嘉庆初因河工、贪墨等案件被治罪处死，具体生卒年及案情细节以清代档案为准。
@@ -302,6 +325,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0224
     name: 勒保
+    avatar: monkey_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （1740年—1819年）清代将领、重臣。长期参与镇压川楚白莲教起义，历任四川总督、大学士及军机大臣等职。
@@ -315,6 +339,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0225
     name: 额勒登保
+    avatar: pig_wu_male5.png
     default_gender: male
     archetype: military
     flavor: （1748年—1805年）瓜尔佳氏，清中期将领。嘉庆年间长期统兵镇压白莲教起义，因军功封一等男，卒后追赠。
@@ -328,6 +353,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0226
     name: 德楞泰
+    avatar: monkey_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （1749年—1809年）伍弥特氏，清代将领。嘉庆年间参与镇压白莲教起义，历任西安将军等职，长期统兵于西北、西南。
@@ -341,6 +367,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0227
     name: 尹壮图
+    avatar: pig/文041.png
     default_gender: male
     archetype: civil
     flavor: （1738年—1808年）清代官员、谏臣、书法家。任工部侍郎时上疏揭露地方库银亏空，因触及财政与吏治问题受到处分。
@@ -354,6 +381,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0228
     name: 蒋赐棨
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: 清代学者，生平约活动于乾隆、嘉庆时期，治经史与文献。公开百科对其官历和著述记载有限，具体信息需与同名人物区分。
@@ -367,6 +395,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0229
     name: 卢见曾
+    avatar: pig/文028.png
     default_gender: male
     archetype: civil
     flavor: （1690年—1768年）清代官员，曾任两淮盐运使。乾隆年间因盐引亏空案被追查，后牵连盐政与扬州文人交游网络。
@@ -380,6 +409,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0231
     name: 尚可喜
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: （1604年—1676年）明末降清将领，封平南王，镇守广东，为清初三藩之一。三藩之乱时拒绝响应吴三桂，后病卒。
@@ -393,6 +423,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0232
     name: 耿仲明
+    avatar: pig/武051.png
     default_gender: male
     archetype: military
     flavor: （1604年—1649年）明末降清将领，封靖南王，为清初三藩之一。镇守福建、广东等地，后因逃人案件获罪，自缢而死。
@@ -406,6 +437,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0233
     name: 孔有德
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: （1602年—1652年）明末降清将领，封定南王，为清初藩王。率军进入广西，桂林失守后自焚而死。
@@ -419,6 +451,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0235
     name: 刘文秀
+    avatar: monkey_wu_male3.png
     default_gender: male
     archetype: military
     flavor: 张献忠养子，大西政权及南明将领。入南明后受封抚南王等爵，曾在西南抗清，后病卒。
@@ -432,6 +465,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0236
     name: 孙可望
+    avatar: monkey/其他随机角色/武037_男.png
     default_gender: male
     archetype: military
     flavor: （约1606年—1660年）张献忠养子，大西政权将领，后为南明秦王。曾主持西南抗清，后降清，封义王，卒于清廷。
@@ -445,6 +479,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0238
     name: 法式善
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: （1753年—1813年）字开文，清代诗人、目录学家、藏书家。官至翰林，著《槐厅载笔》《清秘述闻》等，记录清代馆阁与文献掌故。
@@ -458,6 +493,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0241
     name: 蒋士铨
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （1725年—1784年）字心馀，清代诗人、戏曲家，与袁枚、赵翼并称乾隆三大家。著有《忠雅堂集》《藏园九种曲》等。
@@ -471,6 +507,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0242
     name: 顾大成
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: 清代学者，约活动于乾隆时期，治经史与文献考证。公开百科对其生卒、官历及著作记载有限，具体生平需结合地方志核实。
@@ -484,6 +521,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0243
     name: 谢元龙
+    avatar: pig/文028.png
     default_gender: male
     archetype: civil
     flavor: 清代文人、官员，约活动于乾隆时期。现存公开资料对其生卒、仕履和著述记载不多，人物信息需与同名者区分。
@@ -497,6 +535,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0244
     name: 朱筠
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （1729年—1781年）字竹君，清代学者、官员。任翰林院官时建议从《永乐大典》辑佚古籍，为后来《四库全书》辑佚工作提供先声。
@@ -510,6 +549,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0245
     name: 钱坫
+    avatar: pig/文041.png
     default_gender: male
     archetype: civil
     flavor: （1744年—1806年）字献之，清代书法家、金石学家，钱大昕之侄。精于篆书、隶书及金石考释，兼任地方官职。
@@ -523,6 +563,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0246
     name: 曹鼎臣
+    avatar: pig/武076.png
     default_gender: male
     archetype: military
     flavor: 明末清初官员、文人，崇祯进士，历任闽县、宝坻知县及兵科给事中。明亡后归里，公开资料对其卒年及后期经历记载不一。
@@ -536,6 +577,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0247
     name: 顾应祥
+    avatar: monkey/其他随机角色/文_男123.png
     default_gender: male
     archetype: civil
     flavor: （1483年—1565年）明代官员、数学家。著《测圆海镜分类释术》等，研究传统几何与历法，官至南京工部尚书等职。
@@ -549,6 +591,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0248
     name: 邢玠
+    avatar: monkey_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （1540年—1612年）明代官员、将领，曾任蓟辽总督。万历援朝抗倭战争中负责辽东及朝鲜战场的军务统筹。
@@ -562,6 +605,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0249
     name: 宋一麟
+    avatar: pig/文041.png
     default_gender: male
     archetype: civil
     flavor: 明末文人，兼擅书画，字仁卿，号仲符。现存公开资料对其官历、著述及生卒记载较少，具体信息需与同名人物区分。
@@ -575,6 +619,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0250
     name: 李材
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: 明代官员、阳明学者，字孟诚，号见罗。曾任云南、郧阳等地官职，讲学论政，主张将心学修养落实于政事与实践。
@@ -588,6 +633,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0252
     name: 李攀龙
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （1514年—1570年）字于鳞，号沧溟，明代诗人、文学家，后七子领袖之一。主张“文必秦汉、诗必盛唐”，倡导诗文复古。
@@ -601,6 +647,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0253
     name: 钱福
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （1461年—1504年）字与谦，号鹤滩，明代状元、文学家。弘治三年状元，曾任翰林修撰，著有《鹤滩集》。
@@ -614,6 +661,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0254
     name: 邵宝
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （1460年—1527年）字国贤，号二泉，明代学者、官员。尊崇朱子学，历任江西按察使、南京礼部侍郎等职，重视地方教化。
@@ -627,6 +675,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0255
     name: 胡缵宗
+    avatar: pig/文041.png
     default_gender: male
     archetype: civil
     flavor: （1480年—1560年）字孝思，号可泉，明代官员、学者、书法家。历任陕西等地官职，著《鸟鼠山人集》，擅长榜书。
@@ -640,6 +689,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0257
     name: 陆深
+    avatar: pig/文041.png
     default_gender: male
     archetype: civil
     flavor: （1477年—1544年）字子渊，号俨山，明代学者、官员、书法家。著《俨山集》《金台纪闻》等，兼治经史、文字与典章文献。

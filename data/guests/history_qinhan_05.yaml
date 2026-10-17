@@ -2,6 +2,7 @@ heroes:
   blue:
   - key: hist_qinhan_0211
     name: 徐福
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）秦代方士，受秦始皇派遣出海求仙。徐福带领童男童女和百工入海，传说到达海外后未再返回；关于他最终去向，史书之外还有许多附会。
@@ -15,6 +16,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0223
     name: 刘弗陵
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （前94年—前74年）汉昭帝，汉武帝幼子，八岁即位，由霍光、金日磾等大臣辅政。刘弗陵在位时平定燕王刘旦、上官桀等人的谋反，并召开盐铁会议讨论财政与边务；他二十一岁病死，未留下子嗣。
@@ -28,6 +30,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0226
     name: 卢绾
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （前256年—前194年）西汉燕王，刘邦的同乡和旧友。刘邦称帝后封卢绾为燕王；高祖去世后，卢绾因与陈豨往来而被怀疑谋反，率军抵抗汉军，后来逃往匈奴并病死。
@@ -41,6 +44,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0230
     name: 李信
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）战国末期秦国将领，因年轻敢战受到秦始皇重用。秦灭楚时，李信自请率二十万军出征，却被楚将项燕击败；后来他仍参与攻燕、代等战事。
@@ -54,6 +58,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0234
     name: 王贲
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）战国末期秦国将领，王翦之子。王贲先后参与灭魏、灭燕和灭齐的战事，曾水淹大梁攻灭魏国，又攻下燕都蓟城；秦统一六国后，他的事迹逐渐少见于史书。
@@ -67,6 +72,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0244
     name: 子婴
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前206年）秦王，秦二世被杀后即位。子婴与儿子及宦官韩谈合谋杀死赵高，随后向入关的刘邦投降；刘邦退兵后，子婴被项羽杀害。
@@ -80,6 +86,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0206
     name: 刘德
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前130年）西汉河间献王，汉景帝之子，以好学和藏书著称。刘德广泛搜集秦火后散佚的古籍，招请学者讲习，留下“修学好古，实事求是”的名声；他去世后，河间国所藏典籍仍为学者所重。
@@ -93,6 +100,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0213
     name: 薄姬
+    avatar: monkey_wen_female7.png
     default_gender: female
     archetype: civil
     flavor: （生年不详—前155年）汉高祖嫔妃，汉文帝之母。薄姬早年曾在魏王豹宫中，入汉宫后生下刘恒；刘恒封代王时，她随儿子前往代国居住。刘恒即位后，薄姬被尊为皇太后，平日少干预政事，以宽厚谨慎著称。
@@ -106,6 +114,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0216
     name: 钩弋夫人
+    avatar: monkey_wen_female7.png
     default_gender: female
     archetype: civil
     flavor: （生年不详—前88年）汉武帝晚年宠妃，封赵婕妤，生汉昭帝刘弗陵。武帝立刘弗陵为太子后，以吕后专权的旧事为戒，赐死钩弋夫人；刘弗陵即位后，她被追尊为皇太后。
@@ -119,6 +128,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0203
     name: 项伯
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前192年）项羽叔父，楚汉相争时与张良交好。鸿门宴前，项伯连夜把消息告诉张良，并在宴席上保护刘邦；楚汉战争结束后，他归附刘邦，被封为射阳侯，赐姓刘。
@@ -132,6 +142,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0204
     name: 项庄
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）项羽族弟，楚汉相争时随项羽作战。鸿门宴上，项庄奉范增之命舞剑，试图趁机刺杀刘邦；樊哙闯入营帐后挡在刘邦身前，项庄未能得手。
@@ -145,6 +156,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0208
     name: 吴芮
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前202年）秦汉之际人物，秦时任番阳令。秦末起兵后，吴芮率部归附刘邦，汉高祖封他为长沙王；吴芮死后，儿子吴臣继承王位，长沙国延续了数代。
@@ -158,6 +170,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0246
     name: 任嚣
+    avatar: pig_wu_male9.png
     default_gender: male
     archetype: military
     flavor: （生年不详—前208年）秦将，南海郡尉，曾与赵佗一起镇守岭南。秦末中原战乱时，任嚣病重，临终把南海郡交给赵佗；赵佗据守岭南，后来建立南越国。
@@ -171,6 +184,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0215
     name: 郅支
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前36年）匈奴郅支单于，呼韩邪单于之兄。兄弟争位后，郅支西走康居，杀害汉使谷吉，并在康居修筑郅支城；汉将陈汤、甘延寿率军远征，将他斩杀于郅支城。
@@ -184,6 +198,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0227
     name: 吕嘉
+    avatar: pig/武049.png
     default_gender: male
     archetype: military
     flavor: （生年不详—前111年）南越国丞相，先后侍奉赵婴齐、赵兴和赵建德三代南越王。吕嘉反对赵兴归附汉朝，杀死赵兴、樛太后和汉使，拥立赵建德；汉军攻破番禺后，他逃亡海上，最终被汉军追杀。
@@ -197,6 +212,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0228
     name: 常惠
+    avatar: pig/武048.png
     default_gender: male
     archetype: military
     flavor: （生年不详—前46年）西汉使者，曾随苏武出使匈奴并被扣留多年。归汉后，常惠多次出使乌孙，参与陈汤、甘延寿远征郅支的行动，因功封长罗侯，后来升任右将军。
@@ -210,6 +226,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0214
     name: 贾逵
+    avatar: monkey/其他随机角色/文_男123.png
     default_gender: male
     archetype: civil
     flavor: （30年—101年）东汉经学家、天文学家，字景伯，贾谊后裔。贾逵精通五经，曾向汉章帝讲授《左传》，著有《左氏长义》；他还研究天文历法，提出月亮运行速度会随位置变化的见解。
@@ -223,6 +240,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0218
     name: 龚遂
+    avatar: pig/文049.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前62年）西汉官员，字少卿，曾任渤海太守。当地饥荒、盗贼并起时，龚遂单车赴任，劝盗贼卖剑买牛、卖刀买犊，督促百姓耕种；渤海安定后，他被汉宣帝召回，任水衡都尉。
@@ -236,6 +254,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0220
     name: 儿宽
+    avatar: pig/文049.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前103年）西汉御史大夫，出身贫寒，曾在田间耕作时借书诵读。儿宽精通《尚书》，得到张汤赏识后参与法令事务，又参加太初历的制定，后来升任御史大夫。
@@ -250,6 +269,7 @@ heroes:
   green:
   - key: hist_qinhan_0247
     name: 卢生
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）秦代方士，与侯生同受秦始皇信任，曾奉命求仙并进献方术。卢生后来因求仙无果，在私下议论秦始皇后逃亡；秦始皇追究方士，卢生之事也与坑儒相连。
@@ -263,6 +283,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0200
     name: 司马欣
+    avatar: pig_wu_male1.png
     default_gender: male
     archetype: military
     flavor: 司马欣（生卒年不详），秦朝长史，秦末随章邯作战。巨鹿败后降项羽，受封塞王；曾降刘邦又复归楚，成皋败战后自杀。
@@ -276,6 +297,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0248
     name: 侯生
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）秦代方士，与卢生一同为秦始皇求仙。求仙无果后，侯生和卢生逃离咸阳，秦始皇因此下令追究方士，侯生的名字也见于坑儒的记载。
@@ -289,6 +311,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0201
     name: 周苛
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: 周苛（生卒年不详），汉军将领。荥阳失守后被项羽俘获，拒绝改事楚国，遭烹杀。
@@ -302,6 +325,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0202
     name: 董翳
+    avatar: pig_wu_male8.png
     default_gender: male
     archetype: military
     flavor: 董翳（生卒年不详），秦末都尉、章邯旧部。巨鹿败后降项羽，受封翟王；其后先后降汉、归楚，成皋败战后自杀。
@@ -315,6 +339,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0205
     name: 冯立
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: 冯立（字圣卿，生卒年不详），西汉经学家，冯奉世之子。通晓《春秋》，历任西河、五原、上郡等太守，以清廉有治绩著称。
@@ -328,6 +353,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0207
     name: 刘辟光
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: 刘辟光（生卒年不详），西汉济南王，齐王刘肥之子。七国之乱中参与反汉，兵败被杀，济南国随之废除。
@@ -341,6 +367,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0209
     name: 咸宣
+    avatar: pig/文050.png
     default_gender: male
     archetype: civil
     flavor: 咸宣（生卒年不详），西汉酷吏，曾任左内史，以严酷执法著称，后因获罪被杀。
@@ -354,6 +381,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0210
     name: 张欧
+    avatar: monkey_wen_male7.png
     default_gender: male
     archetype: civil
     flavor: 张欧（生卒年不详），西汉官员，曾任廷尉，以宽厚持法、少杀慎刑著称。
@@ -367,6 +395,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0212
     name: 李息
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: 李息（生卒年不详），西汉将领，参与景帝、武帝时期北方边事与对匈奴作战，长期承担边军征伐和驻防。
@@ -380,6 +409,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0217
     name: 魏应
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: 魏应（生卒年不详），东汉经学家，曾任侍中，传与《鲁诗》一脉有关，著述与生平记载较少。
@@ -393,6 +423,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0219
     name: 丁复
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: 丁复（生卒年不详），汉初将领，封阳都侯，原为赵将，后归刘邦，参与攻龙且、击项羽等楚汉战事。
@@ -406,6 +437,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0221
     name: 共敖
+    avatar: monkey_wu_male10.png
     default_gender: male
     archetype: military
     flavor: 共敖（生卒年不详），秦末楚将，项羽分封时为临江王，都江陵。其死后由子共尉继位，临江国最终被汉军攻灭。
@@ -419,6 +451,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0222
     name: 刘戊
+    avatar: monkey_wu_male1.png
     default_gender: male
     archetype: military
     flavor: 刘戊（生卒年不详），西汉楚王。前154年七国之乱中响应吴王刘濞，率楚军反汉，兵败后自杀。
@@ -432,6 +465,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0224
     name: 刘贤
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: 刘贤（生卒年不详），西汉菑川王，齐王刘肥之子。七国之乱中参与齐地诸王的反汉行动，兵败后被杀。
@@ -445,6 +479,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0225
     name: 刘雄渠
+    avatar: monkey_wu_male3.png
     default_gender: male
     archetype: military
     flavor: 刘雄渠（生卒年不详），西汉胶东王，齐王刘肥之子。七国之乱中与齐地诸王合兵反汉，兵败身死，封国被除。
@@ -458,6 +493,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0229
     name: 景驹
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: 景驹（生卒年不详），秦末楚王，陈胜死后由秦嘉拥立。项梁起兵后击败景驹，景驹战死。
@@ -471,6 +507,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0231
     name: 李良
+    avatar: monkey_wu_male8.png
     default_gender: male
     archetype: military
     flavor: 李良（生卒年不详），秦末赵地将领，先为秦将，后降武臣。因与武臣关系恶化而杀武臣、邵骚，随后投降秦军。
@@ -484,6 +521,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0232
     name: 梁勤
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: 梁勤（又作梁懃、梁勒，生卒年不详），南北朝时期宕昌国首位称王者，羌人酋帅。其所处时代晚于秦汉，并非秦末汉初人物。
@@ -497,6 +535,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0233
     name: 滇王
+    avatar: pig_wu_male8.png
     default_gender: male
     archetype: military
     flavor: 滇王（姓名不详，生卒年不详），战国末至西汉滇国君主。汉武帝经营西南夷时，滇王归附并受赐“滇王之印”，地方政权由此纳入汉朝体系。
@@ -510,6 +549,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0235
     name: 申阳
+    avatar: monkey_wu_male3.png
     default_gender: male
     archetype: military
     flavor: 申阳（生卒年不详），秦末赵将，因攻取河南郡被项羽封为河南王，都洛阳。楚汉相争时以河南地归附刘邦，后事记载有限。
@@ -523,6 +563,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0236
     name: 翁归靡
+    avatar: monkey_wen_female7.png
     default_gender: female
     archetype: military
     flavor: 翁归靡（生卒年不详），西汉乌孙昆弥，号肥王，娶汉宗室女解忧公主。汉匈相争时与汉结盟，共同牵制匈奴。
@@ -536,6 +577,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0237
     name: 虫达
+    avatar: monkey_wu_male10.png
     default_gender: male
     archetype: military
     flavor: 虫达（生卒年不详），汉初将领，封曲成侯。楚汉战争中归附刘邦并立有军功，后来又参与平定燕王臧荼。
@@ -549,6 +591,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0238
     name: 赵食其
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: 赵食其（生卒年不详），西汉将领，参与汉武帝时期对匈奴的远征。其具体战绩与结局记载较少。
@@ -562,6 +605,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0239
     name: 辕固
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: 辕固（生卒年不详），西汉齐人经学家，号辕固生，齐诗学派的重要传授者，曾任博士并参与汤武放伐之辩。
@@ -575,6 +619,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0240
     name: 韩广
+    avatar: pig/武051.png
     default_gender: male
     archetype: military
     flavor: 韩广（生卒年不详），秦末燕王，原为赵将，奉武臣命攻取燕地后被拥立为王，后为部将臧荼所杀。
@@ -588,6 +633,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0241
     name: 马贤
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: 马贤（生卒年不详—141年），东汉将领，长期征讨西北羌乱。其在战事中被羌军击杀，东汉西北边局随之恶化。
@@ -601,6 +647,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0242
     name: 高业
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: 高业（生卒年不详），西汉方士，传说曾以谶纬之说游说淮南王刘安。相关故事多见于后世材料，具体言行已难考。
@@ -614,6 +661,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0245
     name: 李由
+    avatar: pig/武049.png
     default_gender: male
     archetype: military
     flavor: 李由（生卒年不详—前208年），秦丞相李斯之子，曾任三川郡守。陈胜起兵后在雍丘与义军作战，最终战死。
@@ -627,6 +675,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0249
     name: 周文
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
     flavor: 周文（生卒年不详—前208年），秦末起义军将领，奉陈胜命率军西进，曾逼近关中；后被章邯击败，自杀身亡。

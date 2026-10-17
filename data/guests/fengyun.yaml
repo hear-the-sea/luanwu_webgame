@@ -4,6 +4,7 @@ heroes:
   green:
   - key: hero_ilrock_04594
     name: 文丑丑
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: 折扇常在手中，笑脸常在雄霸面前，文丑丑是马荣成漫画《风云》里的天下会总管。他长于察言观色，替帮主管理会务，迎来送往时总能说出讨喜的话。看似只求苟安的小人物，却熟知会中秘密，也渐渐看清雄霸对弟子的猜忌。当秦霜、风云与帮主走向决裂，他终于不再只靠奉承保命，开始设法向昔日同伴传递真相。
@@ -18,6 +19,7 @@ heroes:
       agility: 24
   - key: hero_ilrock_04632
     name: 孔慈
+    avatar: monkey_wen_female3.png
     default_gender: female
     archetype: civil
     flavor: 天下会里温柔的侍女，与秦霜、聂风、步惊云一同长大，见于马荣成漫画《风云》。孔慈熟悉三人的性情，也与他们有着各自不同的感情。雄霸察觉其中牵连后，把她的婚事当成分化弟子的手段，将她许配秦霜。原本相互扶持的少年伙伴，因情意与猜忌渐起争执；身在争端中的她，却没有足以左右自身命运的权势。
@@ -32,6 +34,7 @@ heroes:
       agility: 16
   - key: hero_ilrock_04639
     name: 颜盈
+    avatar: monkey/其他随机角色/文084_女.png
     default_gender: female
     archetype: civil
     flavor: 聂风的母亲，马荣成漫画《风云》中以美貌闻名的女子。颜盈不甘守着平淡生活，向往强者的权势，先后与聂人王、破军、绝无神产生纠葛，后来又成为绝天的母亲。她离开聂家，使聂人王的愤怒与聂风的童年伤痛久久难平。辗转东瀛与中原之后，昔日夫君、儿子与身边强者再度相遇，她也不得不面对亲情里的裂痕。
@@ -46,6 +49,7 @@ heroes:
       agility: 22
   - key: hero_ilrock_04667
     name: 于楚楚
+    avatar: monkey/其他随机角色/文078_女.png
     default_gender: female
     archetype: civil
     flavor: 麒麟臂于岳的女儿，在马荣成漫画《风云》中与重伤的步惊云相遇。于楚楚心地善良，愿意亲近那张冷漠面孔，也渐渐理解他不肯轻易向人诉说的旧伤。跟随步惊云之后，她被卷入断浪对剑晨的操纵与算计，遭受深重伤害，却仍努力守住与亲人相处的日子。刀剑追逐不断逼近，她心中挂念的始终是所爱之人的安危。
@@ -60,6 +64,7 @@ heroes:
       agility: 16
   - key: hero_ilrock_04666
     name: 于岳
+    avatar: pig/武021.png
     default_gender: male
     archetype: military
     flavor: 麒麟之血沾染手臂，使于岳拥有惊人力量，也令他长年承受异变之苦。马荣成漫画《风云》中，他与女儿于楚楚生活在江湖纷争之外，却始终记着自己曾犯下的过错。重伤失臂的步惊云来到身边时，他决定将麒麟臂转赠给这个年轻人。旧日力量从此随步惊云再入武林，他则把对女儿的牵挂与重新做人的愿望一并留下。
@@ -74,6 +79,7 @@ heroes:
       agility: 10
   - key: hero_ilrock_04622
     name: 霍步天
+    avatar: pig/武021.png
     default_gender: male
     archetype: military
     flavor: 霍家门门主，马荣成漫画《风云》中步惊云曾经敬爱的继父。霍步天接纳随母亲来到霍家的孤僻少年，为他取名霍惊觉，传授霍家剑法，也给予真诚的关怀。雄霸扩张势力时，他不肯屈从招揽，霍家遂遭灭门。幸存的少年带着这段短暂亲情投入天下会，霍步天留下的温暖与霍家的血仇，始终藏在步惊云沉默的心底。
@@ -88,6 +94,7 @@ heroes:
       agility: 16
   - key: hero_ilrock_04646
     name: 独孤鸣
+    avatar: pig/武015.png
     default_gender: male
     archetype: military
     flavor: 无双城少主，独孤一方之子，见于马荣成漫画《风云》。独孤鸣以降龙神腿迎敌，凭家世与武艺自视甚高，与聂风等天下会弟子交锋时尤显骄矜。父亲的城池与天下会相争，他也被推到两方冲突的前沿。待无双城遭逢变故，少主的身份不再能替他挡住强敌，家门旧日声势与眼前险境，迫使他独自承担更多重压。
@@ -103,6 +110,7 @@ heroes:
   blue:
   - key: hero_ilrock_04578
     name: 断浪
+    avatar: monkey/其他随机角色/武064_男_.png
     default_gender: male
     archetype: military
     flavor: 南麟剑首断帅之子，在马荣成漫画《风云》中与聂风一同进入天下会。聂风被雄霸收为弟子，断浪却屡受冷落，久积的不甘令两人的道路渐渐分开。他携火麟剑、施蚀日剑法，辗转依附各方强者，也不断寻找扬名夺权的机会。后来夺得龙元之力，昔日受轻视的少年终于强大得令人畏惧，杀机更一步步逼向曾经的朋友。
@@ -117,6 +125,7 @@ heroes:
       agility: 18
   - key: hero_ilrock_04579
     name: 破军
+    avatar: pig/武017.png
     default_gender: male
     archetype: military
     flavor: 剑慧之子，与无名同出剑宗，见于马荣成漫画《风云》。破军对剑道第一怀着强烈执念，败给同门后仍不肯服输，甚至远赴东瀛寻求新的力量。他以天刃刀、贪狼剑施展杀破狼绝技，刀剑齐出时凶猛凌厉。早年的狠辣与偏执使他犯下许多恶行，后来面对更大的武林劫难，又曾与旧敌并肩，沉重往事仍随刀剑一同相伴。
@@ -131,6 +140,7 @@ heroes:
       agility: 14
   - key: hero_ilrock_04580
     name: 绝之介
+    avatar: monkey/其他随机角色/武066_男_.png
     default_gender: male
     archetype: military
     flavor: 改名绝无神后，绝之介统领东瀛无神绝宫，是马荣成漫画《风云》中入侵中原的枭雄。他以不灭金身抵御刀剑，以杀拳击倒强敌，率鬼叉罗渡海而来，囚禁武林各派高手，并觊觎中原皇位。颜盈、绝心、绝天都与他的权势相牵，宫中也潜伏着各自的欲望。风云等人迎向无神绝宫时，他的铁腕统治随之遭到猛烈反击。
@@ -145,6 +155,7 @@ heroes:
       agility: 12
   - key: hero_ilrock_04581
     name: 第二梦
+    avatar: monkey/其他随机角色/武083_女_.png
     default_gender: female
     archetype: military
     flavor: 第二刀皇的女儿，兼得家传刀法与剑皇所授剑术，见于马荣成漫画《风云》。第二梦面上留下两种内力冲突所致的印记，因此不愿轻易让人看见容貌。与聂风互通书信之后，两人由相知渐生爱意，她也为这份情意走出原来的生活。聂风修习魔刀、受魔性侵扰时，她仍设法接近他，把熟悉的声音与深切的挂念带到刀锋之前。
@@ -159,6 +170,7 @@ heroes:
       agility: 26
   - key: hero_ilrock_04583
     name: 第一邪皇
+    avatar: pig/武065.png
     default_gender: male
     archetype: military
     flavor: 生死门中隐居的刀道奇人，江湖通称第一邪皇，见于马荣成漫画《风云》。他自幼天资卓绝，自创威力惊人的魔刀，却在试刀时受魔性支配，误杀亲子。悔恨之下，他远离纷争，又自断双臂，防止失控再伤他人。聂风为抵御绝无神前来求学，他才传下这门险绝刀法，同时将入魔后的危险与自己惨痛的往事一并告知。
@@ -173,6 +185,7 @@ heroes:
       agility: 16
   - key: hero_ilrock_04584
     name: 第二刀皇
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: 江湖通称第二刀皇的刀客，是马荣成漫画《风云》中第二梦的父亲。他研习断情刀法，对胜负极为执着，总想压过第一邪皇，也常与第三猪皇争执。认定情爱会妨碍刀道，他便严厉要求女儿断绝牵挂，对她与聂风的感情尤难容忍。第二梦越想追寻自己的生活，父女间的隔阂就越深，生死门内外也常听到他不肯退让的喝斥。
@@ -187,6 +200,7 @@ heroes:
       agility: 16
   - key: hero_ilrock_04585
     name: 第三猪皇
+    avatar: pig/武015.png
     default_gender: male
     archetype: military
     flavor: 胖大豁达、嗜好美食的老刀客，江湖通称第三猪皇，见于马荣成漫画《风云》。他与第一邪皇、第二刀皇相交多年，对两人的脾气和本事都十分熟悉，自己也有不凡刀法。平日不愿为排名伤神，面对聂风求助却肯认真相帮，引他前往生死门拜访邪皇。热闹言谈之中，他既会调和朋友间的争执，也能及时看出年轻人身处的险境。
@@ -201,6 +215,7 @@ heroes:
       agility: 14
   - key: hero_ilrock_04586
     name: 拳道神
+    avatar: pig/武015.png
     default_gender: male
     archetype: military
     flavor: 东瀛拳门中江湖通称拳道神的强者，是马荣成漫画《风云》中绝无神的同门师兄。其拳劲刚猛，绝技拳殛虚空足以震慑高手，却遭暗算，长久被囚于无神绝宫。昔日恩怨与儿子的遭遇使他积愤日深，重获自由后，压抑多年的力量也随怒火爆发。绝无神向中原伸出的铁腕之外，这个遭他压制的师兄同样带着可怕的拳势而来。
@@ -215,6 +230,7 @@ heroes:
       agility: 10
   - key: hero_ilrock_04588
     name: 剑晨
+    avatar: pig/武070.png
     default_gender: male
     archetype: military
     flavor: 英雄剑随身，无名的弟子剑晨在马荣成漫画《风云》中初以温文正直的面貌踏入武林。他谨记师父教诲，也希望凭剑行侠，却在与步惊云、于楚楚的纠葛中生出嫉妒与欲念。断浪又利用他的弱点加以操纵，使他一步步犯下难以挽回的过错。再度面对师父与故人时，昔日名剑仍在，持剑者却背负着羞愧、恐惧与无法轻易偿还的伤害。
@@ -229,6 +245,7 @@ heroes:
       agility: 22
   - key: hero_ilrock_04589
     name: 聂人王
+    avatar: pig/武053.png
     default_gender: male
     archetype: military
     flavor: 北饮狂刀聂人王以雪饮刀与傲寒六诀成名，是马荣成漫画《风云》中聂风的父亲。他曾为妻儿退隐，颜盈离去后却再难平静，祖传疯血又使愤怒更易失控。与南麟剑首断帅在乐山大佛前交战，两人同入凌云窟，后来发现关系中原安危的龙脉，遂放下旧怨共同守护。远离人世的岁月里，他仍惦记着不知身在何处的儿子。
@@ -243,6 +260,7 @@ heroes:
       agility: 14
   - key: hero_ilrock_04590
     name: 断帅
+    avatar: monkey/其他随机角色/武064_男_.png
     default_gender: male
     archetype: military
     flavor: 火麟剑与蚀日剑法成就南麟剑首之名，断帅是马荣成漫画《风云》中断浪的父亲。他与聂人王在乐山大佛前比武，后同陷凌云窟，意外发现深藏其中的龙脉。两人不再为私怨厮杀，而是留在洞中守护这处关乎中原安危的所在。世人久未听闻他的消息，断浪也在父亲缺席的岁月里独自成长，父子此后各自走向不同的江湖道路。
@@ -257,6 +275,7 @@ heroes:
       agility: 18
   - key: hero_ilrock_04592
     name: 泥菩萨
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: 江湖通称泥菩萨的相士，精于命理，见于马荣成漫画《风云》。他曾替雄霸批命，预言风云与天下会兴衰相系，由此被卷入帮主对命运的执念。泄露天机令他身受病苦，躲藏与隐姓也没能避开追索。雄霸再度寻到他时，听见的已不只是称霸之兆，还有盛极而衰的警示；那几句批言很快使帮主疑忌渐深，转而对弟子设下杀局。
@@ -271,6 +290,7 @@ heroes:
       agility: 16
   - key: hero_ilrock_04629
     name: 秦霜
+    avatar: pig/武013.png
     default_gender: male
     archetype: military
     flavor: 天霜堂堂主、雄霸的首徒，秦霜在马荣成漫画《风云》中以天霜拳与沉稳性情为人所知。他待聂风、步惊云如手足，常在两人争执时从中调停，也承担许多会中事务。与孔慈的婚事原本寄托着自己的真情，却被师父用来分化弟子。察觉雄霸的阴谋后，他仍想护住旧日兄弟，在天下会暗流汹涌之际寻找挽回局面的机会。
@@ -285,6 +305,7 @@ heroes:
       agility: 14
   - key: hero_ilrock_04616
     name: 独孤一方
+    avatar: pig/武032.png
     default_gender: male
     archetype: military
     flavor: 无双城城主、剑圣独孤剑的弟弟，也是独孤鸣的父亲，见于马荣成漫画《风云》。独孤一方曾前往剑宗见证无名与破军的决斗，却在剑慧施展回天冰诀时被封在冰中。外界并不知真城主已遭此劫，顶替其身份的人仍据守无双城，并与雄霸争锋。聂风后来面对的城主，因而与那位留在剑宗冰封中的独孤一方并非同一个人。
@@ -299,6 +320,7 @@ heroes:
       agility: 16
   - key: hero_ilrock_04653
     name: 幽若
+    avatar: monkey_wu_female.png
     default_gender: female
     archetype: military
     flavor: 湖心小筑锁着雄霸的女儿幽若，见于马荣成漫画《风云》。父亲以保护之名将她藏起，她虽衣食无忧，却向往外面的天地，也不肯永远听任安排。化名剑舞接近聂风时，她原本肩负雄霸交付的任务，朝夕相处后却真正动了情。父亲要她利用的少年，成了她想亲近的人，深藏多年的父女牵挂也因此与初生的爱意发生冲突。
@@ -313,6 +335,7 @@ heroes:
       agility: 28
   - key: hero_ilrock_04621
     name: 绝心
+    avatar: pig/武023.png
     default_gender: male
     archetype: military
     flavor: 无神绝宫中的长子，马荣成漫画《风云》里绝无神的儿子绝心，善于察觉旁人的欲望与弱点。他协助父亲入侵中原，却并不甘心一直居于父亲与弟弟绝天的阴影之下。遇到变局时，他常先隐藏打算，借别人的交锋保存实力，再寻找取而代之的机会。无神绝宫的威势消长，未能熄灭他的野心，反而令这位阴沉的继承者更加危险。
@@ -328,6 +351,7 @@ heroes:
   purple:
   - key: hero_ilrock_04574
     name: 聂风
+    avatar: monkey/风云/聂风.png
     default_gender: male
     archetype: military
     flavor: 北饮狂刀聂人王之子，在马荣成漫画《风云》中拜雄霸为师，凭风神腿驰骋天下会，又与步惊云结下深厚情谊。聂风待人仁厚，常愿为旁人停步相助，体内却潜藏祖传疯血。为抵御绝无神，他前往生死门学习魔刀，承担入魔的危险。雪饮刀出鞘之后，狂烈杀意与熟悉的故人同时逼近，他仍竭力辨认身边值得守护的人。
@@ -342,6 +366,7 @@ heroes:
       agility: 36
   - key: hero_ilrock_04575
     name: 步惊云
+    avatar: monkey/风云/步惊云.png
     default_gender: male
     archetype: military
     flavor: 不哭死神步惊云，是马荣成漫画《风云》中沉默而冷峻的刀剑客。霍家遭雄霸灭门后，他投入天下会学习排云掌，始终把报仇之念藏在心底。孔慈、于楚楚与聂风先后走近他的生活，也看见冷面之下炽烈的情感。麒麟臂与绝世好剑伴他走过恶战，无名的指点又让他渐渐从私仇中抬头，与聂风一起迎向接连而来的武林劫难。
@@ -356,6 +381,7 @@ heroes:
       agility: 12
   - key: hero_ilrock_04577
     name: 雄霸
+    avatar: monkey/风云/雄霸.png
     default_gender: male
     archetype: military
     flavor: 天下会帮主，马荣成漫画《风云》中以三绝武学争雄的枭雄。雄霸收秦霜、步惊云、聂风为徒，分别传授天霜拳、排云掌、风神腿，自己又融三门所长为三分归元气。借弟子之力扩张势力后，他听到泥菩萨关于败于风云的批命，遂疑忌日深，利用孔慈的婚事离间师兄弟。昔日倚重的门徒渐渐转身，成为他必须亲自面对的强敌。
@@ -370,6 +396,7 @@ heroes:
       agility: 12
   - key: hero_ilrock_04587
     name: 独孤剑
+    avatar: monkey/风云/独孤剑.png
     default_gender: male
     archetype: military
     flavor: 圣灵剑法出自独孤剑之手，马荣成漫画《风云》中，人们尊这位无双城主的兄长为剑圣。他痴迷剑道，曾以高绝武功重创天池杀手，却在与无名交锋后尝到败绩。暮年仍不肯停下求索，为无双城挑战雄霸，终于悟出剑二十三。衰老身躯难以承载那股凌厉剑意，决战之前，他已把余生所剩的心力全倾入这一式惊世剑招。
@@ -385,9 +412,10 @@ heroes:
   orange:
   - key: hero_ilrock_04576
     name: 韦英雄
+    avatar: monkey/orange/韦英雄（无名）.png
     default_gender: male
     archetype: military
-    flavor: 幼年被慕家收养，改名慕英名，后来以无名之名行走武林，韦英雄是马荣成漫画《风云》中的剑道宗师。他早年震慑各派，被誉为武林神话，亲人亡故后却看淡声名，在中华阁隐居抚琴。弟子剑晨、后辈风云先后受到他的教导；各派遭劫时，他也一次次离开隐居之所，凭天剑境界迎战强敌，为纷乱江湖寻找转机。
+    flavor: "出自马荣成漫画《风云》，本名韦英雄，被慕家收养后名慕英名，后来以“无名”之名行走江湖。他早年以精深剑术震慑各派，赢得“武林神话”的声誉，却在历经亲人离散与妻子亡故后渐渐淡看声名，隐居中华阁。平日的他沉静寡言，待人克制，心中始终留着对故人的牵挂。剑晨承其教诲，风云也曾受到他的指点；每逢强敌为祸、武林生变，他又会离开隐居之所，挺身应对危局。纵然厌倦了江湖争斗，他仍放不下守护他人的责任，在一场场风波中为后辈留下转机。"
     recruitable: true
     growth_range:
     - 8

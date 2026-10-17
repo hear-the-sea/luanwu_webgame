@@ -1,0 +1,315 @@
+{
+  "status": "resumed_and_verified",
+  "operation": "resume-virtual-player-20261015-01",
+  "authorization": "explicit_user_request",
+  "before_routing": {
+    "bootstrap_mode": "v2_active",
+    "maintenance_mode": "v2_paused",
+    "calibration_routes": [],
+    "revision": 848,
+    "last_hourly_safety_window_end_at": "2026-10-15 06:00:00+00:00",
+    "last_daily_safety_window_end_at": "2026-10-15 00:00:00+00:00",
+    "last_pause_window_id": "daily:20261013T000000Z",
+    "pause_reason": "duplicate_or_partial_commit",
+    "paused_from_maintenance_mode": "v2_active",
+    "persisted": true
+  },
+  "after_routing": {
+    "bootstrap_mode": "v2_active",
+    "maintenance_mode": "v2_active",
+    "calibration_routes": [],
+    "revision": 849,
+    "last_hourly_safety_window_end_at": "2026-10-15 06:00:00+00:00",
+    "last_daily_safety_window_end_at": "2026-10-15 00:00:00+00:00",
+    "last_pause_window_id": "daily:20261013T000000Z",
+    "pause_reason": "",
+    "paused_from_maintenance_mode": "",
+    "persisted": true
+  },
+  "audit_id": 793,
+  "reconciliation": {
+    "operation_id": "resume-virtual-player-20261015-01",
+    "authorization": "explicit_user_request",
+    "uncertain_profile_id": 907,
+    "uncertain_operation_id": "4b87482e40aa4be6a8b360819be97a90",
+    "resolved_business_outcome": "applied",
+    "cycle_id": "vp-cycle-907-15-8a29418202fa4818863c",
+    "committed_slots": [
+      {
+        "id": 258383,
+        "operation_id": "vp-cycle-907-15-1",
+        "outcome": "applied",
+        "action_kind": "technology_upgrade"
+      },
+      {
+        "id": 264246,
+        "operation_id": "vp-cycle-907-15-2",
+        "outcome": "applied",
+        "action_kind": "building_upgrade"
+      },
+      {
+        "id": 265103,
+        "operation_id": "vp-cycle-907-15-3",
+        "outcome": "applied",
+        "action_kind": "technology_upgrade"
+      },
+      {
+        "id": 265821,
+        "operation_id": "vp-cycle-907-15-4",
+        "outcome": "applied",
+        "action_kind": "building_upgrade"
+      },
+      {
+        "id": 265947,
+        "operation_id": "vp-cycle-907-15-5",
+        "outcome": "applied",
+        "action_kind": "inventory_acquisition"
+      },
+      {
+        "id": 266061,
+        "operation_id": "vp-cycle-907-15-6",
+        "outcome": "applied",
+        "action_kind": "building_upgrade"
+      },
+      {
+        "id": 267245,
+        "operation_id": "vp-cycle-907-15-7",
+        "outcome": "applied",
+        "action_kind": "building_upgrade"
+      },
+      {
+        "id": 267368,
+        "operation_id": "vp-cycle-907-15-8",
+        "outcome": "applied",
+        "action_kind": "building_upgrade"
+      }
+    ],
+    "reviewed_hourly_windows": [
+      "hourly:20261015T050000Z",
+      "hourly:20261015T040000Z",
+      "hourly:20261015T030000Z"
+    ],
+    "historical_safety_events_unchanged": true
+  },
+  "verification": {
+    "checked_at": "2026-10-15 06:59:35.591923+00:00",
+    "routing": {
+      "bootstrap_mode": "v2_active",
+      "maintenance_mode": "v2_active",
+      "calibration_routes": [],
+      "revision": 849,
+      "last_hourly_safety_window_end_at": "2026-10-15 06:00:00+00:00",
+      "last_daily_safety_window_end_at": "2026-10-15 00:00:00+00:00",
+      "last_pause_window_id": "daily:20261013T000000Z",
+      "pause_reason": "",
+      "paused_from_maintenance_mode": "",
+      "persisted": true
+    },
+    "preflight": {
+      "allowed": true,
+      "reason": "",
+      "checked_at": "2026-10-15 06:59:35.591923+00:00",
+      "monitor_heartbeat_at": "2026-10-15 06:59:00+00:00"
+    },
+    "new_scheduled_attempts": [
+      {
+        "outcome": "no_action",
+        "action_kind": "guest_healing",
+        "count": 17
+      },
+      {
+        "outcome": "applied",
+        "action_kind": "building_upgrade",
+        "count": 8
+      },
+      {
+        "outcome": "applied",
+        "action_kind": "technology_upgrade",
+        "count": 16
+      },
+      {
+        "outcome": "applied",
+        "action_kind": "training",
+        "count": 44
+      },
+      {
+        "outcome": "applied",
+        "action_kind": "skill_learning",
+        "count": 8
+      },
+      {
+        "outcome": "applied",
+        "action_kind": "equipment_equip",
+        "count": 7
+      },
+      {
+        "outcome": "applied",
+        "action_kind": "inventory_acquisition",
+        "count": 4
+      }
+    ],
+    "new_scheduled_attempt_count": 104,
+    "new_applied_attempt_count": 87,
+    "profiles_with_new_applied_actions": 84,
+    "last_attempts": [
+      {
+        "pk": 267796,
+        "profile_id": 117,
+        "action_kind": "technology_upgrade",
+        "outcome": "applied",
+        "completed_at": "2026-10-15 06:59:15.406854+00:00"
+      },
+      {
+        "pk": 267795,
+        "profile_id": 117,
+        "action_kind": "guest_healing",
+        "outcome": "no_action",
+        "completed_at": "2026-10-15 06:59:15.394800+00:00"
+      },
+      {
+        "pk": 267794,
+        "profile_id": 360,
+        "action_kind": "training",
+        "outcome": "applied",
+        "completed_at": "2026-10-15 06:59:15.297528+00:00"
+      },
+      {
+        "pk": 267793,
+        "profile_id": 843,
+        "action_kind": "technology_upgrade",
+        "outcome": "applied",
+        "completed_at": "2026-10-15 06:59:15.178310+00:00"
+      },
+      {
+        "pk": 267792,
+        "profile_id": 843,
+        "action_kind": "guest_healing",
+        "outcome": "no_action",
+        "completed_at": "2026-10-15 06:59:15.164635+00:00"
+      },
+      {
+        "pk": 267791,
+        "profile_id": 53,
+        "action_kind": "equipment_equip",
+        "outcome": "applied",
+        "completed_at": "2026-10-15 06:58:23.523096+00:00"
+      },
+      {
+        "pk": 267790,
+        "profile_id": 591,
+        "action_kind": "technology_upgrade",
+        "outcome": "applied",
+        "completed_at": "2026-10-15 06:58:22.207901+00:00"
+      },
+      {
+        "pk": 267789,
+        "profile_id": 591,
+        "action_kind": "guest_healing",
+        "outcome": "no_action",
+        "completed_at": "2026-10-15 06:58:22.197792+00:00"
+      }
+    ],
+    "profile907": [
+      {
+        "pk": 907,
+        "state": "active",
+        "maintenance_sequence": 222,
+        "last_planned_at": "2026-10-13 06:30:00.776352+00:00",
+        "next_growth_at": "2026-10-13 15:15:17.671395+00:00"
+      }
+    ],
+    "profile907_recovery": [
+      {
+        "status": "requeued",
+        "failure_code": "commit_uncertain",
+        "failure_streak": 0,
+        "last_success_at": null,
+        "requeued_at": "2026-10-15 06:55:27.879730+00:00",
+        "payload": {
+          "trigger": "scheduled",
+          "requeue_reason": "resume-virtual-player-20261015-01:confirmed-slot-8-applied"
+        }
+      }
+    ],
+    "recent_uncertain_safety_events": 0,
+    "latest_audits": [
+      {
+        "pk": 793,
+        "operation": "recovery",
+        "resulting_mode": "v2_active",
+        "resulting_reason": "",
+        "resulting_revision": 849,
+        "created_at": "2026-10-15 06:55:28.048076+00:00"
+      },
+      {
+        "pk": 792,
+        "operation": "monitor",
+        "resulting_mode": "v2_paused",
+        "resulting_reason": "duplicate_or_partial_commit",
+        "resulting_revision": 848,
+        "created_at": "2026-10-15 06:05:00.249789+00:00"
+      },
+      {
+        "pk": 791,
+        "operation": "monitor",
+        "resulting_mode": "v2_paused",
+        "resulting_reason": "duplicate_or_partial_commit",
+        "resulting_revision": 847,
+        "created_at": "2026-10-15 05:05:00.113359+00:00"
+      },
+      {
+        "pk": 790,
+        "operation": "monitor",
+        "resulting_mode": "v2_paused",
+        "resulting_reason": "duplicate_or_partial_commit",
+        "resulting_revision": 846,
+        "created_at": "2026-10-15 04:05:00.107780+00:00"
+      }
+    ]
+  },
+  "controlled_catchup": {
+    "checked_at": "2026-10-15 06:59:15.430086+00:00",
+    "maintained": 3,
+    "new_attempt_count": 5,
+    "applied_count": 3,
+    "attempts": [
+      {
+        "pk": 267792,
+        "profile_id": 843,
+        "action_kind": "guest_healing",
+        "outcome": "no_action",
+        "completed_at": "2026-10-15 06:59:15.164635+00:00"
+      },
+      {
+        "pk": 267793,
+        "profile_id": 843,
+        "action_kind": "technology_upgrade",
+        "outcome": "applied",
+        "completed_at": "2026-10-15 06:59:15.178310+00:00"
+      },
+      {
+        "pk": 267794,
+        "profile_id": 360,
+        "action_kind": "training",
+        "outcome": "applied",
+        "completed_at": "2026-10-15 06:59:15.297528+00:00"
+      },
+      {
+        "pk": 267795,
+        "profile_id": 117,
+        "action_kind": "guest_healing",
+        "outcome": "no_action",
+        "completed_at": "2026-10-15 06:59:15.394800+00:00"
+      },
+      {
+        "pk": 267796,
+        "profile_id": 117,
+        "action_kind": "technology_upgrade",
+        "outcome": "applied",
+        "completed_at": "2026-10-15 06:59:15.406854+00:00"
+      }
+    ]
+  },
+  "historical_safety_evidence_preserved": true,
+  "application_services_restarted": false
+}

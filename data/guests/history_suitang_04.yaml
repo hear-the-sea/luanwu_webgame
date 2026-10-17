@@ -2,6 +2,7 @@ heroes:
   purple:
   - key: hist_suitang_0157_limi
     name: 李密
+    avatar: monkey/隋唐与五代/李密.png
     default_gender: male
     archetype: military
     flavor: （582年-619年）隋末起义领袖，出身世族而能与草莽结盟，终成为瓦岗军核心。其以夺取洛口仓、控制粮道壮大声势，一度被视为问鼎中原的强力竞争者。但他在内部整合与对外联盟上多有失策，与翟让矛盾激化并引发猜忌；对王世充作战失利后选择归唐，旋又卷入旧部与新朝之间的危险地带，终在途中遇袭而亡。李密的兴亡像一条曲折线：才智足以成势，却难以建立稳定的权威与信任。
@@ -15,6 +16,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0159_wangshichong
     name: 王世充
+    avatar: monkey/隋唐与五代/王世充.png
     default_gender: male
     archetype: military
     flavor: （？-621年）隋末军政人物，凭禁军与官僚体系控制洛阳，后逼立皇帝并自称郑帝。其擅长权谋与城市防守，能在群雄并起的夹缝中把握中枢资源，却也因猜忌与苛刻失去人心。与瓦岗、窦夏互相牵制之际，唐军以虎牢关决战击破其战略支点，王世充遂降而被处置。其失败不在一时勇怯，而在政权过度依赖军事与恐惧，缺乏能持久凝聚的合法性与秩序。
@@ -28,6 +30,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0141_wangxianzhi
     name: 王仙芝
+    avatar: monkey/隋唐与五代/王仙芝.png
     default_gender: male
     archetype: military
     flavor: （? - 878年）晚唐农民起义首领之一，起事于民生困顿与赋役失衡的背景之下。与黄巢同处一个大动荡浪潮，但两者并非始终同一行动体：王仙芝早期起兵的路线、招抚与战败过程，反映地方社会从抗税、流民到武装叛乱的逐级升级。史书记其屡战屡走，显示起义军往往依赖机动与民间支持，而一旦补给与联盟断裂，便容易被分割围剿。王仙芝这段经历提示：黄巢之乱并非突然而至，它前面有一连串地方危机的"预演"；而每一次被压下去的火苗，都会为更大的爆燃积蓄燃料。
@@ -42,6 +45,7 @@ heroes:
   blue:
   - key: hist_suitang_0135_lijifu
     name: 李吉甫
+    avatar: pig/文050.png
     default_gender: male
     archetype: civil
     flavor: （758年—814年）唐代宰相、地理学家，字弘宪。李吉甫历任中书舍人、宰相，参与唐宪宗削藩；他撰成《元和郡县图志》，记录州县沿革、山川道路，卒于淮南节度使任上。
@@ -55,6 +59,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0136_peixiu
     name: 裴休
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （791年—864年）唐代宰相、文学家，字公美。裴休历任礼部尚书、宰相，晚年任荆南节度使；他笃信佛教，与黄檗希运交往密切，曾为《传心法要》作序。
@@ -68,6 +73,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0137_lizongmin
     name: 李宗闵
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （？—847年）唐代宰相，进士及第，曾任中书侍郎、同中书门下平章事。李宗闵与李德裕分属牛李两党，数次入相又被贬，晚年贬为封州刺史，卒于任所。
@@ -81,6 +87,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0138_linghuchu
     name: 令狐楚
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （766年—837年）唐代大臣、文学家，进士及第，曾任翰林学士、中书侍郎、宰相。令狐楚擅长骈文，晚年任山南西道节度使，卒于兴元。
@@ -94,6 +101,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0139_linghutao
     name: 令狐绹
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （798年—872年）唐代宰相，令狐楚之子，进士及第，曾任翰林学士、中书侍郎、同中书门下平章事。令狐绹后来出任淮南、凤翔等地节度使，卒于任所。
@@ -107,6 +115,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0140_baiminzhong
     name: 白敏中
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: （？—870年）唐代宰相，进士及第，唐宣宗时任宰相，后来出任凤翔、邠宁等地节度使。白敏中晚年因病辞官，咸通十一年去世。
@@ -120,6 +129,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0150_lichun
     name: 李春
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）隋代匠师，相传主持建造赵州桥（安济桥）。李春设计了敞肩石拱结构，使桥身横跨洨河；他的生平记载很少，姓名主要因桥铭而留存。
@@ -133,6 +143,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0142_choushiliang
     name: 仇士良
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （？—843年）唐代宦官，曾任神策军中尉，拥立唐敬宗、唐文宗。甘露之变后，仇士良控制朝政，后来请求退休，退居家中不久病死。
@@ -146,6 +157,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0143_tianlingzi
     name: 田令孜
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: （？—893年）唐代宦官，曾任神策军中尉，长期侍奉唐僖宗。黄巢攻陷长安后，田令孜随僖宗逃往成都；后来与西川节度使王建交恶，失势后被杀。
@@ -159,6 +171,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0144_wangji
     name: 王绩
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: （590年—644年）隋唐之际诗人，字无功，号东皋子。王绩曾任六合丞、太乐丞，因不耐官场约束辞官归隐，嗜酒善饮；《野望》为其名作。
@@ -172,6 +185,7 @@ heroes:
       agility: 18
   - key: hist_suitang_0145_dushenyan
     name: 杜审言
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: （645年—708年）唐代诗人，杜甫祖父，进士及第，曾任隰城尉、洛阳丞。杜审言因事被贬峰州，后来召回任国子监主簿；他的近体诗以格律严整著称。
@@ -185,6 +199,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0146_songzhiwen
     name: 宋之问
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: （656年—712年）唐代诗人，进士及第，曾任尚方监丞、左奉宸内供奉。宋之问先后依附张易之兄弟，后来被贬钦州、越州，因与太平公主交往获罪，赐死于桂州。
@@ -198,6 +213,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0175_houjunji
     name: 侯君集
+    avatar: pig_wu_male5.png
     default_gender: male
     archetype: military
     flavor: （？—643年）唐初将领，参与玄武门之变，后来率军攻灭高昌，官至兵部尚书。侯君集因参与太子李承乾谋反被处死，爵位与功臣名次也被削除。
@@ -211,6 +227,7 @@ heroes:
       agility: 8
   - key: hist_suitang_0176_sudingfang
     name: 苏定方
+    avatar: monkey_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （592年—667年）唐代将领，曾随李靖攻打东突厥。苏定方后来击灭西突厥、擒获阿史那贺鲁，又率军征讨百济，官至左骁卫大将军，封邢国公。
@@ -224,6 +241,7 @@ heroes:
       agility: 10
   - key: hist_suitang_0177_liurengui
     name: 刘仁轨
+    avatar: monkey_wu_male10.png
     default_gender: male
     archetype: military
     flavor: （601年—685年）唐代将领、大臣，曾任鸡林道行军大总管。刘仁轨在白江口之战中率唐军与新罗军击败倭、百济联军，后来入朝任宰相，封乐城县公。
@@ -237,6 +255,7 @@ heroes:
       agility: 10
   - key: hist_suitang_0179_lidaozong
     name: 李道宗
+    avatar: monkey/其他随机角色/武037_男.png
     default_gender: male
     archetype: military
     flavor: （600年—653年）唐宗室将领，唐高祖堂侄。李道宗曾参与平定刘武周、征讨吐谷浑和高句丽，封江夏郡王；后来因房遗爱谋反案受牵连，贬象州，途中病逝。
@@ -250,6 +269,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0151_zhangxutuo
     name: 张须陀
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: （565年—616年）隋代将领，曾任齐郡丞、河南道讨捕大使，先后击败卢明月、孙宣雅等起义军。张须陀在荥阳与瓦岗军交战时兵败，战死于阵中。
@@ -263,6 +283,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0154_peiju
     name: 裴矩
+    avatar: monkey_wen_male7.png
     default_gender: male
     archetype: civil
     flavor: （547年—627年）隋唐之际大臣、地理学家，曾出使西域，撰成《西域图记》。裴矩先仕隋朝，隋末归唐后任民部尚书、太常卿，封安邑县公。
@@ -276,6 +297,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0158_doujiande
     name: 窦建德
+    avatar: pig_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （573年—621年）隋末河北起义军首领，建立夏政权。窦建德曾率军救援王世充，在虎牢关被李世民击败，俘至长安后处死，夏政权随之瓦解。
@@ -289,6 +311,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0170_lijiancheng
     name: 李建成
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: （589年—626年）唐高祖长子，隋末随父起兵，攻取长安后被立为太子。李建成曾参与平定刘黑闼等战事；玄武门之变中，他与李元吉一同被李世民杀害。
@@ -302,6 +325,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0149_yuwenkai
     name: 宇文恺
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: （555年—612年）隋代建筑家，参与规划大兴城和东都洛阳，主持营造仁寿宫、显仁宫等宫殿。宇文恺官至工部尚书，隋炀帝征辽东时随驾，卒于江都。
@@ -315,6 +339,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0152_laihuer
     name: 来护儿
+    avatar: monkey_wu_male7.png
     default_gender: male
     archetype: military
     flavor: （约550年—618年）隋代将领，曾任右骁卫大将军、涿郡留守，参与隋炀帝征讨高句丽。江都兵变时，来护儿率部抵抗宇文化及，兵败后被杀。
@@ -328,6 +353,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0160_yuwenhuaji
     name: 宇文化及
+    avatar: pig/武051.png
     default_gender: male
     archetype: military
     flavor: （？—619年）隋末将领，宇文述之子。大业十四年，宇文化及在江都发动兵变，杀死隋炀帝，拥立杨浩；后来在魏县称许帝，北上时被窦建德擒杀。
@@ -341,6 +367,7 @@ heroes:
       agility: 18
   - key: hist_suitang_0161_dufuwei
     name: 杜伏威
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （598年—624年）隋末江淮起义军首领，与辅公祏共同起兵，后归附唐朝，受封吴王。辅公祏后来起兵反唐，杜伏威被召入长安并受猜疑，最终病死于长安。
@@ -354,6 +381,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0162_zhairang
     name: 翟让
+    avatar: monkey/其他随机角色/武037_男.png
     default_gender: male
     archetype: military
     flavor: （？—617年）瓦岗军创建者之一，早年任东郡法曹，隋末率众起兵。翟让后来把首领位置让给李密，却在宴席上被李密部将杀害。
@@ -367,6 +395,7 @@ heroes:
       agility: 18
   - key: hist_suitang_0163_luoshixin
     name: 罗士信
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: （约600年—622年）隋末唐初将领，年少从军，先后效力张须陀、王世充，后来归附唐朝。罗士信与刘黑闼交战时被俘，拒绝投降，最终被杀。
@@ -380,6 +409,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0164_shanxiongxin
     name: 单雄信
+    avatar: pig_wu_male5.png
     default_gender: male
     archetype: military
     flavor: （？—621年）隋末将领，早年参加瓦岗军，瓦岗失败后转投王世充，任郑国大将军。虎牢关之战后，单雄信被唐军俘获，因拒绝归降而被处死。
@@ -393,6 +423,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0166_liheita
     name: 刘黑闼
+    avatar: pig_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （？—623年）窦建德旧部。窦建德被杀后，刘黑闼在河北起兵，先后与李世民、李建成交战；他兵败逃亡时被部下杀死。
@@ -406,6 +437,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0167_xiaoxian
     name: 萧铣
+    avatar: pig/武051.png
     default_gender: male
     archetype: military
     flavor: （583年—621年）隋末割据荆楚的首领，梁宣帝曾孙，曾在江陵称梁王。唐军李孝恭、李靖攻破江陵后，萧铣投降，被押往长安处死。
@@ -419,6 +451,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0168_liuwuzhou
     name: 刘武周
+    avatar: pig/武049.png
     default_gender: male
     archetype: military
     flavor: （？—622年）隋末割据者，曾任马邑太守，起兵后依附突厥，攻占太原等地。李世民率唐军击败刘武周后，他逃入突厥，最终死在那里。
@@ -432,6 +465,7 @@ heroes:
       agility: 18
   - key: hist_suitang_0169_xueju
     name: 薛举
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: （？—618年）隋末割据首领，金城起兵后据陇右称西秦霸王。薛举曾在浅水原击败唐军，准备进攻长安时病死；其子薛仁杲继位，不久被唐军俘杀。
@@ -445,6 +479,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0171_liyuanji
     name: 李元吉
+    avatar: monkey_wu_male10.png
     default_gender: male
     archetype: military
     flavor: （603年—626年）唐高祖第四子，封齐王，曾镇守并州，参与征讨刘武周。李建成与李世民争夺储位时，李元吉站在太子一方；玄武门之变中，他与李建成一同被杀。
@@ -458,6 +493,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0172_peiji
     name: 裴寂
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: （570年—632年）唐初大臣，李渊旧友，参与晋阳起兵，并劝李渊在长安称帝。裴寂官至尚书左仆射，唐太宗即位后失势，因言获罪被流放，途中病死。
@@ -471,6 +507,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0173_liuwending
     name: 刘文静
+    avatar: pig/文049.png
     default_gender: male
     archetype: civil
     flavor: （568年—619年）唐初谋臣，曾劝李渊起兵，参与攻取长安和制定军政计划，官至民部尚书。刘文静与裴寂不和，后来因被告发与突厥往来、谋反而处死。
@@ -484,6 +521,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0174_chaishao
     name: 柴绍
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: （588年—638年）唐初将领，唐高祖女婿，与平阳公主共同参与起兵。柴绍参加攻取长安、征讨薛举和刘武周等战事，官至右骁卫大将军，封谯国公。
@@ -497,6 +535,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0180_zhanggongjin
     name: 张公谨
+    avatar: monkey_wu_male16.png
     default_gender: male
     archetype: military
     flavor: （594年—632年）唐初将领，秦王府旧部，参与玄武门之变。张公谨后来任代州都督，参与防御突厥，贞观六年卒于任所，列入凌烟阁功臣。
@@ -510,6 +549,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0148_yangyong
     name: 杨勇
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （？—604年）隋文帝长子，开皇元年被立为太子。杨勇因生活奢侈、失去独孤皇后支持而被废为庶人；杨广即位后，他被幽禁并赐死。
@@ -524,6 +564,7 @@ heroes:
   green:
   - key: hist_suitang_0155_niuhong
     name: 牛弘
+    avatar: pig/文032.png
     default_gender: male
     archetype: civil
     flavor: 北周、隋朝官员，历任秘书监、吏部尚书等职；重视搜集散佚典籍，参与隋代礼制与官制整理，对开皇年间制度建设有贡献。
@@ -537,6 +578,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0165_wangbodang
     name: 王伯当
+    avatar: pig/武063.png
     default_gender: male
     archetype: military
     flavor: 隋末瓦岗军将领，李密部下，以善射著称；瓦岗失败后仍随李密降唐，619年与李密在与王世充作战时一同战死。
@@ -550,6 +592,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0178_xuewanchhe
     name: 薛万彻
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: 唐初将领，薛世雄之子，玄武门之变时为李建成部将，后归唐并参与征讨梁师都、高昌、薛延陀；因房遗爱谋反案被赐死。

@@ -2,6 +2,7 @@ heroes:
   blue:
   - key: hist_sljnbc_0306
     name: 凌统
+    avatar: monkey_wu_male16.png
     default_gender: male
     archetype: military
     flavor: （189年—217年）东吴将领，凌操之子。余杭人，其父凌操为孙策部将，在与黄祖交战时被甘宁射杀。凌统年仅十五岁便继承父业统领部曲，随军征战屡立功勋。孙权攻合肥时，他与甘宁共为先锋，大破魏军。合肥之战撤退时，张辽突袭孙权后军，凌统率亲兵拼死护卫孙权突围，亲兵战死殆尽，他身受数十处创伤仍死战不退，直到孙权安全渡河。
@@ -15,6 +16,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0307
     name: 朱治
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: （156年—224年）东汉末至三国吴将，丹阳故鄣人。朱治早年随孙坚，孙坚死后辅佐孙策平定江东；孙策死后，他与张昭等拥立孙权，并曾举荐孙权为孝廉，官至安国将军。
@@ -28,6 +30,7 @@ heroes:
       agility: 12
   - key: hist_sljnbc_0308
     name: 吕范
+    avatar: pig/文050.png
     default_gender: male
     archetype: civil
     flavor: （？—228年）忠亮雅正，军中执法。汝南细阳人，年轻时在家乡为县吏，后避乱江东，投奔孙策。他不仅是谋士，更兼管军中财务钱粮，所有账目清清楚楚，从无差错。他性情豪爽，喜好排场，出行时前呼后拥车马华丽，孙权曾问他为何如此铺张，他答曰"臣为将军效力，当扬我军威仪，使敌人知我东吴有人"。
@@ -41,6 +44,7 @@ heroes:
       agility: 12
   - key: hist_sljnbc_0317
     name: 陆凯
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: （198年—269年）东吴大臣，吴郡吴县人，字敬风，陆逊族侄。他早年从军，参与多次征战，后转任地方官员，政绩卓著。晚年官至左丞相，成为东吴朝廷的核心人物。孙皓即位后荒淫暴虐，大臣多不敢言。他多次上疏直谏，言辞恳切，不惧触怒暴君。他在临终前仍上疏劝谏孙皓减轻赋税、停止劳役，真正做到了鞠躬尽瘁。
@@ -54,6 +58,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0327
     name: 孙休
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （235年—264年）东吴景帝，字子烈，孙权第六子。他早年被封为琅琊王，远离权力中心。权臣孙綝废黜孙亮后，迎立他为帝。他即位后表面对孙綝恭顺，暗中却与张布、丁奉等密谋除掉权臣。永安元年（258年）腊日宴会上，丁奉趁孙綝不备将其擒获，当场斩杀。他由此夺回皇权，亲理朝政。他在位期间重视文教，设立国学，选拔人才，东吴政局一度好转。
@@ -67,6 +72,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0334
     name: 陆机
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （261年—303年）西晋文学家，吴郡华亭人，字士衡，陆逊之孙。他与弟陆云并称"二陆"，是太康年间最杰出的文学家。东吴灭亡后他入洛阳，以文才名动一时。他的《文赋》是中国文学批评史上的重要著作，系统阐述了文学创作的理论。他的诗赋骈文皆为当时翘楚。八王之乱中他被成都王司马颖任命为后将军，统兵讨伐长沙王司马乂。
@@ -80,6 +86,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0338
     name: 阮籍
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: （210年—263年）魏晋文学家，“竹林七贤”之一，字嗣宗。阮籍曾任步兵校尉，面对司马氏专权多以饮酒、佯狂自保；他传世《咏怀诗》八十二首，另有“青白眼”等轶事。
@@ -93,6 +100,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0339
     name: 山涛
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: （205年—283年3月3日）竹林七贤之一，河内怀县人，字巨源。他早年与嵇康、阮籍等交游，为竹林七贤之一。他后入仕司马氏，历任尚书吏部郎、吏部尚书等要职，主持官员选拔三十余年，知人善任，所荐人才多为时用。他曾推荐嵇康出仕，嵇康愤而作《与山巨源绝交书》与之断交。然嵇康被杀时将儿子托付给他，他尽心抚养嵇绍成人。
@@ -106,6 +114,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0340
     name: 刘伶
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: （约221年—约300年）西晋文人，沛国人，字伯伦，竹林七贤之一。刘伶曾任建威参军，后来辞官；他常携酒乘鹿车出行，作《酒德颂》表达以酒自娱的生活态度。
@@ -119,6 +128,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0341
     name: 向秀
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: （约227年—272年）西晋文人，河内怀县人，字子期，竹林七贤之一。向秀为《庄子》作注，嵇康被杀后被迫入仕司马氏；他经过嵇康、吕安旧居听到笛声，写下《思旧赋》悼念故友。
@@ -132,6 +142,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0342
     name: 左思
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （约250年—305年）西晋文学家，齐国临淄人，字太冲。左思用十年写成《三都赋》，经皇甫谧作序、张载和张华等人推荐后，洛阳士人争相传抄；他还作《咏史诗》八首，寄托寒门士子的不平。
@@ -145,6 +156,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0343
     name: 贾南风
+    avatar: monkey_wen_female7.png
     default_gender: female
     archetype: civil
     flavor: （256年—300年4月）西晋惠帝皇后，平阳襄陵人，贾充之女。她貌丑而性妒，凶悍善谋。晋惠帝司马衷即位后，她逐渐掌握朝政大权。她先是联合楚王司马玮诛杀辅政大臣杨骏和汝南王司马亮，随后又杀司马玮灭口。她专权期间诛杀异己，废太子司马遹并将其杀害，引发诸王不满。赵王司马伦以为太子报仇为名起兵，将她废黜赐死。
@@ -158,6 +170,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0344
     name: 王戎
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （234年—305年）竹林七贤之一，琅琊临沂人，字濬冲。他少有神童之名，年幼时见道边李树多子，众人争采，他独不动，言"树在道边而多子，此必苦李"，果如其言。他与阮籍、嵇康等为竹林之游，然入仕后善于谋身保位，历任吏部尚书、司徒等要职，是七贤中官位最高者。他为人吝啬，家有好李，恐人得种，每售必钻核，时人讥之。
@@ -172,6 +185,7 @@ heroes:
   green:
   - key: hist_sljnbc_0301
     name: 全琮
+    avatar: pig_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （198年—249年）字子璜，吴郡钱唐人，三国东吴将领，孙权长女孙鲁班之夫。历任卫将军、徐州牧等职，参与石亭之战，官至右大司马、左军师。
@@ -185,6 +199,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0302
     name: 孙峻
+    avatar: pig/武076.png
     default_gender: male
     archetype: military
     flavor: （219年—256年）字子远，东吴宗室、权臣。孙权临终时受遗诏辅政，后发动政变诛杀诸葛恪并掌握朝政，征魏途中病卒。
@@ -198,6 +213,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0303
     name: 孙綝
+    avatar: pig/武076.png
     default_gender: male
     archetype: military
     flavor: （231年—259年）字子通，东吴宗室、权臣。孙峻死后掌政，诛杀吕据、滕胤等并废孙亮；孙休即位后与丁奉等诛杀孙綝。
@@ -211,6 +227,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0304
     name: 董袭
+    avatar: pig/武046.png
     default_gender: male
     archetype: military
     flavor: （？—213年或217年）字元世，会稽余姚人，孙策、孙权部将，列为江东十二虎臣，官至偏将军，战死于水战。
@@ -224,6 +241,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0305
     name: 陈武
+    avatar: pig_wu_male5.png
     default_gender: male
     archetype: military
     flavor: （？—215年）字子烈，东吴将领，庐江松滋人，孙策、孙权部将，统领庐江上甲，合肥战役中战死。
@@ -237,6 +255,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0309
     name: 吴景
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: （？—203年）孙坚妻弟、孙策孙权舅父，东吴将领，曾任丹阳太守，孙坚死后支持孙策经营江东。
@@ -250,6 +269,7 @@ heroes:
       agility: 18
   - key: hist_sljnbc_0310
     name: 孙静
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）字幼台，孙坚之弟，东汉末东吴将领。孙策攻会稽时献计从小路进军，孙氏创业时期负责守卫后方。
@@ -263,6 +283,7 @@ heroes:
       agility: 12
   - key: hist_sljnbc_0311
     name: 孙瑜
+    avatar: monkey_wu_male10.png
     default_gender: male
     archetype: military
     flavor: （177年—215年）孙静之子，东吴宗室将领，兼通经史，曾参与平定山越及荆州军务，官至奋威将军、丹阳太守。
@@ -276,6 +297,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0312
     name: 严畯
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）字曼才，彭城人，东吴文臣、经学家，与诸葛瑾、步骘并称“东吴三友”，曾任太常。
@@ -289,6 +311,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0313
     name: 程秉
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）字德枢，汝南南顿人，东吴儒学家、官员，师从郑玄，曾任太常、太子太傅，负责礼制与太子教育。
@@ -302,6 +325,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0314
     name: 于吉
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: （？—200年）东汉末方士，琅琊人，以符水聚集信众，孙策以惑众罪将其杀害；相关神异故事多属传说。
@@ -315,6 +339,7 @@ heroes:
       agility: 12
   - key: hist_sljnbc_0315
     name: 步练师
+    avatar: monkey_wen_female7.png
     default_gender: female
     archetype: civil
     flavor: （？—238年）名练师，东吴孙权宠妃，步骘族人，孙鲁班、孙鲁育之母，死后追赠皇后，史称步皇后。
@@ -328,6 +353,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0316
     name: 诸葛靓
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）字仲思，诸葛诞之子，魏败后入仕东吴；西晋灭吴后因父仇终身不仕，时人称其至孝。
@@ -341,6 +367,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0318
     name: 滕胤
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: （？—256年）字承嗣，东吴重臣、外戚，孙权女婿。孙峻死后与吕据谋诛孙綝，事败被杀。
@@ -354,6 +381,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0319
     name: 吕据
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: （？—256年）字世议，东吴将领，吕范次子。孙綝专权时与滕胤联合讨伐，兵败后自杀。
@@ -367,6 +395,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0320
     name: 朱异
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: （？—257年）字季文，朱桓之子，东吴将领，任镇南将军，援救寿春失败后被孙綝诛杀。
@@ -380,6 +409,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0321
     name: 骆统
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: （193年—228年）字公绪，东吴名臣、将领，会稽乌伤人，任濡须督、偏将军，曾上疏减轻征发以安抚百姓。
@@ -393,6 +423,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0322
     name: 王僧虔
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: （426年—485年）南朝刘宋、南齐官员与书法家，琅琊临沂人，王导玄孙、王昙首之子，善书并著有书法论述。
@@ -406,6 +437,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0323
     name: 吾粲
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: （？—245年）字孔休，东吴官员、将领，吴郡乌程人，任太子太傅，二宫之争中支持孙和，后被孙权处死。
@@ -419,6 +451,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0324
     name: 朱据
+    avatar: monkey_wu_male7.png
     default_gender: male
     archetype: military
     flavor: （194年—250年）字子范，东吴大臣、将领，孙权女婿，支持太子孙和，后被赐死。
@@ -432,6 +465,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0325
     name: 全尚
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: （？—258年）字子真，东吴外戚，全琮族子，全皇后之父。孙亮谋诛孙綝时参与联络，计划泄露后被杀害。
@@ -445,6 +479,7 @@ heroes:
       agility: 12
   - key: hist_sljnbc_0326
     name: 全懿
+    avatar: monkey_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）史料亦作全怿，东吴将领，全琮之子。257年随军救援寿春，后因宗族归附魏而率部归附司马昭。
@@ -458,6 +493,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0328
     name: 孙亮
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （243年—260年）字子明，东吴少帝，252年至258年在位。先后受诸葛恪、孙峻、孙綝控制，谋诛孙綝失败后被废为会稽王。
@@ -471,6 +507,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0329
     name: 孙和
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （224年—253年）字子孝，东吴太子，孙权第三子。二宫之争中被废，后被赐死；其子孙皓后来即位为帝。
@@ -484,6 +521,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0330
     name: 孙霸
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （？—250年）东吴鲁王，孙权第四子，因与太子孙和争储形成二宫之争，后被赐死。
@@ -497,6 +535,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0331
     name: 全寄
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （3世纪—250年）全琮次子，支持鲁王孙霸并参与诬陷太子孙和，250年与孙霸党羽一同被诛杀。
@@ -510,6 +549,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0332
     name: 何植
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）东吴司徒，何姬之弟、孙皓舅父，属于吴末外戚，个人事迹与生卒情况史料记载较少。
@@ -523,6 +563,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0333
     name: 孙异
+    avatar: monkey_wu_male10.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东吴宗室将领，孙桓之子，曾参与援救寿春等吴魏战事，个人事迹记载较少。
@@ -536,6 +577,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0335
     name: 刘渊
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
     flavor: （约250年—310年）南匈奴屠各部首领，汉赵建立者。八王之乱后于304年在并州称汉王，308年称帝，国号后改为赵。
@@ -549,6 +591,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0336
     name: 留赞
+    avatar: pig/武051.png
     default_gender: male
     archetype: military
     flavor: （183年—255年）字正明，会稽长山人，东吴将领，官至左将军。曾参加东兴之战，255年病重时仍与魏军交战，战死于军中。
@@ -562,6 +605,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0337
     name: 丁封
+    avatar: pig_wu_male9.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东吴将领，丁奉之弟，官至后将军，曾参与吴末对魏、蜀军事行动。
@@ -575,6 +619,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0345
     name: 司马亮
+    avatar: pig/文034.png
     default_gender: male
     archetype: civil
     flavor: （？—291年）西晋宗室、汝南王，受遗诏与杨骏辅政，后参与诛杨骏；因贾南风与司马玮发动的政变被杀。
@@ -588,6 +633,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0346
     name: 司马乂
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （277年—304年）西晋长沙王，八王之乱中曾讨伐司马伦、司马冏，后被司马颙部将张方擒杀。
@@ -601,6 +647,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0347
     name: 司马颖
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （279年—306年）西晋成都王，八王之乱重要参与者，曾任皇太弟，兵败于司马越后失势并被杀。
@@ -614,6 +661,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0348
     name: 司马颙
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （？—306年）西晋河间王，八王之乱参与者，曾与司马颖联合并遣张方入洛阳，后败于司马越。
@@ -627,6 +675,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0349
     name: 司马越
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （？—311年）西晋东海王，八王之乱后期胜者，掌握朝政并挟晋惠帝西行，后在内忧外患中病死。
@@ -640,6 +689,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0350
     name: 苟晞
+    avatar: pig_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （？—311年）字道将，西晋末将领，曾任青、兖等州军事长官，后拥立司马端抗乱，最终为石勒俘杀。

@@ -2,6 +2,7 @@ heroes:
   blue:
   - key: hist_xianqin_0366
     name: 曹刿
+    avatar: monkey/其他随机角色/文男.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）春秋鲁国谋士。齐军攻鲁时，曹刿求见鲁庄公，建议等齐军三次击鼓后再反攻；长勺之战中鲁军采纳他的建议取胜，战后他又根据车辙和军旗判断是否追击。
@@ -15,6 +16,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0390
     name: 姬诵
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （?—约前1021年）西周成王，周武王之子。姬诵幼年即位，由周公旦摄政；周公平定三监之乱后还政，姬诵亲自主持祭祀和诸侯会盟，晚年将政务交给太子钊。
@@ -28,6 +30,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0397
     name: 姬静
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （?—前782年）西周宣王，名静。姬静结束共和行政后即位，任用仲山甫、尹吉甫等大臣，先后出兵征伐猃狁、淮夷；晚年在千亩之战败于姜氏之戎，周军损失惨重。
@@ -41,6 +44,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0398
     name: 姬宫涅
+    avatar: monkey_wen_female7.png
     default_gender: female
     archetype: military
     flavor: （?—前771年）西周幽王，名宫涅。姬宫涅宠爱褒姒，废掉申后和太子宜臼，改立褒姒之子伯服；申侯联合犬戎攻入镐京，诸侯未及时救援，姬宫涅死于骊山，西周灭亡。
@@ -54,6 +58,7 @@ heroes:
       agility: 22
   - key: hist_xianqin_0399
     name: 姬宜臼
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （?—前720年）东周平王，名宜臼，周幽王之子。幽王死后，姬宜臼在申侯、郑武公、晋文侯等诸侯支持下即位，并将周都从镐京迁到洛邑；他在位后期与郑国因王室土地和贡赋发生争执。
@@ -67,6 +72,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0370
     name: 叔孙豹
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: （?—前538年）春秋鲁国大夫，叔孙氏宗主，名豹。叔孙豹出使晋国时，向范宣子解释“立德、立功、立言”三种不朽；他在鲁国任职期间，曾参与鲁国与晋、齐等国的外交事务。
@@ -80,6 +86,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0381
     name: 孟姜
+    avatar: monkey/其他随机角色/文078_女.png
     default_gender: female
     archetype: civil
     flavor: （生卒年不详）春秋齐国大夫杞梁之妻，姓名不详，后世称孟姜。杞梁战死莒城后，她到城下哭吊；齐庄公想在郊外吊唁，孟姜以礼制要求在正寝受吊。孟姜哭城的故事后来逐渐与秦长城传说合流。
@@ -93,6 +100,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0383
     name: 展获
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: （前720年—前621年）春秋鲁国大夫，名获，字禽，食邑柳下，谥惠。展获曾多次被鲁国罢免，却不肯离开鲁国；传说寒夜收留受冻女子时，他只让女子坐在自己怀中取暖而不失礼，故称柳下惠。
@@ -106,6 +114,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0386
     name: 武庚
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: （?—约前1039年）商纣王之子。周武王灭商后，封武庚于殷地主持祭祀；武王死后，他联合管叔、蔡叔和东夷诸侯反周，周公东征三年平乱，武庚兵败被杀。
@@ -119,6 +128,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0395
     name: 共伯和
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）西周晚期共国国君或诸侯。周厉王被国人驱逐、太子静年幼时，共伯和与召穆公共同主持朝政；十四年后，周厉王去世，太子静即位为周宣王，共伯和还政离开。
@@ -133,6 +143,7 @@ heroes:
   green:
   - key: hist_xianqin_0350
     name: 薳启强
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）薳启强，春秋时期楚国大夫，薳氏成员，见于楚国贵族和诸侯会盟相关记载。个人官职、出使及生卒年，传世史料记载不详。
@@ -146,6 +157,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0351
     name: 子特
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: （？—前469年）子特，宋昭公，春秋时期宋国君主。在位期间宋国卿族势力强盛；前469年宋国发生政变，宋昭公被杀，公室权力进一步削弱。
@@ -159,6 +171,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0352
     name: 子田
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （？—前396年）子田，宋悼公，战国前期宋国君主。有关其在位政绩的史料较少，主要见于宋国世系和君主纪年。
@@ -172,6 +185,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0353
     name: 子偃
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
     flavor: （？—前286年）子偃，宋康王，宋国末代君主。曾对外扩张并自称“天子”，后因与齐、楚、魏等国交战，宋国都城被攻破，宋国于前286年灭亡。
@@ -185,6 +199,7 @@ heroes:
       agility: 22
   - key: hist_xianqin_0354
     name: 唐成公
+    avatar: monkey_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）唐成公，春秋时期唐国君主，周武王之子唐叔虞后裔。唐国位于汉水、淮水之间，后在春秋时期被楚国所灭；成公个人事迹记载不多。
@@ -198,6 +213,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0355
     name: 姬捷
+    avatar: monkey/其他随机角色/武038_男.png
     default_gender: male
     archetype: military
     flavor: （？—前628年）姬捷，郑文公，春秋时期郑国君主，郑厉公之子，在位四十余年。其时郑国处于晋、楚两强之间，重耳流亡时未获郑国厚待，后晋文公伐郑。
@@ -211,6 +227,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0356
     name: 姬兰
+    avatar: monkey_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （？—前606年）姬兰，郑穆公，春秋时期郑国君主。其后裔形成郑国“七穆”卿族，驷、罕、国、良、印、游、丰等氏族长期参与郑国政务。
@@ -224,6 +241,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0357
     name: 姬赤
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: （？—前660年）姬赤，卫懿公，春秋时期卫国君主。史传称其爱鹤、以厚禄养鹤；前660年狄人攻卫，卫懿公战死，卫国都城被破。爱鹤故事带有寓言化色彩。
@@ -237,6 +255,7 @@ heroes:
       agility: 24
   - key: hist_xianqin_0358
     name: 姬衎
+    avatar: monkey_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （？—前544年）姬衎，卫献公，春秋时期卫国君主。因与孙林父、宁殖等卿族冲突被逐，流亡十二年后复位；其经历反映卫国公室与卿族的长期斗争。
@@ -250,6 +269,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0359
     name: 姬元
+    avatar: monkey/其他随机角色/武037_男.png
     default_gender: male
     archetype: military
     flavor: （？—前493年）姬元，卫灵公，春秋时期卫国君主，在位四十余年。其在位后期，太子蒯聩因南子与公子朝的传闻谋刺南子，出奔晋国，卫国继承冲突由此加剧。
@@ -263,6 +283,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0360
     name: 姬辄
+    avatar: monkey_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （？—前456年）姬辄，卫出公，卫灵公之孙、太子蒯聩之子。蒯聩出奔后他继位；蒯聩回国争位，卫国陷入父子相争和多次废立。
@@ -276,6 +297,7 @@ heroes:
       agility: 22
   - key: hist_xianqin_0361
     name: 蒯聩
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: （？—前478年）蒯聩，卫灵公太子，卫出公姬辄之父。因南子与公子朝的关系传闻，曾谋刺南子并出奔；卫灵公死后，他返卫与儿子争夺君位。
@@ -289,6 +311,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0362
     name: 南子
+    avatar: monkey_wen_female7.png
     default_gender: female
     archetype: civil
     flavor: （？—前478年）南子，春秋时期卫灵公夫人，宋国公主。关于她与宋国公子朝的关系，史传多有传闻；太子蒯聩因此谋刺她。孔子在卫时曾见南子，相关记载见于《论语》。
@@ -302,6 +325,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0363
     name: 子朝
+    avatar: pig/武046.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）子朝，春秋时期宋国公子，见于卫灵公时期有关南子的史传。其与南子的关系及相关政治往来，传世记载带有传闻成分，并牵连太子蒯聩谋刺南子一事。
@@ -315,6 +339,7 @@ heroes:
       agility: 22
   - key: hist_xianqin_0364
     name: 姬息姑
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （？—前712年）姬息姑，鲁隐公，鲁惠公庶子。惠公死后，他代行国政并在位，后被公子翚以祭祀为名杀害，鲁国君位由弟弟姬允继承。
@@ -328,6 +353,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0365
     name: 姬同
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （前706年—前662年）姬同，鲁庄公，春秋时期鲁国君主。长勺之战中采纳曹刿建议击败齐军；晚年继承安排不当，死后引发庆父之乱。
@@ -341,6 +367,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0367
     name: 曹沫
+    avatar: pig/武060.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）曹沫，春秋时期鲁国将领。多次与齐作战失利，后在柯地会盟时以兵刃迫齐桓公答应归还鲁国失地，齐国最终履行盟约；《史记》将其列入刺客相关人物。
@@ -354,6 +381,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0368
     name: 臧文仲
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: （？—前617年）臧文仲，春秋时期鲁国大夫、臧氏宗主，曾主持鲁国政务。《论语》批评他知柳下惠之贤而不荐，《左传》又记其处理海鸟爰居之事，后世常据此评价其“不仁”“不智”。
@@ -367,6 +395,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0369
     name: 臧宣叔
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）臧宣叔，春秋时期鲁国臧氏大夫，臧文仲之后。其具体任职和事迹记载较少，主要见于鲁国卿族及诸侯外交相关材料。
@@ -380,6 +409,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0371
     name: 季孙行父
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: （？—前568年）季孙行父，谥季文子，春秋时期鲁国季氏宗主，长期执政。史传称其生活俭朴、谨慎从政，曾参与鲁国与诸侯外交；孔子评价其“三思而后行”，认为再思即可。
@@ -393,6 +423,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0372
     name: 季孙宿
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （？—前535年）季孙宿，谥季武子，春秋时期鲁国季氏宗主。曾扩充鲁国军制，使三桓各掌一军，进一步削弱鲁国公室对军权的控制。
@@ -406,6 +437,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0373
     name: 季孙意如
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （？—前505年）季孙意如，谥季平子，春秋时期鲁国季氏宗主。鲁昭公试图削弱三桓时，季孙意如联合叔孙氏、孟孙氏将其逐出鲁国，公室权力由此进一步衰落。
@@ -419,6 +451,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0374
     name: 季孙斯
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （？—前492年）季孙斯，谥季桓子，春秋时期鲁国季氏执政。齐国赠送女乐后，他与鲁定公沉溺享乐，孔子因此离开鲁国；其任内季氏继续掌握鲁国实权。
@@ -432,6 +465,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0375
     name: 季孙肥
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: （？—前468年）季孙肥，谥季康子，春秋时期鲁国季氏执政。曾向孔子问政，并在孔子晚年召其归鲁；其时三桓仍掌握鲁国政治。
@@ -445,6 +479,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0376
     name: 孟孙何忌
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: （？—前481年）孟孙何忌，谥孟懿子，春秋时期鲁国孟氏宗主、三桓之一。曾向孔子问孝，孔子以生事、死葬、祭祀皆应合礼相答。
@@ -458,6 +493,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0377
     name: 公山弗扰
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）公山弗扰，春秋时期鲁国季氏家臣，掌管费邑，后据邑反叛。曾召孔子出仕，孔子一度考虑但未成行；其后叛乱失败。
@@ -471,6 +507,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0378
     name: 阳货
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）阳货，名虎，春秋时期鲁国季氏家臣，曾一度掌握鲁国政权。试图召孔子出仕；政变失败后出奔，后事见于《左传》《论语》。
@@ -484,6 +521,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0379
     name: 公伯寮
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）公伯寮，春秋时期鲁人，曾向季孙氏诋毁子路，事见《论语·宪问》。关于其是否为孔门弟子，后世说法不一。
@@ -497,6 +535,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0380
     name: 杞梁
+    avatar: pig/武060.png
     default_gender: male
     archetype: military
     flavor: （？—前549年）杞梁，春秋时期齐国大夫，齐庄公伐莒时战死。其妻拒绝在郊外受吊、要求按国礼致哀的故事见于《左传》；后世“孟姜女哭长城”传说在此基础上继续演变。
@@ -510,6 +549,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0382
     name: 颜叔子
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）颜叔子，先秦传说中的鲁国贤者。有关他在风雨中让邻家寡妇避宿、自己秉烛达旦以避嫌的故事，主要见于后世道德传说，缺少可考生平。
@@ -523,6 +563,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0384
     name: 展喜
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）展喜，春秋时期鲁国大夫。齐孝公伐鲁时，他奉命犒师并以先代盟好和出师名分劝说齐军退兵，事见《左传》。
@@ -536,6 +577,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0385
     name: 子启
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）子启，即微子启，商王帝乙之子、帝辛之兄，周灭商后受封于宋，奉守殷商祭祀。传统将他与比干、箕子并称“殷之三仁”；其出走、佯狂等事迹含有传说成分。
@@ -549,6 +591,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0387
     name: 姬鲜
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: （？—约前1039年）姬鲜，史称管叔鲜，周文王之子、周武王之弟。武王灭商后与蔡叔度、霍叔处驻守殷地，周公摄政时参与三监之乱，失败后被诛。
@@ -562,6 +605,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0388
     name: 姬度
+    avatar: pig/武060.png
     default_gender: male
     archetype: military
     flavor: （？—约前1039年）姬度，史称蔡叔度，周文王之子、周武王之弟，受封于蔡。与管叔鲜、霍叔处同为三监，参与反对周公摄政的叛乱，失败后被放逐；其子蔡仲后来继承蔡国。
@@ -575,6 +619,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0389
     name: 姬处
+    avatar: monkey_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）姬处，史称霍叔处，周文王之子，受封于霍。参与三监之乱，周公平乱后被废为庶人；其具体作用和结局，史传记载不尽一致。
@@ -588,6 +633,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0391
     name: 姬钊
+    avatar: monkey_wu_male16.png
     default_gender: male
     archetype: military
     flavor: （？—约前996年）姬钊，周康王，周成王之子，西周君主。其在位时期与周成王合称“成康之治”，相关太平叙述带有后世理想化色彩。
@@ -601,6 +647,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0392
     name: 姬瑕
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: （？—约前977年）姬瑕，周昭王，西周君主。曾多次南征荆楚，末次南征渡汉水后未归；关于胶船等细节多为后世传说，较稳定的传统是周昭王及军队在南方覆没。
@@ -614,6 +661,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0393
     name: 姬满
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: （约前1054年—约前949年）姬满，周穆王，西周君主，在位约五十五年。八骏西行、瑶池会西王母主要见于《穆天子传》等后出文献；传统史籍还记载其征伐犬戎、整饬刑制。
@@ -627,6 +675,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0394
     name: 姬胡
+    avatar: monkey_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （？—前828年）姬胡，周厉王，西周君主。推行“专利”、以卫巫监视国人议论，前841年引发国人暴动并出奔；“道路以目”等叙述主要见于后世史传。
@@ -640,6 +689,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0396
     name: 姬虎
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）姬虎，通常指召公虎，周室重臣、召公奭后裔。传统叙事称国人暴动时他以己子替换太子静，周厉王出奔后又参与共和行政；其具体细节带有忠臣传说色彩。

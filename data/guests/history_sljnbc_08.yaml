@@ -2,6 +2,7 @@ heroes:
   blue:
   - key: hist_sljnbc_0356
     name: 刘聪
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （？—318年）汉赵政权第二任皇帝，新兴匈奴人，字玄明，刘渊第四子。他自幼聪慧，精通汉学，兼习武艺。刘渊死后他夺得帝位，继续对西晋用兵。永嘉五年（311年）他遣大军攻破洛阳，俘虏晋怀帝，迫其为仆从斟酒，后将其杀害。建兴四年（316年）他再遣军攻入长安，俘虏晋愍帝，西晋灭亡。
@@ -15,6 +16,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0359
     name: 董卓
+    avatar: duck_wu_male2.png
     default_gender: male
     archetype: military
     flavor: （？—192年5月22日）东汉末年权臣，字仲颖，陇西临洮人。他自幼在凉州长大，与羌人交往密切，后投身军旅，在平定羌乱的战争中屡立战功，逐渐成为拥兵自重的边将。中平六年（189年）大将军何进谋诛宦官，召他率军入京。他兵临洛阳时何进已死，他趁乱控制朝廷，废少帝刘辩，立陈留王刘协为帝（汉献帝），自任相国，独揽朝政。
@@ -28,6 +30,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0381
     name: 袁术
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （？—199年）东汉末年诸侯，汝南汝阳人，袁绍之弟。出身"四世三公"名门，早年任后将军、南阳太守。董卓之乱后他据有淮南，地盘广阔，兵精粮足。他奢侈无度，生活腐化，却野心勃勃。建安二年（197年）他得到孙坚所获传国玉玺后，在寿春僭号称帝，国号"仲氏"，自取灭亡。他称帝后众叛亲离，吕布、孙策、曹操等群起攻之。
@@ -41,6 +44,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0383
     name: 马谡
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: （190年—228年）蜀汉参军，襄阳宜城人，马良之弟。他才思敏捷，善谈兵法，诸葛亮对其颇为赏识，曾称"马谡言过其实，不可大用"。建兴六年（228年）诸葛亮第一次北伐，命他镇守街亭这一战略要地。他违背诸葛亮"当道扎营"的军令，舍水上山，结果被魏将张郃围困断水，蜀军大败，街亭失守，北伐全盘受挫。诸葛亮挥泪斩马谡，以正军法。
@@ -54,6 +58,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0384
     name: 黄月英
+    avatar: monkey_wen_female10.png
     default_gender: female
     archetype: civil
     flavor: （？—？）诸葛亮之妻，沔阳名士黄承彦之女。据《襄阳记》载，黄承彦对诸葛亮说"闻君择妇，身有丑女，黄头黑色，而才堪配"，诸葛亮欣然答应迎娶。当时人笑谈"莫作孔明择妇，正得阿承丑女"。她虽容貌不扬，却才华出众，据说精通机械制作，诸葛亮发明木牛流马等器械或受其启发。她与诸葛亮婚后相夫教子，生育一子诸葛瞻。
@@ -67,6 +72,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0386
     name: 小乔
+    avatar: monkey/其他随机角色/文065_女.png
     default_gender: female
     archetype: civil
     flavor: （？—？）江东二乔之妹，周瑜之妻。庐江皖县人，与姐姐大乔并称"江东二乔"，以绝色著称于世。建安四年（199年）孙策攻破皖城后，周瑜娶她为妻，孙策娶其姐大乔，一时传为佳话。她与周瑜情深意笃，伉俪和谐。周瑜风流倜傥、精通音律，她陪伴丈夫走过了赤壁之战的辉煌岁月。建安十五年（210年）周瑜病逝巴丘，年仅三十六岁，她年纪尚轻便守寡。
@@ -80,6 +86,7 @@ heroes:
       agility: 12
   - key: hist_sljnbc_0387
     name: 潘安
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （247年—300年）西晋文学家，荥阳中牟人，字安仁，本名潘岳。潘岳以容貌俊美著称，与陆机并称“潘陆”；他任河阳县令时遍植桃李，后因参与贾谧集团而在赵王伦政变中被杀，《悼亡诗》写于妻子杨氏去世后。
@@ -93,6 +100,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0388
     name: 王献之
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: （344年—386年）东晋书法家，琅琊临沂人，字子敬，王羲之第七子。王献之自幼随父学书，后来形成疏朗妍媚的行草书风；他曾与新安公主成婚，因公主改嫁而离婚，晚年病逝。
@@ -106,6 +114,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0390
     name: 谢灵运
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: （385年—433年）南朝宋诗人，陈郡阳夏人，谢玄之孙，袭封康乐公。谢灵运曾任永嘉太守、临川内史，常携众游山，制作可调节鞋齿的木屐；他因参与地方叛乱嫌疑被宋文帝处死，山水诗有《登池上楼》等篇。
@@ -119,6 +128,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0392
     name: 花木兰
+    avatar: monkey/其他随机角色/武083_女_.png
     default_gender: female
     archetype: military
     flavor: （传说人物）中国古代女英雄，事迹主要见于南北朝时期的《木兰辞》。诗中写她代父从军，征战多年而不改女儿身份；凯旋后她拒绝官爵，只愿回乡与家人团聚。关于木兰的历史原型，传世文献没有形成一致结论；游戏中的她，属于源自《木兰辞》的文学传说形象。
@@ -132,6 +142,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0394
     name: 王粲
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: （177年—217年）东汉末年文学家，山阳高平人，字仲宣。他出身名门，少有才名，蔡邕曾倒履相迎。他容貌短小，但博闻强记，过目不忘，能背诵碑文，精通算术。他避乱荆州依附刘表，却因貌陋不获重用，失意十五年。刘表死后他归曹操，深受赏识，任丞相掾、侍中等职。他是建安七子之首，文才冠绝当时。
@@ -145,6 +156,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0397
     name: 郭璞
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: （276年—324年）东晋学者、文学家，河东闻喜人，字景纯。郭璞为《尔雅》《山海经》《穆天子传》等古籍作注，也擅长阴阳术数；王敦起兵时，他拒绝为其占卜吉凶，随后被王敦杀害。
@@ -159,6 +171,7 @@ heroes:
   green:
   - key: hist_sljnbc_0351
     name: 王衍
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: （256年—311年）西晋名士、重臣，以清谈玄理著称，历任司徒等职。永嘉之乱中被石勒俘获，因请求拥立石勒而被杀。
@@ -172,6 +185,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0352
     name: 齐万年
+    avatar: pig_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （？—299年）西晋末氐族首领，关中饥荒与边地矛盾激化后起兵，拥众据泾阳一带，最终被孟观击败并擒杀。
@@ -185,6 +199,7 @@ heroes:
       agility: 12
   - key: hist_sljnbc_0353
     name: 王济
+    avatar: pig/文048.png
     default_gender: male
     archetype: civil
     flavor: （？—291年）西晋权贵、晋武帝女婿，善骑射，喜奢华，与石崇、王恺等竞富，官至侍中。
@@ -198,6 +213,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0354
     name: 司马伦
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （？—301年）西晋赵王，300年发动政变诛杀贾南风，废晋惠帝并自立为帝；301年被诸王起兵击败，赐死。
@@ -211,6 +227,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0355
     name: 王弥
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: （？—311年）西晋末流民军首领，先在青徐起兵，后归汉赵，曾与刘曜、石勒攻陷洛阳，后为石勒所杀。
@@ -224,6 +241,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0357
     name: 乐广
+    avatar: pig/文049.png
     default_gender: male
     archetype: civil
     flavor: （？—304年）西晋名士、官员，曾任河南尹等职，以清谈和“杯弓蛇影”故事知名。
@@ -237,6 +255,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0358
     name: 王恺
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）西晋外戚，晋武帝舅父，以与石崇斗富闻名，豪奢事迹见于《世说新语》等记载。
@@ -250,6 +269,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0360
     name: 赫连勃勃
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: （381年—425年）大夏建立者，铁弗匈奴人，原名刘勃勃，后改姓赫连。后秦衰乱时据朔方建立大夏，修筑统万城并称帝。
@@ -263,6 +283,7 @@ heroes:
       agility: 14
   - key: hist_sljnbc_0361
     name: 吕光
+    avatar: monkey_wu_male7.png
     default_gender: male
     archetype: military
     flavor: （337年—399年）后凉建立者，前秦名将。奉苻坚命远征西域，攻取龟兹；淝水之战后据姑臧建立后凉。
@@ -276,6 +297,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0362
     name: 李暠
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （351年—417年）西凉建立者，字玄盛，敦煌人。400年据敦煌、酒泉建西凉，重视儒学与学校，在河西维持地方秩序。
@@ -289,6 +311,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0363
     name: 张轨
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: （255年—314年）西晋凉州刺史，前凉奠基者。永嘉乱后据河西整饬吏治、兴修水利、收容流民，以晋室名义维持凉州秩序。
@@ -302,6 +325,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0364
     name: 苻生
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （335年—357年）前秦皇帝，苻健之子，在位期间猜忌暴虐、滥杀大臣，后被宗室苻坚等废杀。
@@ -315,6 +339,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0365
     name: 张重华
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （327年—353年）前凉君主，张骏之子，少年继位，任用谢艾抵御后赵进攻，河西一度安定。
@@ -328,6 +353,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0366
     name: 吕婆楼
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）前秦重臣、吕光之父，苻坚早年亲信。苻生暴政时参与拥立苻坚，后辅佐处理军国事务。
@@ -341,6 +367,7 @@ heroes:
       agility: 12
   - key: hist_sljnbc_0367
     name: 秃发乌孤
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: （？—399年）南凉建立者，河西鲜卑秃发部首领。397年据乐都称王，后与后凉、北凉、西秦争夺河湟地区。
@@ -354,6 +381,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0368
     name: 段业
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （？—401年）北凉初主，原为后凉建康太守，沮渠蒙逊等拥立其为主；401年被沮渠蒙逊杀害。
@@ -367,6 +395,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0369
     name: 沮渠蒙逊
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （368年—433年）北凉建立者，匈奴沮渠部首领，曾拥立段业，后自立为王，吞并南凉、西凉并长期控制河西。
@@ -380,6 +409,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0370
     name: 冯跋
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）北燕建立者，后燕末年与弟冯素弗发动政变，先拥立高云，后自立为帝；在位时减轻赋役、重视农桑。
@@ -393,6 +423,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0371
     name: 慕容暐
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （350年—384年）前燕末帝，幼年即位，慕容恪死后朝政衰败；前秦攻邺时投降，淝水之战后谋求复国，事败被杀。
@@ -406,6 +437,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0372
     name: 苻丕
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）前秦哀平帝，淝水之战后据邺城抵抗慕容氏，后在晋阳称帝，最终兵败身死。
@@ -419,6 +451,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0373
     name: 乞伏炽磐
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）西秦文昭王，乞伏乾归之子，继位后整饬政务并吞并南凉，使西秦一度成为河西强国。
@@ -432,6 +465,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0374
     name: 吕钻
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （？—401年）史籍作吕纂，后凉君主、吕光长子。继位后荒政失国，最终被从弟吕超发动政变杀死。
@@ -445,6 +479,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0375
     name: 李歆
+    avatar: pig_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）西凉后主，李暠之子。面对北凉威胁出兵蓼泉，兵败被沮渠蒙逊所杀，西凉随之灭亡。
@@ -458,6 +493,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0376
     name: 苏惠
+    avatar: monkey_wen_female9.png
     default_gender: female
     archetype: civil
     flavor: （生卒年不详）前秦才女，窦滔之妻，相传以五色锦织成回文诗《璇玑图》，后世据此称颂其才思。
@@ -471,6 +507,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0377
     name: 慕容宝
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （355年—398年）后燕君主，慕容垂之子。北魏南下时在参合陂惨败，后燕由此衰落；慕容垂死后，慕容宝在内乱中被杀。
@@ -484,6 +521,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0378
     name: 慕容农
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）后燕宗室、将领，慕容垂之子，曾参与复国和地方平乱；慕容垂死后讨伐兰汗，兵败被杀。
@@ -497,6 +535,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0379
     name: 姚苌
+    avatar: pig_wu_male9.png
     default_gender: male
     archetype: military
     flavor: （330年—393年）后秦建立者，羌族首领，早年效力前秦苻坚。淝水之战后起兵，擒杀苻坚，386年在长安称帝。
@@ -510,6 +549,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0380
     name: 袁术
+    avatar: pig/武060.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）东汉末诸侯，袁绍异母弟，先据淮南，197年在寿春称帝，国号仲氏，后因诸侯讨伐与粮尽败亡。
@@ -523,6 +563,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0382
     name: 马谡
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: （190年—228年）蜀汉将领，诸葛亮第一次北伐时守街亭，违令依山结营，被张郃断水击败；诸葛亮为整肃军法将其处死。
@@ -536,6 +577,7 @@ heroes:
       agility: 12
   - key: hist_sljnbc_0385
     name: 李典
+    avatar: pig/武060.png
     default_gender: male
     archetype: military
     flavor: （174年—209年）曹魏将领，出身东汉豪族，博学谦让。合肥之战中与张辽、乐进协同作战，击退孙权军。
@@ -549,6 +591,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0391
     name: 冼英
+    avatar: monkey_wen_female9.png
     default_gender: female
     archetype: civil
     flavor: （512年—602年）岭南俚族首领，冯宝之妻，历梁、陈、隋三朝，平定地方纷争并促成岭南归附，隋封谯国夫人。
@@ -562,6 +605,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0393
     name: 张春华
+    avatar: monkey_wen_female7.png
     default_gender: female
     archetype: civil
     flavor: （189年—247年）司马懿正妻，晋宣穆皇后，司马师、司马昭之母，长期处于司马氏家族核心。
@@ -575,6 +619,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0395
     name: 严颜
+    avatar: pig/武076.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）刘璋部将，曾任巴郡太守。刘备入蜀时据江州抵抗，兵败被张飞俘获，后归附刘备。
@@ -588,6 +633,7 @@ heroes:
       agility: 14
   - key: hist_sljnbc_0396
     name: 贺齐
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （？—227年）东吴将领，长期平定山越、治理地方并扩充兵源，官至安东将军，封山阴侯。
@@ -601,6 +647,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0398
     name: 殷浩
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: （？—356年）东晋名士、将领，出任扬州刺史并主持北伐，攻前秦失利后被废黜、流放。
@@ -614,6 +661,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0399
     name: 桓玄
+    avatar: pig/武049.png
     default_gender: male
     archetype: military
     flavor: （369年—404年）东晋权臣、桓温之子，控制荆州后攻入建康，迫晋安帝禅位，建立桓楚；刘裕起兵后败亡。
@@ -627,6 +675,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0400
     name: 慕容德
+    avatar: monkey_wu_male10.png
     default_gender: male
     archetype: military
     flavor: （336年—405年）南燕建立者，慕容垂之弟。后燕分裂后南下据滑台，后迁广固称帝，建立南燕。

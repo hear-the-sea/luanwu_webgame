@@ -4,6 +4,7 @@ heroes:
   blue:
   - key: hero_ilrock_04234
     name: 释天风
+    avatar: pig/武070.png
     default_gender: male
     archetype: military
     flavor: 灵鳌岛上自成一方武学天地的岛主，凤歌小说《昆仑》中的释天风，有东海一尊、灵鳌武库之誉。他熟悉诸般武功，轻功尤为高明，乘风蹈海的身法令人叹服。远离中原仍不妨碍他与江湖人物来往，梁萧等人走入海疆，也随之见识到另一番高手风貌。岛上武学与海上往来的经历，都藏在这位老宗师举重若轻的身手之中。
@@ -18,6 +19,7 @@ heroes:
       agility: 36
   - key: hero_ilrock_04241
     name: 花生
+    avatar: pig/武078.png
     default_gender: male
     archetype: military
     flavor: 九如座下的年轻和尚，僧名花生，见于凤歌小说《昆仑》。他身形壮实，天生力大，随着师父修习大金刚神力，举手投足便有惊人威势。性情却淳朴憨厚，少有曲折心机，与梁萧相识后结为兄弟，遇事总愿认真相帮。师父的喝斥、朋友的请求，他往往都信得真切；风波来时，那个不善言辞的少年便握紧拳头，站到同伴身边。
@@ -32,6 +34,7 @@ heroes:
       agility: 10
   - key: hero_ilrock_04243
     name: 花无媸
+    avatar: monkey/其他随机角色/文084_女.png
     default_gender: female
     archetype: civil
     flavor: 天机宫前任宫主，凤歌小说《昆仑》中公羊羽的妻子、花清渊的母亲。花无媸精于术数，治宫严厉，丈夫留下的旧日情事却令她多年难解心结。梁萧来到天机宫后，她设下天机十算考验这个聪颖少年，一道道难题既有算学奥妙，也夹着自己的怨气。宫门中的年轻人不断成长，她与公羊羽积压已久的情感，也在变故中逐渐显露。
@@ -46,6 +49,7 @@ heroes:
       agility: 12
   - key: hero_ilrock_04242
     name: 花清渊
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: 天机宫的家学与宫务，由花清渊承接，是凤歌小说《昆仑》中公羊羽与花无媸的儿子。他熟悉武学、术数，处世较父母温和，对梁萧多有照拂，也格外关爱体弱的女儿花晓霜。家中长辈旧怨未平，少年后辈又卷入新的争执，他常要在其中斡旋。待危难真正逼近天机宫，这份温厚便与保护家门、亲人的决心一起显现。
@@ -60,6 +64,7 @@ heroes:
       agility: 14
   - key: hero_ilrock_04279
     name: 花晓霜
+    avatar: monkey/其他随机角色/文059_女.png
     default_gender: female
     archetype: civil
     flavor: 花清渊与凌霜君的女儿，凤歌小说《昆仑》中在天机宫长大的温柔少女。花晓霜自幼体弱，却潜心学习医术，与梁萧相识后，始终记挂这个多次身陷险境的人。宋元战火渐烈，伤者无论来自哪一方，她都愿意施救；家门争执与外界非议逼近时，她也不轻易改变心意。行囊中装着药物，身边牵着患难之人，她就这样继续走下去。
@@ -74,6 +79,7 @@ heroes:
       agility: 14
   - key: hero_ilrock_04244
     name: 梁文靖
+    avatar: pig/武017.png
     default_gender: male
     archetype: military
     flavor: 质朴的青年梁文靖，是凤歌《昆仑》前传《铁血天骄》中的主人公，也是梁萧的父亲。早年阴差阳错成为宋军将领的替身，被推入合州守城的战局，他从惶恐中渐渐生出勇气。与蒙古女子萧玉翎相遇后，两人在敌对立场间相爱，试图离开战火共度生活。萧千绝的阻挠却使这段姻缘走向惨剧，也让年幼的梁萧背上了父辈旧怨。
@@ -88,6 +94,7 @@ heroes:
       agility: 14
   - key: hero_ilrock_04245
     name: 萧玉翎
+    avatar: monkey_wu_female6.png
     default_gender: female
     archetype: military
     flavor: 黑水宗师萧千绝的弟子，梁文靖之妻，亦是梁萧的母亲，见于凤歌《铁血天骄》与《昆仑》。萧玉翎身怀武艺，原在宋蒙交战中与梁文靖敌对，后来却认定了这个朴实青年。师父不肯容纳两人的姻缘，使她饱受失夫、失子的痛苦。多年后，儿子与恩师拔剑相向，她又立在至亲与师门之间，竭力阻止眼前的死斗继续。
@@ -102,6 +109,7 @@ heroes:
       agility: 26
   - key: hero_ilrock_04239
     name: 云殊
+    avatar: monkey/其他随机角色/武052_男.png
     default_gender: male
     archetype: military
     flavor: 名门子弟云殊，是凤歌小说《昆仑》中云万程的儿子、公羊羽的弟子，后来与花慕容结为夫妻。他有出众武艺，也重视家国立场，在宋元交兵之际投入抗元之事。与梁萧相逢时，两人曾同在年轻英杰之列，之后却因梁萧助元的经历愈生分歧。师门、亲缘与战场上的选择交织在一起，使旧日交往渐渐变成难以让步的对峙。
@@ -117,6 +125,7 @@ heroes:
   purple:
   - key: hero_ilrock_04230
     name: 梁萧
+    avatar: monkey/昆仑/梁萧.png
     default_gender: male
     archetype: military
     flavor: 少年时在天机宫苦解天机十算，后来将算学融入武功与战阵，梁萧是凤歌小说《昆仑》中历经坎坷的一代奇侠。他在宋元兵火间辗转，曾助元军攻城，也曾救护宋室，遭到两方人物的猜忌与非议。历尽恩怨，他融会所学，悟得谐之道。天罚剑随他迎战强敌，花晓霜与花生的相伴，则让他在艰险行路中始终有所牵挂。
@@ -131,6 +140,7 @@ heroes:
       agility: 18
   - key: hero_ilrock_04231
     name: 公羊羽
+    avatar: monkey/昆仑/公羊羽.png
     default_gender: male
     archetype: military
     flavor: 凌空一羽，万古云霄，是凤歌小说《昆仑》中公羊羽的声名。他剑术高绝、身法精妙，怀有儒侠气度，却与妻子花无媸多年隔阂，家事远不如剑法从容。收云殊为徒后，他既传武学，也将自己的立场寄予后辈。面对聪颖而选择复杂的梁萧，惜才与家国之责常使他难以两全，几度相向的剑锋背后，仍留着不能轻易说尽的情义。
@@ -145,6 +155,7 @@ heroes:
       agility: 30
   - key: hero_ilrock_04232
     name: 萧千绝
+    avatar: monkey/昆仑/萧千绝.png
     default_gender: male
     archetype: military
     flavor: 黑水武学威震江湖，凤歌小说《昆仑》中的萧千绝，与公羊羽同为顶尖宗师。他性情强硬偏执，不肯接纳弟子萧玉翎与梁文靖的姻缘，亲手造成的惨剧也使梁萧将他视为深仇。多年恩怨令双方屡起冲突，后来他却又因救命之恩、故人情分而赴险相助。昔日令人畏惧的老宗师，仍会在天机宫危难时挺身迎向强敌。
@@ -159,6 +170,7 @@ heroes:
       agility: 14
   - key: hero_ilrock_04233
     name: 九如
+    avatar: monkey/昆仑/九如.png
     default_gender: male
     archetype: military
     flavor: 法号九如的老和尚，在凤歌小说《昆仑》中行止粗豪、不拘清规，教导弟子花生时也少不了响亮喝斥。他修成大金刚神力，拳掌间有开山般的威势，待人却宽厚，遇上年轻后辈也肯指点扶持。梁萧闯荡江湖时，多次与他相遇，见识到酒肉言笑之外的高深武学。师徒二人一路而行，常给冷厉的江湖场面添出几分热闹。

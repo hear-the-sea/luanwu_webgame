@@ -2,6 +2,7 @@ heroes:
   blue:
   - key: hist_mingqing_0058
     name: 蓝玉
+    avatar: monkey_wu_male7.png
     default_gender: male
     archetype: military
     flavor: （生年不详—1393年）明朝开国将领，常遇春妻弟。蓝玉在捕鱼儿海大败北元军，俘获北元皇帝次子等人；晚年因侵占民田、蓄养庄奴等事获罪，牵连入蓝玉案，最终被朱元璋处死。
@@ -15,6 +16,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0059
     name: 汤和
+    avatar: monkey_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （1326年—1395年）明朝开国将领，朱元璋同乡旧友。汤和参与平定方国珍、陈友谅和明夏，明朝建立后又负责修筑浙江沿海城防；晚年主动交还兵权，回乡养老，死后追封东瓯王。
@@ -28,6 +30,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0060
     name: 傅友德
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: （生年不详—1394年）明朝开国将领，封颖国公。傅友德参加平定四川、甘肃和云南的战事，屡立战功；洪武二十七年，他在宫中宴会上触怒朱元璋，被迫自杀，两个儿子也一同获罪。
@@ -41,6 +44,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0061
     name: 冯胜
+    avatar: monkey_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （生年不详—1395年）明朝开国将领，封宋国公。冯胜参加平定陈友谅、张士诚的战事，洪武二十年率军降服纳哈出，收复辽东；洪武二十八年，他因受到猜忌被朱元璋赐死。
@@ -54,6 +58,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0062
     name: 胡大海
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: （生年不详—1362年）明朝开国将领，封越国公，早年归附朱元璋。胡大海参加平定浙东、江西等地的战事，曾向朱元璋推荐宋濂、刘基等人；他镇守金华时被部将蒋英刺杀，朱元璋闻讯后十分痛惜。
@@ -67,6 +72,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0063
     name: 廖永忠
+    avatar: pig_wu_male5.png
     default_gender: male
     archetype: military
     flavor: （1323年—1375年）明朝开国将领，封德庆侯，善于水战。廖永忠在鄱阳湖之战中率战船突击陈友谅，后来又沿长江进攻明夏；洪武八年，他因僭用龙凤纹饰等罪被赐死。
@@ -80,6 +86,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0064
     name: 李文忠
+    avatar: monkey/其他随机角色/武038_男.png
     default_gender: male
     archetype: military
     flavor: （1339年—1384年）明朝开国将领，朱元璋外甥，封曹国公。李文忠参加北伐和收复辽东的战事，后长期镇守北平；他曾因直谏朱元璋而触怒皇帝，洪武十七年病逝，追封岐阳王。
@@ -93,6 +100,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0065
     name: 沐英
+    avatar: pig/武046.png
     default_gender: male
     archetype: military
     flavor: （1344年—1392年）明朝开国将领，朱元璋养子，封西平侯、黔宁王。沐英随军平定云南后留镇当地，修筑城池、兴办屯田；听到马皇后和太子朱标去世的消息后，他悲痛成疾，回南京途中病逝。
@@ -106,6 +114,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0071
     name: 胡宗宪
+    avatar: pig/文031.png
     default_gender: male
     archetype: civil
     flavor: （1512年—1565年）明代抗倭官员，嘉靖年间任浙江巡抚、总督，后任兵部尚书。胡宗宪任内重用戚继光、俞大猷，招抚并诱捕王直、徐海等倭寇首领；严嵩失势后，他因严党案被捕，狱中自杀。
@@ -119,6 +128,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0072
     name: 谭纶
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: （1520年—1577年）明代将领、官员，曾任福建巡抚，参与东南抗倭。谭纶后来调任蓟辽，与戚继光共同整顿边军、修筑城堡，历任兵部尚书、蓟辽总督，死后追赠太子少保。
@@ -132,6 +142,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0076
     name: 卢象升
+    avatar: monkey_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （1600年—1639年）明末将领，文官出身，曾组建天雄军。卢象升在北方多次击退清军，崇祯十二年奉命与清军交战于巨鹿贾庄；援军未至，他率部力战而死。
@@ -145,6 +156,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0087
     name: 宋濂
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （1310年—1381年）明朝开国文臣，字景濂，曾任翰林学士，主持修撰《元史》，参与制定明初礼制。宋濂晚年因长孙宋慎卷入胡惟庸案，被流放茂州，途中病死；他还著有《送东阳马生序》等文章。
@@ -158,6 +170,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0088
     name: 方孝孺
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （1357年—1402年）明初学者、官员，字希直，建文帝时任翰林侍讲。朱棣攻入南京后，命方孝孺起草即位诏书，他拒绝执笔并当面斥责朱棣；方孝孺随后被处死，亲族和门生也受到株连。
@@ -171,6 +184,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0089
     name: 解缙
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: （1369年—1415年）明初文臣，十八岁中进士，曾任内阁首辅。解缙奉明成祖之命主持编纂《永乐大典》，后来因参与太子立储之争被贬谪、下狱；永乐十三年，他被锦衣卫埋在雪中冻死。
@@ -184,6 +198,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0090
     name: 杨士奇
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （1365年—1444年）明代内阁大臣，字士奇，江西泰和人，与杨荣、杨溥并称“三杨”。杨士奇历事永乐、洪熙、宣德、正统四朝，长期在内阁任职；正统年间因儿子杨稷犯法受到牵连，仍任少师，病逝后谥文贞。
@@ -197,6 +212,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0091
     name: 杨荣
+    avatar: pig/文028.png
     default_gender: male
     archetype: civil
     flavor: （1371年—1440年）明代内阁大臣，字勉仁，建安人，与杨士奇、杨溥并称“三杨”。杨荣多次随明成祖北征，负责在内阁处理军务；正统五年，他随明英宗北巡返回时病逝，追赠少师，谥文敏。
@@ -210,6 +226,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0092
     name: 杨溥
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: （1372年—1446年）明代内阁大臣，字弘济，与杨士奇、杨荣并称“三杨”。杨溥因太子案被下狱十年，明仁宗即位后获释并入内阁；他历任礼部尚书、武英殿大学士，正统十一年病逝。
@@ -223,6 +240,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0093
     name: 夏元吉
+    avatar: pig/文028.png
     default_gender: male
     archetype: civil
     flavor: （1366年—1430年）明代户部尚书，字维喆，江西德兴人。夏元吉负责迁都、北征和郑和下西洋所需的粮饷，曾因劝明成祖停止北征被下狱；明仁宗即位后，他重新主持户部，任内病逝。
@@ -236,6 +254,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0096
     name: 杨廷和
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （1459年—1529年）明代内阁首辅，正德、嘉靖两朝重臣。明武宗去世后，杨廷和主持迎立兴献王朱厚熜为帝，并在嘉靖初年裁汰冗员、整顿朝政；“大礼议”中他与嘉靖帝意见相左，辞官回乡。
@@ -249,6 +268,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0097
     name: 杨继盛
+    avatar: pig/文031.png
     default_gender: male
     archetype: civil
     flavor: （1516年—1555年）明代官员，字椒山。杨继盛任兵部员外郎时上疏弹劾严嵩，列举“五奸十大罪”，因此被捕下狱；他受刑后仍拒绝认罪，嘉靖三十四年被处死，临刑前留下绝命诗。
@@ -262,6 +282,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0098
     name: 徐阶
+    avatar: pig/文014.png
     default_gender: male
     archetype: civil
     flavor: （1503年—1583年）明代内阁首辅，嘉靖、隆庆两朝重臣。徐阶在严嵩任首辅时长期任次辅，暗中搜集严世蕃罪证，隆庆元年促成严嵩罢官；他任首辅期间起用张居正等人，隆庆二年辞官回乡。
@@ -275,6 +296,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0102
     name: 李贽
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （1527年—1602年）明代思想家，号卓吾，曾任云南姚安知府。李贽晚年在麻城讲学，著有《焚书》《藏书》，提出“童心说”，因言论受到弹劾；万历三十年，他在狱中自杀。
@@ -288,6 +310,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0104
     name: 左光斗
+    avatar: pig/文014.png
     default_gender: male
     archetype: civil
     flavor: （1575年—1625年）明代官员，东林党人，曾任左佥都御史。左光斗弹劾魏忠贤及其党羽后被捕入狱，受酷刑而死；他在狱中曾见弟子史可法，勉励史可法继续任事。
@@ -301,6 +324,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0105
     name: 徐弘祖
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （1587年—1641年）明代旅行家、地理学家，号霞客。徐弘祖自万历三十五年起多次出游，考察江河、山脉和洞穴，足迹遍及西南、东南等地；他将沿途见闻写入日记，后人整理为《徐霞客游记》，晚年病逝于家中。
@@ -314,6 +338,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0077
     name: 耿炳文
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: （1334年—1403年）明朝开国将领，以善守城著称。耿炳文在长兴镇守十年，抵挡张士诚军多次进攻；靖难之役中，他奉建文帝之命率军北上，在真定败于燕军，后来被召回，晚年事迹不详。
@@ -327,6 +352,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0080
     name: 邓愈
+    avatar: monkey_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （1337年—1377年）明朝开国将领，封卫国公。邓愈十六岁起兵抗元，后来随朱元璋平定江西、讨伐明夏和吐蕃；洪武十年，他在征讨吐蕃回师途中病死，追封宁河王。
@@ -340,6 +366,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0099
     name: 高拱
+    avatar: pig/文050.png
     default_gender: male
     archetype: civil
     flavor: （1512年—1578年）明代官员，隆庆、万历初年内阁首辅。高拱在隆庆年间主持吏部，整顿官员考核并处理边防事务；他与张居正争执后被穆宗罢免，万历初年又被张居正排斥，退居新郑。
@@ -353,6 +380,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0106
     name: 潘季驯
+    avatar: pig/文048.png
     default_gender: male
     archetype: civil
     flavor: （1521年—1595年）明代治河官员，字时良，号印台，曾四任总理河道。潘季驯主持黄河、运河治理，提出“束水攻沙”，把河道筑堤约束水流；他晚年著有《河防一览》，万历二十三年病逝。
@@ -366,6 +394,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0101
     name: 归有光
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: （1507年—1571年）明代散文家，字熙甫，号震川。归有光嘉靖四十四年中进士，历任长兴知县、南京太仆寺丞；他在任上仍坚持写作，著有《项脊轩志》等文章，隆庆五年病逝。
@@ -379,6 +408,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0103
     name: 袁宏道
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: （1568年—1610年）明代文学家，公安派代表人物，字中郎。袁宏道与兄袁宗道、弟袁中道并称“三袁”，曾任吴县知县、礼部主事等职；他主张“独抒性灵，不拘格套”，著有《袁中郎全集》，万历三十八年病逝。
@@ -393,6 +423,7 @@ heroes:
   green:
   - key: hist_mingqing_0066
     name: 康茂才
+    avatar: pig_wu_male5.png
     default_gender: male
     archetype: military
     flavor: （约1313年—1370年）字寿卿，元末明初将领，蕲州人。归附朱元璋后参与渡江、龙湾及北伐诸战，曾以诈降计诱陈友谅，后病卒，追封蕲国公。
@@ -406,6 +437,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0067
     name: 赵德胜
+    avatar: monkey/其他随机角色/武038_男.png
     default_gender: male
     archetype: military
     flavor: （？—1363年）元末明初将领，归朱元璋后任帐前先锋。陈友谅围南昌时率军固守，亲临战阵，最终战死城中。
@@ -419,6 +451,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0068
     name: 华云龙
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: （？—1374年）明初将领，封淮安侯。明军攻取大都后奉命镇守北平，后奉召入朝，途中病卒。
@@ -432,6 +465,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0069
     name: 俞通海
+    avatar: pig_wu_male9.png
     default_gender: male
     archetype: military
     flavor: （？—1367年）巢湖水师将领，归朱元璋后参与采石、太平、池州及鄱阳湖等战，善用水军，伤病交加而卒，追封豫国公。
@@ -445,6 +479,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0070
     name: 仇成
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: （？—1388年）明初将领，含山人，早年归朱元璋。参与平陈友谅、张士诚及北征等战事，封安庆侯，卒后追封皖国公。
@@ -458,6 +493,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0073
     name: 麻贵
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （？—1618年）明代边将，出身将门，历镇宁夏、辽东等地。万历援朝时参加平壤、蔚山等战，后以总兵镇边。
@@ -471,6 +507,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0074
     name: 曹文诏
+    avatar: monkey_wu_male16.png
     default_gender: male
     archetype: military
     flavor: （？—1635年）明末将领，长期在陕甘等地与农民军作战，屡战有功。崇祯八年在真宁作战时陷入重围，力战而死。
@@ -484,6 +521,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0075
     name: 满桂
+    avatar: monkey_wu_male10.png
     default_gender: male
     archetype: military
     flavor: （？—1630年）明末边将，蒙古族，历任辽东、大同总兵。宁远、宁锦之战有功，己巳之变援京，战死于京师。
@@ -497,6 +535,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0078
     name: 郭英
+    avatar: pig_wu_male5.png
     default_gender: male
     archetype: military
     flavor: （1335年—1403年）明初开国将领，郭兴之弟，封武定侯。随朱元璋参加鄱阳湖、北伐及云南战事，后任京营，卒后追封营国公。
@@ -510,6 +549,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0079
     name: 周遇春
+    avatar: pig/武046.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）明初开国将领，随朱元璋渡江，参与集庆、常州、北伐及西南征讨，后封汝南侯；与明末守宁武关的周遇吉并非一人。
@@ -523,6 +563,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0081
     name: 吴良
+    avatar: pig/武060.png
     default_gender: male
     archetype: military
     flavor: （1323年—1381年）初名国兴，定远人，明初将领，吴祯之兄，封江阴侯。长期镇守江阴，抵御张士诚军，卒后追封江国公。
@@ -536,6 +577,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0082
     name: 吴祯
+    avatar: monkey_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （1328年—1379年）初名国宝，定远人，吴良之弟，明初水师将领，封靖海侯。参与平方国珍、陈友定及沿海倭患，负责海运与海防。
@@ -549,6 +591,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0083
     name: 薛显
+    avatar: monkey_wu_male16.png
     default_gender: male
     archetype: military
     flavor: （？—1387年）明初将领，徐州萧县人。早年归朱元璋，参与南昌守城、鄱阳湖及北伐诸战，屡任前锋，封永城侯。
@@ -562,6 +605,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0084
     name: 郭兴
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: （1331年—1384年）明初开国将领，郭英之兄，封巩昌侯。随朱元璋参加渡江、采石、集庆和北伐等战事，后任军职。
@@ -575,6 +619,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0085
     name: 顾成
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: （1330年—1414年）字景韶，江都人，明初将领。历随朱元璋征战并镇守贵州，靖难时归附朱棣，封镇远侯，后平定西南。
@@ -588,6 +633,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0086
     name: 曹震
+    avatar: monkey/其他随机角色/武037_男.png
     default_gender: male
     archetype: military
     flavor: （？—1393年）明初将领，封景川侯，随朱元璋征陈友谅、张士诚并参加征云南。洪武末因涉蓝玉案被处死。
@@ -601,6 +647,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0094
     name: 蹇义
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: （1363年—1435年）原名蹇容，巴县人，明代重臣。洪武进士，永乐至宣德长期任吏部尚书，官至少师，历事洪武、建文、永乐、洪熙、宣德五朝。
@@ -614,6 +661,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0095
     name: 王华
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （1446年—1522年）字德辉，余姚人，明成化十七年状元，明代官员，官至南京吏部尚书；王守仁之父。
@@ -627,6 +675,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0100
     name: 赵贞吉
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: （1508年—1576年）明代官员、理学家，嘉靖三十五年进士，历任礼部尚书等职，官至内阁大学士，以敢言直谏著称。

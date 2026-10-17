@@ -146,16 +146,16 @@ def pay_market_purchase(locked_manor: Manor, *, item_name: str, total_price: int
         raise TradeValidationError(str(exc)) from exc
 
 
-def settle_market_sale_proceeds(locked_manor: Manor, *, item_name: str, silver_amount: int) -> None:
-    _credited, overflow = grant_resources_locked(
+def settle_market_sale_proceeds(locked_manor: Manor, *, item_name: str, silver_amount: int) -> int:
+    """按银库容量入账，超出的成交收入直接丢弃，不阻止买家购买。"""
+    credited, _overflow = grant_resources_locked(
         locked_manor,
         {"silver": silver_amount},
         note=f"出售{item_name}",
         reason=ResourceEvent.Reason.ITEM_SOLD,
         sync_production=False,
     )
-    if overflow.get("silver", 0) > 0:
-        raise TradeValidationError("卖家银库空间不足，暂时无法完成交易")
+    return credited.get("silver", 0)
 
 
 def send_market_message(**kwargs):

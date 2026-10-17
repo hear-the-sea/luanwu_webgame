@@ -2,6 +2,7 @@ heroes:
   blue:
   - key: hist_sljnbc_0251
     name: 孟获
+    avatar: monkey_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （？—？）七擒七纵，南中归心。南中蛮族首领，在当地各部落中威望极高。建兴三年南中诸郡叛乱，他被推为首领与蜀汉对抗。诸葛亮亲率大军南征，采纳马谡"攻心为上"的策略，决心收服其心而非仅取其地。诸葛亮七次设计擒获孟获，每次都给予优待并释放，问他服不服。孟获前六次皆不服，声称"来时不知虚实，今知矣，再战必胜"。
@@ -15,6 +16,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0252
     name: 刘禅
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （207年—271年）乐不思蜀，亡国之君。涿郡涿县人，刘备之子，蜀汉第二任也是末代皇帝，在位四十一年。长坂坡之战时他尚在襁褓，由赵云怀抱杀出重围得以保全。他在诸葛亮辅佐下度过前半生，诸葛亮事无巨细皆亲力亲为，他只需无为而治。诸葛亮去世后他逐渐重用宦官黄皓，朝政日非。魏将邓艾偷渡阴平直逼成都，他在谯周劝说下不战而降，蜀汉灭亡。
@@ -28,6 +30,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0258
     name: 邓芝
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （178年—251年）刚正不阿，重修吴盟。义阳新野人，汉光武帝刘秀的后裔。他早年入蜀避乱，刘备入蜀后他历任县令，政绩卓著。刘备驾崩后蜀吴关系紧张，他奉诸葛亮之命出使东吴。面对孙权的犹豫和威胁，他从容不迫，晓以利害，言辞恳切却不卑不亢。孙权问他若吴蜀联军灭魏后天下当如何处置，他坦然答曰"各安其分"，以坦诚赢得了孙权的敬重。
@@ -41,6 +44,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0260
     name: 孙尚香
+    avatar: monkey/其他随机角色/武083_女_.png
     default_gender: female
     archetype: military
     flavor: （？—？）东汉末年至三国时期女性人物，吴郡富春人，孙权之妹，刘备之妻。史书记载她名不详，后世多以“孙尚香”称之。她性格刚烈尚武，有其父兄之风，左右侍婢百余人皆执刀侍立。赤壁之战后为巩固孙刘联盟，孙权将她嫁给刘备。刘备每次入内寝都心怀畏惧，诸葛亮也认为"主公在公安，北畏曹操之强，东惮孙权之逼，近则惧孙夫人生变于肘腋之下"。
@@ -54,6 +58,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0279
     name: 刘璋
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （？—220年）东汉末年益州牧，江夏竟陵人，字季玉，刘焉幼子。他继承父亲刘焉之位统治益州，在位期间政务宽和，百姓得以休养。建安十六年（211年）他惧怕汉中张鲁的威胁，听从张松建议迎刘备入川。刘备入蜀后反客为主，围攻成都。建安十九年（214年）他开城投降，益州遂归刘备所有。
@@ -67,6 +72,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0293
     name: 张松
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （？—212年）益州别驾，蜀郡成都人，字子乔。他身材矮小、相貌丑陋，但才华过人，尤以过目不忘著称。曹操平定荆州后，刘璋派他出使曹营。他因受曹操冷遇而心怀怨恨，归来后劝说刘璋迎接刘备入川。他暗中与法正、孟达联络，为刘备绘制益州地图并提供军事情报。刘备入川后与刘璋反目，他的兄长张肃告发其通敌之事，刘璋遂将其处死。
@@ -80,6 +86,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0295
     name: 孙坚
+    avatar: pig_wu_male4.png
     default_gender: male
     archetype: military
     flavor: （155年—191年）江东猛虎，孙氏奠基人。吴郡富春人，据说是孙武后裔。他少年时便以勇武闻名，曾单枪匹马追击海盗，斩首而还。黄巾之乱时他募兵讨贼，屡建功勋；讨伐董卓时他担任先锋，威震诸侯，是联军中唯一击败董卓军的将领。他在洛阳废墟的井中得到传国玉玺，引发了后来无数纷争。
@@ -93,6 +100,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0297
     name: 孙皓
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （242年—284年）东吴末帝，暴虐亡国。字元宗，孙权之孙，废太子孙和之子。他即位之初励精图治，颇有明君气象，朝野期望甚高。然而不久他便露出暴虐本性，大肆杀戮宗室重臣，酷刑滥用，宫中常闻惨叫之声。他迷信巫术，穷奢极欲，大修宫殿，耗尽民力。他喜欢让群臣饮酒，醉后令侍从相互揭发过失，有言辄诛，朝臣人人自危。
@@ -106,6 +114,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0298
     name: 大乔
+    avatar: monkey_wen_female5.png
     default_gender: female
     archetype: civil
     flavor: （？—？）江东二乔之姐，孙策之妻。庐江皖县人，与妹妹小乔并称"江东二乔"，国色天香名动江南。孙策攻破皖城后，将二乔姐妹纳入府中，孙策娶大乔为妻，周瑜娶小乔为妻，一时传为佳话。然而好景不长，仅仅两年后孙策便遇刺身亡，年仅二十六岁，而大乔当时也不过二十岁左右。她年纪轻轻便守寡，此后的人生史书再无记载，只知她育有一子孙绍。
@@ -119,6 +128,7 @@ heroes:
       agility: 12
   - key: hist_sljnbc_0300
     name: 步骘
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: （？—247年）宽弘长者，平定交州。临淮淮阴人，与诸葛瑾、严畯齐名，并称"东吴三友"。他年轻时家贫却志向远大，以才学闻名。他追随孙权后历任要职，以宽厚仁慈、处事稳重著称。他最大的功绩是平定交州。交州刺史士燮死后其子士徽据城自立不服东吴，他奉命率军南下。他先礼后兵，遣使晓谕利害，士徽不听，他便挥军进攻。
@@ -133,6 +143,7 @@ heroes:
   green:
   - key: hist_sljnbc_0253
     name: 糜竺
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）东汉末徐州豪门出身，刘备的重要支持者。曾资助刘备军队，并将妹妹嫁给刘备；刘备入益州后任安汉将军，地位显贵。
@@ -146,6 +157,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0254
     name: 简雍
+    avatar: pig/文031.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）字宪和，刘备同乡旧友，蜀汉官员。随刘备活动于荆州，任从事中郎，长于说客和辞令；刘备围成都时入城劝说刘璋投降，后受刘备礼遇。
@@ -159,6 +171,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0255
     name: 孙乾
+    avatar: pig/文014.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）字公祐，北海人，蜀汉官员。早期长期随刘备，曾出使袁绍、刘表等势力，负责联络和外交；入蜀后任秉忠将军等职，与麋竺、简雍同为刘备旧臣。
@@ -172,6 +185,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0256
     name: 伊籍
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）字机伯，山阳高平人，原依刘表，后随刘备入蜀。以辩才著称，曾出使东吴；益州平定后任昭文将军，并与诸葛亮、法正、刘巴、李严共同制定《蜀科》。
@@ -185,6 +199,7 @@ heroes:
       agility: 8
   - key: hist_sljnbc_0257
     name: 秦宓
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）蜀汉政治人物、学者，精通《周易》。刘备伐吴时以天时劝止，因触怒刘备入狱；张温出使蜀汉时与秦宓辩论，令张温敬服。
@@ -198,6 +213,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0259
     name: 霍峻
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: （？—217年）蜀汉将领，刘备入蜀时镇守葭萌城，以数百人坚守近一年，击破扶禁、向存所部并斩向存；后任梓潼太守，卒后刘备为之哀惜。
@@ -211,6 +227,7 @@ heroes:
       agility: 14
   - key: hist_sljnbc_0261
     name: 邓忠
+    avatar: monkey_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （？—264年）曹魏将领邓艾之子，随父参加灭蜀之战，在绵竹战事中任军将。邓艾被钟会等诬陷后，邓忠与父亲一同被捕，后在押解途中遇害。
@@ -224,6 +241,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0262
     name: 陈震
+    avatar: pig/文048.png
     default_gender: male
     archetype: civil
     flavor: （？—235年）字孝起，蜀汉官员，先后任汶山太守、犍为太守、尚书令等。229年孙权称帝后，奉命出使东吴，重申孙刘同盟，负责协调两国关系。
@@ -237,6 +255,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0263
     name: 马忠
+    avatar: pig_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （？—249年）字德信，原名狐笃，巴西阆中人，蜀汉将领。诸葛亮南征时任牂牁太守，后长期镇守南中，官至镇南将军，封彭乡亭侯。
@@ -250,6 +269,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0264
     name: 邓方
+    avatar: monkey_wu_male7.png
     default_gender: male
     archetype: military
     flavor: （？—221年）东汉末至蜀汉将领，刘备入蜀后任朱提太守、庲降都督，负责南中军政。史料对其事迹记载不多，后世主要据《华阳国志》和《季汉辅臣赞》知其名。
@@ -263,6 +283,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0265
     name: 张南
+    avatar: monkey_wu_male16.png
     default_gender: male
     archetype: military
     flavor: （？—222年）字文进，蜀汉将领，刘备伐吴时任前部督。夷陵之战蜀军败于陆逊，张南与冯习等将领战死。
@@ -276,6 +297,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0266
     name: 冯习
+    avatar: pig/武070.png
     default_gender: male
     archetype: military
     flavor: （？—222年）字休元，蜀汉大督，刘备伐吴时负责前线军务。夷陵之战中蜀军被陆逊击败，冯习与张南等将领战死。
@@ -289,6 +311,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0267
     name: 向朗
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: （约167年—247年）字巨达，襄阳宜城人，蜀汉大臣、藏书家。曾因知情不报马谡逃亡被诸葛亮免官，后搜集典籍、教授后学，官至光禄勋等职。
@@ -302,6 +325,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0268
     name: 郤正
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （？—278年）本名郤纂，字令先，蜀汉官员、文士。任秘书令，263年奉刘禅命起草向邓艾投降的文书；蜀亡后入晋任官，曾任巴西太守。
@@ -315,6 +339,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0269
     name: 刘巴
+    avatar: pig/文029.png
     default_gender: male
     archetype: civil
     flavor: （？—222年）蜀汉重臣，博学而善理财。入蜀后建议铸造直百钱、整顿市场以缓解财政，并与诸葛亮等共同制定《蜀科》；曾任尚书令，卒于刘备称帝后。
@@ -328,6 +353,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0270
     name: 李恢
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: （？—231年）字德昂，建宁俞元人，蜀汉官员、将领。曾劝马超归附刘备，任庲降都督，参与诸葛亮南征，平定南中并调配当地物资，官至安汉将军。
@@ -341,6 +367,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0271
     name: 樊建
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）蜀汉后期官员，官至侍中、守尚书令，与董厥、诸葛瞻等主持朝政，未能遏制黄皓的政治影响；蜀亡后迁居洛阳，入晋继续任职。
@@ -354,6 +381,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0272
     name: 董厥
+    avatar: pig/文050.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）蜀汉官员，诸葛亮时期曾任丞相府令史，后与樊建同为尚书令，参与后期朝政。蜀汉灭亡后迁居洛阳，任相国参军、散骑常侍，并奉命到蜀地慰劳军民。
@@ -367,6 +395,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0273
     name: 孙桓
+    avatar: pig/武060.png
     default_gender: male
     archetype: military
     flavor: （198年—223年）东吴宗室将领，孙权族侄，222年夷陵之战任前锋，曾被刘备军围于夷道；陆逊破蜀后参与追击，官至安东中郎将。
@@ -380,6 +409,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0274
     name: 薛综
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （？—243年）字敬文，东吴大臣、经学家。曾随吕岱平定交州，后任选曹尚书、太子少傅等职，长于文章和政论，著有诗赋、论难等作品。
@@ -393,6 +423,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0275
     name: 张星彩
+    avatar: monkey/其他随机角色/文084_女.png
     default_gender: female
     archetype: civil
     flavor: 史书不载“张星彩”之名；该名通常是游戏等后世作品对蜀汉敬哀皇后张氏的称呼。敬哀皇后是张飞长女、刘禅第一任皇后，卒后谥敬哀，其生卒和本名均不详。
@@ -406,6 +437,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0277
     name: 胡奋
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （？—288年）字玄威，安定临泾人，胡遵之子，曹魏至西晋将领。曾参与灭蜀及讨伐诸葛诞等战事，西晋时官至镇军大将军等职，女儿胡芳为晋武帝贵嫔。
@@ -419,6 +451,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0278
     name: 句扶
+    avatar: pig_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）字孝兴，巴西汉昌人，蜀汉将领。后期官至左将军，功名爵位仅次于王平，史家以“前有王平，后有句扶”评价其军中地位，具体战事记载较少。
@@ -432,6 +465,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0280
     name: 张温
+    avatar: pig/文032.png
     default_gender: male
     archetype: civil
     flavor: （193年—230年）字惠恕，吴郡吴县人，东吴大臣、名士。曾出使蜀汉，参与重建吴蜀关系；因推荐暨艳、名望过盛而受孙权猜忌，后被免黜，死于禁锢期间。
@@ -445,6 +479,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0281
     name: 李势
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）字子仁，十六国成汉末帝，李寿之子。347年东晋桓温伐蜀，成汉灭亡，李势出降并被迁往建康，封归义侯。
@@ -458,6 +493,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0282
     name: 李球
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: （？—263年）李恢之侄，蜀汉羽林右部督。263年魏军邓艾入蜀时，他随诸葛瞻守绵竹，与黄崇、张遵等一同战死。
@@ -471,6 +507,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0283
     name: 李撰
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）字钦仲，蜀汉经学家，梓潼涪人，精通五经，尤其研究《周易》。曾为《古文易》作注，在蜀中传授经学，仕历记载较少。
@@ -484,6 +521,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0284
     name: 尹默
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）蜀汉学者，师从司马徽、宋忠，精通《左氏春秋》。益州平定后任劝学从事，后教授太子刘禅，主要以经学训诂和教育活动见称。
@@ -497,6 +535,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0285
     name: 许靖
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: （？—222年）东汉末至蜀汉官员，许劭从兄，以“月旦评”人物品评知名。董卓掌权时曾参与选用地方官，后辗转入蜀；刘备建立蜀汉后任司徒，成为朝廷重臣。
@@ -510,6 +549,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0286
     name: 杜微
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）字国辅，梓潼涪人，蜀汉儒者。刘备、诸葛亮征召时，他以耳聋为由退居；诸葛亮仍任命他为谏议大夫，议事时通过书写交流。
@@ -523,6 +563,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0287
     name: 周群
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）字仲直，巴西阆中人，蜀汉官员、占星家。承父周舒家学，曾任刘璋师友从事；刘备占领益州后任儒林校尉，并因预言汉中战事得失而知名。
@@ -536,6 +577,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0288
     name: 张裕
+    avatar: monkey/其他随机角色/文_男123.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）字南和，蜀郡人，东汉末蜀汉官员，精于天文相术。曾预言刘备攻汉中只能得地而难得民，又因预言刘氏运数触怒刘备，最终被处死。
@@ -549,6 +591,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0289
     name: 宗预
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （？—264年）字德艳，蜀汉后期重臣，擅长与东吴交涉。曾多次出使吴国，向孙权说明蜀汉在永安增兵的必要，后任镇军大将军；蜀亡后迁居洛阳，途中病逝。
@@ -562,6 +605,7 @@ heroes:
       agility: 10
   - key: hist_sljnbc_0290
     name: 张遵
+    avatar: pig/武049.png
     default_gender: male
     archetype: military
     flavor: （？—263年）张飞之孙、张苞之子，蜀汉官员，官至尚书。263年魏军邓艾入蜀时随诸葛瞻守绵竹，诸葛瞻阵亡后继续作战，最终被俘斩首。
@@ -575,6 +619,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0291
     name: 王浚
+    avatar: pig_wu_male5.png
     default_gender: male
     archetype: military
     flavor: （206年—286年）字士治，西晋将领、益州刺史。任内在蜀中建造楼船，280年率水军顺江伐吴，先后攻取西陵、夏口、武昌，直抵建业，接受孙皓投降。
@@ -588,6 +633,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0292
     name: 吕凯
+    avatar: pig/文031.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）字季平，永昌不韦人，蜀汉官员。刘备去世后，雍闿降吴并试图进入永昌，吕凯与府丞王伉闭境拒守；诸葛亮平定南中后，吕凯获表彰，后死于南中叛乱。
@@ -601,6 +647,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0294
     name: 来敏
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）字敬达，义阳新野人，蜀汉官员、经学家。随刘璋入蜀后归附刘备，精通《左氏春秋》和文字训诂；因性情率直、屡犯礼法，多次被免官，仍以学问受到重用。
@@ -614,6 +661,7 @@ heroes:
       agility: 20
   - key: hist_sljnbc_0296
     name: 潘璋
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: （？—234年）字文珪，东吴将领，随吕蒙袭取荆州，部将马忠在临沮擒获关羽父子；夷陵之战中又随陆逊击败刘备，史载其治军严厉。
@@ -627,6 +675,7 @@ heroes:
       agility: 22
   - key: hist_sljnbc_0299
     name: 陈登
+    avatar: pig/武049.png
     default_gender: male
     archetype: military
     flavor: （163年—201年）字元龙，东汉末广陵太守，陈珪之子。治理广陵时兴修水利、发展农业，曾协助曹操对付吕布，并击退孙策等地方势力，后病卒。

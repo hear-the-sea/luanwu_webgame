@@ -2,6 +2,7 @@ heroes:
   purple:
   - key: hist_suitang_0190_yangyuhuan
     name: 杨玉环
+    avatar: monkey/隋唐与五代/杨玉环.png
     default_gender: female
     archetype: civil
     flavor: （719年-756年）唐玄宗贵妃，真实历史身份是宫廷政治的一部分，后世却常被简化为"祸水"符号。她得宠于天宝时期，宫廷奢华与外戚扩张因之更受瞩目，但唐帝国走向危机的根源并不在一位女子。安史之乱后，军心与朝局需要替罪者，马嵬驿赐死使她成为盛唐崩塌的象征。杨玉环的悲剧在于：她无法决定国家大势，却要承担大势崩坏的道德指责；留在诗歌与传说中的她，既是爱情叙事，也是政治责任转移的产物。
@@ -15,6 +16,7 @@ heroes:
       agility: 20
   - key: hist_suitang_0200_huangchao
     name: 黄巢
+    avatar: monkey/隋唐与五代/黄巢.png
     default_gender: male
     archetype: military
     flavor: （820年-884年）晚唐大起义领袖，出身盐贩背景并屡试不第，最终以武装反抗席卷山东、河南等地。其军队攻入长安并建立政权，虽短暂却对唐朝统治造成根本打击：财政体系崩坏、地方军阀坐大、社会秩序大幅破裂。黄巢并非单纯"诗人式叛军"，史载其军纪与屠戮亦极为残酷，反映乱世暴力的失控。其败亡后唐室虽存，国家已难回盛唐结构。谈黄巢，不能只看一场攻城，更要看到它揭开的社会裂缝与制度终局。
@@ -28,6 +30,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0207_guowei
     name: 郭威
+    avatar: monkey/隋唐与五代/郭威.png
     default_gender: male
     archetype: military
     flavor: （904年-954年）后周开国皇帝，出身军旅，在五代频繁兵变的环境中凭威望与军功崛起。其入京即位并非单纯夺权，而是旧秩序崩坏后的强人整合：一方面安抚军心、稳定财政与吏治，另一方面为后周的改革打下可操作的基础。郭威用人务实，能容纳不同出身的将吏；又以收养柴荣为继承人，避免了五代常见的宗室内耗。后周能成为五代中"最像国家"的政权之一，郭威的开局与取舍是关键原因。
@@ -41,6 +44,7 @@ heroes:
       agility: 8
   - key: hist_suitang_0208_shijingruo
     name: 石敬瑭
+    avatar: monkey/隋唐与五代/石敬瑭.png
     default_gender: male
     archetype: military
     flavor: （892年-942年）后晋开国皇帝，五代外交与战略困境的代表人物。其起兵夺位时倚重契丹军力，作为交换割让幽云十六州，并以屈辱性的臣属关系换取短期安全。后世称其"儿皇帝"，更多是对这一选择的道德评判；从现实角度看，他是在内斗与外压夹击下用空间换时间。问题在于：失去燕云后中原北门洞开，宋辽长期对峙的格局由此加深。石敬瑭的名字因此常被用来讨论：乱世求存的妥协，究竟能否承受后果。
@@ -55,6 +59,7 @@ heroes:
   blue:
   - key: hist_suitang_0181_mazhou
     name: 马周
+    avatar: pig/文050.png
     default_gender: male
     archetype: civil
     flavor: （601年—648年）唐代大臣，字宾王，出身寒微。马周曾任监察御史，后任中书令，多次向唐太宗上疏，涉及官员任用、赋税与地方事务；贞观二十二年病逝。
@@ -68,6 +73,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0182_chusuliang
     name: 褚遂良
+    avatar: pig/文041.png
     default_gender: male
     archetype: civil
     flavor: （596年—658年）唐代大臣、书法家，字登善，曾任谏议大夫、黄门侍郎、尚书右仆射。唐高宗欲立武昭仪为皇后时，褚遂良进谏反对，后来被贬潭州、桂州，死于爱州。
@@ -81,6 +87,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0183_yushinan
     name: 虞世南
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: （558年—638年）唐代大臣、书法家，字伯施，早年仕隋，归唐后任秘书监、弘文馆学士。唐太宗称许其德行、忠直、博学、文辞、书翰，传世《孔子庙堂碑》为其书法代表。
@@ -94,6 +101,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0184_ouyangxun
     name: 欧阳询
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: （557年—641年）唐代书法家、官员，字信本，官至太子率更令、弘文馆学士。欧阳询楷书自成“欧体”，《九成宫醴泉铭》为代表作；他还参与编纂《艺文类聚》。
@@ -107,6 +115,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0186_shangguanwaner
     name: 上官婉儿
+    avatar: monkey/其他随机角色/文084_女.png
     default_gender: female
     archetype: civil
     flavor: （664年—710年）唐代女官、诗人，祖父上官仪获罪后入掖庭，因文才被武则天任用，掌管诏令和制诰。唐中宗时封昭容，景龙四年在唐隆政变中被李隆基杀死。
@@ -120,6 +129,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0188_lilifu
     name: 李林甫
+    avatar: duck_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （683年—753年）唐代宰相，唐玄宗后期长期执掌中书省。李林甫排斥张九龄等政敌，曾支持安禄山出任边将；天宝十一载病死，死后被追夺官爵。
@@ -133,6 +143,7 @@ heroes:
       agility: 10
   - key: hist_suitang_0191_gaolishi
     name: 高力士
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: （684年—762年）唐代宦官，早年入宫，因得到唐玄宗信任而官至骠骑大将军、开府仪同三司。安史之乱后，高力士随玄宗入蜀，后被流放巫州，返回长安后病逝。
@@ -146,6 +157,7 @@ heroes:
       agility: 10
   - key: hist_suitang_0185_yanliben
     name: 阎立本
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: （约601年—673年）唐代画家、官员，曾任将作少监、工部尚书、中书令。阎立本擅长人物画，传世《步辇图》《历代帝王图》；其父阎毗、兄阎立德也以绘画和营造闻名。
@@ -159,6 +171,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0187_zhangjianzhi
     name: 张柬之
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （625年—706年）唐代大臣，进士及第，曾任凤阁侍郎、同凤阁鸾台三品。神龙元年，张柬之与敬晖等发动政变，迫使武则天传位给唐中宗；后来被武三思排挤，流放泷州，死于途中。
@@ -172,6 +185,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0192_geshuhan
     name: 哥舒翰
+    avatar: pig/武060.png
     default_gender: male
     archetype: military
     flavor: （？—757年）唐代将领，长期镇守河西、陇右，曾任河西节度使，攻取石堡城。安史之乱时，哥舒翰奉命守潼关，出战失利后被叛军俘获，最终被安禄山杀害。
@@ -185,6 +199,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0195_libi
     name: 李泌
+    avatar: monkey/其他随机角色/文男213.png
     default_gender: male
     archetype: civil
     flavor: （722年—789年）唐代大臣、谋士，少年时以才学闻名，曾隐居嵩山、衡山。安史之乱中，李泌入朝辅佐唐肃宗，后来又为唐代宗、唐德宗任用，官至中书侍郎同平章事。
@@ -198,6 +213,7 @@ heroes:
       agility: 10
   - key: hist_suitang_0196lishu
     name: 李愬
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: （773年—821年）唐代将领，李晟之子，曾任唐邓节度使。元和十二年，李愬在大雪夜率军袭取蔡州，擒获淮西节度使吴元济；后来任魏博节度使，卒于任所。
@@ -211,6 +227,7 @@ heroes:
       agility: 8
   - key: hist_suitang_0197_liuyan
     name: 刘晏
+    avatar: pig/文035.png
     default_gender: male
     archetype: civil
     flavor: （716年—780年）唐代大臣、理财家，唐肃宗时任度支、盐铁、转运使。刘晏整顿盐法和漕运，使江淮粮食能够持续运往关中；后来被杨炎等排挤，贬忠州刺史，途中遇害。
@@ -224,6 +241,7 @@ heroes:
       agility: 10
   - key: hist_suitang_0198_yangyan
     name: 杨炎
+    avatar: pig/文048.png
     default_gender: male
     archetype: civil
     flavor: （727年—781年）唐代宰相，任中书侍郎时主持推行两税法，按土地、资产征收夏秋两税。杨炎后来与卢杞交恶，被贬为崖州司马，途中被赐死。
@@ -237,6 +255,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0199_luzhi
     name: 陆贽
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （754年—805年）唐代大臣、文学家，进士及第，曾任翰林学士。泾原兵变时，陆贽随唐德宗到奉天，起草诏书并提出安抚、用兵建议；后来被排挤，贬为忠州别驾，卒于任所。
@@ -250,6 +269,7 @@ heroes:
       agility: 10
   - key: hist_suitang_0204_yixing
     name: 一行
+    avatar: pig/武066.png
     default_gender: male
     archetype: civil
     flavor: （683年—727年）唐代高僧、天文学家，本名张遂。玄宗时，一行主持编制《大衍历》，组织全国天文观测，并参与测量子午线；开元十五年圆寂于长安。
@@ -263,6 +283,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0205_yijing
     name: 义净
+    avatar: pig/武072.png
     default_gender: male
     archetype: civil
     flavor: （635年—713年）唐代高僧、译经家，671年从扬州出发，经海路前往天竺求法。义净回国后主持译经，著有《南海寄归内法传》《大唐西域求法高僧传》，记述南海和天竺见闻。
@@ -276,6 +297,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0211_libian
     name: 李昪
+    avatar: pig/文049.png
     default_gender: male
     archetype: civil
     flavor: （889年—943年）南唐烈祖，原名徐知诰，是吴国权臣徐温的养子。徐温死后，徐知诰取代杨溥，于937年建立南唐，定都金陵；后来传位给李璟，卒于金陵。
@@ -289,6 +311,7 @@ heroes:
       agility: 8
   - key: hist_suitang_0232_laijunchen
     name: 来俊臣
+    avatar: pig/文031.png
     default_gender: male
     archetype: civil
     flavor: （651年—697年）武周酷吏，因告密入仕，曾任侍御史、御史中丞，负责审理多起诏狱。来俊臣编写《罗织经》，后因得罪武则天近臣，被百官奏请处死。
@@ -302,6 +325,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0189_yangguozhong
     name: 杨国忠
+    avatar: duck_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （？—756年）唐玄宗末年宰相，杨贵妃堂兄，本名杨钊。杨国忠因善理财得到宠信，任相后与安禄山争权；安史之乱后随玄宗西逃，在马嵬驿被军士杀害。
@@ -315,6 +339,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0203_yuantian
     name: 袁天罡
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: （？—？）隋唐之际相士、术士，正史记载他曾任地方官，以相术闻名。后世把许多预言故事归于袁天罡，并常将他与李淳风并称；他的生卒和详细官历已难考。
@@ -328,6 +353,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0206_wangxuance
     name: 王玄策
+    avatar: pig_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （？—？）唐代使臣，曾多次出使天竺。贞观二十二年出使中天竺时，王玄策因当地政变向吐蕃、尼婆罗借兵，擒获阿罗那顺，带俘虏返回长安；其后官历不详。
@@ -341,6 +367,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0212_lijing
     name: 李璟
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （916年—961年）南唐中主，李昪长子，943年即位，能作词。后周南征后，李璟迁都南昌、割让江北十四州，后来去帝号称国主；建隆二年卒于南昌。
@@ -354,6 +381,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0213_hanxizai
     name: 韩熙载
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: （902年—970年）南唐大臣、文学家，曾任兵部尚书、勤政殿学士。韩熙载善于诗文书画，南唐画家顾闳中据其夜宴情景绘成《韩熙载夜宴图》；他晚年任中书侍郎，卒于金陵。
@@ -368,6 +396,7 @@ heroes:
   green:
   - key: hist_suitang_0193_fengchangqing
     name: 封常清
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: 唐朝将领，曾随高仙芝征战西域，任安西、北庭等地军职；安史之乱爆发后募兵守洛阳，兵败后与高仙芝一同被唐玄宗处死。
@@ -381,6 +410,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0194_xuyuan
     name: 许远
+    avatar: pig/武049.png
     default_gender: male
     archetype: military
     flavor: 唐朝官员，安史之乱时任睢阳太守，与张巡共同守城；睢阳陷落后被叛军俘获，后来遇害。
@@ -394,6 +424,7 @@ heroes:
       agility: 10
   - key: hist_suitang_0201_gaopian
     name: 高骈
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: 唐朝后期将领，曾镇守西域并收复交趾，后任淮南节度使；黄巢起义时据守扬州，最终在军阀混战中被杀。
@@ -407,6 +438,7 @@ heroes:
       agility: 10
   - key: hist_suitang_0202_limaozhen
     name: 李茂贞
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: 唐末藩镇首领，原名宋文通，因镇守凤翔获赐李姓；后据凤翔建立岐国，曾多次介入长安政局，最终向后梁称臣。
@@ -420,6 +452,7 @@ heroes:
       agility: 10
   - key: hist_suitang_0209_liuzhiyuan
     name: 刘知远
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: 后汉高祖，沙陀族将领，后晋末年据开封称帝，建立后汉；在位期间收复部分中原，948年去世。
@@ -433,6 +466,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0210_lisyuan
     name: 李嗣源
+    avatar: pig/武051.png
     default_gender: male
     archetype: military
     flavor: 后唐明宗，李克用养子，参与灭后梁；926年即位后平定内乱，整顿吏治、减轻赋役，933年去世。
@@ -446,6 +480,7 @@ heroes:
       agility: 10
   - key: hist_suitang_0214_fengyanshen
     name: 冯延巳
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: 五代南唐词人、官员，历仕南唐烈祖、元宗，曾任宰相；词作收入《阳春集》，对南唐及北宋词的发展有影响。
@@ -459,6 +494,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0215_wangshenzhi
     name: 王审知
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: 闽国开国君主，与兄王潮、王审邽入闽并控制福建；后梁封其为闽王，他在位时减轻徭役、兴学通商。
@@ -472,6 +508,7 @@ heroes:
       agility: 8
   - key: hist_suitang_0216_mayin
     name: 马殷
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: 五代十国楚国开国君主，唐末据有湖南，后梁封为楚王；治楚期间重视农业与贸易，927年正式称楚国王。
@@ -485,6 +522,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0217_mengchang
     name: 孟昶
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: 后蜀末代皇帝，934年继承孟知祥；在位期间统治成都及四川部分地区，965年向北宋投降，入汴后不久去世。
@@ -498,6 +536,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0218_qianchu
     name: 钱俶
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: 吴越末代国王，原名钱弘俶，948年即位；978年向北宋纳土归降，吴越政权和平结束。
@@ -511,6 +550,7 @@ heroes:
       agility: 10
   - key: hist_suitang_0219_suwei
     name: 苏威
+    avatar: pig/文031.png
     default_gender: male
     archetype: civil
     flavor: 隋朝宰相，苏绰之子，历仕北周、隋文帝及隋炀帝；参与隋初制度与选官事务，后因政争失势。
@@ -524,6 +564,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0220_zhaochuo
     name: 赵绰
+    avatar: pig/文050.png
     default_gender: male
     archetype: civil
     flavor: 隋朝司法官，以执法刚正、坚持依法办案著称；任大理丞等职时多次据法直谏，常被视为隋代法吏代表。
@@ -537,6 +578,7 @@ heroes:
       agility: 10
   - key: hist_suitang_0221_yuwenshu
     name: 宇文述
+    avatar: monkey_wu_male16.png
     default_gender: male
     archetype: military
     flavor: 北周、隋朝将领，参与平定尉迟迥、灭陈及征高句丽等战事；隋炀帝时期深受信任，其子宇文化及后来发动江都兵变。
@@ -550,6 +592,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0222_yuzhongwen
     name: 于仲文
+    avatar: monkey_wu_male7.png
     default_gender: male
     archetype: military
     flavor: 北周、隋朝将领，参与灭陈、修治漕运及征高句丽；613年讨伐杨玄感失败后获罪，不久去世。
@@ -563,6 +606,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0223_weixuan
     name: 卫玄
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: 北周、隋朝官员、将领，曾参与平定尉迟迥余党及杨玄感之乱；隋末奉命镇压各地起义，617年去世。
@@ -576,6 +620,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0224_xueshixiong
     name: 薛世雄
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: 隋朝将领，参与征讨吐谷浑、突厥及高句丽；后长期镇守涿郡，负责北方边防，隋末病逝。
@@ -589,6 +634,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0225_liushu
     name: 柳述
+    avatar: pig/文028.png
     default_gender: male
     archetype: civil
     flavor: 隋朝官员，文帝时任要职并娶兰陵公主；隋炀帝即位后因政治斗争被贬龙川，后死于流放地。
@@ -602,6 +648,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0226_xushanxin
     name: 许善心
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: 陈朝旧臣，隋灭陈后入仕，兼长史学；江都兵变后拒绝向宇文化及称臣，被杀。
@@ -615,6 +662,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0227_wangtong
     name: 王通
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: 隋代儒学者、教育家，字仲淹，号文中子；晚年讲学，房玄龄、魏征、薛收等曾与其学，《中说》为后人辑录。
@@ -628,6 +676,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0228_liuzhuo
     name: 刘焯
+    avatar: monkey/其他随机角色/文_男123.png
     default_gender: male
     archetype: civil
     flavor: 隋代天文学家、数学家，字士元；编制《皇极历》，讨论岁差并改进历法计算，但该历未获正式采用。
@@ -641,6 +690,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0229_chayuanfang
     name: 巢元方
+    avatar: pig_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: 隋代医学家，曾任太医博士、太医令；奉诏主持编撰《诸病源候论》，系统记录疾病病因、证候和养生方法。
@@ -654,6 +704,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0230_zhenquang
     name: 甄权
+    avatar: pig/文040.png
     default_gender: male
     archetype: civil
     flavor: 南北朝至隋唐之际医家，精于针灸和药物知识；唐太宗曾向其询问医术并授官，相关著作今多已散佚。

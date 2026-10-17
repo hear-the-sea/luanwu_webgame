@@ -86,19 +86,22 @@ def send_purchase_notifications(
 
     seller_mail_sent = False
     if listing.seller_id:
+        discarded_silver = max(0, listing.total_price - tax_amount - seller_received)
+        overflow_notice = f"- 银库容量不足，超出容量的 {discarded_silver:,} 银两已丢弃\n" if discarded_silver else ""
         seller_mail_sent = safe_create_message(
             manor=listing.seller,
             kind="system",
             title="【交易成功】您的物品已售出",
             body=(
                 f"恭喜！您上架的 {listing.item_template.name} ×{listing.quantity} 已成功售出！\n\n"
-                f"银两已直接存入您的账户。\n\n"
+                f"成交收入已按银库容量存入，实际到账 {seller_received:,} 银两。\n\n"
                 f"交易详情：\n"
                 f"- 物品：{listing.item_template.name}\n"
                 f"- 数量：{listing.quantity}\n"
                 f"- 成交价：{listing.total_price:,} 银两\n"
                 f"- 税费（10%）：{tax_amount:,} 银两\n"
                 f"- 实际到账：{seller_received:,} 银两\n"
+                f"{overflow_notice}"
                 f"- 买家：{buyer.display_name}\n"
                 f"- 成交时间：{timezone.localtime(listing.sold_at).strftime('%Y-%m-%d %H:%M:%S')}"
             ),

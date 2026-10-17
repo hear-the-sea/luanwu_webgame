@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, cast
 
 from ..passive_effects import consume_pending_extra_target_true_damage
 from ..passives import run_passives_for_timing
-from ..random_context import CURRENT_BATTLE_ENGINE_VERSION
+from ..random_context import CURRENT_BATTLE_ENGINE_VERSION, GROUPED_ATTACK_ENGINE_VERSIONS
 from .constants import TROOP_EXTRA_ATTACK_INTERVAL, TROOP_GROUP_DAMAGE_MULTIPLIER
 from .damage_application import apply_damage_results
 from .damage_calculation import calculate_attack_damage, calculate_passive_true_damage, process_status_effects
@@ -134,7 +134,7 @@ def _apply_extra_target_true_damage(
         target,
         damage,
         rng,
-        ranged_attack=ranged_attack and battle_engine_version == CURRENT_BATTLE_ENGINE_VERSION,
+        ranged_attack=ranged_attack and battle_engine_version in GROUPED_ATTACK_ENGINE_VERSIONS,
     )
     damage_contract = _read_damage_contract(application, target)
     reflect_applied_damage, reflect_overkill_damage = _read_secondary_damage(application, "reflect")
@@ -314,8 +314,8 @@ def _perform_single_attack(
             round_priority=round_priority,
             troop_attack_strength=troop_attack_strength,
             troop_damage_multiplier=troop_damage_multiplier,
-            enable_ranged_damage_reduction=battle_engine_version == CURRENT_BATTLE_ENGINE_VERSION,
-            enable_siege_damage_bonus=battle_engine_version == CURRENT_BATTLE_ENGINE_VERSION,
+            enable_ranged_damage_reduction=battle_engine_version in GROUPED_ATTACK_ENGINE_VERSIONS,
+            enable_siege_damage_bonus=battle_engine_version in GROUPED_ATTACK_ENGINE_VERSIONS,
         )
 
         damage_to_apply: int | float = damage_calc.damage
@@ -348,7 +348,7 @@ def _perform_single_attack(
             current_target,
             damage_to_apply,
             rng,
-            ranged_attack=ranged_attack and battle_engine_version == CURRENT_BATTLE_ENGINE_VERSION,
+            ranged_attack=ranged_attack and battle_engine_version in GROUPED_ATTACK_ENGINE_VERSIONS,
         )
         damage_contract = _read_damage_contract(applied, current_target)
         reflect_applied_damage, reflect_overkill_damage = _read_secondary_damage(applied, "reflect")
@@ -497,7 +497,7 @@ def perform_attack(
     """执行一次行动；达到人数门槛的护院依次完成分队攻击。"""
 
     if (
-        battle_engine_version != CURRENT_BATTLE_ENGINE_VERSION
+        battle_engine_version not in GROUPED_ATTACK_ENGINE_VERSIONS
         or actor.kind != "troop"
         or actor.troop_strength < TROOP_EXTRA_ATTACK_INTERVAL
     ):

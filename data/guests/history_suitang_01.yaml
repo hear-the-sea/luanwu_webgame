@@ -2,9 +2,10 @@ heroes:
   orange:
   - key: hist_suitang_0001_lishimin
     name: 李世民
+    avatar: monkey/orange/李世民.png
     default_gender: male
     archetype: military
-    flavor: （598年-649年）唐代第二位皇帝，亲历隋末群雄并以武功定鼎。玄武门之变后登基，能收揽旧怨、广开言路，重用房玄龄、杜如晦、魏征等，以制度整饬与轻徭薄赋推动"贞观之治"。对外击破东突厥、经营西域，奠定大唐盛世根基；但夺嫡流血亦成为其政治才能背后的阴影，功业与手段并存。其治世之名由此确立，也因权力起点而更显复杂。
+    flavor: "（598年—649年）唐太宗，唐朝第二位皇帝。隋末随父李渊起兵，以秦王身份转战四方，虎牢一战击败窦建德、迫降王世充，为唐朝统一奠定重要基础。玄武门之变后即位，重用房玄龄、杜如晦、魏征等人，重视纳谏，整饬吏治，减轻赋役，开出贞观之治的气象。对外击败东突厥，拓展唐朝在西域的影响，晚年亲征高句丽却未能如愿。由沙场走上御座，他既能断大事，也愿听逆耳之言；开创盛世的雄心与夺嫡流血的往事相伴，使这位帝王的从容之下，始终带着锋利的权力意志。"
     growth_range:
     - 9
     - 14
@@ -15,9 +16,10 @@ heroes:
       agility: 12
   - key: hist_suitang_0002_yangjian
     name: 杨坚
+    avatar: monkey/orange/杨坚.png
     default_gender: male
     archetype: military
-    flavor: （541年-604年）隋文帝，凭北周外戚与重臣身份受禅建隋，继而灭陈一统。其在位整顿吏治、修律令、务节俭，推动均田与赋役制度运行，形成"开皇之治"。科举取士在其朝逐步制度化，弱化门阀世族垄断。晚年围绕太子更易与宫廷权力生变，隋室由盛转衰的伏线亦在此埋下；其身后死因与宫闱传闻多有争议。其治下的统一与集权既是盛世起步，也是隐患积累。
+    flavor: "（541年—604年）隋文帝，隋朝开国皇帝。出身关陇贵族，以北周外戚与重臣身份掌权，581年受禅建隋。即位后平定反对势力，589年遣军灭陈，结束长期南北分裂。治政务求严整，推行三省六部体制，修订《开皇律》，整顿户籍与赋役，兴建仓储，使战乱后的经济渐次恢复，形成开皇之治。他重视中央选官，力图将人事与财赋握在朝廷手中。晚年猜忌渐重，废太子杨勇而改立杨广，宫廷裂痕由此加深。节俭、自律、勤于政务是他的底色，对秩序近乎严苛的追求，也伴随其一生。"
     growth_range:
     - 8
     - 13
@@ -28,9 +30,10 @@ heroes:
       agility: 12
   - key: hist_suitang_0003_wuzhao
     name: 武曌
+    avatar: monkey/orange/武曌.png
     default_gender: female
     archetype: civil
-    flavor: （624年-705年）唐高宗后、武周皇帝，亦是中国历史上唯一自立称帝的女性。她由才人入宫，凭政治手腕掌控中枢，690年改国号周。其治下扩大科举取士、重用能臣以整饬吏治，同时倚重酷吏与严刑以压制反对，朝局锋利而高效。她既能用狄仁杰等人稳住国本，也以强势改写宗室与外戚格局；无字碑不言褒贬，正合其功过并陈的身后名。
+    flavor: "（624年—705年）即武则天，唐高宗皇后、武周皇帝。由才人入宫，历经宫廷沉浮，成为皇后并逐步参与政务。临朝之后，她于690年称帝，改国号为周，将权柄真正握在自己手中。她扩大科举取士，重视荐举，任用狄仁杰等官员，以识人用人的手腕维持朝局；也倚重酷吏，严厉镇压宗室与反对势力，使宫阙内外常伴杀伐。晚年宠信近臣，705年神龙政变后退位，唐朝国号恢复。她善于把握时势，也敢于越过旧有秩序，以非凡韧性走到帝位之巅。乾陵无字碑静立千年，将未尽的褒贬留给后人。"
     growth_range:
     - 8
     - 13
@@ -42,6 +45,7 @@ heroes:
   purple:
   - key: hist_suitang_0004_libai
     name: 李白
+    avatar: monkey/隋唐与五代/李白.png
     default_gender: male
     archetype: civil
     flavor: （701年-762年）唐代诗人，才情纵逸，善以夸张想象写山河与人生。早岁漫游四方，入长安受荐又不得久留，诗名却因此传播天下。安史之乱后卷入永王事件而遭流放，途中遇赦，漂泊更深。他既能写"长风破浪"的豪气，也能写"举杯邀明月"的孤清；仕途屡挫，却以语言的光芒把盛唐的自信与不羁留在诗史。他把个人性情写成时代气象，后世以此辨认盛唐。
@@ -55,6 +59,7 @@ heroes:
       agility: 15
   - key: hist_suitang_0005_dufu
     name: 杜甫
+    avatar: monkey/隋唐与五代/杜甫.png
     default_gender: male
     archetype: civil
     flavor: （712年-770年）唐代诗人，身逢由盛转衰的大时代。安史之乱前后辗转流离，入仕短暂却目睹民生凋敝，于诗中记录饥馑、征役与家国裂痕，故被称为"诗史"。他不以奇崛取胜，而以沉郁顿挫的节制与同情心穿透现实；既写宫阙与典礼，也写茅屋、饥寒与战火。个人困顿与国家忧思交织，使其诗成为理解唐代社会的长期坐标。他用一生把悲悯写成史料，也写成诗的良知。
@@ -68,6 +73,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0006_lijing
     name: 李靖
+    avatar: monkey/隋唐与五代/李靖.png
     default_gender: male
     archetype: military
     flavor: （571年-649年）唐初名将与兵法家，历经开国征战而成一代统帅。其军事生涯以平定割据、经营边防见长，破东突厥、征吐谷浑等战事使唐朝北疆大定。史传称其用兵谨严，善于审势与统筹后勤，不以勇武逞一时。晚年居功自守，得以善终；《李卫公问对》被后世奉为谈兵要籍，既留下战功，也留下方法。后世评其能将能相，正是初唐军事与政治融合的写照。
@@ -81,6 +87,7 @@ heroes:
       agility: 10
   - key: hist_suitang_0007_guoziyi
     name: 郭子仪
+    avatar: monkey/隋唐与五代/郭子仪.png
     default_gender: male
     archetype: military
     flavor: （697年-781年）中唐名将，安史之乱中屡任主帅，参与收复长安、洛阳并稳定关中局势。其功高而能自抑，善于与朝廷、藩镇、宦官等多方周旋，故得以历事多朝而名望不坠。史书称其治军宽简而能得众心，乱后仍以威望镇抚边镇。后世敬其"功成而不逼主"的分寸，也因此把他视作乱世功臣少见的全身之例；在功名与猜忌之间仍能存身，亦见其政治分寸。
@@ -94,6 +101,7 @@ heroes:
       agility: 8
   - key: hist_suitang_0008_xuanzang
     name: 玄奘
+    avatar: monkey/隋唐与五代/玄奘.png
     default_gender: male
     archetype: civil
     flavor: （602年-664年）唐代僧人，俗名陈祎，以求法之志远行天竺。其西行历时多年，往返万里，携回大量佛典梵本与见闻资料，归国后主持译经，推动法相学说体系化。其行记《大唐西域记》兼具地理、民族与宗教信息，为研究中亚与印度古史的重要文献。玄奘并非神话人物，而是以严谨学问与惊人毅力完成一场学术远征，其"求真"精神亦因此被后世反复引用。
@@ -107,6 +115,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0009_fangxuanling
     name: 房玄龄
+    avatar: monkey/隋唐与五代/房玄龄.png
     default_gender: male
     archetype: civil
     flavor: （579年-648年）贞观名相，长于谋划与统筹，后世以"房谋杜断"概括其与杜如晦分工。其辅佐唐太宗处理政务、整饬制度，重视选任与奏议，使贞观政治更趋成型。史书称其为相谨慎，不喜矜伐，善于在激烈的开国功臣集团中维持秩序与效率。除政务外，他亦参与修史等文治工程。其功不在一役一战，而在把新王朝的运转方式落实到日常细节。
@@ -120,6 +129,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0010_weizheng
     name: 魏征
+    avatar: monkey/隋唐与五代/魏征.png
     default_gender: male
     archetype: civil
     flavor: （580年-643年）唐代谏臣，以直言敢谏著称。早年曾依附太子李建成，玄武门后仍被太宗重用，体现贞观初年用人不拘旧怨的政治风格。其奏疏多切中制度与人事之病，如《谏太宗十思疏》强调居安思危、节制欲望。太宗所谓"以人为镜，可以明得失"与其相互成就：明君愿听逆耳，贤臣敢言是非。魏征的意义不在于每一条建议都被采纳，而在于把"可受批评"变成朝廷自我校正的习惯。
@@ -133,6 +143,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0011_direnjie
     name: 狄仁杰
+    avatar: monkey/隋唐与五代/狄仁杰.png
     default_gender: male
     archetype: civil
     flavor: （630年-700年）武周时期重臣，历任地方与中枢要职，以持重与识人著称。其在武则天朝多次入相，既能处理疑狱，又能以大局为先缓和朝廷震荡。史载其屡以言谏与举荐稳住政局，亦力保李唐宗室血脉，为后来的复唐创造条件。后世小说与公案常借其形象铺陈断案传奇，但真实的狄仁杰更像一位善于在权力高压下保持法度与尺度的政治人物，功在"稳住局面"。
@@ -146,6 +157,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0012_yanzhenqing
     name: 颜真卿
+    avatar: monkey/隋唐与五代/颜真卿.png
     default_gender: male
     archetype: civil
     flavor: （709年-784年）唐代书法家与官员，楷书雄健端正，后世称"颜体"，与柳公权并列为取法典范。安史之乱中其守城起兵，秉持忠义，写下《祭侄文稿》以记家国之痛，文字与书法同具震撼。晚年奉命出使叛镇，终遭害而殉国。颜真卿的历史形象并不依赖传说：一方面是艺术上的规范与气骨，另一方面是乱世中坚持原则的官员人格，两者相互印证，遂成千古重名。
@@ -159,6 +171,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0013_chairong
     name: 柴荣
+    avatar: monkey/隋唐与五代/柴荣.png
     default_gender: male
     archetype: military
     flavor: （921年-959年）后周世宗，五代少见的强势改革者。其在位时间不长，却能整顿军纪、裁抑冗费、改善财政与兵制，使后周一度呈现"由乱入治"的气象。对外多次用兵，试图打开北方战略空间并削弱割据势力，为统一奠基。史书称其勤于政务，敢用人才而不惮触动既得利益。其早逝使大业未竟，后世常以"若假以岁月"感叹其潜力；而其改革遗产亦为宋初整合天下提供了现实基础。
@@ -172,6 +185,7 @@ heroes:
       agility: 10
   - key: hist_suitang_0015_liyuan
     name: 李渊
+    avatar: monkey/隋唐与五代/李渊.png
     default_gender: male
     archetype: military
     flavor: （566年-635年）唐朝开国皇帝，隋末动乱中据太原起兵，入关定都长安，完成从地方势力到新王朝的转换。其治国更多依赖宗室与旧部，重在稳住局面、承接隋制并安抚关中。玄武门之变后退居太上皇，开国功业被太宗贞观光芒遮蔽，但没有李渊的起兵与定鼎，盛唐亦无从谈起；他擅长在乱局里抓住窗口，却未能驾驭家族内部的权力竞争。
@@ -185,6 +199,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0016_duruhui
     name: 杜如晦
+    avatar: monkey/隋唐与五代/杜如晦.png
     default_gender: male
     archetype: civil
     flavor: （585年-630年）贞观宰辅，与房玄龄并称，后世以"房谋杜断"形容其善决断、能在关键时刻拍板。其早从秦王府幕僚起步，玄武门后入相，处理政务利落，重效率而不喜冗文。惜英年早逝，太宗为之恸惜并优礼追赠。杜如晦的贡献不在宏大理论，而在把复杂局面迅速落到可执行的决策上，是贞观政治得以运转的"决断之刃"；其早逝也使贞观少了一只断事的手。
@@ -198,6 +213,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0017_lilongji
     name: 李隆基
+    avatar: monkey/隋唐与五代/李隆基.png
     default_gender: male
     archetype: civil
     flavor: （685年-762年）唐玄宗，前期任用姚崇、宋璟等整饬吏治与财政，开创"开元"盛世气象。其晚年政治判断失衡，重用李林甫、杨国忠，边镇节度使势力坐大，安史之乱爆发后仓皇西奔，盛世转入大乱。玄宗并非简单昏君：他既能建立高效官僚运转，也在享乐与权力结构变化中失去制衡能力。一生宛如分水岭，前半是高峰，后半是裂痕。
@@ -211,6 +227,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0018_hanyu
     name: 韩愈
+    avatar: monkey/隋唐与五代/韩愈.png
     default_gender: male
     archetype: civil
     flavor: （768年-824年）唐代文人与官员，古文运动的旗手之一，主张以质朴有力的散文重振儒家论述。其文锋锐，敢批佛骨迎奉，遂被贬潮州，却在地方仍能兴学济民。韩愈的影响不仅在作品，更在"文以载道"的姿态：他把文章当作公共议论的工具，推动中唐思想与文学的转向。其后学者从欧阳修到苏轼皆受其启发，韩愈由此成为连接唐宋文脉的重要节点。
@@ -224,6 +241,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0019_huineng
     name: 慧能
+    avatar: monkey/隋唐与五代/慧能.png
     default_gender: male
     archetype: civil
     flavor: （638年-713年）禅宗重要人物，后世尊为六祖，与"顿悟"思想联系最紧密。其生平在史传与宗门传说中层层叠加，细节未必尽可考，但其思想影响确实深远：强调心性觉悟与日用修行，推动禅宗从经院式阐释转向更贴近生活的实践。与神秀等人之争被后世构造成"南北宗"叙事，既有宗门竞争，也有思想分化。慧能的意义不在神异故事，而在于他为中国佛教提供更简化、可传播的修行语言，使禅宗成为影响中国文化气质的重要力量。
@@ -237,6 +255,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0020_yaochong
     name: 姚崇
+    avatar: monkey/隋唐与五代/姚崇.png
     default_gender: male
     archetype: civil
     flavor: （651年-721年）开元初年宰相，务实而敢于兴革。其关注吏治与选任，强调整顿积弊、提高行政效率，与宋璟并称"姚宋"，共同塑造玄宗前期的清明风气。姚崇不以空谈取名，而以具体措施应对财政、军政与地方管理的难题；史书亦记其处事强硬，容易得罪人。正因敢动旧习，他才能在盛世起步阶段压住官场松散，把"盛世"从口号变成可运行的治理状态。
@@ -250,6 +269,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0021_songjing
     name: 宋璟
+    avatar: monkey/隋唐与五代/宋璟.png
     default_gender: male
     archetype: civil
     flavor: （663年-737年）唐代名相，以清正峻切著称。其为相时直面权贵与弊政，强调法度与节俭，屡以坚决态度纠正朝廷风气，因此常与姚崇并称。宋璟的特点是不愿讨好：敢说难听话，也敢在制度与人事上做"刹车"，使开元政治更有底线。其刚直亦意味着不善周旋，仕途起落不免；但正因为难以折腰，他才更像盛世里的一块硬石，提醒权力保持自律。
@@ -263,6 +283,7 @@ heroes:
       agility: 10
   - key: hist_suitang_0022_zhangjiuling
     name: 张九龄
+    avatar: monkey/隋唐与五代/张九龄.png
     default_gender: male
     archetype: civil
     flavor: （678年-740年）开元名相兼诗人，出身岭南而入主中枢，是唐代用人广度的象征之一。其在朝重视选贤与风纪，性情端方，敢于指出边镇用人隐患，反对以逢迎取宠。被罢相后，言路日窄，后世常将其视为盛世转折处的标志人物。诗名如"海上生明月"清朗悠远，与其政治品格相映。张九龄的价值在于把原则感带进权力核心，虽难改写大势，却留下可循尺度。
@@ -276,6 +297,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0023_zhangxu
     name: 张旭
+    avatar: monkey/隋唐与五代/张旭.png
     default_gender: male
     archetype: civil
     flavor: （675年-约750年）唐代书法家，狂草代表，号称"草圣"。其书风奔放，线条如骤雨旋风，往往以一气呵成见精神，不拘成法却自成法度。史载其性情放达，好酒善舞剑，艺术灵感常来自生活的极端状态；这类传闻或有夸张，但其作品确把草书推向更强调速度与气势的境界。张旭最令人震撼的，正是这种突破：让书法不只是一种规范书写，而成为情绪与力量的直接呈现。
@@ -289,6 +311,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0022_zhuwen
     name: 朱温
+    avatar: monkey/隋唐与五代/朱温.png
     default_gender: male
     archetype: military
     flavor: （852年-912年）唐末军阀，起自黄巢军后转而归唐，凭藩镇兵权步步上位。其挟持唐廷、清除异己并最终取代唐朝建立后梁，标志五代乱世的开端。史书多记其用权残酷、猜忌深重，手段不择，却也能在瓦解的制度上搭起新的军政架构。晚年内斗激烈，终被子所弑。朱温并非乱世偶然，而是藩镇体系走到尽头时最尖锐的产物；他留下的不是统一，而是一套以武力更迭的规则。
@@ -302,6 +325,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0023_liji
     name: 李勣
+    avatar: monkey/隋唐与五代/李勣.png
     default_gender: male
     archetype: military
     flavor: （594年-669年）原名徐世勣，后赐姓李。其从瓦岗起家，转入唐军后屡立战功，参与平定东突厥、经营西北并征讨辽东等重大行动，是唐代持续数十年的战略骨干。除用兵外，他亦善于在太宗、高宗两朝之间保持政治安全，既能领兵远征，也能处理边镇与朝廷关系。李勣的厉害不在传奇一役，而在长期稳定的军事执行力，像一根贯穿初唐的脊梁。
@@ -315,6 +339,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0024_lideyu
     name: 李德裕
+    avatar: monkey/隋唐与五代/李德裕.png
     default_gender: male
     archetype: civil
     flavor: （787年-850年）晚唐宰相，牛李党争的核心人物之一。其政治主张多偏向强化中央、整肃藩镇与边防，对吐蕃与西北形势亦有应对，政绩与争议同在。党争反复使朝政变成派系角力，他在得势时强硬用权，失势时则被贬至岭南而卒。李德裕的生涯像一面镜子：个人才略再高，也难在晚唐结构性裂缝中独善其身；党争留下的，不只是胜负，更是官僚体系的疲惫。
@@ -328,6 +353,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0025_liyu
     name: 李煜
+    avatar: monkey/隋唐与五代/李煜.png
     default_gender: male
     archetype: civil
     flavor: （937年-978年）南唐后主，政治上无力扭转国势，却以词才冠绝一代。其前期享承江南富庶，后期亡国入宋，个人情感与时代兴亡在词中交汇，写出细腻而沉痛的亡国之音。李煜的伟大并不来自君主业绩，而来自把失去写成可共鸣的语言：宫阙、故国、离恨与自责，被他化为含蓄而直入人心的句子。正因如此，他既是失败者，也是文学史上难以替代的胜者。
@@ -341,6 +367,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0026_yangguang
     name: 杨广
+    avatar: monkey/隋唐与五代/杨广.png
     default_gender: male
     archetype: military
     flavor: （569年-618年）隋代皇帝，志在以工程与军事重塑帝国版图。大运河沟通南北，确立粮运与都城供给的骨架；东都营建与科举推行，也使隋制更趋集中。但连年征役、三征高句丽与频繁巡幸加重民力，地方反叛蜂起。江都兵变身死，留下"功在制度与工程，失在用人和度量"的两极评价：既能开长路，也能把天下拖入断裂，更让后世看见集中动员的力量与代价。
@@ -354,6 +381,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0027_wangwei
     name: 王维
+    avatar: monkey/隋唐与五代/王维.png
     default_gender: male
     archetype: civil
     flavor: （701年-761年）盛唐诗人、画家与官员，诗风清空含禅意，后世称"诗佛"。其山水田园诗不以宏阔取胜，而以疏淡静穆见长，能在短句中营造"空山新雨"的深远。安史之乱中曾被叛军胁迫留于长安，事后得以自明，仕途虽有阴影仍获任用。王维的魅力在"兼艺"：诗、画、音乐气质互相渗透，使其作品既可读也可观，成为盛唐审美的稳定坐标。
@@ -367,6 +395,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0022_baijuyi
     name: 白居易
+    avatar: monkey/隋唐与五代/白居易.png
     default_gender: male
     archetype: civil
     flavor: （772年-846年）唐代诗人兼官员，强调诗歌应"为时而作"，语言通俗而关怀现实。其讽喻诗直指政治与民生，《长恨歌》《琵琶行》又以叙事与情感征服读者，使其在士大夫与民间都拥有罕见传播度。仕途起落中，他既能直言，也懂得在边缘位置保存表达空间，晚年居洛阳仍笔耕不辍。白居易把文学门槛放低，却不降低作品的社会重量。
@@ -380,6 +409,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0029_peidu
     name: 裴度
+    avatar: monkey/隋唐与五代/裴度.png
     default_gender: male
     archetype: civil
     flavor: （765年-839年）中唐名相，主张削藩并亲自督师平定淮西叛镇。其在朝廷权力分散、藩镇坐大之际，能以政治协调、财政支持与军事调度合为一体，为李愬奇袭蔡州等胜局提供条件。其为相多次，处事稳健，既能压住强藩，又能维持朝廷运转。裴度的功劳不在一场冲锋，而在于把"讨伐"变成可持续的国家行动，是中唐再集中化的关键推手。
@@ -394,6 +424,7 @@ heroes:
   blue:
   - key: hist_suitang_0030_zhangsunwujii
     name: 长孙无忌
+    avatar: monkey_wen_male7.png
     default_gender: male
     archetype: civil
     flavor: （594年—659年）唐太宗长孙皇后的兄长，贞观年间宰相。长孙无忌参与玄武门之变，长期辅佐李世民，唐高宗即位后仍主持朝政；他反对立武昭仪为后，后来被武后贬往黔州，最终被逼自尽。
@@ -407,6 +438,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0031_weiyingwu
     name: 韦应物
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （737年—792年）唐代诗人、官员，年轻时曾任三卫郎，后来历任洛阳丞、滁州刺史、苏州刺史。韦应物在任上常写地方政务和民生，离任后寓居苏州，著有《韦苏州集》，《滁州西涧》是其名作。
@@ -420,6 +452,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0032_luyu
     name: 陆羽
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （733年—804年）唐代学者，字鸿渐，后世称“茶圣”。陆羽幼年被遗弃，长大后在竟陵龙盖寺生活，离寺后游历各地考察茶事；他著有《茶经》，记述茶叶产地、采制、器具和煮饮方法。
@@ -433,6 +466,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0033_peixingjian
     name: 裴行俭
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: （619年—682年）唐代将领、官员，曾任洮州道行军总管、安西大都护。裴行俭平定西突厥阿史那都支，又以计擒突厥首领阿史那奉职；他还擅长识拔将才，曾推荐程务挺、王方翼等人，卒于任上。
@@ -446,6 +480,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0034_zhangshuo
     name: 张说
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: （667年—730年）唐代宰相、文学家，字道济。张说历任中书令、兵部尚书，曾主持朔方军务，开元年间三次入相；他参与修订律令、撰写诏诰，卒后陪葬桥陵，谥文贞。
@@ -459,6 +494,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0035_wangzhongsi
     name: 王忠嗣
+    avatar: monkey_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （生年不详—747年）唐代名将，曾任河东节度使、朔方节度使。王忠嗣长期镇守西北，曾击退吐蕃和突厥；天宝年间，因反对攻打石堡城得罪李林甫和杨国忠，被召回朝廷，不久病死。
@@ -472,6 +508,7 @@ heroes:
       agility: 8
   - key: hist_suitang_0036_shisiming
     name: 史思明
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: （生年不详—761年）安史之乱叛军首领，原为安禄山部将。安禄山死后，史思明杀安庆绪并在范阳称帝，后来攻占洛阳；他的儿子史朝义担心被废，联合部将将他杀死。
@@ -485,6 +522,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0037_lisheng
     name: 李晟
+    avatar: pig_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （727年—793年）唐代将领，出身行伍，曾任凤翔节度使。唐德宗建中四年，李晟率军平定朱泚之乱，收复长安，因功封西平郡王；晚年入朝任太尉，贞元九年病逝。
@@ -498,6 +536,7 @@ heroes:
       agility: 10
   - key: hist_suitang_0038_niusengni
     name: 牛僧孺
+    avatar: pig/文048.png
     default_gender: male
     archetype: civil
     flavor: （779年—848年）唐代宰相，进士出身，牛李党争中与李德裕长期对立。牛僧孺历任户部侍郎、同州刺史、淮南节度使等职，多次入相；会昌年间被李德裕排挤，任东都留守，卒于任上。
@@ -511,6 +550,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0039_lizhi
     name: 李治
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （628年—683年）唐高宗，唐太宗第九子。李治即位后继续进攻高句丽、平定西突厥，显庆年间一度亲自处理政务；晚年因风疾由皇后武则天协助批阅奏章，弘道元年病逝。
@@ -524,6 +564,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0040_lixian
     name: 李显
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （656年—710年）唐中宗，唐高宗与武则天之子，两度即位。李显第一次即位后被武则天废为庐陵王，神龙元年复位；复位后立韦氏为皇后、任用安乐公主，景龙四年被韦后和安乐公主毒杀。
@@ -537,6 +578,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0041_lidan
     name: 李旦
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （662年—716年）唐睿宗，唐高宗之子，两度即位。李旦第一次即位后被武则天废为相王，唐隆元年在诛灭韦氏后复位；景云三年，他将皇位传给太子李隆基，退为太上皇，开元四年病逝。
@@ -550,6 +592,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0042_liliheng
     name: 李亨
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: civil
     flavor: （711年—762年）唐肃宗，唐玄宗之子。安史之乱中，李亨在灵武即位，任用郭子仪、李光弼等将领，借回鹘兵收复长安、洛阳；战乱期间他依赖宦官李辅国，宝应元年病逝于长安。
@@ -563,6 +606,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0043_liyu
     name: 李豫
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （726年—779年）唐代宗，唐肃宗之子。李豫即位后任用郭子仪等人平定安史余部，处理吐蕃入侵和藩镇叛乱；他还采纳刘晏建议整顿漕运，实行两税法，和大历十四年病逝。
@@ -576,6 +620,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0044_lichun
     name: 李纯
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （778年—820年）唐宪宗，唐顺宗之子。李纯即位后任用裴度、李愬等人，先后平定淮西、成德等藩镇，元和年间收回部分州镇；元和十五年，他因宦官陈弘志等人进献丹药而中毒身亡。
@@ -589,6 +634,7 @@ heroes:
       agility: 10
   - key: hist_suitang_0045_lichen
     name: 李忱
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （810年—859年）唐宣宗，唐宪宗之子。李忱即位后亲自处理奏章，裁抑宦官、整顿吏治，收复河湟部分地区；大中十三年，他服食丹药后病重去世，皇位由唐懿宗继承。

@@ -240,6 +240,8 @@ class RecruitmentConfig:
 
     # 每个卡池每日招募次数上限（按庄园独立统计）
     DAILY_POOL_DRAW_LIMIT: int = 3
+    PURPLE_PITY_LIMIT: int = 2000
+    ORANGE_PITY_LIMIT: int = 8000
 
 
 # ============ 打工配置 ============

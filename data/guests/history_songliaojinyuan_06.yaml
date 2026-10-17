@@ -2,6 +2,7 @@ heroes:
   blue:
   - key: hist_songliaojinyuan_0273
     name: 耶律德光
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
     flavor: （902年-947年）辽太宗，辽朝第二位皇帝。他灭后晋，建立大辽国号，推动契丹汉化。他在中原称帝，虽然统治短暂，却开创了北方民族入主中原的先例。耶律德光所作决断并非孤立行为，而是内政派系与外部形势共同作用的产物。
@@ -15,6 +16,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0274
     name: 耶律休哥
+    avatar: monkey_wu_male10.png
     default_gender: male
     archetype: military
     flavor: （？—998年）辽朝将领，字逊宁。耶律休哥在高梁河之战中与耶律斜轸合击宋军，击败宋太宗；后来他任南京留守，负责辽国南面边防，死后追封宋王。
@@ -28,6 +30,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0275
     name: 耶律隆绪
+    avatar: pig_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （972年—1031年）辽圣宗，辽景宗长子，982年即位，早年由萧太后摄政。耶律隆绪亲政后多次南下攻宋，后与宋订立澶渊之盟；太平十一年病逝。
@@ -41,6 +44,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0280
     name: 韩德让
+    avatar: pig/文049.png
     default_gender: male
     archetype: civil
     flavor: （941年—1011年）辽代大臣，汉人，字致尧，后赐名耶律隆运。韩德让辅佐萧太后、辽圣宗，任南院枢密使，参与对宋作战和澶渊和议，卒后葬于乾陵附近。
@@ -55,6 +59,7 @@ heroes:
   green:
   - key: hist_songliaojinyuan_0259
     name: 曾几
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: 曾几（1084—1166），字吉甫，号茶山，南宋诗人。历任地方及馆阁官职，官至敷文阁待制；陆游曾从其学诗。其诗清新平淡，著有《茶山集》。
@@ -68,6 +73,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0260
     name: 朱敦儒
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: 朱敦儒（1081—1159），字希真，号岩壑、樵歌，两宋之交词人。靖康之变后南渡，词风由早年的清旷转为慷慨与清畅，晚年曾出仕又退居，著有《樵歌词》。
@@ -81,6 +87,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0261
     name: 张元干
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: 张元干（1091—约1161），字仲宗，号芦川居士，北宋末南宋初词人。其《贺新郎》赠胡铨，因触怒秦桧被削籍；词风由清丽转为慷慨悲凉，著有《芦川词》。
@@ -94,6 +101,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0262
     name: 朱淑真
+    avatar: monkey/其他随机角色/文064_女.png
     default_gender: female
     archetype: civil
     flavor: 朱淑真，号幽栖居士，宋代女诗人、词人。其生卒与婚姻经历记载多有异说，传世作品有《断肠诗集》《断肠词》，多写闺情、春愁与个人身世。
@@ -107,6 +115,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0263
     name: 严羽
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: 严羽，字丹丘，号沧浪逋客，南宋诗论家、诗人，生卒年不详。著《沧浪诗话》，提出妙悟、兴趣等诗学主张，强调诗歌感兴与独立审美，反对只以学问堆砌诗作。
@@ -120,6 +129,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0264
     name: 戴复古
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: 戴复古（1167—约1248），字式之，号石屏，南宋诗人，江湖诗派代表。曾向陆游学诗，一生以布衣游历闽浙赣淮，作品关注民生与战乱，著有《石屏集》。
@@ -133,6 +143,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0265
     name: 刘辰翁
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: 刘辰翁（1232—1297），字会孟，号须溪，南宋末诗人、词人。宋亡后隐居不仕，词作多寄托亡国与身世之感；又长于评点古籍，著有《须溪集》。
@@ -146,6 +157,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0266
     name: 方岳
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: 方岳（1199—1262），字巨山，号秋崖，南宋诗人、词人，绍定进士。其诗风平淡自然，兼写山水田园与时事民生，著有《秋崖集》。
@@ -159,6 +171,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0267
     name: 叶梦得
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: 叶梦得（1077—1148），字少蕴，号石林，北宋末南宋初政治家、学者、词人。历仕两朝，著有《石林词》《石林诗话》《石林燕语》等，词风在南北宋之际发生转变。
@@ -172,6 +185,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0268
     name: 刘一止
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: 刘一止（1079—1160），字行简，湖州归安人，南宋初文学家、官员。宣和三年进士，历官至敷文阁直学士，著有《苕溪集》，诗文风格平易晓畅。
@@ -185,6 +199,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0269
     name: 汪元量
+    avatar: monkey/其他随机角色/文039_男.png
     default_gender: male
     archetype: civil
     flavor: 汪元量（约1241—约1317），南宋末诗人、词人、宫廷琴师。宋亡后随三宫北迁，作品记录临安陷落及遗民生活，传有《湖山类稿》《水云集》。
@@ -198,6 +213,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0270
     name: 林景熙
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: 林景熙（1242—1310），字德阳，号霁山，南宋遗民诗人。宋亡后不仕，与谢翱、唐珏等交游；有关其参与收葬宋六陵遗骨的记载见于后世文献，著有《霁山集》。
@@ -211,6 +227,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0271
     name: 郑思肖
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: 郑思肖（1241—1318），字忆翁，号所南，南宋遗民、诗人、画家。宋亡后不仕，擅画兰而不画土，以寄托故国之思；著有《心史》，传世诗文与画作多具遗民意识。
@@ -224,6 +241,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0272
     name: 高翥
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: 高翥（1170—1241），初名公弼，字九万，号菊涧，南宋诗人、画家，江湖诗派代表。兼工乐府，著有《菊涧集》，《清明日对酒》等诗流传至今。
@@ -237,6 +255,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0276
     name: 耶律斜轸
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: 耶律斜轸（？—999），字韩隐，辽景宗、圣宗时期名将，官至北院枢密使。986年宋军北伐时，他在山西击败潘美所部并俘获杨业，后封魏王。
@@ -250,6 +269,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0277
     name: 耶律倍
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: 耶律倍（899—937），契丹名图欲，辽太祖耶律阿保机长子，东丹王。曾任皇太子并治理渤海故地，精通汉学，兼长诗文、书画、医学与音乐，后出奔后唐。
@@ -263,6 +283,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0278
     name: 耶律璟
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: 耶律璟（931—969），即辽穆宗，辽太宗耶律德光长子，在位十九年。其统治以嗜酒、游猎和少理政事著称，常滥施刑罚；应历十九年被近侍弑杀。
@@ -276,6 +297,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0279
     name: 韩延徽
+    avatar: pig/文034.png
     default_gender: male
     archetype: civil
     flavor: 韩延徽（882—959），字藏明，幽州安次人，辽朝汉臣。曾任刘守光幕僚，出使契丹后辅佐耶律阿保机，参与筑城、安置汉民和制度建设，历仕辽太祖、太宗、世宗，官至南府宰相。
@@ -289,6 +311,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0281
     name: 室昉
+    avatar: monkey_wen_male7.png
     default_gender: male
     archetype: civil
     flavor: 室昉，字梦奇，辽朝大臣，契丹族，南京人。辽圣宗初年与韩德让、耶律斜轸共同辅政，整饬弊政、减轻赋役，推动辽朝中枢治理。
@@ -302,6 +325,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0282
     name: 萧挞凛
+    avatar: monkey/其他随机角色/文_男123.png
     default_gender: male
     archetype: military
     flavor: 萧挞凛，辽朝将领，通晓天文。986年参加辽宋战争并参与俘获杨业；1004年随辽圣宗、萧太后南下，在澶州城下被宋军床子弩射杀，后宋辽订立澶渊之盟。
@@ -315,6 +339,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0283
     name: 萧惠
+    avatar: pig/武051.png
     default_gender: male
     archetype: military
     flavor: 萧惠，字伯仁，契丹人，辽朝名臣、将领。曾参与辽宋、辽夏边务，辽兴宗时任重要军政职务；后尚辽圣宗之女秦国长公主，封魏国王。
@@ -328,6 +353,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0284
     name: 萧思温
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: 萧思温，字寅古，辽朝外戚重臣，辽景宗时任北府宰相，萧绰即萧太后之父。970年遇刺身亡，其家族此后长期处于辽朝权力核心。
@@ -341,6 +367,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0285
     name: 耶律仁先
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: 耶律仁先（1013—1072），字糺邻，辽朝宗室、名臣。曾随辽兴宗征西夏，后任东京留守；1063年平定耶律重元之乱，官至北院枢密使、于越，封宋王。
@@ -354,6 +381,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0286
     name: 耶律洪基
+    avatar: pig_wu_male1.png
     default_gender: male
     archetype: military
     flavor: 耶律洪基（1032—1101），即辽道宗，辽兴宗长子，在位四十六年。即位初平定重元之乱，后受耶律乙辛影响，导致皇后萧观音被诬死、太子耶律浚被废；晚年诛乙辛。
@@ -367,6 +395,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0287
     name: 耶律延禧
+    avatar: pig_wu_male5.png
     default_gender: male
     archetype: military
     flavor: 耶律延禧（1075—1128），即辽天祚帝，辽朝末代皇帝，1101—1125年在位。金朝兴起后辽军屡败，1125年被金军俘获，降封海滨王，后死于金国。
@@ -380,6 +409,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0288
     name: 耶律章奴
+    avatar: monkey_wu_male1.png
     default_gender: male
     archetype: military
     flavor: 耶律章奴（？—1115），辽朝末年宗室、将领。天庆五年趁天祚帝出征女真，在上京发动兵变，企图拥立耶律淳；兵变失败后被诛。
@@ -393,6 +423,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0289
     name: 耶律淳
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: 耶律淳（1062—1122），辽朝宗室，燕京军民拥立后称帝，尊号天锡皇帝，史称北辽宣宗。其政权建立于1122年，耶律淳即位数月后病逝。
@@ -406,6 +437,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0290
     name: 萧奉先
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: 萧奉先（？—1122），辽朝大臣、外戚，天祚帝元妃萧贵哥之兄，官至北院枢密使。天祚帝时期他掌握中枢，曾诬陷耶律余睹及晋王耶律敖卢斡，辽亡前后身死。
@@ -419,6 +451,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0291
     name: 萧兀纳
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: 萧兀纳，辽道宗、天祚帝两朝重臣。耶律乙辛构陷太子时，他曾力保皇孙耶律延禧；天祚帝即位后又屡谏游猎、整饬政务，后被疏远外放。
@@ -432,6 +465,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0292
     name: 耶律乙辛
+    avatar: pig/文048.png
     default_gender: male
     archetype: civil
     flavor: 耶律乙辛（？—1083），辽道宗朝权臣，官至北院枢密使。先后构陷皇后萧观音与太子耶律浚，制造冤狱并排斥异己；失势后被囚，最终自缢。
@@ -445,6 +479,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0294
     name: 萧韩家奴
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: 萧韩家奴，字休坚，辽朝大臣、史学家。任翰林都林牙，参与编纂辽代实录；辽兴宗要求删改狩猎事故记录时，他坚持据实书写，并曾参与制定礼典。
@@ -458,6 +493,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0295
     name: 耶律义先
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: 耶律义先（1011—1052），辽朝政治人物、将领，耶律仁先之弟。1044年随辽兴宗西征西夏，后任殿前都点检、行军都部署，攻破蒲奴里并擒其首领，封武昌郡王。
@@ -471,6 +507,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0296
     name: 萧图玉
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: 萧图玉，辽朝将领，活动于辽圣宗时期。统和二十九年建议分治归附的阻卜各部并设置节度使，获准后统辖西北诸部，后任乌古敌烈部详稳。
@@ -484,6 +521,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0297
     name: 萧观音
+    avatar: monkey/其他随机角色/文-女.png
     default_gender: female
     archetype: civil
     flavor: 萧观音（1040—1075），辽道宗第一任皇后，精通音律诗词，著有《回心院》等。耶律乙辛借《十香词》等构陷她与伶官私通，萧观音因此被赐死。
@@ -497,6 +535,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0299
     name: 耶律重元
+    avatar: pig/武060.png
     default_gender: male
     archetype: military
     flavor: 耶律重元（？—1063），辽朝宗室、辽兴宗之弟，重元之乱首领。清宁九年起兵争位，叛乱被耶律仁先等平定后自杀，辽道宗因而巩固皇位。
@@ -510,6 +549,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0300
     name: 耶律李胡
+    avatar: monkey/其他随机角色/武037_男.png
     default_gender: male
     archetype: military
     flavor: 耶律李胡（911—960），又名耶律洪古，辽太祖耶律阿保机第三子。辽世宗即位后，述律太后曾命他率军争夺帝位；兵败后被囚，最终死于狱中。
@@ -523,6 +563,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0301
     name: 耶律隆庆
+    avatar: pig/武008.png
     default_gender: male
     archetype: military
     flavor: 耶律隆庆（973—1016），字燕隐，辽景宗与萧绰次子，辽圣宗之弟，秦晋国王。统和十七年南征为先锋，曾击败宋军；开泰初任大元帅，1016年病逝。
@@ -536,6 +577,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0302
     name: 萧排押
+    avatar: monkey_wu_male3.png
     default_gender: male
     archetype: military
     flavor: 萧排押，辽朝后族将领，萧绰女婿。参加辽宋战争，曾在望都击败曹彬、米信所部，后多次率军南下攻宋，官至重要军职。
@@ -549,6 +591,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0303
     name: 耶律盆奴
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: 耶律盆奴，辽朝将领。统和二十八年辽圣宗攻高丽时任先锋，在铜州击破高丽军并擒获将领康肇，后继续参与辽朝对高丽的军事行动。
@@ -562,6 +605,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0304
     name: 马得臣
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: 马得臣，辽朝官员、学者，南京人，以明经入仕，官至翰林学士。辽圣宗沉迷蹴鞠时，他上书劝其学习经史、效法唐代君主，辽史称其以文治进谏。
@@ -575,6 +619,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0305
     name: 王继忠
+    avatar: monkey_wu_male8.png
     default_gender: male
     archetype: military
     flavor: 王继忠，原北宋将领，咸平二年在望都之战中被辽军俘获，降辽后受萧太后、辽圣宗器重，赐姓耶律显忠。澶渊之战时，他向宋真宗传信，对宋辽议和起了沟通作用。
@@ -588,6 +633,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0306
     name: 耶律昭
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: 耶律昭，辽朝宗室、文士，活动于辽圣宗、兴宗时期。其文章见于《答萧挞凛书》，后世认为文风雅健；现存史料对其具体官职与生平记载较少。
@@ -601,6 +647,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0307
     name: 萧阿鲁带
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: 萧阿鲁带，辽朝将领。1093年率军迎击达理得、拔思母等部，夺回被掠牲畜；1095年再度击退拔思母，后任西北路招讨使，封郡公。
@@ -614,6 +661,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0308
     name: 耶律余睹
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
     flavor: 耶律余睹（？—1132），辽朝末年宗室、将领。辽末率部降金并引金军攻辽，后因与金朝关系恶化、涉嫌谋反而被杀；其降金加速了辽朝灭亡。

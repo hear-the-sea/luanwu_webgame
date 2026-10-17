@@ -28,6 +28,14 @@ MANIFEST
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+.local_preview.sqlite3*
+.local_preview_media/
+reports/**/original*.zip
+reports/**/before_*.zip
+reports/guest_portrait_normalization*/**/*.jpg
+reports/local_admin_max_buildings_*.json
+reports/local_avatar_refresh_*.json
+reports/local_guest_avatar_preview_*.md
 media/
 staticfiles/
 

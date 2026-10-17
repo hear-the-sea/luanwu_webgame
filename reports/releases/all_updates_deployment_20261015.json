@@ -1,0 +1,288 @@
+{
+  "status": "deployed_and_verified",
+  "checked_at_utc": "2026-10-15T01:28:40.982316+00:00",
+  "image": "webgame:all-updates-20261015",
+  "previous_web_image": "webgame:market-overflow-20261014",
+  "files": {
+    "battle/random_context.py": "fc2a88a9fd5aa789c09f1be8444d30fdad46fa81700b388260aa4d3c82dbc73b",
+    "battle/simulation/attack_execution.py": "4fcd5887b526c8507151b69401f8521e36b648d2cd4473a86148a8756c5dc79e",
+    "battle/simulation/battle_flow.py": "80b659edafd85111e29e454784a3681f5c7f002793187a6c0a478389f29f939a",
+    "battle/simulation/damage_application.py": "a960caa958155429d849ba2a1c53145692443978818e67427c223e9614f88f0a",
+    "battle/simulation/turn_order.py": "29deaa8792b0341448154d9163e0e47afe3c967506f12a9a5798db58dda770d8",
+    "battle/view_helpers.py": "a5e45ce90adb987ffae0899955a1eb9706ab7638cd78e6a98def71aca72bf3ed",
+    "config/asgi.py": "9910bcb0f68cf3140728c38064c52b5d52d22d5b09011bdb1378210ef9f34e1e",
+    "core/game_data/arena_ring_rules.py": "a92c3dc1c7d063ade1f3b471795dbce0766ec5e4a4a0a4dca695665b2d7a81d2",
+    "core/utils/yaml_schema.py": "408859bed14a1ecdf197e15af4a8144380452c011197d3708495706c3d1237ec",
+    "core/utils/yaml_validators/__init__.py": "8ab04bd6b0529fa1e92ceec2fe1426d246cfe436e8aad1e1887429101ea475c7",
+    "core/utils/yaml_validators/registry.py": "4d694503a045aae8bbfe6cdf004f54b7598b8fd6a24316844c44b8b1dbed97b9",
+    "core/utils/yaml_validators/rules.py": "0345786069ae25c3c4e3466c0f62148318b992348164f8507d7f07dd463edd0c",
+    "data/guest_skills.yaml": "e8681bcc8f165da52b8ecc45366aab806ca7c102b53461bdd3cc8170b866bb27",
+    "data/item_templates.yaml": "432bcbb28e32e42b19c64fc213166370c973ce2c2d7fb5b6a4a3ff0075ba6cb8",
+    "gameplay/constants.py": "3d5ddfc39c997e4c780671b2569e6a1f71b40f9f3c41f538059d18303c15eaa1",
+    "gameplay/migrations/0197_arena_ring.py": "50207645e2813d2ce3f4f4e7ea410a6305e11a9ed4b7b726e951366a096e3010",
+    "gameplay/models/__init__.py": "5d9eb6779d1c1f08188c8116f105677349fb044c96aa467997d178fb0bcc1a85",
+    "gameplay/selectors/arena/details.py": "9e407a5dc17184505234c399bc73d355195617a022fcccf2612a8ebcef56cc62",
+    "gameplay/selectors/arena/events.py": "29cd6a9220282510b07249b1e5de0832a38c080511469e4f2bef43cb09e0bff3",
+    "gameplay/selectors/arena/rings.py": "8c48b4cb66aed11e6abd2f4d29a066ad8c1088d6ab3abf78017c9d52188595f9",
+    "gameplay/selectors/troop_recruitment.py": "d6f7b6b9442d22dafe4e82dd9d38c1c55915897bd67688fb33f70efd815e3113",
+    "gameplay/selectors/warehouse.py": "90a62ec82e1c263ad2c5edc4078bc21ab559534fcdd974532a65e673bb2d9c43",
+    "gameplay/services/arena/ring.py": "7c567e686d37650133c290910b0ee4827538238cd490b23fe9351920d1c8ba48",
+    "gameplay/services/arena/ring_rules.py": "2199af593b1d3d224a06c2b84ee0adb59bd889dcc0fbfbeb41acf0ba968a3b98",
+    "gameplay/services/arena/ring_snapshots.py": "55825f535b0b58e615542bd8dde8f4382577ce4795e8b2653435aac89dd770c1",
+    "gameplay/services/buildings/forge_blueprints.py": "2553a02dc75b540be297c581bc3bb62df6fb872095279f60db8ae311468e5539",
+    "gameplay/services/buildings/smithy.py": "dbb509b47019efff6a5eb700da7c755efde55e182cc7fdec3b62c2878abea85e",
+    "gameplay/services/inventory/guest_items.py": "3cb0590264cf416484d2945d0b2951f44744a266b77f7bf00db7939b5f470abb",
+    "gameplay/services/raid/scout.py": "ca308a26296e67869c0d2b270125c3168accfb3892dee0d795ea34a1851bc709",
+    "gameplay/services/raid/scout_finalize.py": "7228549b0c77e9dccffbad4e9a1189ffd4545838f97283f7a3068f9cde54eacf",
+    "gameplay/services/raid/scout_followups.py": "864147d62fbe5dfafc4802fbd48a144f68f924f0feb2a831a4b49a4f3a772280",
+    "gameplay/services/raid/scout_intel.py": "65c7f443fc72288d541d384c5dd939d49231f8c3efcb380ab5d00a6e6e2f3c1b",
+    "gameplay/services/scout_intel_rules.py": "ada464e80f0b54081cc6a89c13ef23ae3422297743b9800b677013d17a51135e",
+    "gameplay/services/scout_reports.py": "fcdbc1574dbb9efe9642766872ef3bf103dda39342fb32f17059a1dd1cdaaa62",
+    "gameplay/templates/gameplay/arena/events.html": "419a285154dc5de4041ebdbf3c38af6cacae9bacffdc0f85c74b28268f7b28ed",
+    "gameplay/templates/gameplay/arena/partials/ring_form.html": "8ac6d4b8742c3d0cd188a6fb9686d300b57d5ca3e8fa1b68354e254f469d85ff",
+    "gameplay/templates/gameplay/arena/partials/ring_lineup.html": "b9bb8e8e07cbb6b2f9076f9f76987df4b433cc1424b2d0d9cccd9f6c9248a6da",
+    "gameplay/templates/gameplay/arena/ring_detail.html": "39f186b0490f252bf7b4fc3ce99c8d25dcf0025aaa6b47b82977450ad3edc611",
+    "gameplay/templates/gameplay/arena/rings.html": "493571741ab1d79fc37925c5f2282fb7f8bf674556dc59aed36691ed56d67815",
+    "gameplay/templates/gameplay/warehouse.html": "31f06e0d3727a0a8c52de16d12690ad212cac6df32eede27aa3eb8d28e25b721",
+    "gameplay/urls.py": "48512e055bdbce4555b53a9db267e309d5dac5377241423541e2cee62dbbb2c2",
+    "gameplay/views/messages.py": "5bd566d40756a0a704702b036de97114edcdb8aa05caecee385e2d90bcd27cb0",
+    "guests/admin_forms.py": "bdf519474934067ac0da6ed49f39bf17ff64b001cca22d346427f6fbdcf6df78",
+    "guests/migrations/0084_promote_zhaoyun.py": "a6442f6b6c987cceb8408331da858bd10b7dbfeb7482615813ac15130f31b6c6",
+    "guests/migrations/0085_promote_lier.py": "786d2f1cb99d5e1c2a30d03a1b68f87aa9fe5ce0c264702325603b3ea4a58009",
+    "guests/services/health.py": "80669d16e1e310a0ec8bfeabfaf70d3d37f8f2a7842a39f002a417bc6f99abb6",
+    "guilds/services/guild_mission_queries.py": "4f5ded0b8d7138f48a527306230f22f0f2df6aae12d6386b045644f8487dbecf",
+    "guilds/services/guild_pvp_queries.py": "3ea6ac99cca0ff1f65b51055f3ebce489b520a4227ca0bca3de7de1cb2ba01f7",
+    "static/css/tailwind.css": "99b06ff2f2ad208b53c0a1184fd747d11ff3a04ab192bfa099d30dac43e12420",
+    "static/js/tasks-page.js": "a47e28e9fd95d96d1f39a1f9b5f7fafdee27dcf65c7f672953c4bbc0150dfe4c",
+    "trade/templates/trade/partials/_shop.html": "b93bef74ad26604e0ecac0e803b6b404d460a4715fbe9d5563423f0c1c10985f",
+    "gameplay/services/scout_narrative.py": "a414fb0183d99d875394db1f77e765f32212bd8e5436e3eddaa92ef953da6ec4",
+    "static/images/buildings/青龙擂.webp": "04fbefd31a0339a82638e3350a4e3942de43067ff842e563e98c79a137c504d2",
+    "static/images/buildings/白虎擂.webp": "ad39a873d416dba6ad54e394b2008a91f6742742b91284829e0223b35ae9a463",
+    "static/images/buildings/青龙擂-thumb.webp": "f8827343582822b86fe163f4f3f4d22e81237537ff5558e284364ffd7a14ec06",
+    "static/images/buildings/白虎擂-thumb.webp": "6621b068f82d4f4cf14838a8035eea88e9272d94ae49b87edd67f86d955c4b99"
+  },
+  "services": {
+    "web": {
+      "image": "webgame:all-updates-20261015",
+      "restart_count": 0,
+      "oom_killed": false,
+      "health": "healthy"
+    },
+    "worker": {
+      "image": "webgame:all-updates-20261015",
+      "restart_count": 0,
+      "oom_killed": false,
+      "health": null
+    },
+    "worker_battle": {
+      "image": "webgame:all-updates-20261015",
+      "restart_count": 0,
+      "oom_killed": false,
+      "health": null
+    },
+    "worker_timer": {
+      "image": "webgame:all-updates-20261015",
+      "restart_count": 0,
+      "oom_killed": false,
+      "health": null
+    },
+    "worker_timer_scan": {
+      "image": "webgame:all-updates-20261015",
+      "restart_count": 0,
+      "oom_killed": false,
+      "health": null
+    },
+    "worker_timer_safety": {
+      "image": "webgame:all-updates-20261015",
+      "restart_count": 0,
+      "oom_killed": false,
+      "health": null
+    },
+    "worker_timer_maintenance": {
+      "image": "webgame:all-updates-20261015",
+      "restart_count": 0,
+      "oom_killed": false,
+      "health": null
+    },
+    "beat": {
+      "image": "webgame:all-updates-20261015",
+      "restart_count": 0,
+      "oom_killed": false,
+      "health": null
+    }
+  },
+  "ready": "passed",
+  "other_services_kept_running": true,
+  "database_migrations": false,
+  "data_sync": {
+    "operation": "all-updates-data-sync-20261015",
+    "changed": [
+      "hell_instant_formation",
+      "meteor_pierce_moon",
+      "zhuyingtai_guest_scroll"
+    ],
+    "before": {
+      "skills": [
+        {
+          "pk": 23,
+          "key": "hell_instant_formation",
+          "damage_formula": {
+            "ally": {
+              "luck": 0.6,
+              "force": 0.6,
+              "agility": 3.2
+            },
+            "base": 2000,
+            "enemy": {
+              "agility": 0.2,
+              "defense": 0.25
+            }
+          }
+        },
+        {
+          "pk": 24,
+          "key": "meteor_pierce_moon",
+          "damage_formula": {
+            "ally": {
+              "luck": 0.4,
+              "force": 1.8,
+              "agility": 4.3
+            },
+            "base": 2500,
+            "enemy": {
+              "agility": 0.15,
+              "defense": 0.2
+            }
+          }
+        }
+      ],
+      "item": {
+        "pk": 95,
+        "key": "zhuyingtai_guest_scroll",
+        "storage_space": 150
+      }
+    },
+    "after": {
+      "skills": [
+        {
+          "pk": 23,
+          "key": "hell_instant_formation",
+          "damage_formula": {
+            "base": 1000,
+            "ally": {
+              "force": 0.6,
+              "agility": 3.2,
+              "luck": 0.6
+            },
+            "enemy": {
+              "defense": 0.5,
+              "agility": 0.2
+            }
+          }
+        },
+        {
+          "pk": 24,
+          "key": "meteor_pierce_moon",
+          "damage_formula": {
+            "base": 2000,
+            "ally": {
+              "force": 1.8,
+              "agility": 4.3,
+              "luck": 0.4
+            },
+            "enemy": {
+              "defense": 0.3,
+              "agility": 0.15
+            }
+          }
+        }
+      ],
+      "item": {
+        "pk": 95,
+        "key": "zhuyingtai_guest_scroll",
+        "storage_space": 200
+      }
+    }
+  },
+  "virtual_player_routing_before": {
+    "bootstrap_mode": "v2_active",
+    "maintenance_mode": "v2_paused",
+    "calibration_routes": [],
+    "revision": 843,
+    "last_hourly_safety_window_end_at": "2026-10-15 01:00:00+00:00",
+    "last_daily_safety_window_end_at": "2026-10-15 00:00:00+00:00",
+    "last_pause_window_id": "daily:20261013T000000Z",
+    "pause_reason": "duplicate_or_partial_commit",
+    "paused_from_maintenance_mode": "v2_active",
+    "persisted": true
+  },
+  "virtual_player_routing_after": {
+    "bootstrap_mode": "v2_active",
+    "maintenance_mode": "v2_paused",
+    "calibration_routes": [],
+    "revision": 843,
+    "last_hourly_safety_window_end_at": "2026-10-15 01:00:00+00:00",
+    "last_daily_safety_window_end_at": "2026-10-15 00:00:00+00:00",
+    "last_pause_window_id": "daily:20261013T000000Z",
+    "pause_reason": "duplicate_or_partial_commit",
+    "paused_from_maintenance_mode": "v2_active",
+    "persisted": true
+  },
+  "virtual_player_resume": "blocked_by_existing_hard_safety_pause",
+  "phase": {
+    "operation": "7afebbff50ff4cd7bf453603cb2b967c",
+    "phase": "complete",
+    "candidate": "code-web-bg-7afebbff50ff",
+    "image": "webgame:all-updates-20261015",
+    "proxy": "web",
+    "override": "/root/code/.web-bg-7afebbff50ff.json",
+    "updated_at": 1792027713.2202985
+  },
+  "public": {
+    "/health/live": {
+      "status": 200,
+      "seconds": 0.090572
+    },
+    "/accounts/login/": {
+      "status": 200,
+      "seconds": 0.077751
+    },
+    "/static/css/tailwind.e237ea03fa05.css": {
+      "status": 200,
+      "seconds": 0.07992
+    },
+    "/static/js/tasks-page.ef932aa8f16f.js": {
+      "status": 200,
+      "seconds": 0.053808
+    },
+    "/static/images/buildings/青龙擂.8d5474b434c9.webp": {
+      "status": 200,
+      "seconds": 0.063321
+    },
+    "/static/images/buildings/白虎擂.6bf3803ba7b0.webp": {
+      "status": 200,
+      "seconds": 0.067041
+    },
+    "/static/images/buildings/青龙擂-thumb.3bb55b27210f.webp": {
+      "status": 200,
+      "seconds": 0.05408
+    },
+    "/static/images/buildings/白虎擂-thumb.4889625f2749.webp": {
+      "status": 200,
+      "seconds": 0.059266
+    }
+  },
+  "validation": {
+    "backend": 1800,
+    "browser": 65,
+    "js_test_files": 39,
+    "mypy_source_files": 804
+  },
+  "release": "/root/code/releases/all-updates-20261015",
+  "full_application_hash_audit": {
+    "files_compared": 2037,
+    "remaining_runtime_differences": 0,
+    "excluded_unused_source_artwork": "data/images/"
+  },
+  "additional_safety_and_deployment_tests_passed": 50
+}

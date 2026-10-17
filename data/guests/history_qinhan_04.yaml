@@ -2,6 +2,7 @@ heroes:
   purple:
   - key: hist_qinhan_0151
     name: 马援
+    avatar: monkey/秦汉/马援.png
     default_gender: male
     archetype: military
     flavor: （前14年—49年）伏波将军，马革裹尸。他半生戎马，南征交趾，立铜柱为界；北击匈奴，西破羌人。他六十二岁时仍请缨出征，在军中以豪言激励士气。他不仅战功赫赫，更以严谨的家风著称，《诫兄子严敦书》流传千古。史载其晚年因军中物议与诬告受牵连，死后一度被夺爵，这种身后翻案并不罕见：边将功劳再大，也可能在政争与流言里被重新解释。马援留下的，不只是战场记忆，还有一套对后辈的处世警戒——如何守节、如何慎交、如何在功名与风险之间自保。
@@ -15,6 +16,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0153
     name: 主父偃
+    avatar: monkey/秦汉/主父偃.png
     default_gender: male
     archetype: military
     flavor: （生年不详—前126年）纵横策士，推恩令主。他出身贫寒，早年备受冷落，入朝后一年四迁。他向武帝提出“推恩令”，允许诸侯王将封地分给子弟，以分割方式持续削弱诸侯国的力量，兵不血刃地缓解长期隐患。他为人刻薄，行事锋利，甚至以“丈夫生不五鼎食，死即五鼎烹”自况，最终被齐王自杀案牵连而族诛。主父偃的悲剧感来自反差：他能提出极具制度穿透力的方案，却无法在权力网络中维持人缘与安全。对武帝而言，策士可以被使用，但绝不会被允许成为不可替代的中心；一旦政策完成、风险上升，主父偃很容易从“奇谋之臣”变成需要被清理的麻烦。
@@ -28,6 +30,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0154
     name: 公孙弘
+    avatar: monkey/秦汉/公孙弘.png
     default_gender: male
     archetype: civil
     flavor: （前200年—前121年）西汉丞相，出身寒微而以经术入仕，是武帝朝“儒者入政府”的象征人物之一。史书写公孙弘，常把他放在两种期待之间：一方面他以儒学名义参与政务，使经术更贴近国家制度；另一方面他在权力中心必须讲求可行与折中，于是又容易被批评为圆滑、善顺时势。公孙弘的意义不在于把他当成纯粹的思想家，而在于看见儒学如何被转译为行政语言：如何进入奏章、如何进入官制、如何成为整合人心与官僚的工具。经术一旦入朝，就要面对利益与风险，公孙弘正是在这种现实里完成了上升，也在现实里留下争议。
@@ -41,6 +44,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0166
     name: 扶苏
+    avatar: monkey/秦汉/扶苏.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前210年）秦始皇长子。史载他性情较为宽厚，曾因进谏而被遣往北方随军，其处境本就显示秦廷继承问题并不安稳。始皇死后，扶苏与蒙恬遭矫诏赐死，未能继承帝位，成为秦帝国迅速崩塌的关键转折之一。扶苏之死常与赵高操控政局并提，后世据此反思秦制的薄弱点：皇位继承缺乏公开可检验的程序，诏命与印玺集中在少数人手里，便给密室操作留下巨大空间。扶苏并非单纯的“可惜太子”，他更像一面镜子，照见帝国在最高权力交接时的脆弱——当制度无法保障继承，个人再贤也可能被一纸伪诏终结。
@@ -54,6 +58,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0182
     name: 章邯
+    avatar: monkey/秦汉/章邯.png
     default_gender: male
     archetype: military
     flavor: （生年不详—前205年）秦末名将。陈胜吴广起事后，章邯奉命仓促出战，史载他征发骊山刑徒与戍卒成军，短时间内连破义军，一度把濒临崩裂的秦廷拉回到“还能打”的状态。可他越能打，越暴露秦制的悖论：中央不信任前线，将领得不到稳定的支援与授权；赵高专权、朝命反复，又把军功变成随时可翻案的风险。巨鹿失利后章邯降楚，被项羽封雍王，继而在汉军进关时败亡。写章邯，最该写的是他夹在两种崩坏之间——对外是天下反叛的洪流，对内是中枢失控的撕裂；他用兵再强，也救不了一个已经失去自我修复能力的帝国。
@@ -67,6 +72,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0185
     name: 范增
+    avatar: monkey/秦汉/范增.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前204年）楚汉之际谋士，项羽重要智囊，号“亚父”。史载他在关键关口屡劝项羽果断处置对手、把握战机，尤其鸿门宴前后的判断常被后世反复咀嚼。范增的悲剧不在于“不会出主意”，而在于他与主帅的权力关系：谋臣能提出方案，却不能替主帅承担心理负担；当主帅在仁义名声、宗族情感与现实算计之间摇摆时，再高明的策略也可能被搁置。范增愤而离去、途中病亡的结局，使他成为“良谋不被用”的经典符号，但符号背后更值得看的，是乱世决策的真实成本：优柔寡断不是性格小毛病，而可能直接改写天下归属。
@@ -80,6 +86,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0189
     name: 赵佗
+    avatar: monkey/秦汉/赵佗.png
     default_gender: male
     archetype: military
     flavor: （生年不详—前137年）秦末南海龙川人，秦将。秦亡后据岭南自立，建立南越政权，长期与汉廷在“称臣—称王—互市”之间周旋。赵佗的强处不只是能打，更在能“把南方管起来”：一方面沿用秦的郡县与军政框架，保持行政效率；一方面又必须面对百越族群与岭南环境的差异，通过安抚、联姻与贸易等方式稳住地方。对汉廷而言，南越既是边疆安全问题，也是海上与南方资源的门户；而赵佗则在中央力量暂时难以深入的年代，把自己经营成不可忽视的地方王者。理解赵佗，等于理解早期帝国如何在远方建立弹性的统治边界。
@@ -93,6 +100,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0159
     name: 刘盈
+    avatar: monkey/秦汉/刘盈.png
     default_gender: male
     archetype: civil
     flavor: （前210年—前188年）汉惠帝，刘邦次子。即位时国政多为吕后所握，他能施展的空间有限，因此史书常把他的形象写得温仁而无力。关于“人彘”惨剧，史载其见之震骇，这种震骇并非单纯的情感戏剧，而是对汉初宫廷权力运作的直观冲击：亲情、法度与威慑在同一瞬间被撕开。惠帝在位期间仍有一些制度调整被归到他名下，如对秦代严苛条文的松动与对丞相体系的倚重；这些措施未必都出自他个人意志，却确实推动汉初政治从战争动员转向休养生息。刘盈早逝，使他更像汉初“强力政治”阴影下的一位短命守成者。
@@ -106,6 +114,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0187
     name: 蒙毅
+    avatar: monkey/秦汉/蒙毅.png
     default_gender: male
     archetype: military
     flavor: （生年不详—前210年）秦将蒙恬之弟，秦始皇近臣。史载他掌管近侍，陪侍始皇巡行，长期处在宫廷中枢。秦始皇死后，赵高、胡亥排斥蒙氏，蒙毅被囚于代，后与蒙恬相继遇害。诏令与时序在传世记载中颇多曲折，但一个近臣在继承风波中的处境，已足见秦廷权力的险峻。
@@ -119,6 +128,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0149
     name: 路博德
+    avatar: monkey/秦汉/路博德.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）西汉将领，史载其在南越征讨中居重要位置，与楼船将军杨仆等分兵推进，最终促成岭南并入汉廷。南越战事并不只是打一场仗：海陆交通、粮运补给、地方豪强与旧官僚的去留，都决定能否在战后站稳脚跟。史书所写路博德“以招抚为主”等做法，提示他不仅靠武力，也靠对地方人心与利益结构的拿捏；能让对手放下抵抗，有时比杀伤更能节省成本。路博德的经历显出汉代对南方扩张是一套系统工程：军事只是开门，郡县化与行政接管才是长期胜负。
@@ -132,6 +142,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0150
     name: 郑吉
+    avatar: monkey/秦汉/郑吉.png
     default_gender: male
     archetype: military
     flavor: （生年不详—前49年）西汉将领，史载为首任西域都护。郑吉的工作性质并不止于“打一仗”，更接近把远域纳入可治理空间：屯田、驻防、联络诸国、处理矛盾、保障通道，都需要长期投入与稳定的行政枢纽。设都护府与幕府的意义也不仅是名号，而是让汉廷在西域拥有持续发号施令与调度资源的抓手，从而把影响力从军事行动延伸到制度存在。郑吉并非只以武力取胜，他更像西域经营的“第一代管家”——既要懂军务，也要懂外交与地方政治，把复杂的多国网络纳入一个可运转的秩序框架。
@@ -146,6 +157,7 @@ heroes:
   blue:
   - key: hist_qinhan_0174
     name: 灌夫
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: （生年不详—前131年）西汉将领，以勇悍刚直著称。灌夫与窦婴交好，曾因战功任将军；武帝初年，他在宴席上与田蚡争执，因失礼和辱骂权贵被捕，最终与窦婴一同被诛。
@@ -159,6 +171,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0180
     name: 田蚡
+    avatar: pig/文028.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前131年）西汉外戚、权臣，汉武帝生母王娡之弟，封武安侯，官至丞相。田蚡入朝后广纳宾客、干预人事，与窦婴、灌夫多次冲突；灌夫案后，他逼死窦婴，自己不久也病死。
@@ -172,6 +185,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0152
     name: 马融
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （79年—166年）东汉经学家，字季长，马援从孙。马融遍注群经，设帐讲学，卢植、郑玄等人都曾受业于他；他又擅长辞赋、书法和音律。马融生活奢华，曾依附外戚梁冀，因此屡受时人非议，晚年仍以经学著述闻名。
@@ -185,6 +199,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0158
     name: 刘奭
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （前74年—前33年）西汉元帝，汉宣帝之子。刘奭喜好儒学，即位后重用经术之臣，减轻刑罚，并多次下诏宽恤百姓；他又信任宦官石显，使石显得以干预朝政。刘奭在位期间，匈奴呼韩邪单于归附，汉匈关系暂时缓和。
@@ -198,6 +213,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0160
     name: 司马谈
+    avatar: monkey/其他随机角色/文_男123.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前110年）西汉太史令，司马迁之父。司马谈负责观测天象、制定历法和掌管典籍，著有《论六家要旨》，比较儒、墨、道、法等学派。临终前，他嘱咐司马迁继任太史令并完成史书，司马迁后来因此撰成《史记》。
@@ -211,6 +227,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0183
     name: 细君公主
+    avatar: monkey_wen_female10.png
     default_gender: female
     archetype: civil
     flavor: （生年不详—前101年）西汉宗室女，江都王刘建之女。细君公主奉汉武帝之命远嫁乌孙昆莫，因语言、风俗不同而长期思乡，作《悲愁歌》诉说身世。她在乌孙去世后，汉廷又派解忧公主续任和亲。
@@ -224,6 +241,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0184
     name: 缇萦
+    avatar: monkey/其他随机角色/文084_女.png
     default_gender: female
     archetype: civil
     flavor: （生卒年不详）西汉名医淳于意之女。淳于意获罪将受肉刑时，缇萦随父入京，上书汉文帝陈述肉刑不可复生，并请求以自身服役赎父。文帝被她打动，改易肉刑，淳于意也因此免受刑罚。
@@ -237,6 +255,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0188
     name: 袁盎
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前147年）西汉名臣，以敢于直谏著称。文帝时，袁盎曾劝阻淮南王刘长入朝；景帝即位后，他参与讨论削藩，又因梁王刘武的案件与朝臣争执。后来袁盎被梁王派来的刺客杀害。
@@ -250,6 +269,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0155
     name: 公孙贺
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前92年）西汉重臣，位至丞相，曾任将军，又因与卫氏家族联姻成为外戚。巫蛊之祸中，他为获罪的儿子公孙敬声求情，父子最终一同死于狱中。
@@ -263,6 +283,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0156
     name: 冯劫
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前207年）秦末重臣，曾任将军并参与朝政。赵高专权、天下起兵后，冯劫与冯去疾等人上书劝谏，最终被逼自杀。
@@ -276,6 +297,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0157
     name: 冯去疾
+    avatar: monkey_wen_male7.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前210年）秦朝丞相，秦始皇晚年与李斯共同处理朝政。秦二世即位后，冯去疾与冯劫等人上书劝谏，触怒胡亥，最终自杀身亡。
@@ -289,6 +311,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0172
     name: 刘衎
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （前9年—6年）西汉平帝，汉元帝之孙。刘衎九岁即位，王莽以外戚身份辅政；他在位六年，于元始五年病死，皇位随后由王莽控制。
@@ -302,6 +325,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0173
     name: 刘骜
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （前51年—前7年）西汉成帝，汉元帝之子。刘骜即位后宠爱赵飞燕、赵合德姐妹，立后与皇嗣问题反复；他在位期间没有留下皇子，死后由侄子刘欣继位。
@@ -315,6 +339,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0181
     name: 申屠嘉
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前155年）西汉丞相，以刚正守法著称。文帝时，申屠嘉曾因晁错入朝不趋而欲治其罪，未获文帝准许；景帝即位后，他与晁错不和，失去相位后病死。
@@ -328,6 +353,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0186
     name: 荀彘
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）西汉左将军，曾率军征讨卫氏朝鲜。荀彘与楼船将军杨仆争功，并将杨仆囚禁，后来攻破王险城；回朝后，他因擅自拘押同僚获罪，被汉武帝处死。
@@ -341,6 +367,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0161
     name: 吴广
+    avatar: monkey_wu_male16.png
     default_gender: male
     archetype: military
     flavor: （生年不详—前208年）秦末起义领袖，与陈胜在大泽乡共同起兵。陈胜建立张楚后，吴广率军围攻荥阳，因久攻不下被部将田臧杀害。
@@ -354,6 +381,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0162
     name: 周昌
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前152年）西汉开国功臣，以口吃而敢于直谏著称。刘邦曾想废太子刘盈，周昌当面反对；后来他任赵王刘如意的相国，却没能阻止吕后将刘如意召回长安。
@@ -367,6 +395,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0163
     name: 审食其
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前177年）西汉沛县人，刘邦旧臣，吕后的亲信，封辟阳侯并任左丞相。吕后去世、吕氏失势后，审食其被捕入狱，后来得到赦免。
@@ -380,6 +409,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0164
     name: 张耳
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前202年）秦末汉初赵地人物，早年与陈余结为至交，共同拥立赵王歇。两人后来因兵权和赵王之事决裂，张耳归附刘邦，被封为赵王，病逝于封国。
@@ -393,6 +423,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0165
     name: 张苍
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前152年）西汉名臣，早年随刘邦起兵，后来历任计相、丞相等职。张苍精通律历，参与制定汉初历法和制度，年老时仍以学问与长寿闻名。
@@ -406,6 +437,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0167
     name: 李夫人
+    avatar: monkey_wen_female7.png
     default_gender: female
     archetype: civil
     flavor: （生年不详—前88年）西汉汉武帝宠妃，李延年之妹，擅长歌舞，因兄长推荐入宫。李夫人病重时不肯再让武帝见面，死后仍获厚葬；她的兄长李广利也因她受宠而得到重用。
@@ -419,6 +451,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0168
     name: 李广利
+    avatar: monkey_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （生年不详—前88年）西汉将领，李夫人之兄。汉武帝任他为贰师将军，先后出兵大宛，夺取汗血马；武帝晚年李氏家族因巫蛊之祸失势，李广利率军攻匈奴失败后投降，最终被匈奴郁成王杀死。
@@ -432,6 +465,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0169
     name: 杨仆
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）西汉将领，号楼船将军，曾率水军参与平定南越、东越。征讨卫氏朝鲜时，他与左将军荀彘争功并被对方囚禁；回朝后，杨仆因战事获罪，被下狱并赎为庶人。
@@ -445,6 +479,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0170
     name: 段会宗
+    avatar: pig/文031.png
     default_gender: male
     archetype: civil
     flavor: （前83年—前9年）西汉官员，字子松，曾多次出任西域都护。段会宗长期驻守西域，熟悉乌孙等国的事务，常以出使、安抚和交涉处理当地争端，晚年回到长安任职。
@@ -458,6 +493,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0171
     name: 刘欣
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （前25年—前1年）西汉哀帝，汉元帝之孙。刘欣即位后曾试图削弱外戚丁氏、傅氏的势力，却又宠信祖母傅太后和董贤，任董贤为大司马；他在位六年病死，董贤随即失势。
@@ -471,6 +507,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0175
     name: 王娡
+    avatar: monkey_wen_female7.png
     default_gender: female
     archetype: civil
     flavor: （生年不详—前126年）汉景帝皇后，汉武帝之母。王娡原嫁金王孙，入宫后生下刘彻，并与馆陶长公主结成婚姻联盟，使刘彻最终被立为太子。武帝即位后，王娡被尊为皇太后，她的弟弟田蚡也因此封侯入仕。
@@ -484,6 +521,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0176
     name: 王离
+    avatar: monkey/其他随机角色/武037_男.png
     default_gender: male
     archetype: military
     flavor: （生年不详—前207年）秦将，王翦之孙、王贲之子。秦末陈胜起兵后，王离率军南下援救巨鹿，与章邯一起围攻赵军；项羽渡河击败秦军，王离随后被俘，秦军主力也由此瓦解。
@@ -497,6 +535,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0177
     name: 王绾
+    avatar: pig/文048.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）秦朝丞相，秦统一六国后负责处理新并入地区的政务。王绾曾建议分封宗室以安定关东，李斯主张实行郡县制，秦始皇最终采纳了李斯的意见。
@@ -510,6 +549,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0178
     name: 班彪
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （3年—54年）东汉史学家，班固、班昭之父。班彪曾续写《史记》后传，整理西汉史事；他去世后，班固在其旧稿和家藏材料的基础上编撰《汉书》。
@@ -523,6 +563,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0190
     name: 赵高
+    avatar: duck_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （生年不详—前207年）秦二世时的中车府令、宦官，深受胡亥信任。秦始皇死后，赵高与李斯合谋矫诏，逼扶苏和蒙恬自尽并拥立胡亥；后来他诬杀李斯，最终被子婴设计杀死。
@@ -536,6 +577,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0191
     name: 陈余
+    avatar: monkey_wu_male10.png
     default_gender: male
     archetype: military
     flavor: （生年不详—前204年）秦末赵地将领，早年与张耳共同起兵，拥立赵王歇。陈余后来因赵王和兵权之事与张耳决裂，在井陉被韩信击败，退守故赵后被汉军追杀身亡。
@@ -549,6 +591,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0192
     name: 陈胜
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: （生年不详—前208年）秦末起义领袖，与吴广在大泽乡起兵，随后在陈县建立张楚政权，自立为王。陈胜派遣部将分路攻秦，起义军很快遍及各地；秦军反击后，他退守城父，最终被车夫庄贾杀害。
@@ -562,6 +605,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0193
     name: 陈阿娇
+    avatar: monkey_wen_female7.png
     default_gender: female
     archetype: civil
     flavor: （生年不详—前130年）西汉皇后，汉武帝刘彻的第一任皇后，馆陶长公主之女。陈阿娇早年与刘彻订婚，刘彻即位后立她为皇后；后来因失宠、无子并涉及巫蛊，被废居长门宫，最终病死。
@@ -575,6 +619,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0194
     name: 项梁
+    avatar: pig_wu_male5.png
     default_gender: male
     archetype: military
     flavor: （生年不详—前208年）楚国贵族后裔，项羽之叔。秦末项梁在会稽起兵，拥立楚怀王，先后击败秦军并收拢各地楚军；他在定陶之战中战死，项羽随后接掌其部众。
@@ -588,6 +633,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0195
     name: 刘庄
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （28年—75年）东汉明帝，光武帝刘秀第四子。刘庄即位后重视吏治，整顿官员考课；他又派窦固等人出击北匈奴，并遣使前往西域，在位期间东汉边事和朝政都较为稳定。
@@ -601,6 +647,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0196
     name: 刘炟
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （57年—88年）东汉章帝，汉明帝之子。刘炟即位后减轻刑罚、重视经学，曾在白虎观召集群儒讨论五经，相关议论后来整理为《白虎通义》。他在位期间还任用班超经营西域，章和二年病逝。
@@ -614,6 +661,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0197
     name: 刘肇
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （79年—105年）东汉和帝，汉章帝之子，十岁即位。窦太后临朝时，窦宪掌握朝廷和军队；刘肇亲政后联合宦官郑众诛灭窦氏，并派班超继续经营西域，在位十七年病死。
@@ -627,6 +675,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0198
     name: 刘保
+    avatar: monkey_wen_male5.png
     default_gender: male
     archetype: civil
     flavor: （115年—144年）东汉顺帝，汉安帝之子。刘保原为太子，因安帝宠信耿贵人而被废为济阴王；安帝死后，他在宦官拥立下即位，并任梁商为大将军，后来又立梁氏为皇后。
@@ -640,6 +689,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0199
     name: 刘志
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （132年—168年）东汉桓帝，汉质帝堂弟。梁太后临朝时，梁冀掌握朝政；延熹二年，刘志联合单超、具瑗等宦官诛杀梁冀，收没梁氏家产，后来又因党锢之事与士人发生冲突。
@@ -654,6 +704,7 @@ heroes:
   green:
   - key: hist_qinhan_0179
     name: 班游
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）西汉班氏家族学者，成帝时曾与刘向等校阅皇家藏书，官至右曹中郎将。班游与班彪同族，班固是他的后辈；关于他的个人著述和仕履，传世记载已经不多。

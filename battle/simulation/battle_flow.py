@@ -52,7 +52,11 @@ def _iter_phase_attackers(
 ) -> list["Combatant"]:
     # Negative priority phases are cumulative by design: a faster unit with
     # priority -2 acts in both the -2 phase and the later -1 phase.
-    return [actor for actor in determine_turn_order(attacker_team, defender_team, rng) if actor.priority <= priority]
+    return [
+        actor
+        for actor in determine_turn_order(attacker_team, defender_team, rng, round_priority=priority)
+        if actor.priority <= priority
+    ]
 
 
 def _append_heal_event(events: List[Dict[str, Any]], heal_event: Dict[str, Any] | None) -> None:
@@ -223,7 +227,7 @@ def _resolve_standard_round(
         )
         _append_passive_events(events, passive_events)
 
-    for actor in determine_turn_order(attacker_units, defender_units, rng):
+    for actor in determine_turn_order(attacker_units, defender_units, rng, battle_engine_version=battle_engine_version):
         if actor.hp <= 0:
             continue
         active_statuses = capture_active_status_effects(actor)

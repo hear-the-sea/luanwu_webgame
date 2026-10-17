@@ -2,6 +2,7 @@ heroes:
   blue:
   - key: hist_qinhan_0452
     name: 安期生
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）秦汉之际方士，传说与齐地求仙活动有关，曾受秦始皇、汉武帝遣使求访。关于其生平多见于方士传说，具体行迹已不可考。
@@ -15,6 +16,7 @@ heroes:
       agility: 19
   - key: hist_qinhan_0459
     name: 绮里季
+    avatar: monkey_wen_male10.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）秦汉之际隐士，商山四皓之一。秦末，他与东园公、夏黄公、甪里先生隐居商山；汉高祖晚年欲废太子时，绮里季等应吕后之请出山，辅佐太子刘盈。
@@ -28,6 +30,7 @@ heroes:
       agility: 18
   - key: hist_qinhan_0526
     name: 蒯彻
+    avatar: pig_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）楚汉之际谋士，曾为韩信分析天下形势，劝他据齐地自立，与刘邦、项羽鼎足而立；韩信没有采纳。汉朝建立后，蒯彻因避汉武帝名讳改名蒯通，最终得到赦免。
@@ -41,6 +44,7 @@ heroes:
       agility: 18
   - key: hist_qinhan_0527
     name: 毛亨
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）西汉经学家，相传为《诗经》毛诗一派的传授者。毛亨长期讲授、训释《诗经》，并将所传经文交给毛苌；除经学传承外，他的个人经历已难详考。
@@ -54,6 +58,7 @@ heroes:
       agility: 6
   - key: hist_qinhan_0461
     name: 孔鲋
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （前264年—前208年）秦末儒者，孔门后裔。孔鲋曾主持讲学、收藏典籍，秦末战乱中仍设法保存儒家文献；他后来卷入陈胜政权的动荡，最终死于乱军之中。
@@ -67,6 +72,7 @@ heroes:
       agility: 14
   - key: hist_qinhan_0476
     name: 巴寡妇清
+    avatar: monkey/其他随机角色/文064_女.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）秦代巴郡女商人，丈夫早逝后经营丹砂产业，凭借矿产和商业积累成为巨富。秦始皇曾召见巴寡妇清，并为她修筑“女怀清台”。
@@ -80,6 +86,7 @@ heroes:
       agility: 15
   - key: hist_qinhan_0480
     name: 乌氏倮
+    avatar: pig/文044.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）秦代边地富商，长期经营畜牧与马匹贸易，家中拥有大量牛、马、羊。乌氏倮曾向秦廷输送牲畜和物资，因经营有方而得到秦始皇召见。
@@ -93,6 +100,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0492
     name: 史禄
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）秦代水利官，秦始皇南征百越时主持开凿灵渠，沟通湘水与漓水。灵渠建成后，史禄负责的水运得以承担军粮和兵员转运。
@@ -106,6 +114,7 @@ heroes:
       agility: 19
   - key: hist_qinhan_0495
     name: 朱家
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）秦汉之际游侠，家财丰厚而乐于救助他人。朱家曾收留被通缉的季布，帮助他躲过追捕；他不以富贵自居，门下常有受其救济的宾客。
@@ -119,6 +128,7 @@ heroes:
       agility: 17
   - key: hist_qinhan_0496
     name: 随何
+    avatar: monkey/其他随机角色/文男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）楚汉之际谋士，奉刘邦之命出使九江，游说英布背楚归汉。英布接受他的劝说后率军归附刘邦，随何也因此得到重用。
@@ -132,6 +142,7 @@ heroes:
       agility: 15
   - key: hist_qinhan_0508
     name: 屠睢
+    avatar: pig_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）秦代将领，奉秦始皇之命率军南征百越，负责岭南战线的进攻和驻防。屠睢在南征中遭越人伏击战死，秦军随后由赵佗等人继续统率。
@@ -146,6 +157,7 @@ heroes:
   green:
   - key: hist_qinhan_0491
     name: 卢敖
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）秦汉时期方术与游学人物，曾遍游名山，与方士和士人往来。卢敖的故事多与求仙、远游传说相连，具体行迹和结局已难考。
@@ -159,6 +171,7 @@ heroes:
       agility: 5
   - key: hist_qinhan_0474
     name: 夏无且
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）秦代医官，曾任秦始皇身边的太医。荆轲刺秦时，夏无且以药囊投击荆轲，帮助秦始皇躲过袭击；其余生平事迹记载不多。
@@ -172,6 +185,7 @@ heroes:
       agility: 22
   - key: hist_qinhan_0523
     name: 哀章
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）新莽政治人物，曾向王莽献上符命文书，劝其接受天命、登上帝位。王莽称帝后，哀章得到任用；更始军攻入长安时，他随新莽政权覆亡而被杀。
@@ -185,6 +199,7 @@ heroes:
       agility: 14
   - key: hist_qinhan_0518
     name: 董偃
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）西汉宫廷人物，因受馆陶公主宠信而得以出入宫廷。董偃善于应对，常陪公主入朝，曾受到汉武帝接见；除这些宫廷活动外，他的生平记载不多。
@@ -198,6 +213,7 @@ heroes:
       agility: 8
   - key: hist_qinhan_0482
     name: 羊千
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: 羊千（又称羊子，生卒年不详），秦始皇时期秦朝博士。传世资料仅留下其姓名与少量著录，具体任职和事迹已难考。
@@ -211,6 +227,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0483
     name: 卫君角
+    avatar: pig/文034.png
     default_gender: male
     archetype: civil
     flavor: 卫君角（生卒年不详），姬姓、子南氏，名角，战国时期卫国末代君主。前241年前后由秦国立为卫君，秦统一后卫国被废，卫国国祚至此终结。
@@ -224,6 +241,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0484
     name: 襄彊
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: 襄彊（生卒年不详），秦末群雄之一，可能出自楚国旧公族。葛婴奉陈胜命攻取东城时拥立他为楚王，后事见载有限。
@@ -237,6 +255,7 @@ heroes:
       agility: 11
   - key: hist_qinhan_0485
     name: 阮翁仲
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: 阮翁仲（生卒年不详），传说中的秦代巨人，或称李翁仲。相传秦始皇命其守临洮、威震匈奴，死后铸铜像置于宫门；相关事迹含有传说成分。
@@ -250,6 +269,7 @@ heroes:
       agility: 19
   - key: hist_qinhan_0486
     name: 鲍白令之
+    avatar: pig/文028.png
     default_gender: male
     archetype: civil
     flavor: 鲍白令之（生卒年不详），秦始皇时期大臣，一说为博士。史载他曾在廷议中以桀、纣之事劝谏秦始皇，使始皇感到惭愧，具体官职与生平记载很少。
@@ -263,6 +283,7 @@ heroes:
       agility: 15
   - key: hist_qinhan_0487
     name: 黄疵
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: 黄疵（又作黄公疵，生卒年不详），秦始皇时期秦朝博士。其姓名见于《史记·秦始皇本纪》《汉书·艺文志》等，除任职与文献著录外，生平事迹已难详考。
@@ -276,6 +297,7 @@ heroes:
       agility: 15
   - key: hist_qinhan_0488
     name: 陈恢
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: 陈恢（生卒年不详），秦末汉初人物。秦末任职南阳，刘邦进军时劝南阳郡守举城归降，因此获封殷侯，食邑千户。
@@ -289,6 +311,7 @@ heroes:
       agility: 15
   - key: hist_qinhan_0490
     name: 韩谈
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: 韩谈（生卒年不详），秦朝宦官，秦末曾在子婴身边任事。关于其参与诛杀赵高的记载见于后世史籍，个人生平资料很少。
@@ -302,6 +325,7 @@ heroes:
       agility: 13
   - key: hist_qinhan_0493
     name: 丞相启
+    avatar: pig/文014.png
     default_gender: male
     archetype: civil
     flavor: 丞相启（生卒年不详），秦王政时期秦国右丞相，见于秦简与兵器铭文。其任职约在前235年至前222年间；学界曾将其与昌平君芈启等同，但出土简牍显示此说存在年代矛盾，身份尚不能确定。
@@ -315,6 +339,7 @@ heroes:
       agility: 15
   - key: hist_qinhan_0494
     name: 项雎
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: 项雎（后改名刘雎，生卒年不详），项伯之子，原为项羽部下，随父投降刘邦。汉高祖赐项伯一家刘姓；项伯死后，项雎因获罪不能袭爵，射阳侯国除。
@@ -328,6 +353,7 @@ heroes:
       agility: 19
   - key: hist_qinhan_0497
     name: 项缠
+    avatar: pig/文034.png
     default_gender: male
     archetype: civil
     flavor: 项缠（字伯，后称项伯，生卒年不详），楚国项氏贵族、项羽叔父。鸿门宴前向张良通报项羽意图并保护刘邦；汉建立后被赐刘姓、封射阳侯。
@@ -341,6 +367,7 @@ heroes:
       agility: 13
   - key: hist_qinhan_0504
     name: 骆甲
+    avatar: pig_wu_male8.png
     default_gender: male
     archetype: military
     flavor: 骆甲（生卒年不详），秦末汉初将领，原为秦军骑士。楚汉相争时与李必同被刘邦军中推举为骑将，任灌婴副将，参与荥阳一带对楚作战。
@@ -354,6 +381,7 @@ heroes:
       agility: 9
   - key: hist_qinhan_0507
     name: 苏角
+    avatar: pig/武050.png
     default_gender: male
     archetype: military
     flavor: 苏角（生卒年不详），秦朝将领，随王离、涉间、章邯救援巨鹿。秦军败于项羽后，苏角战死，王离被俘，秦军主力由此受重创。
@@ -367,6 +395,7 @@ heroes:
       agility: 14
   - key: hist_qinhan_0510
     name: 杨熊
+    avatar: monkey/其他随机角色/武037_男.png
     default_gender: male
     archetype: military
     flavor: 杨熊（生卒年不详），秦末将领。前207年曾在白马、曲遇等地与刘邦军交战，败后退守荥阳，秦二世因败绩将其诛杀。
@@ -380,6 +409,7 @@ heroes:
       agility: 13
   - key: hist_qinhan_0513
     name: 赵贲
+    avatar: pig/武051.png
     default_gender: male
     archetype: military
     flavor: 赵贲（生卒年不详），秦末秦军将领，曾率军在开封等地与刘邦军交战，败于曹参等汉军，后事记载有限。
@@ -393,6 +423,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0453
     name: 班壹
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: 班壹（生卒年不详），班氏先祖。秦始皇时期避居楼烦，以畜牧致富；后代迁居扶风安陵，班氏由此在关中发展。
@@ -406,6 +437,7 @@ heroes:
       agility: 11
   - key: hist_qinhan_0455
     name: 共尉
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: 共尉（又作共驩，生卒年不详），西楚临江王共敖之子，秦汉之际诸侯。共敖死后继立临江王，拒绝归附刘邦，兵败被俘，后在洛阳被杀。
@@ -419,6 +451,7 @@ heroes:
       agility: 15
   - key: hist_qinhan_0456
     name: 韩终
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: 韩终（生卒年不详），战国末至秦代方士。秦始皇曾派他与侯公、石生等出海求仙，韩终后来未返；其事迹多含方士传说成分。
@@ -432,6 +465,7 @@ heroes:
       agility: 9
   - key: hist_qinhan_0458
     name: 胡毋敬
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: 胡毋敬（又作胡母敬，生卒年不详），秦朝太史令、文字学者。相传与李斯、赵高参与整理小篆，并撰《博学篇》七章，对秦代文字规范化有一定影响。
@@ -445,6 +479,7 @@ heroes:
       agility: 7
   - key: hist_qinhan_0460
     name: 孔树
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: 孔树（又作孔祔，字子文，生卒年不详），孔子九世孙，孔谦之子、孔鲋与孔腾的兄弟。其事迹主要见于孔氏世系记载，个人经历已难详考。
@@ -458,6 +493,7 @@ heroes:
       agility: 11
   - key: hist_qinhan_0515
     name: 丁缓
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: 丁缓（生卒年不详），西汉长安巧匠，传说善制七轮扇、被中香炉等奇巧器物。相关记载多见于《西京杂记》等后世材料，具体年代与经历难考。
@@ -471,6 +507,7 @@ heroes:
       agility: 19
   - key: hist_qinhan_0516
     name: 刁间
+    avatar: pig/文044.png
     default_gender: male
     archetype: civil
     flavor: 刁间（又作刀间，生卒年不详），西汉齐地商人。史载他善待奴仆，使其从事渔业和盐业，因经营有方而致富。
@@ -484,6 +521,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0517
     name: 杜穉季
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: 杜穉季（生卒年不详），西汉关中游侠，居霸陵。史载其凭借与权贵的交往在关中横行，曾与外戚及列侯相往来，具体官职不详。
@@ -497,6 +535,7 @@ heroes:
       agility: 13
   - key: hist_qinhan_0519
     name: 樊少翁
+    avatar: pig/文044.png
     default_gender: male
     archetype: civil
     flavor: 樊少翁（生卒年不详），西汉长安大商人，以制作和经营豆豉致富，家财达巨万，号称“长安豉”。南昌豆豉业后世奉其为行业祖师。
@@ -510,6 +549,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0521
     name: 郭舍人
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: 郭舍人（生卒年不详），西汉宫廷侍从，以机敏善辩、诙谐应对闻名，常与东方朔并列为汉武帝身边的滑稽人物。
@@ -523,6 +563,7 @@ heroes:
       agility: 21
   - key: hist_qinhan_0522
     name: 胡毋生
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: 胡毋生（又作胡母生，字子都，生卒年不详），西汉齐地经学家，专治《春秋公羊传》，是早期公羊学的重要传授者。
@@ -536,6 +577,7 @@ heroes:
       agility: 14
   - key: hist_qinhan_0524
     name: 金王孙
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: 金王孙（生卒年不详），西汉人物，臧儿的前夫。臧儿改嫁王仲后，女儿王娡入宫并成为汉景帝皇后；金王孙本人事迹记载很少。
@@ -549,6 +591,7 @@ heroes:
       agility: 9
   - key: hist_qinhan_0528
     name: 谬忌
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: 谬忌（生卒年不详），西汉方士。汉武帝时上书言太一神祠祀之事，推动朝廷设置太一祭祀，其姓名由此与汉代国家祭祀相联系。
@@ -562,6 +605,7 @@ heroes:
       agility: 14
   - key: hist_qinhan_0529
     name: 桥桃
+    avatar: pig/文029.png
     default_gender: male
     archetype: civil
     flavor: 桥桃（又作桥姚，生卒年不详），西汉商人，居于边塞。汉武帝开拓边疆时，他经营畜牧致富，家有马千匹、牛两千头、羊万头。
@@ -575,6 +619,7 @@ heroes:
       agility: 10
   - key: hist_qinhan_0531
     name: 师史
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: 师史（生卒年不详），西汉初年大贩运商，周人，居洛阳。其拥有数百辆运货牛车，雇贫民转运货物，商业遍及诸郡国，因而成为巨富。
@@ -588,6 +633,7 @@ heroes:
       agility: 10
   - key: hist_qinhan_0534
     name: 田子春
+    avatar: pig_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: 田生（字子春，生卒年不详），西汉吕后时期齐国策士。史载他曾向刘泽进言并赴长安活动，后让儿子求见宦官张子卿，具体仕历不详。
@@ -601,6 +647,7 @@ heroes:
       agility: 14
   - key: hist_qinhan_0536
     name: 毋盐氏
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: 毋盐氏（又作无盐氏，生卒年不详），西汉初年长安高利贷者。七国之乱时借千金给筹措军费的列侯、封君，战乱很快平定后获利十倍，因而富显关中。
@@ -614,6 +661,7 @@ heroes:
       agility: 10
   - key: hist_qinhan_0537
     name: 卫长君
+    avatar: pig/文034.png
     default_gender: male
     archetype: civil
     flavor: 卫长君（生卒年不详），西汉人物，卫子夫、卫青之兄。史料称其早逝，个人官职与事迹记载较少；其家族后来因卫子夫入宫成为汉武帝外戚。
@@ -627,6 +675,7 @@ heroes:
       agility: 8
   - key: hist_qinhan_0539
     name: 郇越
+    avatar: pig/文018.png
     default_gender: male
     archetype: civil
     flavor: 郇越（字臣仲，生卒年不详），太原人，西汉隐士。与郇相为同族兄弟，活动于汉成帝至王莽时期，后隐居不仕。
@@ -640,6 +689,7 @@ heroes:
       agility: 13
   - key: hist_qinhan_0462
     name: 任氏
+    avatar: pig/文044.png
     default_gender: male
     archetype: civil
     flavor: 任氏（生卒年不详），西汉宣曲富商。《史记·货殖列传》载其在楚汉之际囤积粮食，借粮价上涨致富，是汉初粮食商人的代表。
@@ -653,6 +703,7 @@ heroes:
       agility: 18
   - key: hist_qinhan_0463
     name: 田角
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: 田角（生卒年不详），秦末齐国田氏宗族人物。齐王田巿即位后，田荣要求赵国杀死田角，事迹主要见于齐、楚、赵政权交涉的记载。
@@ -666,6 +717,7 @@ heroes:
       agility: 13
   - key: hist_qinhan_0465
     name: 崔广
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: 崔广（传为夏黄公，生卒年不详），秦末汉初隐士，商山四皓之一。相传与东园公、绮里季、甪里先生隐居商山，后应吕后之请辅太子刘盈；具体事迹含传说成分。
@@ -679,6 +731,7 @@ heroes:
       agility: 11
   - key: hist_qinhan_0466
     name: 徐公
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: 徐公（生卒年不详），秦末范阳县令。其姓名见于秦末赵地政权与地方官吏交涉的记载，除这一职任外，生平事迹已难详考。
@@ -692,6 +745,7 @@ heroes:
       agility: 13
   - key: hist_qinhan_0472
     name: 郑昌
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: 郑昌（生卒年不详），秦末吴县县令，与项梁、项羽相善。前206年项羽处死韩王成后，立郑昌为韩王，以对抗汉王刘邦；与西汉经学家郑昌并非同一人。
@@ -705,6 +759,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0498
     name: 蔡赐
+    avatar: pig/武076.png
     default_gender: male
     archetype: military
     flavor: 蔡赐（生卒年不详），秦末张楚政权大臣，封房君，官至上柱国。陈胜攻荥阳久不下时曾征召他议事；蔡赐后与章邯作战，被秦军杀死。
@@ -718,6 +773,7 @@ heroes:
       agility: 10
   - key: hist_qinhan_0503
     name: 李必
+    avatar: pig/武051.png
     default_gender: male
     archetype: military
     flavor: 李必（生卒年不详），秦末汉初将领，原为秦军骑士，后归附刘邦。楚汉相争时与骆甲同被推举为骑将，任灌婴副将，参与荥阳一带对楚作战。
@@ -731,6 +787,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0506
     name: 涉间
+    avatar: pig_wu_male9.png
     default_gender: male
     archetype: military
     flavor: 涉间（生卒年不详），秦朝将领，随王离救援巨鹿。秦军败后他不肯投降楚军，自焚而死，成为秦将拒降的代表人物。
@@ -744,6 +801,7 @@ heroes:
       agility: 14
   - key: hist_qinhan_0514
     name: 秦嘉
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: 秦嘉（生卒年不详），秦末东海起义首领，自号大司马，曾拥立景驹为楚王。后与项梁争夺楚地领导权，兵败被杀。
@@ -757,6 +815,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0520
     name: 樊重
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: 樊重（字君云，生卒年不详），西汉末南阳郡湖阳人，经营田产水利而致富。其女樊娴都嫁刘钦，成为刘縯、刘秀之母；樊重后被追封寿张侯。
@@ -770,6 +829,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0525
     name: 孔腾
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: 孔腾（字子襄，生卒年不详），孔子九世孙、孔鲋之弟。汉高祖十二年刘邦祭孔时封其为奉祀君，后任博士、长沙王太傅，承续孔氏祭祀与经学传统。
@@ -783,6 +843,7 @@ heroes:
       agility: 11
   - key: hist_qinhan_0530
     name: 司马季主
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: 司马季主（生卒年不详），西汉楚地占卜者，在长安东市设卜肆。史载他与博士宋忠、贾谊谈论治国之道，事迹主要见于《史记·日者列传》。
@@ -796,6 +857,7 @@ heroes:
       agility: 16
   - key: hist_qinhan_0533
     name: 田仲
+    avatar: pig/武079.png
     default_gender: male
     archetype: civil
     flavor: 田仲（生卒年不详），西汉初楚地游侠，善剑术。史载其长期侍奉朱家，对朱家如父，体现汉初游侠交往与声望网络。
@@ -809,6 +871,7 @@ heroes:
       agility: 7
   - key: hist_qinhan_0535
     name: 田禄伯
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: 田禄伯（生卒年不详），西汉吴王刘濞属将。七国之乱时任将军，曾建议吴王集中兵力西进，不要分兵攻城；叛乱失败后事迹不详。
@@ -822,6 +885,7 @@ heroes:
       agility: 13
   - key: hist_qinhan_0538
     name: 夏贺良
+    avatar: monkey/其他随机角色/文_男123.png
     default_gender: male
     archetype: civil
     flavor: 夏贺良（生卒年不详），西汉末方士。汉哀帝时以灾异、历法与“再受命”之说进言，劝朝廷改元易制；事情败露后被诛。
@@ -835,6 +899,7 @@ heroes:
       agility: 13
   - key: hist_qinhan_0540
     name: 新垣平
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: 新垣平（生卒年不详），西汉赵人，方士。因伪造祥瑞、欺骗汉文帝而获罪，最终以谋反论处，家族被诛。
@@ -848,6 +913,7 @@ heroes:
       agility: 9
   - key: hist_qinhan_0541
     name: 虞常
+    avatar: pig/文042.png
     default_gender: male
     archetype: civil
     flavor: 虞常（生卒年不详），西汉长水人，居匈奴境内。苏武出使时，他与张胜谋划诛杀卫律并劫持单于母亲归汉；事败后被匈奴斩杀，牵连苏武使团。
@@ -861,6 +927,7 @@ heroes:
       agility: 18
   - key: hist_qinhan_0464
     name: 邢三姑
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: 邢三姑（生卒年不详），秦朝女性，云间人，相传本名降圣。有关她的资料以传说性记载为主，除身份与籍贯外，生平事迹已难考。
@@ -874,6 +941,7 @@ heroes:
       agility: 5
   - key: hist_qinhan_0467
     name: 项声
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: 项声（生卒年不详），楚汉相争时期项氏宗族将领。项羽曾派他与薛公等收复淮北，后被汉将灌婴在下邳击败，结局记载不详。
@@ -887,6 +955,7 @@ heroes:
       agility: 12
   - key: hist_qinhan_0469
     name: 辕生
+    avatar: monkey/其他随机角色/文061_男.png
     default_gender: male
     archetype: civil
     flavor: 辕生（生卒年不详），楚汉相争时期谋士。汉四年，他建议刘邦从武关出兵、坚守险要，并让韩信平定北方以牵制项羽，刘邦采纳其策。
@@ -900,6 +969,7 @@ heroes:
       agility: 8
   - key: hist_qinhan_0470
     name: 蜀卓氏
+    avatar: pig/文044.png
     default_gender: male
     archetype: civil
     flavor: 蜀卓氏（生卒年不详），秦汉之际蜀地富商家族。卓氏原居赵地，以冶铁致富；秦灭六国后迁往临邛，继续经营冶铁、畜牧，成为巨富。
@@ -913,6 +983,7 @@ heroes:
       agility: 4
   - key: hist_qinhan_0471
     name: 赵子儿
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: 赵子儿（生卒年不详），西汉初人，汉高祖刘邦后宫美人。魏王豹败亡后，她与管夫人、薄姬等一同被刘邦收纳，后来事迹不详。
@@ -926,6 +997,7 @@ heroes:
       agility: 17
   - key: hist_qinhan_0473
     name: 刘媪
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: 刘媪（生卒年不详），汉高祖刘邦之母、刘太公之妻。史书未明确记其本名，刘邦称帝后追尊为昭灵夫人，后又尊为昭灵皇后。
@@ -939,6 +1011,7 @@ heroes:
       agility: 10
   - key: hist_qinhan_0475
     name: 宛孔氏
+    avatar: pig/文044.png
     default_gender: male
     archetype: civil
     flavor: 宛孔氏（生卒年不详），战国末至西汉初宛地富商家族。魏国灭亡后孔氏迁至宛城，以冶铁兼营商业致富，至汉初家资巨万。
@@ -952,6 +1025,7 @@ heroes:
       agility: 9
   - key: hist_qinhan_0477
     name: 桂贞
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: 桂贞（生卒年不详），秦始皇时期秦朝博士。现存资料仅见其姓名及博士身份，其他生平事迹已难详考。
@@ -965,6 +1039,7 @@ heroes:
       agility: 14
   - key: hist_qinhan_0478
     name: 正先
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: 正先（生卒年不详），秦人。赵高专权时曾批评赵高，因而被杀；后世以此事说明赵高借诛杀异己立威。
@@ -978,6 +1053,7 @@ heroes:
       agility: 10
   - key: hist_qinhan_0479
     name: 沈遂
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: 沈遂（字佐时，生卒年不详），秦朝博士。其子沈倧为左庶长、竹邑侯，孙沈遵曾任汉齐王太傅；沈遂本人事迹主要见于家世记载。
@@ -991,6 +1067,7 @@ heroes:
       agility: 14
   - key: hist_qinhan_0481
     name: 邵骚
+    avatar: pig/文014.png
     default_gender: male
     archetype: civil
     flavor: 邵骚（卒于前208年），秦末民变时赵王武臣的左丞相，后在赵国内讧中被武臣部将李良杀害。

@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import random
+
 import pytest
 
 from battle.combatants_pkg.core import Combatant
 from battle.combatants_pkg.guest_builder import assign_agility_based_priorities
+from battle.simulation.battle_flow import simulate_battle
 from battle.simulation.turn_order import determine_turn_order
 
 
@@ -116,7 +119,7 @@ def test_guest_average_includes_dead_and_skipping_deployed_guests():
 
     ordered = determine_turn_order([attacker, dead_guest, skipping_guest], [defender, defender_guest], NoRandomRng())
 
-    assert [unit.name for unit in ordered] == ["守方门客", "攻方护院", "守方护院"]
+    assert [unit.name for unit in ordered] == ["攻方护院", "守方护院", "守方门客"]
 
 
 def test_fixed_first_takes_precedence_over_guest_average():
@@ -141,4 +144,82 @@ def test_guest_average_excludes_troops_and_does_not_override_unit_agility():
 
     ordered = determine_turn_order([attacker, attacker_guest], [defender, faster_troop, defender_guest], NoRandomRng())
 
-    assert [unit.name for unit in ordered] == ["守方快护院", "攻方门客", "守方门客", "攻方护院", "守方护院"]
+    assert [unit.name for unit in ordered] == ["守方快护院", "攻方护院", "守方护院", "攻方门客", "守方门客"]
+
+
+@pytest.mark.parametrize("version", ["legacy", "2", "3", "4"])
+@pytest.mark.parametrize("priority", [-2, -1, 0])
+def test_troops_precede_faster_guests_only_in_new_standard_rounds(version, priority):
+    guest = make_combatant("高速门客", "attacker", 300)
+    troop = make_combatant("低速护院", "defender", 80)
+    troop.kind = "troop"
+
+    ordered = determine_turn_order(
+        [guest], [troop], NoRandomRng(), round_priority=priority, battle_engine_version=version
+    )
+
+    expected = [troop, guest] if version == "4" and priority == 0 else [guest, troop]
+    assert ordered == expected
+
+
+def test_fixed_first_precedes_troops_and_dead_or_skipping_units_are_excluded():
+    troop = make_combatant("护院", "attacker", 100)
+    troop.kind = "troop"
+    guest = make_combatant("门客", "defender", 300)
+    tower = make_combatant("箭塔", "defender", 0)
+    tower.kind = "city_defense"
+    tower.battle_modifiers["fixed_first"] = True
+    dead = make_combatant("阵亡护院", "attacker", 1000)
+    dead.kind = "troop"
+    dead.hp = 0
+    wall = make_combatant("城墙", "defender", 0)
+    wall.kind = "city_defense"
+    wall.battle_modifiers["skip_turn"] = True
+
+    assert determine_turn_order([troop, dead], [guest, tower, wall], NoRandomRng()) == [tower, troop, guest]
+
+
+@pytest.mark.parametrize("version", ["3", "4"])
+def test_simulation_preserves_opening_order_and_versions_standard_round_order(version):
+    guest = make_combatant("高速门客", "attacker", 300)
+    troop = make_combatant("低速护院", "defender", 80)
+    troop.kind = "troop"
+    for unit in (guest, troop):
+        unit.priority = -1
+        unit.hp = unit.max_hp = unit.initial_hp = 100000
+    troop.initial_troop_strength = 1
+    troop.unit_attack = 100
+    troop.unit_defense = 50
+    troop.unit_hp = 100000
+
+    result = simulate_battle(
+        [guest],
+        [troop],
+        random.Random(7),
+        seed=7,
+        travel_seconds=0,
+        config={"max_rounds": 2},
+        battle_engine_version=version,
+    )
+
+    assert result.rounds[0]["priority"] == -1
+    opening_attacks = [event["actor"] for event in result.rounds[0]["events"] if "damage" in event]
+    standard_attacks = [event["actor"] for event in result.rounds[1]["events"] if "damage" in event]
+    assert opening_attacks == [guest.name, troop.name]
+    assert standard_attacks == ([troop.name, guest.name] if version == "4" else [guest.name, troop.name])
+
+
+def test_guest_killed_by_troop_before_action_does_not_act():
+    guest = make_combatant("高速门客", "attacker", 300)
+    troop = make_combatant("低速护院", "defender", 80)
+    troop.kind = "troop"
+    troop.initial_troop_strength = 1
+    troop.unit_attack = 1000000
+    troop.unit_defense = 50
+    troop.unit_hp = 100
+
+    result = simulate_battle([guest], [troop], random.Random(7), seed=7, travel_seconds=0, config={"max_rounds": 1})
+
+    assert result.winner == "defender"
+    assert guest.hp == 0
+    assert [event["actor"] for event in result.rounds[0]["events"] if "damage" in event] == [troop.name]

@@ -2,6 +2,7 @@ heroes:
   purple:
   - key: hist_songliaojinyuan_0036
     name: 包拯
+    avatar: monkey/宋辽金元/包拯.png
     default_gender: male
     archetype: civil
     flavor: （999年-1062年）铁面无私辨忠奸，龙图阁里青天在。他是开封府的传奇，是清官的代名词。他不畏权贵，弹劾外戚张尧佐；他明察秋毫，断案如神。他的故事被编成戏曲，成为家喻户晓的"包青天"。他用一生证明：公正与正义，是为官者永恒的追求。
@@ -15,6 +16,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0037
     name: 范仲淹
+    avatar: monkey/宋辽金元/范仲淹.png
     default_gender: male
     archetype: civil
     flavor: （989年-1052年）先天下之忧而忧，后天下之乐而乐。他是北宋最杰出的政治家、文学家、军事家。庆历新政虽然短命，却开启了改革的先声。他镇守西北，令西夏不敢南望。一篇《岳阳楼记》，道尽了士大夫的家国情怀与人生境界。他是文武全才，更是士人楷模。
@@ -28,6 +30,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0038
     name: 司马光
+    avatar: monkey/宋辽金元/司马光.png
     default_gender: male
     archetype: civil
     flavor: （1019年-1086年）二十年磨一剑，终成《资治通鉴》。他是北宋最伟大的史学家，用一部三百余万字的史书警醒后世君王。他与王安石政见不同，新旧党争贯穿其政治生涯。他砸缸救友的故事千古流传，展现了他从小就具有的果敢与智慧。他以史为鉴，为后世留下了宝贵的政治遗产。
@@ -41,6 +44,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0039
     name: 欧阳修
+    avatar: monkey/宋辽金元/欧阳修.png
     default_gender: male
     archetype: civil
     flavor: （1007年-1072年）六一居士，北宋文坛的盟主。他倡导古文运动，提携苏轼、曾巩等后辈，影响了一代文风。《醉翁亭记》醉翁之意不在酒，《秋声赋》写尽人生萧瑟。他是唐宋八大家之一，更是北宋文化繁荣的推动者。他主持编纂《新唐书》《新五代史》，为后世留下珍贵史料。
@@ -54,6 +58,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0040
     name: 辛弃疾
+    avatar: monkey/宋辽金元/辛弃疾.png
     default_gender: male
     archetype: civil
     flavor: （1140年-1207年）醉里挑灯看剑，梦回吹角连营。他是词中之龙，豪放派的又一座高峰。他年少时带领五十骑闯入金营，生擒叛将，何等英雄！可惜南渡之后，壮志难酬，只能把满腔热血化作六百余首词章。众里寻他千百度，蓦然回首，那人却在灯火阑珊处。他是词人，更是失意的英雄。
@@ -67,6 +72,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0041
     name: 狄青
+    avatar: monkey/宋辽金元/狄青.png
     default_gender: male
     archetype: military
     flavor: （1008年-1057年）面涅将军，北宋最传奇的武将。他出身行伍，脸上刺有囚犯印记，却凭借战功一路升至枢密使。他平定侬智高之乱，夜袭昆仑关，威震南疆。他打破了北宋重文轻武的传统，证明武将同样可以出将入相。可惜功高震主，最终郁郁而终。
@@ -80,6 +86,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0042
     name: 寇准
+    avatar: monkey/宋辽金元/寇准.png
     default_gender: male
     archetype: civil
     flavor: （961年-1023年）北宋第一硬骨头，澶渊之盟的缔造者。辽军南侵，朝廷惶恐，唯有他力主亲征，最终促成宋真宗御驾北上。澶渊城下，他运筹帷幄，与辽国达成百年和约。他刚正不阿，直言敢谏，三起三落而本色不改。他用行动证明：大臣的风骨，可以撑起一个王朝的脊梁。
@@ -93,6 +100,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0043
     name: 赵光义
+    avatar: monkey/宋辽金元/赵光义.png
     default_gender: male
     archetype: military
     flavor: （939年-997年）宋太宗，北宋第二位皇帝。他在"烛影斧声"之谜中登基，却用二十二年的统治完成了兄长未竟的统一大业。他灭北汉，攻幽州，虽有高梁河之败，却奠定了北宋的基本版图。他重文轻武，扩大科举，确立了宋朝的文治传统。
@@ -106,6 +114,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0044
     name: 赵祯
+    avatar: monkey/宋辽金元/赵祯.png
     default_gender: male
     archetype: civil
     flavor: （1010年-1063年）宋仁宗，北宋在位最长的皇帝。他在位四十二年，创造了"仁宗盛治"。他宽厚仁慈，与士大夫共治天下，培养了包拯、范仲淹、欧阳修等一代名臣。他死后，就连辽国皇帝也为之落泪。他是中国历史上最符合"仁"字的皇帝。
@@ -119,6 +128,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0046
     name: 柳永
+    avatar: monkey/宋辽金元/柳永.png
     default_gender: male
     archetype: civil
     flavor: （约984年-约1053年）凡有井水处，皆能歌柳词。他是北宋最受欢迎的词人，却仕途坎坷，自称"奉旨填词柳三变"。他的词婉约缠绵，深入市井，开创了慢词创作的新天地。杨柳岸晓风残月，道尽了他一生的漂泊与柔情。
@@ -132,6 +142,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0047
     name: 黄庭坚
+    avatar: monkey/宋辽金元/黄庭坚.png
     default_gender: male
     archetype: civil
     flavor: （1045年-1105年）苏门四学士之一，江西诗派开创者。他与苏轼并称"苏黄"，书法与苏轼、米芾、蔡襄并称"宋四家"。他的诗追求瘦硬奇崛，自成一派。他的书法更是独树一帜，影响深远。其诗书并重，开宋代文人风骨之新境。
@@ -145,6 +156,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0049
     name: 韩琦
+    avatar: monkey/宋辽金元/韩琦.png
     default_gender: male
     archetype: civil
     flavor: （1008年-1075年）北宋名将名相，与范仲淹齐名。他镇守西北多年，使西夏不敢东犯，军民称"韩范"。他后来入朝为相，历仕三朝，是北宋政坛的定海神针。其军政兼擅，堪称北宋治边之柱石。其名望深重，能安定朝野人心。
@@ -158,6 +170,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0050
     name: 赵普
+    avatar: monkey/宋辽金元/赵普.png
     default_gender: male
     archetype: civil
     flavor: （922年-992年）宋初名相，辅佐赵匡胤统一天下。他策划陈桥兵变，参与杯酒释兵权，是北宋开国的首席功臣。他自称"半部论语治天下"，虽有自夸之嫌，却也展现了治国理政的才能。其权衡功过仍受史家反复评议，影响深远。
@@ -171,6 +184,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0052
     name: 赵佶
+    avatar: monkey/宋辽金元/赵佶.png
     default_gender: male
     archetype: civil
     flavor: （1082年-1135年）宋徽宗，艺术家皇帝。他创制瘦金体，工笔花鸟独步天下，书画成就冠绝历代帝王。可惜他沉溺艺术，荒废政事，任用蔡京等奸臣，终致靖康之耻。他是杰出的艺术家，却是失败的皇帝。其文化成就与政治失误形成强烈反差，史论不绝。
@@ -184,6 +198,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0059
     name: 杨业
+    avatar: monkey/宋辽金元/杨业.png
     default_gender: male
     archetype: military
     flavor: （约932年-986年）杨家将始祖，人称"杨无敌"。他原是北汉将领，归宋后成为抗辽前锋。他屡败辽军，令敌人闻风丧胆。陈家谷之战，他孤军奋战，最终被俘绝食而死，忠烈传家，成为杨家将故事的源头。其忠勇形象被后世演绎为民族英雄的典范。
@@ -197,6 +212,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0060
     name: 杨延昭
+    avatar: monkey/宋辽金元/杨延昭.png
     default_gender: male
     archetype: military
     flavor: （958年-1014年）杨六郎，杨业之子。他镇守三关二十余年，令辽人胆寒。他继承父志，守卫边疆，是杨家将第二代的杰出代表。他的事迹被后世演绎，成为忠义报国的象征。其守边之功，使宋辽边境长期相对安定。其忠勇事迹在民间故事中代代流传。
@@ -210,6 +226,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0065
     name: 秦观
+    avatar: monkey/宋辽金元/秦观.png
     default_gender: male
     archetype: civil
     flavor: （1049年-1100年）苏门四学士，婉约派词人。两情若是久长时，又岂在朝朝暮暮——他的词凄婉动人，情深意切。他与苏轼亦师亦友，却命运多舛，一生坎坷。他的词作虽不多，却篇篇精品。其情感深度与词法精巧，后世推为婉约典范。
@@ -223,6 +240,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0076
     name: 韩世忠
+    avatar: monkey/宋辽金元/韩世忠.png
     default_gender: male
     archetype: military
     flavor: （1089年-1151年）中兴四将之首，黄天荡的英雄。他与金兀术对峙四十八天，以八千水军围困十万金兵。他的妻子梁红玉擂鼓助战，成为千古佳话。他忠心耿耿，岳飞被害时他怒斥秦桧："莫须有何以服天下？"他是南宋的擎天柱，是忠义的化身。
@@ -236,6 +254,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0077
     name: 陆游
+    avatar: monkey/宋辽金元/陆游.png
     default_gender: male
     archetype: civil
     flavor: （1125年-1210年）位卑未敢忘忧国，事定犹须待阖棺。他一生写诗九千余首，是中国最高产的诗人之一。他渴望北伐收复中原，却壮志难酬，只能把满腔悲愤化作诗篇。死去元知万事空，但悲不见九州同——临终遗言，道尽了他一生的遗憾与执念。
@@ -249,6 +268,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0078
     name: 李清照
+    avatar: monkey/宋辽金元/李清照.png
     default_gender: female
     archetype: civil
     flavor: （1084年-1155年）千古第一才女，婉约词宗。她早年与赵明诚琴瑟和鸣，"争渡争渡，惊起一滩鸥鹭"何等欢快。国破家亡后，"寻寻觅觅，冷冷清清，凄凄惨惨戚戚"道尽人间愁苦。她的词，是宋词婉约一派的最高峰，是女性文学的永恒丰碑。
@@ -262,6 +282,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0079
     name: 赵构
+    avatar: monkey/宋辽金元/赵构.png
     default_gender: male
     archetype: military
     flavor: （1107年-1187年）宋高宗，南宋开国皇帝。他在靖康之变后南渡，建立南宋政权，延续宋祚一百五十年。他偏安江南，杀害岳飞，为后人所诟病。但他在乱世中保存了汉族政权，为中华文化的延续作出了贡献。功过是非，至今仍有争议。
@@ -275,6 +296,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0080
     name: 秦桧
+    avatar: monkey/宋辽金元/秦桧.png
     default_gender: male
     archetype: civil
     flavor: （1091年-1155年）南宋权相，千古罪人。他主持绍兴和议，以"莫须有"之罪杀害岳飞。他专权十九年，打压主战派，推行投降路线。他跪在岳飞墓前的铁像，承受着后人的唾骂。他虽是反面人物，却是了解南宋历史绑不开的关键人物。
@@ -288,6 +310,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0083
     name: 吴玠
+    avatar: monkey/宋辽金元/吴玠.png
     default_gender: male
     archetype: military
     flavor: （1093年-1139年）川陕抗金名将，和尚原、仙人关大捷的创造者。他镇守西南，多次击败金军，保住了四川这一战略后方。他与弟弟吴璘并称"二吴"。其守蜀功劳卓著，为南宋稳固后方立下大功。其功绩使西南长期免受大规模战祸。
@@ -301,6 +324,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0067
     name: 邵雍
+    avatar: monkey/宋辽金元/邵雍.png
     default_gender: male
     archetype: civil
     flavor: （1011年-1077年）北宋理学家，易学大师。他创立先天易学，以数理解释宇宙变化。他隐居苏门山，不求仕进，专心学问。他的《皇极经世》对后世易学影响深远。其数理体系被后世视为易学重要分水岭。其学说影响宋明易学发展方向。
@@ -314,6 +338,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0064
     name: 晏殊
+    avatar: monkey/宋辽金元/晏殊.png
     default_gender: male
     archetype: civil
     flavor: （991年-1055年）北宋宰相，婉约词的重要代表。无可奈何花落去，似曾相识燕归来——他的词雍容华贵，充满富贵气象。他主政时期，提携了范仲淹、欧阳修等后辈，对北宋文化繁荣功不可没。其词风与政声相映，成为宋代士大夫典范。
@@ -327,6 +352,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0081
     name: 孟珙
+    avatar: monkey/宋辽金元/孟珙.png
     default_gender: male
     archetype: military
     flavor: （1195年-1246年）南宋晚期最杰出的名将，灭金的功臣。他联蒙灭金，亲率宋军攻入蔡州，俘获金哀宗尸骨。他又转而抗蒙，在京湖战区建立防线，多次击退蒙军。他是儒将典范，能文能武，被誉为"机动防御大师"。
@@ -340,6 +366,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0086
     name: 梁红玉
+    avatar: monkey/宋辽金元/梁红玉.png
     default_gender: female
     archetype: military
     flavor: （1102年-1135年）女中豪杰，韩世忠之妻。黄天荡之战，她亲自擂鼓助战，激励士气。她是中国历史上著名的巾帼英雄，与穆桂英齐名。其勇毅与胆识使其成为南宋抗金的精神象征。其事迹被后世赞为妇女参战的典范。
@@ -353,6 +380,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0048
     name: 富弼
+    avatar: monkey/宋辽金元/富弼.png
     default_gender: male
     archetype: civil
     flavor: （1004年-1083年）北宋名相，三朝元老。他与范仲淹共同主持庆历新政，是北宋政坛的中流砥柱。他出使辽国，据理力争，维护了国家尊严。他为官清廉，政声卓著，是北宋名相的典范。其稳健持重，为朝廷提供了长期稳定的支撑。
@@ -366,6 +394,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0051
     name: 王旦
+    avatar: monkey/宋辽金元/王旦.png
     default_gender: male
     archetype: civil
     flavor: （957年-1017年）北宋名相，与寇准并称。他宽厚谦和，善于用人，是宋真宗时期的贤相。他与寇准政见不同，却能相互尊重，共同维护朝廷稳定。其调和之功，使政局少有震荡，被视为良臣典范。其稳健作风为宋初政治留下良好范式。
@@ -379,6 +408,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0061
     name: 种师道
+    avatar: monkey/宋辽金元/种师道.png
     default_gender: male
     archetype: military
     flavor: （1051年-1126年）种家军领袖，抗金名将。他主张抗金，反对议和。开封保卫战中，他率军力战，最终忧愤而死。他是北宋末年少有的清醒之士。其主战立场与忠烈精神，为后世所传颂。其家国情怀成为将门精神的代表。
@@ -392,6 +422,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0082
     name: 刘锜
+    avatar: monkey/宋辽金元/刘锜.png
     default_gender: male
     archetype: military
     flavor: （1098年-1162年）南宋抗金名将，顺昌大捷的英雄。他以两万兵力大败金兀术十万大军，创造了以少胜多的奇迹。他用兵如神，令金人闻风丧胆。其胜利极大振奋南宋军心，被视为中兴战绩之一。其用兵胆略为后世将帅所称道。
@@ -406,6 +437,7 @@ heroes:
   blue:
   - key: hist_songliaojinyuan_0084
     name: 吴璘
+    avatar: monkey_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （1102年—1167年）南宋将领，吴玠之弟，字唐卿。吴璘长期镇守四川，参加和尚原、仙人关等战役，后任四川宣抚使；乾道三年病逝于兴元。
@@ -419,6 +451,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0085
     name: 岳云
+    avatar: monkey_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （1119年-1142年）岳飞长子，年少成名的小将。他两次夺得郾城之战头功，勇冠三军。他与父亲同时被害，年仅二十三岁，令人扼腕。其英年早逝成为岳家冤案最令人痛惜的一笔。其忠勇形象在民间传说中尤为鲜明。
@@ -432,6 +465,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0088
     name: 贾似道
+    avatar: duck_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （1213年—1275年）南宋权臣，理宗、度宗时两度任相。鄂州之战后，贾似道隐瞒战况并与蒙古议和；德祐元年宋军败于丁家洲，他被贬，途中被郑虎臣杀死。
@@ -445,6 +479,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0045
     name: 曾巩
+    avatar: pig/文034.png
     default_gender: male
     archetype: civil
     flavor: （1019年—1083年）北宋文学家，字子固，南丰人。曾巩师从欧阳修，嘉祐二年中进士，历任州县官、史馆修撰和福州知州，著有《元丰类稿》。
@@ -458,6 +493,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0053
     name: 苏洵
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （1009年-1066年）唐宋八大家之一，苏轼、苏辙之父。他二十七岁才开始发奋读书，大器晚成。他的散文雄健有力，《六国论》借古讽今，警醒世人。他培养出两个杰出的儿子，一门三苏，传为佳话。其家学渊源深厚，成为宋代文坛盛事。
@@ -471,6 +507,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0054
     name: 苏辙
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: （1039年—1112年）北宋文学家，字子由，苏轼之弟。苏辙与苏轼同登进士，历任秘书省校书郎、尚书右丞、门下侍郎；哲宗亲政后，他被贬筠州、雷州，晚年居颍川，编成《栾城集》。
@@ -484,6 +521,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0055
     name: 米芾
+    avatar: pig/文041.png
     default_gender: male
     archetype: civil
     flavor: （1051年—1107年）北宋书画家，字元章，号襄阳漫士。米芾历任校书郎、书画学博士等职，擅长行书和绘画，曾因见奇石而拜之为兄；他还编写《书史》，记录历代书画家和作品。
@@ -497,6 +535,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0056
     name: 蔡襄
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: （1012年—1067年）北宋大臣、书法家，字君谟，仙游人。蔡襄历任知泉州、知福州，主持修建万安桥（洛阳桥）；他擅长楷书、行书，著有《茶录》《荔枝谱》及《蔡襄书法》。
@@ -510,6 +549,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0057
     name: 李纲
+    avatar: pig/文028.png
     default_gender: male
     archetype: civil
     flavor: （1083年—1140年）北宋末、南宋初大臣，字伯纪。靖康元年，李纲任东京留守，组织军民守开封；高宗时复任宰相，后因与秦桧不合退居，绍兴十年病逝。
@@ -523,6 +563,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0058
     name: 吕夷简
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: （978年-1044年）北宋名相，三朝元老。他主政二十年，是宋仁宗时期的核心人物。他善于用人，但也因专权被范仲淹弹劾。其政治手腕强硬，功过并存，史论分歧甚多。其任相时期朝局稳固，亦有争议遗存。其施政风格被视为宋仁宗朝的典型样貌。
@@ -536,6 +577,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0062
     name: 种师中
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （1059年—1126年）北宋将领，种师道之弟。种师中长期在西北任职，金兵南下后率军增援太原；靖康元年，他在援军行动中战死，种氏军队由此失去一名主将。
@@ -549,6 +591,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0063
     name: 折可适
+    avatar: pig_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （1060年—1126年）北宋将领，折克行之子，折家军将领。折可适曾任环庆路经略使，参与宋夏战争；靖康元年金军南下时，他在泾原一带任职，后病逝。
@@ -562,6 +605,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0066
     name: 晏几道
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: （1038年—1110年）北宋词人，字叔原，晏殊之子，号小山。晏几道早年生活优裕，父亲去世后家道中落，仕途多次受挫；他编有《小山词》，多写旧游、离情和身世感慨。
@@ -575,6 +619,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0068
     name: 贺铸
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （1052年—1125年）北宋词人，字方回，号庆湖遗老。贺铸出身武将家族，历任泗州、太平州通判，晚年退居苏州；他作《青玉案》《鹧鸪天》等词，也以《东山词》传世。
@@ -588,6 +633,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0074
     name: 陈东
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: （1086年—1127年）北宋太学生，字少阳。金兵逼近汴京时，陈东率太学生伏阙上书，要求罢免蔡京、童贯等权臣；靖康元年，他与李若水等人因反对议和被杀。
@@ -601,6 +647,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0075
     name: 李若水
+    avatar: pig/文028.png
     default_gender: male
     archetype: civil
     flavor: （1093年—1127年）北宋官员，字清卿。金军攻入汴京后，李若水随徽、钦二帝北迁，途中斥责金人、保护宋钦宗；他拒绝屈服，最终在金军押送途中被杀。
@@ -614,6 +661,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0087
     name: 张浚
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: （1097年—1164年）南宋大臣、将领，字德远。张浚曾任枢密使、右相，主持富平之战；隆兴北伐失利后罢相，晚年再任枢密使，乾道元年病逝。
@@ -627,6 +675,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0089
     name: 韩侂胄
+    avatar: pig/武049.png
     default_gender: male
     archetype: military
     flavor: （1152年—1207年）南宋权臣，韩琦曾孙，宁宗时掌握朝政。开禧二年，韩侂胄发动北伐，战事失利后准备与金议和；史弥远等人在嘉泰四年将他杀死，并把首级送给金朝。
@@ -640,6 +689,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0090
     name: 虞允文
+    avatar: pig_wu_male8.png
     default_gender: male
     archetype: military
     flavor: （1110年-1174年）采石矶大捷的英雄，以少胜多的奇迹创造者。他本是文官，却在危急时刻挺身而出，击败金军十万大军。他证明了书生也可以上马杀敌。其胜利扭转战局，成为南宋抗金的关键战绩。其事迹亦激励士人投身武备。
@@ -653,6 +703,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0091
     name: 杨万里
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （1127年—1206年）南宋诗人，字廷秀，号诚斋。杨万里历任国子博士、秘书监、广东提点刑狱等职，曾因反对韩侂胄用兵被罢官；他一生作诗数万首，晚年编成《诚斋集》。
@@ -666,6 +717,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0092
     name: 范成大
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: （1126年—1193年）南宋官员、诗人，字至能。范成大历任参知政事、四川制置使，乾道六年出使金国，著《揽辔录》记述途中见闻；退居石湖后写成《四时田园杂兴》。
@@ -679,6 +731,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0093
     name: 萧绰
+    avatar: monkey_wen_female7.png
     default_gender: female
     archetype: civil
     flavor: （953年-1009年）萧太后，辽朝最杰出的女政治家。她摄政二十七年，使辽朝达到鼎盛。她亲率大军南下，与宋朝签订澶渊之盟，确立了宋辽百年和平。她任用贤能，整顿吏治，是中国历史上最杰出的女主之一。杨家将故事中，她是令人敬畏的对手。
@@ -692,6 +745,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0069
     name: 童贯
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
     flavor: （1054年—1126年）北宋宦官，宋徽宗时掌枢密院，曾任陕西、河北宣抚使。童贯参与联金攻辽，燕京失守后退回；靖康元年，宋钦宗下令将他处死。
@@ -705,6 +759,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0070
     name: 高俅
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: （？—1126年）北宋武臣，宋徽宗宠臣。高俅因善蹴鞠得到徽宗任用，历任殿帅府都指挥使、太尉；靖康元年金军南下时，他随徽宗南逃，后病死于途中。
@@ -718,6 +773,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0071
     name: 苏颂
+    avatar: pig/文050.png
     default_gender: male
     archetype: civil
     flavor: （1020年—1101年）北宋官员、科学家，字子容。苏颂主持制造水运仪象台，撰成《新仪象法要》，又参与编修《本草图经》；官至右仆射，元符四年病逝。
@@ -731,6 +787,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0072
     name: 梅尧臣
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: （1002年—1060年）北宋诗人，字圣俞，宣州宣城人。梅尧臣历任主簿、县令和尚书都官员外郎，与欧阳修交往密切，参与诗文革新；他的诗多写日常见闻，著有《宛陵先生集》。
@@ -744,6 +801,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0073
     name: 张先
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: （990年—1078年）北宋词人，字子野，历任知州。张先晚年居湖州，与苏轼等人唱和；“云破月来花弄影”等句使他得到“张三影”的雅号。
@@ -757,6 +815,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0094
     name: 完颜宗弼
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
     flavor: （？—1148年）金朝将领，女真名兀术，金太祖第四子。完颜宗弼参与攻宋，攻占开封并俘获宋徽宗、宋钦宗；后来与韩世忠、岳飞交战，皇统八年病逝。
@@ -770,6 +829,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0095
     name: 耶律大石
+    avatar: monkey/其他随机角色/武038_男.png
     default_gender: male
     archetype: military
     flavor: （1094年-1143年）辽朝宗室，西辽的开创者。他在辽朝灭亡后率残部西迁，在中亚建立西辽，延续契丹国祚九十年。他击败塞尔柱突厥，威震西域，被称为"中亚的亚历山大"。他证明了契丹人的骄傲与韧性，在异域书写了民族复兴的传奇。
@@ -783,6 +843,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0096
     name: 蒙哥
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: （1209年-1259年）蒙古第四任大汗，拖雷长子。他继续西征欧洲，南征大理、安南。他亲征南宋，却在合州钓鱼城下中箭身亡。他的死改变了世界历史——蒙古西征就此停止，欧洲得以幸存。钓鱼城因此被称为"上帝折鞭处"。
@@ -796,6 +857,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0097
     name: 伯颜
+    avatar: monkey_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （1236年-1295年）元朝开国名将，灭南宋的主帅。他率二十万大军南下，攻克临安，俘虏南宋皇室。他秋毫无犯，礼遇俘虏，展现了名将风范。他是忽必烈最信任的将领，为元朝的统一立下汗马功劳。其统帅能力与治军纪律为元初诸将之冠。
@@ -809,6 +871,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0098
     name: 耶律楚材
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: （1190年—1244年）契丹族政治家，字晋卿。耶律楚材先事成吉思汗，后辅佐窝阔台，任中书令；他劝阻屠城，主持赋税和选官，晚年因与权臣争执失势。
@@ -822,6 +885,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0099
     name: 马致远
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: （约1250年—1321年）元代散曲、杂剧作家，号东篱。马致远曾任江浙行省务官，晚年退居，作有杂剧《汉宫秋》和散曲《天净沙·秋思》等。
@@ -835,6 +899,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0100
     name: 白朴
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: （1226年-约1306年）元曲四大家之一，《梧桐雨》的作者。他是金末遗民，经历国破家亡，作品中充满了对故国的怀念。他的杂剧文采飞扬，感情真挚。其作品情感深沉，为元代杂剧增添沉郁风格。其亡国之痛贯穿作品，格调悲壮。
@@ -848,6 +913,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0101
     name: 郑光祖
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: （约1260年—1320年）元代杂剧作家，字德辉，平阳襄陵人。郑光祖长期在杭州从事教坊工作，著有《倩女离魂》《王粲登楼》等杂剧。
@@ -861,6 +927,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0102
     name: 王实甫
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: （约1260年—1336年）元代杂剧作家，名德信，字实甫，大都人。王实甫创作《西厢记》，写张珙与崔莺莺在普救寺相识、相恋和成婚；他另有《破窑记》《丽春堂》等杂剧。
@@ -874,6 +941,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0103
     name: 脱脱
+    avatar: pig/文048.png
     default_gender: male
     archetype: civil
     flavor: （1314年—1355年）元代大臣，字大用。脱脱两度出任中书右丞相，主持整顿盐法、开河和编修《辽史》《金史》《宋史》；至正十四年复相后，因治理黄河和镇压红巾军获罪，被流放云南，后被哈麻派人毒死。
@@ -887,6 +955,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0104
     name: 许衡
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: （1209年—1281年）元代学者、官员，字仲平。许衡曾任国子祭酒，制定学校规制、教授《四书》，后任中书左丞；至元十八年病逝。
@@ -900,6 +969,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0105
     name: 王祯
+    avatar: pig/文014.png
     default_gender: male
     archetype: civil
     flavor: （1271年—1368年）元代农学家、官员，字伯善。王祯曾任旌德、永丰县令，任内推广农具，著有《农书》，并在书中记述木活字印刷。
@@ -913,6 +983,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0106
     name: 脱列哥那
+    avatar: monkey_wen_female7.png
     default_gender: female
     archetype: civil
     flavor: （生卒年不详）大蒙古国摄政皇后，窝阔台之妻，贵由汗之母。窝阔台去世后，脱列哥那临朝称制五年，任用法蒂玛等人处理政务，并主持选立贵由；贵由即位后，她退居后宫。
@@ -926,6 +997,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0107
     name: 刘秉忠
+    avatar: pig/文031.png
     default_gender: male
     archetype: civil
     flavor: （1216年—1274年）元代政治家、建筑师，字仲晦，邢台人。刘秉忠早年出家，后来进入忽必烈幕府，参与定国号“元”、规划大都城和上都城，官至太保。
@@ -939,6 +1011,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0108
     name: 许有壬
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （1287年—1364年）元代官员、文学家，字可用。许有壬历任集贤大学士、中书左丞，参与修撰辽、金、宋三史；至正二十四年卒于大都。

@@ -7,6 +7,7 @@ from __future__ import annotations
 import random
 from typing import TYPE_CHECKING, List
 
+from ..random_context import CURRENT_BATTLE_ENGINE_VERSION
 from .utils import alive
 
 if TYPE_CHECKING:
@@ -17,6 +18,9 @@ def determine_turn_order(
     attacker_team: List["Combatant"],
     defender_team: List["Combatant"],
     rng: random.Random,
+    *,
+    round_priority: int = 0,
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
 ) -> List["Combatant"]:
     del rng
     participants = [
@@ -35,6 +39,8 @@ def determine_turn_order(
         participants,
         key=lambda combatant: (
             1 if getattr(combatant, "battle_modifiers", {}).get("fixed_first") else 0,
+            # 仅新版本普通回合按护院、门客分组；开战先攻与旧版本保留原顺序。
+            1 if battle_engine_version == "4" and round_priority == 0 and combatant.kind == "troop" else 0,
             combatant.agility,
             average_guest_agility[combatant.side],
             1 if combatant.side == "defender" else 0,

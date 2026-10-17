@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING, Callable, TypedDict
 
 from django.db import connections, transaction
 
-from ..models import GuestRarity, GuestTemplate, RecruitmentCandidate
+from ..models import GuestRarity, GuestTemplate, RecruitmentCandidate, RecruitmentPity
+from .recruitment_pity import apply_candidate_pity
 from .template_identity import get_non_repeatable_family_template_ids_by_id
 
 if TYPE_CHECKING:
@@ -85,6 +86,7 @@ def build_candidate_batch(
     hermit_templates: list[GuestTemplate],
     generate_random_name: GenerateNameFunc,
     non_repeatable_rarities: frozenset[str],
+    pity: RecruitmentPity | None = None,
 ) -> list[RecruitmentCandidate]:
     candidates_to_create: list[RecruitmentCandidate] = []
     template_ids = {entry.template_id for entry in pool_entries if entry.template_id}
@@ -99,6 +101,15 @@ def build_candidate_batch(
             templates_by_rarity=templates_by_rarity,
             hermit_templates=hermit_templates,
         )
+        pity_rarity = ""
+        if pity is not None:
+            template, pity_rarity = apply_candidate_pity(
+                template,
+                pity=pity,
+                templates_by_rarity=templates_by_rarity,
+                excluded_ids=excluded_ids,
+                rng=rng,
+            )
         candidates_to_create.append(
             RecruitmentCandidate(
                 manor=manor,
@@ -112,6 +123,7 @@ def build_candidate_batch(
                 rarity=template.rarity,
                 archetype=template.archetype,
                 rarity_revealed=should_reveal_candidate_rarity(template),
+                pity_rarity=pity_rarity,
             )
         )
         if should_exclude_candidate_template(template, non_repeatable_rarities=non_repeatable_rarities):

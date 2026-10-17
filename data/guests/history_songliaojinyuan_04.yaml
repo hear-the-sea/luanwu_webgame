@@ -2,6 +2,7 @@ heroes:
   blue:
   - key: hist_songliaojinyuan_0180
     name: 潘美
+    avatar: monkey/其他随机角色/武038_男.png
     default_gender: male
     archetype: military
     flavor: （925年-991年）北宋开国名将，曾与杨业搭档抗辽。他战功赫赫，灭南汉、征南唐皆有大功。因陈家谷之战与杨业殉国，他被后世误解为奸臣，实则是一代名将。其功过争议在史书与民间传说中反复被讨论，形象复杂而立体。
@@ -15,6 +16,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0181
     name: 曹彬
+    avatar: monkey_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （931年—999年）北宋将领，字国华。曹彬先后参加灭后蜀、南唐等战事，攻下金陵时约束军队，不许部下妄杀；真宗即位后病逝，追封济阳郡王。
@@ -28,6 +30,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0182
     name: 石守信
+    avatar: monkey_wu_male10.png
     default_gender: male
     archetype: military
     flavor: （928年—984年）北宋将领，后周、宋初功臣，赵匡胤陈桥兵变的同谋。石守信参加平定李筠、李重进等战事，宋初任侍卫亲军马步军都指挥使，后来解除兵权，太平兴国九年病逝。
@@ -41,6 +44,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0183
     name: 高怀德
+    avatar: pig_wu_male5.png
     default_gender: male
     archetype: military
     flavor: （926年—982年）北宋开国将领，字藏用，后周齐王郭璟之婿。高怀德随赵匡胤平定后蜀、南唐，北宋建立后镇守河东、潞州等地；他历任殿前都指挥使、武胜军节度使，死后追封渤海郡王。
@@ -54,6 +58,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0198
     name: 宗泽
+    avatar: monkey/其他随机角色/武037_男.png
     default_gender: male
     archetype: military
     flavor: （1059年—1128年）北宋将领，字汝霖，东京留守。宗泽在金军南下后整修汴京城防、收编溃兵，多次上书请求北伐；建炎二年病重，仍连呼“过河”而死。
@@ -67,6 +72,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0208
     name: 周邦彦
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （1056年—1121年）北宋词人，字美成，号清真居士。周邦彦精通音律，曾任校书郎、提举大晟府，负责整理宫廷乐章；他作有《片玉词》，词中多写羁旅、宴饮和男女离情。
@@ -81,6 +87,7 @@ heroes:
   green:
   - key: hist_songliaojinyuan_0159
     name: 刘攽
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: 刘攽（1023—1089），字贡父，北宋史学家、文学家。参与司马光编修《资治通鉴》，精于史料考订，著有《东汉刊误》；其诗文亦有传世。
@@ -94,6 +101,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0160
     name: 刘恕
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: 刘恕（1032—1078），字道原，北宋史学家。司马光修《资治通鉴》时，他负责考订大量史料，并参与编纂五代史部分；著有《十国纪年》等，卒年仅四十七岁。
@@ -107,6 +115,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0161
     name: 王安国
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: 王安国（1028—1074），字平甫，王安石之弟，北宋官员、文学家。历任地方及馆阁职务，诗文有名；他对新法的某些做法持保留意见，未完全附和兄长的政治主张。
@@ -120,6 +129,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0162
     name: 王雱
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: 王雱（1044—1076），字元泽，王安石之子，北宋官员、学者。参与编纂《三经新义》，是熙宁新学的重要人物；他早年有才名，任职太常寺等官，三十余岁病逝。
@@ -133,6 +143,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0163
     name: 郑侠
+    avatar: pig/文031.png
     default_gender: male
     archetype: civil
     flavor: 郑侠（约1041—1119），字介夫，北宋官员。熙宁年间绘制《流民图》，并上疏批评新法造成的民生问题，促使宋神宗关注灾民处境；后因政见不合被贬。
@@ -146,6 +157,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0164
     name: 李廌
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: 李廌（1059—1109），字方叔，北宋文学家，苏轼弟子，“苏门六君子”之一。他以诗文受苏轼赏识，著有《济南集》等，仕途长期不顺，晚年仍以文章自见。
@@ -159,6 +171,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0165
     name: 张邦昌
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: 张邦昌（1081—1127），字子能，北宋末年宰相。靖康之变后被金军强立为“大楚”皇帝，政权仅存三十余日；宋高宗即位后，他因受伪位被赐死。
@@ -172,6 +185,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0166
     name: 吕本中
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: 吕本中（1084—1145），字居仁，号东莱先生，两宋之际诗人、诗论家、学者。他编撰《江西诗社宗派图》，总结江西诗派的师承，被后世视为宋代诗学的重要人物。
@@ -185,6 +199,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0167
     name: 张舜民
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: 张舜民（约1034—约1110），字芸叟，号浮休居士，北宋官员、诗人。他的诗词兼写边地见闻与个人遭际，著有《画墁集》；元祐、绍圣党争中曾受牵连。
@@ -198,6 +213,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0168
     name: 李之仪
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: 李之仪（约1038—1117），字端叔，号姑溪居士，北宋官员、词人。词作《卜算子·我住长江头》流传甚广，主张词应做到“语尽而意不尽”，著有《姑溪居士集》。
@@ -211,6 +227,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0169
     name: 毛滂
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: 毛滂，字泽民，号东堂，北宋词人。其词常写宴游、节序和个人情感，风格清丽疏朗；著有《东堂词》，在北宋后期词坛占有一席之地。
@@ -224,6 +241,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0170
     name: 舒亶
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: 舒亶（1041—1103），字信道，北宋官员、词人。元丰年间任监察御史，曾参与弹劾苏轼，与“乌台诗案”有关；他也能作词，著有《舒学士词》及文集。
@@ -237,6 +255,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0171
     name: 王观
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: 王观（约1035—1100），字通叟，北宋词人、官员，与秦观并称“二观”。他的《卜算子·送鲍浩然之浙东》等词语言清新明快，今存词作多收于《全宋词》。
@@ -250,6 +269,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0172
     name: 蔡挺
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: 蔡挺（1014—1079），字子正，北宋官员、边将，长期任职西北。他参与宋夏边防，重视城寨、军器和军马管理；蔡挺亦能作词，文武兼长是其在史籍中的主要形象。
@@ -263,6 +283,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0173
     name: 王诜
+    avatar: pig/文041.png
     default_gender: male
     archetype: civil
     flavor: 王诜（约1048—1104），字晋卿，北宋画家、驸马都尉。师法李成，擅长山水画，与苏轼、黄庭坚、李公麟、米芾等文人交游；传世作品有《烟江叠嶂图》等。
@@ -276,6 +297,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0174
     name: 文同
+    avatar: pig/文041.png
     default_gender: male
     archetype: civil
     flavor: 文同（1018—1079），字与可，北宋画家、诗人，世称文湖州。他以墨竹著名，“胸有成竹”一语与其画竹经验有关；苏轼称其诗、词、书、画俱佳，著有《丹渊集》。
@@ -289,6 +311,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0175
     name: 李公麟
+    avatar: pig/文041.png
     default_gender: male
     archetype: civil
     flavor: 李公麟（1049—1106），字伯时，号龙眠居士，北宋画家。他擅长人物、佛道像和鞍马，创立以线描为主的白描画法，代表作有《五马图》，并精于古器物鉴赏。
@@ -302,6 +325,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0176
     name: 郭熙
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: 郭熙，字淳夫，北宋画家、绘画理论家，活动于神宗熙宁、元丰年间。他继承并发展李成画法，善画山水寒林；其子郭思整理《林泉高致》，提出高远、深远、平远的三远理论。
@@ -315,6 +339,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0177
     name: 范宽
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: 范宽，字中立，北宋山水画家，华原人。以真山真水为师，画风雄浑厚重，代表作《溪山行旅图》传世；他与李成、关仝并称北宋山水画三家。
@@ -328,6 +353,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0178
     name: 李成
+    avatar: pig/文041.png
     default_gender: male
     archetype: civil
     flavor: 李成（919—967），字咸熙，五代至北宋初年画家。祖籍唐宗室后裔，寓居青州，擅长寒林、平远山水，形成清润疏阔的画风；与范宽、关仝并称山水画家。
@@ -341,6 +367,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0179
     name: 燕肃
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: 燕肃（961—1040），字穆之，北宋官员、画家、科学技术家。他精于山水画，曾制作莲花漏等计时器具，并研究潮汐、织机等技术，是宋代兼具文艺与工艺才能的人物。
@@ -354,6 +381,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0184
     name: 呼延赞
+    avatar: pig/武051.png
     default_gender: male
     archetype: military
     flavor: 呼延赞，北宋初年将领，史籍记载其勇悍善战，曾参与宋初对北汉、契丹等方向的军事行动。后世戏曲和说部将其塑造成呼家将代表，但铁鞭等传奇形象不宜与正史混同。
@@ -367,6 +395,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0185
     name: 李继隆
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: 李继隆（950—1005），字霸图，北宋初年将领，明德皇后之兄。曾参与征讨北汉、北伐辽国并镇守北方，亦负责西北军务；他以沉着有谋、善待士卒见称。
@@ -380,6 +409,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0186
     name: 王全斌
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: 王全斌（908—976），北宋开国将领，灭后蜀的主帅。乾德三年率军攻蜀，数十日内攻下成都；平蜀后因纵兵劫掠、处置失当被贬，功过均见于《宋史》本传。
@@ -393,6 +423,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0187
     name: 郭进
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: 郭进（？—979），北宋初年将领，长期镇守北方边境，曾参与征讨北汉和抵御辽军。宋太祖时期他以守边有功升任节度使，后在军中冲突中自缢。
@@ -406,6 +437,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0188
     name: 党进
+    avatar: pig/武046.png
     default_gender: male
     archetype: military
     flavor: 党进（约927—979），朔州马邑人，北宋初年将领。早年从军，随宋军征讨北汉、契丹，因战功升至节度使；史籍称其不通文墨而勇于临阵，卒谥武懿。
@@ -419,6 +451,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0189
     name: 王韶
+    avatar: monkey_wu_male3.png
     default_gender: male
     archetype: military
     flavor: 王韶（1030—1081），字子纯，北宋将领、政治家。熙宁年间上《平戎策》，主张经营河湟以牵制西夏；任熙河路经略使后拓地建城、招抚蕃部，扩大了北宋在西北的控制范围。
@@ -432,6 +465,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0190
     name: 章楶
+    avatar: pig_wu_male5.png
     default_gender: male
     archetype: military
     flavor: 章楶（1027—1102），字质夫，北宋将领、政治家。哲宗、徽宗时期主持西北边务，在平夏城击败西夏军并拓展疆界；后任枢密院要职，卒谥庄敏。
@@ -445,6 +479,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0191
     name: 折克行
+    avatar: pig_wu_male5.png
     default_gender: male
     archetype: military
     flavor: 折克行（约1040—1103），字遵道，府州折氏将领。长期镇守宋夏边境，参与葭芦川等战事，屡有战功并善于抚恤士卒；他是北宋折家将的重要代表。
@@ -458,6 +493,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0192
     name: 刘延庆
+    avatar: monkey_wu_male3.png
     default_gender: male
     archetype: military
     flavor: 刘延庆（约1068—1127），北宋将领，出身西北将门，曾任鄜延路军职。宣和年间参与伐辽，因战事失利受责；靖康之变时率军勤王，最终死于北宋覆亡之际。
@@ -471,6 +507,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0193
     name: 刘法
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: 刘法（？—1119），北宋边将，以善战著称，多次参与对西夏的军事行动。宣和元年奉命进攻统安城，因战事失利与部众力战而死，李纲曾作《吊国殇文》悼念。
@@ -484,6 +521,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0194
     name: 姚兕
+    avatar: pig_wu_male9.png
     default_gender: male
     archetype: military
     flavor: 姚兕，字武之，北宋将领，姚宝之子，与弟姚麟并称“二姚”。他长期参与宋夏战争，曾在河州等地作战并击败西夏军，是北宋中期姚家将门的重要人物。
@@ -497,6 +535,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0195
     name: 姚麟
+    avatar: monkey/其他随机角色/武038_男.png
     default_gender: male
     archetype: military
     flavor: 姚麟，北宋将领，姚兕之弟，与兄并称“二姚”。他长期任职西北，参与宋夏边防，后官至殿前都指挥使；其军功主要见于《宋史》及宋代军政记录。
@@ -510,6 +549,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0196
     name: 姚古
+    avatar: monkey_wu_male8.png
     default_gender: male
     archetype: military
     flavor: 姚古，北宋将领，姚兕之子，出自西北姚家将门。靖康年间任河东制置使，曾率军勤王、参与抗金；北宋末年军情复杂，其部队多次受到金军压迫。
@@ -523,6 +563,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0197
     name: 王德
+    avatar: monkey_wu_male1.png
     default_gender: male
     archetype: military
     flavor: 王德，字子华，南宋将领，曾任刘光世部将，后参与抗金作战，因勇猛被称为“王夜叉”。建炎、绍兴年间他多次领兵作战，官至节度使，是南宋初年重要武将。
@@ -536,6 +577,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0199
     name: 曹玮
+    avatar: monkey_wu_male10.png
     default_gender: male
     archetype: military
     flavor: 曹玮（973—1030），字宝臣，曹彬之子，北宋名将。长期镇守西北，熟悉吐蕃、党项等边务，史称其用兵沉着，大小战斗少有败绩；官至彰武军节度使，卒谥武穆。
@@ -549,6 +591,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0200
     name: 曹利用
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: 曹利用（？—1029），字用之，北宋大臣、将领。景德年间奉命出使辽营，参与订立澶渊之盟，后任枢密使、宰相；天圣年间因事获罪，贬房州后自缢。
@@ -562,6 +605,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0201
     name: 张亢
+    avatar: monkey/其他随机角色/武038_男.png
     default_gender: male
     archetype: military
     flavor: 张亢，字公寿，北宋将领，曾任陕西沿边军职，参与宋夏战争和边防建设。他多次上奏边地军政、军粮与城防问题，曾主持修筑防御设施，具体生卒年史料记载不一。
@@ -575,6 +619,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0202
     name: 种世衡
+    avatar: pig/武051.png
     default_gender: male
     archetype: military
     flavor: 种世衡（985—1045），字仲平，北宋将领，种氏将门的重要人物。他经营清涧城，重视筑城、练兵和招抚羌族，长期稳定宋夏边境；后世种家将的边防传统由此发展。
@@ -588,6 +633,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0203
     name: 张俊
+    avatar: monkey_wu_male7.png
     default_gender: male
     archetype: military
     flavor: 张俊（1086—1154），字伯英，南宋将领，“中兴四将”之一。早年参与抗金并建立战功，后支持秦桧，参与处置岳飞；其军事功绩与政治选择都对南宋政局产生影响。
@@ -601,6 +647,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0204
     name: 刘光世
+    avatar: monkey/其他随机角色/武037_男.png
     default_gender: male
     archetype: military
     flavor: 刘光世（1089—1142），南宋将领，“中兴四将”之一。早年参与平定地方叛乱并抗金，后因多次退守、避战受到朝廷和将领批评；绍兴年间被解除兵权，封荣国公。
@@ -614,6 +661,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0205
     name: 余玠
+    avatar: pig/武046.png
     default_gender: male
     archetype: military
     flavor: 余玠（约1199—1253），南宋将领、四川制置使。任职四川时整顿军政，经营合州钓鱼城等山城防线，任用王坚等将领抗击蒙古；其防御体系为后来宋军守蜀奠定基础。
@@ -627,6 +675,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0206
     name: 牛皋
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
     flavor: 牛皋（1087—1147），字伯远，南宋将领，岳飞部下。早年组织乡兵抗金，后加入岳家军，参与襄阳、淮西等战事，并随军平定杨幺；民间“笑死金兀术”等故事属于后世传说。
@@ -640,6 +689,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0207
     name: 李庭芝
+    avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
     flavor: 李庭芝（1219—1276），南宋末年将领、政治家。任淮东制置使时长期守扬州，组织军民抵抗蒙古；城破后拒绝投降，最终遇害，姜才等部将亦随之坚持抗元。

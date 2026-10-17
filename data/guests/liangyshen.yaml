@@ -4,6 +4,7 @@ heroes:
   green:
   - key: hero_chu_zhaonan
     name: 楚昭南
+    avatar: monkey_wu_male12.png
     archetype: military
     flavor: 天山派晦明禅师的二弟子，七剑之一。他心胸狭隘，嫉贤妒能，最终叛出师门，投靠大内，成为清廷鹰犬。他一生被心魔所困，在正邪之间摇摆，最终众叛亲离，落得个悲惨下场。是梁羽生笔下塑造得非常成功的反派人物。出自梁羽生小说《七剑下天山》
     default_gender: male
@@ -19,6 +20,7 @@ heroes:
       agility: 20
   - key: hero_fei_hongjin
     name: 飞红巾
+    avatar: monkey_wu_female6.png
     archetype: military
     flavor: 飞红巾以红巾蒙面，来去如风。她快意恩仇，轻功凌厉，常在乱世中劫富济贫。与唐晓澜、吕四娘并肩，她展现巾帼不让须眉的胆魄。红巾一掠，江湖便多一分热血与传说。她行事直截了当，最恨欺压百姓之辈。出自梁羽生小说《江湖三女侠》
     default_gender: female
@@ -34,6 +36,7 @@ heroes:
       agility: 40
   - key: hero_tan_yuchong
     name: 檀羽冲
+    avatar: pig/武009.png
     archetype: military
     flavor: 檀羽冲爽朗豁达，行事洒脱而有担当。与张丹枫结交后多次共历险局，刀剑上不落人后，计谋中亦有灵光。江湖纷争里，他常以义气为先，甘愿为友人挡刃。其人如长风，不耀眼却让人安心。他懂进退，也懂情义，最重一个“信”字。出自梁羽生小说《萍踪侠影录》
     default_gender: male
@@ -49,6 +52,7 @@ heroes:
       agility: 25
   - key: hero_nalan_minghui
     name: 纳兰明慧
+    avatar: monkey/其他随机角色/文078_女.png
     archetype: civil
     flavor: 纳兰明慧身为清廷格格，却敢追随内心。她武功不俗，性情坚韧，在族群与情感之间毅然抉择。与杨云骢的情缘跨越敌对，既温柔又凛烈。乱世风雪中，她的执着像一盏灯，为七剑的故事添一抹柔光。她敢背离身份，也敢为爱承受代价。出自梁羽生小说《七剑下天山》
     default_gender: female
@@ -64,6 +68,7 @@ heroes:
       agility: 25
   - key: hero_miao_changfeng
     name: 缪长风
+    avatar: pig/武013.png
     archetype: military
     flavor: 缪长风性烈如火，嫉恶如仇。身为天山七剑之一，他的剑势刚猛，行事果决，常在战局最险处冲锋。反清大义面前，他从不退缩，哪怕伤痕累累也要护同伴周全。其血性与正气，是七剑中最锋锐的一柄。他宁可战死，也不愿退后一步。出自梁羽生小说《七剑下天山》
     default_gender: male
@@ -79,6 +84,7 @@ heroes:
       agility: 25
   - key: hero_xin_longzi
     name: 辛龙子
+    avatar: pig/文016.png
     archetype: civil
     flavor: 辛龙子沉稳内敛，智勇双全。七剑之中他如定海神针，善于谋划大局，又能临阵决断。战场上他不以蛮勇取胜，而以奇策破敌。风雨岁月里，他以冷静守住七剑的心脉。他少言却善断，关键时刻常能定胜负。出自梁羽生小说《七剑下天山》
     default_gender: male
@@ -94,6 +100,7 @@ heroes:
       agility: 20
   - key: hero_liu_yufang
     name: 刘郁芳
+    avatar: monkey/其他随机角色/武083_女_.png
     archetype: military
     flavor: 刘郁芳英气勃发，巾帼不让须眉。身为七剑之一，她剑法凌厉，出手干脆，敢在战阵中直面强敌。她既有女子的柔韧，也有将士的刚烈。雪野刀光里，她是最亮的一抹红。她不惧牺牲，最怕辜负同伴的期待。出自梁羽生小说《七剑下天山》
     default_gender: female
@@ -109,6 +116,7 @@ heroes:
       agility: 35
   - key: hero_han_zhibang
     name: 韩志邦
+    avatar: monkey/其他随机角色/武066_男_.png
     archetype: military
     flavor: 韩志邦豪气干云，重情重义。天山七剑之一的他，战场上勇猛无比，遇险亦不退半步。与同伴并肩时，他常以身为盾，守护大义与友情。粗犷外表下，藏着细腻的忠诚。他的笑声豪迈，却藏着对天下苍生的牵挂。出自梁羽生小说《七剑下天山》
     default_gender: male
@@ -124,6 +132,7 @@ heroes:
       agility: 20
   - key: hero_yun_zhong
     name: 云重
+    avatar: pig/武088.png
     archetype: military
     flavor: 云重背负家国与亲情的双重枷锁。身为云蕾之兄，他一度为瓦剌效力，却心怀正义，在阵营之间痛苦抉择。武功高强却命途多舛，他的每一步都踩在家国伤口上。其悲剧让萍踪侠影更添苍凉。他的犹疑不是软弱，而是对亲情与大义的拉扯。出自梁羽生小说《萍踪侠影录》
     default_gender: male
@@ -139,6 +148,7 @@ heroes:
       agility: 20
   - key: hero_shangguan_tianye
     name: 上官天野
+    avatar: pig/武080.png
     archetype: military
     flavor: 上官天野亦正亦邪，行事难测。武功高强却不愿受门派约束，他与练霓裳的交集让人看见人性深处的矛盾。江湖风雨里，他像一柄游离的刀，随时可能改变局势。正邪之间的灰色，是他最真实的底色。他既渴望自由，又难免被情义牵绊。出自梁羽生小说《白发魔女传》
     default_gender: male
@@ -154,6 +164,7 @@ heroes:
       agility: 25
   - key: hero_murong_xuanji
     name: 慕容璇玑
+    avatar: monkey_wen_female5.png
     archetype: civil
     flavor: 慕容璇玑美貌聪慧，心思细腻。她卷入卓一航与练霓裳的情感纠葛，既有情意，也有算计。柔声软语背后，是深藏的欲望与不甘。她在江湖里周旋，映照出爱情与权势的复杂。她的算计让人防备，却也流露对命运的不安。出自梁羽生小说《白发魔女传》
     default_gender: female
@@ -169,6 +180,7 @@ heroes:
       agility: 25
   - key: hero_dou_xianniang
     name: 窦线娘
+    avatar: monkey_wu_female6.png
     archetype: military
     flavor: 窦线娘巾帼英雄，侠气凌云。她行走隋唐乱世，刀剑间救民于危，与群雄周旋而不失本心。武功高强，胆识过人，敢与强敌正面相抗。她的传奇像史书里的一抹飞光，耀眼又决绝。她不为名利所动，只为百姓安宁而战。出自梁羽生小说《女帝奇英传》
     default_gender: female
@@ -184,6 +196,7 @@ heroes:
       agility: 30
   - key: hero_qiuran_ke
     name: 虬髯客
+    avatar: pig_wu_male2.png
     archetype: military
     flavor: 虬髯客豪迈不羁，侠肝义胆。风尘三侠之一的他，既有江湖浪子的洒脱，也有护国济民的担当。武功深厚，行事磊落，出手即是风雷。乱世里他如狂风，卷起一段英雄传说。他的豪迈与担当，让群雄心服口服。出自梁羽生小说《女帝奇英传》
     default_gender: male
@@ -199,6 +212,7 @@ heroes:
       agility: 20
   - key: hero_hongxian_nv
     name: 红线女
+    avatar: monkey_wen_female3.png
     archetype: civil
     flavor: 红线女身手轻灵，来去无踪。她以盗取金合名动江湖，却不为贪财，只为惩奸扶弱。侠心与机智并存，使她在乱世中自成一道风景。她的传说像一缕红线，穿过世俗与传奇。她来如风去无影，却总留下公道与传颂。出自梁羽生小说《女帝奇英传》
     default_gender: female
@@ -214,6 +228,7 @@ heroes:
       agility: 40
   - key: hero_nie_yinniang
     name: 聂隐娘
+    avatar: monkey_wu_female6.png
     archetype: military
     flavor: 聂隐娘行踪如影，剑影如电。她是传奇刺客，出手只在一念之间，生死随之。心性冷静却不失侠义，常以一剑解决江湖难局。她的名字是唐代传说中的冷光，也是武侠世界最锋利的孤刃。她行事独来独往，却始终守着心中底线。出自梁羽生小说《女帝奇英传》
     default_gender: female
@@ -230,6 +245,7 @@ heroes:
   blue:
   - key: hero_gu_zhihua
     name: 谷之华
+    avatar: monkey_wu_female.png
     archetype: military
     flavor: 天山有女，冰雪为骨，却偏生一颗炽热真心。她出身名门却不拘礼教，与金世遗相遇于冰川绝谷，历经千难万险终成眷属。世人道她武功高强、容颜倾城，却不知她最动人处在于那份不问出身、只问真心的坦荡。雪峰之上，她以柔情化解世俗偏见；风雪之中，她与心上人并肩而立。梁羽生笔下最动人的女性角色之一。出自梁羽生小说《冰川天女传》
     default_gender: female
@@ -245,6 +261,7 @@ heroes:
       agility: 30
   - key: hero_yun_lei
     name: 云蕾
+    avatar: monkey_wen_female7.png
     archetype: civil
     flavor: 她是瓦剌公主，本该与中原侠客势不两立。然而情之所起，不问敌我。与张丹枫相遇于乱世烽烟，她放下公主身份，他搁置国仇家恨，两人以真心跨越了本不可逾越的鸿沟。她性情温婉却意志坚定，在家国与儿女之间从容抉择。萍踪万里，侠影双飞，她与张丹枫的爱情是梁羽生笔下最纯粹的传奇。出自梁羽生小说《萍踪侠影录》
     default_gender: female
@@ -260,6 +277,7 @@ heroes:
       agility: 30
   - key: hero_tang_xiaolan
     name: 唐晓澜
+    avatar: pig_wu_male7.png
     archetype: military
     flavor: 天山派掌门，康熙年间的武林宗师。他为人敦厚，游走于朝廷与江湖之间。作为唐经天之父，他虽不如妻子吕四娘那般锋芒毕露，却以内功深厚、处事稳重著称。他以大智若愚的姿态化解无数危机，是承上启下的宗师级人物。出自梁羽生小说《江湖三女侠》
     default_gender: male
@@ -275,6 +293,7 @@ heroes:
       agility: 20
   - key: hero_lv_siniang
     name: 吕四娘
+    avatar: monkey_wu_female.png
     archetype: military
     flavor: 江湖三女侠之一吕四娘，武功绝顶性格冷傲。她是梁羽生笔下神秘女侠，传说曾刺杀雍正皇帝。她的故事充满传奇色彩，至今仍为人津津乐道。她独来独往，行事干脆，是乱世里最清冷的一柄剑。出自梁羽生小说《江湖三女侠》
     default_gender: female
@@ -290,6 +309,7 @@ heroes:
       agility: 30
   - key: hero_ling_weifeng
     name: 凌未风
+    avatar: pig_wu_male7.png
     archetype: military
     flavor: 天山绝顶，他是执掌一派的宗师；江湖风雨，他是后辈仰望的高峰。执掌天山派数十载，他以深厚武功镇四方，以宽厚胸襟纳百川。金世遗这等桀骜弟子，也在他调教下成就一代宗师。他身居高位却从无架子，德高望重而不倚老卖老。一生行侠仗义，守护天山基业，堪称梁羽生笔下最可敬的长辈形象。出自梁羽生小说《冰川天女传》
     default_gender: male
@@ -305,6 +325,7 @@ heroes:
       agility: 20
   - key: hero_gui_zhongming
     name: 桂仲明
+    avatar: pig/武080.png
     archetype: military
     flavor: 七剑之中，他是最勇猛的那一把刀。身为清朝遗民后代，他骨子里流淌着反清复明的热血。性格耿直，出手果决，战阵之上从无退缩——七剑若论战力，当推此人为首。他与凌未风等人并肩作战，在风雨飘摇的年代里，以一腔热血书写家国大义。梁羽生笔下最具热血精神的侠客形象。出自梁羽生小说《七剑下天山》
     default_gender: male
@@ -320,6 +341,7 @@ heroes:
       agility: 20
   - key: hero_wu_qiongyao
     name: 武琼瑶
+    avatar: monkey_wu_female.png
     archetype: military
     flavor: 七剑之中，她是最刚烈的那一抹红颜。性如烈火，剑若秋霜，战场上她与男儿并肩杀敌，从不落于人后。与桂仲明情深意重，二人在抗清烽火中结下生死之缘。她不是躲在男人身后的柔弱女子，而是能独当一面的巾帼豪杰。七剑下天山，她的身影同样不可或缺。梁羽生笔下经典女侠形象。出自梁羽生小说《七剑下天山》
     default_gender: female
@@ -335,6 +357,7 @@ heroes:
       agility: 30
   - key: hero_li_shengnan
     name: 厉胜男
+    avatar: monkey_wu_female5.png
     archetype: military
     flavor: 爱到深处，便是不归路。她对金世遗一往情深，却终究求而不得。性格刚烈如她，不愿委曲求全，宁可玉碎也不瓦全。她武功高强，本可独步武林；她容颜出众，本可觅得良缘。偏偏一颗心只系一人，至死不渝。最终为所爱之人牺牲自己，留下的是梁羽生笔下最动人的爱情悲歌。出自梁羽生小说《冰川天女传》
     default_gender: female
@@ -350,6 +373,7 @@ heroes:
       agility: 35
   - key: hero_huo_tiandu
     name: 霍天都
+    avatar: monkey_wu_male13.png
     archetype: military
     flavor: 七剑出天山，他是执剑之首。天山派武学集大成者，一代宗师风范无双。他率领七剑下天山反清复明，剑气纵横，侠义盖世。他开创的天山剑法传承百年，培养的英才遍布武林。他不仅是武学宗师，更是民族大义的扛鼎之人。梁羽生以他为笔，书写了一曲慷慨激昂的家国壮歌。开山立派，名垂青史，此之谓也。出自梁羽生小说《七剑下天山》
     default_gender: male
@@ -365,6 +389,7 @@ heroes:
       agility: 20
   - key: hero_yang_yuncong
     name: 杨云骢
+    avatar: monkey_wu_male12.png
     archetype: military
     flavor: 七剑之一，断金切玉。他是天山派晦明禅师的高徒，手持青干剑，剑气如虹。他性格沉稳，心怀大义，在七剑下天山的反清斗争中发挥了中流砥柱的作用。他与纳兰明慧的跨国恋情凄美动人，最终为了大义牺牲自我，留下女儿易兰珠传承侠义火种。梁羽生笔下悲剧英雄的代表。出自梁羽生小说《七剑下天山》
     default_gender: male
@@ -380,6 +405,7 @@ heroes:
       agility: 25
   - key: hero_yue_mingke
     name: 岳鸣珂
+    avatar: pig/武021.png
     archetype: military
     flavor: 武当门人岳鸣珂，剑术深厚，行事端方。作为卓一航师兄，他在正道与情义的夹缝中见证了白发魔女的悲剧。江湖风雨里，他既是门规的守卫者，也是内心动摇的见证人。剑光之下，忠与情的抉择让他一生难安。他的克制与犹疑，映照出武当门人的沉重责任。出自梁羽生小说《白发魔女传》
     default_gender: male
@@ -395,6 +421,7 @@ heroes:
       agility: 20
   - key: hero_yi_lanzhu
     name: 易兰珠
+    avatar: monkey_wu_female.png
     archetype: military
     flavor: 易兰珠出身名门，气质清冷却情深似海。她与张丹枫、金逐流纠葛难解，在国仇家恨与儿女情长间辗转。武功不弱，心性更坚，宁以牺牲换他人平安。她的选择如玉弓之弦，绷紧了整段爱情的悲音。她的隐忍与担当，让她成为故事里最深情的一束光。出自梁羽生小说《云海玉弓缘》
     default_gender: female
@@ -410,6 +437,7 @@ heroes:
       agility: 30
   - key: hero_jin_zhuliu
     name: 金逐流
+    avatar: pig/武032.png
     archetype: military
     flavor: 金逐流豪迈不羁，剑法狂放如风。身陷与张丹枫、易兰珠的情感纠葛，他在爱与义之间屡屡挣扎。武学上他敢破旧成新，江湖上他敢爱敢恨。风云变幻里，他终以真性情写出一段侠客传奇。他的冲动与豪情并存，既耀眼也让人叹息。出自梁羽生小说《云海玉弓缘》
     default_gender: male
@@ -425,6 +453,7 @@ heroes:
       agility: 30
   - key: hero_li_yi
     name: 李逸
+    avatar: pig/武023.png
     archetype: military
     flavor: 李逸少年英气，剑胆琴心。行走唐代江湖，他扶危济困、惩恶扬善，以热血书写侠义。武功高强而不恃强，内心更重承诺与情义。风云起处，他是大唐游侠的代表身影。他的坦荡与赤诚，让他在乱世中格外醒目。出自梁羽生小说《大唐游侠传》
     default_gender: male
@@ -440,6 +469,7 @@ heroes:
       agility: 25
   - key: hero_tie_mole
     name: 铁摩勒
+    avatar: pig/武013.png
     archetype: military
     flavor: 铁摩勒沉稳如山，是李逸最可靠的同伴。武功深厚，行事谨慎，却在大义面前从不含糊。战阵中他以坚韧守护队伍，江湖里他以义气赢得敬重。若说李逸是火，他便是那块稳固的石。他寡言却可信，常在危急关头稳住全局。出自梁羽生小说《大唐游侠传》
     default_gender: male
@@ -456,6 +486,7 @@ heroes:
   purple:
   - key: hero_jin_shiyi
     name: 金世遗
+    avatar: monkey/梁羽生/金世遗.png
     archetype: military
     flavor: 天山雪峰孤鸿影，冰川绝谷逆行人。他自幼孤苦，性情乖张，被世人目为邪魔外道，却有着最炽热的真心。谷之华是他此生挚爱，厉胜男是他永远的遗憾。他不拘礼法，却重情重义；他桀骜不驯，却侠骨柔肠。从被世人唾弃的弃儿，到天山派掌门宗师，他以离经叛道的姿态书写了最动人的武侠传奇。梁羽生笔下最具反叛精神的主角，以真性情行走江湖。出自梁羽生小说《冰川天女传》
     default_gender: male
@@ -471,6 +502,7 @@ heroes:
       agility: 35
   - key: hero_zhang_danfeng
     name: 张丹枫
+    avatar: monkey/梁羽生/张丹枫.png
     archetype: military
     flavor: 萍踪侠影，云海玉弓。他是瓦剌与大明夹缝中的贵胄之后，却心怀天下苍生。武功盖世，才情惊人，与云蕾的爱情跨越国仇家恨。他不仅是武学奇才，更是胸怀大义的侠者——国可灭，家可破，唯正道不可弃。玉弓在手时他纵横四海，云海苍茫处他儿女情长。梁羽生笔下最完美的侠客形象，以儒雅风度诠释何为真正的大侠。出自梁羽生小说《萍踪侠影录》
     default_gender: male
@@ -486,6 +518,7 @@ heroes:
       agility: 20
   - key: hero_zhuo_yihang
     name: 卓一航
+    avatar: monkey/梁羽生/卓一航.png
     archetype: military
     flavor: 武当青锋，痴情一片。他是武当掌门，剑术通神，却困于门户之见与世俗偏见。他与练霓裳正邪相恋，却因一念之差错失挚爱。白发魔女一夜白头，他亦终生未娶，独守武当空山冷月。他宁负天下不负卿，却终究负了那个最爱他的人。雕栏玉砌今犹在，红颜白发已成殇。梁羽生笔下最痴情的男主角，以一生的等待演绎世间最凄美的爱情悲剧。出自梁羽生小说《白发魔女传》
     default_gender: male
@@ -501,6 +534,7 @@ heroes:
       agility: 25
   - key: hero_lian_nichang
     name: 练霓裳
+    avatar: monkey/梁羽生/练霓裳.png
     archetype: military
     flavor: 一夜白头，情殇天山。她本是绝代佳人，武林第一美女，却因情伤而满头银丝。与卓一航爱恨交织，却被世俗偏见生生拆散。她武功绝顶，性情刚烈，一身白衣如雪，白发如霜。天山之巅，她孤独守望那永不会来的相逢；月下花前，她独饮那杯永不会暖的冷酒。情之一字，何其伤人？梁羽生笔下最凄美的女侠，以决绝的姿态书写正邪之恋的千古绝唱。出自梁羽生小说《白发魔女传》
     default_gender: female

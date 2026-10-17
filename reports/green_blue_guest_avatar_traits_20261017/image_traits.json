@@ -1,0 +1,1915 @@
+[
+  {
+    "avatar": "monkey_wen_female6.png",
+    "archetype": "civil",
+    "gender": "female",
+    "traits": [
+      "modern",
+      "scholar",
+      "book"
+    ],
+    "era": "modern"
+  },
+  {
+    "avatar": "monkey_wen_female7.png",
+    "archetype": "civil",
+    "gender": "female",
+    "traits": [
+      "noblewoman",
+      "crown"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wen_female3.png",
+    "archetype": "civil",
+    "gender": "female",
+    "traits": [
+      "noblewoman",
+      "young"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey/其他随机角色/文084_女.png",
+    "archetype": "civil",
+    "gender": "female",
+    "traits": [
+      "scholar",
+      "noblewoman",
+      "book",
+      "elegant"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey/其他随机角色/文-女.png",
+    "archetype": "civil",
+    "gender": "female",
+    "traits": [
+      "musician",
+      "flute",
+      "noblewoman",
+      "elegant"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey/其他随机角色/文065_女.png",
+    "archetype": "civil",
+    "gender": "female",
+    "traits": [
+      "musician",
+      "guqin",
+      "noblewoman",
+      "elegant"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey/其他随机角色/文078_女.png",
+    "archetype": "civil",
+    "gender": "female",
+    "traits": [
+      "noblewoman",
+      "fan",
+      "lotus",
+      "elegant"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wen_female1.png",
+    "archetype": "civil",
+    "gender": "female",
+    "traits": [
+      "modern",
+      "scholar"
+    ],
+    "era": "modern"
+  },
+  {
+    "avatar": "monkey_wen_female2.png",
+    "archetype": "civil",
+    "gender": "female",
+    "traits": [
+      "noblewoman",
+      "elegant"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey/其他随机角色/文059_女.png",
+    "archetype": "civil",
+    "gender": "female",
+    "traits": [
+      "healer",
+      "herbal",
+      "noblewoman",
+      "elegant"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wen_female9.png",
+    "archetype": "civil",
+    "gender": "female",
+    "traits": [
+      "noblewoman",
+      "dancer",
+      "elegant"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wen_female10.png",
+    "archetype": "civil",
+    "gender": "female",
+    "traits": [
+      "noblewoman",
+      "elegant"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wen_female4.png",
+    "archetype": "civil",
+    "gender": "female",
+    "traits": [
+      "modern",
+      "dancer"
+    ],
+    "era": "modern"
+  },
+  {
+    "avatar": "monkey_wen_female8.png",
+    "archetype": "civil",
+    "gender": "female",
+    "traits": [
+      "modern",
+      "noblewoman"
+    ],
+    "era": "modern"
+  },
+  {
+    "avatar": "monkey_wen_female5.png",
+    "archetype": "civil",
+    "gender": "female",
+    "traits": [
+      "noblewoman",
+      "poet",
+      "lotus",
+      "elegant"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey/其他随机角色/文064_女.png",
+    "archetype": "civil",
+    "gender": "female",
+    "traits": [
+      "scholar",
+      "poet",
+      "book",
+      "noblewoman",
+      "elegant"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig_wen_male2.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "strategist",
+      "fan",
+      "elder"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文041.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "artist",
+      "calligrapher",
+      "painter",
+      "scroll"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文039.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "scholar",
+      "poet",
+      "book"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey/其他随机角色/文_男.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "artist",
+      "calligrapher",
+      "scholar",
+      "painter"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wen_male2.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "scholar",
+      "official"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wen_male8.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "hermit",
+      "staff",
+      "wanderer"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey/其他随机角色/文052_男.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "scholar",
+      "historian",
+      "bamboo",
+      "official"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文014.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "official",
+      "magistrate",
+      "scroll"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "duck_wen_male1.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "modern",
+      "scholar",
+      "glasses"
+    ],
+    "era": "modern"
+  },
+  {
+    "avatar": "monkey/其他随机角色/文049_男.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "scholar",
+      "book",
+      "official"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey/其他随机角色/文男.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "strategist",
+      "fan",
+      "elegant"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wen_male4.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "scholar",
+      "elegant"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文028.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "official",
+      "historian",
+      "bamboo"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey/其他随机角色/文041_男.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "strategist",
+      "fan",
+      "elegant"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文016.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "scholar",
+      "historian",
+      "scroll"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wen_male6.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "scholar",
+      "book",
+      "elegant"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文044.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "merchant",
+      "abacus"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文011.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "scholar",
+      "scroll",
+      "official"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文050.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "official",
+      "constable",
+      "staff"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "duck_wen_male2.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "hermit",
+      "scholar",
+      "wanderer"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文046.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "modern",
+      "merchant"
+    ],
+    "era": "modern"
+  },
+  {
+    "avatar": "monkey_wen_male10.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "hermit",
+      "elder",
+      "beard"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文032.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "official",
+      "magistrate"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey/其他随机角色/文061_男.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "strategist",
+      "fan",
+      "elegant"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文043.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "taoist",
+      "alchemist",
+      "incense"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey/其他随机角色/文_男123.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "astronomer",
+      "explorer",
+      "telescope"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文040.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "healer",
+      "herbal"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig_wen_male1.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "healer",
+      "gourd",
+      "scholar"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig_wen_male3.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "scholar",
+      "official"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wen_male7.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "official",
+      "magistrate"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文036.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "taoist",
+      "hermit",
+      "elder",
+      "beard",
+      "staff"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文030.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "official",
+      "scholar"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文049.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "official",
+      "magistrate"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文034.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "scholar",
+      "book"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "duck_wen_male3.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "modern",
+      "explorer",
+      "glasses"
+    ],
+    "era": "modern"
+  },
+  {
+    "avatar": "monkey/其他随机角色/文101_男.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "scholar",
+      "poet",
+      "book"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文021.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "beggar",
+      "hermit",
+      "ragged"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文033.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "official",
+      "scholar"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey/其他随机角色/文039_男.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "musician",
+      "guqin",
+      "hermit",
+      "elegant"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文010.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "strategist",
+      "fan"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文029.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "merchant",
+      "purse",
+      "scholar"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文042.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "scholar",
+      "scroll"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wen_male3.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "ruler",
+      "crown"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wen_male9.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "scholar",
+      "elegant",
+      "young"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey/其他随机角色/文037_男.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "scholar",
+      "historian",
+      "bamboo",
+      "beard"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文038.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "scholar",
+      "historian",
+      "bamboo"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文045.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "sailor",
+      "explorer",
+      "ship"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wen_male1.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "scholar",
+      "poet",
+      "elegant"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文018.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "hermit",
+      "poet",
+      "tea",
+      "elegant"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig_wen_male4.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "scholar",
+      "official"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wen_male5.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "ruler",
+      "general",
+      "crown",
+      "armor"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文037.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "hermit",
+      "naturalist",
+      "butterfly",
+      "elegant"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文035.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "merchant",
+      "abacus"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文048.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "official",
+      "magistrate"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey/其他随机角色/文男213.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "strategist",
+      "fan",
+      "elegant"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wen_male11.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "strategist",
+      "general",
+      "elder",
+      "beard"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/文031.png",
+    "archetype": "civil",
+    "gender": "male",
+    "traits": [
+      "official",
+      "magistrate"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wu_female.png",
+    "archetype": "military",
+    "gender": "female",
+    "traits": [
+      "boxer",
+      "heroine",
+      "unarmed"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wu_female4.png",
+    "archetype": "military",
+    "gender": "female",
+    "traits": [
+      "modern",
+      "heroine"
+    ],
+    "era": "modern"
+  },
+  {
+    "avatar": "monkey_wu_female5.png",
+    "archetype": "military",
+    "gender": "female",
+    "traits": [
+      "heroine",
+      "unarmed",
+      "noblewoman"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wu_female3.png",
+    "archetype": "military",
+    "gender": "female",
+    "traits": [
+      "modern",
+      "boxer"
+    ],
+    "era": "modern"
+  },
+  {
+    "avatar": "monkey_wu_female2.png",
+    "archetype": "military",
+    "gender": "female",
+    "traits": [
+      "modern",
+      "heroine"
+    ],
+    "era": "modern"
+  },
+  {
+    "avatar": "monkey_wu_female6.png",
+    "archetype": "military",
+    "gender": "female",
+    "traits": [
+      "heroine",
+      "assassin",
+      "hat"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey/其他随机角色/武083_女_.png",
+    "archetype": "military",
+    "gender": "female",
+    "traits": [
+      "heroine",
+      "assassin",
+      "daggers"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "duck_wu_male1.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "modern",
+      "soldier",
+      "grenade"
+    ],
+    "era": "modern"
+  },
+  {
+    "avatar": "pig/武091.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "bandit",
+      "fierce",
+      "staff"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武010.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "general",
+      "spearman",
+      "armor"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig_wu_male6.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "soldier",
+      "armor"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武064.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "healer",
+      "herbal",
+      "hermit",
+      "gourd"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武090.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "boxer",
+      "unarmed"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武055.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "bladesman",
+      "soldier"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig_wu_male3.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "general",
+      "swordsman",
+      "shield",
+      "armor"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武054.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "mace",
+      "fierce",
+      "hero"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武080.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "boxer",
+      "hero"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武069.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "taoist",
+      "whisk"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武063.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "archer",
+      "hunter"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig_wu_male1.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "general",
+      "axeman",
+      "fierce",
+      "shield",
+      "armor"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey/其他随机角色/武066_男_.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "bladesman",
+      "hero",
+      "wanderer",
+      "gourd"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武048.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "spearman",
+      "hero"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武009.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "spearman",
+      "hero"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武077.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "spearman",
+      "soldier"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武015.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "bladesman",
+      "hero"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武011.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "bladesman",
+      "hero",
+      "soldier"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武061.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "spearman",
+      "soldier"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武056.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "bladesman",
+      "hero"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey/其他随机角色/武064_男_.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "swordsman",
+      "hero"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武046.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "general",
+      "spearman",
+      "armor"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武007.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "assassin",
+      "daggers",
+      "fierce"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武016.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "spearman",
+      "hero"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武083.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "boxer",
+      "unarmed"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey/其他随机角色/武037_男.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "general",
+      "swordsman",
+      "armor"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武058.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "spearman",
+      "soldier"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey/其他随机角色/武男22.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "bladesman",
+      "hero",
+      "wanderer"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武087.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "boxer",
+      "unarmed"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wu_male3.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "general",
+      "bladesman",
+      "beard",
+      "armor"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey/其他随机角色/武052_男.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "hammer",
+      "fierce",
+      "hero"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武053.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "bladesman",
+      "hero"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wu_male16.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "general",
+      "soldier",
+      "swordsman",
+      "armor"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武079.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "swordsman",
+      "assassin"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey/其他随机角色/武044_男_.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "general",
+      "shield",
+      "armor"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武032.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "hero",
+      "flute",
+      "swordsman"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武085.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "boxer",
+      "unarmed"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wu_male8.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "general",
+      "swordsman",
+      "shield",
+      "armor"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武086.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "boxer",
+      "staff"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武071.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "beggar",
+      "boxer",
+      "ragged"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武008.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "hammer",
+      "fierce",
+      "hero"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武075.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "boxer",
+      "unarmed"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wu_male11.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "bandit",
+      "drinker",
+      "bladesman"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武014.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "constable",
+      "whip"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武030.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "boxer",
+      "unarmed"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wu_male9.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "modern",
+      "artist",
+      "singer"
+    ],
+    "era": "modern"
+  },
+  {
+    "avatar": "pig/武088.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "spearman",
+      "hero"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武028.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "bandit",
+      "boxer",
+      "ragged"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wu_male12.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "swordsman",
+      "bladesman",
+      "hero"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武060.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "general",
+      "boxer",
+      "armor"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武026.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "taoist",
+      "elder",
+      "beard"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武021.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "swordsman",
+      "fierce",
+      "hero"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武065.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "hermit",
+      "staff"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武078.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "monk",
+      "rosary",
+      "bald"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武067.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "puppeteer",
+      "artist"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武049.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "official",
+      "constable",
+      "staff"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wu_male1.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "general",
+      "swordsman",
+      "armor"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wu_male13.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "swordsman",
+      "hero",
+      "elegant"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig_wu_male2.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "hammer",
+      "fierce",
+      "hero"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武089.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "modern",
+      "constable"
+    ],
+    "era": "modern"
+  },
+  {
+    "avatar": "pig/武068.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "modern",
+      "soldier"
+    ],
+    "era": "modern"
+  },
+  {
+    "avatar": "pig_wu_male7.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "boxer",
+      "beast",
+      "fierce",
+      "hero"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武072.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "monk",
+      "buddhist",
+      "staff"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wu_male7.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "general",
+      "armor"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武050.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "general",
+      "bladesman",
+      "shield"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武084.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "boxer",
+      "unarmed"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武047.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "axeman",
+      "bandit",
+      "fierce"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wu_male6.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "spearman",
+      "soldier",
+      "armor"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey/其他随机角色/武038_男.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "general",
+      "spearman",
+      "shield",
+      "armor"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武023.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "bladesman",
+      "hero"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武081.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "hermit",
+      "fan",
+      "flower"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig_wu_male8.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "general",
+      "hammer",
+      "fierce",
+      "armor"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武073.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "musician",
+      "hermit",
+      "instrument"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武013.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "boxer",
+      "mace",
+      "hero"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig_wu_male5.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "general",
+      "axeman",
+      "fierce",
+      "armor"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武052.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "spearman",
+      "assassin",
+      "eyepatch"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey/其他随机角色/武047_男.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "general",
+      "spearman",
+      "beard",
+      "armor"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wu_male10.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "general",
+      "armor"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "duck_wu_male2.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "modern",
+      "soldier",
+      "rifle"
+    ],
+    "era": "modern"
+  },
+  {
+    "avatar": "pig/武017.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "swordsman",
+      "hero"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武074.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "boxer",
+      "unarmed"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武057.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "spearman",
+      "soldier"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武005.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "archer",
+      "hunter",
+      "soldier"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武066.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "monk",
+      "rosary",
+      "bald"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武059.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "general",
+      "spearman",
+      "shield",
+      "armor"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wu_male14.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "spearman",
+      "soldier"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wu_male4.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "boxer",
+      "bandit",
+      "drinker",
+      "unarmed"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig_wu_male9.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "general",
+      "bladesman",
+      "armor"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武051.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "general",
+      "swordsman",
+      "shield",
+      "armor"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig_wu_male4.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "axeman",
+      "fierce",
+      "hero"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武076.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "official",
+      "magistrate",
+      "constable",
+      "tablet"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wu_male5.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "archer",
+      "hunter"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武070.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "assassin",
+      "hero"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武082.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "taoist",
+      "talisman"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "pig/武062.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "spearman",
+      "soldier"
+    ],
+    "era": "traditional"
+  },
+  {
+    "avatar": "monkey_wu_male2.png",
+    "archetype": "military",
+    "gender": "male",
+    "traits": [
+      "general",
+      "spearman",
+      "armor"
+    ],
+    "era": "traditional"
+  }
+]

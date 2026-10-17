@@ -247,8 +247,8 @@ def prepare_guest_avatar_asset(
     return ensure_guest_avatar_asset(source_filename)
 
 
-def _resolve_guest_avatar_asset_path(guest: object) -> str:
-    raw_asset_path = getattr(guest, "avatar_asset_key", "")
+def _resolve_guest_avatar_asset_path(guest: object, field_name: str = "avatar_asset_key") -> str:
+    raw_asset_path = getattr(guest, field_name, "")
     if not isinstance(raw_asset_path, str):
         return ""
     asset_path = raw_asset_path.strip()
@@ -272,7 +272,14 @@ def has_guest_avatar_override(guest: object) -> bool:
 
 def resolve_guest_avatar_url(guest: object) -> str:
     """Resolve a guest's effective avatar URL without exposing arbitrary storage paths."""
-    if has_guest_avatar_override(guest):
+    if getattr(guest, "use_original_avatar", False) is True:
+        original_path = _resolve_guest_avatar_asset_path(guest, "original_avatar_asset_key")
+        if original_path:
+            try:
+                return str(default_storage.url(original_path) or "")
+            except (AttributeError, ValueError):
+                pass
+    elif has_guest_avatar_override(guest):
         override_key = getattr(guest, "avatar_override_key", "")
         if isinstance(override_key, str) and override_key.strip() == SUPER_GUEST_DISGUISE_AVATAR_KEY:
             return default_storage.url(SUPER_GUEST_DISGUISE_AVATAR_PATH)

@@ -1,0 +1,98 @@
+{
+  "status": "deployed_and_verified",
+  "checked_at_utc": "2026-10-15T13:13:15.376340+00:00",
+  "image": "webgame:scout-briefing-20261015",
+  "previous_web_image": "webgame:all-updates-20261015",
+  "files": {
+    "gameplay/services/scout_assessment.py": "c92482b11902b731715ce8763f08e4c81974aa42544fdba10f935669125cfd19",
+    "gameplay/services/scout_briefing.py": "6bf5c6acce2262b80f3208a0610e844c37c27a92b3ade5014378203e2c16639f",
+    "gameplay/services/scout_briefing_assets.py": "e14ec78bd5f7a36af7f382f8b73c167e426e65f8722f7670df5d381c0779d5c4",
+    "gameplay/services/scout_narrative.py": "8a7aa39cac37240253f59f4c2734ef76b16ee2f9ac8ab10113004184e465d46d",
+    "gameplay/services/scout_intel_rules.py": "9264a1dd6677a344cafcb6a7a8b176a58e00ec530f633c8057cb275e4e640eef",
+    "gameplay/services/scout_reports.py": "db87cc3fc0cbec6c9f83a6886b86dacb75fd78907cec1f0313f2860c6602985b",
+    "gameplay/services/raid/scout.py": "594b0a946bafcd543fc6b09d50e120eed08dd6c838cd0f087212d331f9d506b7",
+    "gameplay/services/raid/scout_finalize.py": "8b267814bdd330e8d92f6b7a9206c14dabaacbc527c3ccfbfa01d4bc49fab4d7",
+    "gameplay/services/raid/scout_followups.py": "864147d62fbe5dfafc4802fbd48a144f68f924f0feb2a831a4b49a4f3a772280",
+    "gameplay/services/raid/scout_intel.py": "41bee68093eac23d51942dd90622a6e915483f87cf0ad3e4ac2e76304c463050"
+  },
+  "services": {
+    "web": {
+      "image": "webgame:scout-briefing-20261015",
+      "restart_count": 0,
+      "oom_killed": false,
+      "health": "healthy"
+    },
+    "worker": {
+      "image": "webgame:scout-briefing-20261015",
+      "restart_count": 0,
+      "oom_killed": false,
+      "health": null
+    },
+    "worker_battle": {
+      "image": "webgame:scout-briefing-20261015",
+      "restart_count": 0,
+      "oom_killed": false,
+      "health": null
+    },
+    "worker_timer": {
+      "image": "webgame:scout-briefing-20261015",
+      "restart_count": 0,
+      "oom_killed": false,
+      "health": null
+    },
+    "worker_timer_scan": {
+      "image": "webgame:scout-briefing-20261015",
+      "restart_count": 0,
+      "oom_killed": false,
+      "health": null
+    },
+    "worker_timer_safety": {
+      "image": "webgame:scout-briefing-20261015",
+      "restart_count": 0,
+      "oom_killed": false,
+      "health": null
+    },
+    "worker_timer_maintenance": {
+      "image": "webgame:scout-briefing-20261015",
+      "restart_count": 0,
+      "oom_killed": false,
+      "health": null
+    },
+    "beat": {
+      "image": "webgame:scout-briefing-20261015",
+      "restart_count": 0,
+      "oom_killed": false,
+      "health": null
+    }
+  },
+  "ready": "passed",
+  "other_services_kept_running": true,
+  "database_migrations": false,
+  "data_sync": false,
+  "static_assets_changed": false,
+  "public": {
+    "/health/live": {
+      "status": 200,
+      "seconds": 0.068658
+    },
+    "/accounts/login/": {
+      "status": 200,
+      "seconds": 1.842902
+    }
+  },
+  "phase": {
+    "operation": "522c4573bb5f4ddba8f91c45b94a75d1",
+    "phase": "complete",
+    "candidate": "code-web-bg-522c4573bb5f",
+    "image": "webgame:scout-briefing-20261015",
+    "proxy": "web",
+    "override": "/root/code/.web-bg-522c4573bb5f.json",
+    "updated_at": 1792069990.2612457
+  },
+  "validation": {
+    "backend_tests_passed": 814,
+    "mypy_source_files": 10
+  },
+  "release": "/root/code/releases/scout-briefing-20261015",
+  "runtime_scout_report_smoke": "passed_on_candidate_and_canonical_web"
+}

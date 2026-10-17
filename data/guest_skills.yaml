@@ -458,13 +458,13 @@ skills:
     base_probability: 0.72
     kind: active
     damage_formula:
-      base: 2000
+      base: 1000
       ally:
         force: 0.6
         agility: 3.2
         luck: 0.6
       enemy:
-        defense: 0.25
+        defense: 0.5
         agility: 0.2
     required_level: 65
     required_force: 170
@@ -478,13 +478,13 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 2500
+      base: 2000
       ally:
         force: 1.8
         agility: 4.3
         luck: 0.4
       enemy:
-        defense: 0.2
+        defense: 0.3
         agility: 0.15
     required_level: 68
     required_force: 175

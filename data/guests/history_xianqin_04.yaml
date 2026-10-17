@@ -2,6 +2,7 @@ heroes:
   purple:
   - key: hist_xianqin_0150
     name: 项燕
+    avatar: monkey/先秦与神话/项燕.png
     default_gender: male
     archetype: military
     flavor: （?—前223年）楚国名将，抗秦之魂。他是楚国末期最杰出的将领，也是西楚霸王项羽的祖父。秦将李信率二十万大军伐楚，年轻气盛，轻敌冒进。项燕老谋深算，诱敌深入，伏击秦军，大败李信，斩杀七都尉，这是战国后期楚军对秦军最辉煌的胜利。秦始皇震怒，起用老将王翦，发兵六十万再伐。项燕拼死抵抗，终因力量悬殊，兵败身死（一说自刎殉国）。楚国灭亡之际，民间流传"楚虽三户，亡秦必楚"的预言。十余年后，他的孙子项羽在巨鹿之战破釜沉舟，推翻暴秦，预言成真。项燕虽败，其精神不灭。
@@ -15,6 +16,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0153
     name: 褒姒
+    avatar: monkey/先秦与神话/褒姒.png
     default_gender: female
     archetype: civil
     flavor: （?—前771年）烽火戏诸侯，西周终结者。她出身褒国，据说生性冷淡，从不展颜欢笑。周幽王对她一见倾心，宠爱无度，千方百计只为博她一笑。有佞臣献策：点燃烽火，诸侯以为京畿有难，必率军来援；待他们发现是虚惊，慌张撤退的狼狈模样定能让王后开颜。果然，褒姒看到诸侯匆忙赶来又悻悻而去，终于莞尔一笑。此后幽王多次戏弄，诸侯不再响应。及至犬戎真正入侵，烽火狼烟却无人来救，西周灭亡。"烽火戏诸侯"的故事警示后人：失信于人，必自食其果。褒姒虽是祸首的替罪羊，却成为亡国红颜的代名词。
@@ -28,6 +30,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0154
     name: 妲己
+    avatar: monkey/先秦与神话/妲己.png
     default_gender: female
     archetype: civil
     flavor: （生卒年不详）有苏氏女，商纣王妃。先秦文献将她写入殷商末年的宫廷叙事，后世又以酒池、炮烙等故事不断铺陈其形象；《封神演义》更将她塑为狐妖。史书中的妲己只留下王妃与亡国末世相连的剪影，红颜祸水的骂名，则是后世层层叠上的回声。
@@ -41,6 +44,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0159
     name: 聂政
+    avatar: monkey/先秦与神话/聂政.png
     default_gender: male
     archetype: military
     flavor: （?—前397年）击杀韩相，刺客传奇。他本是魏国轵邑深井里人，以屠狗为业，与寡母相依为命。严仲子与韩相侠累有隙，重金聘请聂政行刺。聂政以母在为由婉拒，待母亲去世、姐姐出嫁后，他独闯韩国都城。他手持利剑，直入相府，连杀数十人，将侠累斩杀于阶下。事成之后，他深知若被生擒，必连累姐姐，遂以剑自毁面目、剜出双眼、剖腹自尽，使人无法辨认。其姐聂嫈闻讯赶来，认出弟弟遗体，伏尸大哭曰："此吾弟聂政也！"言毕亦自尽于其侧。聂政的忠义与决绝、聂嫈的勇气与亲情，成为《刺客列传》中最动人的篇章，令后世击节叹赏。
@@ -54,6 +58,7 @@ heroes:
       agility: 22
   - key: hist_xianqin_0164
     name: 庞涓
+    avatar: monkey/先秦与神话/庞涓.png
     default_gender: male
     archetype: military
     flavor: （?—前341年）魏国大将，马陵惨死。他与孙膑同出鬼谷门下，论才学本在伯仲之间，却因嫉妒心起，设计陷害同门，致孙膑受膑刑、面刺黥字。他自以为除去心腹大患，却不料孙膑诈疯逃往齐国，成为他最可怕的对手。桂陵之战，他中围魏救赵之计；马陵之战，他中增兵减灶之计，率军追入绝地。万弩齐发之际，他在火光中看到树上刻字"庞涓死于此树之下"，仰天长叹"遂成竖子之名"后自刎而亡。嫉贤妒能者的悲剧结局，警示后人千古。
@@ -67,6 +72,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0166
     name: 惠施
+    avatar: monkey/先秦与神话/惠施.png
     default_gender: male
     archetype: civil
     flavor: （约前390年—前317年）庄子挚友，名家大师。他博学多才，"学富五车"的典故正是形容他的著作之丰。他与庄子亦敌亦友，濠梁之辩成为千古名篇："子非鱼，安知鱼之乐？""子非我，安知我不知鱼之乐？"两人唇枪舌剑，妙趣横生。庄子评他"逐万物而不反"，批评他过于追求外在知识而忽略内在修养；然庄子晚年过惠施墓，叹无人可语，可见二人情谊之深。他曾任魏国相国，在政治上也颇有建树。惠施是庄子精神上最好的对手，两人的辩论丰富了中国古代哲学的内涵。
@@ -80,6 +86,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0160
     name: 豫让
+    avatar: monkey/先秦与神话/豫让.png
     default_gender: male
     archetype: military
     flavor: （?—前453年）士为知己者死。他本是智伯家臣，智伯死后欲为其报仇。先以漆涂身、吞炭变声，又伏于桥下欲刺赵襄子，皆未遂。临死前请求赵襄子脱衣，以剑击其衣袍象征报仇，然后自刎。豫让的故事，是忠诚与义气的极致演绎。
@@ -94,6 +101,7 @@ heroes:
   blue:
   - key: hist_xianqin_0167
     name: 邹衍
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （约前324年—约前250年）战国齐国稷下学者，阴阳家代表。邹衍以“五德终始”解释王朝更替，又提出“大九州”说；齐、燕两国君主都曾礼遇他，晚年入燕讲学。
@@ -107,6 +115,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0169
     name: 田忌
+    avatar: pig/武046.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）战国齐国将领。田忌与齐威王赛马时采纳孙膑的调换马匹之计，取得胜局；他任孙膑为军师，参与桂陵、马陵两次对魏作战。后来田忌与邹忌争权，出奔楚国，晚年才返回齐国。
@@ -120,6 +129,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0176
     name: 蒙武
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （?—约前219年）战国秦国将领，蒙骜之子、蒙恬之父。蒙武随王翦攻楚，参加攻破郢都、击杀项燕的战事；秦灭楚后，他继续在南方领兵，蒙氏父子三代都在秦军任将。
@@ -133,6 +143,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0180
     name: 魏冉
+    avatar: pig/文049.png
     default_gender: male
     archetype: civil
     flavor: （?—约前264年）战国秦国大臣，封穰侯，秦宣太后的异父弟。魏冉四次出任丞相，主持伐楚、攻魏，并举荐白起为将；范雎入秦后，他被秦昭襄王罢相，迁回封地，死于陶。
@@ -146,6 +157,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0165
     name: 公孙龙
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （前320年—前250年）战国名家学者，赵国人。公孙龙以“白马非马”“离坚白”等辩题游说诸侯，曾为平原君门客；《公孙龙子》保存了后人整理的部分言论。
@@ -159,6 +171,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0170
     name: 邹忌
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （约前385年—前319年）战国齐国大臣，封于邹，名忌。邹忌以自己不如城北徐公却受妻、妾和门客称赞为喻，劝齐威王广开言路；他后来担任相国，与田忌发生政争。
@@ -172,6 +185,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0183
     name: 毛遂
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: （前285年—前228年）战国赵国平原君门客。秦军围邯郸时，毛遂自荐随平原君出使楚国；楚王迟迟不肯出兵，他按剑上前陈说利害，促成楚、赵歃血结盟，平原君回国后奉他为上客。
@@ -185,6 +199,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0189
     name: 甘罗
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: （约前256年—?）战国秦国使者，甘茂之孙。秦王想让张唐出使燕国时，甘罗说服张唐成行；他又出使赵国，促使赵王攻燕并献五城，秦昭王因此封他为上卿，赐田宅。
@@ -198,6 +213,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0181
     name: 赵奢
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）战国赵国将领。赵奢任田部吏收税时，依法处置平原君赵胜的家臣，因此得到赵惠文王赏识；阏与被秦军围攻后，他率军救援并击败秦军。赵奢临终前曾告诫赵王不要任用只会谈兵的儿子赵括。
@@ -211,6 +227,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0187
     name: 鲁仲连
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: （约前305年—约前245年）战国游士，齐国人。秦军围邯郸时，鲁仲连反驳魏国使者辛垣衍尊秦为帝的主张，促使赵国坚持抵抗；秦军撤退后，他拒绝平原君赠金和封爵，离开赵国。
@@ -224,6 +241,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0192
     name: 申不害
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: （?—前337年）战国韩国相国，郑国人。申不害受到韩昭侯任用后，在韩国执政十五年，以考核官吏、隐藏君主意图等“术”整顿政务；他死后，韩昭侯仍继续使用其政令。
@@ -237,6 +255,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0197
     name: 姬丹
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: （?—前226年）燕王喜之子，燕太子丹。太子丹早年在赵国为质，秦王政即位后又入秦为质，逃回燕国便招揽田光、荆轲刺秦；刺杀失败后，秦军攻燕，燕王喜为求自保杀死太子丹。
@@ -250,6 +269,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0174
     name: 司马错
+    avatar: pig/武051.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）战国秦国将领。秦惠文王时，司马错与张仪争论先攻韩国还是先取蜀地；秦王采纳司马错的建议后，他率军灭蜀，随后平定巴地，并继续参加秦国对楚国的战争。
@@ -263,6 +283,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0177
     name: 蒙骜
+    avatar: pig/武010.png
     default_gender: male
     archetype: military
     flavor: （?—前240年）战国秦国将领，原为齐国人，蒙武之父、蒙恬祖父。蒙骜长期在秦军中攻韩、伐赵、击魏，曾攻取成皋、荥阳和魏国东郡；他死后，蒙武、蒙恬相继为秦将。
@@ -276,6 +297,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0194
     name: 公孙衍
+    avatar: monkey/其他随机角色/文男213.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）战国纵横家，魏国人，号犀首。公孙衍曾任秦国大良造，后离秦入魏，游说燕、赵、韩、魏和中山互相尊王，并多次组织合纵攻秦；他与张仪长期在外交上对立。
@@ -289,6 +311,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0196
     name: 唐雎
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）战国魏国安陵君使臣。秦王政想用五百里土地换取安陵五十里封地，唐雎奉命入秦，坚持安陵不能割让；他以“布衣之怒”反驳秦王威胁，最终使安陵得以保全。
@@ -302,6 +325,7 @@ heroes:
       agility: 12
   - key: hist_xianqin_0156
     name: 师旷
+    avatar: monkey/其他随机角色/文039_男.png
     default_gender: male
     archetype: civil
     flavor: （约前572年—约前532年）春秋晋国乐师，字子野，双目失明。师旷精通音律，曾为晋平公奏乐并以乐声判断政事得失；他也多次直谏晋平公，反对穷兵黩武。
@@ -315,6 +339,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0157
     name: 文种
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （?—前472年）春秋越国大夫，楚国人。文种与范蠡一同辅佐勾践，在会稽战败后提出离间、贿赂和疲敌等计策，帮助越国灭吴；越王勾践称霸后，他留在越国，被赐剑自杀。
@@ -328,6 +353,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0161
     name: 申包胥
+    avatar: pig/文034.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）春秋楚国大夫，与伍子胥曾为旧友。吴军攻破楚都后，申包胥赴秦国求援，在秦廷外哭泣七日，终于说动秦哀公出兵；楚国复国后，他拒绝封赏，退居山野。
@@ -341,6 +367,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0162
     name: 养由基
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）春秋楚国将领，善于射箭。养由基在鄢陵之战中射杀晋将吕锜，后来又奉命射杀叛将斗越椒；相传他能百步射中杨柳叶，故有“百步穿杨”的故事。
@@ -354,6 +381,7 @@ heroes:
       agility: 32
   - key: hist_xianqin_0168
     name: 列御寇
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （约前450年—约前375年）战国郑国思想家，名御寇。列御寇相传能御风而行，常在郑国隐居讲学；今本《列子》收有愚公移山、杞人忧天等寓言，成书年代晚于列御寇本人。
@@ -367,6 +395,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0171
     name: 淳于髡
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （约前386年—前310年）战国齐国辩士，稷下学者。淳于髡身材矮小而善于辞令，曾用“一斗亦醉、一石亦醉”的酒话劝齐威王停止长夜饮酒；他还多次出使诸侯，司马迁将其事迹列入《滑稽列传》。
@@ -380,6 +409,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0173
     name: 甘茂
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）战国秦国大臣，下蔡人。秦武王想攻韩国宜阳时，甘茂力主出兵，并以息壤之盟劝武王坚持作战，秦军最终攻下宜阳；他后来与樗里疾、魏冉争权，出奔齐国，客死异乡。
@@ -393,6 +423,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0179
     name: 樗里疾
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: （?—前300年）战国秦国宗室，秦惠文王异母弟，名疾，号樗里子。樗里疾曾在修鱼击败韩军、攻取魏国曲沃，历任秦国将相；他晚年以善于谋划和通晓堪舆闻名，死后葬于渭南。
@@ -406,6 +437,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0182
     name: 赵括
+    avatar: pig_wu_male3.png
     default_gender: male
     archetype: military
     flavor: （?—前260年）战国赵国将领，赵奢之子。赵括熟读兵书，长平之战中接替廉颇统军，改变坚守策略出兵追击秦军；白起设伏切断赵军粮道，赵括突围时中箭身亡，赵军随后投降。
@@ -419,6 +451,7 @@ heroes:
       agility: 20
   - key: hist_xianqin_0184
     name: 冯谖
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）战国齐国孟尝君门客。冯谖初入薛公门下时以弹剑求食、求车、求家，后来奉命到薛地收债，却焚毁债券、替孟尝君收买民心；孟尝君失势返薛后，他又游说魏国和齐王，使孟尝君重新得到任用。
@@ -432,6 +465,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0185
     name: 朱亥
+    avatar: monkey/其他随机角色/武044_男_.png
     default_gender: male
     archetype: military
     flavor: （?—约前225年）战国魏国大梁屠户，信陵君门客。秦围邯郸时，魏无忌窃取兵符，晋鄙仍不肯交出兵权，朱亥用铁椎击杀晋鄙，帮助信陵君率魏军救赵；他后来随信陵君居于赵国。
@@ -445,6 +479,7 @@ heroes:
       agility: 18
   - key: hist_xianqin_0186
     name: 侯嬴
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: （?—前257年）战国魏国大梁夷门监者，年逾七十。侯嬴受到信陵君礼遇后，设计让如姬盗取兵符、朱亥击杀晋鄙；信陵君出发救赵时，他因不能同行而北向自刎。
@@ -458,6 +493,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0188
     name: 高渐离
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）战国燕国乐师，荆轲好友，善击筑。易水送别荆轲时，高渐离为他击筑；荆轲死后，他隐姓埋名，最终被秦始皇召入宫中，因刺杀秦始皇失败而被杀。
@@ -471,6 +507,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0191
     name: 慎到
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: （约前395年—约前315年）战国赵国思想家，曾在齐国稷下讲学。慎到主张君主应凭借“势”行使权力，也重视公开的法令；《慎子》今已残缺，现存文字多由后世辑录。
@@ -484,6 +521,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0193
     name: 触龙
+    avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）战国赵国大臣。秦军攻赵时，触龙劝赵太后送幼子长安君到齐国做人质；他先以饮食起居和自己的小儿子为话题，再劝太后为长安君安排长远出路，最终说服太后答应此事。
@@ -497,6 +535,7 @@ heroes:
       agility: 12
   - key: hist_xianqin_0195
     name: 陈轸
+    avatar: monkey/其他随机角色/文061_男.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）战国纵横家，先后游说秦、楚、齐等国。陈轸曾用画蛇添足的故事劝楚将昭阳停止争功，也曾借卞庄子刺虎劝张仪等待时机；他晚年在楚国任职。
@@ -510,6 +549,7 @@ heroes:
       agility: 16
   - key: hist_xianqin_0199
     name: 田光
+    avatar: monkey_wu_male1.png
     default_gender: male
     archetype: military
     flavor: （?—前227年）战国燕国名士。太子丹求访刺客时，田光接受鞠武推荐并向太子举荐荆轲；太子要求他保密，田光认为这是对自己的怀疑，便自杀以证明不会泄密。
@@ -523,6 +563,7 @@ heroes:
       agility: 22
   - key: hist_xianqin_0158
     name: 要离
+    avatar: pig/武079.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）春秋吴国刺客。吴王阖闾为除掉庆忌，安排要离假装得罪吴王、投奔庆忌；要离以断臂和杀妻取得信任，最终在船上刺杀庆忌，事后自杀。
@@ -536,6 +577,7 @@ heroes:
       agility: 22
   - key: hist_xianqin_0163
     name: 赵衰
+    avatar: pig/文038.png
     default_gender: male
     archetype: civil
     flavor: （?—前622年）春秋晋国大夫，字子余，晋文公重耳流亡时的随臣。赵衰陪伴重耳十九年，返晋后参与主持国政，并推荐郤縠、胥臣等贤才；他死后，赵氏由其子赵盾继承。
@@ -550,6 +592,7 @@ heroes:
   green:
   - key: hist_xianqin_0155
     name: 太颠
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: （生卒年不详）太颠，周文王、周武王时期的大臣，常与散宜生、闳夭、南宫括并称“文王四友”。关于其具体事迹，传世文献记载较少；后世主要将他视为辅佐周室、参与灭商的功臣。
@@ -563,6 +606,7 @@ heroes:
       agility: 14
   - key: hist_xianqin_0198
     name: 秦舞阳
+    avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
     flavor: （生卒年不详）秦舞阳，战国末年燕国勇士，曾随荆轲入秦行刺秦王。到咸阳宫时他面色惊恐，荆轲以其为北方边地人、未见天子为之解释。刺杀失败后，史书未详载其结局。

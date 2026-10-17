@@ -55,6 +55,8 @@ GUEST_RESET_UPDATE_FIELDS = [
     "allocated_agility",
     "avatar_override_key",
     "avatar_asset_key",
+    "original_avatar_asset_key",
+    "use_original_avatar",
     "super_disguise_applied",
 ]
 
@@ -362,6 +364,8 @@ def apply_guest_template_reset(
     guest.xisuidan_used = 0
     guest.avatar_override_key = ""
     guest.avatar_asset_key = ""
+    guest.original_avatar_asset_key = None
+    guest.use_original_avatar = False
     if had_generated_avatar and (not target_template.avatar or uses_instance_avatar_generation(target_template.key)):
         guest.avatar_asset_key = prepare_guest_avatar_asset(
             archetype=target_template.archetype,

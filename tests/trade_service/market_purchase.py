@@ -144,8 +144,69 @@ class TestMarketPurchase:
         with pytest.raises(TradeValidationError, match="银两不足"):
             market_service.purchase_listing(buyer_manor, listing.id)
 
-    def test_purchase_rejects_seller_income_overflow_and_rolls_back(
-        self, seller_manor, buyer_manor, tradeable_item_template
+    @pytest.mark.parametrize("available_capacity", [5, 0, -5, 18000])
+    def test_purchase_discards_seller_income_overflow(
+        self, seller_manor, buyer_manor, tradeable_item_template, available_capacity, monkeypatch
+    ):
+        listing = market_service.create_listing(
+            manor=seller_manor,
+            item_key="test_tradeable_item",
+            quantity=10,
+            unit_price=2000,
+            duration=7200,
+        )
+        seller_manor.refresh_from_db()
+        seller_manor.silver_capacity = seller_manor.silver + available_capacity
+        seller_manor.save(update_fields=["silver_capacity"])
+        seller_silver_before = seller_manor.silver
+        buyer_silver_before = buyer_manor.silver
+
+        messages = []
+        notifications = []
+        monkeypatch.setattr(market_service, "send_market_message", lambda **kwargs: messages.append(kwargs))
+        monkeypatch.setattr(
+            market_service,
+            "send_market_notification",
+            lambda user_id, payload, **kwargs: notifications.append(payload),
+        )
+        transaction = market_service.purchase_listing(buyer_manor, listing.id)
+
+        seller_manor.refresh_from_db()
+        buyer_manor.refresh_from_db()
+        listing.refresh_from_db()
+        credited = max(0, available_capacity)
+        assert seller_manor.silver == seller_silver_before + credited
+        assert buyer_manor.silver == buyer_silver_before - 20000
+        assert listing.status == MarketListing.Status.SOLD
+        assert listing.buyer_id == buyer_manor.pk
+        transaction.refresh_from_db()
+        assert transaction.total_price == 20000
+        assert transaction.tax_amount == 2000
+        assert transaction.seller_received == credited
+        assert MarketTransaction.objects.filter(listing=listing).count() == 1
+        assert (
+            InventoryItem.objects.get(
+                manor=buyer_manor,
+                template=tradeable_item_template,
+                storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+            ).quantity
+            == 10
+        )
+        seller_message = next(message for message in messages if message["manor"].pk == seller_manor.pk)
+        assert f"- 实际到账：{credited:,} 银两" in seller_message["body"]
+        if credited < 18000:
+            assert f"超出容量的 {18000 - credited:,} 银两已丢弃" in seller_message["body"]
+        else:
+            assert "丢弃" not in seller_message["body"]
+        assert notifications[0]["silver_received"] == credited
+
+        with pytest.raises(TradeValidationError, match="已下架"):
+            market_service.purchase_listing(buyer_manor, listing.id)
+        buyer_manor.refresh_from_db()
+        assert buyer_manor.silver == buyer_silver_before - 20000
+
+    def test_purchase_with_seller_overflow_rolls_back_when_item_grant_fails(
+        self, seller_manor, buyer_manor, tradeable_item_template, monkeypatch
     ):
         listing = market_service.create_listing(
             manor=seller_manor,
@@ -160,7 +221,11 @@ class TestMarketPurchase:
         seller_silver_before = seller_manor.silver
         buyer_silver_before = buyer_manor.silver
 
-        with pytest.raises(TradeValidationError, match="卖家银库空间不足"):
+        def fail_item_grant(*args, **kwargs):
+            raise TradeValidationError("仓库无法收取物品")
+
+        monkeypatch.setattr(market_service, "grant_market_item_locked", fail_item_grant)
+        with pytest.raises(TradeValidationError, match="仓库无法收取物品"):
             market_service.purchase_listing(buyer_manor, listing.id)
 
         seller_manor.refresh_from_db()
@@ -170,11 +235,7 @@ class TestMarketPurchase:
         assert buyer_manor.silver == buyer_silver_before
         assert listing.status == MarketListing.Status.ACTIVE
         assert not MarketTransaction.objects.filter(listing=listing).exists()
-        assert not InventoryItem.objects.filter(
-            manor=buyer_manor,
-            template=tradeable_item_template,
-            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
-        ).exists()
+        assert not InventoryItem.objects.filter(manor=buyer_manor, template=tradeable_item_template).exists()
 
     def test_purchase_expired_listing(self, seller_manor, buyer_manor):
         listing = market_service.create_listing(

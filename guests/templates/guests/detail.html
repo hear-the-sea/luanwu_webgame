@@ -29,6 +29,23 @@
                     {% endif %}
                 </div>
             </div>
+            {% if guest.can_switch_avatar %}
+            <form method="post" action="{% url 'guests:switch_avatar' guest.id %}" class="avatar-switch">
+                {% csrf_token %}
+                <div class="pill avatar-switch-current">
+                    <span>当前：{% if guest.use_original_avatar %}原形象{% else %}易容形象{% endif %}</span>
+                    <button type="submit" name="appearance"
+                            value="{% if guest.use_original_avatar %}disguise{% else %}original{% endif %}"
+                            class="avatar-switch-icon"
+                            aria-label="{% if guest.use_original_avatar %}切换为易容形象{% else %}切换为原形象{% endif %}"
+                            title="{% if guest.use_original_avatar %}切换为易容形象{% else %}切换为原形象{% endif %}（免费，属性加成保持生效）">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                            <path d="M3 11a9 9 0 0 1 15.36-6.36L21 7M21 3v4h-4M21 13a9 9 0 0 1-15.36 6.36L3 17M3 21v-4h4"/>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+            {% endif %}
             <div class="pill">状态：{{ guest.get_status_display }}</div>
             <div class="pill">稀有度：{{ guest.rarity|rarity_label }}</div>
         </div>

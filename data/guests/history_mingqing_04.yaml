@@ -2,6 +2,7 @@ heroes:
   blue:
   - key: hist_mingqing_0129
     name: 方苞
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （1668年—1749年）清代文学家，字灵皋，号望溪。方苞因戴名世《南山集》案被捕，获释后入翰林，曾参与修撰《三礼》和《四库全书》；他提出古文写作要讲“义法”，著有《方望溪先生全集》。
@@ -15,6 +16,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0130
     name: 刘大櫆
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: （1698年—1779年）清代文学家，字才甫，号海峰。刘大櫆长期在书院讲学，曾任黟县教谕、安徽学政；他继承方苞的古文理论，强调文章的“神气、音节、字句”，姚鼐年轻时曾向他学习。
@@ -28,6 +30,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0131
     name: 姚鼐
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （1731年—1815年）清代文学家，字姬传，号梦谷，桐城派代表人物。姚鼐曾任刑部郎中、四库全书馆纂修官，乾隆三十九年辞官后主持江南多所书院；他编选《古文辞类纂》，提出义理、考据、辞章兼备的写作主张。
@@ -41,6 +44,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0145
     name: 柳如是
+    avatar: monkey/其他随机角色/文084_女.png
     default_gender: female
     archetype: civil
     flavor: （1618年—1664年）明末清初诗人、名妓，本名柳隐，字如是。柳如是与钱谦益结缡后居虞山，常与文人唱和；清军南下时，她曾劝钱谦益守节，钱谦益晚年去世后，柳如是在家中自缢。
@@ -54,6 +58,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0146
     name: 李香君
+    avatar: monkey_wen_female9.png
     default_gender: female
     archetype: civil
     flavor: （1624年—1654年）明末秦淮歌妓，侯方域的恋人。李香君拒绝阮大铖的拉拢，抗拒逼婚时撞头血溅扇面；侯方域后来将扇面交给杨龙友，制成《桃花扇》，李香君的晚年事迹已难详考。
@@ -67,6 +72,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0155
     name: 李光地
+    avatar: pig/文028.png
     default_gender: male
     archetype: civil
     flavor: （1642年—1718年）清代官员、理学家，字晋卿，号厚庵。李光地在康熙年间任翰林、直隶巡抚、吏部尚书，曾为平台湾向康熙帝推荐施琅；他参与编纂《朱子全书》，晚年以大学士致仕。
@@ -80,6 +86,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0156
     name: 纳兰明珠
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （1635年—1708年）清代权臣，叶赫那拉氏，康熙朝大学士。纳兰明珠参与平定三藩、收复台湾和对俄谈判等政务，曾长期得到康熙帝信任；后来因结党与索额图争斗失势，被罢去大学士，晚年病死。
@@ -93,6 +100,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0157
     name: 赫舍里·索额图
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （1636年—1703年）清代权臣，索尼之子，康熙朝大学士。索额图参与擒拿鳌拜、平定三藩，并作为谈判代表签订《尼布楚条约》；晚年卷入皇太子胤礽的储位争斗，被康熙帝下令幽禁，死于幽所。
@@ -106,6 +114,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0108
     name: 吴有性
+    avatar: pig/武064.png
     default_gender: male
     archetype: civil
     flavor: （1582年—1652年）明末医学家，字又可，江苏吴县人。崇祯年间疫病流行时，吴有性行医观察病情，认为疫病由“戾气”从口鼻侵入人体，著成《温疫论》；明亡后，他曾隐居乡里继续行医。
@@ -119,6 +128,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0117
     name: 张景岳
+    avatar: pig/文040.png
     default_gender: male
     archetype: civil
     flavor: （1563年—1640年）明代医学家，字介宾，号景岳。张景岳早年从军，后来专心行医和著述，整理《黄帝内经》为《类经》，又编写《景岳全书》；他主张治疗虚损病重视温补，晚年居会稽。
@@ -132,6 +142,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0121
     name: 孙承宗
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: （1563年—1638年）明末官员、辽东经略，字稚绳，号恺阳。孙承宗曾任兵部尚书，驻守辽东时修筑关宁锦防线，收复部分失地并培养袁崇焕等将领；崇祯十一年清军入关，他在高阳组织守城，城破后自尽。
@@ -145,6 +156,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0124
     name: 魏良辅
+    avatar: monkey_wu_male9.png
     default_gender: male
     archetype: civil
     flavor: （1489年—1566年）明代戏曲音乐家，昆山人。魏良辅吸收海盐腔、余姚腔等唱腔，改造昆山腔，形成婉转细腻的“水磨腔”；他还整理笛、笙、琵琶等伴奏，晚年在苏州传授曲艺。
@@ -158,6 +170,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0114
     name: 王肯堂
+    avatar: pig/文040.png
     default_gender: male
     archetype: civil
     flavor: （1549年—1613年）明代医学家、官员，字宇泰。王肯堂曾任南京吏部郎中，公务之余搜集医方，编成《证治准绳》；他还著有《郁冈斋笔尘》，涉及法律、天文和佛学等内容，晚年在家乡行医著述。
@@ -171,6 +184,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0115
     name: 陈实功
+    avatar: pig/文040.png
     default_gender: male
     archetype: civil
     flavor: （1555年—1636年）明代外科医家，字毓仁，号若虚。陈实功长期在民间行医，擅长治疗痈疽、疮疡，著有《外科正宗》；书中列出“医家五戒十要”，要求医者诊病用药不分贫富，晚年卒于家乡。
@@ -184,6 +198,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0116
     name: 李中梓
+    avatar: pig_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （1588年—1655年）明末清初医家，字士材，号念莪。李中梓行医时重视辨证和脾肾调养，著有《医宗必读》《内经知要》等书；明清易代后，他仍在江南行医授徒，晚年病逝。
@@ -197,6 +212,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0122
     name: 陈洪绶
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: （1598年—1652年）明末清初画家，字章侯，号老莲。陈洪绶以人物画和版画闻名，明亡后曾避居绍兴、杭州，后来出家又还俗；他晚年仍作画，留下《九歌图》《水浒叶子》等作品。
@@ -210,6 +226,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0138
     name: 万斯同
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: （1638年—1702年）清初史学家，字季野，号石园。万斯同拒绝清廷授予官职，以布衣身份参与《明史》编纂，长期在宁波、京师等地校订史稿；他晚年仍为明史馆提供材料，卒于京师。
@@ -223,6 +240,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0152
     name: 索尼
+    avatar: pig/文028.png
     default_gender: male
     archetype: civil
     flavor: （1601年—1667年）清初大臣，满洲赫舍里氏，康熙初年四辅政大臣之首。索尼在顺治朝曾因反对多尔衮而受压，康熙即位后参与牵制鳌拜；他病重时推荐索额图辅政，康熙六年去世。
@@ -236,6 +254,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0154
     name: 施世纶
+    avatar: pig/文050.png
     default_gender: male
     archetype: civil
     flavor: （1659年—1722年）清代官员，字文贤，号浔江，施琅之子。施世纶历任扬州知府、江宁知府、漕运总督等职，任内多次开仓赈济、查办贪官；他因断案严明被百姓称为“施青天”，卒于仓场总督任上。
@@ -249,6 +268,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0148
     name: 董小宛
+    avatar: monkey/其他随机角色/文064_女.png
     default_gender: female
     archetype: civil
     flavor: （1624年—1651年）明末清初秦淮名妓，名董白，字小宛。董小宛与冒襄相识后，随冒襄居住如皋，侍奉冒母并整理家务；清顺治八年，她因病去世，冒襄后来写《影梅庵忆语》追述两人生活。
@@ -263,6 +283,7 @@ heroes:
   green:
   - key: hist_mingqing_0109
     name: 缪希雍
+    avatar: pig_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （1546年—1627年）字仲醇，明代医家、本草学家。著《神农本草经疏》《先醒斋医学广笔记》，重视药性、产地与临床辨证。
@@ -276,6 +297,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0110
     name: 杨继洲
+    avatar: pig_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （约1522年—1620年）字玄洲，明代针灸医家。汇集历代针灸文献与医案，编成《针灸大成》，对后世针灸教育影响深远。
@@ -289,6 +311,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0111
     name: 汪机
+    avatar: pig/文040.png
     default_gender: male
     archetype: civil
     flavor: （1463年—1539年）字省之，号石山，明代新安医家。重视脾胃、营卫与气血辨治，著有《石山医案》等。
@@ -302,6 +325,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0112
     name: 徐春甫
+    avatar: pig/文040.png
     default_gender: male
     archetype: civil
     flavor: （约1520年—1596年）字汝元，明代医家。编纂《古今医统大全》，并组织一体堂宅仁医会，汇辑医籍、医论与方术。
@@ -315,6 +339,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0113
     name: 武之望
+    avatar: pig/文040.png
     default_gender: male
     archetype: civil
     flavor: （1552年—1629年）字叔卿，明代官员、医家。编撰《济阴纲目》《济阳纲目》，系统整理妇科病证与历代医论。
@@ -328,6 +353,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0118
     name: 邢侗
+    avatar: pig/文041.png
     default_gender: male
     archetype: civil
     flavor: （1551年—1612年）字子愿，临邑人，明代书法家、官员，官至太仆寺少卿。精研晋唐法帖，与董其昌、米万钟、张瑞图并称晚明书家。
@@ -341,6 +367,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0119
     name: 米万钟
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: （1570年—1628年）字仲诏，号友石，明代官员、书画家。书法与董其昌并称“南董北米”，又以收藏奇石、营造勺园闻名。
@@ -354,6 +381,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0120
     name: 莫是龙
+    avatar: pig/文041.png
     default_gender: male
     archetype: civil
     flavor: （1537年—1587年）字云卿，明代画家、画论家。善画山水，关于南北宗与文人画的论述，对晚明画学发展有先声之功。
@@ -367,6 +395,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0123
     name: 曾鲸
+    avatar: pig/文041.png
     default_gender: male
     archetype: civil
     flavor: （1564年—1647年）字波臣，明末肖像画家。重视线描、设色及面部明暗表现，形成“波臣派”，对明清肖像画影响较大。
@@ -380,6 +409,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0125
     name: 梁辰鱼
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: （1521年—1594年）字伯龙，明代戏曲家。所作《浣纱记》取材吴越兴亡，在昆山腔发展的背景下推动昆曲传奇传播。
@@ -393,6 +423,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0126
     name: 阮大铖
+    avatar: pig/文028.png
     default_gender: male
     archetype: civil
     flavor: （1587年—1646年）字集之，号圆海，明末官员、戏曲家。著有《燕子笺》《春灯谜》等，曾涉魏忠贤党争，南明弘光朝依附马士英。
@@ -406,6 +437,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0127
     name: 李玉
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: （约1591年—1671年）字玄玉，明末清初戏曲家，苏州派代表作家。作品有《清忠谱》《一捧雪》等，善以戏曲表现权势、信义与社会冲突。
@@ -419,6 +451,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0128
     name: 褚人获
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （约1635年—1719年）字学稼，号坚瓠庵主，清初文人、笔记家。编写《隋唐演义》，并著《坚瓠集》，辑录掌故、风俗与文人轶事。
@@ -432,6 +465,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0132
     name: 阮葵生
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: （1727年—1789年）字宝台，号次山，清代官员、笔记家。著《茶余客话》，记录乾隆时期的制度、风俗、科场及社会见闻。
@@ -445,6 +479,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0133
     name: 陆继辂
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: （1772年—1834年）字祁孙，号修源，清代阳湖派文人。其文章兼重经世与民生，关注地方事务，体现阳湖派兼采经史、古文的特点。
@@ -458,6 +493,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0134
     name: 查继佐
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: （1601年—1676年）字伊璜，号东山，明末清初史家、文人。曾因庄廷鑨《明史》案受审，著编年史《罪惟录》，保存明末清初史料。
@@ -471,6 +507,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0135
     name: 陈确
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: （1604年—1677年）字乾初，明末清初思想家，刘宗周弟子。明亡后不仕清廷，著《大学辨》等，重视道德实践与日用人情。
@@ -484,6 +521,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0136
     name: 魏禧
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: （1624年—1681年）字冰叔，号勺庭，清初散文家、思想家，清初三大家之一。长期居宁都翠微峰，文章多论人物气节与遗民处境。
@@ -497,6 +535,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0137
     name: 黄宗炎
+    avatar: monkey/其他随机角色/文_男123.png
     default_gender: male
     archetype: civil
     flavor: （1616年—1686年）字晦木，黄宗羲之弟，清初易学家。著《图书辨惑》《易学象数论》等，考辨河图、洛书及象数学说。
@@ -510,6 +549,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0139
     name: 沈宸荃
+    avatar: monkey_wu_male7.png
     default_gender: male
     archetype: military
     flavor: （1606年—1652年）字伯荪，南明官员、将领。明亡后参与鲁王政权的海上抗清，曾任兵部尚书，后在海上遇风遇难。
@@ -523,6 +563,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0140
     name: 张同敞
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: （1617年—1650年）字昭宣，张居正曾孙，南明官员、将领。与瞿式耜共同守桂林，城破被俘后拒绝降清，遇害。
@@ -536,6 +577,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0141
     name: 蔡复一
+    avatar: monkey/其他随机角色/武038_男.png
     default_gender: male
     archetype: military
     flavor: （1576年—1625年）字敬夫，明代官员、军事统帅。曾在西南处理播州善后及奢安之乱，兼顾军务、粮饷与地方治理，卒于任上。
@@ -549,6 +591,7 @@ heroes:
       agility: 16
   - key: hist_mingqing_0142
     name: 屈大均
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: （1630年—1696年）字翁山，号华夫，明末清初诗人、学者，岭南三大家之一。著《广东新语》，记录岭南山川、物产、风俗与人物。
@@ -562,6 +605,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0143
     name: 陈恭尹
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: （1631年—1700年）明末清初诗人、书法家，岭南三大家之一。其父陈邦彦抗清殉国，他以诗文和书法保存岭南遗民记忆。
@@ -575,6 +619,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0144
     name: 梁佩兰
+    avatar: monkey_wen_male1.png
     default_gender: male
     archetype: civil
     flavor: （1629年—1705年）字芝五，号药亭，清初诗人，岭南三大家之一。康熙年间中进士，诗作多写岭南山海风物与易代感怀。
@@ -588,6 +633,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0147
     name: 顾横波
+    avatar: monkey_wen_female5.png
     default_gender: female
     archetype: civil
     flavor: （约1619年—1664年）原名顾媚，明末秦淮名妓，秦淮八艳之一。工诗、书、画，后嫁清初官员龚鼎孳，获诰封一品夫人。
@@ -601,6 +647,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0149
     name: 卞玉京
+    avatar: monkey_wen_female10.png
     default_gender: female
     archetype: civil
     flavor: （约1623年—1665年）本名卞赛，明末清初秦淮名妓，秦淮八艳之一。善诗、琴、画兰，入清后出家为女道士。
@@ -614,6 +661,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0150
     name: 寇白门
+    avatar: monkey/其他随机角色/文064_女.png
     default_gender: female
     archetype: civil
     flavor: （约1622年—？）本名寇湄，明末秦淮名妓，秦淮八艳之一。曾与朱国弼成婚，明亡后为夫筹措赎金，后与其分离。
@@ -627,6 +675,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0151
     name: 陈贞慧
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: （1604年—1656年）字定生，明末清初文人，复社成员、明季四公子之一。曾因反对阮大铖入狱，明亡后隐居著述。
@@ -640,6 +689,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0153
     name: 苏麻喇姑
+    avatar: monkey_wen_female7.png
     default_gender: female
     archetype: civil
     flavor: （约1612年—1705年）蒙古族，清初孝庄文皇后侍女，通满、蒙文字，曾教康熙帝满文并抚养皇子胤祹，卒后以嫔礼葬。

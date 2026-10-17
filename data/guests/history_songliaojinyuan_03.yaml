@@ -2,6 +2,7 @@ heroes:
   blue:
   - key: hist_songliaojinyuan_0109
     name: 文彦博
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: （1006年-1097年）北宋名相，历仕四朝五十年。他出将入相，功勋卓著，是北宋政坛的常青树。他主持平定贝州王则起义，又多次出任宰相，政绩斐然。其稳健持重，使北宋初政局屡转危为安。其政绩在史书中被反复称述。
@@ -15,6 +16,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0110
     name: 吕蒙正
+    avatar: pig/文014.png
     default_gender: male
     archetype: civil
     flavor: （944年—1011年）北宋宰相，字圣功，洛阳人。吕蒙正太平兴国二年进士第一，三度入相，曾主持编修《太宗实录》；大中祥符四年病逝。
@@ -28,6 +30,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0111
     name: 赵恒
+    avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: （968年—1022年）宋真宗，宋太宗第三子。赵恒在寇准建议下亲征澶州，与辽订立澶渊之盟；晚年封禅泰山、尊奉天书，乾兴元年病逝。
@@ -42,6 +45,7 @@ heroes:
   green:
   - key: hist_songliaojinyuan_0112
     name: 章惇
+    avatar: pig/文049.png
     default_gender: male
     archetype: civil
     flavor: 章惇（1035—1106），字子厚，北宋政治家，新党骨干。哲宗亲政后任宰相，主持“绍述”，恢复熙宁、元丰新法，并加强对西夏的军事行动；徽宗即位后因反对其继位被贬，卒于湖州。
@@ -55,6 +59,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0113
     name: 曾公亮
+    avatar: pig/文050.png
     default_gender: male
     archetype: civil
     flavor: 曾公亮（999—1078），字明仲，北宋宰相、军事学家。历仕仁宗、英宗、神宗，曾任枢密使、宰相；与丁度奉诏编修《武经总要》，记载宋代军制、兵器及火药技术。
@@ -68,6 +73,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0114
     name: 丁谓
+    avatar: duck_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: 丁谓（966—1037），字谓之，后改字公言，北宋大臣、文学家。曾任宰相，参与营建玉清昭应宫，主持运料、疏浚和填土工程；后与寇准争权并专擅政事，遭贬雷州。
@@ -81,6 +87,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0115
     name: 范纯仁
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: 范纯仁（1027—1101），字尧夫，范仲淹次子，北宋政治家。历任地方及中枢官职，元祐年间任宰相，主张宽简持重；绍圣后因党争被贬，晚年归居，卒谥忠宣。
@@ -94,6 +101,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0116
     name: 张耒
+    avatar: pig/文016.png
     default_gender: male
     archetype: civil
     flavor: 张耒（1054—1114），字文潜，号柯山，北宋诗人，“苏门四学士”之一。诗学白居易、张籍，作品多写民生与日常生活，语言平易；著有《柯山集》，晚年受新旧党争牵连。
@@ -107,6 +115,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0117
     name: 陈师道
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: 陈师道（1053—1102），字履常，号后山居士，北宋诗人，江西诗派重要作家。他与黄庭坚并称“黄陈”，重视诗歌锤炼和法度，著有《后山集》，一生清贫而以诗文自守。
@@ -120,6 +129,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0118
     name: 王禹偁
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: 王禹偁（954—1001），字元之，北宋文学家、政治家，太平兴国进士。任知制诰时以直言著称，屡因论事被贬；他提倡韩愈、柳宗元的古文，著有《小畜集》等。
@@ -133,6 +143,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0119
     name: 宋祁
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: 宋祁（998—1061），字子京，北宋文学家、史学家，与兄宋庠并称“二宋”。他参与编修《新唐书》，主要负责列传，词作《玉楼春》有“红杏枝头春意闹”名句，著有《景文集》。
@@ -146,6 +157,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0120
     name: 林逋
+    avatar: pig/文018.png
     default_gender: male
     archetype: civil
     flavor: 林逋（967—1028），字君复，北宋隐逸诗人，长期居杭州西湖孤山，世称林和靖、和靖先生。他以咏梅诗著名，“梅妻鹤子”是后世对其隐居生活的称誉，代表作有《山园小梅》。
@@ -159,6 +171,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0121
     name: 钱惟演
+    avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: 钱惟演（977—1034），字希圣，吴越王钱俶之子，入宋后任官并成为文学家。他是西昆体的重要作家，诗宗李商隐，参与馆阁文献编纂，著有《典懿集》等。
@@ -172,6 +185,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0122
     name: 王曾
+    avatar: pig/文032.png
     default_gender: male
     archetype: civil
     flavor: 王曾（978—1038），字孝先，北宋宰相。咸平年间乡试、会试、殿试皆居第一，成为连中三元的状元；历任地方和中枢官职，入相后以清谨持重著称。
@@ -185,6 +199,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0123
     name: 张方平
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: 张方平（1007—1091），字安道，号乐全居士，北宋政治家、文学家。历仕仁宗至哲宗，任益州知州时以宽简治蜀；他曾荐举苏洵、苏轼父子，对北宋文坛有重要影响。
@@ -198,6 +213,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0124
     name: 吕公着
+    avatar: pig/文048.png
     default_gender: male
     archetype: civil
     flavor: 吕公著（1018—1089），字晦叔，吕夷简之子，北宋大臣。历任中书、枢密等职，元祐年间任宰相，支持司马光等反对王安石新法；后主持政务，卒谥正献。
@@ -211,6 +227,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0125
     name: 王珪
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: 王珪（1019—1085），字禹玉，北宋宰相、文学家。庆历进士，历任翰林学士、参知政事，元丰年间长期居相位；因奏对多承旨意，后世有“三旨相公”之称。
@@ -224,6 +241,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0126
     name: 刘挚
+    avatar: pig/文014.png
     default_gender: male
     archetype: civil
     flavor: 刘挚（约1030—1097），字莘老，北宋政治家，元祐年间旧党重臣。哲宗初年任尚书右仆射，主持废除部分熙丰新法；绍圣后新党得势，屡遭贬谪，卒于贬所。
@@ -237,6 +255,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0127
     name: 吕大防
+    avatar: pig/文041.png
     default_gender: male
     archetype: civil
     flavor: 吕大防（1027—1097），字微仲，北宋政治家、书法家。元祐年间任宰相，司马光去世后主持朝政，延续废新法、复旧制的政策；绍圣后被贬至循州，卒于贬所。
@@ -250,6 +269,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0128
     name: 范祖禹
+    avatar: monkey_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: 范祖禹（1041—1098），字淳夫，北宋史学家、文学家。协助司马光编修《资治通鉴》，主要负责唐代史料，并著《唐鉴》；元祐时期参与政务，绍圣后因党争被贬，卒于化州。
@@ -263,6 +283,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0129
     name: 吕惠卿
+    avatar: pig/文030.png
     default_gender: male
     archetype: civil
     flavor: 吕惠卿（1032—1111），字吉甫，北宋政治家，新党重要人物。受王安石任用，参与制定和推行青苗、免役等新法，曾任参知政事；后与王安石失和，晚年被贬，列入《宋史·奸臣传》。
@@ -276,6 +297,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0130
     name: 蔡确
+    avatar: pig/文049.png
     default_gender: male
     archetype: civil
     flavor: 蔡确（1037—1093），字持正，北宋宰相，新党重臣。元丰年间参与推行熙丰新法，曾主持对西夏战争；元祐年间因《夏日登车盖亭诗》被指讥刺朝政，形成“车盖亭诗案”，最终贬死。
@@ -289,6 +311,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0131
     name: 邢恕
+    avatar: pig/文028.png
     default_gender: male
     archetype: civil
     flavor: 邢恕（约1035—1109），字和叔，北宋官员。早年受吕公著推荐，后依附蔡确等新党人物，参与排斥元祐旧臣；绍圣年间任御史中丞，因政治作为被《宋史》列入奸臣传。
@@ -302,6 +325,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0132
     name: 蔡卞
+    avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
     flavor: 蔡卞（1048—1117），字元度，北宋政治家、书法家，蔡京之弟、王安石女婿。参与推行熙丰新法，历任中书舍人、尚书等职；书法与蔡京并称“二蔡”，著有《毛诗名物解》等。
@@ -315,6 +339,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0133
     name: 曾布
+    avatar: pig/文014.png
     default_gender: male
     archetype: civil
     flavor: 曾布（约1036—1107），字子宣，北宋政治家，曾巩之弟。早年参与王安石变法，后因政见分歧与新党人物多有冲突；徽宗初年任宰相，旋因党争罢相，卒于润州。
@@ -328,6 +353,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0134
     name: 吴充
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: 吴充（1021—1080），字冲卿，北宋大臣、宰相，与王安石有姻亲关系。熙宁年间任参知政事，王安石罢相后继任宰相；他在新法问题上持较为中立的立场，卒谥正宪。
@@ -341,6 +367,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0135
     name: 陈瓘
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: 陈瓘（1057—1124），字莹中，北宋谏臣，元丰二年进士第三名。任职期间多次弹劾章惇、蔡京等权臣，著《尊尧集》辨析政事；因此屡遭贬谪，卒于楚州，谥忠肃。
@@ -354,6 +381,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0136
     name: 邹浩
+    avatar: monkey_wen_male9.png
     default_gender: male
     archetype: civil
     flavor: 邹浩（1060—1111），字志完，北宋谏臣。因上疏反对册立刘妃为皇后而被贬岭南，徽宗初年一度召还，后又因党争受迫害；著有《道乡集》，卒谥忠。
@@ -367,6 +395,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0137
     name: 陈尧佐
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: 陈尧佐（963—1044），字希元，北宋政治家、文学家，陈尧叟、陈尧咨之弟。历任地方官和宰相，任职期间重视治水；他擅长书法，工于隶书，卒谥文惠。
@@ -380,6 +409,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0138
     name: 陈尧咨
+    avatar: monkey/其他随机角色/武038_男.png
     default_gender: male
     archetype: military
     flavor: 陈尧咨（970—1034），字嘉谟，北宋官员、将领，咸平三年状元。其善射事迹见于《宋史》和《卖油翁》，历任地方官、节度使，曾参与西北边防，卒谥康肃。
@@ -393,6 +423,7 @@ heroes:
       agility: 16
   - key: hist_songliaojinyuan_0139
     name: 杜衍
+    avatar: pig/文049.png
     default_gender: male
     archetype: civil
     flavor: 杜衍（978—1057），字世昌，北宋政治家、宰相。庆历年间支持范仲淹等推行新政，任相仅百余日即因改革受阻罢相；他以拒绝未经正常程序的任命、生活俭朴著称。
@@ -406,6 +437,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0140
     name: 庞籍
+    avatar: monkey_wen_male11.png
     default_gender: male
     archetype: civil
     flavor: 庞籍（988—1063），字醇之，北宋政治家、军事家。长期任职陕西，参与组织宋夏边防与战争，后官至宰相；他曾推荐狄青，熟悉西北军政，卒谥庄敏。
@@ -419,6 +451,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0141
     name: 薛居正
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: 薛居正（912—981），字子平，五代至北宋初年政治家、史学家。历仕后晋、后汉、后周，入宋后任宰相；他主持编修《旧五代史》，为研究五代历史保存了重要史料。
@@ -432,6 +465,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0142
     name: 李昉
+    avatar: monkey/其他随机角色/文101_男.png
     default_gender: male
     archetype: civil
     flavor: 李昉（925—996），字明远，五代至北宋初年政治家、文学家。历仕后汉、后周，入宋后官至宰相；他参与主持《太平御览》《太平广记》《文苑英华》等大型类书的编纂。
@@ -445,6 +479,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0143
     name: 徐铉
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: 徐铉（916—991），字鼎臣，五代至北宋初年文学家、文字学家。早年仕南唐，南唐亡后入宋；奉诏与句中正等校订《说文解字》，形成后世所称“大徐本”，与弟徐锴并称“二徐”。
@@ -458,6 +493,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0144
     name: 李沆
+    avatar: pig/文032.png
     default_gender: male
     archetype: civil
     flavor: 李沆（947—1004），字太初，北宋宰相。历仕太宗、真宗，任相时以持重守成著称，主张不轻改朝廷法制；他经常将水旱、盗贼等实际政情奏报皇帝，卒谥文靖。
@@ -471,6 +507,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0145
     name: 向敏中
+    avatar: pig/文014.png
     default_gender: male
     archetype: civil
     flavor: 向敏中（949—1020），字常之，北宋大臣、宰相。历仕太宗、真宗，曾任枢密使、宰相；他为政端谨，任地方官时重视审理积案，卒后获赠太尉、中书令，谥文简。
@@ -484,6 +521,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0146
     name: 张咏
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: 张咏（946—1015），字复之，北宋官员、文学家。历任益州、杭州等地长官，任益州时整顿吏治、治理地方有声；他为政刚果，著有《张乖崖集》，卒谥忠定。
@@ -497,6 +535,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0147
     name: 王钦若
+    avatar: monkey_wen_male6.png
     default_gender: male
     archetype: civil
     flavor: 王钦若（963—1025），字定国，北宋宰相、文学家。参与编纂《册府元龟》，历任枢密使、宰相；他与丁谓等在真宗、仁宗时期居于权力中枢，后世因其政治作为有“五鬼”之讥。
@@ -510,6 +549,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0148
     name: 陈彭年
+    avatar: pig/文048.png
     default_gender: male
     archetype: civil
     flavor: 陈彭年（961—1017），字永年，北宋官员、音韵学家。曾任参知政事，奉诏与丘雍等修订《切韵》，编成《广韵》；又参与《册府元龟》《玉篇》等典籍的校订和编纂。
@@ -523,6 +563,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0149
     name: 胡瑗
+    avatar: pig/文039.png
     default_gender: male
     archetype: civil
     flavor: 胡瑗（993—1059），字翼之，北宋教育家、理学先驱，世称安定先生。他在苏州、湖州及太学讲学，提出“明体达用”，创立分斋教学制度，与孙复、石介并称宋初三先生。
@@ -536,6 +577,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0150
     name: 孙复
+    avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
     flavor: 孙复（992—1057），字明复，号富春，北宋学者，世称泰山先生。他长期在泰山讲学，后任国子监直讲，著有《春秋尊王发微》，与胡瑗、石介并称宋初三先生。
@@ -549,6 +591,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0151
     name: 石介
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: 石介（1005—1045），字守道，北宋学者，世称徂徕先生。曾任国子监直讲，与胡瑗、孙复并称宋初三先生；他倡导古文、排斥佛老，著有《中国论》等。
@@ -562,6 +605,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0152
     name: 刘敞
+    avatar: monkey/其他随机角色/文052_男.png
     default_gender: male
     archetype: civil
     flavor: 刘敞（1019—1068），字原父，号公是，北宋经学家、史学家、文学家。精研《春秋》，著有《春秋权衡》《七经小传》；他还研究金石、天文、地理，曾出使契丹。
@@ -575,6 +619,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0153
     name: 杨亿
+    avatar: pig/文033.png
     default_gender: male
     archetype: civil
     flavor: 杨亿（974—1020），字大年，北宋文学家、翰林学士。幼年以神童知名，参与编修《册府元龟》，与刘筠、钱惟演等倡导西昆体；他编有《西昆酬唱集》，收录相关诗作。
@@ -588,6 +633,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0154
     name: 刘筠
+    avatar: pig/文011.png
     default_gender: male
     archetype: civil
     flavor: 刘筠（971—1031），字子仪，北宋官员、诗人，西昆体代表作家。历任翰林学士等职，与杨亿、钱惟演唱和，参与编修《册府元龟》，其诗以用典精切、辞藻工丽见称。
@@ -601,6 +647,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0155
     name: 穆修
+    avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
     flavor: 穆修（979—1032），字伯长，北宋文学家。早年倡导韩愈、柳宗元的古文，反对西昆体的骈俪文风；他曾校刻、传播韩愈文集，对尹洙、苏舜钦及欧阳修等人的古文创作有影响。
@@ -614,6 +661,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0156
     name: 尹洙
+    avatar: pig_wen_male4.png
     default_gender: male
     archetype: civil
     flavor: 尹洙（约1001—1047），字师鲁，北宋文学家、官员。与欧阳修、梅尧臣同倡古文，文章简练有法，论兵尤有见地；庆历新政后屡遭贬谪，著有《河南先生文集》。
@@ -627,6 +675,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0157
     name: 苏舜钦
+    avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
     flavor: 苏舜钦（1008—1048），字子美，北宋诗人、散文家，与梅尧臣并称“苏梅”。他主张改革西昆体的浮靡文风；庆历年间因进奏院事件被除名，退居苏州沧浪亭。
@@ -640,6 +689,7 @@ heroes:
       agility: 12
   - key: hist_songliaojinyuan_0158
     name: 郑獬
+    avatar: pig/文049.png
     default_gender: male
     archetype: civil
     flavor: 郑獬（1022—1072），字毅夫，北宋官员，皇祐五年状元。历任知制诰、翰林学士等职，曾论冗兵并批评青苗法，因政见不合出知杭州，著有《郧溪集》。

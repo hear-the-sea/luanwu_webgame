@@ -9,7 +9,7 @@ import logging
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db import DatabaseError
+from django.db import DatabaseError, transaction
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
@@ -372,6 +372,27 @@ class GuestDetailView(LoginRequiredMixin, TemplateView):
         )
         context["skill_point_form"].fields["guest"].queryset = manor.guests.filter(pk=guest.pk)
         return context
+
+
+@login_required
+@require_POST
+def switch_avatar_view(request, pk: int):
+    from gameplay.services.manor.core import get_manor
+
+    manor = get_manor(request.user)
+    appearance = request.POST.get("appearance")
+    if appearance not in {"original", "disguise"}:
+        messages.error(request, "请选择有效的门客形象")
+        return redirect("guests:detail", pk=pk)
+    with transaction.atomic():
+        guest = get_object_or_404(manor.guests.select_for_update(), pk=pk)
+        if not guest.can_switch_avatar:
+            messages.error(request, "该门客尚未使用易容卡")
+        else:
+            guest.use_original_avatar = appearance == "original"
+            guest.save(update_fields=["use_original_avatar"])
+            messages.success(request, "已切换为原形象" if guest.use_original_avatar else "已切换为易容形象")
+    return redirect("guests:detail", pk=pk)
 
 
 @login_required
