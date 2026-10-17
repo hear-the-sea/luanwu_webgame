@@ -1,0 +1,220 @@
+{
+  "commit": "e9368ef76ea0589ab9ef696210dc0ad5886e2e4f",
+  "release": "/root/code/releases/custom-guests-20261017T170547Z",
+  "image": "webgame:custom-guests-20261017t170547z",
+  "base_image": "webgame:xiangyu-portrait-20261017t122640z",
+  "archive": "/tmp/custom-guests-20261017T170547Z-delta.tar.gz",
+  "archive_sha256": "3fface7b517c06db244462b98ff295a123e2e725762d8d692cd158109eb81ae2",
+  "production_hashes_verified": 2849,
+  "removed_files": [
+    "data/images/guests/menghu.png"
+  ],
+  "repository_only_excluded": [
+    "config/local_preview_urls.py",
+    "config/settings/local_preview.py",
+    "scripts/guest_avatar_preview.html"
+  ],
+  "source_commit": "e9368ef76ea0589ab9ef696210dc0ad5886e2e4f",
+  "offline_validation": {
+    "backend_passed": 7688,
+    "backend_skipped": 20,
+    "backend_subtests_passed": 7,
+    "shards_all_exit_zero": true,
+    "excluded_markers": [
+      "integration",
+      "evidence"
+    ],
+    "browser_passed": 81,
+    "javascript_passed": 39,
+    "mypy_source_files": 812,
+    "yaml_files_validated": 29,
+    "django_system_check": "passed",
+    "migration_generation_check": "no_changes",
+    "commit_hooks": "all_passed",
+    "runtime_file_hashes_verified": 2873
+  },
+  "deployment_state": "deployed_and_verified",
+  "status": "deployed_and_verified",
+  "phase": {
+    "phase": "deployed",
+    "updated_at": "2026-10-17T17:42:09.185562+00:00",
+    "cutoff": "2026-10-17T17:35:11.323684+00:00",
+    "commit": "e9368ef76ea0589ab9ef696210dc0ad5886e2e4f",
+    "image": "webgame:custom-guests-20261017t170547z"
+  },
+  "services": {
+    "web": {
+      "image": "webgame:custom-guests-20261017t170547z",
+      "running": true,
+      "health": "healthy",
+      "restarts": 0
+    },
+    "worker": {
+      "image": "webgame:custom-guests-20261017t170547z",
+      "running": true,
+      "health": null,
+      "restarts": 0
+    },
+    "worker_battle": {
+      "image": "webgame:custom-guests-20261017t170547z",
+      "running": true,
+      "health": null,
+      "restarts": 0
+    },
+    "worker_timer": {
+      "image": "webgame:custom-guests-20261017t170547z",
+      "running": true,
+      "health": null,
+      "restarts": 0
+    },
+    "worker_timer_scan": {
+      "image": "webgame:custom-guests-20261017t170547z",
+      "running": true,
+      "health": null,
+      "restarts": 0
+    },
+    "worker_timer_safety": {
+      "image": "webgame:custom-guests-20261017t170547z",
+      "running": true,
+      "health": null,
+      "restarts": 0
+    },
+    "worker_timer_maintenance": {
+      "image": "webgame:custom-guests-20261017t170547z",
+      "running": true,
+      "health": null,
+      "restarts": 0
+    },
+    "beat": {
+      "image": "webgame:custom-guests-20261017t170547z",
+      "running": true,
+      "health": null,
+      "restarts": 0
+    }
+  },
+  "public": {
+    "/health/live": {
+      "status": 200,
+      "bytes": 16,
+      "content_type": "application/json"
+    },
+    "/accounts/login/": {
+      "status": 200,
+      "bytes": 2706,
+      "content_type": "text/html; charset=utf-8"
+    },
+    "/static/css/custom-guest.45c051870468.css": {
+      "status": 200,
+      "bytes": 4040,
+      "content_type": "text/css; charset=utf-8"
+    },
+    "/static/js/custom-guest.4ace7a9089e9.js": {
+      "status": 200,
+      "bytes": 2415,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "/media/items/custom_guest_card.webp": {
+      "status": 200,
+      "bytes": 5006,
+      "content_type": "image/webp"
+    },
+    "/media/items/millennium_zhuguo.webp": {
+      "status": 200,
+      "bytes": 4570,
+      "content_type": "image/webp"
+    },
+    "/media/items/xisuidan_gpElWpk.webp": {
+      "status": 200,
+      "bytes": 3816,
+      "content_type": "image/webp"
+    },
+    "/media/items/yijinjing.webp": {
+      "status": 200,
+      "bytes": 6372,
+      "content_type": "image/webp"
+    }
+  },
+  "logs": {
+    "web": {
+      "tracebacks": 0,
+      "error_lines": 2
+    },
+    "worker": {
+      "tracebacks": 0,
+      "error_lines": 0
+    },
+    "worker_battle": {
+      "tracebacks": 0,
+      "error_lines": 0
+    },
+    "worker_timer": {
+      "tracebacks": 0,
+      "error_lines": 0
+    },
+    "worker_timer_scan": {
+      "tracebacks": 0,
+      "error_lines": 0
+    },
+    "worker_timer_safety": {
+      "tracebacks": 0,
+      "error_lines": 0
+    },
+    "worker_timer_maintenance": {
+      "tracebacks": 0,
+      "error_lines": 0
+    },
+    "beat": {
+      "tracebacks": 0,
+      "error_lines": 0
+    }
+  },
+  "backups": {
+    "database-before.sql.gz": {
+      "bytes": 1364552987,
+      "sha256": "b151fcf7bc25ce9f8a26bceb200fc145bd913370263e0549db59c6ea23b28fc6"
+    },
+    "media-static-before.tar.gz": {
+      "bytes": 83675633,
+      "sha256": "8ce19adcfe7e02a008cb8e6922ac5fa3ce94ad079867fea01994cadfc2889765"
+    }
+  },
+  "gift_verification": {
+    "campaign": "custom-guest-release-20261018",
+    "counts": {
+      "already_had_card_or_guest": 0,
+      "attachment_shape_violations": 0,
+      "bot_or_post_cutoff_deliveries": 0,
+      "card_issued_progress": 150,
+      "cards_supplemented": 150,
+      "claimed_messages": 0,
+      "cultivation_missions": 3,
+      "custom_guest_templates": 4,
+      "deliveries": 150,
+      "eligible_real_players": 150,
+      "invalid_messages": 0,
+      "missing_item_media": 0,
+      "missing_messages": 0,
+      "pending_migrations": 0,
+      "required_items": 7,
+      "snapshot_players": 150,
+      "unclaimed_messages": 150,
+      "unprotected_messages": 0
+    },
+    "cutoff": "2026-10-17T17:35:11.323684+00:00",
+    "errors": [],
+    "ok": true
+  },
+  "readiness": "passed",
+  "celery_ping": {
+    "responding_workers": 6,
+    "status": "passed"
+  },
+  "maintenance_duration_seconds": 418,
+  "startup_observations": {
+    "temporary_readiness_503": 2,
+    "resolution": "Internal readiness passed before Caddy traffic was restored; final Docker health is healthy.",
+    "runtime_tracebacks": 0,
+    "worker_error_log_lines": 0,
+    "other_web_error_lines": 0
+  }
+}
