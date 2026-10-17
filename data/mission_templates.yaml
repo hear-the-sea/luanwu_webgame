@@ -1402,3 +1402,145 @@ missions:
 #
 # 8. 建议先在测试服调试任务难度，再发布到正式服
 # ============================================================
+
+  # 易筋修行任务
+  - key: yaolu_hujing
+    name: 药庐护经
+    difficulty: junior
+    description: 山中药师携经归庐，却被成群盗匪堵住山道。刀客结阵护住匪首，匪首伺机快攻。护送药师脱险，药庐愿以珍藏经卷相赠。
+    battle_type: task1
+    is_defense: false
+    guest_only: false
+    enemy_guests:
+    - key: task_cultivation_road_blade
+      skills:
+      - iron_wall_heart
+      label: 拦路刀客
+    - key: task_cultivation_road_blade
+      skills:
+      - iron_wall_heart
+      label: 拦路刀客
+    - key: task_cultivation_road_blade
+      skills:
+      - iron_wall_heart
+      label: 拦路刀客
+    - key: task_cultivation_road_blade
+      skills:
+      - iron_wall_heart
+      label: 拦路刀客
+    - key: task_cultivation_road_blade
+      skills:
+      - iron_wall_heart
+      label: 拦路刀客
+    - key: task_cultivation_road_blade
+      skills:
+      - iron_wall_heart
+      label: 拦路刀客
+    - key: task_cultivation_bandit_leader
+      skills: []
+      label: 劫经匪首
+    enemy_troops: {}
+    enemy_technology:
+      level: 7
+      guest_level: 35
+      guest_bonus: 0.12
+    entry_cost: {}
+    drop_table:
+      mission_chest_v3_yaolu_hujing: 1
+    probability_drop_table: {}
+    available_weekdays: []
+    display_order: 9
+    base_travel_time: 1800
+    daily_limit: 2
+    mission_card_daily_limit: 0
+  - key: xisui_yougu
+    name: 洗髓幽谷
+    difficulty: intermediate
+    description: 幽谷药香不散，剑客结阵守谷，药师以言语扰敌。闯过守谷人的考验，便可带走谷中修行珍品。只重护甲，未必挡得住药师的攻势。
+    battle_type: task1
+    is_defense: false
+    guest_only: false
+    enemy_guests:
+    - key: task_cultivation_valley_swordsman
+      skills:
+      - iron_wall_heart
+      label: 守谷剑客
+    - key: task_cultivation_valley_swordsman
+      skills:
+      - iron_wall_heart
+      label: 守谷剑客
+    - key: task_cultivation_valley_swordsman
+      skills:
+      - iron_wall_heart
+      - fatal_chain_sword
+      label: 守谷剑客
+    - key: task_cultivation_valley_healer
+      skills:
+      - flower_rain
+      - steadfast_planning
+      label: 幽谷药师
+    - key: task_cultivation_valley_healer
+      skills:
+      - flower_rain
+      - steadfast_planning
+      label: 幽谷药师
+    - key: task_cultivation_valley_healer
+      skills:
+      - flower_rain
+      - steadfast_planning
+      label: 幽谷药师
+    enemy_troops:
+      arrow_god: 800
+      qiang_wang: 800
+      quan_sheng: 800
+    enemy_technology:
+      level: 10
+      guest_level: 85
+      guest_bonus: 0.3
+    entry_cost: {}
+    drop_table:
+      mission_chest_v3_xisui_yougu: 1
+    probability_drop_table: {}
+    available_weekdays: []
+    display_order: 9
+    base_travel_time: 1800
+    daily_limit: 2
+    mission_card_daily_limit: 0
+  - key: yijin_mijing
+    name: 易筋秘境
+    difficulty: advanced
+    description: 古寺深处别有洞天。金刚护法引敌护阵，明心护法诵经伤敌，伏魔护法快攻破阵。胜过三位护法，可获经卷、灵丹与遗留武学。
+    battle_type: task1
+    is_defense: false
+    guest_only: false
+    enemy_guests:
+    - key: task_cultivation_vajra_guard
+      label: 金刚护法
+      skills:
+      - iron_wall_heart
+      - draw_enemy_blades
+    - key: task_cultivation_mind_guard
+      label: 明心护法
+      skills:
+      - tangseng_sermon
+      - steadfast_planning
+    - key: task_cultivation_demon_guard
+      label: 伏魔护法
+      skills:
+      - meteor_pierce_moon
+    enemy_troops:
+      arrow_god: 300
+      quan_sheng: 700
+    enemy_technology:
+      level: 9
+      guest_level: 80
+      guest_bonus: 0.26
+    entry_cost: {}
+    drop_table:
+      mission_chest_v3_yijin_mijing: 1
+    probability_drop_table: {}
+    available_weekdays: []
+    display_order: 9
+    base_travel_time: 1800
+    daily_limit: 1
+    mission_card_daily_limit: 0

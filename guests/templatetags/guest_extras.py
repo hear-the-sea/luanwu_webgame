@@ -171,7 +171,7 @@ def gear_summary(template) -> str:
 
     parts = []
     if hasattr(template, "required_level"):
-        parts.append(f"需求：门客Lv.{template.required_level}")
+        parts.append(f"LV{template.required_level}")
     desc = getattr(template, "description", "")
     if desc:
         parts.append(str(desc))
@@ -202,7 +202,7 @@ def gear_tooltip(template, set_map=None) -> str:
     esc = conditional_escape
     lines = []
     if hasattr(template, "required_level"):
-        lines.append(format_html("需求：门客Lv.{}", template.required_level))
+        lines.append(format_html("LV{}", template.required_level))
     desc = getattr(template, "description", "") or ""
     if desc:
         lines.append(format_html("{}", esc(desc)))

@@ -99,7 +99,13 @@ def build_guest_item_selection_context(
     rarity_upgrade_source_keys = _collect_rarity_upgrade_source_keys(payloads)
     rarity_upgrade_source_rarities = _collect_rarity_upgrade_source_rarities(payloads)
 
-    guests_for_xisuidan = [guest for guest in eligible_guests if guest.level == 100 and guest.xisuidan_used < 10]
+    from guests.services.custom_guest import is_custom_guest
+
+    guests_for_xisuidan = [
+        guest
+        for guest in eligible_guests
+        if guest.level == 100 and (guest.xisuidan_used < 10 or is_custom_guest(guest))
+    ]
     guests_for_xisuidan.sort(key=lambda guest: (guest.xisuidan_used, guest.template.name, guest.id))
 
     guests_for_xidianka = [
@@ -117,7 +123,8 @@ def build_guest_item_selection_context(
     guests_for_soul_fusion = [
         guest
         for guest in soul_fusion_candidates
-        if guest_is_eligible_for_soul_fusion(
+        if not is_custom_guest(guest)
+        and guest_is_eligible_for_soul_fusion(
             guest,
             min_level=soul_fusion_min_level,
             allowed_rarities=soul_fusion_allowed_rarities,
@@ -127,7 +134,8 @@ def build_guest_item_selection_context(
     guests_for_rarity_upgrade = [
         guest
         for guest in eligible_guests
-        if guest.status == GuestStatus.IDLE
+        if not is_custom_guest(guest)
+        and guest.status == GuestStatus.IDLE
         and (
             guest.template.key in rarity_upgrade_source_keys or guest.template.rarity in rarity_upgrade_source_rarities
         )

@@ -89,3 +89,22 @@ def test_build_ai_guests_starts_generated_enemy_at_full_hp(monkeypatch):
 
     assert len(guests) == 1
     assert guests[0].current_hp == guests[0].max_hp
+
+
+@pytest.mark.parametrize("entry", ["custom_guest_green", {"key": "custom_guest_orange", "skills": []}])
+def test_named_ai_rejects_custom_guest_templates_before_growth(entry, monkeypatch):
+    key = entry if isinstance(entry, str) else entry["key"]
+    template = GuestTemplate(key=key, rarity="green")
+    monkeypatch.setattr("battle.combatants_pkg.ai_generator.get_all_guest_templates", lambda: {key: template})
+    with pytest.raises(AssertionError, match="custom guest template is unavailable"):
+        build_named_ai_guests([entry], level=50, rng=random.Random(1))
+
+
+def test_random_ai_pool_excludes_custom_templates(monkeypatch):
+    templates = {
+        "custom_guest_green": GuestTemplate(key="custom_guest_green", rarity="green"),
+        "normal": GuestTemplate(key="normal", rarity="green", base_hp=400),
+    }
+    monkeypatch.setattr("battle.combatants_pkg.ai_generator.get_all_guest_templates", lambda: templates)
+    guests = build_ai_guests(random.Random(1))
+    assert [guest.template.key for guest in guests] == ["normal"]

@@ -148,7 +148,7 @@ def test_mid_autumn_mooncake_contract():
             "choices": _weighted_choices(["experience_pineapple"]),
         },
         {
-            "chance": 0.05,
+            "chance": 0.0125,
             "min_quantity": 1,
             "max_quantity": 1,
             "choices": _weighted_choices(["mission_card"]),

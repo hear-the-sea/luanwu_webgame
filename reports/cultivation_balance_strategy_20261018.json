@@ -1,0 +1,110 @@
+[
+  {
+    "mission": "yijin_mijing",
+    "level": 95,
+    "profile": "strong",
+    "troops": false,
+    "wins": 8,
+    "n": 40,
+    "meanround": 5.25
+  },
+  {
+    "mission": "yijin_mijing",
+    "level": 95,
+    "profile": "strong",
+    "troops": 0.5,
+    "wins": 23,
+    "n": 40,
+    "meanround": 6
+  },
+  {
+    "mission": "yijin_mijing",
+    "level": 95,
+    "profile": "strong",
+    "troops": true,
+    "wins": 35,
+    "n": 40,
+    "meanround": 6.125
+  },
+  {
+    "mission": "yijin_mijing",
+    "level": 95,
+    "profile": "weak",
+    "troops": false,
+    "wins": 5,
+    "n": 40,
+    "meanround": 4.475
+  },
+  {
+    "mission": "yijin_mijing",
+    "level": 95,
+    "profile": "weak",
+    "troops": 0.5,
+    "wins": 4,
+    "n": 40,
+    "meanround": 5.45
+  },
+  {
+    "mission": "yijin_mijing",
+    "level": 95,
+    "profile": "weak",
+    "troops": true,
+    "wins": 20,
+    "n": 40,
+    "meanround": 6.85
+  },
+  {
+    "mission": "yijin_mijing",
+    "level": 95,
+    "profile": "no_passives",
+    "troops": false,
+    "wins": 9,
+    "n": 40,
+    "meanround": 4.7
+  },
+  {
+    "mission": "yijin_mijing",
+    "level": 95,
+    "profile": "no_passives",
+    "troops": 0.5,
+    "wins": 14,
+    "n": 40,
+    "meanround": 5.475
+  },
+  {
+    "mission": "yijin_mijing",
+    "level": 95,
+    "profile": "no_passives",
+    "troops": true,
+    "wins": 27,
+    "n": 40,
+    "meanround": 6.575
+  },
+  {
+    "mission": "yijin_mijing",
+    "level": 95,
+    "profile": "tank",
+    "troops": false,
+    "wins": 6,
+    "n": 40,
+    "meanround": 4.925
+  },
+  {
+    "mission": "yijin_mijing",
+    "level": 95,
+    "profile": "tank",
+    "troops": 0.5,
+    "wins": 19,
+    "n": 40,
+    "meanround": 6.2
+  },
+  {
+    "mission": "yijin_mijing",
+    "level": 95,
+    "profile": "tank",
+    "troops": true,
+    "wins": 33,
+    "n": 40,
+    "meanround": 6.25
+  }
+]

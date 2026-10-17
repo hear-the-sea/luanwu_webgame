@@ -12,6 +12,7 @@ from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.constants import get_raid_capture_guest_rate
 from guests.constants import RARITY_CONVERSION_TEMPLATE_KEY_PREFIX
 from guests.models import Guest, GuestRarity, GuestStatus, GuestTemplate, WorldUniqueGuest
+from guests.services.custom_guest import CUSTOM_GUEST_TEMPLATE_KEYS, is_custom_guest
 from guests.services.world_unique import WORLD_UNIQUE_LUBU_TEMPLATE_KEY, release_world_unique_guest_after_raid
 
 from ....models import JailPrisoner, Manor, OathBond, RaidRun
@@ -69,7 +70,11 @@ def _filter_capture_candidates(losing_guest_ids: List[int]) -> List[int]:
         Guest.objects.filter(
             id__in=losing_guest_ids,
         )
-        .filter(Q(template__is_world_unique=True) | Q(template__key=WORLD_UNIQUE_LUBU_TEMPLATE_KEY))
+        .filter(
+            Q(template__is_world_unique=True)
+            | Q(template__key=WORLD_UNIQUE_LUBU_TEMPLATE_KEY)
+            | Q(template__key__in=CUSTOM_GUEST_TEMPLATE_KEYS)
+        )
         .values_list("id", flat=True)
     )
     oathed_ids = set(OathBond.objects.filter(guest_id__in=losing_guest_ids).values_list("guest_id", flat=True))
@@ -108,6 +113,8 @@ def _select_capture_target(
         .first()
     )
     if not target:
+        return None
+    if is_custom_guest(target):
         return None
 
     if OathBond.objects.filter(guest=target).exists():

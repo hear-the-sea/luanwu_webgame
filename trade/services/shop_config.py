@@ -179,6 +179,8 @@ def get_sell_price_by_template(template: ItemTemplate) -> int:
     """
     根据 ItemTemplate 获取回收价格（即基准价格）
     """
+    if template.key == "custom_guest_card":
+        return 0
     config = get_shop_item_config(template.key)
     if config and config.price is not None:
         return max(0, safe_int(config.price, 0))

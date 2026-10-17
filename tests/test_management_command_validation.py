@@ -329,6 +329,7 @@ def test_default_mission_templates_import_configured_display_order():
         "biwu_zhaoqin",
         "jiguanshou_chuxian",
         "taozi_fenban",
+        "yaolu_hujing",
     ]
 
 

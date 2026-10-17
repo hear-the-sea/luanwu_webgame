@@ -31,15 +31,22 @@ def test_shenyi_poxu_config_has_balanced_single_target_formula_and_learning_gate
     }
 
 
-def test_shenyi_poxu_book_matches_snapshot_and_has_no_new_distribution():
+def test_shenyi_poxu_book_matches_snapshot_and_has_only_requested_sources():
     rows = yaml.safe_load((ROOT / "data/item_templates.yaml").read_text())["items"]
     matches = [row for row in rows if row["key"] == migration.BOOK_KEY]
     assert len(matches) == 1
     row = matches[0]
     assert row == {"key": migration.BOOK_KEY, "image": "skill3.png", **migration.BOOK_DEFAULTS}
-    for other in rows:
-        if other["key"] != migration.BOOK_KEY:
-            assert migration.BOOK_KEY not in repr(other.get("effect_payload", {}))
+    sources = {
+        other["key"]
+        for other in rows
+        if other["key"] != migration.BOOK_KEY and migration.BOOK_KEY in repr(other.get("effect_payload", {}))
+    }
+    assert sources == {
+        "mission_chest_fengbang_tianmen",
+        "mission_chest_v3_fengbang_tianmen",
+        "guild_skill_book_box_master",
+    }
 
 
 @pytest.mark.django_db

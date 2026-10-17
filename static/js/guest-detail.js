@@ -275,7 +275,7 @@ const initGuestDetailPage = () => {
       options.forEach((entry) => {
         const option = document.createElement("option");
         option.value = entry.id;
-        const levelText = `需求Lv.${entry.required_level || 1}`;
+        const levelText = `LV${entry.required_level || 1}`;
         const missingText = entry.missing_levels ? `，还差${entry.missing_levels}级` : "";
         option.textContent = `[${entry.rarity_label}] ${entry.name}（×${entry.count}，${levelText}${missingText}）`;
         option.disabled = entry.can_equip === false;

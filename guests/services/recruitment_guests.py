@@ -20,6 +20,7 @@ from ..utils.name_generator import generate_random_name
 from ..utils.recruitment_variance import apply_recruitment_variance
 from . import recruitment_batch as _recruitment_batch
 from . import recruitment_finalize_helpers as _recruitment_finalize_helpers
+from .custom_guest import CUSTOM_GUEST_TEMPLATE_KEYS
 from .recruitment_shared import invalidate_recruitment_hall_cache
 from .training import ensure_auto_training
 
@@ -96,6 +97,8 @@ def create_guest_from_template(
     assign_fallback_avatar: bool = False,
 ) -> Guest:
     """按模板创建门客（含属性波动、初始HP与技能）。"""
+    if template.key in CUSTOM_GUEST_TEMPLATE_KEYS:
+        raise GameError("专属门客只能通过自定义门客卡获得")
     if getattr(template, "is_world_unique", False) and not allow_world_unique:
         raise WorldUniqueGuestError(
             message=f"{template.name}为全服唯一门客，只能通过专属召唤卷轴获得",

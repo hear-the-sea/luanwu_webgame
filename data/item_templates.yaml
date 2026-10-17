@@ -1726,6 +1726,48 @@ items:
     is_usable: false  # 需要在聚贤庄选择具体卡池后使用
     image: recruitment_card.png
 
+  # ---------- 专属门客养成 ----------
+
+  - key: custom_guest_card
+    name: 自定义门客卡
+    description: 意识穿越到春秋乱世有一段时间了，使用自定义门客卡即可获得专属肉身，还自带吞噬强化系统，出任CEO，赢娶白富美，走上人生巅峰就在眼前。
+    rarity: green
+    tradeable: false
+    default_bound: true
+    effect_payload:
+      action: create_custom_guest
+    effect_type: tool
+    image: custom_guest_card.png
+    price: 0
+    storage_space: 1
+    is_usable: true
+  - key: yijinjing
+    name: 易筋经
+    description: 记载易筋锻骨之法的武学经卷，可用于专属门客升阶及橙色强化。尝试无论成败均会消耗，失败后本阶段成功率提升。
+    rarity: purple
+    tradeable: true
+    default_bound: false
+    effect_payload:
+      action: advance_custom_guest
+    effect_type: tool
+    image: yijinjing.png
+    price: 0
+    storage_space: 1
+    is_usable: false
+  - key: millennium_zhuguo
+    name: 千年朱果
+    description: 千年方熟的灵果，可将专属门客的武力、智力、防御与敏捷成长权重重置为各500，保留现有品质与强化成果。
+    rarity: orange
+    tradeable: true
+    default_bound: false
+    effect_payload:
+      action: reset_custom_guest_weights
+    effect_type: tool
+    image: millennium_zhuguo.png
+    price: 0
+    storage_space: 1
+    is_usable: false
+
   # ---------- 门客重生卡 ----------
 
   - key: guest_rebirth_card
@@ -2520,6 +2562,8 @@ items:
         - item_key: book_five_thunder_descent
           weight: 22
         - item_key: book_brahma_true_fire
+          weight: 22
+        - item_key: book_shenyi_poxu
           weight: 22
         - item_key: book_stratagem_burst
           weight: 20
@@ -9912,6 +9956,13 @@ items:
         choices:
         - item_key: book_five_thunder_descent
           weight: 1
+      - label: book_shenyi_poxu
+        chance: 0.048
+        min_quantity: 1
+        max_quantity: 1
+        choices:
+        - item_key: book_shenyi_poxu
+          weight: 1
       - label: book_last_chance_revival
         chance: 0.072
         min_quantity: 1
@@ -13018,6 +13069,13 @@ items:
         choices:
         - item_key: book_five_thunder_descent
           weight: 1
+      - label: book_shenyi_poxu
+        chance: 0.048
+        min_quantity: 1
+        max_quantity: 1
+        choices:
+        - item_key: book_shenyi_poxu
+          weight: 1
       - label: book_last_chance_revival
         chance: 0.072
         min_quantity: 1
@@ -13931,6 +13989,175 @@ items:
         - item_key: equip_tianjiguan
           weight: 1
       reward_balance_version: 3
+      blueprint_material_support: {}
+      blueprint_forging_requirements: {}
+      experience_fruit_source: battle_salvage
+
+  # 易筋修行任务
+  - key: mission_chest_v3_yaolu_hujing
+    name: 药庐护经宝箱
+    description: 打开必得易筋经×1，另有机会获得洗髓丹、千年朱果及一本初级技能书。
+    effect_type: loot_box
+    rarity: green
+    tradeable: false
+    default_bound: false
+    price: 0
+    storage_space: 5
+    is_usable: true
+    image: mission_chest_v1.png
+    effect_payload:
+      mission_reward_version: 1
+      reward_balance_version: 3
+      mission_key: yaolu_hujing
+      reward_theme: 易筋修行
+      item_rewards:
+      - item_key: yijinjing
+        min_quantity: 1
+        max_quantity: 1
+      random_item_groups:
+      - label: xisuidan
+        chance: 0.01
+        min_quantity: 1
+        max_quantity: 1
+        choices:
+        - item_key: xisuidan
+          weight: 1
+      - label: millennium_zhuguo
+        chance: 0.005
+        min_quantity: 1
+        max_quantity: 1
+        choices:
+        - item_key: millennium_zhuguo
+          weight: 1
+      - label: 初级技能书
+        chance: 0.05
+        min_quantity: 1
+        max_quantity: 1
+        choices:
+        - item_key: book_ice_curse
+          weight: 25
+        - item_key: book_thunder_control
+          weight: 25
+        - item_key: book_dragon_break_curse
+          weight: 25
+        - item_key: book_endless_chatter
+          weight: 25
+        - item_key: book_taiyi_wind
+          weight: 25
+        - item_key: book_steadfast_planning
+          weight: 18
+        - item_key: book_iron_wall_heart
+          weight: 18
+      blueprint_material_support: {}
+      blueprint_forging_requirements: {}
+      experience_fruit_source: battle_salvage
+  - key: mission_chest_v3_xisui_yougu
+    name: 洗髓幽谷宝箱
+    description: 打开必得易筋经×2，另有机会获得洗髓丹、千年朱果及一本中级技能书。
+    effect_type: loot_box
+    rarity: blue
+    tradeable: false
+    default_bound: false
+    price: 0
+    storage_space: 5
+    is_usable: true
+    image: mission_chest_v1.png
+    effect_payload:
+      mission_reward_version: 1
+      reward_balance_version: 3
+      mission_key: xisui_yougu
+      reward_theme: 易筋修行
+      item_rewards:
+      - item_key: yijinjing
+        min_quantity: 2
+        max_quantity: 2
+      random_item_groups:
+      - label: xisuidan
+        chance: 0.03
+        min_quantity: 1
+        max_quantity: 1
+        choices:
+        - item_key: xisuidan
+          weight: 1
+      - label: millennium_zhuguo
+        chance: 0.01
+        min_quantity: 1
+        max_quantity: 1
+        choices:
+        - item_key: millennium_zhuguo
+          weight: 1
+      - label: 中级技能书
+        chance: 0.05
+        min_quantity: 1
+        max_quantity: 1
+        choices:
+        - &id001
+          item_key: book_flower_rain
+          weight: 18
+        - &id002
+          item_key: book_soul_erode
+          weight: 18
+        - &id003
+          item_key: book_red_lotus_dance
+          weight: 16
+        - &id004
+          item_key: book_fatal_chain_sword
+          weight: 15
+        - &id005
+          item_key: book_last_chance_revival
+          weight: 12
+        - &id006
+          item_key: book_draw_enemy_blades
+          weight: 12
+      blueprint_material_support: {}
+      blueprint_forging_requirements: {}
+      experience_fruit_source: battle_salvage
+  - key: mission_chest_v3_yijin_mijing
+    name: 易筋秘境宝箱
+    description: 打开必得易筋经×4，另有机会获得洗髓丹、千年朱果及一本中级技能书。
+    effect_type: loot_box
+    rarity: purple
+    tradeable: false
+    default_bound: false
+    price: 0
+    storage_space: 5
+    is_usable: true
+    image: mission_chest_v1.png
+    effect_payload:
+      mission_reward_version: 1
+      reward_balance_version: 3
+      mission_key: yijin_mijing
+      reward_theme: 易筋修行
+      item_rewards:
+      - item_key: yijinjing
+        min_quantity: 4
+        max_quantity: 4
+      random_item_groups:
+      - label: xisuidan
+        chance: 0.05
+        min_quantity: 1
+        max_quantity: 1
+        choices:
+        - item_key: xisuidan
+          weight: 1
+      - label: millennium_zhuguo
+        chance: 0.02
+        min_quantity: 1
+        max_quantity: 1
+        choices:
+        - item_key: millennium_zhuguo
+          weight: 1
+      - label: 中级技能书
+        chance: 0.05
+        min_quantity: 1
+        max_quantity: 1
+        choices:
+        - *id001
+        - *id002
+        - *id003
+        - *id004
+        - *id005
+        - *id006
       blueprint_material_support: {}
       blueprint_forging_requirements: {}
       experience_fruit_source: battle_salvage

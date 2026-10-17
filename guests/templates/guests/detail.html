@@ -5,6 +5,7 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/guest-detail.css' %}">
+<link rel="stylesheet" href="{% static 'css/custom-guest.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -66,6 +67,8 @@
         {% include "guests/partials/detail_equipment_card.html" %}
     </div>
 
+    {% include "guests/partials/custom_guest_panel.html" %}
+
     <section class="board-card intro-card mt-6">
         <div class="intro-header">
             <div class="intro-title-wrap">
@@ -74,9 +77,7 @@
             </div>
         </div>
         <div class="intro-body">
-            <p class="intro-text">
-                {{ guest.template.flavor|default:"此人行踪神秘，江湖上未有其传闻。" }}
-            </p>
+            <p class="intro-text">{% if custom_guest_biography %}{{ custom_guest_biography|cut:" " }}{% else %}{{ guest.template.flavor|default:"此人行踪神秘，江湖上未有其传闻。" }}{% endif %}</p>
         </div>
     </section>
 
@@ -122,4 +123,5 @@
 <script src="{% static 'js/dashboard.js' %}"></script>
 <script src="{% static 'js/tooltip.js' %}"></script>
 <script src="{% static 'js/guest-detail.js' %}"></script>
+{% if custom_guest %}<script src="{% static 'js/custom-guest.js' %}"></script>{% endif %}
 {% endblock %}

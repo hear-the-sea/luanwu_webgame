@@ -47,7 +47,8 @@ def test_calculate_resource_loot_reaches_full_cap_with_full_squad_and_troops():
 
 
 @pytest.mark.django_db
-def test_calculate_resource_loot_reduces_cap_when_attacker_troops_die():
+def test_calculate_resource_loot_reduces_cap_when_attacker_troops_die(monkeypatch):
+    monkeypatch.setattr("battle.troops.load_troop_templates", lambda: {"dao_ke": {}})
     defender = SimpleNamespace(silver=10_000_000)
     battle_report = SimpleNamespace(
         losses={
@@ -194,6 +195,7 @@ def test_calculate_loot_items_clamps_quantity_by_item_capacity(monkeypatch):
 
 @pytest.mark.django_db
 def test_calculate_loot_items_reduces_item_capacity_after_troop_losses(monkeypatch):
+    monkeypatch.setattr("battle.troops.load_troop_templates", lambda: {"dao_ke": {}})
     user = User.objects.create_user(username="raid_item_loss_capacity", password="pass123")
     defender = ensure_manor(user)
     template = ItemTemplate.objects.create(

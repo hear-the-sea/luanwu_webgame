@@ -754,3 +754,30 @@ class GuestDefection(models.Model):
 
     def __str__(self) -> str:
         return f"{self.guest_name} (Lv{self.guest_level}) 叛逃"
+
+
+def default_custom_guest_weights() -> dict[str, int]:
+    return {"force": 500, "intellect": 500, "defense": 500, "agility": 500}
+
+
+class CustomGuestProgress(models.Model):
+    """每个庄园独立保存专属门客养成与一次发卡记录。"""
+
+    manor = models.OneToOneField("gameplay.Manor", on_delete=models.CASCADE, related_name="custom_guest_progress")
+    guest = models.OneToOneField(
+        Guest, null=True, blank=True, on_delete=models.SET_NULL, related_name="custom_progress"
+    )
+    card_issued = models.BooleanField(default=False)
+    weights = models.JSONField(default=default_custom_guest_weights)
+    enhancement_level = models.PositiveSmallIntegerField(default=0)
+    failed_attempts = models.PositiveSmallIntegerField(default=0)
+    feeding_date = models.DateField(null=True, blank=True)
+    feeding_count = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(enhancement_level__lte=2), name="custom_guest_enhancement_max_two"
+            ),
+            models.CheckConstraint(condition=models.Q(feeding_count__lte=100), name="custom_guest_daily_feed_max_100"),
+        ]

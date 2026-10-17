@@ -8,6 +8,7 @@ import random
 from typing import Any, Dict, List, Mapping, Sequence
 
 from guests.models import Guest
+from guests.services.custom_guest import CUSTOM_GUEST_TEMPLATE_KEYS
 
 from .cache import get_all_guest_templates
 
@@ -122,6 +123,8 @@ def build_named_ai_guests(
 
     for config in parsed_configs:
         template_key = config["key"]
+        if template_key in CUSTOM_GUEST_TEMPLATE_KEYS:
+            raise AssertionError(f"custom guest template is unavailable for ai: {template_key!r}")
         override_skills = config["skills"]
         display_name_override = config.get("label")
 
@@ -177,7 +180,7 @@ def build_named_ai_guests(
 def build_ai_guests(rng: random.Random) -> List[Guest]:
     """Build random AI guests for testing."""
     all_templates = get_all_guest_templates()
-    templates = list(all_templates.values())
+    templates = [template for template in all_templates.values() if template.key not in CUSTOM_GUEST_TEMPLATE_KEYS]
     rng.shuffle(templates)
     guests: List[Guest] = []
     max_squad = _get_max_squad()

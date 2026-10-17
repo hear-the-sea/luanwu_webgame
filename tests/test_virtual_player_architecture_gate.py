@@ -134,6 +134,7 @@ BOT_PROFILE_RELATION_READERS = {
     "guests/admin.py": "label the existing GuestRecruitment bot_profile field in the read-only recruitment audit admin",
     "gameplay/services/virtual_player_core/recruitment.py": "exclude pending virtual recruitment through the Manor profile relation",
     "gameplay/management/commands/audit_virtual_player_baseline.py": "exclude virtual profiles from real samples",
+    "gameplay/management/commands/send_custom_guest_release_gifts.py": "exclude virtual profiles from the existing real-player release gift snapshot",
     "gameplay/selectors/stats.py": "exclude virtual profiles from real-player activity counts",
     "gameplay/services/raid/map_search.py": "apply virtual-profile map visibility states",
     "gameplay/services/ranking.py": "exclude virtual profiles from real-player rankings",

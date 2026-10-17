@@ -1,0 +1,215 @@
+{
+  "template_updates": {
+    "task_cultivation_road_blade": {
+      "base_attack": 70,
+      "base_intellect": 40,
+      "base_defense": 60,
+      "base_agility": 45,
+      "base_luck": 50,
+      "base_hp": 2000
+    },
+    "task_cultivation_bandit_leader": {
+      "base_attack": 100,
+      "base_intellect": 35,
+      "base_defense": 55,
+      "base_agility": 75,
+      "base_luck": 65,
+      "base_hp": 2400
+    },
+    "task_cultivation_valley_swordsman": {
+      "base_attack": 80,
+      "base_intellect": 45,
+      "base_defense": 70,
+      "base_agility": 75,
+      "base_luck": 65,
+      "base_hp": 1600
+    },
+    "task_cultivation_valley_healer": {
+      "base_attack": 45,
+      "base_intellect": 100,
+      "base_defense": 55,
+      "base_agility": 70,
+      "base_luck": 75,
+      "base_hp": 1600
+    },
+    "task_cultivation_vajra_guard": {
+      "base_attack": 150,
+      "base_intellect": 65,
+      "base_defense": 155,
+      "base_agility": 75,
+      "base_luck": 70,
+      "base_hp": 100000
+    },
+    "task_cultivation_mind_guard": {
+      "base_attack": 65,
+      "base_intellect": 175,
+      "base_defense": 100,
+      "base_agility": 100,
+      "base_luck": 100,
+      "base_hp": 100000
+    },
+    "task_cultivation_demon_guard": {
+      "base_attack": 170,
+      "base_intellect": 60,
+      "base_defense": 95,
+      "base_agility": 155,
+      "base_luck": 80,
+      "base_hp": 90000
+    }
+  },
+  "mission_updates": {
+    "yaolu_hujing": {
+      "enemy_guests": [
+        {
+          "key": "task_cultivation_road_blade",
+          "skills": [
+            "iron_wall_heart"
+          ],
+          "label": "拦路刀客"
+        },
+        {
+          "key": "task_cultivation_road_blade",
+          "skills": [
+            "iron_wall_heart"
+          ],
+          "label": "拦路刀客"
+        },
+        {
+          "key": "task_cultivation_road_blade",
+          "skills": [
+            "iron_wall_heart"
+          ],
+          "label": "拦路刀客"
+        },
+        {
+          "key": "task_cultivation_road_blade",
+          "skills": [
+            "iron_wall_heart"
+          ],
+          "label": "拦路刀客"
+        },
+        {
+          "key": "task_cultivation_road_blade",
+          "skills": [
+            "iron_wall_heart"
+          ],
+          "label": "拦路刀客"
+        },
+        {
+          "key": "task_cultivation_road_blade",
+          "skills": [
+            "iron_wall_heart"
+          ],
+          "label": "拦路刀客"
+        },
+        {
+          "key": "task_cultivation_bandit_leader",
+          "skills": [],
+          "label": "劫经匪首"
+        }
+      ],
+      "enemy_troops": {},
+      "enemy_technology": {
+        "level": 7,
+        "guest_level": 35,
+        "guest_bonus": 0.12
+      }
+    },
+    "xisui_yougu": {
+      "enemy_guests": [
+        {
+          "key": "task_cultivation_valley_swordsman",
+          "skills": [
+            "iron_wall_heart"
+          ],
+          "label": "守谷剑客"
+        },
+        {
+          "key": "task_cultivation_valley_swordsman",
+          "skills": [
+            "iron_wall_heart"
+          ],
+          "label": "守谷剑客"
+        },
+        {
+          "key": "task_cultivation_valley_swordsman",
+          "skills": [
+            "iron_wall_heart",
+            "fatal_chain_sword"
+          ],
+          "label": "守谷剑客"
+        },
+        {
+          "key": "task_cultivation_valley_healer",
+          "skills": [
+            "flower_rain",
+            "steadfast_planning"
+          ],
+          "label": "幽谷药师"
+        },
+        {
+          "key": "task_cultivation_valley_healer",
+          "skills": [
+            "flower_rain",
+            "steadfast_planning"
+          ],
+          "label": "幽谷药师"
+        },
+        {
+          "key": "task_cultivation_valley_healer",
+          "skills": [
+            "flower_rain",
+            "steadfast_planning"
+          ],
+          "label": "幽谷药师"
+        }
+      ],
+      "enemy_troops": {
+        "arrow_god": 800,
+        "qiang_wang": 800,
+        "quan_sheng": 800
+      },
+      "enemy_technology": {
+        "level": 10,
+        "guest_level": 85,
+        "guest_bonus": 0.3
+      }
+    },
+    "yijin_mijing": {
+      "enemy_guests": [
+        {
+          "key": "task_cultivation_vajra_guard",
+          "label": "金刚护法",
+          "skills": [
+            "iron_wall_heart",
+            "draw_enemy_blades"
+          ]
+        },
+        {
+          "key": "task_cultivation_mind_guard",
+          "label": "明心护法",
+          "skills": [
+            "tangseng_sermon",
+            "steadfast_planning"
+          ]
+        },
+        {
+          "key": "task_cultivation_demon_guard",
+          "label": "伏魔护法",
+          "skills": [
+            "meteor_pierce_moon"
+          ]
+        }
+      ],
+      "enemy_troops": {
+        "arrow_god": 300,
+        "quan_sheng": 700
+      },
+      "enemy_technology": {
+        "level": 9,
+        "guest_level": 80,
+        "guest_bonus": 0.26
+      }
+    }
+  }
+}

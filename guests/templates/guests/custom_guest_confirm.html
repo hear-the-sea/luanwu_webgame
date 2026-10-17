@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}确认{{ preview.title }}{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/guest-detail.css' %}"><link rel="stylesheet" href="{% static 'css/custom-guest.css' %}">{% endblock %}
+{% block content %}
+<section class="dashboard guest-detail custom-confirm">
+    <div class="board-card">
+        <h1>确认{{ preview.title }}</h1>
+        {% if preview.avatar %}<img class="custom-confirm-avatar" src="{{ preview.avatar.url }}" alt="{{ preview.avatar.label }}" width="96" height="96">{% endif %}
+        <p class="custom-confirm-summary">{{ preview.summary }}</p>
+        <p>{{ preview.detail }}</p>
+        <form method="post" class="custom-confirm-actions">{% csrf_token %}<input type="hidden" name="confirmation" value="{{ confirmation }}"><a class="tw-btn-secondary" href="{% if guest %}{% url 'guests:detail' guest.id %}{% else %}{% url 'gameplay:warehouse' %}{% endif %}">取消</a><button type="submit" class="tw-btn-primary">确认{{ preview.title }}</button></form>
+    </div>
+</section>
+{% endblock %}

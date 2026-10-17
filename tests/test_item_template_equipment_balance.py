@@ -122,6 +122,9 @@ RESOURCE_PACK_STORAGE = {
     "resource_pack_advanced": 100,
 }
 STRATEGIC_ITEM_STORAGE = {
+    "custom_guest_card": 1,
+    "yijinjing": 1,
+    "millennium_zhuguo": 1,
     "zhuxian_sword_intent": 1,
     "xuanyuan_sword_intent": 1,
     "hulao_halberd_fragment": 1,

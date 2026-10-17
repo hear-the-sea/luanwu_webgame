@@ -1,0 +1,87 @@
+# 专属门客各品质模板；养成权重与强化由玩家独立保存。
+
+heroes:
+  green:
+  - key: custom_guest_green
+    name: 专属门客
+    archetype: military
+    recruitable: false
+    default_gender: unknown
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 500
+      intellect: 500
+      defense: 500
+      agility: 500
+    custom_stats:
+      force: 45
+      intellect: 50
+      defense: 24
+      agility: 52
+      luck: 165
+      base_hp: 400
+  blue:
+  - key: custom_guest_blue
+    name: 专属门客
+    archetype: military
+    recruitable: false
+    default_gender: unknown
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 500
+      intellect: 500
+      defense: 500
+      agility: 500
+    custom_stats:
+      force: 45
+      intellect: 50
+      defense: 24
+      agility: 52
+      luck: 165
+      base_hp: 600
+  purple:
+  - key: custom_guest_purple
+    name: 专属门客
+    archetype: military
+    recruitable: false
+    default_gender: unknown
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 500
+      intellect: 500
+      defense: 500
+      agility: 500
+    custom_stats:
+      force: 45
+      intellect: 50
+      defense: 24
+      agility: 52
+      luck: 165
+      base_hp: 800
+  orange:
+  - key: custom_guest_orange
+    name: 专属门客
+    archetype: military
+    recruitable: false
+    default_gender: unknown
+    growth_range:
+    - 6
+    - 14
+    attribute_weights:
+      force: 500
+      intellect: 500
+      defense: 500
+      agility: 500
+    custom_stats:
+      force: 45
+      intellect: 50
+      defense: 24
+      agility: 52
+      luck: 165
+      base_hp: 1000

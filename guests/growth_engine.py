@@ -87,8 +87,18 @@ def allocate_level_up_attributes(
         rng = random.Random()
 
     template = guest.template
-    min_growth, max_growth = _resolve_growth_range(guest.rarity, template.growth_range)
-    weights = _resolve_weights(guest.archetype, template.attribute_weights)
+    from guests.services.custom_guest import is_custom_guest, resolve_custom_growth_range, resolve_custom_growth_weights
+
+    min_growth, max_growth = (
+        resolve_custom_growth_range(guest)
+        if is_custom_guest(guest)
+        else _resolve_growth_range(guest.rarity, template.growth_range)
+    )
+    weights = (
+        resolve_custom_growth_weights(guest)
+        if is_custom_guest(guest)
+        else _resolve_weights(guest.archetype, template.attribute_weights)
+    )
     choices = _build_weighted_choices(weights)
 
     allocation: GrowthAllocation = {key: 0 for key in GROWTH_KEYS}
@@ -209,7 +219,13 @@ def _allocate_growth_at_total(
     if total_points <= 0:
         return allocation
 
-    weights = _resolve_weights(guest.archetype, guest.template.attribute_weights)
+    from guests.services.custom_guest import is_custom_guest, resolve_custom_growth_weights
+
+    weights = (
+        resolve_custom_growth_weights(guest)
+        if is_custom_guest(guest)
+        else _resolve_weights(guest.archetype, guest.template.attribute_weights)
+    )
     choices = _build_weighted_choices(weights)
     for _ in range(total_points):
         allocation[rng.choice(choices)] += 1
@@ -247,7 +263,13 @@ def reroll_guest_growth(
     current_growth = extract_current_guest_growth(guest, non_growth_bonuses=non_growth_bonuses)
     current_total = sum(current_growth.values())
     levels = max(0, guest.level - 1)
-    _minimum_growth, maximum_growth = _resolve_growth_range(guest.rarity, guest.template.growth_range)
+    from guests.services.custom_guest import is_custom_guest, resolve_custom_growth_range
+
+    _minimum_growth, maximum_growth = (
+        resolve_custom_growth_range(guest)
+        if is_custom_guest(guest)
+        else _resolve_growth_range(guest.rarity, guest.template.growth_range)
+    )
     maximum_total = levels * maximum_growth
 
     if current_total > maximum_total:

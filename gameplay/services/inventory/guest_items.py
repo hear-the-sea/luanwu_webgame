@@ -231,8 +231,18 @@ def use_guest_rebirth_card(
     )
 
     reset_prep = prepare_guest_for_reset(guest, action_label="重生", manor=manor)
-    varied_attrs = roll_guest_template_attributes(guest.template, rng=inventory_random.Random())
-    apply_guest_template_reset(guest, target_template=guest.template, varied_attrs=varied_attrs)
+    from guests.services.custom_guest import get_custom_guest_initial_attributes, is_custom_guest
+
+    if is_custom_guest(guest):
+        appearance = {field: getattr(guest, field) for field in ("avatar_asset_key",)}
+        varied_attrs = get_custom_guest_initial_attributes(guest.template)
+        apply_guest_template_reset(guest, target_template=guest.template, varied_attrs=varied_attrs)
+        for field, value in appearance.items():
+            setattr(guest, field, value)
+        guest.save(update_fields=list(appearance))
+    else:
+        varied_attrs = roll_guest_template_attributes(guest.template, rng=inventory_random.Random())
+        apply_guest_template_reset(guest, target_template=guest.template, varied_attrs=varied_attrs)
 
     from guests.services.training import ensure_auto_training
 
@@ -272,6 +282,11 @@ def use_xisuidan(
         "reroll_growth",
         binding_mode=binding_mode,
     )
+
+    from guests.services.custom_guest import is_custom_guest
+
+    if (is_custom_guest(guest) and guest.level != 100) or (not is_custom_guest(guest) and guest.xisuidan_used >= 10):
+        raise GuestItemConfigurationError("洗髓需要100级，普通门客最多使用10次")
 
     result = reroll_guest_growth(
         guest,
@@ -335,6 +350,10 @@ def use_guest_rarity_upgrade_item(
         "upgrade_guest_rarity",
         binding_mode=binding_mode,
     )
+    from guests.services.custom_guest import is_custom_guest
+
+    if is_custom_guest(guest):
+        raise GuestItemConfigurationError("专属门客请在详情页升阶")
     ensure_guest_not_world_unique(guest, action="升阶")
 
     target_template = resolve_rarity_upgrade_target(guest, payload=locked_item.template.effect_payload or {})
@@ -389,6 +408,10 @@ def use_soul_container(
         allowed_statuses=SOUL_FUSION_ALLOWED_GUEST_STATUSES,
         binding_mode=binding_mode,
     )
+    from guests.services.custom_guest import is_custom_guest
+
+    if is_custom_guest(guest):
+        raise GuestItemConfigurationError("专属门客无法进行灵魂融合")
     ensure_guest_not_world_unique(guest, action="灵魂融合")
 
     payload = locked_item.template.effect_payload or {}

@@ -20,6 +20,7 @@ from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
 
 from core.utils import safe_float, safe_int
+from guests.services.custom_guest import CUSTOM_GUEST_TEMPLATE_KEYS
 
 from .config import BattleConfig, BattleDebuggerInputError, ConfigLoader, GuestConfig, InvalidPresetError, PartyConfig
 from .simulator import BattleSimulator
@@ -382,18 +383,22 @@ def api_guests(request):
     from guests.models import GuestTemplate
 
     # 优化：使用 only() 只获取需要的字段，避免加载不必要的数据
-    guests = GuestTemplate.objects.only(
-        "key",
-        "name",
-        "rarity",
-        "archetype",
-        "base_attack",
-        "base_intellect",
-        "base_defense",
-        "base_agility",
-        "base_luck",
-        "base_hp",
-    ).order_by("rarity", "name")
+    guests = (
+        GuestTemplate.objects.exclude(key__in=CUSTOM_GUEST_TEMPLATE_KEYS)
+        .only(
+            "key",
+            "name",
+            "rarity",
+            "archetype",
+            "base_attack",
+            "base_intellect",
+            "base_defense",
+            "base_agility",
+            "base_luck",
+            "base_hp",
+        )
+        .order_by("rarity", "name")
+    )
     data = [
         {
             "key": g.key,
@@ -467,7 +472,11 @@ def custom_config(request):
 
     if request.method == "GET":
         # 获取所有可用数据（预加载关联对象避免 N+1 查询）
-        guests = GuestTemplate.objects.prefetch_related("default_skills").order_by("rarity", "name")
+        guests = (
+            GuestTemplate.objects.exclude(key__in=CUSTOM_GUEST_TEMPLATE_KEYS)
+            .prefetch_related("initial_skills")
+            .order_by("rarity", "name")
+        )
         skills = Skill.objects.all().order_by("name")
         troops = TroopTemplate.objects.all().order_by("priority")
 

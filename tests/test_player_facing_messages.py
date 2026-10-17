@@ -141,22 +141,17 @@ def test_message_attachment_labels_hide_unknown_keys(monkeypatch):
     assert [entry["name"] for entry in payload] == ["未知资源", "未知物品"]
 
 
+@pytest.mark.django_db
 @pytest.mark.parametrize("source_is_bound", [False, True])
 def test_loot_box_reward_message_hides_unknown_item_key(monkeypatch, source_is_bound):
     from gameplay.services.inventory import use as inventory_use
 
-    empty_query = SimpleNamespace(first=lambda: None)
-    monkeypatch.setattr(
-        inventory_use,
-        "ItemTemplate",
-        SimpleNamespace(objects=SimpleNamespace(filter=lambda **_kwargs: empty_query)),
-    )
     grants = []
 
-    def _grant_item(manor, item_key, quantity, *, is_bound=None):
-        grants.append((manor.id, item_key, quantity, is_bound))
+    def _grant_items(manor, items, *, templates=None, is_bound=None):
+        grants.append((manor.id, items, is_bound))
 
-    monkeypatch.setattr(inventory_use, "add_item_to_inventory", _grant_item)
+    monkeypatch.setattr(inventory_use, "add_items_to_inventory_locked", _grant_items)
     monkeypatch.setattr(inventory_use.inventory_random, "randint", lambda _minimum, _maximum: 2)
     item = SimpleNamespace(
         id=1,
@@ -171,9 +166,10 @@ def test_loot_box_reward_message_hides_unknown_item_key(monkeypatch, source_is_b
 
     result = inventory_use._apply_loot_box(item)
 
-    assert result["rewards"] == ["物品【未知物品】×2"]
-    assert result["_message"] == "打开宝箱获得：物品【未知物品】×2"
-    assert grants == [(1, "future_item", 2, source_is_bound)]
+    assert result["rewards"] == []
+    assert result["_message"] == "打开宝箱获得：空"
+    assert result["skipped_bonus_items"] == ["future_item"]
+    assert grants == []
     assert "future_item" not in result["_message"]
 
 

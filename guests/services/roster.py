@@ -5,11 +5,12 @@ from dataclasses import dataclass
 
 from django.db import transaction
 
-from core.exceptions import EquipmentError, GuestNotFoundError, GuestNotIdleError, WorldUniqueGuestError
+from core.exceptions import EquipmentError, GuestError, GuestNotFoundError, GuestNotIdleError, WorldUniqueGuestError
 from gameplay.models import Manor
 
 from ..models import Guest, GuestStatus
 from . import equipment as equipment_service
+from .custom_guest import is_custom_guest
 from .world_unique import (
     WORLD_UNIQUE_LUBU_TEMPLATE_KEY,
     ensure_guest_not_world_unique,
@@ -33,6 +34,8 @@ def dismiss_guest(guest: Guest) -> DismissGuestResult:
         locked_guest = Guest.objects.select_for_update().filter(pk=guest.pk, manor_id=locked_manor.pk).first()
         if not locked_guest:
             raise GuestNotFoundError()
+        if is_custom_guest(locked_guest):
+            raise GuestError("专属门客不可辞退")
         if locked_guest.status not in {GuestStatus.IDLE, GuestStatus.INJURED, GuestStatus.VACATION}:
             raise GuestNotIdleError(locked_guest)
 

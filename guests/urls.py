@@ -1,5 +1,6 @@
 from django.urls import path
 
+from .views.custom_guest import custom_guest_action_view
 from .views.equipment import equip_view, gear_options_view, unequip_view
 from .views.items import heal_all_guests_view, use_medicine_item_view
 from .views.recruit import RecruitView, accept_candidate_view, use_magnifying_glass_view, use_recruitment_card_view
@@ -11,6 +12,11 @@ from .views.training import allocate_points_view, check_training_view, use_exper
 app_name = "guests"
 
 urlpatterns = [
+    path("custom/create/<int:inventory_id>/", custom_guest_action_view, name="custom_create"),
+    path("<int:pk>/custom/appearance/", custom_guest_action_view, {"action": "appearance"}, name="custom_appearance"),
+    path("<int:pk>/custom/consume/", custom_guest_action_view, {"action": "consume"}, name="custom_consume"),
+    path("<int:pk>/custom/advance/", custom_guest_action_view, {"action": "advance"}, name="custom_advance"),
+    path("<int:pk>/custom/reset/", custom_guest_action_view, {"action": "reset"}, name="custom_reset_weights"),
     path("", RosterView.as_view(), name="roster"),
     path("<int:pk>/", GuestDetailView.as_view(), name="detail"),
     path("<int:pk>/switch-avatar/", switch_avatar_view, name="switch_avatar"),

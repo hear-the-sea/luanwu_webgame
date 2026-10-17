@@ -343,6 +343,8 @@ def sell_item(manor: Manor, item_key: str, quantity: int) -> Dict:
     quantity = safe_int(quantity, 0)
     if quantity <= 0:
         raise ShopValidationError(action="sell")
+    if item_key == "custom_guest_card":
+        raise ItemNotConfiguredError("自定义门客卡不可出售")
 
     # 获取物品模板
     try:

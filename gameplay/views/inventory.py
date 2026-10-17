@@ -222,6 +222,10 @@ class WarehouseView(LoginRequiredMixin, TemplateView):
         )
         context["manor"] = manor
 
+        from accounts.custom_guest_grant import grant_custom_guest_card_on_entry
+
+        grant_custom_guest_card_on_entry(self.request.user, manor=manor)
+
         current_tab = self.request.GET.get("tab", "warehouse")
         selected_category = self.request.GET.get("category", "all")
         page = safe_int(self.request.GET.get("page", 1), default=1, min_val=1) or 1

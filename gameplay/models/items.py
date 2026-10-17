@@ -263,7 +263,7 @@ def _equipment_summary(payload: dict) -> str:
         if payload.get(key):
             parts.append(f"{label}+{payload[key]}")
     if isinstance(required_level, int) and not isinstance(required_level, bool) and required_level > 1:
-        parts.append(f"需求：门客Lv.{required_level}")
+        parts.append(f"LV{required_level}")
 
     troop_bonus_text = format_raw_troop_device_bonus(payload.get("troop_stat_bonus"))
     if troop_bonus_text:

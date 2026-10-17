@@ -1,0 +1,40 @@
+{% if custom_guest %}
+<section class="board-card custom-cultivation mt-6" aria-labelledby="custom-cultivation-title">
+    <div class="custom-cultivation-heading">
+        <div><h2 id="custom-cultivation-title">吞噬修行</h2>{% if guest.rarity == 'orange' %}<p class="tw-muted">橙色强化 {{ custom_guest.enhancement_level }}/2</p>{% endif %}</div>
+        <a class="tw-btn-secondary tw-btn-sm" href="{% url 'guests:custom_appearance' guest.id %}">姓名与形象</a>
+    </div>
+    <div class="custom-weight-grid">
+        {% for row in custom_guest.weight_rows %}
+        <div class="custom-weight"><span>{{ row.label }}</span><strong>{{ row.value }}</strong><span class="tw-muted">{{ row.percent }}%</span><meter min="0" max="100" value="{{ row.percent }}" aria-label="{{ row.label }}成长分配占比">{{ row.percent }}%</meter></div>
+        {% endfor %}
+    </div>
+    <p class="custom-weight-total">成长权重 {{ custom_guest.total_weight }}/25000 <span class="tw-muted">· 权重决定成长分配，不增加每级成长总量</span></p>
+    <div class="custom-cultivation-actions">
+        <form method="post" action="{% url 'guests:custom_consume' guest.id %}" class="custom-consume-form" data-custom-guest-action>
+            {% csrf_token %}
+            <label for="custom-equipment">吞噬装备</label>
+            <span class="tw-muted">今日已吞噬 {{ custom_guest.feeding_used }}/{{ custom_guest.feeding_limit }} 件</span>
+            <select name="equipment" id="custom-equipment" required {% if not custom_guest.equipment_rows %}disabled{% endif %}>
+                <option value="">选择带前缀装备</option>
+                {% for row in custom_guest.equipment_rows %}
+                <option value="{{ row.value }}">{{ row.item.template.name }}{% if row.mode == 'bound' %}（绑定）{% endif %} · {{ row.quantity }}件 · {{ row.label }}权重+{{ row.gain }}/件</option>
+                {% endfor %}
+            </select>
+            <label class="custom-quantity-label" for="custom-quantity">数量</label><input type="number" name="quantity" id="custom-quantity" min="1" max="{{ custom_guest.feeding_remaining }}" value="1" required>
+            <button class="tw-btn-primary" type="submit" {% if not custom_guest.equipment_rows or not custom_guest.feeding_remaining or custom_guest.total_weight >= 25000 or guest.status != 'idle' %}disabled{% endif %}>吞噬</button>
+        </form>
+        <div class="custom-advance">
+            {% if custom_guest.next_stage %}
+            <p>{% if guest.rarity != 'orange' %}升阶权重需满足{{ custom_guest.next_stage.required_weight }} · {% endif %}本次成功率 <strong>{{ custom_guest.next_stage.chance }}%</strong></p>
+            <form method="post" action="{% url 'guests:custom_advance' guest.id %}" data-custom-guest-action>
+                {% csrf_token %}
+                <button class="tw-btn-primary" type="submit" {% if guest.status != 'idle' or custom_guest.total_weight < custom_guest.next_stage.required_weight or custom_guest.material_quantity < custom_guest.next_stage.cost %}disabled{% endif %}>{{ custom_guest.next_stage.label }} · 易筋经×{{ custom_guest.next_stage.cost }}</button>
+                <span class="tw-muted">持有 {{ custom_guest.material_quantity }}</span>
+            </form>
+            {% else %}<p>橙色强化已圆满</p>{% endif %}
+        </div>
+    </div>
+    <details class="custom-reset"><summary>重置成长方向</summary><form method="post" action="{% url 'guests:custom_reset_weights' guest.id %}" data-custom-guest-action>{% csrf_token %}<p class="tw-muted">四项权重恢复为各500，保留品质与强化。</p><button type="submit" class="tw-btn-secondary" {% if not custom_guest.has_resettable_weights or not custom_guest.fruit_quantity or guest.status != 'idle' %}disabled{% endif %}>使用千年朱果×1</button><span class="tw-muted">持有 {{ custom_guest.fruit_quantity }}</span></form></details>
+</section>
+{% endif %}

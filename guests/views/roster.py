@@ -373,6 +373,9 @@ class GuestDetailView(LoginRequiredMixin, TemplateView):
             }
         )
         context["skill_point_form"].fields["guest"].queryset = manor.guests.filter(pk=guest.pk)
+        from .custom_guest import get_custom_guest_panel_context
+
+        context.update(get_custom_guest_panel_context(manor, guest))
         return context
 
 

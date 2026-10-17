@@ -1,0 +1,182 @@
+[
+  {
+    "mission": "yaolu_hujing",
+    "level": 40,
+    "composition": "mixed",
+    "troops": false,
+    "wins": 20,
+    "n": 20,
+    "meanround": 4.95
+  },
+  {
+    "mission": "yaolu_hujing",
+    "level": 40,
+    "composition": "mixed",
+    "troops": true,
+    "wins": 20,
+    "n": 20,
+    "meanround": 4.25
+  },
+  {
+    "mission": "yaolu_hujing",
+    "level": 50,
+    "composition": "mixed",
+    "troops": false,
+    "wins": 20,
+    "n": 20,
+    "meanround": 3.55
+  },
+  {
+    "mission": "yaolu_hujing",
+    "level": 50,
+    "composition": "mixed",
+    "troops": true,
+    "wins": 20,
+    "n": 20,
+    "meanround": 3.6
+  },
+  {
+    "mission": "xisui_yougu",
+    "level": 65,
+    "composition": "mixed",
+    "troops": false,
+    "wins": 14,
+    "n": 20,
+    "meanround": 5.6
+  },
+  {
+    "mission": "xisui_yougu",
+    "level": 65,
+    "composition": "mixed",
+    "troops": true,
+    "wins": 20,
+    "n": 20,
+    "meanround": 5.2
+  },
+  {
+    "mission": "xisui_yougu",
+    "level": 75,
+    "composition": "mixed",
+    "troops": false,
+    "wins": 19,
+    "n": 20,
+    "meanround": 4.6
+  },
+  {
+    "mission": "xisui_yougu",
+    "level": 75,
+    "composition": "mixed",
+    "troops": true,
+    "wins": 20,
+    "n": 20,
+    "meanround": 4.05
+  },
+  {
+    "mission": "yijin_mijing",
+    "level": 90,
+    "composition": "mixed",
+    "troops": false,
+    "wins": 1,
+    "n": 20,
+    "meanround": 5
+  },
+  {
+    "mission": "yijin_mijing",
+    "level": 90,
+    "composition": "mixed",
+    "troops": true,
+    "wins": 16,
+    "n": 20,
+    "meanround": 6.15
+  },
+  {
+    "mission": "yijin_mijing",
+    "level": 100,
+    "composition": "mixed",
+    "troops": false,
+    "wins": 3,
+    "n": 20,
+    "meanround": 5.15
+  },
+  {
+    "mission": "yijin_mijing",
+    "level": 100,
+    "composition": "mixed",
+    "troops": true,
+    "wins": 19,
+    "n": 20,
+    "meanround": 6
+  },
+  {
+    "mission": "dongtian_fudi",
+    "level": 95,
+    "composition": "mixed",
+    "troops": false,
+    "wins": 0,
+    "n": 20,
+    "meanround": 4.6
+  },
+  {
+    "mission": "dongtian_fudi",
+    "level": 95,
+    "composition": "mixed",
+    "troops": true,
+    "wins": 0,
+    "n": 20,
+    "meanround": 7.85
+  },
+  {
+    "mission": "zhuiji_manzu",
+    "level": 95,
+    "composition": "mixed",
+    "troops": false,
+    "wins": 0,
+    "n": 20,
+    "meanround": 3.75
+  },
+  {
+    "mission": "zhuiji_manzu",
+    "level": 95,
+    "composition": "mixed",
+    "troops": true,
+    "wins": 0,
+    "n": 20,
+    "meanround": 6.95
+  },
+  {
+    "mission": "jiufeng_feihuan",
+    "level": 70,
+    "composition": "mixed",
+    "troops": false,
+    "wins": 1,
+    "n": 20,
+    "meanround": 5.6
+  },
+  {
+    "mission": "jiufeng_feihuan",
+    "level": 70,
+    "composition": "mixed",
+    "troops": true,
+    "wins": 5,
+    "n": 20,
+    "meanround": 6.8
+  },
+  {
+    "mission": "wulongshan",
+    "level": 45,
+    "composition": "mixed",
+    "troops": false,
+    "wins": 20,
+    "n": 20,
+    "meanround": 4.2
+  },
+  {
+    "mission": "wulongshan",
+    "level": 45,
+    "composition": "mixed",
+    "troops": true,
+    "wins": 20,
+    "n": 20,
+    "meanround": 4.25
+  }
+]

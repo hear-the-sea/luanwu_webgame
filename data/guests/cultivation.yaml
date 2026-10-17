@@ -1,0 +1,123 @@
+# 修行任务专用敌人；头像选自现有素材，属性独立于其他关卡。
+heroes:
+  blue:
+  - key: task_cultivation_road_blade
+    name: 拦路刀客
+    archetype: military
+    recruitable: false
+    default_gender: male
+    default_morality: 70
+    avatar: pig/武050.png
+    growth_range:
+    - 5
+    - 9
+    custom_stats:
+      force: 70
+      intellect: 40
+      defense: 60
+      agility: 45
+      luck: 50
+      base_hp: 2000
+  - key: task_cultivation_bandit_leader
+    name: 劫经匪首
+    archetype: military
+    recruitable: false
+    default_gender: male
+    default_morality: 70
+    avatar: pig/武007.png
+    growth_range:
+    - 5
+    - 9
+    custom_stats:
+      force: 100
+      intellect: 35
+      defense: 55
+      agility: 75
+      luck: 65
+      base_hp: 2400
+  purple:
+  - key: task_cultivation_valley_swordsman
+    name: 守谷剑客
+    archetype: military
+    recruitable: false
+    default_gender: male
+    default_morality: 70
+    avatar: pig/武021.png
+    growth_range:
+    - 6
+    - 11
+    custom_stats:
+      force: 80
+      intellect: 45
+      defense: 70
+      agility: 75
+      luck: 65
+      base_hp: 1600
+  - key: task_cultivation_valley_healer
+    name: 幽谷药师
+    archetype: civil
+    recruitable: false
+    default_gender: male
+    default_morality: 70
+    avatar: pig/武081.png
+    growth_range:
+    - 6
+    - 11
+    custom_stats:
+      force: 45
+      intellect: 100
+      defense: 55
+      agility: 70
+      luck: 75
+      base_hp: 1600
+  - key: task_cultivation_vajra_guard
+    name: 金刚护法
+    archetype: military
+    recruitable: false
+    default_gender: male
+    default_morality: 70
+    avatar: cultivation/cultivation_vajra_guard.webp
+    growth_range:
+    - 6
+    - 11
+    custom_stats:
+      force: 150
+      intellect: 65
+      defense: 155
+      agility: 75
+      luck: 70
+      base_hp: 100000
+  - key: task_cultivation_mind_guard
+    name: 明心护法
+    archetype: civil
+    recruitable: false
+    default_gender: male
+    default_morality: 70
+    avatar: pig/武072.png
+    growth_range:
+    - 6
+    - 11
+    custom_stats:
+      force: 65
+      intellect: 175
+      defense: 100
+      agility: 100
+      luck: 100
+      base_hp: 100000
+  - key: task_cultivation_demon_guard
+    name: 伏魔护法
+    archetype: military
+    recruitable: false
+    default_gender: male
+    default_morality: 70
+    avatar: pig/武078.png
+    growth_range:
+    - 6
+    - 11
+    custom_stats:
+      force: 170
+      intellect: 60
+      defense: 95
+      agility: 155
+      luck: 80
+      base_hp: 90000

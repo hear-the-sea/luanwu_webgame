@@ -16,6 +16,7 @@ from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 
+from accounts.custom_guest_grant import grant_custom_guest_card_on_entry
 from core.decorators import flash_unexpected_view_error
 from core.exceptions import GameError
 from core.utils import sanitize_error_message
@@ -84,6 +85,7 @@ class HomeView(TemplateView):
                 project_fn=project_manor_activity_for_read,
             )
             manor = prepared_manor.manor
+            grant_custom_guest_card_on_entry(user, manor=manor)
             production_basis = (
                 prepared_manor.projection_result
                 if prepared_manor.projection_succeeded

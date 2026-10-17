@@ -1,0 +1,4958 @@
+{
+  "live_reference": {
+    "missions": [
+      {
+        "key": "dongtian_fudi",
+        "name": "洞天福地",
+        "difficulty": "advanced",
+        "is_defense": false,
+        "enemy_guests": [
+          {
+            "key": "task_heaven_cave_sentinel",
+            "label": "金甲神兵"
+          },
+          {
+            "key": "task_heaven_cave_sentinel",
+            "label": "金甲神兵"
+          }
+        ],
+        "enemy_troops": {
+          "arrow_god": 300,
+          "quan_sheng": 700
+        },
+        "enemy_technology": {
+          "level": 9,
+          "guest_bonus": 0.26,
+          "guest_level": 80
+        }
+      },
+      {
+        "key": "jiguanshou_chuxian",
+        "name": "机关兽初现",
+        "difficulty": "junior",
+        "is_defense": false,
+        "enemy_guests": [
+          {
+            "key": "task_mechanism_cat",
+            "label": "改装机械猫"
+          },
+          {
+            "key": "task_mechanism_cat",
+            "label": "改装机械猫"
+          },
+          {
+            "key": "task_mechanism_cat",
+            "label": "改装机械猫"
+          },
+          {
+            "key": "task_mechanism_cat",
+            "label": "改装机械猫"
+          },
+          {
+            "key": "task_mechanism_cat",
+            "label": "改装机械猫"
+          },
+          {
+            "key": "task_mechanism_cat",
+            "label": "改装机械猫"
+          },
+          {
+            "key": "task_mechanism_cat",
+            "label": "改装机械猫"
+          },
+          {
+            "key": "task_mechanism_cat",
+            "label": "改装机械猫"
+          }
+        ],
+        "enemy_troops": {},
+        "enemy_technology": {
+          "level": 7,
+          "guest_bonus": 0.12,
+          "guest_level": 35
+        }
+      },
+      {
+        "key": "wagangzhai_nixi",
+        "name": "瓦岗寨的逆袭",
+        "difficulty": "intermediate",
+        "is_defense": true,
+        "enemy_guests": [
+          {
+            "key": "hist_suitang_0162_zhairang",
+            "skills": [
+              "tangseng_sermon"
+            ]
+          },
+          {
+            "key": "hero_qin_shubao",
+            "skills": [
+              "brahma_true_fire"
+            ]
+          },
+          "hist_suitang_0164_shanxiongxin",
+          "hist_suitang_0165_wangbodang",
+          "hero_luo_cheng",
+          "hero_cheng_yaojin"
+        ],
+        "enemy_troops": {
+          "arrow_god": 800,
+          "qiang_wang": 800,
+          "quan_sheng": 800
+        },
+        "enemy_technology": {
+          "level": 10,
+          "guest_bonus": 0.3,
+          "guest_level": 100
+        }
+      },
+      {
+        "key": "xisui_yougu",
+        "name": "洗髓幽谷",
+        "difficulty": "intermediate",
+        "is_defense": false,
+        "enemy_guests": [
+          {
+            "key": "task_cultivation_valley_swordsman",
+            "label": "守谷剑客",
+            "skills": [
+              "iron_wall_heart",
+              "fatal_chain_sword"
+            ]
+          },
+          {
+            "key": "task_cultivation_valley_healer",
+            "label": "幽谷药师",
+            "skills": [
+              "flower_rain",
+              "steadfast_planning"
+            ]
+          }
+        ],
+        "enemy_troops": {
+          "archer": 100,
+          "jian_hao": 180
+        },
+        "enemy_technology": {
+          "level": 5,
+          "guest_bonus": 0.08,
+          "guest_level": 70
+        }
+      },
+      {
+        "key": "yaolu_hujing",
+        "name": "药庐护经",
+        "difficulty": "junior",
+        "is_defense": false,
+        "enemy_guests": [
+          {
+            "key": "task_cultivation_road_blade",
+            "label": "拦路刀客",
+            "skills": [
+              "iron_wall_heart"
+            ]
+          },
+          {
+            "key": "task_cultivation_bandit_leader",
+            "label": "劫经匪首",
+            "skills": []
+          }
+        ],
+        "enemy_troops": {
+          "qiang_ke": 120
+        },
+        "enemy_technology": {
+          "level": 3,
+          "guest_bonus": 0,
+          "guest_level": 45
+        }
+      },
+      {
+        "key": "yijin_mijing",
+        "name": "易筋秘境",
+        "difficulty": "advanced",
+        "is_defense": false,
+        "enemy_guests": [
+          {
+            "key": "task_cultivation_vajra_guard",
+            "label": "金刚护法",
+            "skills": [
+              "iron_wall_heart",
+              "draw_enemy_blades"
+            ]
+          },
+          {
+            "key": "task_cultivation_mind_guard",
+            "label": "明心护法",
+            "skills": [
+              "tangseng_sermon",
+              "steadfast_planning"
+            ]
+          },
+          {
+            "key": "task_cultivation_demon_guard",
+            "label": "伏魔护法",
+            "skills": [
+              "meteor_pierce_moon"
+            ]
+          }
+        ],
+        "enemy_troops": {
+          "arrow_god": 100,
+          "jian_sheng": 250,
+          "quan_sheng": 200
+        },
+        "enemy_technology": {
+          "level": 7,
+          "guest_bonus": 0.15,
+          "guest_level": 95
+        }
+      }
+    ],
+    "templates": [
+      {
+        "key": "hero_cheng_yaojin",
+        "name": "程咬金",
+        "archetype": "military",
+        "rarity": "blue",
+        "base_attack": 51,
+        "base_intellect": 15,
+        "base_defense": 44,
+        "base_agility": 37,
+        "base_luck": 50,
+        "base_hp": 600,
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 45,
+          "agility": 15,
+          "defense": 25,
+          "intellect": 15
+        },
+        "default_gender": "male",
+        "default_morality": 70,
+        "recruitable": true,
+        "skills": []
+      },
+      {
+        "key": "hero_luo_cheng",
+        "name": "罗成",
+        "archetype": "military",
+        "rarity": "purple",
+        "base_attack": 59,
+        "base_intellect": 17,
+        "base_defense": 51,
+        "base_agility": 42,
+        "base_luck": 62,
+        "base_hp": 800,
+        "growth_range": [
+          7,
+          11
+        ],
+        "attribute_weights": {
+          "force": 45,
+          "agility": 15,
+          "defense": 25,
+          "intellect": 15
+        },
+        "default_gender": "male",
+        "default_morality": 75,
+        "recruitable": true,
+        "skills": []
+      },
+      {
+        "key": "hero_qin_shubao",
+        "name": "秦叔宝",
+        "archetype": "military",
+        "rarity": "purple",
+        "base_attack": 59,
+        "base_intellect": 17,
+        "base_defense": 51,
+        "base_agility": 42,
+        "base_luck": 62,
+        "base_hp": 800,
+        "growth_range": [
+          7,
+          11
+        ],
+        "attribute_weights": {
+          "force": 45,
+          "agility": 15,
+          "defense": 25,
+          "intellect": 15
+        },
+        "default_gender": "male",
+        "default_morality": 80,
+        "recruitable": true,
+        "skills": []
+      },
+      {
+        "key": "hist_suitang_0162_zhairang",
+        "name": "翟让",
+        "archetype": "military",
+        "rarity": "blue",
+        "base_attack": 51,
+        "base_intellect": 15,
+        "base_defense": 44,
+        "base_agility": 37,
+        "base_luck": 50,
+        "base_hp": 600,
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 36,
+          "agility": 18,
+          "defense": 28,
+          "intellect": 18
+        },
+        "default_gender": "male",
+        "default_morality": 70,
+        "recruitable": true,
+        "skills": []
+      },
+      {
+        "key": "hist_suitang_0164_shanxiongxin",
+        "name": "单雄信",
+        "archetype": "military",
+        "rarity": "blue",
+        "base_attack": 51,
+        "base_intellect": 15,
+        "base_defense": 44,
+        "base_agility": 37,
+        "base_luck": 50,
+        "base_hp": 600,
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {
+          "force": 38,
+          "agility": 16,
+          "defense": 30,
+          "intellect": 16
+        },
+        "default_gender": "male",
+        "default_morality": 70,
+        "recruitable": true,
+        "skills": []
+      },
+      {
+        "key": "hist_suitang_0165_wangbodang",
+        "name": "王伯当",
+        "archetype": "military",
+        "rarity": "green",
+        "base_attack": 41,
+        "base_intellect": 12,
+        "base_defense": 35,
+        "base_agility": 29,
+        "base_luck": 47,
+        "base_hp": 400,
+        "growth_range": [
+          3,
+          7
+        ],
+        "attribute_weights": {
+          "force": 36,
+          "agility": 16,
+          "defense": 30,
+          "intellect": 18
+        },
+        "default_gender": "male",
+        "default_morality": 70,
+        "recruitable": true,
+        "skills": []
+      },
+      {
+        "key": "task_cultivation_bandit_leader",
+        "name": "劫经匪首",
+        "archetype": "military",
+        "rarity": "blue",
+        "base_attack": 115,
+        "base_intellect": 40,
+        "base_defense": 65,
+        "base_agility": 90,
+        "base_luck": 65,
+        "base_hp": 1200,
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {},
+        "default_gender": "male",
+        "default_morality": 70,
+        "recruitable": false,
+        "skills": []
+      },
+      {
+        "key": "task_cultivation_demon_guard",
+        "name": "伏魔护法",
+        "archetype": "military",
+        "rarity": "purple",
+        "base_attack": 170,
+        "base_intellect": 60,
+        "base_defense": 95,
+        "base_agility": 155,
+        "base_luck": 80,
+        "base_hp": 2200,
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {},
+        "default_gender": "male",
+        "default_morality": 70,
+        "recruitable": false,
+        "skills": []
+      },
+      {
+        "key": "task_cultivation_mind_guard",
+        "name": "明心护法",
+        "archetype": "civil",
+        "rarity": "purple",
+        "base_attack": 65,
+        "base_intellect": 175,
+        "base_defense": 100,
+        "base_agility": 100,
+        "base_luck": 120,
+        "base_hp": 2400,
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {},
+        "default_gender": "male",
+        "default_morality": 70,
+        "recruitable": false,
+        "skills": []
+      },
+      {
+        "key": "task_cultivation_road_blade",
+        "name": "拦路刀客",
+        "archetype": "military",
+        "rarity": "blue",
+        "base_attack": 90,
+        "base_intellect": 35,
+        "base_defense": 85,
+        "base_agility": 65,
+        "base_luck": 55,
+        "base_hp": 1200,
+        "growth_range": [
+          5,
+          9
+        ],
+        "attribute_weights": {},
+        "default_gender": "male",
+        "default_morality": 70,
+        "recruitable": false,
+        "skills": []
+      },
+      {
+        "key": "task_cultivation_vajra_guard",
+        "name": "金刚护法",
+        "archetype": "military",
+        "rarity": "purple",
+        "base_attack": 150,
+        "base_intellect": 65,
+        "base_defense": 155,
+        "base_agility": 75,
+        "base_luck": 70,
+        "base_hp": 2400,
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {},
+        "default_gender": "male",
+        "default_morality": 70,
+        "recruitable": false,
+        "skills": []
+      },
+      {
+        "key": "task_cultivation_valley_healer",
+        "name": "幽谷药师",
+        "archetype": "civil",
+        "rarity": "purple",
+        "base_attack": 45,
+        "base_intellect": 125,
+        "base_defense": 65,
+        "base_agility": 80,
+        "base_luck": 100,
+        "base_hp": 1600,
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {},
+        "default_gender": "male",
+        "default_morality": 70,
+        "recruitable": false,
+        "skills": []
+      },
+      {
+        "key": "task_cultivation_valley_swordsman",
+        "name": "守谷剑客",
+        "archetype": "military",
+        "rarity": "purple",
+        "base_attack": 120,
+        "base_intellect": 55,
+        "base_defense": 110,
+        "base_agility": 100,
+        "base_luck": 65,
+        "base_hp": 1800,
+        "growth_range": [
+          6,
+          11
+        ],
+        "attribute_weights": {},
+        "default_gender": "male",
+        "default_morality": 70,
+        "recruitable": false,
+        "skills": []
+      },
+      {
+        "key": "task_heaven_cave_sentinel",
+        "name": "金甲神兵",
+        "archetype": "military",
+        "rarity": "purple",
+        "base_attack": 208,
+        "base_intellect": 118,
+        "base_defense": 176,
+        "base_agility": 118,
+        "base_luck": 70,
+        "base_hp": 150000,
+        "growth_range": [],
+        "attribute_weights": {},
+        "default_gender": "male",
+        "default_morality": 70,
+        "recruitable": false,
+        "skills": [
+          "dragon_roar"
+        ]
+      },
+      {
+        "key": "task_mechanism_cat",
+        "name": "改装机械猫",
+        "archetype": "military",
+        "rarity": "blue",
+        "base_attack": 60,
+        "base_intellect": 78,
+        "base_defense": 50,
+        "base_agility": 40,
+        "base_luck": 48,
+        "base_hp": 1800,
+        "growth_range": [],
+        "attribute_weights": {},
+        "default_gender": "male",
+        "default_morality": 70,
+        "recruitable": false,
+        "skills": []
+      }
+    ]
+  },
+  "candidate": {
+    "template_updates": {
+      "task_cultivation_road_blade": {
+        "base_attack": 70,
+        "base_intellect": 40,
+        "base_defense": 60,
+        "base_agility": 45,
+        "base_luck": 50,
+        "base_hp": 2000
+      },
+      "task_cultivation_bandit_leader": {
+        "base_attack": 100,
+        "base_intellect": 35,
+        "base_defense": 55,
+        "base_agility": 75,
+        "base_luck": 65,
+        "base_hp": 2400
+      },
+      "task_cultivation_valley_swordsman": {
+        "base_attack": 80,
+        "base_intellect": 45,
+        "base_defense": 70,
+        "base_agility": 75,
+        "base_luck": 65,
+        "base_hp": 1600
+      },
+      "task_cultivation_valley_healer": {
+        "base_attack": 45,
+        "base_intellect": 100,
+        "base_defense": 55,
+        "base_agility": 70,
+        "base_luck": 75,
+        "base_hp": 1600
+      },
+      "task_cultivation_vajra_guard": {
+        "base_attack": 150,
+        "base_intellect": 65,
+        "base_defense": 155,
+        "base_agility": 75,
+        "base_luck": 70,
+        "base_hp": 100000
+      },
+      "task_cultivation_mind_guard": {
+        "base_attack": 65,
+        "base_intellect": 175,
+        "base_defense": 100,
+        "base_agility": 100,
+        "base_luck": 100,
+        "base_hp": 100000
+      },
+      "task_cultivation_demon_guard": {
+        "base_attack": 170,
+        "base_intellect": 60,
+        "base_defense": 95,
+        "base_agility": 155,
+        "base_luck": 80,
+        "base_hp": 90000
+      }
+    },
+    "mission_updates": {
+      "yaolu_hujing": {
+        "enemy_guests": [
+          {
+            "key": "task_cultivation_road_blade",
+            "skills": [
+              "iron_wall_heart"
+            ],
+            "label": "拦路刀客"
+          },
+          {
+            "key": "task_cultivation_road_blade",
+            "skills": [
+              "iron_wall_heart"
+            ],
+            "label": "拦路刀客"
+          },
+          {
+            "key": "task_cultivation_road_blade",
+            "skills": [
+              "iron_wall_heart"
+            ],
+            "label": "拦路刀客"
+          },
+          {
+            "key": "task_cultivation_road_blade",
+            "skills": [
+              "iron_wall_heart"
+            ],
+            "label": "拦路刀客"
+          },
+          {
+            "key": "task_cultivation_road_blade",
+            "skills": [
+              "iron_wall_heart"
+            ],
+            "label": "拦路刀客"
+          },
+          {
+            "key": "task_cultivation_road_blade",
+            "skills": [
+              "iron_wall_heart"
+            ],
+            "label": "拦路刀客"
+          },
+          {
+            "key": "task_cultivation_bandit_leader",
+            "skills": [],
+            "label": "劫经匪首"
+          }
+        ],
+        "enemy_troops": {},
+        "enemy_technology": {
+          "level": 7,
+          "guest_level": 35,
+          "guest_bonus": 0.12
+        }
+      },
+      "xisui_yougu": {
+        "enemy_guests": [
+          {
+            "key": "task_cultivation_valley_swordsman",
+            "skills": [
+              "iron_wall_heart"
+            ],
+            "label": "守谷剑客"
+          },
+          {
+            "key": "task_cultivation_valley_swordsman",
+            "skills": [
+              "iron_wall_heart"
+            ],
+            "label": "守谷剑客"
+          },
+          {
+            "key": "task_cultivation_valley_swordsman",
+            "skills": [
+              "iron_wall_heart",
+              "fatal_chain_sword"
+            ],
+            "label": "守谷剑客"
+          },
+          {
+            "key": "task_cultivation_valley_healer",
+            "skills": [
+              "flower_rain",
+              "steadfast_planning"
+            ],
+            "label": "幽谷药师"
+          },
+          {
+            "key": "task_cultivation_valley_healer",
+            "skills": [
+              "flower_rain",
+              "steadfast_planning"
+            ],
+            "label": "幽谷药师"
+          },
+          {
+            "key": "task_cultivation_valley_healer",
+            "skills": [
+              "flower_rain",
+              "steadfast_planning"
+            ],
+            "label": "幽谷药师"
+          }
+        ],
+        "enemy_troops": {
+          "arrow_god": 800,
+          "qiang_wang": 800,
+          "quan_sheng": 800
+        },
+        "enemy_technology": {
+          "level": 10,
+          "guest_level": 85,
+          "guest_bonus": 0.3
+        }
+      },
+      "yijin_mijing": {
+        "enemy_guests": [
+          {
+            "key": "task_cultivation_vajra_guard",
+            "label": "金刚护法",
+            "skills": [
+              "iron_wall_heart",
+              "draw_enemy_blades"
+            ]
+          },
+          {
+            "key": "task_cultivation_mind_guard",
+            "label": "明心护法",
+            "skills": [
+              "tangseng_sermon",
+              "steadfast_planning"
+            ]
+          },
+          {
+            "key": "task_cultivation_demon_guard",
+            "label": "伏魔护法",
+            "skills": [
+              "meteor_pierce_moon"
+            ]
+          }
+        ],
+        "enemy_troops": {
+          "arrow_god": 300,
+          "quan_sheng": 700
+        },
+        "enemy_technology": {
+          "level": 9,
+          "guest_level": 80,
+          "guest_bonus": 0.26
+        }
+      }
+    }
+  },
+  "source": {
+    "data/guest_templates.yaml": {
+      "sha256": "f1f2dc9f7848ff459f04cfd94b24d649d7952e28e456378dc45401ee775eba0b",
+      "payload": {
+        "attribute_profiles": {
+          "black": {
+            "military": {
+              "force": 29,
+              "intellect": 8,
+              "defense": 24,
+              "agility": 20,
+              "luck": 25
+            },
+            "civil": {
+              "force": 20,
+              "intellect": 22,
+              "defense": 11,
+              "agility": 23,
+              "luck": 80
+            }
+          },
+          "gray": {
+            "military": {
+              "force": 34,
+              "intellect": 10,
+              "defense": 29,
+              "agility": 24,
+              "luck": 35
+            },
+            "civil": {
+              "force": 24,
+              "intellect": 27,
+              "defense": 13,
+              "agility": 28,
+              "luck": 95
+            }
+          },
+          "green": {
+            "military": {
+              "force": 41,
+              "intellect": 12,
+              "defense": 35,
+              "agility": 29,
+              "luck": 47
+            },
+            "civil": {
+              "force": 29,
+              "intellect": 32,
+              "defense": 15,
+              "agility": 33,
+              "luck": 112
+            }
+          },
+          "red": {
+            "military": {
+              "force": 46,
+              "intellect": 13,
+              "defense": 39,
+              "agility": 33,
+              "luck": 47
+            },
+            "civil": {
+              "force": 32,
+              "intellect": 36,
+              "defense": 17,
+              "agility": 37,
+              "luck": 112
+            }
+          },
+          "blue": {
+            "military": {
+              "force": 51,
+              "intellect": 15,
+              "defense": 44,
+              "agility": 37,
+              "luck": 50
+            },
+            "civil": {
+              "force": 36,
+              "intellect": 40,
+              "defense": 19,
+              "agility": 42,
+              "luck": 120
+            }
+          },
+          "purple": {
+            "military": {
+              "force": 59,
+              "intellect": 17,
+              "defense": 51,
+              "agility": 42,
+              "luck": 62
+            },
+            "civil": {
+              "force": 42,
+              "intellect": 46,
+              "defense": 22,
+              "agility": 48,
+              "luck": 141
+            }
+          },
+          "orange": {
+            "military": {
+              "force": 64,
+              "intellect": 18,
+              "defense": 55,
+              "agility": 46,
+              "luck": 85
+            },
+            "civil": {
+              "force": 45,
+              "intellect": 50,
+              "defense": 24,
+              "agility": 52,
+              "luck": 165
+            }
+          }
+        },
+        "pools": [
+          {
+            "key": "cunmu",
+            "name": "村募",
+            "tier": "cunmu",
+            "description": "在地方由村长主持的初级招募，寻找有潜力的年轻人。",
+            "cost": {
+              "silver": 500
+            },
+            "cooldown_seconds": 600,
+            "draw_count": 5
+          },
+          {
+            "key": "xiangshi",
+            "name": "乡试",
+            "tier": "xiangshi",
+            "description": "各省贡院三年一科的大型考试，通过者称举人。",
+            "cost": {
+              "silver": 1500
+            },
+            "cooldown_seconds": 1200,
+            "draw_count": 8
+          },
+          {
+            "key": "huishi",
+            "name": "会试",
+            "tier": "huishi",
+            "description": "在京城由礼部主持的统考举人考试，通过者称贡士。",
+            "cost": {
+              "silver": 5000
+            },
+            "cooldown_seconds": 1800,
+            "draw_count": 12
+          },
+          {
+            "key": "dianshi",
+            "name": "殿试",
+            "tier": "dianshi",
+            "description": "皇帝在宫殿亲自主持的最高等级考试，对会试贡士排定名次，取进士。",
+            "cost": {
+              "silver": 10000
+            },
+            "cooldown_seconds": 3600,
+            "draw_count": 15
+          }
+        ]
+      }
+    },
+    "data/guest_growth_rules.yaml": {
+      "sha256": "c3ac24912ae8a63e14668fbc12c74935e75a9998835c5a62305e79d329a6da7f",
+      "payload": {
+        "rarity_hp_profiles": {
+          "black": {
+            "base": 100
+          },
+          "gray": {
+            "base": 250
+          },
+          "green": {
+            "base": 400
+          },
+          "red": {
+            "base": 450
+          },
+          "blue": {
+            "base": 600
+          },
+          "purple": {
+            "base": 800
+          },
+          "orange": {
+            "base": 1000
+          }
+        },
+        "rarity_skill_point_gains": {
+          "black": 1,
+          "gray": 1,
+          "green": 1,
+          "red": 1,
+          "blue": 1,
+          "purple": 1,
+          "orange": 1
+        },
+        "rarity_attribute_growth_range": {
+          "black": [
+            1,
+            3
+          ],
+          "gray": [
+            2,
+            5
+          ],
+          "green": [
+            3,
+            7
+          ],
+          "red": [
+            4,
+            7
+          ],
+          "blue": [
+            5,
+            9
+          ],
+          "purple": [
+            6,
+            11
+          ],
+          "orange": [
+            6,
+            14
+          ]
+        },
+        "archetype_attribute_weights": {
+          "military": {
+            "force": 40,
+            "intellect": 15,
+            "defense": 23,
+            "agility": 22
+          },
+          "civil": {
+            "force": 20,
+            "intellect": 40,
+            "defense": 20,
+            "agility": 20
+          }
+        }
+      }
+    },
+    "data/guest_skills.yaml": {
+      "sha256": "f3a6ee2557489f17b3d44449c2d64ffb6bf648940b078a8e2b67662602347da8",
+      "payload": {
+        "skills": [
+          {
+            "key": "stratagem_burst",
+            "name": "奇策突袭",
+            "rarity": "purple",
+            "description": "随机对敌人造成高额伤害并可能眩晕。",
+            "base_power": 220,
+            "base_probability": 0.8,
+            "kind": "active",
+            "status_effect": "stunned",
+            "status_probability": 0.3,
+            "status_duration": 1,
+            "damage_formula": {
+              "base": 800,
+              "ally": {
+                "force": 0.5,
+                "intellect": 5,
+                "agility": 0.2
+              },
+              "enemy": {
+                "defense": 0.35,
+                "intellect": 0.5
+              }
+            },
+            "required_level": 50,
+            "required_intellect": 255,
+            "required_agility": 125,
+            "targets": 1
+          },
+          {
+            "key": "ice_curse",
+            "name": "寒冰咒",
+            "rarity": "green",
+            "description": "念诵玄冰咒语，召唤寒气侵袭敌人，冰寒刺骨。",
+            "base_probability": 0.75,
+            "kind": "active",
+            "damage_formula": {
+              "base": 1000,
+              "ally": {
+                "force": 0.2,
+                "intellect": 1.8
+              },
+              "enemy": {
+                "defense": 0.2,
+                "intellect": 0.1
+              }
+            },
+            "required_level": 12,
+            "required_intellect": 100,
+            "targets": 1
+          },
+          {
+            "key": "thunder_control",
+            "name": "驭雷术",
+            "rarity": "green",
+            "description": "引动天雷之力劈向敌人，雷光闪烁，迅如疾风。",
+            "base_probability": 0.75,
+            "kind": "active",
+            "damage_formula": {
+              "base": 1500,
+              "ally": {
+                "force": 0.15,
+                "intellect": 1.5,
+                "agility": 0.3
+              },
+              "enemy": {
+                "defense": 0.25,
+                "intellect": 0.1
+              }
+            },
+            "required_level": 15,
+            "required_intellect": 110,
+            "required_agility": 65,
+            "targets": 1
+          },
+          {
+            "key": "dragon_break_curse",
+            "name": "破龙咒",
+            "rarity": "green",
+            "description": "以咒力震慑龙气，专破护甲坚固之敌，忽视大部分防御。",
+            "base_probability": 0.7,
+            "kind": "active",
+            "damage_formula": {
+              "base": 750,
+              "ally": {
+                "force": 0.1,
+                "intellect": 1.56,
+                "luck": 0.2
+              },
+              "enemy": {
+                "defense": 0.05,
+                "intellect": 0.05
+              }
+            },
+            "required_level": 20,
+            "required_intellect": 125,
+            "targets": 1
+          },
+          {
+            "key": "endless_chatter",
+            "name": "唧唧歪歪",
+            "rarity": "green",
+            "description": "滔滔不绝地絮叨，言辞如刀，令敌人心烦意乱。",
+            "base_probability": 0.8,
+            "kind": "active",
+            "damage_formula": {
+              "base": 1200,
+              "ally": {
+                "force": 0.1,
+                "intellect": 1.9,
+                "luck": 0.4
+              },
+              "enemy": {
+                "defense": 0.15,
+                "intellect": 0.15
+              }
+            },
+            "required_level": 12,
+            "required_intellect": 95,
+            "targets": 1
+          },
+          {
+            "key": "taiyi_wind",
+            "name": "太乙生风",
+            "rarity": "green",
+            "description": "运转太乙真气，化为狂风席卷战场，摧枯拉朽。",
+            "base_probability": 0.75,
+            "kind": "active",
+            "damage_formula": {
+              "base": 880,
+              "ally": {
+                "force": 0.3,
+                "intellect": 3.0,
+                "agility": 0.5
+              },
+              "enemy": {
+                "defense": 0.3,
+                "intellect": 0.15
+              }
+            },
+            "required_level": 24,
+            "required_intellect": 145,
+            "required_agility": 80,
+            "targets": 1
+          },
+          {
+            "key": "flower_rain",
+            "name": "天花乱坠",
+            "rarity": "blue",
+            "description": "口吐莲花，舌灿生辉，言辞如天花飘落，杀人于无形。",
+            "base_probability": 0.75,
+            "kind": "active",
+            "damage_formula": {
+              "base": 770,
+              "ally": {
+                "force": 0.2,
+                "intellect": 3.5,
+                "luck": 0.6
+              },
+              "enemy": {
+                "defense": 0.25,
+                "intellect": 0.15
+              }
+            },
+            "required_level": 28,
+            "required_intellect": 170,
+            "targets": 1
+          },
+          {
+            "key": "soul_erode",
+            "name": "销魂蚀骨",
+            "rarity": "blue",
+            "description": "阴毒法术侵蚀敌人精魄，直击灵魂深处。",
+            "base_probability": 0.7,
+            "kind": "active",
+            "damage_formula": {
+              "base": 990,
+              "ally": {
+                "force": 0.15,
+                "intellect": 4,
+                "luck": 0.4
+              },
+              "enemy": {
+                "defense": 0.1,
+                "intellect": 0.2
+              }
+            },
+            "required_level": 32,
+            "required_intellect": 190,
+            "targets": 1
+          },
+          {
+            "key": "red_lotus_dance",
+            "name": "红莲之舞",
+            "rarity": "blue",
+            "description": "召唤业火红莲绽放，火焰如舞者般席卷敌阵。",
+            "base_probability": 0.75,
+            "kind": "active",
+            "damage_formula": {
+              "base": 2500,
+              "ally": {
+                "force": 0.3,
+                "intellect": 4.5,
+                "agility": 0.4
+              },
+              "enemy": {
+                "defense": 0.25,
+                "intellect": 0.15
+              }
+            },
+            "required_level": 35,
+            "required_intellect": 205,
+            "required_agility": 110,
+            "targets": 1
+          },
+          {
+            "key": "thunder_nine_heavens",
+            "name": "雷动九天",
+            "rarity": "blue",
+            "description": "引动九天神雷轰击敌阵，雷霆万钧，势不可挡。",
+            "base_probability": 0.8,
+            "kind": "active",
+            "damage_formula": {
+              "base": 3000,
+              "ally": {
+                "force": 0.5,
+                "intellect": 5.4,
+                "agility": 0.8
+              },
+              "enemy": {
+                "defense": 0.35,
+                "intellect": 0.2
+              }
+            },
+            "required_level": 45,
+            "required_intellect": 255,
+            "required_agility": 125,
+            "targets": 1
+          },
+          {
+            "key": "tangseng_sermon",
+            "name": "唐僧说禅",
+            "rarity": "blue",
+            "description": "如唐三藏般念诵经文，绵绵不绝，言辞凌厉如刀剑万千。",
+            "base_probability": 0.8,
+            "kind": "active",
+            "damage_formula": {
+              "base": 3000,
+              "ally": {
+                "force": 0.2,
+                "intellect": 5.04,
+                "luck": 1.0
+              },
+              "enemy": {
+                "defense": 0.2,
+                "intellect": 0.25
+              }
+            },
+            "required_level": 42,
+            "required_intellect": 240,
+            "targets": 1
+          },
+          {
+            "key": "five_thunder_descent",
+            "name": "五雷降世",
+            "rarity": "purple",
+            "description": "召唤金木水火土五行雷霆同时降临，毁天灭地。",
+            "base_probability": 0.75,
+            "kind": "active",
+            "damage_formula": {
+              "base": 4500,
+              "ally": {
+                "force": 0.4,
+                "intellect": 5.76,
+                "luck": 0.8
+              },
+              "enemy": {
+                "defense": 0.1,
+                "intellect": 0.25
+              }
+            },
+            "required_level": 60,
+            "required_intellect": 320,
+            "required_agility": 140,
+            "targets": 1
+          },
+          {
+            "key": "brahma_true_fire",
+            "name": "梵天真火",
+            "rarity": "purple",
+            "description": "引动梵天圣火焚尽万物，烈焰滔天，神佛难挡。",
+            "base_probability": 0.75,
+            "kind": "active",
+            "damage_formula": {
+              "base": 5000,
+              "ally": {
+                "force": 0.7,
+                "intellect": 7.8,
+                "agility": 0.9
+              },
+              "enemy": {
+                "defense": 0.35,
+                "intellect": 0.25
+              }
+            },
+            "required_level": 70,
+            "required_intellect": 380,
+            "required_agility": 160,
+            "targets": 1
+          },
+          {
+            "key": "shenyi_poxu",
+            "name": "神意破虚",
+            "rarity": "purple",
+            "description": "神意洞察虚实，内劲直贯破绽。武力与智力相济时，方能尽展此招威力。",
+            "base_probability": 0.75,
+            "kind": "active",
+            "damage_formula": {
+              "base": 5000,
+              "ally_min": {
+                "stats": [
+                  "force",
+                  "intellect"
+                ],
+                "coefficient": 15
+              },
+              "enemy": {
+                "defense": 0.3
+              }
+            },
+            "required_level": 80,
+            "required_force": 400,
+            "required_intellect": 400,
+            "targets": 1
+          },
+          {
+            "key": "wanxian_qingsuan_fuzhao",
+            "name": "符诏清算",
+            "rarity": "purple",
+            "description": "符诏悬空落笔，勾去阵中榜外残名，对多名敌人降下清算雷文。",
+            "base_probability": 0.76,
+            "kind": "active",
+            "damage_formula": {
+              "base": 2800,
+              "ally": {
+                "force": 0.35,
+                "intellect": 7.6,
+                "luck": 1.0
+              },
+              "enemy": {
+                "defense": 0.3,
+                "intellect": 0.24
+              }
+            },
+            "required_level": 70,
+            "required_intellect": 220,
+            "targets": 2
+          },
+          {
+            "key": "wanxian_shier_xianyin",
+            "name": "仙印镇阵",
+            "rarity": "purple",
+            "description": "十二道玉虚法印同时镇落，封死退路后轰击敌阵中枢。",
+            "base_probability": 0.74,
+            "kind": "active",
+            "damage_formula": {
+              "base": 3400,
+              "ally": {
+                "force": 0.45,
+                "intellect": 8.8,
+                "defense": 0.8
+              },
+              "enemy": {
+                "defense": 0.36,
+                "intellect": 0.28
+              }
+            },
+            "required_level": 85,
+            "required_intellect": 260,
+            "targets": 3
+          },
+          {
+            "key": "wanxian_randeng_dengyan",
+            "name": "佛灯焚阵",
+            "rarity": "purple",
+            "description": "过去佛灯照见前尘因果，灯焰扫过之处，阵中生机被层层焚尽。",
+            "base_probability": 0.73,
+            "kind": "active",
+            "damage_formula": {
+              "base": 3300,
+              "ally": {
+                "force": 0.25,
+                "intellect": 9.2,
+                "luck": 1.1
+              },
+              "enemy": {
+                "defense": 0.32,
+                "intellect": 0.32
+              }
+            },
+            "required_level": 95,
+            "required_intellect": 300,
+            "targets": 3
+          },
+          {
+            "key": "wanxian_fengbang_zhiming",
+            "name": "封榜敕命",
+            "rarity": "purple",
+            "description": "封神榜金光铺开，敕命如山压落，榜上神名随令齐鸣。",
+            "base_probability": 0.72,
+            "kind": "active",
+            "damage_formula": {
+              "base": 3600,
+              "ally": {
+                "force": 0.35,
+                "intellect": 9.6,
+                "luck": 1.3
+              },
+              "enemy": {
+                "defense": 0.34,
+                "intellect": 0.3
+              }
+            },
+            "required_level": 95,
+            "required_intellect": 320,
+            "targets": 3
+          },
+          {
+            "key": "wanxian_dashenbian",
+            "name": "神鞭伐魂",
+            "rarity": "purple",
+            "description": "神鞭化作天律长痕，专击逆命之魂，鞭影横扫前阵。",
+            "base_probability": 0.75,
+            "kind": "active",
+            "damage_formula": {
+              "base": 3100,
+              "ally": {
+                "force": 8.4,
+                "intellect": 1.2,
+                "agility": 1.6
+              },
+              "enemy": {
+                "defense": 0.38,
+                "agility": 0.22
+              }
+            },
+            "required_level": 95,
+            "required_force": 300,
+            "required_agility": 220,
+            "targets": 2
+          },
+          {
+            "key": "wanxian_yuxu_tianfa",
+            "name": "天罚诛逆",
+            "rarity": "purple",
+            "description": "玉虚敕令引动天罚雷火，封榜天门前万法齐坠，镇杀逆命之人。",
+            "base_probability": 0.72,
+            "kind": "active",
+            "damage_formula": {
+              "base": 3900,
+              "ally": {
+                "force": 0.55,
+                "intellect": 10.2,
+                "luck": 1.4
+              },
+              "enemy": {
+                "defense": 0.38,
+                "intellect": 0.34
+              }
+            },
+            "required_level": 100,
+            "required_intellect": 340,
+            "targets": 4
+          },
+          {
+            "key": "prison_break_blade",
+            "name": "破狱狂刀",
+            "rarity": "purple",
+            "description": "刀势如囚龙破狱，斩碎敌军护体真气，霸烈难当。",
+            "base_probability": 0.75,
+            "kind": "active",
+            "damage_formula": {
+              "base": 4500,
+              "ally": {
+                "force": 5.76,
+                "agility": 0.8,
+                "luck": 0.4
+              },
+              "enemy": {
+                "defense": 0.3,
+                "agility": 0.25
+              }
+            },
+            "required_level": 55,
+            "required_force": 290,
+            "required_agility": 145,
+            "targets": 1
+          },
+          {
+            "key": "city_felling_strike",
+            "name": "倾城一击",
+            "rarity": "purple",
+            "description": "凝聚全身劲力于一瞬，出手时宛若城倾岳倒，一击定胜负。",
+            "base_probability": 0.75,
+            "kind": "active",
+            "damage_formula": {
+              "base": 4500,
+              "ally": {
+                "force": 7.1,
+                "agility": 1.0,
+                "luck": 0.5
+              },
+              "enemy": {
+                "defense": 0.35,
+                "agility": 0.3
+              }
+            },
+            "required_level": 65,
+            "required_force": 335,
+            "required_agility": 175,
+            "targets": 1
+          },
+          {
+            "key": "fatal_chain_sword",
+            "name": "夺命连环剑",
+            "rarity": "blue",
+            "description": "剑势连绵不绝，快若骤雨，专取敌军要害。",
+            "base_probability": 0.78,
+            "kind": "active",
+            "damage_formula": {
+              "base": 2500,
+              "ally": {
+                "force": 1.0,
+                "agility": 5.04,
+                "luck": 0.6
+              },
+              "enemy": {
+                "defense": 0.2,
+                "agility": 0.25
+              }
+            },
+            "required_level": 38,
+            "required_force": 120,
+            "required_agility": 180,
+            "targets": 1
+          },
+          {
+            "key": "hell_instant_formation",
+            "name": "瞬狱杀阵",
+            "rarity": "purple",
+            "description": "身法化影布下杀阵，刹那间连袭多名敌人，招招夺命。",
+            "base_probability": 0.72,
+            "kind": "active",
+            "damage_formula": {
+              "base": 1000,
+              "ally": {
+                "force": 0.6,
+                "agility": 3.2,
+                "luck": 0.6
+              },
+              "enemy": {
+                "defense": 0.5,
+                "agility": 0.2
+              }
+            },
+            "required_level": 65,
+            "required_force": 170,
+            "required_agility": 260,
+            "targets": 3
+          },
+          {
+            "key": "meteor_pierce_moon",
+            "name": "流星贯月",
+            "rarity": "purple",
+            "description": "身形如流星穿空，剑芒一线贯月，可同时洞穿前排敌手。",
+            "base_probability": 0.75,
+            "kind": "active",
+            "damage_formula": {
+              "base": 2000,
+              "ally": {
+                "force": 1.8,
+                "agility": 4.3,
+                "luck": 0.4
+              },
+              "enemy": {
+                "defense": 0.3,
+                "agility": 0.15
+              }
+            },
+            "required_level": 68,
+            "required_force": 175,
+            "required_agility": 280,
+            "targets": 2
+          },
+          {
+            "key": "dragon_roar",
+            "name": "龙吟破阵",
+            "rarity": "purple",
+            "description": "对随机三名敌人造成范围伤害，运势越高触发率越高。",
+            "base_power": 260,
+            "base_probability": 0.8,
+            "damage_formula": {
+              "base": 1500,
+              "ally": {
+                "force": 3.3,
+                "intellect": 0.2,
+                "agility": 0.2,
+                "luck": 0.2
+              },
+              "enemy": {
+                "defense": 0.3,
+                "intellect": 0.2,
+                "force": 0.2
+              }
+            },
+            "required_level": 68,
+            "required_force": 330,
+            "required_defense": 175,
+            "targets": 3
+          },
+          {
+            "key": "guild_wulinzhai_shadow_raid",
+            "name": "夜幕劫袭",
+            "rarity": "blue",
+            "description": "借夜色贴近敌阵，挥刀连袭两名目标，专打队伍露出的破绽。",
+            "base_probability": 0.78,
+            "kind": "active",
+            "damage_formula": {
+              "base": 980,
+              "ally": {
+                "force": 2.6,
+                "agility": 2.4,
+                "luck": 0.3
+              },
+              "enemy": {
+                "defense": 0.24,
+                "agility": 0.18
+              }
+            },
+            "required_level": 18,
+            "required_force": 96,
+            "required_agility": 108,
+            "targets": 2
+          },
+          {
+            "key": "guild_wulinzhai_torch_volley",
+            "name": "火把乱射",
+            "rarity": "blue",
+            "description": "借火把照明齐射山道，对三名敌人压出一轮凌乱却凶狠的箭雨。",
+            "base_probability": 0.76,
+            "kind": "active",
+            "damage_formula": {
+              "base": 860,
+              "ally": {
+                "force": 1.8,
+                "intellect": 1.2,
+                "agility": 2.1
+              },
+              "enemy": {
+                "defense": 0.22,
+                "agility": 0.16
+              }
+            },
+            "required_level": 18,
+            "required_force": 90,
+            "required_agility": 102,
+            "targets": 3
+          },
+          {
+            "key": "guild_wulinzhai_night_signal",
+            "name": "夜哨号火",
+            "rarity": "purple",
+            "description": "山口号火一起，乌鳞寨众匪立刻收拢阵脚，趁乱压出更狠一轮攻势。",
+            "base_probability": 0.75,
+            "kind": "passive",
+            "damage_formula": {
+              "base": 0
+            },
+            "targets": 1,
+            "passive_config": {
+              "triggers": [
+                {
+                  "timing": "round_start",
+                  "conditions": {
+                    "self_template_in": [
+                      "guild_wulinzhai_junshi",
+                      "guild_wulinzhai_night_watch"
+                    ]
+                  },
+                  "effects": [
+                    {
+                      "type": "emit_log",
+                      "log_name": "夜哨号火",
+                      "message": "哨火示警"
+                    },
+                    {
+                      "type": "modify_outgoing_damage",
+                      "value": 1.12,
+                      "target_scope": "allies"
+                    },
+                    {
+                      "type": "set_softcap",
+                      "threshold": 9000,
+                      "overflow_ratio": 0.4,
+                      "target_scope": "allies"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "key": "guild_bloodflag_convoy_command",
+            "name": "血旗押阵",
+            "rarity": "purple",
+            "description": "镖队号令严整，主心骨未乱时，押运众人会不断前压抢节奏。",
+            "base_probability": 0.75,
+            "kind": "passive",
+            "damage_formula": {
+              "base": 0
+            },
+            "targets": 1,
+            "passive_config": {
+              "triggers": [
+                {
+                  "timing": "round_start",
+                  "conditions": {
+                    "self_template_in": [
+                      "guild_bloodflag_head_escort",
+                      "guild_bloodflag_escort_master"
+                    ]
+                  },
+                  "effects": [
+                    {
+                      "type": "emit_log",
+                      "log_name": "血旗押阵",
+                      "message": "旗令前压"
+                    },
+                    {
+                      "type": "modify_outgoing_damage",
+                      "value": 1.15,
+                      "target_scope": "allies"
+                    },
+                    {
+                      "type": "set_softcap",
+                      "threshold": 11000,
+                      "overflow_ratio": 0.38,
+                      "target_scope": "allies"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "key": "guild_bloodflag_pressing_blade",
+            "name": "压阵逼锋",
+            "rarity": "purple",
+            "description": "镖师借车阵掩护贴身抢位，刀锋连进，一击便逼得敌人难以喘息。",
+            "base_probability": 0.77,
+            "kind": "active",
+            "damage_formula": {
+              "base": 1120,
+              "ally": {
+                "force": 3.3,
+                "agility": 1.9,
+                "luck": 0.4
+              },
+              "enemy": {
+                "defense": 0.26,
+                "agility": 0.18
+              }
+            },
+            "required_level": 22,
+            "required_force": 120,
+            "required_agility": 96,
+            "targets": 1
+          },
+          {
+            "key": "guild_bloodflag_rearguard_counter",
+            "name": "断后回斩",
+            "rarity": "purple",
+            "description": "后队老手半步不让，借退势回身反斩，将追近的两名敌人一并卷入刀势。",
+            "base_probability": 0.75,
+            "kind": "active",
+            "damage_formula": {
+              "base": 980,
+              "ally": {
+                "force": 2.8,
+                "defense": 1.1,
+                "agility": 1.2
+              },
+              "enemy": {
+                "defense": 0.24,
+                "agility": 0.12
+              }
+            },
+            "required_level": 22,
+            "required_force": 116,
+            "required_agility": 88,
+            "targets": 2
+          },
+          {
+            "key": "guild_bloodflag_arrow_screen",
+            "name": "河道箭幕",
+            "rarity": "purple",
+            "description": "镖局弓手借狭道铺开箭幕，对前方三名敌人持续压射，不给轻易突进的机会。",
+            "base_probability": 0.76,
+            "kind": "active",
+            "damage_formula": {
+              "base": 930,
+              "ally": {
+                "force": 1.9,
+                "intellect": 1.0,
+                "agility": 2.5
+              },
+              "enemy": {
+                "defense": 0.22,
+                "agility": 0.18
+              }
+            },
+            "required_level": 21,
+            "required_force": 94,
+            "required_agility": 112,
+            "targets": 3
+          },
+          {
+            "key": "guild_blackwind_battle_standard",
+            "name": "黑风战旗",
+            "rarity": "purple",
+            "description": "关楼战旗一立，黑风关守军杀意更盛，同时借阵势稳住正面承压。",
+            "base_probability": 0.75,
+            "kind": "passive",
+            "damage_formula": {
+              "base": 0
+            },
+            "targets": 1,
+            "passive_config": {
+              "triggers": [
+                {
+                  "timing": "round_start",
+                  "conditions": {
+                    "self_template_in": [
+                      "guild_blackwind_gate_general"
+                    ]
+                  },
+                  "effects": [
+                    {
+                      "type": "emit_log",
+                      "log_name": "黑风战旗",
+                      "message": "战旗高举"
+                    },
+                    {
+                      "type": "modify_outgoing_damage",
+                      "value": 1.18,
+                      "target_scope": "allies"
+                    },
+                    {
+                      "type": "modify_incoming_damage",
+                      "value": 0.88,
+                      "target_scope": "allies"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "key": "guild_blackwind_overseer_order",
+            "name": "督战严令",
+            "rarity": "purple",
+            "description": "监军在阵后严令死守，前排兵卒会在喝令中稳住阵脚，持续压住正面攻势。",
+            "base_probability": 0.75,
+            "kind": "passive",
+            "damage_formula": {
+              "base": 0
+            },
+            "targets": 2,
+            "passive_config": {
+              "triggers": [
+                {
+                  "timing": "round_start",
+                  "conditions": {
+                    "self_template_in": [
+                      "guild_blackwind_gate_overseer",
+                      "guild_blackwind_patrol_captain"
+                    ]
+                  },
+                  "effects": [
+                    {
+                      "type": "emit_log",
+                      "log_name": "督战严令",
+                      "message": "严令死守"
+                    },
+                    {
+                      "type": "modify_outgoing_damage",
+                      "value": 1.1,
+                      "target_scope": "allies",
+                      "target_template_in": [
+                        "guild_blackwind_gate_overseer",
+                        "guild_blackwind_patrol_captain",
+                        "guild_blackwind_iron_guard",
+                        "guild_blackwind_assault_blade",
+                        "guild_blackwind_guard_soldier",
+                        "guild_blackwind_spear_soldier"
+                      ]
+                    },
+                    {
+                      "type": "set_softcap",
+                      "threshold": 9800,
+                      "overflow_ratio": 0.4,
+                      "target_scope": "allies",
+                      "target_template_in": [
+                        "guild_blackwind_gate_overseer",
+                        "guild_blackwind_patrol_captain",
+                        "guild_blackwind_iron_guard",
+                        "guild_blackwind_assault_blade",
+                        "guild_blackwind_guard_soldier",
+                        "guild_blackwind_spear_soldier"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "key": "guild_blackwind_gate_breaker",
+            "name": "破关猛轰",
+            "rarity": "purple",
+            "description": "借重甲与冲势硬砸正面，一击直撞敌阵核心，仿佛城门都要被撞开。",
+            "base_probability": 0.75,
+            "kind": "active",
+            "damage_formula": {
+              "base": 1320,
+              "ally": {
+                "force": 3.9,
+                "defense": 1.2,
+                "agility": 0.8
+              },
+              "enemy": {
+                "defense": 0.28,
+                "agility": 0.1
+              }
+            },
+            "required_level": 24,
+            "required_force": 132,
+            "required_agility": 84,
+            "targets": 1
+          },
+          {
+            "key": "guild_blackwind_arrow_barrage",
+            "name": "关楼箭雨",
+            "rarity": "purple",
+            "description": "关楼弓队居高齐发，密集箭雨直落阵前，对三名敌人形成连绵压制。",
+            "base_probability": 0.76,
+            "kind": "active",
+            "damage_formula": {
+              "base": 1010,
+              "ally": {
+                "force": 2.0,
+                "intellect": 1.3,
+                "agility": 2.6
+              },
+              "enemy": {
+                "defense": 0.24,
+                "agility": 0.18
+              }
+            },
+            "required_level": 24,
+            "required_force": 100,
+            "required_agility": 116,
+            "targets": 3
+          },
+          {
+            "key": "guild_blackwind_countercharge",
+            "name": "关前反冲",
+            "rarity": "purple",
+            "description": "守军趁敌脚步未稳突然顶枪反冲，同时逼退两名贴近的前排对手。",
+            "base_probability": 0.78,
+            "kind": "active",
+            "damage_formula": {
+              "base": 1080,
+              "ally": {
+                "force": 3.0,
+                "defense": 1.3,
+                "agility": 1.0
+              },
+              "enemy": {
+                "defense": 0.26,
+                "agility": 0.12
+              }
+            },
+            "required_level": 23,
+            "required_force": 122,
+            "required_agility": 86,
+            "targets": 2
+          },
+          {
+            "key": "steadfast_planning",
+            "name": "静水筹谋",
+            "rarity": "green",
+            "description": "以静制动，沉着观察局势后再稳步放大己方攻势。",
+            "kind": "passive",
+            "required_level": 18,
+            "required_intellect": 110,
+            "passive_config": {
+              "triggers": [
+                {
+                  "timing": "round_start",
+                  "chance": 0.5,
+                  "conditions": {
+                    "hp_ratio_gte": 0.5
+                  },
+                  "effects": [
+                    {
+                      "type": "emit_log",
+                      "log_name": "静水筹谋",
+                      "message": "伤害增加"
+                    },
+                    {
+                      "type": "modify_outgoing_damage",
+                      "value": 1.2,
+                      "target_scope": "self"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "key": "iron_wall_heart",
+            "name": "铁壁心法",
+            "rarity": "green",
+            "description": "守中求稳，越是稳住心神，越能把外来的冲击化作缓冲。",
+            "kind": "passive",
+            "required_level": 20,
+            "required_defense": 115,
+            "passive_config": {
+              "triggers": [
+                {
+                  "timing": "round_start",
+                  "chance": 0.5,
+                  "conditions": {
+                    "hp_ratio_gte": 0.35
+                  },
+                  "effects": [
+                    {
+                      "type": "emit_log",
+                      "log_name": "铁壁心法",
+                      "message": "获得减伤"
+                    },
+                    {
+                      "type": "modify_incoming_damage",
+                      "value": 0.7,
+                      "target_scope": "self"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "key": "desperate_beast",
+            "name": "困兽犹斗",
+            "rarity": "purple",
+            "description": "陷入绝境时强行压榨战意，攻势更狠，但防线也会露出破绽。",
+            "kind": "passive",
+            "required_level": 45,
+            "required_force": 255,
+            "required_defense": 145,
+            "passive_config": {
+              "triggers": [
+                {
+                  "timing": "round_start",
+                  "conditions": {
+                    "hp_ratio_lte": 0.35
+                  },
+                  "effects": [
+                    {
+                      "type": "emit_log",
+                      "log_name": "困兽犹斗",
+                      "message": "进入狂暴"
+                    },
+                    {
+                      "type": "modify_outgoing_damage",
+                      "value": 1.16,
+                      "target_scope": "self"
+                    },
+                    {
+                      "type": "modify_incoming_damage",
+                      "value": 1.05,
+                      "target_scope": "self"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "key": "last_chance_revival",
+            "name": "绝处逢生",
+            "rarity": "blue",
+            "description": "气息将绝时守住最后一线生机，短促回气后重新稳住阵脚。",
+            "kind": "passive",
+            "required_level": 42,
+            "required_defense": 200,
+            "passive_config": {
+              "triggers": [
+                {
+                  "timing": "action_before",
+                  "conditions": {
+                    "hp_ratio_lt": 0.35,
+                    "state_absent": "last_chance_revival_used"
+                  },
+                  "effects": [
+                    {
+                      "type": "set_state",
+                      "key": "last_chance_revival_used",
+                      "value": true
+                    },
+                    {
+                      "type": "emit_log",
+                      "log_name": "绝处逢生",
+                      "message": "血量回复"
+                    },
+                    {
+                      "type": "heal_ratio",
+                      "value": 0.3,
+                      "max_hp_based": true,
+                      "log": true,
+                      "log_name": "绝处逢生"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "key": "bloodthirsty_fury",
+            "name": "嗜血狂怒",
+            "rarity": "purple",
+            "description": "行动前损失当前生命的10%，随机对本次攻击未选中的一名敌人造成自身生命上限20%的真实伤害；没有其他目标时追加到当前目标，若目标为护院则伤害按四分之一计算。",
+            "kind": "passive",
+            "required_level": 75,
+            "required_force": 265,
+            "required_defense": 305,
+            "passive_config": {
+              "triggers": [
+                {
+                  "timing": "action_before",
+                  "chance": 0.5,
+                  "effects": [
+                    {
+                      "type": "lose_hp_ratio",
+                      "value": 0.1,
+                      "current_hp_based": true,
+                      "nonlethal": true,
+                      "log": true,
+                      "log_name": "嗜血狂怒"
+                    },
+                    {
+                      "type": "random_extra_target_true_damage",
+                      "value": 0.2,
+                      "troop_value_multiplier": 0.25,
+                      "target_scope": "self",
+                      "log_name": "嗜血狂怒"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "key": "draw_enemy_blades",
+            "name": "招锋引敌",
+            "rarity": "blue",
+            "description": "主动露出破绽牵动敌阵，使对手更容易把攻势集中到自己身上。",
+            "kind": "passive",
+            "required_level": 32,
+            "required_defense": 170,
+            "passive_config": {
+              "triggers": [
+                {
+                  "timing": "round_start",
+                  "effects": [
+                    {
+                      "type": "emit_log",
+                      "log_name": "招锋引敌",
+                      "message": "受击概率↑"
+                    },
+                    {
+                      "type": "modify_target_weight",
+                      "value": 10.0,
+                      "target_scope": "self"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "key": "comrade_command",
+            "name": "同袍号令",
+            "rarity": "purple",
+            "description": "借队伍完整之势统一号令，让同袍间的输出更像一个整体。",
+            "kind": "passive",
+            "required_level": 55,
+            "required_intellect": 285,
+            "required_defense": 130,
+            "passive_config": {
+              "triggers": [
+                {
+                  "timing": "round_start",
+                  "chance": 0.35,
+                  "conditions": {
+                    "ally_alive_template_count_gte": 2
+                  },
+                  "effects": [
+                    {
+                      "type": "emit_log",
+                      "log_name": "同袍号令",
+                      "message": "全体伤害↑"
+                    },
+                    {
+                      "type": "modify_outgoing_damage",
+                      "value": 1.15,
+                      "target_scope": "allies"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "data/technology_templates.yaml": {
+      "sha256": "8234f938d742f0966264e6a33cffbe1e03ff60255f940fc456f683806c91463c",
+      "payload": {
+        "upgrade_profiles": {
+          "martial": {
+            "upgrade_time_budget": 864000,
+            "time_curve": 1.08,
+            "upgrade_cost_budget": 2000000,
+            "cost_curve": 1.2
+          }
+        },
+        "categories": [
+          {
+            "key": "basic",
+            "name": "基本技术",
+            "description": "庄园运营的基本功，不学的话连门都出不了"
+          },
+          {
+            "key": "martial",
+            "name": "武艺技术",
+            "description": "让你的兵哥哥们打架更猛的秘籍"
+          },
+          {
+            "key": "production",
+            "name": "生产技术",
+            "description": "搞钱搞粮搞装备，发家致富全靠它"
+          }
+        ],
+        "technologies": [
+          {
+            "key": "scout_art",
+            "name": "侦查术",
+            "category": "basic",
+            "description": "探子眼神更毒辣，打听消息更有一套。升级提升侦察和反侦察能力，每达到50级，还能多摸清一层庄园底细",
+            "effect_type": "scout_bonus",
+            "effect_per_level": 0.05,
+            "max_level": 200,
+            "base_cost": 8000,
+            "upgrade_time_budget": 15552000,
+            "time_curve": 1.01,
+            "upgrade_cost_budget": 200000000,
+            "cost_curve": 1.01
+          },
+          {
+            "key": "march_art",
+            "name": "行军术",
+            "category": "basic",
+            "description": "腿脚利索点，别让敌人跑了，也别让自己跑不掉。升级提升部队移动速度",
+            "effect_type": "march_speed",
+            "effect_per_level": 0.1,
+            "max_level": 10,
+            "base_cost": 8000,
+            "upgrade_time_budget": 1728000,
+            "time_curve": 1.08,
+            "upgrade_cost_budget": 10000000,
+            "cost_curve": 1.2
+          },
+          {
+            "key": "architecture",
+            "name": "建筑学",
+            "category": "basic",
+            "description": "学会砍价和偷工减料的艺术，盖房子更省钱。升级降低建筑成本",
+            "effect_type": "building_cost_reduction",
+            "effect_per_level": 0.05,
+            "max_level": 10,
+            "base_cost": 8000,
+            "upgrade_time_budget": 864000,
+            "time_curve": 1.08,
+            "upgrade_cost_budget": 3000000,
+            "cost_curve": 1.2
+          },
+          {
+            "key": "horsemanship",
+            "name": "驯马术",
+            "category": "production",
+            "description": "从野马变乖宝宝，骑出去倍儿有面子。升级提升产量上限并解锁高级马匹",
+            "effect_type": "horse_production_limit",
+            "effect_per_level": 100,
+            "max_level": 10,
+            "base_cost": 8000,
+            "upgrade_time_budget": 864000,
+            "time_curve": 1.08,
+            "upgrade_cost_budget": 1000000,
+            "cost_curve": 1.2
+          },
+          {
+            "key": "animal_husbandry",
+            "name": "养殖术",
+            "category": "production",
+            "description": "从养鸡开始的畜牧人生，终极目标是养牛当大户。升级提升产量上限并解锁高级家畜",
+            "effect_type": "livestock_production_limit",
+            "effect_per_level": 50,
+            "max_level": 10,
+            "base_cost": 8000,
+            "upgrade_time_budget": 864000,
+            "time_curve": 1.08,
+            "upgrade_cost_budget": 1000000,
+            "cost_curve": 1.2
+          },
+          {
+            "key": "smelting",
+            "name": "冶炼技",
+            "category": "production",
+            "description": "玩火的艺术，把石头变成闪闪发光的金属块。升级提升产量上限并解锁高级金属",
+            "effect_type": "smelting_production_limit",
+            "effect_per_level": 100,
+            "max_level": 10,
+            "base_cost": 8000,
+            "upgrade_time_budget": 864000,
+            "time_curve": 1.08,
+            "upgrade_cost_budget": 1000000,
+            "cost_curve": 1.2
+          },
+          {
+            "key": "forging",
+            "name": "锻造技",
+            "category": "production",
+            "description": "叮叮当当打铁匠，等级越高打的装备越唬人。升级提升产量上限并解锁高级装备",
+            "effect_type": "forging_unlock",
+            "effect_per_level": 50,
+            "max_level": 10,
+            "base_cost": 8000,
+            "upgrade_time_budget": 864000,
+            "time_curve": 1.08,
+            "upgrade_cost_budget": 1000000,
+            "cost_curve": 1.2
+          },
+          {
+            "key": "dao_attack",
+            "name": "力劈华山",
+            "category": "martial",
+            "troop_class": "dao",
+            "description": "刀砍得更狠，一刀下去山都能劈开（夸张了点）。升级提升攻击力",
+            "effect_type": "troop_attack",
+            "effect_per_level": 0.1,
+            "max_level": 10,
+            "base_cost": 8000
+          },
+          {
+            "key": "dao_defense",
+            "name": "横炼铁杉",
+            "category": "martial",
+            "troop_class": "dao",
+            "description": "皮糙肉厚，挨打不疼，敌人砍你跟挠痒痒似的。升级提升防御力",
+            "effect_type": "troop_defense",
+            "effect_per_level": 0.1,
+            "max_level": 10,
+            "base_cost": 8000
+          },
+          {
+            "key": "dao_agility",
+            "name": "疾风碎步",
+            "category": "martial",
+            "troop_class": "dao",
+            "description": "脚底抹油，跑得飞快，追人逃命两不误。升级提升敏捷",
+            "effect_type": "troop_agility",
+            "effect_per_level": 0.1,
+            "max_level": 10,
+            "base_cost": 8000
+          },
+          {
+            "key": "dao_hp",
+            "name": "蓄日回元",
+            "category": "martial",
+            "troop_class": "dao",
+            "description": "血条变长，能多挨几下，死前还能多喊两句。升级提升生命值",
+            "effect_type": "troop_hp",
+            "effect_per_level": 0.1,
+            "max_level": 10,
+            "base_cost": 8000
+          },
+          {
+            "key": "dao_double_strike",
+            "name": "狂狼必杀",
+            "category": "martial",
+            "troop_class": "dao",
+            "description": "砍一刀送一刀，买一送一大酬宾。升级提升双击概率",
+            "effect_type": "double_strike_chance",
+            "effect_per_level": 0.1,
+            "max_level": 5,
+            "base_cost": 20000
+          },
+          {
+            "key": "qiang_attack",
+            "name": "破日枪法",
+            "category": "martial",
+            "troop_class": "qiang",
+            "description": "一枪戳穿天，太阳都得躲着走。升级提升攻击力",
+            "effect_type": "troop_attack",
+            "effect_per_level": 0.1,
+            "max_level": 10,
+            "base_cost": 8000
+          },
+          {
+            "key": "qiang_defense",
+            "name": "金钟罡气",
+            "category": "martial",
+            "troop_class": "qiang",
+            "description": "浑身金光护体，刀枪不入（大概）。升级提升防御力",
+            "effect_type": "troop_defense",
+            "effect_per_level": 0.1,
+            "max_level": 10,
+            "base_cost": 8000
+          },
+          {
+            "key": "qiang_agility",
+            "name": "乾坤挪移",
+            "category": "martial",
+            "troop_class": "qiang",
+            "description": "身法飘逸，敌人都不知道你从哪冒出来的。升级提升敏捷",
+            "effect_type": "troop_agility",
+            "effect_per_level": 0.1,
+            "max_level": 10,
+            "base_cost": 8000
+          },
+          {
+            "key": "qiang_hp",
+            "name": "体血倍增",
+            "category": "martial",
+            "troop_class": "qiang",
+            "description": "血牛本牛，打不死的小强精神。升级提升生命值",
+            "effect_type": "troop_hp",
+            "effect_per_level": 0.1,
+            "max_level": 10,
+            "base_cost": 8000
+          },
+          {
+            "key": "qiang_siege",
+            "name": "攻坚破城",
+            "category": "martial",
+            "troop_class": "qiang",
+            "description": "专业拆迁队，城墙见了都发抖。升级提升攻城伤害",
+            "effect_type": "siege_damage",
+            "effect_per_level": 0.1,
+            "max_level": 10,
+            "base_cost": 20000
+          },
+          {
+            "key": "qiang_counter",
+            "name": "反戈一击",
+            "category": "martial",
+            "troop_class": "qiang",
+            "description": "你敢打我？我还手！礼尚往来懂不懂。升级提升反击概率，反击伤害最多按当前1000名护院计算",
+            "effect_type": "counter_attack_chance",
+            "base_damage": 0.3,
+            "effect_per_level": 0.1,
+            "max_level": 5,
+            "base_cost": 20000
+          },
+          {
+            "key": "jian_attack",
+            "name": "长虹贯日",
+            "category": "martial",
+            "troop_class": "jian",
+            "description": "剑气冲天，帅到没朋友，顺便伤害也高。升级提升攻击力",
+            "effect_type": "troop_attack",
+            "effect_per_level": 0.1,
+            "max_level": 10,
+            "base_cost": 8000
+          },
+          {
+            "key": "jian_defense",
+            "name": "纯阳护体",
+            "category": "martial",
+            "troop_class": "jian",
+            "description": "正气凛然，邪魔外道近不了身。升级提升防御力",
+            "effect_type": "troop_defense",
+            "effect_per_level": 0.1,
+            "max_level": 10,
+            "base_cost": 8000
+          },
+          {
+            "key": "jian_agility",
+            "name": "飘絮身法",
+            "category": "martial",
+            "troop_class": "jian",
+            "description": "轻功了得，飘来飘去像个仙儿。升级提升敏捷",
+            "effect_type": "troop_agility",
+            "effect_per_level": 0.1,
+            "max_level": 10,
+            "base_cost": 8000
+          },
+          {
+            "key": "jian_hp",
+            "name": "回春转气",
+            "category": "martial",
+            "troop_class": "jian",
+            "description": "内功深厚，气血充盈，越打越精神。升级提升生命值",
+            "effect_type": "troop_hp",
+            "effect_per_level": 0.1,
+            "max_level": 10,
+            "base_cost": 8000
+          },
+          {
+            "key": "jian_reflect",
+            "name": "护身剑罡",
+            "category": "martial",
+            "troop_class": "jian",
+            "description": "自带刺甲，打我一下你也疼，公平交易。升级提升反伤比例",
+            "effect_type": "damage_reflect",
+            "base_damage": 0.1,
+            "effect_per_level": 0.05,
+            "max_level": 5,
+            "base_cost": 20000
+          },
+          {
+            "key": "jian_preempt",
+            "name": "驭剑之术",
+            "category": "martial",
+            "troop_class": "jian",
+            "description": "剑比人快，还没开打剑就飞出去了。升级提升先手伤害",
+            "effect_type": "preemptive_strike",
+            "base_damage": 0.5,
+            "effect_per_level": 0.1,
+            "max_level": 5,
+            "base_cost": 20000
+          },
+          {
+            "key": "quan_attack",
+            "name": "通背神拳",
+            "category": "martial",
+            "troop_class": "quan",
+            "description": "拳头硬邦邦，一拳一个小朋友。升级提升攻击力",
+            "effect_type": "troop_attack",
+            "effect_per_level": 0.15,
+            "max_level": 10,
+            "base_cost": 8000
+          },
+          {
+            "key": "quan_defense",
+            "name": "金钟罩体",
+            "category": "martial",
+            "troop_class": "quan",
+            "description": "铜皮铁骨，打我就是打铁。升级提升防御力",
+            "effect_type": "troop_defense",
+            "effect_per_level": 0.1,
+            "max_level": 10,
+            "base_cost": 8000
+          },
+          {
+            "key": "quan_agility",
+            "name": "凌波渡虚",
+            "category": "martial",
+            "troop_class": "quan",
+            "description": "踩着空气跑，物理学家看了直摇头。升级提升敏捷",
+            "effect_type": "troop_agility",
+            "effect_per_level": 0.1,
+            "max_level": 10,
+            "base_cost": 8000
+          },
+          {
+            "key": "quan_hp",
+            "name": "炼气回元",
+            "category": "martial",
+            "troop_class": "quan",
+            "description": "气血两旺，能吃能打能扛揍。升级提升生命值",
+            "effect_type": "troop_hp",
+            "effect_per_level": 0.15,
+            "max_level": 10,
+            "base_cost": 8000
+          },
+          {
+            "key": "quan_vs_ranged",
+            "name": "万宗归流",
+            "category": "martial",
+            "troop_class": "quan",
+            "description": "拳系自带10%远程伤害减免；每级提升10%远程防御值；达到5级时科技额外减伤10%，达到10级时科技额外减伤20%，与基础减免相加后分别为20%和30%",
+            "effect_type": "ranged_defense",
+            "effect_per_level": 0.1,
+            "max_level": 10,
+            "base_cost": 20000
+          },
+          {
+            "key": "quan_heal",
+            "name": "五气朝元",
+            "category": "martial",
+            "troop_class": "quan",
+            "description": "打着打着血就回来了，神奇不神奇。升级提升回血概率（进攻恢复当前生命10%，防守恢复13%）",
+            "effect_type": "battle_heal_chance",
+            "base_heal": 0.1,
+            "effect_per_level": 0.1,
+            "max_level": 5,
+            "base_cost": 20000
+          },
+          {
+            "key": "gong_attack",
+            "name": "百步穿杨",
+            "category": "martial",
+            "troop_class": "gong",
+            "description": "射得准，射得狠，蚊子都能一箭钉墙上。升级提升攻击力",
+            "effect_type": "troop_attack",
+            "effect_per_level": 0.1,
+            "max_level": 10,
+            "base_cost": 8000
+          },
+          {
+            "key": "gong_defense",
+            "name": "天地反转",
+            "category": "martial",
+            "troop_class": "gong",
+            "description": "弓箭手也能挨打了，不再是一碰就碎的脆皮。升级提升防御力",
+            "effect_type": "troop_defense",
+            "effect_per_level": 0.1,
+            "max_level": 10,
+            "base_cost": 8000
+          },
+          {
+            "key": "gong_agility",
+            "name": "御风追月",
+            "category": "martial",
+            "troop_class": "gong",
+            "description": "跑得快，站位骚，打完就跑真奇妙。升级提升敏捷",
+            "effect_type": "troop_agility",
+            "effect_per_level": 0.1,
+            "max_level": 10,
+            "base_cost": 8000
+          },
+          {
+            "key": "gong_hp",
+            "name": "云流转气",
+            "category": "martial",
+            "troop_class": "gong",
+            "description": "多喝枸杞养生茶，血量蹭蹭往上涨。升级提升生命值",
+            "effect_type": "troop_hp",
+            "effect_per_level": 0.1,
+            "max_level": 10,
+            "base_cost": 8000
+          },
+          {
+            "key": "gong_range",
+            "name": "凤舞九天",
+            "category": "martial",
+            "troop_class": "gong",
+            "description": "射程拉满，敌人还没看清你在哪就中箭了。升级提升远程伤害",
+            "effect_type": "extra_range",
+            "base_damage": 0.35,
+            "effect_per_level": 0.1,
+            "max_level": 5,
+            "base_cost": 20000
+          },
+          {
+            "key": "gong_melee",
+            "name": "短刃杀法",
+            "category": "martial",
+            "troop_class": "gong",
+            "description": "被近身了也不慌，掏出小刀就是干。升级提升近战攻击",
+            "effect_type": "melee_attack",
+            "effect_per_level": 0.1,
+            "max_level": 10,
+            "base_cost": 20000
+          },
+          {
+            "key": "farming",
+            "name": "农耕术",
+            "category": "production",
+            "description": "种地的学问，让庄稼长得比隔壁老王家的好。升级提升粮食产量",
+            "effect_type": "resource_production",
+            "resource_type": "grain",
+            "building_key": "farm",
+            "effect_per_level": 0.05,
+            "max_level": 30,
+            "base_cost": 6400,
+            "upgrade_time_budget": 1728000,
+            "time_curve": 1.02,
+            "upgrade_cost_budget": 8000000,
+            "cost_curve": 1.02
+          },
+          {
+            "key": "dao_recruit",
+            "name": "造兵术-刀",
+            "category": "martial",
+            "troop_class": "dao",
+            "description": "批量生产刀客，人多力量大，砍人更带劲。升级解锁高级护院并提升单次招募上限",
+            "effect_type": "recruit_limit",
+            "effect_per_level": 50,
+            "max_level": 7,
+            "base_cost": 8000
+          },
+          {
+            "key": "qiang_recruit",
+            "name": "造兵术-枪",
+            "category": "martial",
+            "troop_class": "qiang",
+            "description": "枪兵流水线，戳人小能手量产中。升级解锁高级护院并提升单次招募上限",
+            "effect_type": "recruit_limit",
+            "effect_per_level": 50,
+            "max_level": 7,
+            "base_cost": 8000
+          },
+          {
+            "key": "jian_recruit",
+            "name": "造兵术-剑",
+            "category": "martial",
+            "troop_class": "jian",
+            "description": "剑客批发部，帅哥美女管够。升级解锁高级护院并提升单次招募上限",
+            "effect_type": "recruit_limit",
+            "effect_per_level": 50,
+            "max_level": 7,
+            "base_cost": 8000
+          },
+          {
+            "key": "quan_recruit",
+            "name": "造兵术-拳",
+            "category": "martial",
+            "troop_class": "quan",
+            "description": "拳师培训班扩招，能打的越来越多。升级解锁高级护院并提升单次招募上限",
+            "effect_type": "recruit_limit",
+            "effect_per_level": 50,
+            "max_level": 7,
+            "base_cost": 8000
+          },
+          {
+            "key": "gong_recruit",
+            "name": "造兵术-弓",
+            "category": "martial",
+            "troop_class": "gong",
+            "description": "弓箭手速成班，射箭不用瞄也能中。升级解锁高级护院并提升单次招募上限",
+            "effect_type": "recruit_limit",
+            "effect_per_level": 50,
+            "max_level": 7,
+            "base_cost": 8000
+          }
+        ],
+        "troop_classes": {
+          "dao": {
+            "name": "刀类",
+            "troops": [
+              "dao_ke",
+              "dao_jie",
+              "dao_ba",
+              "dao_sheng"
+            ]
+          },
+          "qiang": {
+            "name": "枪类",
+            "troops": [
+              "qiang_ke",
+              "qiang_hao",
+              "qiang_ba",
+              "qiang_wang"
+            ]
+          },
+          "jian": {
+            "name": "剑类",
+            "troops": [
+              "jian_shi",
+              "jian_xia",
+              "jian_hao",
+              "jian_sheng"
+            ]
+          },
+          "quan": {
+            "name": "拳类",
+            "troops": [
+              "quan_shi",
+              "quan_ba",
+              "quan_wang",
+              "quan_sheng"
+            ]
+          },
+          "gong": {
+            "name": "弓箭类",
+            "troops": [
+              "archer",
+              "fast_archer",
+              "divine_archer",
+              "arrow_god"
+            ]
+          },
+          "scout": {
+            "name": "探子",
+            "troops": [
+              "scout"
+            ]
+          }
+        }
+      }
+    },
+    "data/troop_templates.yaml": {
+      "sha256": "70571222e408e3d70f240e9b644d1f4997dd5beab71cbbc4273204d16563fca2",
+      "payload": {
+        "troops": [
+          {
+            "key": "scout",
+            "name": "探子",
+            "description": "轻装侦察，行动迅捷，适合刺探敌情。",
+            "base_attack": 1,
+            "base_defense": 1,
+            "base_hp": 10,
+            "speed_bonus": 1,
+            "priority": 0,
+            "default_count": 50,
+            "avatar": "tanzi.png",
+            "recruit": {
+              "tech_key": null,
+              "tech_level": 0,
+              "retainer_cost": 1,
+              "equipment": [
+                "equip_zaohongma"
+              ],
+              "base_duration": 30
+            }
+          },
+          {
+            "key": "dao_ke",
+            "name": "刀客",
+            "description": "江湖刀客，刀法粗犷，攻势凌厉。",
+            "base_attack": 6,
+            "base_defense": 3,
+            "base_hp": 18,
+            "speed_bonus": 3,
+            "priority": 0,
+            "default_count": 180,
+            "avatar": "daoke.png",
+            "recruit": {
+              "tech_key": "dao_recruit",
+              "tech_level": 1,
+              "retainer_cost": 1,
+              "equipment": [
+                "equip_duandao",
+                "equip_buxie",
+                "equip_bupao"
+              ],
+              "base_duration": 60
+            }
+          },
+          {
+            "key": "dao_jie",
+            "name": "刀杰",
+            "description": "刀法精进，出刀更快更狠。",
+            "base_attack": 9,
+            "base_defense": 4,
+            "base_hp": 27,
+            "speed_bonus": 4,
+            "priority": 0,
+            "default_count": 120,
+            "avatar": "daojie.png",
+            "recruit": {
+              "tech_key": "dao_recruit",
+              "tech_level": 3,
+              "retainer_cost": 1,
+              "equipment": [
+                "equip_dakandao",
+                "equip_yangpixue",
+                "equip_shengpijia",
+                "equip_tieyekui",
+                "equip_zaohongma"
+              ],
+              "base_duration": 90
+            }
+          },
+          {
+            "key": "dao_ba",
+            "name": "刀霸",
+            "description": "刀中豪杰，霸道刀意震慑敌胆。",
+            "base_attack": 15,
+            "base_defense": 6,
+            "base_hp": 41,
+            "speed_bonus": 6,
+            "priority": 0,
+            "default_count": 70,
+            "avatar": "daoba.png",
+            "recruit": {
+              "tech_key": "dao_recruit",
+              "tech_level": 5,
+              "retainer_cost": 1,
+              "equipment": [
+                "equip_tongchangdao",
+                "equip_gangpianxue",
+                "equip_housipao",
+                "equip_yulindin",
+                "equip_huangbiaoma"
+              ],
+              "base_duration": 150
+            }
+          },
+          {
+            "key": "dao_sheng",
+            "name": "刀圣",
+            "description": "刀法通神，一刀可断江河。",
+            "base_attack": 20,
+            "base_defense": 9,
+            "base_hp": 60,
+            "speed_bonus": 9,
+            "priority": 0,
+            "default_count": 35,
+            "avatar": "daosheng.png",
+            "recruit": {
+              "tech_key": "dao_recruit",
+              "tech_level": 7,
+              "retainer_cost": 1,
+              "equipment": [
+                "equip_jingtiedao",
+                "equip_yanyuxue",
+                "equip_shapijia",
+                "equip_baihongkui",
+                "equip_dawanma"
+              ],
+              "base_duration": 300
+            }
+          },
+          {
+            "key": "qiang_ke",
+            "name": "枪客",
+            "description": "长枪在手，护卫阵线。",
+            "base_attack": 7,
+            "base_defense": 3,
+            "base_hp": 21,
+            "speed_bonus": 2,
+            "priority": 0,
+            "default_count": 200,
+            "avatar": "qiangke.png",
+            "recruit": {
+              "tech_key": "qiang_recruit",
+              "tech_level": 1,
+              "retainer_cost": 1,
+              "equipment": [
+                "equip_changqiang",
+                "equip_buxie",
+                "equip_bupao"
+              ],
+              "base_duration": 60
+            }
+          },
+          {
+            "key": "qiang_hao",
+            "name": "枪豪",
+            "description": "枪法娴熟，进退有度。",
+            "base_attack": 10,
+            "base_defense": 5,
+            "base_hp": 32,
+            "speed_bonus": 3,
+            "priority": 0,
+            "default_count": 130,
+            "avatar": "qianghao.png",
+            "recruit": {
+              "tech_key": "qiang_recruit",
+              "tech_level": 3,
+              "retainer_cost": 1,
+              "equipment": [
+                "equip_baoweiqiang",
+                "equip_yangpixue",
+                "equip_shengpijia",
+                "equip_tieyekui",
+                "equip_zaohongma"
+              ],
+              "base_duration": 90
+            }
+          },
+          {
+            "key": "qiang_ba",
+            "name": "枪霸",
+            "description": "枪出如龙，攻守兼备。",
+            "base_attack": 17,
+            "base_defense": 7,
+            "base_hp": 48,
+            "speed_bonus": 5,
+            "priority": 0,
+            "default_count": 80,
+            "avatar": "qiangba.png",
+            "recruit": {
+              "tech_key": "qiang_recruit",
+              "tech_level": 5,
+              "retainer_cost": 1,
+              "equipment": [
+                "equip_hutoumao",
+                "equip_gangpianxue",
+                "equip_housipao",
+                "equip_yulindin",
+                "equip_huangbiaoma"
+              ],
+              "base_duration": 150
+            }
+          },
+          {
+            "key": "qiang_wang",
+            "name": "枪王",
+            "description": "枪法称王，万军之中取上将首级。",
+            "base_attack": 22,
+            "base_defense": 10,
+            "base_hp": 72,
+            "speed_bonus": 8,
+            "priority": 0,
+            "default_count": 40,
+            "avatar": "qiangwang.png",
+            "recruit": {
+              "tech_key": "qiang_recruit",
+              "tech_level": 7,
+              "retainer_cost": 1,
+              "equipment": [
+                "equip_pansheqiang",
+                "equip_yanyuxue",
+                "equip_shapijia",
+                "equip_baihongkui",
+                "equip_dawanma"
+              ],
+              "base_duration": 300
+            }
+          },
+          {
+            "key": "jian_shi",
+            "name": "剑士",
+            "description": "仗剑江湖，剑招轻灵。",
+            "base_attack": 6,
+            "base_defense": 2,
+            "base_hp": 17,
+            "speed_bonus": 5,
+            "priority": 0,
+            "default_count": 160,
+            "avatar": "jianshi.png",
+            "recruit": {
+              "tech_key": "jian_recruit",
+              "tech_level": 1,
+              "retainer_cost": 1,
+              "equipment": [
+                "equip_duanjian",
+                "equip_buxie",
+                "equip_bupao"
+              ],
+              "base_duration": 60
+            }
+          },
+          {
+            "key": "jian_xia",
+            "name": "剑侠",
+            "description": "剑气纵横，侠义为先。",
+            "base_attack": 8,
+            "base_defense": 3,
+            "base_hp": 26,
+            "speed_bonus": 7,
+            "priority": 0,
+            "default_count": 110,
+            "avatar": "jianxia.png",
+            "recruit": {
+              "tech_key": "jian_recruit",
+              "tech_level": 3,
+              "retainer_cost": 1,
+              "equipment": [
+                "equip_changjian",
+                "equip_yangpixue",
+                "equip_shengpijia",
+                "equip_tieyekui",
+                "equip_zaohongma"
+              ],
+              "base_duration": 90
+            }
+          },
+          {
+            "key": "jian_hao",
+            "name": "剑豪",
+            "description": "剑意凛然，剑锋所指披靡无敌。",
+            "base_attack": 12,
+            "base_defense": 5,
+            "base_hp": 38,
+            "speed_bonus": 9,
+            "priority": 0,
+            "default_count": 65,
+            "avatar": "jianhao.png",
+            "recruit": {
+              "tech_key": "jian_recruit",
+              "tech_level": 5,
+              "retainer_cost": 1,
+              "equipment": [
+                "equip_qingmangjian",
+                "equip_gangpianxue",
+                "equip_housipao",
+                "equip_yulindin",
+                "equip_huangbiaoma"
+              ],
+              "base_duration": 150
+            }
+          },
+          {
+            "key": "jian_sheng",
+            "name": "剑圣",
+            "description": "人剑合一，剑道通天。",
+            "base_attack": 18,
+            "base_defense": 7,
+            "base_hp": 57,
+            "speed_bonus": 16,
+            "priority": 0,
+            "default_count": 30,
+            "avatar": "jiansheng.png",
+            "recruit": {
+              "tech_key": "jian_recruit",
+              "tech_level": 7,
+              "retainer_cost": 1,
+              "equipment": [
+                "equip_duanmajian",
+                "equip_yanyuxue",
+                "equip_shapijia",
+                "equip_baihongkui",
+                "equip_dawanma"
+              ],
+              "base_duration": 300
+            }
+          },
+          {
+            "key": "quan_shi",
+            "name": "拳师",
+            "description": "拳脚功夫扎实，近身肉搏。",
+            "base_attack": 5,
+            "base_defense": 2,
+            "base_hp": 15,
+            "speed_bonus": 7,
+            "priority": 0,
+            "default_count": 170,
+            "avatar": "quanshi.png",
+            "recruit": {
+              "tech_key": "quan_recruit",
+              "tech_level": 1,
+              "retainer_cost": 1,
+              "equipment": [
+                "equip_niupibian",
+                "equip_buxie",
+                "equip_bupao"
+              ],
+              "base_duration": 60
+            }
+          },
+          {
+            "key": "quan_ba",
+            "name": "拳霸",
+            "description": "铁拳无敌，一拳破甲。",
+            "base_attack": 7,
+            "base_defense": 3,
+            "base_hp": 23,
+            "speed_bonus": 9,
+            "priority": 0,
+            "default_count": 110,
+            "avatar": "quanba.png",
+            "recruit": {
+              "tech_key": "quan_recruit",
+              "tech_level": 3,
+              "retainer_cost": 1,
+              "equipment": [
+                "equip_jicibian",
+                "equip_yangpixue",
+                "equip_shengpijia",
+                "equip_tieyekui",
+                "equip_zaohongma"
+              ],
+              "base_duration": 90
+            }
+          },
+          {
+            "key": "quan_wang",
+            "name": "拳王",
+            "description": "拳风呼啸，气势如虹。",
+            "base_attack": 11,
+            "base_defense": 5,
+            "base_hp": 35,
+            "speed_bonus": 13,
+            "priority": 0,
+            "default_count": 60,
+            "avatar": "quanwang.png",
+            "recruit": {
+              "tech_key": "quan_recruit",
+              "tech_level": 5,
+              "retainer_cost": 1,
+              "equipment": [
+                "equip_jiulonggangbian",
+                "equip_gangpianxue",
+                "equip_housipao",
+                "equip_yulindin",
+                "equip_huangbiaoma"
+              ],
+              "base_duration": 150
+            }
+          },
+          {
+            "key": "quan_sheng",
+            "name": "拳圣",
+            "description": "拳意通玄，一拳开天。",
+            "base_attack": 16,
+            "base_defense": 7,
+            "base_hp": 52,
+            "speed_bonus": 19,
+            "priority": 0,
+            "default_count": 30,
+            "avatar": "quansheng.png",
+            "recruit": {
+              "tech_key": "quan_recruit",
+              "tech_level": 7,
+              "retainer_cost": 1,
+              "equipment": [
+                "equip_mingshejiebian",
+                "equip_yanyuxue",
+                "equip_shapijia",
+                "equip_baihongkui",
+                "equip_dawanma"
+              ],
+              "base_duration": 300
+            }
+          },
+          {
+            "key": "archer",
+            "name": "弓箭手",
+            "description": "远程齐射，擅长压制敌军前排。",
+            "base_attack": 5,
+            "base_defense": 1,
+            "base_hp": 13,
+            "speed_bonus": 3,
+            "priority": -1,
+            "default_count": 150,
+            "avatar": "gongjianshou.png",
+            "recruit": {
+              "tech_key": "gong_recruit",
+              "tech_level": 1,
+              "retainer_cost": 1,
+              "equipment": [
+                "equip_changgong",
+                "equip_buxie",
+                "equip_bupao"
+              ],
+              "base_duration": 60
+            }
+          },
+          {
+            "key": "fast_archer",
+            "name": "快箭手",
+            "description": "箭如连珠，射速惊人。",
+            "base_attack": 7,
+            "base_defense": 2,
+            "base_hp": 20,
+            "speed_bonus": 4,
+            "priority": -1,
+            "default_count": 100,
+            "avatar": "kuaijianshou.png",
+            "recruit": {
+              "tech_key": "gong_recruit",
+              "tech_level": 3,
+              "retainer_cost": 1,
+              "equipment": [
+                "equip_fanqugong",
+                "equip_yangpixue",
+                "equip_shengpijia",
+                "equip_tieyekui",
+                "equip_zaohongma"
+              ],
+              "base_duration": 90
+            }
+          },
+          {
+            "key": "divine_archer",
+            "name": "神箭手",
+            "description": "百步穿杨，箭无虚发。",
+            "base_attack": 10,
+            "base_defense": 4,
+            "base_hp": 30,
+            "speed_bonus": 6,
+            "priority": -1,
+            "default_count": 55,
+            "avatar": "shenjianshou.png",
+            "recruit": {
+              "tech_key": "gong_recruit",
+              "tech_level": 5,
+              "retainer_cost": 1,
+              "equipment": [
+                "equip_tietaigong",
+                "equip_gangpianxue",
+                "equip_housipao",
+                "equip_yulindin",
+                "equip_huangbiaoma"
+              ],
+              "base_duration": 150
+            }
+          },
+          {
+            "key": "arrow_god",
+            "name": "箭神",
+            "description": "箭道通神，一箭定乾坤。",
+            "base_attack": 15,
+            "base_defense": 6,
+            "base_hp": 45,
+            "speed_bonus": 9,
+            "priority": -1,
+            "default_count": 25,
+            "avatar": "jianshen.png",
+            "recruit": {
+              "tech_key": "gong_recruit",
+              "tech_level": 7,
+              "retainer_cost": 1,
+              "equipment": [
+                "equip_shenbigong",
+                "equip_yanyuxue",
+                "equip_shapijia",
+                "equip_baihongkui",
+                "equip_dawanma"
+              ],
+              "base_duration": 300
+            }
+          }
+        ]
+      }
+    },
+    "data/mission_templates.yaml": {
+      "sha256": "6c01fcfe2bc0741190c1572a83633965eaf8f09b9f42290f3808dd410d0988ab",
+      "payload": {
+        "missions": [
+          {
+            "key": "mid_autumn_moon_palace_trial",
+            "name": "广寒宫试炼",
+            "difficulty": "intermediate",
+            "available_weekdays": [
+              2,
+              4,
+              6,
+              7
+            ],
+            "description": "中秋将近，广寒宫外的月桂忽然枝叶疯长，遮蔽月华，连玉兔捣药的石臼也被散落的桂枝掩埋。吴刚日夜挥斧仍无法遏止异变，嫦娥只得向人间庄园主发出月宫请帖。\n\n受邀者需穿过桂影迷阵，协助玉兔收集药材，并通过吴刚与嫦娥设下的月宫试炼。完成试炼者可带回月饼，也有机会获得三位月宫门客留下的召唤卷轴。\n",
+            "battle_type": "task1",
+            "base_travel_time": 1800,
+            "enemy_guests": [
+              {
+                "key": "myth_moon_jade_rabbit",
+                "label": "玉兔"
+              },
+              {
+                "key": "myth_moon_wu_gang",
+                "label": "吴刚"
+              },
+              {
+                "key": "hist_xianqin_0413",
+                "label": "嫦娥"
+              }
+            ],
+            "enemy_troops": {
+              "quan_wang": 300,
+              "jian_hao": 300,
+              "divine_archer": 200
+            },
+            "enemy_technology": {
+              "level": 7,
+              "guest_level": 60,
+              "guest_bonus": 0.12
+            },
+            "drop_table": {
+              "silver": 40000,
+              "mission_chest_v3_mid_autumn_moon_palace_trial": 1
+            },
+            "daily_limit": 3
+          },
+          {
+            "key": "kasukabe_daisakusen",
+            "name": "春日部大作战",
+            "difficulty": "intermediate",
+            "available_weekdays": [
+              2,
+              4,
+              6,
+              7
+            ],
+            "description": "庄园附近突然出现一支自称“春日部防卫队”的神秘队伍。他们本是追查被妖怪夺走的神奇蜡笔，却不慎把庄园周边画成了临时游乐战场：粮仓墙上长出大象鼻子，演武场地面变成蹦床，护院巡逻路线也被涂鸦迷宫搅得七零八落。\n\n为了平息这场哭笑不得的混乱，庄主需要进入春日部游乐战场，突破玩具机关、恶作剧陷阱和防卫队试炼，击败被蜡笔力量影响的涂鸦大魔王，回收“小新的蜡笔”。集齐150个蜡笔后，可在仓库中招募紫色武门客「蜡笔小新」。\n",
+            "battle_type": "task1",
+            "enemy_guests": [
+              {
+                "key": "task_kasukabe_patrol_captain",
+                "label": "春日部巡逻队长"
+              },
+              {
+                "key": "task_kasukabe_toy_crocodile",
+                "label": "玩具机关鳄鱼"
+              },
+              {
+                "key": "task_kasukabe_defense_member",
+                "label": "迷路的防卫队员"
+              },
+              {
+                "key": "task_kasukabe_crayon_clone",
+                "label": "蜡笔恶作剧分身"
+              },
+              {
+                "key": "task_kasukabe_doodle_boss",
+                "label": "涂鸦大魔王"
+              }
+            ],
+            "enemy_troops": {
+              "quan_wang": 300,
+              "archer": 300,
+              "dao_ba": 200
+            },
+            "enemy_technology": {
+              "level": 7,
+              "guest_level": 60,
+              "guest_bonus": 0.12
+            },
+            "drop_table": {
+              "silver": 40000,
+              "mission_chest_v3_kasukabe_daisakusen": 1
+            },
+            "daily_limit": 3
+          },
+          {
+            "key": "huashan_lunjian",
+            "name": "华山论贱",
+            "display_order": 2,
+            "difficulty": "junior",
+            "description": "中原大地，经过无数年的风吹雨打，各大贱派均元气大伤，数百年的休养调整使各大贱客高手知耻后勇，不断创新各种贱术秘籍，停办经年的贱客比武大赛将顺应民意在华山之巅重新开启，各路英雄贱客可在此大展身手，争当新一届人见人爱、花见花开的贱客之王，在此和谐社会留下自己奋斗的印记。\n",
+            "battle_type": "task1",
+            "guest_only": true,
+            "enemy_guests": [
+              {
+                "key": "task_huashan_jianwang",
+                "label": "贱王之王"
+              },
+              {
+                "key": "task_huashan_jianjing",
+                "label": "顶级贱精"
+              },
+              {
+                "key": "task_huashan_jianjing",
+                "label": "顶级贱精"
+              },
+              {
+                "key": "task_huashan_audience_a",
+                "label": "观众甲"
+              }
+            ],
+            "enemy_technology": {
+              "level": 2,
+              "guest_level": 12,
+              "guest_bonus": 0
+            },
+            "drop_table": {
+              "silver": 8000,
+              "mission_chest_v3_huashan_lunjian": 1
+            },
+            "daily_limit": 3
+          },
+          {
+            "key": "wagangzhai_nixi",
+            "name": "瓦岗寨的逆袭",
+            "difficulty": "intermediate",
+            "description": "在上一次广大庄园主联手扫荡瓦岗寨时，正值瓦岗五虎出门执行任务，翟让和程咬金输的并不服气，为了证明瓦岗寨的实力，翟让率领瓦岗五虎\"秦叔宝\"、\"单雄信\"、\"王伯当\"、\"罗成\"、\"程咬金\"携山寨喽啰兵600人亲自上各庄园寻衅……这一次的战场变成了您的庄园，请加强防御设施，让您的门客和护院准备好迎接战斗洗礼。\n",
+            "battle_type": "task1",
+            "is_defense": true,
+            "display_order": 7,
+            "enemy_guests": [
+              {
+                "key": "hist_suitang_0162_zhairang",
+                "skills": [
+                  "tangseng_sermon"
+                ]
+              },
+              {
+                "key": "hero_qin_shubao",
+                "skills": [
+                  "brahma_true_fire"
+                ]
+              },
+              "hist_suitang_0164_shanxiongxin",
+              "hist_suitang_0165_wangbodang",
+              "hero_luo_cheng",
+              "hero_cheng_yaojin"
+            ],
+            "enemy_technology": {
+              "level": 10,
+              "guest_level": 100,
+              "guest_bonus": 0.3
+            },
+            "enemy_troops": {
+              "arrow_god": 800,
+              "quan_sheng": 800,
+              "qiang_wang": 800
+            },
+            "drop_table": {
+              "silver": 40000,
+              "mission_chest_v3_wagangzhai_nixi": 1
+            },
+            "base_travel_time": 1800,
+            "daily_limit": 3
+          },
+          {
+            "key": "jingyanggang",
+            "name": "景阳冈",
+            "display_order": 1,
+            "difficulty": "junior",
+            "description": "景阳冈上有只吊睛白额大虫伤害人命，官府多次派猎户擒捉未果，往客商人只能在巳午未三个时辰结伴过冈，其馀时分，及单身客人，不能过冈，恐被伤害性命。\n",
+            "battle_type": "task1",
+            "guest_only": true,
+            "enemy_guests": [
+              {
+                "key": "task_jingyang_tiger",
+                "label": "猛虎"
+              }
+            ],
+            "enemy_technology": {
+              "level": 3,
+              "guest_level": 15,
+              "guest_bonus": 0.02
+            },
+            "drop_table": {
+              "silver": 7000,
+              "mission_chest_v3_jingyanggang": 1
+            },
+            "daily_limit": 3
+          },
+          {
+            "key": "wulongshan",
+            "name": "乌龙山",
+            "difficulty": "junior",
+            "display_order": 4,
+            "description": "湘黔边界的乌龙山鲜少人迹，这里盘聚着一帮强盗将那里作为他们的大本营。他们借这乱世之际四处行凶，烧杀凌掠无恶不作，种种罪行令人发指。由于此帮强盗行迹过于放肆导致朝野上下为之震动，朝廷号召各方能人尽快歼灭这帮流寇。\n",
+            "battle_type": "task1",
+            "enemy_guests": [
+              {
+                "key": "task_wulong_bandit_chief_zuanshanbao",
+                "label": "钻山豹"
+              },
+              {
+                "key": "task_wulong_bandit_chief_zuoshandiao",
+                "label": "座山雕"
+              }
+            ],
+            "enemy_technology": {
+              "level": 4,
+              "guest_level": 20,
+              "guest_bonus": 0.04
+            },
+            "enemy_troops": {
+              "qiang_ke": 200
+            },
+            "drop_table": {
+              "silver": 15000,
+              "mission_chest_v3_wulongshan": 1
+            },
+            "daily_limit": 3
+          },
+          {
+            "key": "wagangzhai",
+            "name": "瓦岗寨",
+            "difficulty": "junior",
+            "display_order": 5,
+            "description": "瓦岗寨原来的寨主翟让被程咬金击败后让出寨主之位，程咬金自号\"大魔国混世魔王\"，并带领瓦岗军四处出门踢馆打劫，引得各地庄园主怨声在道，大家决定联手打击瓦岗寨，维护和保障各庄园的和平与稳定。\n",
+            "battle_type": "task1",
+            "enemy_guests": [
+              "hero_cheng_yaojin",
+              "hist_suitang_0162_zhairang"
+            ],
+            "enemy_troops": {
+              "jian_xia": 400
+            },
+            "enemy_technology": {
+              "level": 5,
+              "guest_level": 35,
+              "guest_bonus": 0.1
+            },
+            "drop_table": {
+              "silver": 20000,
+              "mission_chest_v3_wagangzhai": 1
+            },
+            "daily_limit": 3
+          },
+          {
+            "key": "fugui_shanzhuang",
+            "name": "富贵山庄",
+            "difficulty": "junior",
+            "display_order": 3,
+            "description": "富贵山庄，其美甲天下、其富可敌国，庄主张富贵更是好客之人，但凡江湖有难，他都不遗余力伸出援助之手，解人燃眉。故被人予以\"雪中炭\"之美名。江湖多有时运不济、怀才不遇的落魄之士，若想求得张庄主帮助，必先证明自己才识。在接受庄主考验后，若能得到庄主赏识，则日后必荣禄相授。\n",
+            "battle_type": "task1",
+            "guest_only": true,
+            "enemy_guests": [
+              {
+                "key": "task_fugui_instructor",
+                "label": "武师教头"
+              }
+            ],
+            "enemy_technology": {
+              "level": 3,
+              "guest_level": 40,
+              "guest_bonus": 0.05
+            },
+            "drop_table": {
+              "silver": 14000,
+              "mission_chest_v3_fugui_shanzhuang": 1
+            },
+            "daily_limit": 3
+          },
+          {
+            "key": "shizipo_heidian",
+            "name": "十字坡黑店",
+            "difficulty": "intermediate",
+            "display_order": 5,
+            "description": "孙二娘和张青在十字坡开酒店，常用蒙汗药蒙翻过往行人。他们将行人杀死后，大块好肉当作黄牛肉卖，零碎小肉，做馅包馒头。江湖有传言说：\"大树十字坡，客人谁敢那里过？肥的切做馒头馅，瘦的却丢去填河。\"\n",
+            "battle_type": "task1",
+            "enemy_guests": [
+              {
+                "key": "task_shizipo_sun_erniang",
+                "label": "孙二娘"
+              },
+              {
+                "key": "task_shizipo_zhang_qing",
+                "label": "张青"
+              }
+            ],
+            "enemy_troops": {
+              "quan_wang": 300,
+              "divine_archer": 300,
+              "dao_ba": 100
+            },
+            "enemy_technology": {
+              "level": 6,
+              "guest_level": 70,
+              "guest_bonus": 0.1
+            },
+            "drop_table": {
+              "silver": 30000,
+              "mission_chest_v3_shizipo_heidian": 1
+            },
+            "daily_limit": 3
+          },
+          {
+            "key": "shanhaiguan",
+            "name": "山海关",
+            "difficulty": "intermediate",
+            "display_order": 6,
+            "description": "山海关所在的河西走廊是华北通向东北的咽喉地带，是一座及其重要的军事重镇，主要防御外族势力的入侵。吴三桂作为镇守山海关的大将，居然意图勾结外族势力，入侵中原。\n",
+            "battle_type": "task1",
+            "enemy_guests": [
+              "hist_mingqing_0230",
+              "hist_mingqing_0054"
+            ],
+            "enemy_troops": {
+              "jian_sheng": 500,
+              "quan_wang": 500,
+              "qiang_ba": 500
+            },
+            "enemy_technology": {
+              "level": 7,
+              "guest_level": 70,
+              "guest_bonus": 0.18
+            },
+            "drop_table": {
+              "silver": 40000,
+              "mission_chest_v3_shanhaiguan": 1
+            },
+            "daily_limit": 3
+          },
+          {
+            "key": "shiren_daochang",
+            "name": "十人道场",
+            "difficulty": "intermediate",
+            "display_order": 3,
+            "description": "十人道场是春秋世界初级试炼之地，由恶人谷十大恶人驻守。只要能击败十大恶人，通过试炼，就能极速提升门客的等级和能力。\n",
+            "battle_type": "task1",
+            "enemy_guests": [
+              "hero_du_sha",
+              "hero_li_dazui",
+              "hero_hahaer",
+              "hero_tu_jiaojiao",
+              "hero_yin_jiuyou",
+              {
+                "key": "task_shiren_xiaomimi",
+                "label": "萧咪咪"
+              },
+              {
+                "key": "task_shiren_xuanyuansanguang",
+                "label": "轩辕三光"
+              },
+              {
+                "key": "task_shiren_tiezhan",
+                "label": "铁战"
+              },
+              "hero_bai_kaixin",
+              {
+                "key": "task_shiren_luoshixiongdi",
+                "label": "罗氏兄弟"
+              }
+            ],
+            "enemy_technology": {
+              "level": 6,
+              "guest_level": 55,
+              "guest_bonus": 0.08
+            },
+            "drop_table": {
+              "silver": 20000,
+              "mission_chest_v3_shiren_daochang": 1
+            },
+            "daily_limit": 3
+          },
+          {
+            "key": "jiguanshou_chuxian",
+            "name": "机关兽初现",
+            "difficulty": "junior",
+            "display_order": 7,
+            "description": "乔家村以制做灵活轻巧、栩栩如生的「机械猫」闻名于天下。「机械猫」又称之为「钟离猫」，相传是墨家子弟孙钟离路过此地时，时逢村中鼠患肆虐，为清除鼠患取当地木材仿猫型制成。经历代乔家村民不断改良，「机械猫」以生具灵性、精巧无比，并作用于生活各用途中。某日乔家村第一铁匠乔大牛家中被盗，八只刚制成的「机械猫」见房门未锁，逃离乔家村。随后，逃离的八只「机械猫」开始在乔家村附近肆虐作恶，搞得乔家村民苦不堪言。\n",
+            "battle_type": "task1",
+            "enemy_guests": [
+              {
+                "key": "task_mechanism_cat",
+                "label": "改装机械猫"
+              },
+              {
+                "key": "task_mechanism_cat",
+                "label": "改装机械猫"
+              },
+              {
+                "key": "task_mechanism_cat",
+                "label": "改装机械猫"
+              },
+              {
+                "key": "task_mechanism_cat",
+                "label": "改装机械猫"
+              },
+              {
+                "key": "task_mechanism_cat",
+                "label": "改装机械猫"
+              },
+              {
+                "key": "task_mechanism_cat",
+                "label": "改装机械猫"
+              },
+              {
+                "key": "task_mechanism_cat",
+                "label": "改装机械猫"
+              },
+              {
+                "key": "task_mechanism_cat",
+                "label": "改装机械猫"
+              }
+            ],
+            "enemy_technology": {
+              "level": 7,
+              "guest_level": 35,
+              "guest_bonus": 0.12
+            },
+            "drop_table": {
+              "silver": 24000,
+              "mission_chest_v3_jiguanshou_chuxian": 1
+            },
+            "daily_limit": 2,
+            "mission_card_daily_limit": 1
+          },
+          {
+            "key": "biwu_zhaoqin",
+            "name": "比武招亲",
+            "difficulty": "junior",
+            "display_order": 6,
+            "description": "苏州首富杜万年之女杜莞尔芳龄二八，登门求亲者络绎不绝，门庭若市。杜老爷既不想得罪朝廷中人，也不愿把女儿嫁给草莽之士，于是想出一招比武招亲。奇就奇在这代杜千金比武的，不是人，而是一只战斗熊。此熊周身每个关节都可活动，内部充满各种机关，战斗力强。比武当天无人能出其右，最终竟由穷小子管无介出马搏得头筹。原来小姐早已芳心暗许，只因那固执的父亲介意门第之见。管无介经众人帮助，得到铸熊大师珍藏图纸，命中熊身要害，一击即中。杜老爷在众人面前也不能食言而肥，只得将女儿许配给比赛冠军。管无介如愿以偿，开心抱得美人归。\n",
+            "battle_type": "task1",
+            "guest_only": true,
+            "enemy_guests": [
+              {
+                "key": "task_matchmaking_bear",
+                "label": "机关熊"
+              }
+            ],
+            "enemy_technology": {
+              "level": 4,
+              "guest_level": 55,
+              "guest_bonus": 0.2
+            },
+            "drop_table": {
+              "silver": 20000,
+              "mission_chest_v3_biwu_zhaoqin": 1
+            },
+            "daily_limit": 3
+          },
+          {
+            "key": "tianpeng_dijiao_1",
+            "name": "天蓬元帅的地窖（第一层）",
+            "difficulty": "intermediate",
+            "display_order": 1,
+            "description": "天蓬元帅何许人也，我想不必多加介绍，他的大名你我也都如雷贯耳了。天蓬元帅耳大招风，腰缠\"万贯\"，气宇方刚，心宽体胖。当然，他最出名的还是吃，不仅会吃，吃遍天下美食，还私藏了许多琼浆玉液、佳肴珍馐。每次天庭大请宾筵，我们的大元帅都是不仅吃得饱饱的，还要兜着走。拿了这么多食物，一时半会儿也消灭不了，那到底放在哪里才算妥当安全呢？天蓬元帅还真是聪明，他想到他在高老庄的老相好，还有他那个老丈人，也是很喜欢这个勤奋的女婿的，他们特地留出一块上好的、超大平方米、黄金地段、冬暖夏凉的地窖给猪女婿保存食物。要说天神也有打瞌睡的时候，天蓬元帅乘天门打开之际，每次都私自下凡，偷渡美食于此地窖中。经年累月，地窖倒也藏了不少宝贝。\n",
+            "battle_type": "task1",
+            "enemy_guests": [
+              {
+                "key": "task_cellar_guard",
+                "label": "守卫"
+              },
+              {
+                "key": "task_cellar_guard",
+                "label": "守卫"
+              },
+              {
+                "key": "task_cellar_guard",
+                "label": "守卫"
+              },
+              {
+                "key": "task_cellar_guard",
+                "label": "守卫"
+              },
+              {
+                "key": "task_cellar_guard",
+                "label": "守卫"
+              },
+              {
+                "key": "task_cellar_guard",
+                "label": "守卫"
+              },
+              {
+                "key": "task_cellar_guard",
+                "label": "守卫"
+              },
+              {
+                "key": "task_cellar_guard",
+                "label": "守卫"
+              }
+            ],
+            "enemy_technology": {
+              "level": 8,
+              "guest_level": 50,
+              "guest_bonus": 0.12
+            },
+            "drop_table": {
+              "silver": 50000,
+              "mission_chest_v3_tianpeng_dijiao_1": 1
+            },
+            "daily_limit": 3
+          },
+          {
+            "key": "tianpeng_dijiao_2",
+            "name": "天蓬元帅的地窖（第二层）",
+            "difficulty": "advanced",
+            "description": "天蓬元帅猪八戒在完成了跟随唐僧西天取经的重任后，混得了一个肥的流油的美差——净坛使者。不说人前人后，吃不完的山珍海味，更有深谙拍马溜须功夫的小妖小仙送上各种宝物，让天蓬元帅高兴之余也苦恼不已，净坛使者那小小地界根本无处可以存放东西。这时候天蓬元帅想起了N年前被搁置的他用来存放食物的高老庄地窖。\n\n找到灵感的天蓬元帅喜滋滋的驾着他的装宝大车回到高老庄，却发现地窖内一片狼藉，他最喜欢的菠萝被抢劫了一大半。天蓬元帅怒从心头起，恶向胆边生。呔，哪方小贼，竟然胆敢洗劫本使者的粮仓！\n\n这时，一绝色美貌狐仙扭着腰肢冲着天蓬元帅狂抛媚眼，八戒哥您消消气，气坏了身子可不好涅，对付这等小贼，奴家愿献上妙计。八戒哥一见美人便七荤八素，当下将满车宝物及地窖的后期开发工程交给了小狐仙。\n\n小狐仙的目的其实是那满车宝物，可怜八戒有了美女就没了大脑，至此以后那车宝贝和地窖都归了小狐仙所有。小狐仙一时间没有地方存放宝贝，于是将地窖开发成好几层，并在各处委派了法力高强的妖仙好友把守。\n\n消息不胫而走，各庄园主在尝过了菠萝的甜头后，将眼光伸向了小狐仙的藏宝库，小狐仙等着接招吧……\n",
+            "battle_type": "task1",
+            "enemy_guests": [
+              {
+                "key": "task_fox_spirit_keeper",
+                "label": "小狐仙"
+              },
+              {
+                "key": "task_fox_spirit_keeper",
+                "label": "小狐仙"
+              },
+              {
+                "key": "task_fox_spirit_keeper",
+                "label": "小狐仙"
+              },
+              {
+                "key": "task_fox_spirit_keeper",
+                "label": "小狐仙"
+              },
+              {
+                "key": "task_fox_spirit_keeper",
+                "label": "小狐仙"
+              },
+              {
+                "key": "task_fox_spirit_keeper",
+                "label": "小狐仙"
+              },
+              {
+                "key": "task_fox_spirit_keeper",
+                "label": "小狐仙"
+              },
+              {
+                "key": "task_fox_spirit_keeper",
+                "label": "小狐仙"
+              }
+            ],
+            "enemy_technology": {
+              "level": 9,
+              "guest_level": 80,
+              "guest_bonus": 0.2
+            },
+            "drop_table": {
+              "mission_chest_v3_tianpeng_dijiao_2": 1
+            },
+            "daily_limit": 3
+          },
+          {
+            "key": "jiguan_chuniao",
+            "name": "机关雏鸟",
+            "difficulty": "intermediate",
+            "display_order": 4,
+            "description": "话说江家堡被仇家围攻，四面受敌，堡内粮草只能维持3天生计，突围的任务迫在眉睫。堡主曾派壮丁驾快马送信求救，可惜都遭遇埋伏。管家之子江犁墨献上自制的木结构机关雏鸟。其鸟可避弓矢，自动飞达目的地。江家堡靠此木鸟最终送出求救信号，得盟友支援解困。后来此鸟被奉为堡内\"幸运鸟\"，经改造后功能更强大，已成为江家堡著名的机关武器之一。\n",
+            "battle_type": "task1",
+            "enemy_guests": [
+              {
+                "key": "task_mechanism_bird",
+                "label": "黑衣人"
+              },
+              {
+                "key": "task_mechanism_bird",
+                "label": "黑衣人"
+              },
+              {
+                "key": "task_mechanism_bird",
+                "label": "黑衣人"
+              },
+              {
+                "key": "task_mechanism_bird",
+                "label": "黑衣人"
+              }
+            ],
+            "enemy_troops": {
+              "qiang_wang": 300,
+              "jian_sheng": 300
+            },
+            "enemy_technology": {
+              "level": 7,
+              "guest_level": 60,
+              "guest_bonus": 0.1
+            },
+            "drop_table": {
+              "silver": 30000,
+              "mission_chest_v3_jiguan_chuniao": 1
+            },
+            "daily_limit": 3
+          },
+          {
+            "key": "dongtian_fudi",
+            "name": "洞天福地",
+            "difficulty": "advanced",
+            "description": "传说\"洞天福地\"位于西部大雪山之巅，当年丘真人携唯一弟子在此闭关修炼，洞内集日月精华，物华天宝俊彩星驰。百年后一场雪崩覆盖了洞口，珍贵的道家秘籍、炼丹点金之术也遭雪掩埋，就此不流于世。多年后各大门派竞相寻找此地，企图寻找求仙捷径。然而\"洞天福地\"内机关重重、关卡奥妙也是众所皆知，至今闯入禁区者无人生还。要想寻找财富，除了勇气，还需傲人的智慧和体魄才行。\n",
+            "battle_type": "task1",
+            "enemy_guests": [
+              {
+                "key": "task_heaven_cave_sentinel",
+                "label": "金甲神兵"
+              },
+              {
+                "key": "task_heaven_cave_sentinel",
+                "label": "金甲神兵"
+              }
+            ],
+            "enemy_troops": {
+              "arrow_god": 300,
+              "quan_sheng": 700
+            },
+            "enemy_technology": {
+              "level": 9,
+              "guest_level": 80,
+              "guest_bonus": 0.26
+            },
+            "drop_table": {
+              "silver": 50000,
+              "mission_chest_v3_dongtian_fudi": 1
+            },
+            "daily_limit": 3
+          },
+          {
+            "key": "jiufeng_feihuan",
+            "name": "九峰匪患",
+            "difficulty": "intermediate",
+            "display_order": 2,
+            "description": "话说有一座有着九个山峰的山叫做九峰山，那里山水秀丽，风景如画，九峰山下有个九峰村，这里的人民善良纯朴，吃苦耐劳，上天也因为这里的人勤劳善良，所以赐给了他们肥沃的土地，村民们也通过自己勤劳的双手将这片土地变成了万顷良田来回报上天的恩赐，于是一代一代的村民就在这里过着无忧无虑的生活。\n\n但有一天这美好日子被一群土匪给搅乱了，带领这帮土匪的是三兄弟分别叫大胖、二胖和小胖，这三人原本是这里的村民，可是这三人好吃懒做，从不去干活，把自己家田里的粮食吃光后还去偷别人的庄稼，最终被村长赶出村，上山做了土匪头子，他们怀恨在心，所以每个月都到山下的村庄来抢粮食、鸡、鸭、牛、羊，还试图抢良家妇女上山做压寨夫人，搞的民不聊生，怨声载道。\n\n于是村民们准备联合起来反抗，他们请村里的木匠赵牛把他发明的机关牛改造成可以防御土匪的武器，说到这赵牛发明的机关牛还真是神奇咧，不用吃草也不用喝水，却又能耕来又能拉，村民们种田犁地拉磨磨面都离不开它。听到了乡亲们的请求赵牛没日没夜的研制，最后给机关牛装上了厚厚的护甲和锋利的武器成为了攻防一体的兵器，同时村长给各地的庄主们发去了求援信希望能借助强大庄主的力量来帮助一起剿灭来犯的土匪，一场保卫九峰村的大战即将展开。\n",
+            "battle_type": "task1",
+            "enemy_guests": [
+              {
+                "key": "task_nine_peaks_bandit",
+                "label": "土匪"
+              },
+              {
+                "key": "task_nine_peaks_bandit",
+                "label": "土匪"
+              },
+              {
+                "key": "task_nine_peaks_bandit",
+                "label": "土匪"
+              }
+            ],
+            "enemy_troops": {
+              "quan_sheng": 500,
+              "arrow_god": 100
+            },
+            "enemy_technology": {
+              "level": 6,
+              "guest_level": 58,
+              "guest_bonus": 0.12
+            },
+            "drop_table": {
+              "silver": 20000,
+              "mission_chest_v3_jiufeng_feihuan": 1
+            },
+            "daily_limit": 3
+          },
+          {
+            "key": "taozi_fenban",
+            "name": "我的桃子分你一半",
+            "difficulty": "junior",
+            "display_order": 8,
+            "description": "终南山为道教发祥地之一。据传，周康王时，函谷关关令尹喜，在山中结草为楼，每日登草楼观星望气。一日圣人老子经过此关，尹喜忙把老子请到楼观，执弟子礼，请其讲经著书。老子为尹喜讲授《道德经》五千言后飘然而去。传说今日楼观台的说经台就是当年老子讲经之处。道教产生后，尊老子为道祖，尹喜为文始真人，奉《道德经》为根本经典。于是终南山上的楼观成了\"天下道林张本之地\"。\n\n日后在山上修行的道士们在山下种了一片桃林，一方面种桃树可以修身养性、锻炼身体，这桃树还是道士们除妖降魔的利器桃木剑的主要材料，而且这道家圣地的桃林结的桃子也不普通，是三年开花三年结果的\"仙桃\"，吃了它不仅功力倍增，而且练起功来更是事半功倍，因此这山下的桃林对于道士们来说十分的重要。\n\n而另一方面众多孤魂野鬼也盯上了这片桃林，由于它是道士们制造桃木剑材料的主要来源，如果能占据它，那道士们就没有办法对付他们了，于是大批的妖魔鬼怪一同聚集到了这片桃林，道士们知道这样下去的结果是不堪设想的，妖魔鬼怪会给人间带来极大的灾难，于是他们进行了多次尝试想驱散妖怪们，但由于寡不敌众均败下阵来，就在这紧要关头他们向各大庄主发去了求援信，希望能借助强大庄主的力量来平定这场灾难，当然作为回报他们将赠与你15个经验桃子以示感谢。\n",
+            "battle_type": "task1",
+            "enemy_guests": [
+              {
+                "key": "task_orchard_wraith",
+                "label": "孤魂野鬼"
+              },
+              {
+                "key": "task_orchard_wraith",
+                "label": "孤魂野鬼"
+              },
+              {
+                "key": "task_orchard_wraith",
+                "label": "孤魂野鬼"
+              },
+              {
+                "key": "task_orchard_wraith",
+                "label": "孤魂野鬼"
+              },
+              {
+                "key": "task_orchard_wraith",
+                "label": "孤魂野鬼"
+              },
+              {
+                "key": "task_orchard_wraith",
+                "label": "孤魂野鬼"
+              },
+              {
+                "key": "task_orchard_wraith",
+                "label": "孤魂野鬼"
+              },
+              {
+                "key": "task_orchard_wraith",
+                "label": "孤魂野鬼"
+              }
+            ],
+            "enemy_technology": {
+              "level": 3,
+              "guest_level": 40,
+              "guest_bonus": 0.06
+            },
+            "drop_table": {
+              "mission_chest_v3_taozi_fenban": 1
+            },
+            "daily_limit": 1,
+            "mission_card_daily_limit": 0
+          },
+          {
+            "key": "simian_chuge",
+            "name": "四面楚歌",
+            "difficulty": "advanced",
+            "description": "楚汉相争时期，项羽、刘邦于荥阳、成皋相持两年多。项羽因腹背受敌，少食无助，被迫与刘邦订立和，以鸿沟为界，东归楚、西属汉。次年，刘邦、韩信、刘贾、彭越、英布等各路汉军约计40万人与10万楚军于垓下展开决战。汉军以韩信率军居中，将军孔熙为左翼、陈贺为右翼，刘邦率部跟进，将军周勃断后。韩信挥军进攻失利，引兵后退，命左、右翼军继续攻击。楚军迎战不利，韩信再挥军反击。楚军大败，退入壁垒坚守，被汉军重重包围。楚军屡战不胜，兵疲食尽。\n\n张良又命围困项羽的各营兵士吹奏楚乐，楚兵闻之，顿时涌起思乡之情，军心涣散，项羽也疑心汉军已进楚地，遂与美人虞姬对饮帐中，奋然起舞，悲歌慷慨，歌数阙，美人和之，慷慨悲凉，脍炙人口。项王涕泪行行，左右皆泣，莫能仰视。未几，虞姬自杀。项羽跨上乌骓协着姬首，率兵800突围而去，至乌江仅剩下26人，形势危急，您是否发兵相助，以求逆天？\n",
+            "battle_type": "task1",
+            "enemy_guests": [
+              {
+                "key": "task_simian_chuge_hanxin_boss",
+                "label": "韩信",
+                "skills": [
+                  "stratagem_burst"
+                ]
+              },
+              {
+                "key": "task_simian_chuge_pengyue_boss",
+                "skills": [
+                  "city_felling_strike"
+                ]
+              },
+              {
+                "key": "task_simian_chuge_yingbu_boss",
+                "skills": [
+                  "city_felling_strike"
+                ]
+              }
+            ],
+            "enemy_troops": {
+              "dao_sheng": 500,
+              "qiang_wang": 500
+            },
+            "enemy_technology": {
+              "level": 10,
+              "guest_level": 100,
+              "guest_bonus": 0.28
+            },
+            "drop_table": {
+              "silver": 50000,
+              "mission_chest_v3_simian_chuge": 1
+            },
+            "daily_limit": 3
+          },
+          {
+            "key": "manzu_ruqin",
+            "name": "蛮族入侵",
+            "difficulty": "advanced",
+            "description": "北方的蛮族首领大胡子单于对中原广阔的土地已经虎视眈眈了许久，终于时机成熟他带领着他那强大的军队踏上了侵略中原的征程，眼看一场腥风血雨的浩劫即将席卷而来，可中原的各大庄主还浑然不知，这时蛮族军队中的一个打杂的坐不住了，他名叫蒲巴乙，这位小伙子长得十分帅气，因为父亲是胡人母亲是汉人的关系，所以他没有蛮族人粗陋的习俗，但他也并非自愿投军的。\n\n话说那日他为了参加\"村有好男儿\"的比赛正在山坡上练歌，刚唱了一句就被人一棍子打晕了，醒来后他发现他和村里的许多壮丁已经被抓到军营里了，他们被强征入伍，随军出征在军队中干杂活。当他想到中原即将生灵涂炭，就再也坐不住了，他想去通知中原的庄主们让他们对即将到来的战争做好准备，于是他偷了匹马乘着夜色逃出了军营，向着中原狂奔而去。\n",
+            "battle_type": "task1",
+            "is_defense": true,
+            "enemy_guests": [
+              {
+                "key": "task_barbarian_chanyu",
+                "label": "单于"
+              }
+            ],
+            "enemy_technology": {
+              "level": 10,
+              "guest_level": 100,
+              "guest_bonus": 0.5
+            },
+            "enemy_troops": {
+              "qiang_wang": 1500
+            },
+            "drop_table": {
+              "silver": 50000,
+              "mission_chest_v3_manzu_ruqin": 1
+            },
+            "daily_limit": 3
+          },
+          {
+            "key": "zhuiji_manzu",
+            "name": "追击蛮族",
+            "difficulty": "advanced",
+            "description": "在蛮族入侵时，小伙子蒲巴乙为拯救中原的人们，使他们避免成为蛮族铁蹄下的冤魂，他偷偷溜出军营骑着马向着中原狂奔而去，经过七天七夜的日夜兼程，最后连马都累死在了半路上，终于他赶在蛮族军队到来之前向庄主们发出了蛮族准备入侵的讯息，各地的庄主得到了讯息之后，立即停止了互相征战，准备联手抗击蛮族，他们准备了周密的计划准备给大胡子单于来个\"瓮中捉鳖\"。\n\n很快蛮族的军队开始了攻城略地，一路上都十分顺利，其间只遭到了庄主们象征性的抵抗，这种轻而易举就取得胜利的状况开始让蛮族的军队放松了戒心，大胡子单于也开始幻想着在关内放牧的情景，然而他们不知道他们正一步步走进庄主们给他们布下的天罗地网。\n\n终于一天夜里领主们趁着夜色对蛮族军营发动了偷袭，毫无提防的蛮族士兵还没反应过来就已经被打得溃不成军，纷纷丢盔弃甲，落荒而逃。大胡子单于更是丢盔弃甲，落荒而逃，现在是抉择的时候了，到底是穷寇莫追，还是追击蛮族让他们再也不敢踏入中原半步呢？一切都由你决定！\n",
+            "battle_type": "task1",
+            "enemy_guests": [
+              {
+                "key": "task_barbarian_chanyu",
+                "label": "单于"
+              }
+            ],
+            "enemy_troops": {
+              "qiang_wang": 1000
+            },
+            "enemy_technology": {
+              "level": 10,
+              "guest_level": 100,
+              "guest_bonus": 0.26
+            },
+            "drop_table": {
+              "silver": 40000,
+              "mission_chest_v3_zhuiji_manzu": 1
+            },
+            "daily_limit": 3
+          },
+          {
+            "key": "liangshanbo_zhuyingtai",
+            "name": "梁山伯与祝英台",
+            "difficulty": "intermediate",
+            "available_weekdays": [
+              1,
+              3,
+              5,
+              6,
+              7
+            ],
+            "description": "红罗山书院里，三好学生梁山伯与女扮男装求学的祝英台在上学途中偶然相遇，二人一见如故，当下投名结义。三载同窗，情意在书声与山色间日渐深厚；待到英台学成归家，山伯一路相送十八里，英台屡借草木禽鸟暗寄芳心，山伯却迟迟未解。直到祝家厅前，英台换回红妆、手奉香茗，山伯方知“九弟即九妹”，二人遂私订终身。\n\n奈何祝家已受北马庄恶霸马文才蛊惑，应下婚约。待山伯依约前来议婚，只换得英台一腔泪语，道是姻缘已晚。山伯素来为人端方，交游甚广，诸多义士闻讯赶来，誓要助这对有情人冲破门第与礼法。他们细细勘定迎亲路线，在沿途埋下伏兵，又备足暗器，只待花轿启行时奋力抢亲。一场满载义气与正心的夺亲之战，即将打响。\n",
+            "battle_type": "task1",
+            "enemy_guests": [
+              {
+                "key": "orig_ma_wencai",
+                "label": "马文才",
+                "skills": [
+                  "stratagem_burst"
+                ]
+              }
+            ],
+            "enemy_troops": {
+              "qiang_wang": 200,
+              "arrow_god": 200,
+              "dao_sheng": 200
+            },
+            "enemy_technology": {
+              "level": 5,
+              "guest_level": 60,
+              "guest_bonus": 0.16
+            },
+            "drop_table": {
+              "silver": 10000,
+              "mission_chest_v3_liangshanbo_zhuyingtai": 1
+            },
+            "base_travel_time": 1800,
+            "daily_limit": 3
+          },
+          {
+            "key": "biyou_candeng",
+            "name": "封神之战：碧游残灯",
+            "difficulty": "advanced",
+            "description": "万仙阵外，截教败局已现。碧游宫阵旗折断，残灯将熄，周营与玉虚门人已封住阵门，准备将阵中余众一并清算。此时，一盏未灭的碧游残灯越过仙门禁制，落入庄园。灯火中传来截教残魂的求援：不是求逆转天命，也不是求替截教洗去旧罪，而是求庄园主入阵夺回第一面万仙阵旗，让尚未入榜、尚未作恶的门人有机会活着离开。\n\n庄园门客踏入阵门，从周营清剿军、玉虚巡阵者与失控剑痕之间杀出一条路。阵门之上，清算符诏仍在一笔一笔抹去榜外残名；阵门之下，碧游残灯只剩最后一线火光。若此战得胜，截教反攻便从这一点残火开始。\n",
+            "battle_type": "task1",
+            "enemy_guests": [
+              "task_wanxian_nangong_lie",
+              "task_wanxian_lu_xuanqing",
+              "task_wanxian_baihe_fushi",
+              "task_wanxian_zhuxian_canfeng",
+              "task_wanxian_yuzhu",
+              "task_wanxian_qingsuan_fuzhao"
+            ],
+            "enemy_troops": {
+              "dao_sheng": 700,
+              "qiang_wang": 650,
+              "arrow_god": 500
+            },
+            "enemy_technology": {
+              "level": 10,
+              "guest_level": 88,
+              "guest_bonus": 0.34
+            },
+            "drop_table": {
+              "silver": 60000,
+              "mission_chest_v3_biyou_candeng": 1
+            },
+            "base_travel_time": 1800,
+            "daily_limit": 3
+          },
+          {
+            "key": "shier_xianyin",
+            "name": "封神之战：十二仙印",
+            "difficulty": "advanced",
+            "description": "阵旗重燃后，万仙阵中层忽然降下十二道玉虚仙印。它们不是仙人本尊，却承载着阐教诸仙的法宝、道统与杀伐意志。哪吒杀星开路，杨戬玄功镇身，太乙神火焚阵，广成番天印压断截教气运。凡庄园主之令入阵相助截教者，皆被天命识作乱榜异数。\n\n若十二印合拢，截教残部将被重新压回死局；若仙印破碎，万仙阵中层便会重开，截教败兵也将第一次从逃亡转为反攻。此战不问天命宽恕，只问仙印能否挡住人间兵锋。\n",
+            "battle_type": "task1",
+            "entry_cost": {
+              "wanyin_flag_fragment": 1
+            },
+            "enemy_guests": [
+              "task_wanxian_nezha",
+              "task_wanxian_yangjian",
+              "task_wanxian_taiyi",
+              "task_wanxian_guangchengzi",
+              "task_wanxian_chijingzi",
+              "task_wanxian_cihang",
+              "task_wanxian_juliusun",
+              "task_wanxian_shier_xianyin"
+            ],
+            "enemy_troops": {
+              "jian_sheng": 850,
+              "arrow_god": 800,
+              "qiang_wang": 750,
+              "quan_sheng": 500
+            },
+            "enemy_technology": {
+              "level": 10,
+              "guest_level": 94,
+              "guest_bonus": 0.46
+            },
+            "drop_table": {
+              "silver": 80000,
+              "mission_chest_v3_shier_xianyin": 1
+            },
+            "base_travel_time": 1800,
+            "daily_limit": 2
+          },
+          {
+            "key": "fengbang_tianmen",
+            "name": "封神之战：封榜天门",
+            "difficulty": "advanced",
+            "description": "十二仙印破碎后，封神榜裂开一页，天门显现。姜子牙持榜而立，燃灯道人点起过去佛灯，打神鞭化为天罚，榜上神名也从金光中逐一醒来。此战已不是救援，而是夺榜改命。封榜天门前，清算将落，截教最后一页榜外残命悬于一线。\n\n庄园主率门客直面封神榜、打神鞭与玉虚天罚，要证明一件事：天命可以定胜负，却不能把所有失败者都抹成灰烬。若此战得胜，封神大势仍会落下，但碧游残火将不再被天命彻底抹去。\n",
+            "battle_type": "task1",
+            "entry_cost": {
+              "yuxu_broken_seal": 1
+            },
+            "enemy_guests": [
+              "task_wanxian_randeng",
+              "task_wanxian_nanji_xianweng",
+              "task_wanxian_jiang_ziya",
+              "task_wanxian_dashenbian",
+              "task_wanxian_bangshangming",
+              "task_wanxian_yuxu_tianfa"
+            ],
+            "enemy_troops": {
+              "dao_sheng": 1000,
+              "jian_sheng": 1000,
+              "arrow_god": 900,
+              "qiang_wang": 900,
+              "quan_sheng": 700
+            },
+            "enemy_technology": {
+              "level": 10,
+              "guest_level": 100,
+              "guest_bonus": 0.62
+            },
+            "drop_table": {
+              "silver": 100000,
+              "mission_chest_v3_fengbang_tianmen": 1
+            },
+            "base_travel_time": 1800,
+            "daily_limit": 1
+          },
+          {
+            "key": "zhuolu_zhongyuan",
+            "name": "逐鹿中原",
+            "difficulty": "advanced",
+            "description": "封榜天门之后，封神榜归位，天命暂定。但中原龙脉承受封神余威，竟引动上古涿鹿之战的兵主命格。九黎战旗自地脉升起，蚩尤率风伯、雨师重开涿鹿战局，欲以兵锋再问中原归属。\n\n轩辕剑光在梦中示警：此战若败，中原龙脉将被九黎战旗夺走，人间秩序也会重新落入上古兵争。庄园主须率门客入阵，与蚩尤正面逐鹿，镇住中原气运。\n",
+            "battle_type": "task1",
+            "enemy_guests": [
+              "task_zhuolu_chiyou",
+              "task_zhuolu_fengbo",
+              "task_zhuolu_yushi",
+              "task_zhuolu_shitieshou",
+              "task_zhuolu_shitieshou",
+              "task_zhuolu_shitieshou"
+            ],
+            "enemy_troops": {
+              "dao_sheng": 1000,
+              "qiang_wang": 1000,
+              "jian_sheng": 1000,
+              "quan_sheng": 900,
+              "arrow_god": 900
+            },
+            "enemy_technology": {
+              "level": 10,
+              "guest_level": 100,
+              "guest_bonus": 0.62
+            },
+            "drop_table": {
+              "silver": 100000,
+              "mission_chest_v3_zhuolu_zhongyuan": 1
+            },
+            "base_travel_time": 1800,
+            "daily_limit": 1
+          },
+          {
+            "key": "guandu_zhizhan",
+            "name": "官渡之战",
+            "difficulty": "advanced",
+            "description": "袁绍拥河北四州之众，粮甲号称百万，正于官渡压境。曹军粮道危急，乌巢成为决定胜负的最后一线生机。\n\n此战不再是群雄混战，庄园主必须率军直面袁绍本人，在河北军势最盛之时击溃这位四世三公之后，夺下官渡最后的胜局。战后可从袁军遗库中寻得多件橙色装备。\n",
+            "battle_type": "task1",
+            "enemy_guests": [
+              {
+                "key": "task_guandu_yuanshao",
+                "label": "袁绍"
+              }
+            ],
+            "enemy_troops": {
+              "dao_sheng": 1400,
+              "qiang_wang": 1400,
+              "jian_sheng": 1200,
+              "quan_sheng": 1000,
+              "arrow_god": 1200
+            },
+            "enemy_technology": {
+              "level": 10,
+              "guest_level": 100,
+              "guest_bonus": 0.68,
+              "guest_skills": [
+                "stratagem_burst"
+              ]
+            },
+            "drop_table": {
+              "silver": 120000,
+              "mission_chest_v3_guandu_zhizhan": 1
+            },
+            "base_travel_time": 2400,
+            "daily_limit": 1
+          },
+          {
+            "key": "huashan_lunjian_advanced",
+            "name": "华山论剑",
+            "display_order": 1100,
+            "difficulty": "advanced",
+            "description": "天下风云出我辈，一入江湖岁月催。皇图霸业谈笑中，不胜人生一场醉。\n\n一张没有落款的论剑帖，自华山传入江湖。有人说，发帖之人要在绝顶重排天下高手座次；有人说，山巅藏着一坛开封即能忘忧的陈年好酒；还有人信誓旦旦地表示，自己只是路过，绝不是专程来抢宝箱的。消息传开后，闭关的出关了，隐姓埋名的改回本名了，连多年不肯下山的老前辈也开始认真挑选登山鞋。\n\n华山九重关，每一重都由一位绝顶高手镇守。扫地僧守心，张三丰守意，独孤求败守剑，东方不败守影；石破天、黄裳、阿青、逍遥子与王重阳也已在峰顶等候。这里没有客套寒暄，也没有凭年龄论资排辈，想在江湖留下名字，便把手中兵刃亮出来说话。\n\n此战只许门客登场。庄园主若能连破九关，便可登上华山绝顶，取走封存已久的武林宝箱。至于箱中是震动江湖的神兵奇珍，还是某位醉仙留下的压箱底玩意儿，只有最后站着的人，才有资格亲手打开。\n",
+            "battle_type": "task1",
+            "guest_only": true,
+            "enemy_guests": [
+              {
+                "key": "hero_sao_di_seng",
+                "label": "扫地僧",
+                "skills": [
+                  "iron_wall_heart",
+                  "last_chance_revival"
+                ]
+              },
+              {
+                "key": "hero_zhang_sanfeng",
+                "label": "张三丰",
+                "skills": [
+                  "taiyi_wind",
+                  "draw_enemy_blades"
+                ]
+              },
+              {
+                "key": "hero_dugu_qiubai",
+                "label": "独孤求败",
+                "skills": [
+                  "fatal_chain_sword",
+                  "prison_break_blade"
+                ]
+              },
+              {
+                "key": "hero_dongfang_bubai",
+                "label": "东方不败",
+                "skills": [
+                  "flower_rain",
+                  "meteor_pierce_moon"
+                ]
+              },
+              {
+                "key": "hero_shi_zhongjian",
+                "label": "石破天",
+                "skills": [
+                  "dragon_roar",
+                  "desperate_beast"
+                ]
+              },
+              {
+                "key": "task_huashan_huang_shang",
+                "label": "黄裳"
+              },
+              {
+                "key": "hero_a_qing",
+                "label": "阿青",
+                "skills": [
+                  "city_felling_strike",
+                  "meteor_pierce_moon"
+                ]
+              },
+              {
+                "key": "hero_xiaoyao_zi",
+                "label": "逍遥子",
+                "skills": [
+                  "taiyi_wind",
+                  "soul_erode"
+                ]
+              },
+              {
+                "key": "hero_wang_chongyang",
+                "label": "王重阳",
+                "skills": [
+                  "thunder_nine_heavens",
+                  "comrade_command"
+                ]
+              }
+            ],
+            "enemy_technology": {
+              "level": 10,
+              "guest_level": 100,
+              "guest_bonus": 0.68
+            },
+            "drop_table": {
+              "silver": 120000,
+              "mission_chest_v3_huashan_lunjian_advanced": 1
+            },
+            "base_travel_time": 2400,
+            "daily_limit": 1
+          },
+          {
+            "key": "sishui_huaxiong_chengwei",
+            "name": "飞将浮沉录：汜水关华雄逞威",
+            "display_order": 1001,
+            "difficulty": "advanced",
+            "description": "汜水关的酒还温着，华雄已经把联军先锋的名册划掉了一大半。他站在关楼上敲着大斧，逢人便问“还有谁”，问得守军都开始替对面捏汗——毕竟再这样下去，联军可能要先输掉士气，再输掉晚饭。\n\n庄园主必须带门客杀穿西凉军，给这位“汜水关话事人”一个正式答复。击败华雄后，夺走军帐中的汜水关战报；那张薄薄的纸，记录着虎牢关布防，也记录着华雄从“逞威”到“闭嘴”的全过程。\n",
+            "battle_type": "task1",
+            "enemy_guests": [
+              {
+                "key": "task_sishui_huaxiong",
+                "label": "华雄"
+              }
+            ],
+            "enemy_troops": {
+              "dao_sheng": 1200,
+              "qiang_wang": 1100,
+              "arrow_god": 900
+            },
+            "enemy_technology": {
+              "level": 10,
+              "guest_level": 92,
+              "guest_bonus": 0.58
+            },
+            "drop_table": {
+              "silver": 90000,
+              "mission_chest_v3_sishui_huaxiong_chengwei": 1
+            },
+            "base_travel_time": 2400,
+            "daily_limit": 1
+          },
+          {
+            "key": "hulao_qunying_zhan_lvbu",
+            "name": "飞将浮沉录：虎牢关群英战吕布",
+            "display_order": 1002,
+            "difficulty": "advanced",
+            "description": "汜水关的战报还没捂热，虎牢关的战鼓已经震得杯中茶水自己站了起来。吕布骑赤兔、执方天画戟，单骑出阵便把诸侯联军的气势砍成了好几段；有人提议讲道理，有人提议先撤退，最后大家一致决定——还是派最能打的上去试试。\n\n进入此关需要消耗一份「汜水关战报」。庄园主须在群英合围中正面击破吕布，并从战场遗物里搜寻方天画戟、龙鳞战甲与赤兔马的踪迹。若能活着离开，还要记得把虎牢关战旗带走——它将是下一场麻烦的入场券。\n",
+            "battle_type": "task1",
+            "entry_cost": {
+              "sishui_battle_report": 1
+            },
+            "enemy_guests": [
+              {
+                "key": "task_hulao_lvbu",
+                "label": "吕布"
+              }
+            ],
+            "enemy_troops": {
+              "dao_sheng": 1500,
+              "qiang_wang": 1500,
+              "jian_sheng": 1300,
+              "quan_sheng": 1000,
+              "arrow_god": 1300
+            },
+            "enemy_technology": {
+              "level": 10,
+              "guest_level": 100,
+              "guest_bonus": 0.72,
+              "guest_skills": [
+                "dragon_roar"
+              ]
+            },
+            "drop_table": {
+              "silver": 110000,
+              "mission_chest_v3_hulao_qunying_zhan_lvbu": 1
+            },
+            "base_travel_time": 2400,
+            "daily_limit": 1
+          },
+          {
+            "key": "baimenlou_mingyun_jueze",
+            "name": "飞将浮沉录：白门楼命运抉择",
+            "display_order": 1003,
+            "difficulty": "advanced",
+            "description": "虎牢关战旗染血之后，曹军围住下邳，白门楼成了吕布最后的落脚处。高顺在整军，张辽在寻找退路，陈宫在推演一条不必投降的路，臧霸守着最后的旧部；而吕布仍相信，只要再给他一次冲阵的机会，天下就还没有真正决定谁会输。\n\n然而江湖传闻，白门楼风声最紧时，总有一张没有落款的招贤帖在暗中流转。若它最终落到有缘人手中，史书上那句“吕布死于白门楼”未必还能照抄，城楼之下或许会多出一位改旗易帜的绝世猛将；只是新东家能不能压住他的脾气，就要看庄园主自己的本事了。\n\n进入此关需要消耗一面「虎牢关战旗」。庄园主须击破吕布、高顺、张辽、陈宫与臧霸的合围，替这段乱世故事写下最后一笔。\n",
+            "battle_type": "task1",
+            "entry_cost": {
+              "hulao_war_banner": 1
+            },
+            "enemy_guests": [
+              {
+                "key": "task_baimenlou_lvbu",
+                "label": "吕布"
+              },
+              {
+                "key": "task_baimenlou_gaoshun",
+                "label": "高顺"
+              },
+              {
+                "key": "task_baimenlou_zhangliao",
+                "label": "张辽"
+              },
+              {
+                "key": "task_baimenlou_chengong",
+                "label": "陈宫"
+              },
+              {
+                "key": "task_baimenlou_zangba",
+                "label": "臧霸"
+              }
+            ],
+            "enemy_troops": {
+              "dao_sheng": 1800,
+              "qiang_wang": 1700,
+              "jian_sheng": 1600,
+              "quan_sheng": 1200,
+              "arrow_god": 1500
+            },
+            "enemy_technology": {
+              "level": 10,
+              "guest_level": 100,
+              "guest_bonus": 0.8
+            },
+            "drop_table": {
+              "silver": 180000,
+              "mission_chest_v3_baimenlou_mingyun_jueze": 1
+            },
+            "base_travel_time": 2700,
+            "daily_limit": 1
+          },
+          {
+            "key": "yaolu_hujing",
+            "name": "药庐护经",
+            "difficulty": "junior",
+            "description": "山中药师携经归庐，却被成群盗匪堵住山道。刀客结阵护住匪首，匪首伺机快攻。护送药师脱险，药庐愿以珍藏经卷相赠。",
+            "battle_type": "task1",
+            "is_defense": false,
+            "guest_only": false,
+            "enemy_guests": [
+              {
+                "key": "task_cultivation_road_blade",
+                "skills": [
+                  "iron_wall_heart"
+                ],
+                "label": "拦路刀客"
+              },
+              {
+                "key": "task_cultivation_road_blade",
+                "skills": [
+                  "iron_wall_heart"
+                ],
+                "label": "拦路刀客"
+              },
+              {
+                "key": "task_cultivation_road_blade",
+                "skills": [
+                  "iron_wall_heart"
+                ],
+                "label": "拦路刀客"
+              },
+              {
+                "key": "task_cultivation_road_blade",
+                "skills": [
+                  "iron_wall_heart"
+                ],
+                "label": "拦路刀客"
+              },
+              {
+                "key": "task_cultivation_road_blade",
+                "skills": [
+                  "iron_wall_heart"
+                ],
+                "label": "拦路刀客"
+              },
+              {
+                "key": "task_cultivation_road_blade",
+                "skills": [
+                  "iron_wall_heart"
+                ],
+                "label": "拦路刀客"
+              },
+              {
+                "key": "task_cultivation_bandit_leader",
+                "skills": [],
+                "label": "劫经匪首"
+              }
+            ],
+            "enemy_troops": {},
+            "enemy_technology": {
+              "level": 7,
+              "guest_level": 35,
+              "guest_bonus": 0.12
+            },
+            "entry_cost": {},
+            "drop_table": {
+              "mission_chest_v3_yaolu_hujing": 1
+            },
+            "probability_drop_table": {},
+            "available_weekdays": [],
+            "display_order": 9,
+            "base_travel_time": 1800,
+            "daily_limit": 2,
+            "mission_card_daily_limit": 0
+          },
+          {
+            "key": "xisui_yougu",
+            "name": "洗髓幽谷",
+            "difficulty": "intermediate",
+            "description": "幽谷药香不散，剑客结阵守谷，药师以言语扰敌。闯过守谷人的考验，便可带走谷中修行珍品。只重护甲，未必挡得住药师的攻势。",
+            "battle_type": "task1",
+            "is_defense": false,
+            "guest_only": false,
+            "enemy_guests": [
+              {
+                "key": "task_cultivation_valley_swordsman",
+                "skills": [
+                  "iron_wall_heart"
+                ],
+                "label": "守谷剑客"
+              },
+              {
+                "key": "task_cultivation_valley_swordsman",
+                "skills": [
+                  "iron_wall_heart"
+                ],
+                "label": "守谷剑客"
+              },
+              {
+                "key": "task_cultivation_valley_swordsman",
+                "skills": [
+                  "iron_wall_heart",
+                  "fatal_chain_sword"
+                ],
+                "label": "守谷剑客"
+              },
+              {
+                "key": "task_cultivation_valley_healer",
+                "skills": [
+                  "flower_rain",
+                  "steadfast_planning"
+                ],
+                "label": "幽谷药师"
+              },
+              {
+                "key": "task_cultivation_valley_healer",
+                "skills": [
+                  "flower_rain",
+                  "steadfast_planning"
+                ],
+                "label": "幽谷药师"
+              },
+              {
+                "key": "task_cultivation_valley_healer",
+                "skills": [
+                  "flower_rain",
+                  "steadfast_planning"
+                ],
+                "label": "幽谷药师"
+              }
+            ],
+            "enemy_troops": {
+              "arrow_god": 800,
+              "qiang_wang": 800,
+              "quan_sheng": 800
+            },
+            "enemy_technology": {
+              "level": 10,
+              "guest_level": 85,
+              "guest_bonus": 0.3
+            },
+            "entry_cost": {},
+            "drop_table": {
+              "mission_chest_v3_xisui_yougu": 1
+            },
+            "probability_drop_table": {},
+            "available_weekdays": [],
+            "display_order": 9,
+            "base_travel_time": 1800,
+            "daily_limit": 2,
+            "mission_card_daily_limit": 0
+          },
+          {
+            "key": "yijin_mijing",
+            "name": "易筋秘境",
+            "difficulty": "advanced",
+            "description": "古寺深处别有洞天。金刚护法引敌护阵，明心护法诵经伤敌，伏魔护法快攻破阵。胜过三位护法，可获经卷、灵丹与遗留武学。",
+            "battle_type": "task1",
+            "is_defense": false,
+            "guest_only": false,
+            "enemy_guests": [
+              {
+                "key": "task_cultivation_vajra_guard",
+                "label": "金刚护法",
+                "skills": [
+                  "iron_wall_heart",
+                  "draw_enemy_blades"
+                ]
+              },
+              {
+                "key": "task_cultivation_mind_guard",
+                "label": "明心护法",
+                "skills": [
+                  "tangseng_sermon",
+                  "steadfast_planning"
+                ]
+              },
+              {
+                "key": "task_cultivation_demon_guard",
+                "label": "伏魔护法",
+                "skills": [
+                  "meteor_pierce_moon"
+                ]
+              }
+            ],
+            "enemy_troops": {
+              "arrow_god": 300,
+              "quan_sheng": 700
+            },
+            "enemy_technology": {
+              "level": 9,
+              "guest_level": 80,
+              "guest_bonus": 0.26
+            },
+            "entry_cost": {},
+            "drop_table": {
+              "mission_chest_v3_yijin_mijing": 1
+            },
+            "probability_drop_table": {},
+            "available_weekdays": [],
+            "display_order": 9,
+            "base_travel_time": 1800,
+            "daily_limit": 1,
+            "mission_card_daily_limit": 0
+          }
+        ]
+      }
+    },
+    "data/guests/cultivation.yaml": {
+      "sha256": "0ed8addb367f7f984b0ee838d3142e4f4bd5d7bc6c28e8f6ea81ef27fcd099a9",
+      "payload": {
+        "heroes": {
+          "blue": [
+            {
+              "key": "task_cultivation_road_blade",
+              "name": "拦路刀客",
+              "archetype": "military",
+              "recruitable": false,
+              "default_gender": "male",
+              "default_morality": 70,
+              "avatar": "cultivation/cultivation_road_blade.webp",
+              "growth_range": [
+                5,
+                9
+              ],
+              "custom_stats": {
+                "force": 70,
+                "intellect": 40,
+                "defense": 60,
+                "agility": 45,
+                "luck": 50,
+                "base_hp": 2000
+              }
+            },
+            {
+              "key": "task_cultivation_bandit_leader",
+              "name": "劫经匪首",
+              "archetype": "military",
+              "recruitable": false,
+              "default_gender": "male",
+              "default_morality": 70,
+              "avatar": "cultivation/cultivation_bandit_leader.webp",
+              "growth_range": [
+                5,
+                9
+              ],
+              "custom_stats": {
+                "force": 100,
+                "intellect": 35,
+                "defense": 55,
+                "agility": 75,
+                "luck": 65,
+                "base_hp": 2400
+              }
+            }
+          ],
+          "purple": [
+            {
+              "key": "task_cultivation_valley_swordsman",
+              "name": "守谷剑客",
+              "archetype": "military",
+              "recruitable": false,
+              "default_gender": "male",
+              "default_morality": 70,
+              "avatar": "cultivation/cultivation_valley_swordsman.webp",
+              "growth_range": [
+                6,
+                11
+              ],
+              "custom_stats": {
+                "force": 80,
+                "intellect": 45,
+                "defense": 70,
+                "agility": 75,
+                "luck": 65,
+                "base_hp": 1600
+              }
+            },
+            {
+              "key": "task_cultivation_valley_healer",
+              "name": "幽谷药师",
+              "archetype": "civil",
+              "recruitable": false,
+              "default_gender": "male",
+              "default_morality": 70,
+              "avatar": "cultivation/cultivation_valley_healer.webp",
+              "growth_range": [
+                6,
+                11
+              ],
+              "custom_stats": {
+                "force": 45,
+                "intellect": 100,
+                "defense": 55,
+                "agility": 70,
+                "luck": 75,
+                "base_hp": 1600
+              }
+            },
+            {
+              "key": "task_cultivation_vajra_guard",
+              "name": "金刚护法",
+              "archetype": "military",
+              "recruitable": false,
+              "default_gender": "male",
+              "default_morality": 70,
+              "avatar": "cultivation/cultivation_vajra_guard.webp",
+              "growth_range": [
+                6,
+                11
+              ],
+              "custom_stats": {
+                "force": 150,
+                "intellect": 65,
+                "defense": 155,
+                "agility": 75,
+                "luck": 70,
+                "base_hp": 100000
+              }
+            },
+            {
+              "key": "task_cultivation_mind_guard",
+              "name": "明心护法",
+              "archetype": "civil",
+              "recruitable": false,
+              "default_gender": "male",
+              "default_morality": 70,
+              "avatar": "cultivation/cultivation_mind_guard.webp",
+              "growth_range": [
+                6,
+                11
+              ],
+              "custom_stats": {
+                "force": 65,
+                "intellect": 175,
+                "defense": 100,
+                "agility": 100,
+                "luck": 100,
+                "base_hp": 100000
+              }
+            },
+            {
+              "key": "task_cultivation_demon_guard",
+              "name": "伏魔护法",
+              "archetype": "military",
+              "recruitable": false,
+              "default_gender": "male",
+              "default_morality": 70,
+              "avatar": "cultivation/cultivation_demon_guard.webp",
+              "growth_range": [
+                6,
+                11
+              ],
+              "custom_stats": {
+                "force": 170,
+                "intellect": 60,
+                "defense": 95,
+                "agility": 155,
+                "luck": 80,
+                "base_hp": 90000
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

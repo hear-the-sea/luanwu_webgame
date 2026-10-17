@@ -198,6 +198,7 @@ def get_tradeable_inventory_queryset(manor: Manor):
             quantity__gt=F("bound_quantity"),
             storage_location=InventoryItem.StorageLocation.WAREHOUSE,
         )
+        .exclude(template__key="custom_guest_card")
         .select_related("template")
         .order_by("id")
     )

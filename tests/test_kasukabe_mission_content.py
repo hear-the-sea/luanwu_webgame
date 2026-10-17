@@ -61,8 +61,8 @@ def test_kasukabe_blue_equipment_set_uses_fixed_bonuses():
         assert item["effect_type"].startswith("equip_")
         assert payload["set_key"] == "kasukabe_defense_set"
         assert payload["set_bonus"] == [
-            {"pieces": 2, "bonus": {"defense": 20, "attack": 30}},
-            {"pieces": 4, "bonus": {"hp": 600, "agility": 20, "luck": 15}},
+            {"pieces": 2, "bonus": {"defense": 15, "attack": 20}},
+            {"pieces": 4, "bonus": {"hp": 400, "agility": 15, "luck": 10}},
         ]
 
 

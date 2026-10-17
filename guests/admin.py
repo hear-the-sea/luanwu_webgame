@@ -63,6 +63,8 @@ apply_common_field_labels(
         "targets": "目标数量",
         "bot_profile": "虚拟玩家档案",
         "operation_id": "招募操作编号",
+        "base_key": "基础装备标识",
+        "base_name": "基础装备名称",
     },
 )
 

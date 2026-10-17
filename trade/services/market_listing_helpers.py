@@ -16,7 +16,7 @@ def load_tradeable_item_template(*, item_template_model, item_key: str):
     item_template = item_template_model.objects.filter(key=item_key).first()
     if not item_template:
         raise TradeValidationError("物品不存在")
-    if not item_template.tradeable:
+    if item_template.key == "custom_guest_card" or not item_template.tradeable:
         raise TradeValidationError("该物品不可交易")
     return item_template
 

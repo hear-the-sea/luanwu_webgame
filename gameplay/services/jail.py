@@ -35,6 +35,7 @@ from core.exceptions import (
 )
 from guests.constants import UPGRADE_TEMPLATE_FAMILIES
 from guests.models import Guest, GuestStatus, GuestTemplate
+from guests.services.custom_guest import CUSTOM_GUEST_TEMPLATE_KEYS, is_custom_guest
 from guests.services.recruitment_guests import grant_template_skills
 from guests.services.template_identity import (
     get_non_repeatable_family_template_ids,
@@ -356,6 +357,8 @@ def add_oath_bond(manor: Manor, guest_id: int) -> OathBond:
     )
     if not guest:
         raise OathGuestNotFoundError()
+    if is_custom_guest(guest):
+        raise JailError("专属门客不可结义")
     if getattr(getattr(guest, "template", None), "is_world_unique", False):
         raise WorldUniqueGuestError(message="全服唯一门客不可结义")
     if guest.status != GuestStatus.IDLE:
@@ -460,6 +463,8 @@ def _recruit_prisoner(
         raise PrisonerNotFoundError()
     if prisoner.status != JailPrisoner.Status.HELD:
         raise PrisonerAlreadyHandledError()
+    if prisoner.guest_template.key in CUSTOM_GUEST_TEMPLATE_KEYS:
+        raise JailError("专属门客不可收编")
     if release_expired_prisoner_if_needed(prisoner):
         return None
 

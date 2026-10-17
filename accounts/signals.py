@@ -12,6 +12,13 @@ from core.utils.infrastructure import DATABASE_CACHE_INFRASTRUCTURE_EXCEPTIONS
 logger = logging.getLogger(__name__)
 
 
+@receiver(user_logged_in)
+def grant_custom_guest_card_on_login(sender, request, user, **kwargs):
+    from accounts.custom_guest_grant import grant_custom_guest_card_on_entry
+
+    grant_custom_guest_card_on_entry(user)
+
+
 def _record_session_sync_failure(user_id: int, detail: str) -> None:
     record_degradation(
         SESSION_SYNC_FAILURE,

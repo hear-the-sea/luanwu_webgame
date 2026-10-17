@@ -1,0 +1,164 @@
+[
+  {
+    "mission": "yaolu_hujing",
+    "variant": "proposed",
+    "composition": "military",
+    "troops": false,
+    "wins": 20,
+    "n": 20,
+    "meanround": 4.35
+  },
+  {
+    "mission": "yaolu_hujing",
+    "variant": "proposed",
+    "composition": "military",
+    "troops": true,
+    "wins": 20,
+    "n": 20,
+    "meanround": 4.2
+  },
+  {
+    "mission": "yaolu_hujing",
+    "variant": "proposed",
+    "composition": "mixed",
+    "troops": false,
+    "wins": 20,
+    "n": 20,
+    "meanround": 4
+  },
+  {
+    "mission": "yaolu_hujing",
+    "variant": "proposed",
+    "composition": "mixed",
+    "troops": true,
+    "wins": 20,
+    "n": 20,
+    "meanround": 3.7
+  },
+  {
+    "mission": "yaolu_hujing",
+    "variant": "proposed",
+    "composition": "civil",
+    "troops": false,
+    "wins": 20,
+    "n": 20,
+    "meanround": 3.25
+  },
+  {
+    "mission": "yaolu_hujing",
+    "variant": "proposed",
+    "composition": "civil",
+    "troops": true,
+    "wins": 20,
+    "n": 20,
+    "meanround": 3.35
+  },
+  {
+    "mission": "xisui_yougu",
+    "variant": "proposed",
+    "composition": "military",
+    "troops": false,
+    "wins": 18,
+    "n": 20,
+    "meanround": 4.75
+  },
+  {
+    "mission": "xisui_yougu",
+    "variant": "proposed",
+    "composition": "military",
+    "troops": true,
+    "wins": 20,
+    "n": 20,
+    "meanround": 4.4
+  },
+  {
+    "mission": "xisui_yougu",
+    "variant": "proposed",
+    "composition": "mixed",
+    "troops": false,
+    "wins": 19,
+    "n": 20,
+    "meanround": 4.7
+  },
+  {
+    "mission": "xisui_yougu",
+    "variant": "proposed",
+    "composition": "mixed",
+    "troops": true,
+    "wins": 20,
+    "n": 20,
+    "meanround": 4.4
+  },
+  {
+    "mission": "xisui_yougu",
+    "variant": "proposed",
+    "composition": "civil",
+    "troops": false,
+    "wins": 14,
+    "n": 20,
+    "meanround": 4.95
+  },
+  {
+    "mission": "xisui_yougu",
+    "variant": "proposed",
+    "composition": "civil",
+    "troops": true,
+    "wins": 20,
+    "n": 20,
+    "meanround": 4.55
+  },
+  {
+    "mission": "yijin_mijing",
+    "variant": "proposed",
+    "composition": "military",
+    "troops": false,
+    "wins": 3,
+    "n": 20,
+    "meanround": 5
+  },
+  {
+    "mission": "yijin_mijing",
+    "variant": "proposed",
+    "composition": "military",
+    "troops": true,
+    "wins": 19,
+    "n": 20,
+    "meanround": 5.7
+  },
+  {
+    "mission": "yijin_mijing",
+    "variant": "proposed",
+    "composition": "mixed",
+    "troops": false,
+    "wins": 2,
+    "n": 20,
+    "meanround": 5.15
+  },
+  {
+    "mission": "yijin_mijing",
+    "variant": "proposed",
+    "composition": "mixed",
+    "troops": true,
+    "wins": 18,
+    "n": 20,
+    "meanround": 6.35
+  },
+  {
+    "mission": "yijin_mijing",
+    "variant": "proposed",
+    "composition": "civil",
+    "troops": false,
+    "wins": 1,
+    "n": 20,
+    "meanround": 4.4
+  },
+  {
+    "mission": "yijin_mijing",
+    "variant": "proposed",
+    "composition": "civil",
+    "troops": true,
+    "wins": 15,
+    "n": 20,
+    "meanround": 5.9
+  }
+]

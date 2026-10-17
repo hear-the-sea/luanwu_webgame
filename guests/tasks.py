@@ -29,6 +29,7 @@ from gameplay.services.virtual_player_core.recovery import (
     record_recovery_failure,
     recovery_circuit_is_open,
 )
+from guests.services.custom_guest import CUSTOM_GUEST_TEMPLATE_KEYS, is_custom_guest
 from guests.services.world_unique import is_world_unique_guest
 from guests.utils.training_timer import guest_training_eta_max_seconds, training_completion_dedup_key
 
@@ -537,6 +538,7 @@ def process_daily_loyalty(self) -> str:
                 manor__bot_profile__isnull=True,
             )
             .exclude(id__in=paid_guest_ids_qs)
+            .exclude(template__key__in=CUSTOM_GUEST_TEMPLATE_KEYS)
             .values_list("id", flat=True)
         )
 
@@ -609,6 +611,8 @@ def _process_defection_batch(guest_ids: list[int], *, create_message: Callable) 
                     .first()
                 )
                 if guest is None:
+                    continue
+                if is_custom_guest(guest):
                     continue
                 guest.manor = locked_manor
                 if is_world_unique_guest(guest):

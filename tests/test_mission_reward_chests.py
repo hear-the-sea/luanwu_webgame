@@ -22,7 +22,9 @@ DATA = Path(__file__).resolve().parents[1] / "data"
 ITEMS = {entry["key"]: entry for entry in yaml.safe_load((DATA / "item_templates.yaml").read_text())["items"]}
 MISSIONS = yaml.safe_load((DATA / "mission_templates.yaml").read_text())["missions"]
 BOXES = [ITEMS[key] for mission in MISSIONS for key in mission["drop_table"] if key != "silver"]
-HISTORICAL_BOXES = [ITEMS["mission_chest_" + mission["key"]] for mission in MISSIONS]
+HISTORICAL_BOXES = [
+    ITEMS["mission_chest_" + mission["key"]] for mission in MISSIONS if "mission_chest_" + mission["key"] in ITEMS
+]
 ALL_BOXES = BOXES + HISTORICAL_BOXES
 
 
@@ -40,10 +42,10 @@ def _reward_keys(box):
 
 
 def test_all_personal_missions_award_one_named_chest_without_scattered_items():
-    assert len(MISSIONS) == len(BOXES) == 32
+    assert len(MISSIONS) == len(BOXES) == 35
     assert len(HISTORICAL_BOXES) == 32
-    assert len({box["key"] for box in ALL_BOXES}) == 64
-    assert len({box["effect_payload"]["mission_key"] for box in BOXES}) == 32
+    assert len({box["key"] for box in ALL_BOXES}) == 67
+    assert len({box["effect_payload"]["mission_key"] for box in BOXES}) == 35
     for mission in MISSIONS:
         drops = mission["drop_table"]
         box_keys = set(drops) - {"silver"}
@@ -88,7 +90,8 @@ def test_chest_rewards_are_complete_and_devices_have_craftable_blueprints_only()
 
 
 def test_historical_boxes_keep_experience_fruit_and_the_same_remaining_reward_pools():
-    for box, historical in zip(BOXES, HISTORICAL_BOXES):
+    for historical in HISTORICAL_BOXES:
+        box = ITEMS["mission_chest_v3_" + historical["effect_payload"]["mission_key"]]
         payload = box["effect_payload"]
         old_payload = historical["effect_payload"]
         assert payload["mission_key"] == old_payload["mission_key"]
@@ -284,7 +287,7 @@ def test_all_current_and_legacy_task_chests_display_task_chest_category():
         "huashan_wulin_chest",
     }
     boxes = [entry for key, entry in ITEMS.items() if key.startswith("mission_chest_") or key in legacy_keys]
-    assert len(boxes) == 70
+    assert len(boxes) == 73
     for entry in boxes:
         template = ItemTemplate(key=entry["key"], effect_type=entry["effect_type"])
         assert InventoryItem(template=template).category_display == "任务宝箱"
