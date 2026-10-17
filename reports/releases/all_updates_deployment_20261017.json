@@ -1,0 +1,226 @@
+{
+  "status": "deployed_and_verified",
+  "checked_at_utc": "2026-10-17T05:38:02.921600+00:00",
+  "commit": "556e9a1b239cc08a490ad878913e09034db6cbfc",
+  "image": "webgame:all-updates-20261017t051912z",
+  "previous_image": "webgame:scout-briefing-20261015",
+  "release": "/root/code/releases/all-updates-20261017T051912Z",
+  "full_application_hash_audit": {
+    "files_compared": 2331,
+    "differences": 0,
+    "excluded_repository_only_files": [
+      ".gitignore"
+    ]
+  },
+  "services": {
+    "web": {
+      "container": "code-web-1",
+      "image": "webgame:all-updates-20261017t051912z",
+      "running": true,
+      "health": "healthy",
+      "restart_count": 0,
+      "oom_killed": false
+    },
+    "worker": {
+      "container": "code-worker-1",
+      "image": "webgame:all-updates-20261017t051912z",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "oom_killed": false
+    },
+    "worker_battle": {
+      "container": "code-worker_battle-1",
+      "image": "webgame:all-updates-20261017t051912z",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "oom_killed": false
+    },
+    "worker_timer": {
+      "container": "code-worker_timer-1",
+      "image": "webgame:all-updates-20261017t051912z",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "oom_killed": false
+    },
+    "worker_timer_scan": {
+      "container": "code-worker_timer_scan-1",
+      "image": "webgame:all-updates-20261017t051912z",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "oom_killed": false
+    },
+    "worker_timer_safety": {
+      "container": "code-worker_timer_safety-1",
+      "image": "webgame:all-updates-20261017t051912z",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "oom_killed": false
+    },
+    "worker_timer_maintenance": {
+      "container": "code-worker_timer_maintenance-1",
+      "image": "webgame:all-updates-20261017t051912z",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "oom_killed": false
+    },
+    "beat": {
+      "container": "code-beat-1",
+      "image": "webgame:all-updates-20261017t051912z",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "oom_killed": false
+    }
+  },
+  "readiness": "passed",
+  "celery_ping": "passed",
+  "data_checks": {
+    "templates_verified": 3718,
+    "database_template_count": 3721,
+    "source_images_verified": 679,
+    "runtime_images_verified": 68,
+    "migrations": "all_applied",
+    "zhudi": {
+      "rarity": "orange",
+      "growth_range": [
+        8,
+        14
+      ]
+    },
+    "recruitment": {
+      "total": 1000000,
+      "weights": {
+        "orange": 150,
+        "hermit": 300,
+        "purple": 600,
+        "red": 0,
+        "blue": 2500,
+        "green": 7000,
+        "gray": 50000,
+        "black": 939450
+      },
+      "purple_pity": 2000,
+      "orange_pity": 8000
+    },
+    "sample_portraits": {
+      "朱棣": "/media/guests/portrait_a99049af8546a98851af798b894db66d62711ac3e20e8982adeb33ff8d5e0de8.webp",
+      "白起": "/media/guests/portrait_c4cb54692b2f36ae97f8a5a429c28f5db9c93c915ce596e5de160e7f0a56d8f7.webp",
+      "关羽": "/media/guests/portrait_5137c7f8d901edd830ce3f6246f5452e58953d9077cb75634da0a942e6e825e7.webp",
+      "嬴政": "/media/guests/portrait_2895f503286694f30bf6fb032ba6c674748a742d21e0f07df4b30c0b3bceffac.webp"
+    },
+    "static_css": "/static/css/guest-detail.27833707f4b8.css"
+  },
+  "public": {
+    "/health/live": {
+      "status": 200,
+      "bytes": 16,
+      "content_type": "application/json",
+      "cache_control": null
+    },
+    "/accounts/login/": {
+      "status": 200,
+      "bytes": 2706,
+      "content_type": "text/html; charset=utf-8",
+      "cache_control": "max-age=0, no-cache, no-store, must-revalidate, private"
+    },
+    "/static/css/guest-detail.27833707f4b8.css": {
+      "status": 200,
+      "bytes": 16110,
+      "content_type": "text/css; charset=utf-8",
+      "cache_control": "public, max-age=31536000, immutable"
+    },
+    "/media/guests/portrait_a99049af8546a98851af798b894db66d62711ac3e20e8982adeb33ff8d5e0de8.webp": {
+      "status": 200,
+      "bytes": 14954,
+      "content_type": "image/webp",
+      "cache_control": "public, max-age=86400"
+    },
+    "/media/guests/portrait_c4cb54692b2f36ae97f8a5a429c28f5db9c93c915ce596e5de160e7f0a56d8f7.webp": {
+      "status": 200,
+      "bytes": 17798,
+      "content_type": "image/webp",
+      "cache_control": "public, max-age=86400"
+    },
+    "/media/guests/portrait_5137c7f8d901edd830ce3f6246f5452e58953d9077cb75634da0a942e6e825e7.webp": {
+      "status": 200,
+      "bytes": 18362,
+      "content_type": "image/webp",
+      "cache_control": "public, max-age=86400"
+    },
+    "/media/guests/portrait_2895f503286694f30bf6fb032ba6c674748a742d21e0f07df4b30c0b3bceffac.webp": {
+      "status": 200,
+      "bytes": 13854,
+      "content_type": "image/webp",
+      "cache_control": "public, max-age=86400"
+    },
+    "/media/guests/lvbu_monkey.webp": {
+      "status": 200,
+      "bytes": 14390,
+      "content_type": "image/webp",
+      "cache_control": "public, max-age=86400"
+    }
+  },
+  "backups": {
+    "database-before.sql.gz": {
+      "bytes": 764681048,
+      "sha256": "2622078b0a6beec3847f23c307c17a78195e5d7e08eeb04f1bf89d9f0e02ed6e"
+    },
+    "media-static-before.tar.gz": {
+      "bytes": 57230544,
+      "sha256": "8ab69fc84ebd8278b96f63288cd7ad670a0d28cd529ed0a0fe6d163c98c027f7"
+    }
+  },
+  "runtime_avatar_backup": "/root/code/runtime/media/.release-backup-20261017",
+  "media_cache_note": "Fixed generic/disguise URLs retain 24-hour browser caching; template portraits use content-hashed URLs.",
+  "offline_validation": {
+    "backend_full_regression": {
+      "collected": 7507,
+      "initial_passed": 7486,
+      "initial_skipped": 20,
+      "initial_failed": 1,
+      "failure": "Task board query-count regression caused by deferred avatar fields",
+      "resolution": "Added both avatar display fields to Guest.only() projection; expanded test across original/disguised modes; complete affected module rerun: 58 passed",
+      "affected_module_rerun_passed": 58,
+      "excluded": "MySQL/integration and evidence tests; SQLite does not prove MySQL row-lock concurrency"
+    },
+    "portrait_and_pity_tests_passed": 23,
+    "battle_and_trade_tests_passed": 219,
+    "battle_smoke_simulations": 24,
+    "browser_tests_passed": 73,
+    "javascript_tests_passed": 39,
+    "player_template_contracts_checked": 104,
+    "mypy_changed_modules_checked": 9,
+    "commit_hooks": "all passed, including formatting, lint, types, YAML, merge-conflict and repository safety checks",
+    "django_system_check": "passed",
+    "migration_generation_check": "no changes detected"
+  },
+  "startup_observations": {
+    "temporary_readiness_503": "Four internal readiness responses during worker/beat replacement; all seven component checks subsequently returned true, final readiness and Celery ping passed. Public liveness and login remained 200 during cutover.",
+    "runtime_tracebacks": 0,
+    "worker_error_log_lines": 0,
+    "web_error_log_lines": "Only the four startup /health/ready responses; no other ERROR or CRITICAL records in inspected new-container logs."
+  },
+  "deployment_method": {
+    "web": "blue-green candidate readiness, Caddy switch, 65-second drain on both transitions, owned candidate cleanup",
+    "workers": "graceful replacement with 120-second stop timeout",
+    "dependencies": "Existing production dependencies reused; dependency manifests unchanged",
+    "source": "Runtime archive from committed tree; only data/images/guests artwork replaced, unrelated existing artwork retained",
+    "player_data": "No local admin password, buildings, guest inventory or test grants transferred; template presentation and intentional promotion migrated only",
+    "other_services": "Database, Redis, Caddy and unrelated sites kept running"
+  },
+  "applied_guest_migrations": [
+    "0086_promote_zhudi",
+    "0087_guest_avatar_switch",
+    "0088_recruitment_pity"
+  ],
+  "targeted_skill_formulas_synced": [
+    "hell_instant_formation",
+    "meteor_pierce_moon"
+  ]
+}
