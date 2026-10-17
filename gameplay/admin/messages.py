@@ -15,6 +15,7 @@ from django.utils.html import format_html
 from core.admin_cascade import is_account_message_cascade
 
 from ..models import GlobalMailCampaign, GlobalMailDelivery, Manor, Message
+from ..services.equipment_reward_attachments import roll_new_equipment_reward_attachments_locked
 from ..services.utils.messages import (
     MessageDeleteResult,
     create_message,
@@ -450,13 +451,15 @@ class MessageAdmin(admin.ModelAdmin):
         for user in recipients:
             manor = Manor.objects.filter(user=user).first()
             if manor:
-                create_message(
-                    manor=manor,
-                    kind=obj.kind,
-                    title=obj.title,
-                    body=obj.body,
-                    attachments=attachments if attachments else None,
-                )
+                with transaction.atomic():
+                    generated_attachments = roll_new_equipment_reward_attachments_locked(attachments)
+                    create_message(
+                        manor=manor,
+                        kind=obj.kind,
+                        title=obj.title,
+                        body=obj.body,
+                        attachments=generated_attachments or None,
+                    )
 
         # 显示成功消息
         self.message_user(request, f"已向 {recipients.count()} 位玩家发送消息")

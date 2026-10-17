@@ -26,6 +26,9 @@ _GEAR_TEMPLATE_SYNC_FIELDS = (
     "attack_bonus",
     "defense_bonus",
     "extra_stats",
+    "required_level",
+    "base_key",
+    "base_name",
 )
 
 
@@ -288,6 +291,16 @@ def synchronize_equipment_templates(
         _lock_legacy_trade_references()
         _lock_all_manors()
         canonical_items = _canonical_equipment_items(normalized_keys)
+        from gameplay.services.equipment_affixes import BASE_KEY_FIELD, refresh_equipment_affix_templates
+
+        bases = {
+            key: item for key, item in canonical_items.items() if not (item.effect_payload or {}).get(BASE_KEY_FIELD)
+        }
+        variant_keys = refresh_equipment_affix_templates(bases)
+        if variant_keys:
+            canonical_items.update(
+                {item.key: item for item in ItemTemplate.objects.select_for_update().filter(key__in=variant_keys)}
+            )
         defaults_by_key = _canonical_gear_defaults(canonical_items)
         created, updated, reassigned, reconciled = _sync_locked_equipment_templates(
             canonical_items,

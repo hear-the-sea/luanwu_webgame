@@ -271,7 +271,7 @@ def apply_mission_rewards_if_won(
     *,
     logger: Any,
     resolve_defense_drops_if_missing: Callable[..., Dict[str, int]],
-    award_mission_drops_locked: Callable[..., None],
+    award_mission_drops_locked: Callable[..., Dict[str, int] | None],
 ) -> None:
     if not report:
         return
@@ -288,9 +288,9 @@ def apply_mission_rewards_if_won(
     if not drops:
         return
 
-    report.drops = drops
+    actual_drops = award_mission_drops_locked(locked_run.manor, drops, locked_run.mission.name)
+    report.drops = actual_drops if actual_drops is not None else drops
     report.save(update_fields=["drops"])
-    award_mission_drops_locked(locked_run.manor, drops, locked_run.mission.name)
 
 
 def _log_mission_report_message_creation_failure(

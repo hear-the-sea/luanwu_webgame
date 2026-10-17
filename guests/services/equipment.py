@@ -32,7 +32,13 @@ from .equipment_inventory import (
     resolve_equippable_gear,
     resolve_inventory_equippable_gear_locked,
 )
-from .equipment_payloads import GEAR_EXTRA_STAT_FIELDS, build_gear_template_preview, normalize_extra_stats
+from .equipment_payloads import (
+    GEAR_EXTRA_STAT_FIELDS,
+    build_gear_template_defaults,
+    build_gear_template_preview,
+    normalize_extra_stats,
+    same_base_equipment,
+)
 from .equipment_stats import apply_set_bonuses, apply_template_stats_to_guest, slot_capacity
 
 logger = logging.getLogger(__name__)
@@ -54,7 +60,7 @@ __all__ = [
 
 
 def gear_options_cache_key(manor_id: int, slot: str) -> str:
-    return f"gear_options:{manor_id}:{slot}"
+    return f"gear_options:v2:{manor_id}:{slot}"
 
 
 def _safe_cache_delete_many(keys: list[str]) -> None:
@@ -88,9 +94,28 @@ def _schedule_gear_options_cache_clear(manor_id: int, *, slots: set[str] | None 
     transaction.on_commit(lambda: _best_effort_clear_gear_options_cache(manor_id, slots=scheduled_slots))
 
 
+@transaction.atomic
 def give_gear(manor: Manor, template: GearTemplate, *, is_bound: bool = False) -> GearItem:
     """创建一个装备道具。"""
-    return GearItem.objects.create(manor=manor, template=template, is_bound=is_bound)
+    from gameplay.services.equipment_affixes import (
+        get_or_create_item_template_for_gear,
+        roll_equipment_reward_items_locked,
+    )
+
+    Manor.objects.select_for_update().get(pk=manor.pk)
+    item_template = get_or_create_item_template_for_gear(template)
+    counts, templates = roll_equipment_reward_items_locked(
+        {item_template.key: 1}, templates={item_template.key: item_template}
+    )
+    actual_item = templates[next(iter(counts))]
+    if actual_item.key != template.key:
+        template, _created = GearTemplate.objects.get_or_create(
+            key=actual_item.key,
+            defaults=build_gear_template_defaults(actual_item, slot=template.slot),
+        )
+    gear = GearItem.objects.create(manor=manor, template=template, is_bound=is_bound)
+    _schedule_gear_options_cache_clear(manor.pk, slots={template.slot})
+    return gear
 
 
 def _lock_gear_items(queryset: QuerySet[GearItem]) -> QuerySet[GearItem]:
@@ -203,12 +228,15 @@ def _apply_gear_to_locked_guest(
     if gear.guest_id == guest.id:
         return gear
 
+    if guest.level < gear.template.required_level:
+        raise EquipmentError(f"门客等级不足，穿戴此装备需要{gear.template.required_level}级")
+
     existing_items = list(
         _lock_gear_items(guest.gear_items.select_related("template").filter(template__slot=resolved_slot))
     )
     updates = {"attack_bonus", "defense_bonus"}
     for item in existing_items:
-        if item.template.name == gear.template.name:
+        if same_base_equipment(item.template, gear.template):
             raise DuplicateEquipmentError()
     if capacity > 1 and len(existing_items) >= capacity:
         raise EquipmentSlotFullError(resolved_slot)

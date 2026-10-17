@@ -6,6 +6,7 @@ from typing import Dict
 from django.db import IntegrityError, transaction
 
 from ...models import ItemTemplate, Manor, ResourceEvent, ResourceType
+from ..equipment_affixes import get_or_create_item_template_for_gear, roll_equipment_reward_items_locked
 from ..inventory.core import add_items_to_inventory_locked
 from ..resources import grant_resources_locked
 
@@ -124,19 +125,9 @@ def _infer_equipment_effect_type(slot: str) -> str:
 
 
 def _get_or_create_equipment_item_template(key: str, gear) -> ItemTemplate:
-    defaults = {
-        "name": gear.name,
-        "effect_type": _infer_equipment_effect_type(gear.slot),
-        "rarity": gear.rarity,
-    }
-    try:
-        tmpl, _ = ItemTemplate.objects.get_or_create(key=key, defaults=defaults)
-        return tmpl
-    except IntegrityError:
-        existing = ItemTemplate.objects.filter(key=key).first()
-        if existing:
-            return existing
-        raise
+    if key != gear.key:
+        raise AssertionError("mission gear template must match its item key")
+    return get_or_create_item_template_for_gear(gear)
 
 
 def _infer_equipment_effect_type_from_category(category: str) -> str:
@@ -177,7 +168,9 @@ def _get_or_create_equipment_item_template_from_category(key: str, category: str
         raise
 
 
-def _upsert_warehouse_items_locked(manor: Manor, item_keys: Dict[str, int], templates: Dict[str, ItemTemplate]) -> None:
+def _upsert_warehouse_items_locked(
+    manor: Manor, item_keys: Dict[str, int], templates: Dict[str, ItemTemplate]
+) -> Dict[str, int]:
     grants: dict[str, int] = {}
     for key, amount in item_keys.items():
         if amount <= 0:
@@ -188,8 +181,11 @@ def _upsert_warehouse_items_locked(manor: Manor, item_keys: Dict[str, int], temp
             raise AssertionError(f"invalid mission drop item key: {key!r}")
         grants[key] = int(amount)
 
-    if grants:
-        add_items_to_inventory_locked(manor, grants, templates=templates)
+    if not grants:
+        return {}
+    actual_grants, actual_templates = roll_equipment_reward_items_locked(grants, templates=templates)
+    add_items_to_inventory_locked(manor, actual_grants, templates=actual_templates)
+    return actual_grants
 
 
 def award_mission_drops_locked(
@@ -198,9 +194,9 @@ def award_mission_drops_locked(
     note: str,
     *,
     locked_manor: Manor | None = None,
-) -> None:
+) -> Dict[str, int]:
     if not drops:
-        return
+        return {}
 
     if not transaction.get_connection().in_atomic_block:
         raise RuntimeError("award_mission_drops_locked must be called inside transaction.atomic()")
@@ -226,19 +222,20 @@ def award_mission_drops_locked(
         )
 
     if not item_keys:
-        return
+        return resources
 
     templates = _load_item_templates_with_skillbook_fallback(item_keys)
-    _upsert_warehouse_items_locked(manor_locked, item_keys, templates)
+    actual_items = _upsert_warehouse_items_locked(manor_locked, item_keys, templates)
+    return {**resources, **actual_items}
 
 
-def award_mission_drops(manor: Manor, drops: Dict[str, int], note: str) -> None:
+def award_mission_drops(manor: Manor, drops: Dict[str, int], note: str) -> Dict[str, int]:
     if not drops:
-        return
+        return {}
 
     with transaction.atomic():
         locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
-        award_mission_drops_locked(manor, drops, note, locked_manor=locked_manor)
+        return award_mission_drops_locked(manor, drops, note, locked_manor=locked_manor)
 
 
 def resolve_defense_drops_if_missing(report, mission_drop_table: dict) -> dict:

@@ -13,6 +13,7 @@ from django.utils import timezone
 
 from core.utils.cache_lock import release_cache_key_if_owner
 from gameplay.models import ItemTemplate
+from gameplay.services.equipment_affixes import roll_equipment_reward_items_locked
 from trade.models import AuctionDelivery, AuctionRound, AuctionSlot
 from trade.services.auction.constants import (
     AUCTION_CREATE_LOCK_KEY,
@@ -105,9 +106,15 @@ def create_auction_round_impl(
                     continue
 
                 for slot_index in range(item_config.slots):
+                    # Fix the auction's equipment variant before bidding starts;
+                    # every winner receives the exact item displayed in this slot.
+                    actual_items, actual_templates = roll_equipment_reward_items_locked(
+                        {item_template.key: 1}, templates={item_template.key: item_template}
+                    )
+                    actual_template = actual_templates[next(iter(actual_items))]
                     slots_to_create.append(
                         {
-                            "item_template": item_template,
+                            "item_template": actual_template,
                             "quantity": item_config.quantity_per_slot,
                             "starting_price": item_config.starting_price,
                             "current_price": item_config.starting_price,

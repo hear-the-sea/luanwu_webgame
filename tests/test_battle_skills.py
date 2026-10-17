@@ -146,6 +146,93 @@ def test_skill_damage_bonus_uses_calculator(monkeypatch):
     assert bonus == pytest.approx(expected)
 
 
+@pytest.mark.parametrize("force,intellect", [(400, 400), (600, 400), (400, 600), (900, 400)])
+def test_minimum_attribute_formula_rewards_balanced_stats(force, intellect):
+    actor = make_unit(force_attr=force, intellect_attr=intellect)
+    target = make_unit(defense=150)
+    skill = {
+        "damage_formula": {
+            "base": 5000,
+            "ally_min": {"stats": ["force", "intellect"], "coefficient": 15},
+            "enemy": {"defense": 0.3},
+        }
+    }
+    bonus = skill_damage_bonus([skill], actor, target)
+    assert bonus == pytest.approx(5000 + 7.5 * force + 7.5 * intellect - 7.5 * abs(force - intellect) - 45)
+    assert bonus == pytest.approx(10955)
+
+
+@pytest.mark.parametrize("kind", ["guest", "troop"])
+def test_minimum_formula_uses_unit_defense_and_final_two_times_skill_multiplier(kind):
+    actor = make_unit(attack=0, force_attr=500, intellect_attr=400)
+    target = make_unit(
+        kind=kind,
+        side="defender",
+        defense=10000,
+        unit_defense=2.5,
+        troop_strength=200 if kind == "troop" else 0,
+        unit_hp=10,
+    )
+    skill = {
+        "damage_formula": {
+            "base": 5000,
+            "ally_min": {"stats": ["force", "intellect"], "coefficient": 15},
+            "enemy": {"defense": 0.3},
+        }
+    }
+    defense = 2.5 if kind == "troop" else 10000
+    result = calculate_attack_damage(actor, target, skills=[skill], rng=FixedRng(), round_priority=0)
+    assert result.damage == int((5000 + 15 * 400 - 0.3 * defense) * 2)
+
+
+def test_minimum_formula_adds_to_existing_linear_terms():
+    actor = make_unit(force_attr=100, intellect_attr=40)
+    target = make_unit(defense=50)
+    skill = {
+        "damage_formula": {
+            "base": 10,
+            "ally": {"force": 2},
+            "enemy": {"defense": 0.5},
+            "ally_min": {"stats": ["force", "intellect"], "coefficient": 3},
+        }
+    }
+    assert skill_damage_bonus([skill], actor, target) == 305
+
+
+@pytest.mark.parametrize(
+    "term",
+    [
+        None,
+        {},
+        {"stats": ["force", "force"], "coefficient": 14},
+        {"stats": ["force", "unknown"], "coefficient": 14},
+        {"stats": ["force", "intellect"], "coefficient": True},
+        {"stats": ["force", "intellect"], "coefficient": float("inf")},
+        {"stats": ["force", "intellect"], "coefficient": "14"},
+    ],
+)
+def test_minimum_formula_rejects_invalid_schema_in_runtime_and_yaml(term):
+    from battle.utils.battle_calculator import calculate_skill_bonus
+    from core.utils.yaml_validators import validate_guest_skills
+
+    skill = {"key": "formula_test", "name": "公式测试", "rarity": "purple", "damage_formula": {"ally_min": term}}
+    assert not validate_guest_skills({"skills": [skill]}).is_valid
+    with pytest.raises(ValueError):
+        calculate_skill_bonus(skill, make_unit(), make_unit())
+
+
+def test_minimum_formula_yaml_accepts_valid_schema():
+    from core.utils.yaml_validators import validate_guest_skills
+
+    skill = {
+        "key": "formula_test",
+        "name": "公式测试",
+        "rarity": "purple",
+        "damage_formula": {"ally_min": {"stats": ["force", "intellect"], "coefficient": 14}},
+    }
+    assert validate_guest_skills({"skills": [skill]}).is_valid
+
+
 def test_apply_skill_statuses_respects_pending(monkeypatch):
     target = make_unit(status_effects={}, has_acted_this_round=True)
     skills = [

@@ -344,6 +344,7 @@ def _gear_targets(
         entry
         for entry in catalog.gear
         if RARITY_RANK.get(entry.rarity, len(RARITY_ORDER)) <= max_rank
+        and entry.required_level <= guest_level
         and entry.extra_stats_digest == EMPTY_PAYLOAD_DIGEST
         and entry.set_bonus_digest == EMPTY_PAYLOAD_DIGEST
     ]

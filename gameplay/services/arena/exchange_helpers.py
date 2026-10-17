@@ -16,6 +16,7 @@ from core.utils.infrastructure import (
 )
 from gameplay.models import ArenaExchangeRecord, Manor, Message
 from gameplay.services.buildings.forge import load_blueprint_catalog
+from gameplay.services.equipment_affixes import roll_equipment_reward_items_locked
 from gameplay.services.inventory.core import add_item_to_inventory_locked
 from gameplay.services.resources import grant_resources_locked
 from gameplay.services.utils.messages import create_message
@@ -314,9 +315,13 @@ def exchange_arena_reward(manor: Manor, reward_key: str, quantity: int = 1) -> A
         ),
         random_blueprint_grants,
     )
+    actual_grants, _templates = roll_equipment_reward_items_locked(
+        merge_item_grants(fixed_item_grants, random_item_grants),
+        rng=random_context.rng(RNG_STREAM_LOOT, discriminator="arena_exchange_equipment_affixes"),
+    )
     granted_items = grant_exchange_items_locked(
-        fixed_item_grants=fixed_item_grants,
-        random_item_grants=random_item_grants,
+        fixed_item_grants=actual_grants,
+        random_item_grants={},
         add_item_to_inventory_locked=add_item_to_inventory_locked,
         locked_manor=locked_manor,
     )

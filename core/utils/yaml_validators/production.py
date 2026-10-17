@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import math
+
 from .base import ValidationResult, _check_in, _check_positive, _check_required_fields, _check_type, _check_unique_keys
 
 # ---------------------------------------------------------------------------
@@ -392,6 +394,36 @@ def validate_guest_skills(data: dict, *, file: str = "guest_skills.yaml") -> Val
                 _validate_passive_config(passive_config, result=result, file=file, path=f"{path}.passive_config")
             else:
                 result.add(file, f"{path}.passive_config", "expected a mapping")
+
+        formula = skill.get("damage_formula")
+        if isinstance(formula, dict) and "ally_min" in formula:
+            term = formula["ally_min"]
+            valid = isinstance(term, dict) and set(term) == {"stats", "coefficient"}
+            stats = term.get("stats") if valid else None
+            coefficient = term.get("coefficient") if valid else None
+            valid = (
+                valid
+                and isinstance(stats, list)
+                and len(stats) == 2
+                and all(
+                    isinstance(stat, str)
+                    and stat in {"attack", "defense", "force", "intellect", "agility", "luck", "hp"}
+                    for stat in stats
+                )
+                and stats[0] != stats[1]
+                and isinstance(coefficient, (int, float))
+                and not isinstance(coefficient, bool)
+            )
+            try:
+                valid = valid and isinstance(coefficient, (int, float)) and math.isfinite(coefficient)
+            except OverflowError:
+                valid = False
+            if not valid:
+                result.add(
+                    file,
+                    f"{path}.damage_formula.ally_min",
+                    "expected two distinct known stats and a finite coefficient",
+                )
 
     return result
 

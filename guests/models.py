@@ -472,6 +472,9 @@ class GearSlot(models.TextChoices):
 class GearTemplate(models.Model):
     key = models.SlugField(unique=True)
     name = models.CharField(max_length=64)
+    required_level = models.PositiveIntegerField(default=1)
+    base_key = models.SlugField(max_length=64, blank=True, default="")
+    base_name = models.CharField(max_length=64, blank=True, default="")
     slot = models.CharField(max_length=16, choices=GearSlot.choices)
     rarity = models.CharField(max_length=16, choices=GuestRarity.choices, default=GuestRarity.GRAY)
     set_key = models.CharField(max_length=64, blank=True, default="")

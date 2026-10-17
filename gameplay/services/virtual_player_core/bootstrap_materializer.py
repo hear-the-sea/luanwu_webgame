@@ -378,6 +378,8 @@ def _materialize_guests(
             if slot_counts[gear_entry.slot] > slot_capacity(gear_entry.slot):
                 raise BootstrapMaterializationError("bootstrap gear exceeds a guest slot capacity")
             template = gear_templates[key]
+            if guest.level < max(gear_entry.required_level, template.required_level):
+                raise BootstrapMaterializationError("bootstrap gear requires a higher guest level")
             apply_template_stats_to_guest(
                 guest,
                 template,

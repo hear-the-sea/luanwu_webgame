@@ -240,7 +240,8 @@ def test_guest_detail_skill_book_modal_shows_unmet_requirement_details(game_data
     content = response.content.decode("utf-8")
     assert "条件不足" in content
     assert "学习要求：等级需 ≥" in content
-    assert f"当前不足：等级需 ≥ {guest.level + 10}（当前 {guest.level}）" in content
+    assert f"等级需 ≥ {guest.level + 10}（当前 {guest.level}）" in content
+    assert "当前不足：" not in content
     assert f"武力需 ≥ {guest.force + 50}（当前 {guest.force}）" in content
 
 

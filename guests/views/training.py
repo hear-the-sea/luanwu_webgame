@@ -257,12 +257,27 @@ def allocate_points_view(request, pk: int):
         guest.refresh_from_db(fields=["force", "intellect", "defense_stat", "agility", "luck", "attribute_points"])
 
         if is_ajax:
+            from .roster import _build_skill_books_context
+
             refreshed_form = AllocateSkillPointsForm(manor=manor, initial={"guest": guest})
             guest_field = cast(forms.ModelChoiceField, refreshed_form.fields["guest"])
             guest_field.queryset = manor.guests.filter(pk=guest.pk)
             attribute_panel_html = render_to_string(
                 "guests/partials/attribute_panel.html",
                 {"guest": guest, "skill_point_form": refreshed_form, **get_xiaoyao_action_context(manor, guest)},
+                request=request,
+            )
+            skill_book_modal_html = render_to_string(
+                "guests/partials/detail_skill_book_modal.html",
+                {
+                    "guest": guest,
+                    "skill_books": _build_skill_books_context(
+                        manor,
+                        guest,
+                        list(guest.guest_skills.select_related("skill")),
+                        list(guest.gear_items.select_related("template")),
+                    ),
+                },
                 request=request,
             )
             return json_success(
@@ -274,6 +289,7 @@ def allocate_points_view(request, pk: int):
                 agility=guest.agility,
                 luck=guest.luck,
                 attribute_panel_html=attribute_panel_html,
+                skill_book_modal_html=skill_book_modal_html,
             )
     except GameError as exc:
         error_msg = sanitize_error_message(exc)

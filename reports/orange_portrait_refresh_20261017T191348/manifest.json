@@ -1,0 +1,188 @@
+{
+  "status": "applied",
+  "count": 6,
+  "canvas": 448,
+  "margin": 12,
+  "records": [
+    {
+      "path": "data/images/guests/monkey/orange/扫地僧.png",
+      "before_size": [
+        935,
+        935
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        88,
+        41,
+        871,
+        901
+      ],
+      "after_box": [
+        31,
+        12,
+        417,
+        436
+      ],
+      "scale": 0.4930232558139535,
+      "offset": [
+        -12,
+        -8
+      ],
+      "before_sha256": "dc942e5d80e1c02fa8ca1b7cbb6f9999955032f706824869fe693799bcba7337",
+      "after_sha256": "755f53dda8ba473e1ebc4d59f8de655cdefb7e143ffc7bd221f85c4330b1edce"
+    },
+    {
+      "path": "data/images/guests/monkey/orange/李世民.png",
+      "before_size": [
+        731,
+        732
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        47,
+        11,
+        669,
+        714
+      ],
+      "after_box": [
+        36,
+        13,
+        412,
+        436
+      ],
+      "scale": 0.6031294452347084,
+      "offset": [
+        8,
+        6
+      ],
+      "before_sha256": "d9dde68e3a69a218ab88f501fcc968d6bebe030c7aee5b4adac6c30267d7f697",
+      "after_sha256": "b25dfec852b73110a9fe0269e1b7eebc196859326c425a5c4952c73742924ef9"
+    },
+    {
+      "path": "data/images/guests/monkey/orange/武曌.png",
+      "before_size": [
+        861,
+        861
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        87,
+        6,
+        794,
+        835
+      ],
+      "after_box": [
+        43,
+        13,
+        405,
+        436
+      ],
+      "scale": 0.51145958986731,
+      "offset": [
+        -1,
+        9
+      ],
+      "before_sha256": "b09e0d76fb0753f0294a00f97bc8e5f5d258cfcd0d11425ce5d7da8b385fd728",
+      "after_sha256": "ca90814f173142ffa76a8f68757001ffc993bfcab30564becebd0f1edea967bf"
+    },
+    {
+      "path": "data/images/guests/monkey/orange/赵匡胤.png",
+      "before_size": [
+        795,
+        796
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        80,
+        13,
+        698,
+        766
+      ],
+      "after_box": [
+        50,
+        12,
+        398,
+        436
+      ],
+      "scale": 0.5630810092961488,
+      "offset": [
+        5,
+        5
+      ],
+      "before_sha256": "d428b99405bfd6bd2312cc467e08343eff580103e459c924ca48b9e66a5d586e",
+      "after_sha256": "df59af69a893562cd8ce8d189d18538607924709d9f803c4960b4f451ef53036"
+    },
+    {
+      "path": "data/images/guests/monkey/orange/轩辕.png",
+      "before_size": [
+        861,
+        862
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        79,
+        10,
+        798,
+        836
+      ],
+      "after_box": [
+        39,
+        12,
+        408,
+        436
+      ],
+      "scale": 0.513317191283293,
+      "offset": [
+        -2,
+        7
+      ],
+      "before_sha256": "762b6dfc0fdb4bb8dcd278dcfd8870051ca7002d34b60bb6d6e42ac8a3cd63f7",
+      "after_sha256": "60f5e484ca287f9f52882266c33bf047d2f38ede9b0550d8489097681bacc6cb"
+    },
+    {
+      "path": "data/images/guests/monkey/orange/项羽.png",
+      "before_size": [
+        1254,
+        1254
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        124,
+        113,
+        1069,
+        1157
+      ],
+      "after_box": [
+        33,
+        12,
+        416,
+        436
+      ],
+      "scale": 0.4061302681992337,
+      "offset": [
+        -18,
+        -34
+      ],
+      "before_sha256": "29c5dabd051eeeac93340e0dd5a701bfc1a5be35ae920ab64dc016675dfa63e2",
+      "after_sha256": "67c1fc53d0b726ef5986701a3bc801b288c08e8cff38b341c3ca0ab9370f464c"
+    }
+  ]
+}

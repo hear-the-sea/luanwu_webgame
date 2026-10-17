@@ -177,6 +177,15 @@ const initGuestDetailPage = () => {
           if (!updated) {
             replaceAttributePanel(data.attribute_panel_html || "");
           }
+          if (data.skill_book_modal_html) {
+            const wrapper = document.createElement("div");
+            wrapper.innerHTML = data.skill_book_modal_html;
+            const nextBody = wrapper.querySelector("#skill-book-modal .tw-modal-body");
+            const currentBody = document.querySelector("#skill-book-modal .tw-modal-body");
+            if (nextBody && currentBody) {
+              currentBody.replaceWith(nextBody);
+            }
+          }
         } catch (error) {
           const message =
             error?.name === "AbortError"
@@ -266,7 +275,10 @@ const initGuestDetailPage = () => {
       options.forEach((entry) => {
         const option = document.createElement("option");
         option.value = entry.id;
-        option.textContent = `[${entry.rarity_label}] ${entry.name}（×${entry.count}）`;
+        const levelText = `需求Lv.${entry.required_level || 1}`;
+        const missingText = entry.missing_levels ? `，还差${entry.missing_levels}级` : "";
+        option.textContent = `[${entry.rarity_label}] ${entry.name}（×${entry.count}，${levelText}${missingText}）`;
+        option.disabled = entry.can_equip === false;
         option.className = `rarity-text ${entry.rarity_class || ""}`.trim();
         if (entry.title) {
           option.title = entry.title;
@@ -274,7 +286,7 @@ const initGuestDetailPage = () => {
         equipSelect.appendChild(option);
       });
     }
-    const hasOptions = options.length > 0;
+    const hasOptions = options.some((entry) => entry.can_equip !== false);
     equipSelect.disabled = !hasOptions;
     if (equipSubmit) {
       equipSubmit.disabled = !hasOptions;

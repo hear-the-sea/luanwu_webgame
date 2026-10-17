@@ -37,7 +37,7 @@ heroes:
   blue:
   - key: hero_cheng_yaojin
     name: 程咬金
-    avatar: monkey_wen_male3.png
+    avatar: monkey/任务/程咬金.png
     archetype: military
     flavor: 号混世魔王，性格豪爽直率，言行不拘小节，笑骂皆真。其人武力刚猛，冲锋时气势如虹，常凭一股蛮劲破敌阵。虽粗中有细，关键时刻能护住同伴，令人又敬又服。出自《隋唐演义》。其关键决断对政局节奏产生了放大效应，也因此成为研究隋唐时期政治机制时难以绕开的节点。
     default_gender: male

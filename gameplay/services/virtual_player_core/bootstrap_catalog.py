@@ -77,6 +77,7 @@ class GearCatalogEntry:
     defense_bonus: int
     extra_stats_digest: str
     set_bonus_digest: str
+    required_level: int = 1
 
 
 @dataclass(frozen=True, slots=True)
@@ -384,6 +385,7 @@ def _load_bootstrap_catalog_uncached(
             "defense_bonus",
             "extra_stats",
             "set_bonus",
+            "required_level",
         )
     )
     available_gear_keys = {str(row["key"]) for row in gear_rows}
@@ -403,6 +405,7 @@ def _load_bootstrap_catalog_uncached(
             defense_bonus=int(row["defense_bonus"] or 0),
             extra_stats_digest=_payload_digest(row["extra_stats"] or {}),
             set_bonus_digest=_payload_digest(row["set_bonus"] or {}),
+            required_level=int(row["required_level"] or 1),
         )
         for row in gear_rows
         if str(row["key"]) in selected_gear_keys

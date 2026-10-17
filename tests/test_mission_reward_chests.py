@@ -137,9 +137,16 @@ def test_each_real_chest_opens_atomically_and_cannot_be_used_twice(box, django_u
     result = inventory_use.use_inventory_item(item, manor)
     assert result["rewards"]
     assert not result.get("skipped_bonus_items")
+    granted_rows = list(InventoryItem.objects.filter(manor=manor).select_related("template"))
     for reward in box["effect_payload"]["item_rewards"]:
         assert (
-            InventoryItem.objects.get(manor=manor, template__key=reward["item_key"]).quantity >= reward["min_quantity"]
+            sum(
+                row.quantity
+                for row in granted_rows
+                if row.template.key == reward["item_key"]
+                or row.template.effect_payload.get("equipment_base_key") == reward["item_key"]
+            )
+            >= reward["min_quantity"]
         )
     expected_fruit = sum(
         reward["min_quantity"]
@@ -403,19 +410,21 @@ def test_grant_failure_rolls_back_partial_rewards_and_keeps_whole_chest(
         },
     )
     item = InventoryItem.objects.create(manor=manor, template=box, quantity=1, bound_quantity=int(source_is_bound))
-    original = inventory_use.add_item_to_inventory
+    original = inventory_use.add_items_to_inventory_locked
     grant_calls = []
 
-    def fail_second(owner, key, quantity, *, is_bound=None):
+    def fail_second(owner, items, *, templates=None, is_bound=None):
+        key, quantity = next(iter(items.items()))
         grant_calls.append((key, quantity, is_bound))
         if key == second.key:
             raise RuntimeError("模拟发奖中途失败")
-        granted = original(owner, key, quantity, is_bound=is_bound)
+        original(owner, items, templates=templates, is_bound=is_bound)
+        granted = InventoryItem.objects.get(manor=owner, template__key=key)
         assert granted.quantity == 2
         assert granted.bound_quantity == (2 if source_is_bound else 0)
         return granted
 
-    monkeypatch.setattr(inventory_use, "add_item_to_inventory", fail_second)
+    monkeypatch.setattr(inventory_use, "add_items_to_inventory_locked", fail_second)
     with pytest.raises(RuntimeError, match="模拟发奖中途失败"):
         inventory_use.use_inventory_item(item, manor)
     item.refresh_from_db()

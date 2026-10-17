@@ -100,7 +100,7 @@ heroes:
       agility: 12
   - key: hist_mingqing_0230
     name: 祖大寿
-    avatar: pig_wu_male9.png
+    avatar: monkey/任务/祖大寿.png
     default_gender: male
     archetype: military
     flavor: （生年不详—1656年）明末辽东将领，吴襄部将，长期镇守宁远、大凌河等地。祖大寿在宁远、宁锦战役中多次击退清军，大凌河被围后首次降清，后来又返回明军；松山失守后再次降清，入关后任清廷左都督，顺治十三年病死。

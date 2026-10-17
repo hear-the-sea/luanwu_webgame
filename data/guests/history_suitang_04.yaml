@@ -381,7 +381,7 @@ heroes:
       agility: 14
   - key: hist_suitang_0162_zhairang
     name: 翟让
-    avatar: monkey/其他随机角色/武037_男.png
+    avatar: monkey/任务/翟让.png
     default_gender: male
     archetype: military
     flavor: （？—617年）瓦岗军创建者之一，早年任东郡法曹，隋末率众起兵。翟让后来把首领位置让给李密，却在宴席上被李密部将杀害。
@@ -409,7 +409,7 @@ heroes:
       agility: 16
   - key: hist_suitang_0164_shanxiongxin
     name: 单雄信
-    avatar: pig_wu_male5.png
+    avatar: monkey/任务/单雄信.png
     default_gender: male
     archetype: military
     flavor: （？—621年）隋末将领，早年参加瓦岗军，瓦岗失败后转投王世充，任郑国大将军。虎牢关之战后，单雄信被唐军俘获，因拒绝归降而被处死。
@@ -578,7 +578,7 @@ heroes:
       agility: 12
   - key: hist_suitang_0165_wangbodang
     name: 王伯当
-    avatar: pig/武063.png
+    avatar: monkey/任务/王伯当.png
     default_gender: male
     archetype: military
     flavor: 隋末瓦岗军将领，李密部下，以善射著称；瓦岗失败后仍随李密降唐，619年与李密在与王世充作战时一同战死。

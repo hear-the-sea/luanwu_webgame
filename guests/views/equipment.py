@@ -188,7 +188,7 @@ def gear_options_view(request):
     cache_key = equipment_service.gear_options_cache_key(manor.id, slot)
     cached = _safe_cache_get(cache_key)
     if cached is not None:
-        return JsonResponse(cached)
+        return JsonResponse(_gear_options_for_guest(cached, request, manor))
 
     options = []
     for entry in equipment_service.list_available_equippable_gear_options(manor, slot=slot):
@@ -204,6 +204,7 @@ def gear_options_view(request):
                 "rarity_class": rarity_class(rarity),
                 "count": entry["count"],
                 "title": gear_summary(template),
+                "required_level": template.required_level,
             }
         )
     payload = {
@@ -212,4 +213,16 @@ def gear_options_view(request):
         "options": options,
     }
     _safe_cache_set(cache_key, payload, timeout=CACHE_TIMEOUT_SHORT)
-    return JsonResponse(payload)
+    return JsonResponse(_gear_options_for_guest(payload, request, manor))
+
+
+def _gear_options_for_guest(payload, request, manor):
+    """缓存只保存庄园库存，穿戴资格按本次门客等级计算。"""
+    guest_id = safe_positive_int(request.GET.get("guest"))
+    guest = get_object_or_404(Guest.objects.only("id", "level"), pk=guest_id, manor=manor) if guest_id else None
+    options = []
+    for entry in payload["options"]:
+        required_level = entry.get("required_level", 1)
+        missing_levels = max(0, required_level - guest.level) if guest else 0
+        options.append({**entry, "can_equip": missing_levels == 0, "missing_levels": missing_levels})
+    return {**payload, "options": options}

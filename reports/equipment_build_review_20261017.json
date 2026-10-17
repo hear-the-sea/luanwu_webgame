@@ -1,0 +1,373 @@
+{
+  "status": "arithmetic_validation_not_battle_simulation",
+  "builds": [
+    {
+      "name": "武将重兵",
+      "keys": [
+        "equip_diwangkui",
+        "equip_longlinzhanjia",
+        "equip_tatianxue",
+        "equip_xuantiechongjian",
+        "equip_chituma",
+        "equip_businiaoyu",
+        "equip_qiankunzhu",
+        "equip_shangshanfaeling",
+        "equip_feiyuan",
+        "equip_chixiaojifeng",
+        "equip_mojiajiguanren"
+      ],
+      "required_level": 80,
+      "before": {
+        "force": 307,
+        "intellect": 134,
+        "defense": 155,
+        "agility": 226,
+        "luck": 62,
+        "hp": 5144,
+        "troop_capacity": 0,
+        "attack": 0,
+        "derived_hp": 12894
+      },
+      "after": {
+        "force": 283,
+        "intellect": 118,
+        "defense": 144,
+        "agility": 144,
+        "luck": 56,
+        "hp": 3809,
+        "troop_capacity": 130,
+        "attack": 0,
+        "derived_hp": 11009
+      },
+      "directional_prefix_extreme": {
+        "force": {
+          "force": 338,
+          "intellect": 107,
+          "defense": 121,
+          "agility": 123,
+          "luck": 56,
+          "hp": 3809,
+          "troop_capacity": 130,
+          "attack": 0,
+          "derived_hp": 9859
+        },
+        "intellect": {
+          "force": 239,
+          "intellect": 206,
+          "defense": 121,
+          "agility": 123,
+          "luck": 56,
+          "hp": 3809,
+          "troop_capacity": 130,
+          "attack": 0,
+          "derived_hp": 9859
+        },
+        "defense": {
+          "force": 239,
+          "intellect": 107,
+          "defense": 220,
+          "agility": 123,
+          "luck": 56,
+          "hp": 3809,
+          "troop_capacity": 130,
+          "attack": 0,
+          "derived_hp": 14809
+        },
+        "agility": {
+          "force": 239,
+          "intellect": 107,
+          "defense": 121,
+          "agility": 222,
+          "luck": 56,
+          "hp": 3809,
+          "troop_capacity": 130,
+          "attack": 0,
+          "derived_hp": 9859
+        }
+      }
+    },
+    {
+      "name": "文官技能",
+      "keys": [
+        "equip_taixudiguan",
+        "equip_hundunlongpao",
+        "equip_tianjilu",
+        "equip_zhuxianjian",
+        "equip_qingluan",
+        "equip_fengshenbang",
+        "equip_taiqingyuce",
+        "equip_tianyinguqin",
+        "equip_feiyuan",
+        "equip_kuileiren",
+        "equip_mojiajiguanren"
+      ],
+      "required_level": 80,
+      "before": {
+        "force": 61,
+        "intellect": 385,
+        "defense": 117,
+        "agility": 153,
+        "luck": 107,
+        "hp": 4849,
+        "troop_capacity": 0,
+        "attack": 0,
+        "derived_hp": 10699
+      },
+      "after": {
+        "force": 53,
+        "intellect": 331,
+        "defense": 113,
+        "agility": 114,
+        "luck": 108,
+        "hp": 3769,
+        "troop_capacity": 0,
+        "attack": 0,
+        "derived_hp": 9419
+      },
+      "directional_prefix_extreme": {
+        "force": {
+          "force": 132,
+          "intellect": 283,
+          "defense": 97,
+          "agility": 99,
+          "luck": 108,
+          "hp": 3769,
+          "troop_capacity": 0,
+          "attack": 0,
+          "derived_hp": 8619
+        },
+        "intellect": {
+          "force": 48,
+          "intellect": 367,
+          "defense": 97,
+          "agility": 99,
+          "luck": 108,
+          "hp": 3769,
+          "troop_capacity": 0,
+          "attack": 0,
+          "derived_hp": 8619
+        },
+        "defense": {
+          "force": 48,
+          "intellect": 283,
+          "defense": 181,
+          "agility": 99,
+          "luck": 108,
+          "hp": 3769,
+          "troop_capacity": 0,
+          "attack": 0,
+          "derived_hp": 12819
+        },
+        "agility": {
+          "force": 48,
+          "intellect": 283,
+          "defense": 97,
+          "agility": 183,
+          "luck": 108,
+          "hp": 3769,
+          "troop_capacity": 0,
+          "attack": 0,
+          "derived_hp": 8619
+        }
+      }
+    },
+    {
+      "name": "玄武坦克",
+      "keys": [
+        "equip_xuanwukui",
+        "equip_xuanwujia",
+        "equip_xuanwuxue",
+        "equip_xuanwuchui",
+        "equip_dilu",
+        "equip_xuanwuyufu",
+        "equip_hunyuansan",
+        "equip_zijinhulu",
+        "equip_xuanwujigui",
+        "equip_jiguanxiong",
+        "equip_mojiajiguanren"
+      ],
+      "required_level": 80,
+      "before": {
+        "force": 245,
+        "intellect": 93,
+        "defense": 355,
+        "agility": 87,
+        "luck": 44,
+        "hp": 6264,
+        "troop_capacity": 0,
+        "attack": 0,
+        "derived_hp": 24014
+      },
+      "after": {
+        "force": 179,
+        "intellect": 82,
+        "defense": 248,
+        "agility": 77,
+        "luck": 37,
+        "hp": 4141,
+        "troop_capacity": 0,
+        "attack": 0,
+        "derived_hp": 16541
+      },
+      "directional_prefix_extreme": {
+        "force": {
+          "force": 232,
+          "intellect": 71,
+          "defense": 219,
+          "agility": 64,
+          "luck": 37,
+          "hp": 4141,
+          "troop_capacity": 0,
+          "attack": 0,
+          "derived_hp": 15091
+        },
+        "intellect": {
+          "force": 157,
+          "intellect": 146,
+          "defense": 219,
+          "agility": 64,
+          "luck": 37,
+          "hp": 4141,
+          "troop_capacity": 0,
+          "attack": 0,
+          "derived_hp": 15091
+        },
+        "defense": {
+          "force": 157,
+          "intellect": 71,
+          "defense": 294,
+          "agility": 64,
+          "luck": 37,
+          "hp": 4141,
+          "troop_capacity": 0,
+          "attack": 0,
+          "derived_hp": 18841
+        },
+        "agility": {
+          "force": 157,
+          "intellect": 71,
+          "defense": 219,
+          "agility": 139,
+          "luck": 37,
+          "hp": 4141,
+          "troop_capacity": 0,
+          "attack": 0,
+          "derived_hp": 15091
+        }
+      }
+    },
+    {
+      "name": "先手轻兵",
+      "keys": [
+        "equip_feiyukui",
+        "equip_tiancanbaoyi",
+        "equip_shenxingxue",
+        "equip_xiaolifeidao",
+        "equip_hanxuebaoma",
+        "equip_businiaoyu",
+        "equip_longjingzhu",
+        "equip_jianghuling",
+        "equip_qingji",
+        "equip_chixiaojifeng",
+        "equip_feiyuan"
+      ],
+      "required_level": 80,
+      "before": {
+        "force": 166,
+        "intellect": 67,
+        "defense": 89,
+        "agility": 386,
+        "luck": 75,
+        "hp": 4019,
+        "troop_capacity": 100,
+        "attack": 0,
+        "derived_hp": 8469
+      },
+      "after": {
+        "force": 162,
+        "intellect": 51,
+        "defense": 69,
+        "agility": 237,
+        "luck": 70,
+        "hp": 3024,
+        "troop_capacity": 80,
+        "attack": 0,
+        "derived_hp": 6474
+      },
+      "directional_prefix_extreme": {
+        "force": {
+          "force": 218,
+          "intellect": 46,
+          "defense": 56,
+          "agility": 199,
+          "luck": 70,
+          "hp": 3024,
+          "troop_capacity": 80,
+          "attack": 0,
+          "derived_hp": 5824
+        },
+        "intellect": {
+          "force": 137,
+          "intellect": 127,
+          "defense": 56,
+          "agility": 199,
+          "luck": 70,
+          "hp": 3024,
+          "troop_capacity": 80,
+          "attack": 0,
+          "derived_hp": 5824
+        },
+        "defense": {
+          "force": 137,
+          "intellect": 46,
+          "defense": 137,
+          "agility": 199,
+          "luck": 70,
+          "hp": 3024,
+          "troop_capacity": 80,
+          "attack": 0,
+          "derived_hp": 9874
+        },
+        "agility": {
+          "force": 137,
+          "intellect": 46,
+          "defense": 56,
+          "agility": 280,
+          "luck": 70,
+          "hp": 3024,
+          "troop_capacity": 80,
+          "attack": 0,
+          "derived_hp": 5824
+        }
+      }
+    }
+  ],
+  "troop_capacity_cases": [
+    {
+      "case": "未触发带兵套装",
+      "bonus": 500,
+      "keys": [
+        "equip_longhuangguan",
+        "equip_xiaoweikaijia",
+        "equip_xiaoweichangxue",
+        "equip_fangtianhuaji",
+        "equip_chituma",
+        "equip_chuanguoyuxi",
+        "equip_pojunhufu",
+        "equip_shenghuoling",
+        "equip_taotieding",
+        "equip_xiaoxingjiguanshu",
+        "equip_tongchanjiguan"
+      ]
+    },
+    {
+      "case": "starter_cloth_set",
+      "bonus": 380
+    },
+    {
+      "case": "xiaowei_set",
+      "bonus": 480
+    }
+  ],
+  "max_extra_troop_capacity": 500
+}

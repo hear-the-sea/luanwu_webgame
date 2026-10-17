@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from gameplay.models import GlobalMailCampaign, GlobalMailDelivery, Manor
+from gameplay.services.equipment_reward_attachments import roll_new_equipment_reward_attachments_locked
 from gameplay.services.utils.messages import create_message
 from gameplay.services.virtual_player_core.selectors import is_bot_manor
 
@@ -44,12 +45,13 @@ def deliver_campaign_to_manor(campaign: GlobalMailCampaign, manor: Manor, *, now
         if not created:
             return False
 
+        generated_attachments = roll_new_equipment_reward_attachments_locked(attachments)
         message = create_message(
             manor=manor,
             kind=campaign.kind,
             title=campaign.title,
             body=campaign.body,
-            attachments=attachments or None,
+            attachments=generated_attachments or None,
         )
         delivery.message = message
         delivery.save(update_fields=["message"])

@@ -1,0 +1,35 @@
+{
+  "status": "applied",
+  "records": [
+    {
+      "path": "data/images/guests/monkey/orange/项羽.png",
+      "before_size": [
+        852,
+        852
+      ],
+      "after_size": [
+        448,
+        448
+      ],
+      "before_box": [
+        46,
+        45,
+        783,
+        807
+      ],
+      "after_box": [
+        19,
+        12,
+        429,
+        436
+      ],
+      "scale": 0.5564304461942258,
+      "offset": [
+        -7,
+        -13
+      ],
+      "before_sha256": "a9603357acb175cd1624c7c202b6b8d85b4f030787385dfde4bcc84d49af65f2",
+      "after_sha256": "24726b5179d6b8f1c0e2d9b77dbf0a6bf649037a8a61381909dd4acd9959ee8b"
+    }
+  ]
+}

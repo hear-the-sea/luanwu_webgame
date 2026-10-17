@@ -26,6 +26,48 @@ from guests.services.equipment import equip_guest
 _COUNTER = count(1)
 
 
+@pytest.mark.django_db
+@pytest.mark.parametrize("source", ["inventory", "virtual"])
+def test_equipment_candidates_obey_guest_required_level(manor_factory, source):
+    from gameplay.services.virtual_player_core.virtual_candidate_pools import build_virtual_equipment_candidates
+
+    manor, _user = manor_factory()
+    guest = _create_guest(manor)
+    guest.level = 29
+    guest.save(update_fields=["level"])
+    item = _create_inventory_gear(manor, payload={"force": 80, "required_level": 30})
+    gear_template = GearTemplate.objects.create(
+        key=item.template.key,
+        name=item.template.name,
+        slot="weapon",
+        rarity="green",
+        required_level=30,
+        extra_stats={"force": 80},
+    )
+
+    def candidates():
+        common = dict(
+            manor_id=manor.pk,
+            prestige_band="low",
+            strength_before=_strength(guest),
+            development_plan=_plan(),
+            growth_stage=7,
+            guests=(guest,),
+        )
+        if source == "virtual":
+            return build_virtual_equipment_candidates(**common, gear_templates=(gear_template,))[0]
+        return build_equipment_equip_candidates(
+            **common,
+            config=_config(),
+            gear_items=(),
+            warehouse_items=(item,),
+        )[0]
+
+    assert not candidates()
+    guest.level = 30
+    assert candidates()
+
+
 def _key(prefix: str) -> str:
     return f"{prefix}_{next(_COUNTER)}"
 

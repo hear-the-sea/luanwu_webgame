@@ -1,0 +1,8411 @@
+{
+  "version": 2,
+  "status": "implemented_and_database_migrated",
+  "source_sha256": "ac1c0bcb939e802b66d2452edf1b10d864d09d52fb3ea9a50238e11b99563f10",
+  "max_equipment_troop_capacity_bonus": 500,
+  "equipment_count": 265,
+  "changed_count": 191,
+  "prefix_rule_recommendation": "已实现：四维之间转移；非目标四维逐项floor(20%)后加到目标；生命、运势、带兵、套装不变",
+  "dynamic_soul_ornament_required_levels": {
+    "green": 30,
+    "blue": 40,
+    "purple": 55
+  },
+  "dynamic_soul_ornament_proposal": {
+    "green": {
+      "hp_before": [
+        800,
+        1600
+      ],
+      "hp_after": [
+        600,
+        1000
+      ],
+      "stat_total_range": [
+        48,
+        65
+      ]
+    },
+    "blue": {
+      "hp_before": [
+        1500,
+        2500
+      ],
+      "hp_after": [
+        1000,
+        1600
+      ],
+      "stat_total_range": [
+        67,
+        85
+      ]
+    },
+    "purple": {
+      "hp_before": [
+        2600,
+        3500
+      ],
+      "hp_after": [
+        1600,
+        2200
+      ],
+      "stat_total_range": [
+        87,
+        110
+      ]
+    }
+  },
+  "equipment": [
+    {
+      "key": "equip_action_mask",
+      "name": "动感超人面具",
+      "rarity": "blue",
+      "slot": "helmet",
+      "role": "轻甲/先手",
+      "required_level": 25,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 300,
+        "defense": 5,
+        "force": 20,
+        "agility": 15,
+        "set_key": "kasukabe_defense_set",
+        "set_description": "春日部防卫队",
+        "set_bonus": [
+          {
+            "pieces": 2,
+            "bonus": {
+              "defense": 20,
+              "attack": 30
+            }
+          },
+          {
+            "pieces": 4,
+            "bonus": {
+              "hp": 600,
+              "agility": 20,
+              "luck": 15
+            }
+          }
+        ]
+      },
+      "after": {
+        "hp": 300,
+        "defense": 5,
+        "force": 18,
+        "agility": 15,
+        "set_key": "kasukabe_defense_set",
+        "set_description": "春日部防卫队",
+        "set_bonus": [
+          {
+            "pieces": 2,
+            "bonus": {
+              "defense": 15,
+              "attack": 20
+            }
+          },
+          {
+            "pieces": 4,
+            "bonus": {
+              "hp": 400,
+              "agility": 15,
+              "luck": 10
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "equip_shiro_leash",
+      "name": "小白的散步绳",
+      "rarity": "blue",
+      "slot": "ornament",
+      "role": "运势辅助",
+      "required_level": 25,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 360,
+        "defense": 15,
+        "force": 5,
+        "luck": 10,
+        "set_key": "kasukabe_defense_set",
+        "set_description": "春日部防卫队",
+        "set_bonus": [
+          {
+            "pieces": 2,
+            "bonus": {
+              "defense": 20,
+              "attack": 30
+            }
+          },
+          {
+            "pieces": 4,
+            "bonus": {
+              "hp": 600,
+              "agility": 20,
+              "luck": 15
+            }
+          }
+        ]
+      },
+      "after": {
+        "hp": 300,
+        "defense": 14,
+        "force": 5,
+        "luck": 10,
+        "set_key": "kasukabe_defense_set",
+        "set_description": "春日部防卫队",
+        "set_bonus": [
+          {
+            "pieces": 2,
+            "bonus": {
+              "defense": 15,
+              "attack": 20
+            }
+          },
+          {
+            "pieces": 4,
+            "bonus": {
+              "hp": 400,
+              "agility": 15,
+              "luck": 10
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "equip_kasukabe_satchel",
+      "name": "春日部小书包",
+      "rarity": "blue",
+      "slot": "armor",
+      "role": "坦克防具",
+      "required_level": 25,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 420,
+        "defense": 20,
+        "agility": 10,
+        "luck": 10,
+        "set_key": "kasukabe_defense_set",
+        "set_description": "春日部防卫队",
+        "set_bonus": [
+          {
+            "pieces": 2,
+            "bonus": {
+              "defense": 20,
+              "attack": 30
+            }
+          },
+          {
+            "pieces": 4,
+            "bonus": {
+              "hp": 600,
+              "agility": 20,
+              "luck": 15
+            }
+          }
+        ]
+      },
+      "after": {
+        "hp": 400,
+        "defense": 20,
+        "agility": 10,
+        "luck": 10,
+        "set_key": "kasukabe_defense_set",
+        "set_description": "春日部防卫队",
+        "set_bonus": [
+          {
+            "pieces": 2,
+            "bonus": {
+              "defense": 15,
+              "attack": 20
+            }
+          },
+          {
+            "pieces": 4,
+            "bonus": {
+              "hp": 400,
+              "agility": 15,
+              "luck": 10
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "equip_action_beam_glove",
+      "name": "动感光波手套",
+      "rarity": "blue",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 25,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "force": 40,
+        "agility": 15,
+        "set_key": "kasukabe_defense_set",
+        "set_description": "春日部防卫队",
+        "set_bonus": [
+          {
+            "pieces": 2,
+            "bonus": {
+              "defense": 20,
+              "attack": 30
+            }
+          },
+          {
+            "pieces": 4,
+            "bonus": {
+              "hp": 600,
+              "agility": 20,
+              "luck": 15
+            }
+          }
+        ]
+      },
+      "after": {
+        "force": 40,
+        "agility": 15,
+        "set_key": "kasukabe_defense_set",
+        "set_description": "春日部防卫队",
+        "set_bonus": [
+          {
+            "pieces": 2,
+            "bonus": {
+              "defense": 15,
+              "attack": 20
+            }
+          },
+          {
+            "pieces": 4,
+            "bonus": {
+              "hp": 400,
+              "agility": 15,
+              "luck": 10
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "equip_nohara_pan",
+      "name": "野原家的平底锅",
+      "rarity": "blue",
+      "slot": "weapon",
+      "role": "重兵/武将输出",
+      "required_level": 25,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 180,
+        "defense": 18,
+        "force": 36,
+        "set_key": "kasukabe_defense_set",
+        "set_description": "春日部防卫队",
+        "set_bonus": [
+          {
+            "pieces": 2,
+            "bonus": {
+              "defense": 20,
+              "attack": 30
+            }
+          },
+          {
+            "pieces": 4,
+            "bonus": {
+              "hp": 600,
+              "agility": 20,
+              "luck": 15
+            }
+          }
+        ]
+      },
+      "after": {
+        "hp": 180,
+        "defense": 12,
+        "force": 36,
+        "set_key": "kasukabe_defense_set",
+        "set_description": "春日部防卫队",
+        "set_bonus": [
+          {
+            "pieces": 2,
+            "bonus": {
+              "defense": 15,
+              "attack": 20
+            }
+          },
+          {
+            "pieces": 4,
+            "bonus": {
+              "hp": 400,
+              "agility": 15,
+              "luck": 10
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "equip_caomao",
+      "name": "斗笠",
+      "rarity": "black",
+      "slot": "helmet",
+      "role": "武将战甲",
+      "required_level": 1,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 250,
+        "defense": 10,
+        "force": 5,
+        "set_key": "starter_cloth_set",
+        "set_description": "一蓑烟雨",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 200,
+            "force": 20,
+            "troop_capacity": 20,
+            "luck": 15
+          }
+        }
+      },
+      "after": {
+        "hp": 250,
+        "defense": 10,
+        "force": 5,
+        "set_key": "starter_cloth_set",
+        "set_description": "一蓑烟雨",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 200,
+            "force": 20,
+            "troop_capacity": 20,
+            "luck": 15
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_suoyi",
+      "name": "蓑衣",
+      "rarity": "black",
+      "slot": "armor",
+      "role": "武将战甲",
+      "required_level": 1,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 100,
+        "defense": 10,
+        "force": 5,
+        "agility": 5,
+        "set_key": "starter_cloth_set",
+        "set_description": "一蓑烟雨",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 200,
+            "force": 20,
+            "troop_capacity": 20,
+            "luck": 15
+          }
+        }
+      },
+      "after": {
+        "hp": 100,
+        "defense": 10,
+        "force": 5,
+        "agility": 5,
+        "set_key": "starter_cloth_set",
+        "set_description": "一蓑烟雨",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 200,
+            "force": 20,
+            "troop_capacity": 20,
+            "luck": 15
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_caoxie",
+      "name": "草鞋",
+      "rarity": "black",
+      "slot": "shoes",
+      "role": "先手机动",
+      "required_level": 1,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 200,
+        "defense": 5,
+        "agility": 10,
+        "set_key": "starter_cloth_set",
+        "set_description": "一蓑烟雨",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 200,
+            "force": 20,
+            "troop_capacity": 20,
+            "luck": 15
+          }
+        }
+      },
+      "after": {
+        "hp": 200,
+        "defense": 5,
+        "agility": 10,
+        "set_key": "starter_cloth_set",
+        "set_description": "一蓑烟雨",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 200,
+            "force": 20,
+            "troop_capacity": 20,
+            "luck": 15
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_tiejian",
+      "name": "铁剑",
+      "rarity": "black",
+      "slot": "weapon",
+      "role": "重兵/武将输出",
+      "required_level": 1,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "defense": 5,
+        "force": 15,
+        "set_key": "starter_cloth_set",
+        "set_description": "一蓑烟雨",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 200,
+            "force": 20,
+            "troop_capacity": 20,
+            "luck": 15
+          }
+        }
+      },
+      "after": {
+        "defense": 5,
+        "force": 15,
+        "set_key": "starter_cloth_set",
+        "set_description": "一蓑烟雨",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 200,
+            "force": 20,
+            "troop_capacity": 20,
+            "luck": 15
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_bumao",
+      "name": "布帽",
+      "rarity": "black",
+      "slot": "helmet",
+      "role": "文官防具",
+      "required_level": 1,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 100,
+        "defense": 5,
+        "intellect": 8,
+        "agility": 5
+      },
+      "after": {
+        "hp": 100,
+        "defense": 5,
+        "intellect": 8,
+        "agility": 5
+      }
+    },
+    {
+      "key": "equip_niupimao",
+      "name": "牛皮帽",
+      "rarity": "black",
+      "slot": "helmet",
+      "role": "武将战甲",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 100,
+        "defense": 10,
+        "force": 5,
+        "agility": 5
+      },
+      "after": {
+        "hp": 100,
+        "defense": 10,
+        "force": 5,
+        "agility": 5
+      }
+    },
+    {
+      "key": "equip_tieyekui",
+      "name": "铁叶盔",
+      "rarity": "green",
+      "slot": "helmet",
+      "role": "武将战甲",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 120,
+        "defense": 8,
+        "force": 12
+      },
+      "after": {
+        "hp": 120,
+        "defense": 8,
+        "force": 12
+      }
+    },
+    {
+      "key": "equip_yulindin",
+      "name": "鱼鳞顶",
+      "rarity": "green",
+      "slot": "helmet",
+      "role": "武将战甲",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 400,
+        "defense": 12,
+        "force": 1,
+        "agility": 4
+      },
+      "after": {
+        "hp": 250,
+        "defense": 12,
+        "force": 1,
+        "agility": 4
+      }
+    },
+    {
+      "key": "equip_baihongkui",
+      "name": "白虹盔",
+      "rarity": "green",
+      "slot": "helmet",
+      "role": "统兵",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 160,
+        "defense": 12,
+        "force": 4,
+        "troop_capacity": 16
+      },
+      "after": {
+        "hp": 160,
+        "defense": 12,
+        "force": 4,
+        "troop_capacity": 10
+      }
+    },
+    {
+      "key": "equip_zhubiankui",
+      "name": "竹编盔",
+      "rarity": "black",
+      "slot": "helmet",
+      "role": "坦克防具",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 300,
+        "defense": 15
+      },
+      "after": {
+        "hp": 300,
+        "defense": 15
+      }
+    },
+    {
+      "key": "equip_yemantoukie",
+      "name": "野蛮头盔",
+      "rarity": "green",
+      "slot": "helmet",
+      "role": "武将战甲",
+      "required_level": 15,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 150,
+        "defense": 10,
+        "force": 20,
+        "set_key": "yeman_set",
+        "set_description": "野蛮套装",
+        "set_bonus": {
+          "pieces": 2,
+          "bonus": {
+            "hp": 300,
+            "force": 25,
+            "defense": 10
+          }
+        }
+      },
+      "after": {
+        "hp": 150,
+        "defense": 10,
+        "force": 16,
+        "set_key": "yeman_set",
+        "set_description": "野蛮套装",
+        "set_bonus": {
+          "pieces": 2,
+          "bonus": {
+            "hp": 250,
+            "force": 20,
+            "defense": 8
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_huwenkui",
+      "name": "虎纹盔",
+      "rarity": "green",
+      "slot": "helmet",
+      "role": "武将战甲",
+      "required_level": 20,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 220,
+        "defense": 18,
+        "force": 15
+      },
+      "after": {
+        "hp": 220,
+        "defense": 18,
+        "force": 15
+      }
+    },
+    {
+      "key": "equip_baoutoukui",
+      "name": "豹头盔",
+      "rarity": "green",
+      "slot": "helmet",
+      "role": "坦克防具",
+      "required_level": 20,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 200,
+        "defense": 20,
+        "agility": 15
+      },
+      "after": {
+        "hp": 200,
+        "defense": 18,
+        "agility": 12
+      }
+    },
+    {
+      "key": "equip_yanlingmao",
+      "name": "雁翎帽",
+      "rarity": "green",
+      "slot": "helmet",
+      "role": "坦克防具",
+      "required_level": 20,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 200,
+        "defense": 15,
+        "agility": 15
+      },
+      "after": {
+        "hp": 200,
+        "defense": 15,
+        "agility": 12
+      }
+    },
+    {
+      "key": "equip_qingtengguan",
+      "name": "青藤冠",
+      "rarity": "green",
+      "slot": "helmet",
+      "role": "文官防具",
+      "required_level": 15,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 200,
+        "defense": 10,
+        "intellect": 15,
+        "luck": 5
+      },
+      "after": {
+        "hp": 200,
+        "defense": 10,
+        "intellect": 15,
+        "luck": 5
+      }
+    },
+    {
+      "key": "equip_xiaoweitoukui",
+      "name": "校尉头盔",
+      "rarity": "blue",
+      "slot": "helmet",
+      "role": "统兵",
+      "required_level": 30,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比",
+        "校尉四件套带兵奖励100→50；本体70加套装共120"
+      ],
+      "before": {
+        "hp": 350,
+        "defense": 20,
+        "force": 15,
+        "troop_capacity": 20,
+        "set_key": "xiaowei_set",
+        "set_description": "校尉套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 360,
+            "defense": 15,
+            "force": 40,
+            "troop_capacity": 100
+          }
+        }
+      },
+      "after": {
+        "hp": 300,
+        "defense": 20,
+        "force": 15,
+        "troop_capacity": 15,
+        "set_key": "xiaowei_set",
+        "set_description": "校尉套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 300,
+            "defense": 12,
+            "force": 30,
+            "troop_capacity": 50
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_jiaodoushitoukui",
+      "name": "角斗士头盔",
+      "rarity": "blue",
+      "slot": "helmet",
+      "role": "武将战甲",
+      "required_level": 35,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 350,
+        "defense": 25,
+        "force": 20,
+        "set_key": "jiaodoushi_set",
+        "set_description": "角斗士套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 280,
+            "defense": 10,
+            "force": 30,
+            "agility": 15
+          }
+        }
+      },
+      "after": {
+        "hp": 300,
+        "defense": 25,
+        "force": 18,
+        "set_key": "jiaodoushi_set",
+        "set_description": "角斗士套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 240,
+            "defense": 8,
+            "force": 24,
+            "agility": 12
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_xuantiekui",
+      "name": "玄铁盔",
+      "rarity": "blue",
+      "slot": "helmet",
+      "role": "坦克防具",
+      "required_level": 40,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 340,
+        "defense": 40,
+        "force": 15
+      },
+      "after": {
+        "hp": 300,
+        "defense": 26,
+        "force": 15
+      }
+    },
+    {
+      "key": "equip_qinglongkui",
+      "name": "青龙盔",
+      "rarity": "blue",
+      "slot": "helmet",
+      "role": "文官防具",
+      "required_level": 35,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 400,
+        "defense": 20,
+        "intellect": 22,
+        "set_key": "sixiang_set",
+        "set_description": "四象套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 360,
+            "force": 35,
+            "intellect": 35,
+            "agility": 20
+          }
+        }
+      },
+      "after": {
+        "hp": 300,
+        "defense": 20,
+        "intellect": 22,
+        "set_key": "sixiang_set",
+        "set_description": "四象套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 300,
+            "force": 25,
+            "intellect": 25,
+            "agility": 15
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_hantiekui",
+      "name": "寒铁盔",
+      "rarity": "blue",
+      "slot": "helmet",
+      "role": "坦克防具",
+      "required_level": 40,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 380,
+        "defense": 35,
+        "force": 5
+      },
+      "after": {
+        "hp": 300,
+        "defense": 26,
+        "force": 5
+      }
+    },
+    {
+      "key": "equip_langyakui",
+      "name": "狼牙盔",
+      "rarity": "blue",
+      "slot": "helmet",
+      "role": "轻甲/先手",
+      "required_level": 40,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 300,
+        "defense": 20,
+        "force": 20,
+        "agility": 15
+      },
+      "after": {
+        "hp": 300,
+        "defense": 20,
+        "force": 18,
+        "agility": 15
+      }
+    },
+    {
+      "key": "equip_feiyukui",
+      "name": "飞羽盔",
+      "rarity": "blue",
+      "slot": "helmet",
+      "role": "轻甲/先手",
+      "required_level": 35,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 400,
+        "defense": 15,
+        "agility": 25,
+        "luck": 10
+      },
+      "after": {
+        "hp": 300,
+        "defense": 15,
+        "agility": 15,
+        "luck": 10
+      }
+    },
+    {
+      "key": "equip_yunwenkui",
+      "name": "云纹盔",
+      "rarity": "blue",
+      "slot": "helmet",
+      "role": "文官防具",
+      "required_level": 30,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 300,
+        "defense": 15,
+        "intellect": 25,
+        "luck": 10
+      },
+      "after": {
+        "hp": 300,
+        "defense": 15,
+        "intellect": 22,
+        "luck": 10
+      }
+    },
+    {
+      "key": "equip_qilinkui",
+      "name": "麒麟盔",
+      "rarity": "purple",
+      "slot": "helmet",
+      "role": "武将战甲",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 440,
+        "defense": 33,
+        "force": 28,
+        "intellect": 3,
+        "set_key": "qilin_set",
+        "set_description": "麒麟套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 420,
+            "force": 38,
+            "agility": 18,
+            "luck": 30
+          }
+        }
+      },
+      "after": {
+        "hp": 360,
+        "defense": 32,
+        "force": 24,
+        "intellect": 3,
+        "set_key": "qilin_set",
+        "set_description": "麒麟套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 320,
+            "force": 28,
+            "agility": 12,
+            "luck": 20
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_fenglingguan",
+      "name": "凤翎冠",
+      "rarity": "purple",
+      "slot": "helmet",
+      "role": "文官防具",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 360,
+        "defense": 21,
+        "intellect": 32,
+        "luck": 11,
+        "set_key": "fengling_set",
+        "set_description": "凤翎套装",
+        "set_bonus": {
+          "pieces": 3,
+          "bonus": {
+            "intellect": 60,
+            "luck": 30
+          }
+        }
+      },
+      "after": {
+        "hp": 360,
+        "defense": 21,
+        "intellect": 28,
+        "luck": 11,
+        "set_key": "fengling_set",
+        "set_description": "凤翎套装",
+        "set_bonus": {
+          "pieces": 3,
+          "bonus": {
+            "intellect": 40,
+            "luck": 20
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_bawangkui",
+      "name": "霸王盔",
+      "rarity": "purple",
+      "slot": "helmet",
+      "role": "统兵",
+      "required_level": 60,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 500,
+        "defense": 30,
+        "force": 35
+      },
+      "after": {
+        "hp": 360,
+        "defense": 30,
+        "force": 24,
+        "troop_capacity": 15
+      }
+    },
+    {
+      "key": "equip_xuanwukui",
+      "name": "玄武盔",
+      "rarity": "purple",
+      "slot": "helmet",
+      "role": "坦克防具",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 545,
+        "defense": 44,
+        "force": 10,
+        "intellect": 10,
+        "set_key": "xuanwu_set",
+        "set_description": "玄武套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 260,
+            "defense": 70,
+            "force": 20
+          }
+        }
+      },
+      "after": {
+        "hp": 360,
+        "defense": 32,
+        "force": 10,
+        "intellect": 10,
+        "set_key": "xuanwu_set",
+        "set_description": "玄武套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 220,
+            "defense": 40,
+            "force": 12
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_pojunkui",
+      "name": "破军盔",
+      "rarity": "purple",
+      "slot": "helmet",
+      "role": "统兵",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 445,
+        "defense": 26,
+        "force": 27,
+        "agility": 15
+      },
+      "after": {
+        "hp": 360,
+        "defense": 26,
+        "force": 24,
+        "agility": 15,
+        "troop_capacity": 20
+      }
+    },
+    {
+      "key": "equip_tianjiguan",
+      "name": "天机冠",
+      "rarity": "purple",
+      "slot": "helmet",
+      "role": "文官防具",
+      "required_level": 45,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 390,
+        "defense": 20,
+        "intellect": 38,
+        "luck": 14
+      },
+      "after": {
+        "hp": 360,
+        "defense": 20,
+        "intellect": 28,
+        "luck": 12
+      }
+    },
+    {
+      "key": "equip_longhuangguan",
+      "name": "龙皇冠",
+      "rarity": "orange",
+      "slot": "helmet",
+      "role": "统兵",
+      "required_level": 65,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 620,
+        "defense": 26,
+        "force": 12,
+        "intellect": 32,
+        "troop_capacity": 20
+      },
+      "after": {
+        "hp": 400,
+        "defense": 26,
+        "force": 12,
+        "intellect": 30,
+        "troop_capacity": 40
+      }
+    },
+    {
+      "key": "equip_diwangkui",
+      "name": "帝王盔",
+      "rarity": "orange",
+      "slot": "helmet",
+      "role": "统兵",
+      "required_level": 80,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 503,
+        "defense": 29,
+        "force": 29,
+        "intellect": 29
+      },
+      "after": {
+        "hp": 400,
+        "defense": 29,
+        "force": 24,
+        "intellect": 29,
+        "troop_capacity": 30
+      }
+    },
+    {
+      "key": "equip_taixudiguan",
+      "name": "太虚帝冠",
+      "rarity": "orange",
+      "slot": "helmet",
+      "role": "文官防具",
+      "required_level": 75,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 560,
+        "defense": 30,
+        "intellect": 34,
+        "luck": 14
+      },
+      "after": {
+        "hp": 400,
+        "defense": 30,
+        "intellect": 30,
+        "luck": 14
+      }
+    },
+    {
+      "key": "equip_bupao",
+      "name": "布袍",
+      "rarity": "black",
+      "slot": "armor",
+      "role": "文官防具",
+      "required_level": 1,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 80,
+        "defense": 6,
+        "intellect": 8
+      },
+      "after": {
+        "hp": 80,
+        "defense": 6,
+        "intellect": 8
+      }
+    },
+    {
+      "key": "equip_shengpijia",
+      "name": "生皮甲",
+      "rarity": "black",
+      "slot": "armor",
+      "role": "武将战甲",
+      "required_level": 5,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 160,
+        "defense": 12,
+        "force": 4
+      },
+      "after": {
+        "hp": 160,
+        "defense": 12,
+        "force": 4
+      }
+    },
+    {
+      "key": "equip_housipao",
+      "name": "厚丝袍",
+      "rarity": "green",
+      "slot": "armor",
+      "role": "武将战甲",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 80,
+        "defense": 12,
+        "intellect": 4,
+        "agility": 6
+      },
+      "after": {
+        "hp": 80,
+        "defense": 12,
+        "intellect": 4,
+        "agility": 6
+      }
+    },
+    {
+      "key": "equip_shapijia",
+      "name": "鲨皮甲",
+      "rarity": "green",
+      "slot": "armor",
+      "role": "武将战甲",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 200,
+        "defense": 14,
+        "force": 4,
+        "agility": 4
+      },
+      "after": {
+        "hp": 200,
+        "defense": 14,
+        "force": 4,
+        "agility": 4
+      }
+    },
+    {
+      "key": "equip_cubujia",
+      "name": "粗布甲",
+      "rarity": "black",
+      "slot": "armor",
+      "role": "武将战甲",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 150,
+        "defense": 10,
+        "force": 5,
+        "agility": 5
+      },
+      "after": {
+        "hp": 150,
+        "defense": 10,
+        "force": 5,
+        "agility": 5
+      }
+    },
+    {
+      "key": "equip_suozijia",
+      "name": "锁子甲",
+      "rarity": "green",
+      "slot": "armor",
+      "role": "坦克防具",
+      "required_level": 20,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 500,
+        "defense": 25,
+        "force": 5
+      },
+      "after": {
+        "hp": 500,
+        "defense": 22,
+        "force": 5
+      }
+    },
+    {
+      "key": "equip_xuantiejia",
+      "name": "玄铁甲",
+      "rarity": "green",
+      "slot": "armor",
+      "role": "坦克防具",
+      "required_level": 20,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "绿装生存峰值回收，保留重甲定位",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 800,
+        "defense": 30
+      },
+      "after": {
+        "hp": 500,
+        "defense": 22
+      }
+    },
+    {
+      "key": "equip_shanwenjia",
+      "name": "山纹甲",
+      "rarity": "green",
+      "slot": "armor",
+      "role": "坦克防具",
+      "required_level": 15,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 500,
+        "defense": 20,
+        "force": 10
+      },
+      "after": {
+        "hp": 500,
+        "defense": 20,
+        "force": 10
+      }
+    },
+    {
+      "key": "equip_qingzhujia",
+      "name": "青竹甲",
+      "rarity": "green",
+      "slot": "armor",
+      "role": "坦克防具",
+      "required_level": 15,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 200,
+        "defense": 20,
+        "force": 5,
+        "agility": 12
+      },
+      "after": {
+        "hp": 200,
+        "defense": 20,
+        "force": 5,
+        "agility": 10
+      }
+    },
+    {
+      "key": "equip_tiexianjia",
+      "name": "铁线甲",
+      "rarity": "green",
+      "slot": "armor",
+      "role": "武将战甲",
+      "required_level": 15,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 800,
+        "defense": 15,
+        "force": 15
+      },
+      "after": {
+        "hp": 500,
+        "defense": 15,
+        "force": 12
+      }
+    },
+    {
+      "key": "equip_nichangyuyi",
+      "name": "霓裳羽衣",
+      "rarity": "green",
+      "slot": "armor",
+      "role": "文官防具",
+      "required_level": 15,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 50,
+        "defense": 15,
+        "intellect": 15,
+        "luck": 8,
+        "set_key": "nichang_set",
+        "set_description": "霓裳",
+        "set_bonus": {
+          "pieces": 3,
+          "bonus": {
+            "hp": 150,
+            "intellect": 20,
+            "agility": 10,
+            "luck": 15
+          }
+        }
+      },
+      "after": {
+        "hp": 50,
+        "defense": 15,
+        "intellect": 15,
+        "luck": 8,
+        "set_key": "nichang_set",
+        "set_description": "霓裳",
+        "set_bonus": {
+          "pieces": 3,
+          "bonus": {
+            "hp": 120,
+            "intellect": 15,
+            "agility": 8,
+            "luck": 12
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_xiaoweikaijia",
+      "name": "校尉铠甲",
+      "rarity": "blue",
+      "slot": "armor",
+      "role": "统兵",
+      "required_level": 30,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比",
+        "校尉四件套带兵奖励100→50；本体70加套装共120"
+      ],
+      "before": {
+        "hp": 440,
+        "defense": 25,
+        "force": 10,
+        "troop_capacity": 30,
+        "set_key": "xiaowei_set",
+        "set_description": "校尉套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 360,
+            "defense": 15,
+            "force": 40,
+            "troop_capacity": 100
+          }
+        }
+      },
+      "after": {
+        "hp": 400,
+        "defense": 25,
+        "force": 10,
+        "troop_capacity": 20,
+        "set_key": "xiaowei_set",
+        "set_description": "校尉套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 300,
+            "defense": 12,
+            "force": 30,
+            "troop_capacity": 50
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_jiaodoushixiongjia",
+      "name": "角斗士胸甲",
+      "rarity": "blue",
+      "slot": "armor",
+      "role": "坦克防具",
+      "required_level": 35,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 450,
+        "defense": 35,
+        "force": 20,
+        "set_key": "jiaodoushi_set",
+        "set_description": "角斗士套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 280,
+            "defense": 10,
+            "force": 30,
+            "agility": 15
+          }
+        }
+      },
+      "after": {
+        "hp": 400,
+        "defense": 28,
+        "force": 18,
+        "set_key": "jiaodoushi_set",
+        "set_description": "角斗士套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 240,
+            "defense": 8,
+            "force": 24,
+            "agility": 12
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_qinglongjia",
+      "name": "青龙甲",
+      "rarity": "blue",
+      "slot": "armor",
+      "role": "坦克防具",
+      "required_level": 35,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 350,
+        "defense": 24,
+        "force": 15,
+        "intellect": 18,
+        "set_key": "sixiang_set",
+        "set_description": "四象套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 360,
+            "force": 35,
+            "intellect": 35,
+            "agility": 20
+          }
+        }
+      },
+      "after": {
+        "hp": 350,
+        "defense": 24,
+        "force": 15,
+        "intellect": 18,
+        "set_key": "sixiang_set",
+        "set_description": "四象套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 300,
+            "force": 25,
+            "intellect": 25,
+            "agility": 15
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_wujinjia",
+      "name": "乌金甲",
+      "rarity": "blue",
+      "slot": "armor",
+      "role": "武将战甲",
+      "required_level": 30,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 400,
+        "defense": 25,
+        "force": 20
+      },
+      "after": {
+        "hp": 400,
+        "defense": 25,
+        "force": 18
+      }
+    },
+    {
+      "key": "equip_linwenzhanjia",
+      "name": "鳞纹战甲",
+      "rarity": "blue",
+      "slot": "armor",
+      "role": "坦克防具",
+      "required_level": 35,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 500,
+        "defense": 30,
+        "force": 15
+      },
+      "after": {
+        "hp": 400,
+        "defense": 28,
+        "force": 15
+      }
+    },
+    {
+      "key": "equip_yunwenfayi",
+      "name": "云纹法衣",
+      "rarity": "blue",
+      "slot": "armor",
+      "role": "文官防具",
+      "required_level": 25,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 350,
+        "defense": 10,
+        "intellect": 30,
+        "luck": 10
+      },
+      "after": {
+        "hp": 350,
+        "defense": 10,
+        "intellect": 25,
+        "luck": 10
+      }
+    },
+    {
+      "key": "equip_xuanjiazhanbao",
+      "name": "玄甲战袍",
+      "rarity": "blue",
+      "slot": "armor",
+      "role": "文官防具",
+      "required_level": 40,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 550,
+        "defense": 30,
+        "intellect": 20
+      },
+      "after": {
+        "hp": 400,
+        "defense": 28,
+        "intellect": 20
+      }
+    },
+    {
+      "key": "equip_huxianpao",
+      "name": "狐仙袍",
+      "rarity": "purple",
+      "slot": "armor",
+      "role": "文官防具",
+      "required_level": 50,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 535,
+        "defense": 25,
+        "force": 3,
+        "intellect": 34,
+        "set_key": "huxian_set",
+        "set_description": "狐仙套装",
+        "set_bonus": {
+          "pieces": 3,
+          "bonus": {
+            "hp": 280,
+            "intellect": 64,
+            "luck": 18
+          }
+        }
+      },
+      "after": {
+        "hp": 500,
+        "defense": 25,
+        "force": 3,
+        "intellect": 28,
+        "set_key": "huxian_set",
+        "set_description": "狐仙套装",
+        "set_bonus": {
+          "pieces": 3,
+          "bonus": {
+            "hp": 220,
+            "intellect": 45,
+            "luck": 15
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_qilinjia",
+      "name": "麒麟甲",
+      "rarity": "purple",
+      "slot": "armor",
+      "role": "坦克防具",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 575,
+        "defense": 35,
+        "force": 25,
+        "intellect": 4,
+        "set_key": "qilin_set",
+        "set_description": "麒麟套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 420,
+            "force": 38,
+            "agility": 18,
+            "luck": 30
+          }
+        }
+      },
+      "after": {
+        "hp": 500,
+        "defense": 35,
+        "force": 22,
+        "intellect": 4,
+        "set_key": "qilin_set",
+        "set_description": "麒麟套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 320,
+            "force": 28,
+            "agility": 12,
+            "luck": 20
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_xuanwujia",
+      "name": "玄武甲",
+      "rarity": "purple",
+      "slot": "armor",
+      "role": "坦克防具",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 676,
+        "defense": 48,
+        "force": 7,
+        "intellect": 7,
+        "set_key": "xuanwu_set",
+        "set_description": "玄武套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 260,
+            "defense": 70,
+            "force": 20
+          }
+        }
+      },
+      "after": {
+        "hp": 500,
+        "defense": 36,
+        "force": 7,
+        "intellect": 7,
+        "set_key": "xuanwu_set",
+        "set_description": "玄武套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 220,
+            "defense": 40,
+            "force": 12
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_tiancanbaoyi",
+      "name": "天蚕宝衣",
+      "rarity": "purple",
+      "slot": "armor",
+      "role": "轻甲/先手",
+      "required_level": 60,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 560,
+        "defense": 30,
+        "force": 6,
+        "agility": 34
+      },
+      "after": {
+        "hp": 500,
+        "defense": 30,
+        "force": 6,
+        "agility": 18
+      }
+    },
+    {
+      "key": "equip_pojunzhanjia",
+      "name": "破军战甲",
+      "rarity": "purple",
+      "slot": "armor",
+      "role": "统兵",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 630,
+        "defense": 29,
+        "force": 31
+      },
+      "after": {
+        "hp": 500,
+        "defense": 29,
+        "force": 22,
+        "troop_capacity": 20
+      }
+    },
+    {
+      "key": "equip_tianjidaopao",
+      "name": "天机道袍",
+      "rarity": "purple",
+      "slot": "armor",
+      "role": "文官防具",
+      "required_level": 45,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 376,
+        "defense": 19,
+        "intellect": 35,
+        "luck": 17
+      },
+      "after": {
+        "hp": 376,
+        "defense": 19,
+        "intellect": 28,
+        "luck": 15
+      }
+    },
+    {
+      "key": "equip_longlinzhanjia",
+      "name": "龙鳞战甲",
+      "rarity": "orange",
+      "slot": "armor",
+      "role": "坦克防具",
+      "required_level": 75,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 720,
+        "defense": 38,
+        "force": 39,
+        "intellect": 3
+      },
+      "after": {
+        "hp": 550,
+        "defense": 38,
+        "force": 26,
+        "intellect": 3
+      }
+    },
+    {
+      "key": "equip_jinsirujia",
+      "name": "金丝软甲",
+      "rarity": "orange",
+      "slot": "armor",
+      "role": "轻甲/先手",
+      "required_level": 70,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 640,
+        "defense": 32,
+        "agility": 28,
+        "luck": 18
+      },
+      "after": {
+        "hp": 550,
+        "defense": 32,
+        "agility": 18,
+        "luck": 16
+      }
+    },
+    {
+      "key": "equip_hundunlongpao",
+      "name": "混沌龙袍",
+      "rarity": "orange",
+      "slot": "armor",
+      "role": "文官防具",
+      "required_level": 65,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 540,
+        "defense": 23,
+        "intellect": 40,
+        "luck": 15
+      },
+      "after": {
+        "hp": 540,
+        "defense": 23,
+        "intellect": 32,
+        "luck": 15
+      }
+    },
+    {
+      "key": "equip_ruanweijia",
+      "name": "软猬甲",
+      "rarity": "orange",
+      "slot": "armor",
+      "role": "轻甲/先手",
+      "required_level": 80,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 665,
+        "defense": 46,
+        "force": 8,
+        "agility": 28
+      },
+      "after": {
+        "hp": 550,
+        "defense": 38,
+        "force": 8,
+        "agility": 18
+      }
+    },
+    {
+      "key": "equip_buxie",
+      "name": "布鞋",
+      "rarity": "black",
+      "slot": "shoes",
+      "role": "先手机动",
+      "required_level": 5,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 80,
+        "defense": 4,
+        "intellect": 4,
+        "agility": 6
+      },
+      "after": {
+        "hp": 80,
+        "defense": 4,
+        "intellect": 4,
+        "agility": 6
+      }
+    },
+    {
+      "key": "equip_yangpixue",
+      "name": "羊皮靴",
+      "rarity": "black",
+      "slot": "shoes",
+      "role": "先手机动",
+      "required_level": 1,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 120,
+        "defense": 2,
+        "force": 4,
+        "agility": 8
+      },
+      "after": {
+        "hp": 120,
+        "defense": 2,
+        "force": 4,
+        "agility": 8
+      }
+    },
+    {
+      "key": "equip_gangpianxue",
+      "name": "钢片靴",
+      "rarity": "green",
+      "slot": "shoes",
+      "role": "先手机动",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 240,
+        "defense": 8,
+        "force": 4,
+        "agility": 10
+      },
+      "after": {
+        "hp": 200,
+        "defense": 8,
+        "force": 4,
+        "agility": 10
+      }
+    },
+    {
+      "key": "equip_yanyuxue",
+      "name": "燕羽靴",
+      "rarity": "green",
+      "slot": "shoes",
+      "role": "先手机动",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 160,
+        "defense": 8,
+        "force": 4,
+        "agility": 14
+      },
+      "after": {
+        "hp": 160,
+        "defense": 8,
+        "force": 4,
+        "agility": 14
+      }
+    },
+    {
+      "key": "equip_mabuxue",
+      "name": "麻布靴",
+      "rarity": "black",
+      "slot": "shoes",
+      "role": "先手机动",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 150,
+        "defense": 8,
+        "intellect": 5,
+        "agility": 6
+      },
+      "after": {
+        "hp": 150,
+        "defense": 8,
+        "intellect": 5,
+        "agility": 6
+      }
+    },
+    {
+      "key": "equip_hupixue",
+      "name": "虎皮靴",
+      "rarity": "green",
+      "slot": "shoes",
+      "role": "先手机动",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 300,
+        "defense": 5,
+        "force": 10,
+        "agility": 15
+      },
+      "after": {
+        "hp": 200,
+        "defense": 5,
+        "force": 8,
+        "agility": 15
+      }
+    },
+    {
+      "key": "equip_tayunxue",
+      "name": "踏云靴",
+      "rarity": "green",
+      "slot": "shoes",
+      "role": "先手机动",
+      "required_level": 15,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 100,
+        "defense": 5,
+        "force": 5,
+        "agility": 25
+      },
+      "after": {
+        "hp": 100,
+        "defense": 5,
+        "force": 5,
+        "agility": 22
+      }
+    },
+    {
+      "key": "equip_jifengxue",
+      "name": "疾风靴",
+      "rarity": "green",
+      "slot": "shoes",
+      "role": "先手机动",
+      "required_level": 20,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 240,
+        "defense": 10,
+        "agility": 25
+      },
+      "after": {
+        "hp": 200,
+        "defense": 8,
+        "agility": 22
+      }
+    },
+    {
+      "key": "equip_youxiaxue",
+      "name": "游侠靴",
+      "rarity": "green",
+      "slot": "shoes",
+      "role": "先手机动",
+      "required_level": 20,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 200,
+        "defense": 5,
+        "force": 10,
+        "agility": 20
+      },
+      "after": {
+        "hp": 200,
+        "defense": 5,
+        "force": 8,
+        "agility": 20
+      }
+    },
+    {
+      "key": "equip_zhuyelu",
+      "name": "竹叶履",
+      "rarity": "green",
+      "slot": "shoes",
+      "role": "先手机动",
+      "required_level": 15,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 100,
+        "defense": 5,
+        "agility": 20,
+        "luck": 8
+      },
+      "after": {
+        "hp": 100,
+        "defense": 5,
+        "agility": 20,
+        "luck": 8
+      }
+    },
+    {
+      "key": "equip_nichangwuxie",
+      "name": "霓裳舞鞋",
+      "rarity": "green",
+      "slot": "shoes",
+      "role": "先手机动",
+      "required_level": 15,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 150,
+        "defense": 5,
+        "intellect": 10,
+        "agility": 20,
+        "set_key": "nichang_set",
+        "set_description": "霓裳",
+        "set_bonus": {
+          "pieces": 3,
+          "bonus": {
+            "hp": 150,
+            "intellect": 20,
+            "agility": 10,
+            "luck": 15
+          }
+        }
+      },
+      "after": {
+        "hp": 150,
+        "defense": 5,
+        "intellect": 10,
+        "agility": 20,
+        "set_key": "nichang_set",
+        "set_description": "霓裳",
+        "set_bonus": {
+          "pieces": 3,
+          "bonus": {
+            "hp": 120,
+            "intellect": 15,
+            "agility": 8,
+            "luck": 12
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_xiaoweichangxue",
+      "name": "校尉长靴",
+      "rarity": "blue",
+      "slot": "shoes",
+      "role": "统兵",
+      "required_level": 30,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比",
+        "校尉四件套带兵奖励100→50；本体70加套装共120"
+      ],
+      "before": {
+        "hp": 250,
+        "defense": 20,
+        "force": 5,
+        "agility": 20,
+        "troop_capacity": 20,
+        "set_key": "xiaowei_set",
+        "set_description": "校尉套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 360,
+            "defense": 15,
+            "force": 40,
+            "troop_capacity": 100
+          }
+        }
+      },
+      "after": {
+        "hp": 200,
+        "defense": 14,
+        "force": 5,
+        "agility": 20,
+        "troop_capacity": 10,
+        "set_key": "xiaowei_set",
+        "set_description": "校尉套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 300,
+            "defense": 12,
+            "force": 30,
+            "troop_capacity": 50
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_jiaodoushizhixue",
+      "name": "角斗士之靴",
+      "rarity": "blue",
+      "slot": "shoes",
+      "role": "先手机动",
+      "required_level": 35,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 250,
+        "defense": 16,
+        "force": 13,
+        "agility": 24,
+        "set_key": "jiaodoushi_set",
+        "set_description": "角斗士套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 280,
+            "defense": 10,
+            "force": 30,
+            "agility": 15
+          }
+        }
+      },
+      "after": {
+        "hp": 200,
+        "defense": 14,
+        "force": 12,
+        "agility": 24,
+        "set_key": "jiaodoushi_set",
+        "set_description": "角斗士套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 240,
+            "defense": 8,
+            "force": 24,
+            "agility": 12
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_qinglongxue",
+      "name": "青龙靴",
+      "rarity": "blue",
+      "slot": "shoes",
+      "role": "先手机动",
+      "required_level": 35,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 216,
+        "defense": 10,
+        "force": 15,
+        "intellect": 15,
+        "agility": 20,
+        "set_key": "sixiang_set",
+        "set_description": "四象套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 360,
+            "force": 35,
+            "intellect": 35,
+            "agility": 20
+          }
+        }
+      },
+      "after": {
+        "hp": 200,
+        "defense": 10,
+        "force": 12,
+        "intellect": 12,
+        "agility": 20,
+        "set_key": "sixiang_set",
+        "set_description": "四象套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 300,
+            "force": 25,
+            "intellect": 25,
+            "agility": 15
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_lingboxie",
+      "name": "凌波鞋",
+      "rarity": "blue",
+      "slot": "shoes",
+      "role": "先手机动",
+      "required_level": 30,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 220,
+        "defense": 10,
+        "agility": 40
+      },
+      "after": {
+        "hp": 200,
+        "defense": 10,
+        "agility": 30
+      }
+    },
+    {
+      "key": "equip_zhuifengxue",
+      "name": "追风靴",
+      "rarity": "blue",
+      "slot": "shoes",
+      "role": "先手机动",
+      "required_level": 25,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 180,
+        "defense": 8,
+        "agility": 42
+      },
+      "after": {
+        "hp": 180,
+        "defense": 8,
+        "agility": 30
+      }
+    },
+    {
+      "key": "equip_pojunxue",
+      "name": "破军靴",
+      "rarity": "blue",
+      "slot": "shoes",
+      "role": "先手机动",
+      "required_level": 30,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 270,
+        "defense": 16,
+        "force": 15,
+        "agility": 20
+      },
+      "after": {
+        "hp": 200,
+        "defense": 14,
+        "force": 12,
+        "agility": 20
+      }
+    },
+    {
+      "key": "equip_yingxingxue",
+      "name": "影行靴",
+      "rarity": "blue",
+      "slot": "shoes",
+      "role": "先手机动",
+      "required_level": 25,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 200,
+        "defense": 10,
+        "agility": 35
+      },
+      "after": {
+        "hp": 200,
+        "defense": 10,
+        "agility": 30
+      }
+    },
+    {
+      "key": "equip_jinlinxue",
+      "name": "金鳞靴",
+      "rarity": "blue",
+      "slot": "shoes",
+      "role": "先手机动",
+      "required_level": 40,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 200,
+        "defense": 18,
+        "force": 11,
+        "agility": 26
+      },
+      "after": {
+        "hp": 200,
+        "defense": 14,
+        "force": 11,
+        "agility": 26
+      }
+    },
+    {
+      "key": "equip_huxianxie",
+      "name": "狐仙鞋",
+      "rarity": "purple",
+      "slot": "shoes",
+      "role": "文官机动",
+      "required_level": 50,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 320,
+        "defense": 10,
+        "intellect": 24,
+        "agility": 32,
+        "set_key": "huxian_set",
+        "set_description": "狐仙套装",
+        "set_bonus": {
+          "pieces": 3,
+          "bonus": {
+            "hp": 280,
+            "intellect": 64,
+            "luck": 18
+          }
+        }
+      },
+      "after": {
+        "hp": 240,
+        "defense": 10,
+        "intellect": 18,
+        "agility": 32,
+        "set_key": "huxian_set",
+        "set_description": "狐仙套装",
+        "set_bonus": {
+          "pieces": 3,
+          "bonus": {
+            "hp": 220,
+            "intellect": 45,
+            "luck": 15
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_qilinxue",
+      "name": "麒麟靴",
+      "rarity": "purple",
+      "slot": "shoes",
+      "role": "稳健机动",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 308,
+        "defense": 21,
+        "force": 18,
+        "agility": 30,
+        "set_key": "qilin_set",
+        "set_description": "麒麟套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 420,
+            "force": 38,
+            "agility": 18,
+            "luck": 30
+          }
+        }
+      },
+      "after": {
+        "hp": 240,
+        "defense": 20,
+        "force": 14,
+        "agility": 30,
+        "set_key": "qilin_set",
+        "set_description": "麒麟套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 320,
+            "force": 28,
+            "agility": 12,
+            "luck": 20
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_xuanwuxue",
+      "name": "玄武靴",
+      "rarity": "purple",
+      "slot": "shoes",
+      "role": "稳健机动",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 362,
+        "defense": 30,
+        "force": 7,
+        "agility": 30,
+        "set_key": "xuanwu_set",
+        "set_description": "玄武套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 260,
+            "defense": 70,
+            "force": 20
+          }
+        }
+      },
+      "after": {
+        "hp": 240,
+        "defense": 20,
+        "force": 7,
+        "agility": 30,
+        "set_key": "xuanwu_set",
+        "set_description": "玄武套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 220,
+            "defense": 40,
+            "force": 12
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_zhurixue",
+      "name": "逐日靴",
+      "rarity": "purple",
+      "slot": "shoes",
+      "role": "稳健机动",
+      "required_level": 60,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 266,
+        "defense": 23,
+        "force": 10,
+        "agility": 45
+      },
+      "after": {
+        "hp": 240,
+        "defense": 20,
+        "force": 10,
+        "agility": 36
+      }
+    },
+    {
+      "key": "equip_tianjilu",
+      "name": "天机履",
+      "rarity": "purple",
+      "slot": "shoes",
+      "role": "文官机动",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 283,
+        "defense": 15,
+        "intellect": 22,
+        "agility": 39
+      },
+      "after": {
+        "hp": 240,
+        "defense": 15,
+        "intellect": 18,
+        "agility": 36
+      }
+    },
+    {
+      "key": "equip_liekongxue",
+      "name": "裂空靴",
+      "rarity": "purple",
+      "slot": "shoes",
+      "role": "稳健机动",
+      "required_level": 45,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 286,
+        "defense": 16,
+        "force": 16,
+        "agility": 40
+      },
+      "after": {
+        "hp": 240,
+        "defense": 16,
+        "force": 14,
+        "agility": 36
+      }
+    },
+    {
+      "key": "equip_tatianxue",
+      "name": "踏天靴",
+      "rarity": "orange",
+      "slot": "shoes",
+      "role": "武将机动",
+      "required_level": 70,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "橙鞋突出武力配装，保留速度取舍",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 340,
+        "defense": 15,
+        "force": 14,
+        "intellect": 9,
+        "agility": 44
+      },
+      "after": {
+        "hp": 220,
+        "defense": 12,
+        "force": 20,
+        "intellect": 7,
+        "agility": 32
+      }
+    },
+    {
+      "key": "equip_shenxingxue",
+      "name": "神行靴",
+      "rarity": "orange",
+      "slot": "shoes",
+      "role": "先手机动",
+      "required_level": 80,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "橙鞋突出速度，以生存换先手",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 330,
+        "defense": 24,
+        "force": 5,
+        "agility": 60
+      },
+      "after": {
+        "hp": 180,
+        "defense": 10,
+        "force": 5,
+        "agility": 42
+      }
+    },
+    {
+      "key": "equip_wujixingxue",
+      "name": "无极行靴",
+      "rarity": "orange",
+      "slot": "shoes",
+      "role": "稳健机动",
+      "required_level": 75,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "橙鞋保留较高生存的均衡定位",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 330,
+        "defense": 24,
+        "force": 7,
+        "agility": 60
+      },
+      "after": {
+        "hp": 240,
+        "defense": 18,
+        "force": 7,
+        "agility": 38
+      }
+    },
+    {
+      "key": "equip_duanjian",
+      "name": "短剑",
+      "rarity": "black",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 1,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 80,
+        "force": 8,
+        "agility": 6
+      },
+      "after": {
+        "hp": 80,
+        "force": 8,
+        "agility": 6
+      }
+    },
+    {
+      "key": "equip_changjian",
+      "name": "长剑",
+      "rarity": "black",
+      "slot": "weapon",
+      "role": "重兵/武将输出",
+      "required_level": 5,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 120,
+        "defense": 1,
+        "force": 14
+      },
+      "after": {
+        "hp": 120,
+        "defense": 1,
+        "force": 14
+      }
+    },
+    {
+      "key": "equip_qingmangjian",
+      "name": "青芒剑",
+      "rarity": "green",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 15,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "defense": 4,
+        "force": 16,
+        "agility": 5
+      },
+      "after": {
+        "defense": 4,
+        "force": 16,
+        "agility": 5
+      }
+    },
+    {
+      "key": "equip_duanmajian",
+      "name": "断马剑",
+      "rarity": "green",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "force": 20,
+        "agility": 8
+      },
+      "after": {
+        "force": 20,
+        "agility": 8
+      }
+    },
+    {
+      "key": "equip_duandao",
+      "name": "短刀",
+      "rarity": "black",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 1,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 40,
+        "force": 12,
+        "agility": 4
+      },
+      "after": {
+        "hp": 40,
+        "force": 12,
+        "agility": 4
+      }
+    },
+    {
+      "key": "equip_dakandao",
+      "name": "大砍刀",
+      "rarity": "black",
+      "slot": "weapon",
+      "role": "重兵/武将输出",
+      "required_level": 5,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 80,
+        "force": 16
+      },
+      "after": {
+        "hp": 80,
+        "force": 16
+      }
+    },
+    {
+      "key": "equip_tongchangdao",
+      "name": "铜长刀",
+      "rarity": "green",
+      "slot": "weapon",
+      "role": "重兵/武将输出",
+      "required_level": 20,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 80,
+        "defense": 4,
+        "force": 22
+      },
+      "after": {
+        "hp": 80,
+        "defense": 4,
+        "force": 22
+      }
+    },
+    {
+      "key": "equip_jingtiedao",
+      "name": "精铁刀",
+      "rarity": "green",
+      "slot": "weapon",
+      "role": "重兵/武将输出",
+      "required_level": 15,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 40,
+        "force": 28
+      },
+      "after": {
+        "hp": 40,
+        "force": 28
+      }
+    },
+    {
+      "key": "equip_changqiang",
+      "name": "长枪",
+      "rarity": "black",
+      "slot": "weapon",
+      "role": "统兵",
+      "required_level": 1,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算"
+      ],
+      "before": {
+        "hp": 160,
+        "defense": 0,
+        "force": 9,
+        "troop_capacity": 12
+      },
+      "after": {
+        "hp": 160,
+        "defense": 0,
+        "force": 9,
+        "troop_capacity": 15
+      }
+    },
+    {
+      "key": "equip_baoweiqiang",
+      "name": "豹尾枪",
+      "rarity": "black",
+      "slot": "weapon",
+      "role": "统兵",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算"
+      ],
+      "before": {
+        "defense": 4,
+        "force": 8,
+        "troop_capacity": 20
+      },
+      "after": {
+        "defense": 4,
+        "force": 8,
+        "troop_capacity": 25
+      }
+    },
+    {
+      "key": "equip_hutoumao",
+      "name": "虎头矛",
+      "rarity": "green",
+      "slot": "weapon",
+      "role": "统兵",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "defense": 4,
+        "force": 16,
+        "troop_capacity": 16
+      },
+      "after": {
+        "defense": 4,
+        "force": 16,
+        "troop_capacity": 15
+      }
+    },
+    {
+      "key": "equip_pansheqiang",
+      "name": "盘蛇枪",
+      "rarity": "green",
+      "slot": "weapon",
+      "role": "统兵",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "force": 16,
+        "agility": 4,
+        "troop_capacity": 16
+      },
+      "after": {
+        "force": 16,
+        "agility": 4,
+        "troop_capacity": 20
+      }
+    },
+    {
+      "key": "equip_changgong",
+      "name": "长弓",
+      "rarity": "black",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 1,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "force": 12,
+        "agility": 4
+      },
+      "after": {
+        "force": 12,
+        "agility": 4
+      }
+    },
+    {
+      "key": "equip_fanqugong",
+      "name": "反曲弓",
+      "rarity": "black",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 5,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "force": 12,
+        "agility": 6
+      },
+      "after": {
+        "force": 12,
+        "agility": 6
+      }
+    },
+    {
+      "key": "equip_tietaigong",
+      "name": "铁胎弓",
+      "rarity": "green",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 15,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "defense": 4,
+        "force": 12,
+        "agility": 9
+      },
+      "after": {
+        "defense": 4,
+        "force": 12,
+        "agility": 9
+      }
+    },
+    {
+      "key": "equip_shenbigong",
+      "name": "神臂弓",
+      "rarity": "green",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "force": 16,
+        "agility": 12
+      },
+      "after": {
+        "force": 16,
+        "agility": 12
+      }
+    },
+    {
+      "key": "equip_changbian",
+      "name": "长鞭",
+      "rarity": "black",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "force": 12,
+        "agility": 8
+      },
+      "after": {
+        "force": 12,
+        "agility": 8
+      }
+    },
+    {
+      "key": "equip_niupibian",
+      "name": "牛皮鞭",
+      "rarity": "black",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "force": 10,
+        "agility": 6,
+        "luck": 4
+      },
+      "after": {
+        "force": 10,
+        "agility": 6,
+        "luck": 4
+      }
+    },
+    {
+      "key": "equip_jicibian",
+      "name": "棘刺鞭",
+      "rarity": "green",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "force": 12,
+        "agility": 6,
+        "luck": 6
+      },
+      "after": {
+        "force": 12,
+        "agility": 6,
+        "luck": 6
+      }
+    },
+    {
+      "key": "equip_jiulonggangbian",
+      "name": "九龙钢鞭",
+      "rarity": "green",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "force": 12,
+        "agility": 8,
+        "luck": 6
+      },
+      "after": {
+        "force": 12,
+        "agility": 8,
+        "luck": 6
+      }
+    },
+    {
+      "key": "equip_mingshejiebian",
+      "name": "冥蛇节鞭",
+      "rarity": "green",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 15,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 40,
+        "force": 12,
+        "agility": 6,
+        "luck": 8
+      },
+      "after": {
+        "hp": 40,
+        "force": 12,
+        "agility": 6,
+        "luck": 8
+      }
+    },
+    {
+      "key": "equip_yemankandao",
+      "name": "野蛮砍刀",
+      "rarity": "green",
+      "slot": "weapon",
+      "role": "重兵/武将输出",
+      "required_level": 15,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "force": 40,
+        "set_key": "yeman_set",
+        "set_description": "野蛮套装",
+        "set_bonus": {
+          "pieces": 2,
+          "bonus": {
+            "hp": 300,
+            "force": 25,
+            "defense": 10
+          }
+        }
+      },
+      "after": {
+        "force": 40,
+        "set_key": "yeman_set",
+        "set_description": "野蛮套装",
+        "set_bonus": {
+          "pieces": 2,
+          "bonus": {
+            "hp": 250,
+            "force": 20,
+            "defense": 8
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_tiegugun",
+      "name": "铁骨棍",
+      "rarity": "green",
+      "slot": "weapon",
+      "role": "重兵/武将输出",
+      "required_level": 20,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "defense": 5,
+        "force": 30
+      },
+      "after": {
+        "defense": 5,
+        "force": 30
+      }
+    },
+    {
+      "key": "equip_tongshanchui",
+      "name": "铜山锤",
+      "rarity": "green",
+      "slot": "weapon",
+      "role": "重兵/武将输出",
+      "required_level": 20,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 200,
+        "defense": 5,
+        "force": 32
+      },
+      "after": {
+        "hp": 160,
+        "defense": 5,
+        "force": 32
+      }
+    },
+    {
+      "key": "equip_pofengji",
+      "name": "破风戟",
+      "rarity": "green",
+      "slot": "weapon",
+      "role": "统兵",
+      "required_level": 20,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "force": 25,
+        "agility": 5,
+        "troop_capacity": 50
+      },
+      "after": {
+        "force": 25,
+        "agility": 5,
+        "troop_capacity": 25
+      }
+    },
+    {
+      "key": "equip_shushengzhesan",
+      "name": "书生折扇",
+      "rarity": "green",
+      "slot": "weapon",
+      "role": "文官技能",
+      "required_level": 20,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "force": 5,
+        "intellect": 25,
+        "luck": 10
+      },
+      "after": {
+        "force": 5,
+        "intellect": 25,
+        "luck": 10
+      }
+    },
+    {
+      "key": "equip_xiaoweichangjian",
+      "name": "校尉长剑",
+      "rarity": "blue",
+      "slot": "weapon",
+      "role": "统兵",
+      "required_level": 30,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比",
+        "校尉四件套带兵奖励100→50；本体70加套装共120"
+      ],
+      "before": {
+        "hp": 72,
+        "force": 45,
+        "troop_capacity": 20,
+        "set_key": "xiaowei_set",
+        "set_description": "校尉套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 360,
+            "defense": 15,
+            "force": 40,
+            "troop_capacity": 100
+          }
+        }
+      },
+      "after": {
+        "hp": 72,
+        "force": 45,
+        "troop_capacity": 25,
+        "set_key": "xiaowei_set",
+        "set_description": "校尉套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 300,
+            "defense": 12,
+            "force": 30,
+            "troop_capacity": 50
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_nichangjian",
+      "name": "霓裳剑",
+      "rarity": "blue",
+      "slot": "weapon",
+      "role": "文官技能",
+      "required_level": 25,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "force": 10,
+        "intellect": 35,
+        "agility": 15,
+        "set_key": "nichang_set",
+        "set_description": "霓裳",
+        "set_bonus": {
+          "pieces": 3,
+          "bonus": {
+            "hp": 150,
+            "intellect": 20,
+            "agility": 10,
+            "luck": 15
+          }
+        }
+      },
+      "after": {
+        "force": 10,
+        "intellect": 35,
+        "agility": 15,
+        "set_key": "nichang_set",
+        "set_description": "霓裳",
+        "set_bonus": {
+          "pieces": 3,
+          "bonus": {
+            "hp": 120,
+            "intellect": 15,
+            "agility": 8,
+            "luck": 12
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_jiaodoushizhichui",
+      "name": "角斗士之锤",
+      "rarity": "blue",
+      "slot": "weapon",
+      "role": "重兵/武将输出",
+      "required_level": 35,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 250,
+        "defense": 8,
+        "force": 45,
+        "set_key": "jiaodoushi_set",
+        "set_description": "角斗士套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 280,
+            "defense": 10,
+            "force": 30,
+            "agility": 15
+          }
+        }
+      },
+      "after": {
+        "hp": 250,
+        "defense": 8,
+        "force": 45,
+        "set_key": "jiaodoushi_set",
+        "set_description": "角斗士套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 240,
+            "defense": 8,
+            "force": 24,
+            "agility": 12
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_junzijian",
+      "name": "君子剑",
+      "rarity": "blue",
+      "slot": "weapon",
+      "role": "文官技能",
+      "required_level": 40,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "force": 25,
+        "intellect": 35,
+        "agility": 15
+      },
+      "after": {
+        "force": 25,
+        "intellect": 35,
+        "agility": 15
+      }
+    },
+    {
+      "key": "equip_qinglongdao",
+      "name": "青龙刀",
+      "rarity": "blue",
+      "slot": "weapon",
+      "role": "武智均衡",
+      "required_level": 35,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 500,
+        "force": 30,
+        "intellect": 25,
+        "set_key": "sixiang_set",
+        "set_description": "四象套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 360,
+            "force": 35,
+            "intellect": 35,
+            "agility": 20
+          }
+        }
+      },
+      "after": {
+        "hp": 300,
+        "force": 30,
+        "intellect": 25,
+        "set_key": "sixiang_set",
+        "set_description": "四象套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 300,
+            "force": 25,
+            "intellect": 25,
+            "agility": 15
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_pozhenqiang",
+      "name": "破阵枪",
+      "rarity": "blue",
+      "slot": "weapon",
+      "role": "统兵",
+      "required_level": 30,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 150,
+        "force": 50,
+        "troop_capacity": 50
+      },
+      "after": {
+        "hp": 150,
+        "force": 50,
+        "troop_capacity": 40
+      }
+    },
+    {
+      "key": "equip_chuanyungong",
+      "name": "穿云弓",
+      "rarity": "blue",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 25,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "force": 40,
+        "agility": 18
+      },
+      "after": {
+        "force": 40,
+        "agility": 18
+      }
+    },
+    {
+      "key": "equip_hanyuejian",
+      "name": "寒月剑",
+      "rarity": "blue",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 35,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "defense": 10,
+        "force": 35,
+        "agility": 15
+      },
+      "after": {
+        "defense": 10,
+        "force": 35,
+        "agility": 15
+      }
+    },
+    {
+      "key": "equip_lieyandao",
+      "name": "烈焰刀",
+      "rarity": "blue",
+      "slot": "weapon",
+      "role": "重兵/武将输出",
+      "required_level": 25,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 160,
+        "force": 55
+      },
+      "after": {
+        "hp": 160,
+        "force": 50
+      }
+    },
+    {
+      "key": "equip_duanhunbian",
+      "name": "断魂鞭",
+      "rarity": "blue",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 35,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "force": 35,
+        "agility": 20,
+        "luck": 10
+      },
+      "after": {
+        "force": 35,
+        "agility": 20,
+        "luck": 10
+      }
+    },
+    {
+      "key": "equip_zhenyuechui",
+      "name": "镇岳锤",
+      "rarity": "blue",
+      "slot": "weapon",
+      "role": "重兵/武将输出",
+      "required_level": 40,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 500,
+        "defense": 20,
+        "force": 35
+      },
+      "after": {
+        "hp": 300,
+        "defense": 12,
+        "force": 35
+      }
+    },
+    {
+      "key": "equip_xuanbinggong",
+      "name": "玄冰弓",
+      "rarity": "blue",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 35,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "force": 40,
+        "agility": 25
+      },
+      "after": {
+        "force": 40,
+        "agility": 22
+      }
+    },
+    {
+      "key": "equip_xingluoshan",
+      "name": "星罗扇",
+      "rarity": "blue",
+      "slot": "weapon",
+      "role": "文官技能",
+      "required_level": 30,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "intellect": 45,
+        "luck": 15
+      },
+      "after": {
+        "intellect": 40,
+        "luck": 15
+      }
+    },
+    {
+      "key": "equip_huxianjian",
+      "name": "狐仙剑",
+      "rarity": "purple",
+      "slot": "weapon",
+      "role": "武智均衡",
+      "required_level": 50,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "force": 41,
+        "intellect": 27,
+        "luck": 5,
+        "set_key": "huxian_set",
+        "set_description": "狐仙套装",
+        "set_bonus": {
+          "pieces": 3,
+          "bonus": {
+            "hp": 280,
+            "intellect": 64,
+            "luck": 18
+          }
+        }
+      },
+      "after": {
+        "force": 41,
+        "intellect": 27,
+        "luck": 5,
+        "set_key": "huxian_set",
+        "set_description": "狐仙套装",
+        "set_bonus": {
+          "pieces": 3,
+          "bonus": {
+            "hp": 220,
+            "intellect": 45,
+            "luck": 15
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_bawangqiang",
+      "name": "霸王枪",
+      "rarity": "purple",
+      "slot": "weapon",
+      "role": "统兵",
+      "required_level": 45,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 237,
+        "force": 46,
+        "agility": 12,
+        "troop_capacity": 39
+      },
+      "after": {
+        "hp": 237,
+        "force": 46,
+        "agility": 12,
+        "troop_capacity": 50
+      }
+    },
+    {
+      "key": "equip_qilindao",
+      "name": "麒麟刀",
+      "rarity": "purple",
+      "slot": "weapon",
+      "role": "重兵/武将输出",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 211,
+        "force": 70,
+        "set_key": "qilin_set",
+        "set_description": "麒麟套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 420,
+            "force": 38,
+            "agility": 18,
+            "luck": 30
+          }
+        }
+      },
+      "after": {
+        "hp": 211,
+        "force": 68,
+        "set_key": "qilin_set",
+        "set_description": "麒麟套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 320,
+            "force": 28,
+            "agility": 12,
+            "luck": 20
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_xuanwuchui",
+      "name": "玄武锤",
+      "rarity": "purple",
+      "slot": "weapon",
+      "role": "重兵/武将输出",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "坦克武器保留武防，压低输出以体现生存取舍",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 350,
+        "defense": 13,
+        "force": 64,
+        "set_key": "xuanwu_set",
+        "set_description": "玄武套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 260,
+            "defense": 70,
+            "force": 20
+          }
+        }
+      },
+      "after": {
+        "hp": 300,
+        "defense": 12,
+        "force": 52,
+        "set_key": "xuanwu_set",
+        "set_description": "玄武套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 220,
+            "defense": 40,
+            "force": 12
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_fenglingshan",
+      "name": "凤翎扇",
+      "rarity": "purple",
+      "slot": "weapon",
+      "role": "文官技能",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "保留智力与运势组合，不把文官武器做成纯主属性堆叠",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "force": 15,
+        "intellect": 45,
+        "luck": 20,
+        "set_key": "fengling_set",
+        "set_description": "凤翎套装",
+        "set_bonus": {
+          "pieces": 3,
+          "bonus": {
+            "intellect": 60,
+            "luck": 30
+          }
+        }
+      },
+      "after": {
+        "force": 15,
+        "intellect": 48,
+        "luck": 20,
+        "set_key": "fengling_set",
+        "set_description": "凤翎套装",
+        "set_bonus": {
+          "pieces": 3,
+          "bonus": {
+            "intellect": 40,
+            "luck": 20
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_qixingjian",
+      "name": "七星剑",
+      "rarity": "purple",
+      "slot": "weapon",
+      "role": "武智均衡",
+      "required_level": 45,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "force": 47,
+        "intellect": 19,
+        "agility": 16
+      },
+      "after": {
+        "force": 47,
+        "intellect": 19,
+        "agility": 16
+      }
+    },
+    {
+      "key": "equip_tulongdao",
+      "name": "屠龙刀",
+      "rarity": "purple",
+      "slot": "weapon",
+      "role": "重兵/武将输出",
+      "required_level": 60,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 271,
+        "force": 77
+      },
+      "after": {
+        "hp": 271,
+        "force": 68
+      }
+    },
+    {
+      "key": "equip_tianjizhang",
+      "name": "天机杖",
+      "rarity": "purple",
+      "slot": "weapon",
+      "role": "文官技能",
+      "required_level": 60,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "调整为智力主属性，保留少量武力",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 187,
+        "force": 41,
+        "intellect": 22,
+        "luck": 15
+      },
+      "after": {
+        "hp": 187,
+        "force": 15,
+        "intellect": 50,
+        "luck": 15
+      }
+    },
+    {
+      "key": "equip_baguadao",
+      "name": "八卦刀",
+      "rarity": "blue",
+      "slot": "weapon",
+      "role": "武智均衡",
+      "required_level": 40,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 200,
+        "defense": 5,
+        "force": 40,
+        "intellect": 20
+      },
+      "after": {
+        "hp": 200,
+        "defense": 5,
+        "force": 40,
+        "intellect": 20
+      }
+    },
+    {
+      "key": "equip_pojunji",
+      "name": "破军戟",
+      "rarity": "purple",
+      "slot": "weapon",
+      "role": "统兵",
+      "required_level": 45,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 214,
+        "force": 50,
+        "agility": 12,
+        "troop_capacity": 34
+      },
+      "after": {
+        "hp": 214,
+        "force": 50,
+        "agility": 12,
+        "troop_capacity": 45
+      }
+    },
+    {
+      "key": "equip_shuanghuagong",
+      "name": "霜华弓",
+      "rarity": "purple",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 50,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "force": 44,
+        "agility": 22,
+        "luck": 14
+      },
+      "after": {
+        "force": 44,
+        "agility": 22,
+        "luck": 14
+      }
+    },
+    {
+      "key": "equip_jinshejian",
+      "name": "金蛇剑",
+      "rarity": "purple",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 50,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "force": 45,
+        "agility": 20,
+        "luck": 15
+      },
+      "after": {
+        "force": 45,
+        "agility": 20,
+        "luck": 15
+      }
+    },
+    {
+      "key": "equip_duomingfeidao",
+      "name": "夺命飞刀",
+      "rarity": "purple",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "force": 38,
+        "agility": 27,
+        "luck": 16
+      },
+      "after": {
+        "force": 38,
+        "agility": 26,
+        "luck": 16
+      }
+    },
+    {
+      "key": "equip_ziweiruanjian",
+      "name": "紫薇软剑",
+      "rarity": "purple",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "force": 46,
+        "agility": 22,
+        "luck": 13
+      },
+      "after": {
+        "force": 46,
+        "agility": 22,
+        "luck": 13
+      }
+    },
+    {
+      "key": "equip_yuxiao",
+      "name": "玉箫",
+      "rarity": "purple",
+      "slot": "weapon",
+      "role": "文官技能",
+      "required_level": 60,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "突出文官技能与运势",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 85,
+        "force": 36,
+        "intellect": 29,
+        "luck": 13
+      },
+      "after": {
+        "hp": 85,
+        "force": 20,
+        "intellect": 40,
+        "luck": 16
+      }
+    },
+    {
+      "key": "equip_jinlun",
+      "name": "金轮",
+      "rarity": "purple",
+      "slot": "weapon",
+      "role": "重兵/武将输出",
+      "required_level": 60,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 280,
+        "defense": 8,
+        "force": 69
+      },
+      "after": {
+        "hp": 280,
+        "defense": 8,
+        "force": 68
+      }
+    },
+    {
+      "key": "equip_xuedao",
+      "name": "血刀",
+      "rarity": "purple",
+      "slot": "weapon",
+      "role": "重兵/武将输出",
+      "required_level": 50,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 170,
+        "force": 63,
+        "agility": 17
+      },
+      "after": {
+        "hp": 170,
+        "force": 63,
+        "agility": 17
+      }
+    },
+    {
+      "key": "equip_yuanyangdao",
+      "name": "鸳鸯刀",
+      "rarity": "purple",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 60,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "force": 49,
+        "agility": 20,
+        "luck": 13
+      },
+      "after": {
+        "force": 49,
+        "agility": 20,
+        "luck": 13
+      }
+    },
+    {
+      "key": "equip_jinshezui",
+      "name": "金蛇锥",
+      "rarity": "purple",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "force": 43,
+        "agility": 27,
+        "luck": 12
+      },
+      "after": {
+        "force": 43,
+        "agility": 26,
+        "luck": 12
+      }
+    },
+    {
+      "key": "equip_wuqiaojian",
+      "name": "乌鞘剑",
+      "rarity": "purple",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 50,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "force": 53,
+        "agility": 16,
+        "luck": 12
+      },
+      "after": {
+        "force": 53,
+        "agility": 16,
+        "luck": 12
+      }
+    },
+    {
+      "key": "equip_biyudao",
+      "name": "碧玉刀",
+      "rarity": "purple",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "force": 48,
+        "agility": 20,
+        "luck": 13
+      },
+      "after": {
+        "force": 48,
+        "agility": 20,
+        "luck": 13
+      }
+    },
+    {
+      "key": "equip_libiegou",
+      "name": "离别钩",
+      "rarity": "purple",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 50,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "force": 50,
+        "agility": 17,
+        "luck": 13
+      },
+      "after": {
+        "force": 50,
+        "agility": 17,
+        "luck": 13
+      }
+    },
+    {
+      "key": "equip_duoqinghuan",
+      "name": "多情环",
+      "rarity": "purple",
+      "slot": "weapon",
+      "role": "武智均衡",
+      "required_level": 45,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 96,
+        "force": 40,
+        "intellect": 26,
+        "luck": 12
+      },
+      "after": {
+        "hp": 96,
+        "force": 40,
+        "intellect": 26,
+        "luck": 12
+      }
+    },
+    {
+      "key": "equip_xiuhuazhen",
+      "name": "绣花针",
+      "rarity": "purple",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "force": 42,
+        "agility": 29,
+        "luck": 11
+      },
+      "after": {
+        "force": 42,
+        "agility": 26,
+        "luck": 11
+      }
+    },
+    {
+      "key": "equip_yitianjian",
+      "name": "倚天剑",
+      "rarity": "orange",
+      "slot": "weapon",
+      "role": "重兵/武将输出",
+      "required_level": 65,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "橙武器恢复输出/技能/统兵职责，减少杂项生命",
+        "按重兵/轻兵/智力/均衡职责逐件重分配，收紧v1预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 518,
+        "defense": 3,
+        "force": 41,
+        "intellect": 24,
+        "agility": 14,
+        "luck": 5
+      },
+      "after": {
+        "hp": 180,
+        "defense": 3,
+        "force": 64,
+        "intellect": 16,
+        "agility": 14,
+        "luck": 5
+      }
+    },
+    {
+      "key": "equip_tuwujian",
+      "name": "屠巫剑",
+      "rarity": "orange",
+      "slot": "weapon",
+      "role": "重兵/武将输出",
+      "required_level": 65,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "橙武器恢复输出/技能/统兵职责，减少杂项生命",
+        "按重兵/轻兵/智力/均衡职责逐件重分配，收紧v1预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 514,
+        "defense": 3,
+        "force": 40,
+        "intellect": 22,
+        "agility": 15,
+        "luck": 3
+      },
+      "after": {
+        "hp": 160,
+        "defense": 3,
+        "force": 70,
+        "intellect": 12,
+        "agility": 12,
+        "luck": 3
+      }
+    },
+    {
+      "key": "equip_fangtianhuaji",
+      "name": "方天画戟",
+      "rarity": "orange",
+      "slot": "weapon",
+      "role": "统兵",
+      "required_level": 75,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "橙武器恢复输出/技能/统兵职责，减少杂项生命",
+        "按重兵/轻兵/智力/均衡职责逐件重分配，收紧v1预算",
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 650,
+        "defense": 12,
+        "force": 50,
+        "agility": 10,
+        "troop_capacity": 24
+      },
+      "after": {
+        "hp": 240,
+        "defense": 10,
+        "force": 55,
+        "agility": 8,
+        "troop_capacity": 70
+      }
+    },
+    {
+      "key": "equip_xuanyuanjian",
+      "name": "轩辕剑",
+      "rarity": "orange",
+      "slot": "weapon",
+      "role": "武智均衡",
+      "required_level": 80,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "橙武器恢复输出/技能/统兵职责，减少杂项生命",
+        "按重兵/轻兵/智力/均衡职责逐件重分配，收紧v1预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 538,
+        "defense": 7,
+        "force": 33,
+        "intellect": 29,
+        "luck": 14
+      },
+      "after": {
+        "hp": 220,
+        "defense": 6,
+        "force": 62,
+        "intellect": 24,
+        "luck": 12
+      }
+    },
+    {
+      "key": "equip_panlonggun",
+      "name": "盘龙棍",
+      "rarity": "orange",
+      "slot": "weapon",
+      "role": "重兵/武将输出",
+      "required_level": 65,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "橙武器恢复输出/技能/统兵职责，减少杂项生命",
+        "按重兵/轻兵/智力/均衡职责逐件重分配，收紧v1预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 680,
+        "defense": 12,
+        "force": 48,
+        "agility": 12,
+        "luck": 8
+      },
+      "after": {
+        "hp": 240,
+        "defense": 10,
+        "force": 72,
+        "agility": 10,
+        "luck": 6
+      }
+    },
+    {
+      "key": "equip_zhuxianjian",
+      "name": "诛仙剑",
+      "rarity": "orange",
+      "slot": "weapon",
+      "role": "文官技能",
+      "required_level": 80,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "橙武器恢复输出/技能/统兵职责，减少杂项生命",
+        "按重兵/轻兵/智力/均衡职责逐件重分配，收紧v1预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 530,
+        "defense": 5,
+        "force": 36,
+        "intellect": 28,
+        "agility": 7,
+        "luck": 5
+      },
+      "after": {
+        "hp": 160,
+        "defense": 4,
+        "force": 28,
+        "intellect": 58,
+        "agility": 6,
+        "luck": 10
+      }
+    },
+    {
+      "key": "equip_qiankunshengong",
+      "name": "乾坤神弓",
+      "rarity": "orange",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 75,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "橙武器恢复输出/技能/统兵职责，减少杂项生命",
+        "按重兵/轻兵/智力/均衡职责逐件重分配，收紧v1预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 555,
+        "defense": 7,
+        "force": 36,
+        "intellect": 9,
+        "agility": 25,
+        "luck": 9
+      },
+      "after": {
+        "hp": 120,
+        "defense": 5,
+        "force": 58,
+        "intellect": 7,
+        "agility": 28,
+        "luck": 8
+      }
+    },
+    {
+      "key": "equip_xuantiechongjian",
+      "name": "玄铁重剑",
+      "rarity": "orange",
+      "slot": "weapon",
+      "role": "重兵/武将输出",
+      "required_level": 80,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "橙武器恢复输出/技能/统兵职责，减少杂项生命",
+        "按重兵/轻兵/智力/均衡职责逐件重分配，收紧v1预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 760,
+        "defense": 15,
+        "force": 58,
+        "agility": 8
+      },
+      "after": {
+        "hp": 280,
+        "defense": 12,
+        "force": 78,
+        "agility": 5
+      }
+    },
+    {
+      "key": "equip_dagoubang",
+      "name": "打狗棒",
+      "rarity": "orange",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 70,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "橙武器恢复输出/技能/统兵职责，减少杂项生命",
+        "按重兵/轻兵/智力/均衡职责逐件重分配，收紧v1预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 567,
+        "defense": 9,
+        "force": 37,
+        "agility": 21,
+        "luck": 14
+      },
+      "after": {
+        "hp": 180,
+        "defense": 7,
+        "force": 56,
+        "agility": 24,
+        "luck": 15
+      }
+    },
+    {
+      "key": "equip_xiaolifeidao",
+      "name": "小李飞刀",
+      "rarity": "orange",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 75,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "橙武器恢复输出/技能/统兵职责，减少杂项生命",
+        "按重兵/轻兵/智力/均衡职责逐件重分配，收紧v1预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 585,
+        "force": 36,
+        "intellect": 7,
+        "agility": 22,
+        "luck": 15
+      },
+      "after": {
+        "hp": 100,
+        "force": 58,
+        "intellect": 5,
+        "agility": 30,
+        "luck": 18
+      }
+    },
+    {
+      "key": "equip_kongquelin",
+      "name": "孔雀翎",
+      "rarity": "orange",
+      "slot": "weapon",
+      "role": "武智均衡",
+      "required_level": 80,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "橙武器恢复输出/技能/统兵职责，减少杂项生命",
+        "按重兵/轻兵/智力/均衡职责逐件重分配，收紧v1预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 610,
+        "force": 36,
+        "intellect": 9,
+        "agility": 23,
+        "luck": 14
+      },
+      "after": {
+        "hp": 120,
+        "force": 50,
+        "intellect": 22,
+        "agility": 26,
+        "luck": 18
+      }
+    },
+    {
+      "key": "equip_tianyamingyuedao",
+      "name": "天涯明月刀",
+      "rarity": "orange",
+      "slot": "weapon",
+      "role": "重兵/武将输出",
+      "required_level": 70,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "橙武器恢复输出/技能/统兵职责，减少杂项生命",
+        "按重兵/轻兵/智力/均衡职责逐件重分配，收紧v1预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 680,
+        "defense": 10,
+        "force": 58,
+        "agility": 18
+      },
+      "after": {
+        "hp": 220,
+        "defense": 8,
+        "force": 74,
+        "agility": 16
+      }
+    },
+    {
+      "key": "equip_yuanyuewandao",
+      "name": "圆月弯刀",
+      "rarity": "orange",
+      "slot": "weapon",
+      "role": "轻兵/先手",
+      "required_level": 80,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "橙武器恢复输出/技能/统兵职责，减少杂项生命",
+        "按重兵/轻兵/智力/均衡职责逐件重分配，收紧v1预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 577,
+        "defense": 9,
+        "force": 44,
+        "agility": 21,
+        "luck": 11
+      },
+      "after": {
+        "hp": 160,
+        "defense": 7,
+        "force": 62,
+        "agility": 22,
+        "luck": 14
+      }
+    },
+    {
+      "key": "equip_changshengjian",
+      "name": "长生剑",
+      "rarity": "orange",
+      "slot": "weapon",
+      "role": "武智均衡",
+      "required_level": 80,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "橙武器恢复输出/技能/统兵职责，减少杂项生命",
+        "按重兵/轻兵/智力/均衡职责逐件重分配，收紧v1预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 533,
+        "defense": 10,
+        "force": 32,
+        "intellect": 27,
+        "luck": 12
+      },
+      "after": {
+        "hp": 220,
+        "defense": 10,
+        "force": 48,
+        "intellect": 34,
+        "luck": 15
+      }
+    },
+    {
+      "key": "equip_zhuyuye",
+      "name": "茱萸叶",
+      "rarity": "purple",
+      "slot": "ornament",
+      "role": "运势辅助",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 320,
+        "defense": 14,
+        "force": 21,
+        "luck": 22
+      },
+      "after": {
+        "hp": 320,
+        "defense": 14,
+        "force": 21,
+        "luck": 22
+      }
+    },
+    {
+      "key": "equip_tongling",
+      "name": "铜铃",
+      "rarity": "green",
+      "slot": "ornament",
+      "role": "运势辅助",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "agility": 10,
+        "luck": 20
+      },
+      "after": {
+        "agility": 10,
+        "luck": 16
+      }
+    },
+    {
+      "key": "equip_yupei",
+      "name": "玉佩",
+      "rarity": "green",
+      "slot": "ornament",
+      "role": "统兵",
+      "required_level": 15,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 50,
+        "troop_capacity": 100
+      },
+      "after": {
+        "hp": 50,
+        "troop_capacity": 60
+      }
+    },
+    {
+      "key": "equip_hushenfu",
+      "name": "护身符",
+      "rarity": "green",
+      "slot": "ornament",
+      "role": "运势辅助",
+      "required_level": 20,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 100,
+        "defense": 15,
+        "force": 5,
+        "luck": 5
+      },
+      "after": {
+        "hp": 100,
+        "defense": 14,
+        "force": 5,
+        "luck": 5
+      }
+    },
+    {
+      "key": "equip_taomupai",
+      "name": "桃木牌",
+      "rarity": "green",
+      "slot": "ornament",
+      "role": "运势辅助",
+      "required_level": 20,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "defense": 20,
+        "intellect": 5,
+        "luck": 10
+      },
+      "after": {
+        "defense": 14,
+        "intellect": 5,
+        "luck": 10
+      }
+    },
+    {
+      "key": "equip_fudai",
+      "name": "福袋",
+      "rarity": "green",
+      "slot": "ornament",
+      "role": "运势辅助",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 100,
+        "defense": 5,
+        "luck": 20
+      },
+      "after": {
+        "hp": 100,
+        "defense": 5,
+        "luck": 16
+      }
+    },
+    {
+      "key": "equip_tiehufu",
+      "name": "铁护符",
+      "rarity": "green",
+      "slot": "ornament",
+      "role": "运势辅助",
+      "required_level": 20,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 200,
+        "defense": 20
+      },
+      "after": {
+        "hp": 200,
+        "defense": 14
+      }
+    },
+    {
+      "key": "equip_tanmunianzhu",
+      "name": "檀木念珠",
+      "rarity": "green",
+      "slot": "ornament",
+      "role": "统兵",
+      "required_level": 20,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "defense": 5,
+        "force": 5,
+        "intellect": 15,
+        "troop_capacity": 20,
+        "luck": 10
+      },
+      "after": {
+        "defense": 5,
+        "force": 5,
+        "intellect": 15,
+        "troop_capacity": 15,
+        "luck": 10
+      }
+    },
+    {
+      "key": "equip_yiqiyaopai",
+      "name": "义气腰牌",
+      "rarity": "green",
+      "slot": "ornament",
+      "role": "统兵",
+      "required_level": 20,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 100,
+        "defense": 5,
+        "force": 25
+      },
+      "after": {
+        "hp": 100,
+        "defense": 5,
+        "force": 20,
+        "troop_capacity": 20
+      }
+    },
+    {
+      "key": "equip_longwenyupei",
+      "name": "龙纹玉佩",
+      "rarity": "blue",
+      "slot": "ornament",
+      "role": "统兵",
+      "required_level": 30,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 100,
+        "force": 12,
+        "troop_capacity": 50,
+        "luck": 15
+      },
+      "after": {
+        "hp": 100,
+        "force": 12,
+        "troop_capacity": 60,
+        "luck": 15
+      }
+    },
+    {
+      "key": "equip_fengyuzan",
+      "name": "凤羽簪",
+      "rarity": "blue",
+      "slot": "ornament",
+      "role": "运势辅助",
+      "required_level": 25,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 100,
+        "intellect": 15,
+        "luck": 20
+      },
+      "after": {
+        "hp": 100,
+        "intellect": 15,
+        "luck": 20
+      }
+    },
+    {
+      "key": "equip_huyaxianglian",
+      "name": "虎牙项链",
+      "rarity": "blue",
+      "slot": "ornament",
+      "role": "武将辅助",
+      "required_level": 25,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 250,
+        "force": 20,
+        "agility": 15
+      },
+      "after": {
+        "hp": 250,
+        "force": 20,
+        "agility": 15
+      }
+    },
+    {
+      "key": "equip_linghuzhui",
+      "name": "灵狐坠",
+      "rarity": "blue",
+      "slot": "ornament",
+      "role": "文官辅助",
+      "required_level": 30,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 150,
+        "intellect": 25,
+        "agility": 15
+      },
+      "after": {
+        "hp": 150,
+        "intellect": 25,
+        "agility": 15
+      }
+    },
+    {
+      "key": "equip_xingshashouchuan",
+      "name": "星砂手串",
+      "rarity": "blue",
+      "slot": "ornament",
+      "role": "运势辅助",
+      "required_level": 30,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 150,
+        "intellect": 16,
+        "luck": 20
+      },
+      "after": {
+        "hp": 150,
+        "intellect": 16,
+        "luck": 20
+      }
+    },
+    {
+      "key": "equip_xueyuzhuo",
+      "name": "血玉镯",
+      "rarity": "blue",
+      "slot": "ornament",
+      "role": "武将辅助",
+      "required_level": 25,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 200,
+        "force": 20,
+        "agility": 18
+      },
+      "after": {
+        "hp": 200,
+        "force": 20,
+        "agility": 15
+      }
+    },
+    {
+      "key": "equip_xuantiejie",
+      "name": "玄铁戒",
+      "rarity": "blue",
+      "slot": "ornament",
+      "role": "武将辅助",
+      "required_level": 40,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 500,
+        "defense": 15,
+        "force": 15
+      },
+      "after": {
+        "hp": 300,
+        "defense": 14,
+        "force": 15
+      }
+    },
+    {
+      "key": "equip_liuyunpei",
+      "name": "流云佩",
+      "rarity": "blue",
+      "slot": "ornament",
+      "role": "运势辅助",
+      "required_level": 30,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 150,
+        "intellect": 9,
+        "agility": 15,
+        "luck": 15
+      },
+      "after": {
+        "hp": 150,
+        "intellect": 9,
+        "agility": 15,
+        "luck": 15
+      }
+    },
+    {
+      "key": "equip_qilinzui",
+      "name": "麒麟坠",
+      "rarity": "purple",
+      "slot": "ornament",
+      "role": "运势辅助",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 235,
+        "force": 24,
+        "intellect": 6,
+        "luck": 28,
+        "set_key": "qilin_set",
+        "set_description": "麒麟套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 420,
+            "force": 38,
+            "agility": 18,
+            "luck": 30
+          }
+        }
+      },
+      "after": {
+        "hp": 235,
+        "force": 24,
+        "intellect": 6,
+        "luck": 24,
+        "set_key": "qilin_set",
+        "set_description": "麒麟套装",
+        "set_bonus": {
+          "pieces": 4,
+          "bonus": {
+            "hp": 320,
+            "force": 28,
+            "agility": 12,
+            "luck": 20
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_fenghuangyu",
+      "name": "凤凰羽",
+      "rarity": "purple",
+      "slot": "ornament",
+      "role": "文官辅助",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 87,
+        "defense": 10,
+        "intellect": 29,
+        "luck": 19,
+        "set_key": "fengling_set",
+        "set_description": "凤翎套装",
+        "set_bonus": {
+          "pieces": 3,
+          "bonus": {
+            "intellect": 60,
+            "luck": 30
+          }
+        }
+      },
+      "after": {
+        "hp": 87,
+        "defense": 10,
+        "intellect": 29,
+        "luck": 19,
+        "set_key": "fengling_set",
+        "set_description": "凤翎套装",
+        "set_bonus": {
+          "pieces": 3,
+          "bonus": {
+            "intellect": 40,
+            "luck": 20
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_longjingzhu",
+      "name": "龙睛珠",
+      "rarity": "purple",
+      "slot": "ornament",
+      "role": "武将辅助",
+      "required_level": 45,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 229,
+        "force": 19,
+        "agility": 22,
+        "luck": 18
+      },
+      "after": {
+        "hp": 229,
+        "force": 19,
+        "agility": 16,
+        "luck": 18
+      }
+    },
+    {
+      "key": "equip_xuanwuyufu",
+      "name": "玄武玉符",
+      "rarity": "purple",
+      "slot": "ornament",
+      "role": "生存辅助",
+      "required_level": 60,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "坦克饰品保留生存与少量武智，避免输出全面兼得",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 286,
+        "defense": 22,
+        "force": 25,
+        "intellect": 14
+      },
+      "after": {
+        "hp": 286,
+        "defense": 18,
+        "force": 16,
+        "intellect": 10
+      }
+    },
+    {
+      "key": "equip_tianjiyupei",
+      "name": "天机玉佩",
+      "rarity": "purple",
+      "slot": "ornament",
+      "role": "文官辅助",
+      "required_level": 45,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 184,
+        "force": 7,
+        "intellect": 26,
+        "luck": 22
+      },
+      "after": {
+        "hp": 184,
+        "force": 7,
+        "intellect": 26,
+        "luck": 22
+      }
+    },
+    {
+      "key": "equip_pojunhufu",
+      "name": "破军虎符",
+      "rarity": "purple",
+      "slot": "ornament",
+      "role": "统兵",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 267,
+        "force": 31,
+        "intellect": 9,
+        "agility": 22
+      },
+      "after": {
+        "hp": 267,
+        "force": 26,
+        "intellect": 9,
+        "agility": 16,
+        "troop_capacity": 80
+      }
+    },
+    {
+      "key": "equip_guiyuanzhu",
+      "name": "归元珠",
+      "rarity": "purple",
+      "slot": "ornament",
+      "role": "运势辅助",
+      "required_level": 45,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 297,
+        "force": 4,
+        "intellect": 23,
+        "luck": 26
+      },
+      "after": {
+        "hp": 297,
+        "force": 4,
+        "intellect": 23,
+        "luck": 24
+      }
+    },
+    {
+      "key": "equip_shenghuoling",
+      "name": "圣火令",
+      "rarity": "purple",
+      "slot": "ornament",
+      "role": "统兵",
+      "required_level": 50,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 261,
+        "force": 14,
+        "intellect": 17,
+        "luck": 22
+      },
+      "after": {
+        "hp": 261,
+        "force": 14,
+        "intellect": 17,
+        "luck": 22,
+        "troop_capacity": 80
+      }
+    },
+    {
+      "key": "equip_heshibi",
+      "name": "和氏璧",
+      "rarity": "orange",
+      "slot": "ornament",
+      "role": "文官辅助",
+      "required_level": 65,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 290,
+        "defense": 7,
+        "intellect": 32,
+        "luck": 25
+      },
+      "after": {
+        "hp": 290,
+        "defense": 7,
+        "intellect": 32,
+        "luck": 25
+      }
+    },
+    {
+      "key": "equip_chuanguoyuxi",
+      "name": "传国玉玺",
+      "rarity": "orange",
+      "slot": "ornament",
+      "role": "统兵",
+      "required_level": 80,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 350,
+        "defense": 5,
+        "force": 16,
+        "intellect": 16,
+        "troop_capacity": 200,
+        "luck": 15
+      },
+      "after": {
+        "hp": 350,
+        "defense": 5,
+        "force": 16,
+        "intellect": 16,
+        "troop_capacity": 160,
+        "luck": 15
+      }
+    },
+    {
+      "key": "equip_qiankunzhu",
+      "name": "乾坤珠",
+      "rarity": "orange",
+      "slot": "ornament",
+      "role": "生存辅助",
+      "required_level": 70,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 271,
+        "defense": 20,
+        "force": 15,
+        "intellect": 10,
+        "agility": 15,
+        "luck": 10
+      },
+      "after": {
+        "hp": 271,
+        "defense": 20,
+        "force": 15,
+        "intellect": 10,
+        "agility": 15,
+        "luck": 10
+      }
+    },
+    {
+      "key": "equip_businiaoyu",
+      "name": "不死鸟羽",
+      "rarity": "orange",
+      "slot": "ornament",
+      "role": "武将辅助",
+      "required_level": 65,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 315,
+        "force": 35,
+        "agility": 35
+      },
+      "after": {
+        "hp": 315,
+        "force": 28,
+        "agility": 20
+      }
+    },
+    {
+      "key": "equip_jianghuling",
+      "name": "江湖令",
+      "rarity": "orange",
+      "slot": "ornament",
+      "role": "统兵",
+      "required_level": 75,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 350,
+        "force": 20,
+        "intellect": 20,
+        "agility": 30,
+        "troop_capacity": 100
+      },
+      "after": {
+        "hp": 350,
+        "force": 20,
+        "intellect": 20,
+        "agility": 20,
+        "troop_capacity": 80
+      }
+    },
+    {
+      "key": "equip_shangshanfaeling",
+      "name": "赏善罚恶令",
+      "rarity": "orange",
+      "slot": "ornament",
+      "role": "统兵",
+      "required_level": 70,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 273,
+        "defense": 7,
+        "force": 21,
+        "intellect": 18,
+        "luck": 22
+      },
+      "after": {
+        "hp": 273,
+        "defense": 7,
+        "force": 21,
+        "intellect": 18,
+        "luck": 22,
+        "troop_capacity": 60
+      }
+    },
+    {
+      "key": "equip_taotieding",
+      "name": "饕餮鼎",
+      "rarity": "purple",
+      "slot": "device",
+      "role": "器械辅助",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 500,
+        "defense": 15,
+        "force": 18,
+        "intellect": 25,
+        "luck": 10,
+        "troop_stat_bonus": {
+          "dao": {
+            "attack_pct": 0.0025,
+            "defense_pct": 0.0025,
+            "hp_pct": 0.0025
+          },
+          "qiang": {
+            "attack_pct": 0.0025,
+            "defense_pct": 0.0025,
+            "hp_pct": 0.0025
+          },
+          "jian": {
+            "attack_pct": 0.0025,
+            "defense_pct": 0.0025,
+            "hp_pct": 0.0025
+          },
+          "quan": {
+            "attack_pct": 0.0025,
+            "defense_pct": 0.0025,
+            "hp_pct": 0.0025
+          },
+          "gong": {
+            "attack_pct": 0.0025,
+            "defense_pct": 0.0025,
+            "hp_pct": 0.0025
+          },
+          "scout": {
+            "attack_pct": 0.0025,
+            "defense_pct": 0.0025,
+            "hp_pct": 0.0025
+          }
+        }
+      },
+      "after": {
+        "hp": 450,
+        "defense": 15,
+        "force": 18,
+        "intellect": 24,
+        "luck": 10,
+        "troop_stat_bonus": {
+          "dao": {
+            "attack_pct": 0.0025,
+            "defense_pct": 0.0025,
+            "hp_pct": 0.0025
+          },
+          "qiang": {
+            "attack_pct": 0.0025,
+            "defense_pct": 0.0025,
+            "hp_pct": 0.0025
+          },
+          "jian": {
+            "attack_pct": 0.0025,
+            "defense_pct": 0.0025,
+            "hp_pct": 0.0025
+          },
+          "quan": {
+            "attack_pct": 0.0025,
+            "defense_pct": 0.0025,
+            "hp_pct": 0.0025
+          },
+          "gong": {
+            "attack_pct": 0.0025,
+            "defense_pct": 0.0025,
+            "hp_pct": 0.0025
+          },
+          "scout": {
+            "attack_pct": 0.0025,
+            "defense_pct": 0.0025,
+            "hp_pct": 0.0025
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_taomujian",
+      "name": "桃木剑",
+      "rarity": "green",
+      "slot": "ornament",
+      "role": "文官辅助",
+      "required_level": 15,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "defense": 10,
+        "intellect": 15,
+        "luck": 5
+      },
+      "after": {
+        "defense": 10,
+        "intellect": 15,
+        "luck": 5
+      }
+    },
+    {
+      "key": "equip_tongjing",
+      "name": "铜镜",
+      "rarity": "green",
+      "slot": "ornament",
+      "role": "生存辅助",
+      "required_level": 15,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "绿饰品兼得高生命高防御的峰值回收",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 500,
+        "defense": 20,
+        "intellect": 5
+      },
+      "after": {
+        "hp": 250,
+        "defense": 14,
+        "intellect": 5
+      }
+    },
+    {
+      "key": "equip_luopan",
+      "name": "罗盘",
+      "rarity": "green",
+      "slot": "ornament",
+      "role": "文官辅助",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "intellect": 20,
+        "agility": 5,
+        "luck": 5
+      },
+      "after": {
+        "intellect": 20,
+        "agility": 5,
+        "luck": 5
+      }
+    },
+    {
+      "key": "equip_zhujian",
+      "name": "竹简",
+      "rarity": "green",
+      "slot": "ornament",
+      "role": "文官辅助",
+      "required_level": 15,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "defense": 5,
+        "intellect": 30
+      },
+      "after": {
+        "defense": 5,
+        "intellect": 24
+      }
+    },
+    {
+      "key": "equip_moyuyan",
+      "name": "墨玉砚",
+      "rarity": "green",
+      "slot": "ornament",
+      "role": "文官辅助",
+      "required_level": 15,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 200,
+        "defense": 5,
+        "intellect": 25
+      },
+      "after": {
+        "hp": 200,
+        "defense": 5,
+        "intellect": 24
+      }
+    },
+    {
+      "key": "equip_qingtongsuanchou",
+      "name": "青铜算筹",
+      "rarity": "green",
+      "slot": "ornament",
+      "role": "文官辅助",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "intellect": 20,
+        "luck": 15
+      },
+      "after": {
+        "intellect": 20,
+        "luck": 15
+      }
+    },
+    {
+      "key": "equip_xiaoxingjiguanshu",
+      "name": "小型机关鼠",
+      "rarity": "green",
+      "slot": "device",
+      "role": "器械辅助",
+      "required_level": 15,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 800,
+        "force": 15,
+        "agility": 15,
+        "troop_stat_bonus": {
+          "dao": {
+            "hp_pct": 0.005
+          },
+          "qiang": {
+            "hp_pct": 0.005
+          },
+          "jian": {
+            "hp_pct": 0.005
+          },
+          "quan": {
+            "hp_pct": 0.005
+          },
+          "gong": {
+            "hp_pct": 0.005
+          },
+          "scout": {
+            "hp_pct": 0.005
+          }
+        }
+      },
+      "after": {
+        "hp": 400,
+        "force": 12,
+        "agility": 12,
+        "troop_stat_bonus": {
+          "dao": {
+            "hp_pct": 0.005
+          },
+          "qiang": {
+            "hp_pct": 0.005
+          },
+          "jian": {
+            "hp_pct": 0.005
+          },
+          "quan": {
+            "hp_pct": 0.005
+          },
+          "gong": {
+            "hp_pct": 0.005
+          },
+          "scout": {
+            "hp_pct": 0.005
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_tongchanjiguan",
+      "name": "铜蝉机关",
+      "rarity": "green",
+      "slot": "device",
+      "role": "器械辅助",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 200,
+        "agility": 18,
+        "force": 15,
+        "intellect": 5,
+        "troop_stat_bonus": {
+          "dao": {
+            "attack_pct": 0.005
+          },
+          "qiang": {
+            "attack_pct": 0.005
+          },
+          "jian": {
+            "attack_pct": 0.005
+          },
+          "quan": {
+            "attack_pct": 0.005
+          },
+          "gong": {
+            "attack_pct": 0.005
+          },
+          "scout": {
+            "attack_pct": 0.005
+          }
+        }
+      },
+      "after": {
+        "hp": 200,
+        "agility": 12,
+        "force": 12,
+        "intellect": 5,
+        "troop_stat_bonus": {
+          "dao": {
+            "attack_pct": 0.005
+          },
+          "qiang": {
+            "attack_pct": 0.005
+          },
+          "jian": {
+            "attack_pct": 0.005
+          },
+          "quan": {
+            "attack_pct": 0.005
+          },
+          "gong": {
+            "attack_pct": 0.005
+          },
+          "scout": {
+            "attack_pct": 0.005
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_zhaoyaojing",
+      "name": "照妖镜",
+      "rarity": "blue",
+      "slot": "ornament",
+      "role": "武将辅助",
+      "required_level": 35,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 500,
+        "force": 25,
+        "luck": 15
+      },
+      "after": {
+        "hp": 300,
+        "force": 22,
+        "luck": 15
+      }
+    },
+    {
+      "key": "equip_qiankunquan",
+      "name": "乾坤圈",
+      "rarity": "blue",
+      "slot": "ornament",
+      "role": "武将辅助",
+      "required_level": 40,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "defense": 10,
+        "force": 25,
+        "agility": 12
+      },
+      "after": {
+        "defense": 10,
+        "force": 22,
+        "agility": 12
+      }
+    },
+    {
+      "key": "equip_tianjiluopan",
+      "name": "天机罗盘",
+      "rarity": "blue",
+      "slot": "ornament",
+      "role": "文官辅助",
+      "required_level": 40,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "intellect": 25,
+        "agility": 5,
+        "luck": 20
+      },
+      "after": {
+        "intellect": 25,
+        "agility": 5,
+        "luck": 20
+      }
+    },
+    {
+      "key": "equip_lingwenyubi",
+      "name": "灵纹玉笔",
+      "rarity": "blue",
+      "slot": "ornament",
+      "role": "文官辅助",
+      "required_level": 30,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 200,
+        "intellect": 25,
+        "luck": 15
+      },
+      "after": {
+        "hp": 200,
+        "intellect": 25,
+        "luck": 15
+      }
+    },
+    {
+      "key": "equip_guanxingdeng",
+      "name": "观星灯",
+      "rarity": "blue",
+      "slot": "ornament",
+      "role": "运势辅助",
+      "required_level": 35,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 100,
+        "intellect": 10,
+        "luck": 30
+      },
+      "after": {
+        "hp": 100,
+        "intellect": 10,
+        "luck": 22
+      }
+    },
+    {
+      "key": "equip_jixiemao",
+      "name": "机械猫",
+      "rarity": "blue",
+      "slot": "device",
+      "role": "器械辅助",
+      "required_level": 30,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 500,
+        "intellect": 10,
+        "agility": 10,
+        "force": 25,
+        "troop_stat_bonus": {
+          "gong": {
+            "hp_pct": 0.01
+          }
+        }
+      },
+      "after": {
+        "hp": 400,
+        "intellect": 10,
+        "agility": 10,
+        "force": 18,
+        "troop_stat_bonus": {
+          "gong": {
+            "hp_pct": 0.01
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_jiguanchuniao",
+      "name": "机关雏鸟",
+      "rarity": "blue",
+      "slot": "device",
+      "role": "器械辅助",
+      "required_level": 30,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 500,
+        "force": 15,
+        "agility": 30,
+        "troop_stat_bonus": {
+          "gong": {
+            "attack_pct": 0.01
+          }
+        }
+      },
+      "after": {
+        "hp": 400,
+        "force": 15,
+        "agility": 16,
+        "troop_stat_bonus": {
+          "gong": {
+            "attack_pct": 0.01
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_kuileimuren",
+      "name": "傀儡木人",
+      "rarity": "blue",
+      "slot": "device",
+      "role": "器械辅助",
+      "required_level": 40,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 150,
+        "defense": 5,
+        "force": 20,
+        "intellect": 25,
+        "troop_stat_bonus": {
+          "qiang": {
+            "hp_pct": 0.01
+          }
+        }
+      },
+      "after": {
+        "hp": 150,
+        "defense": 5,
+        "force": 18,
+        "intellect": 18,
+        "troop_stat_bonus": {
+          "qiang": {
+            "hp_pct": 0.01
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_qingji",
+      "name": "庆忌",
+      "rarity": "blue",
+      "slot": "device",
+      "role": "器械辅助",
+      "required_level": 25,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "agility": 35,
+        "luck": 12,
+        "troop_stat_bonus": {
+          "jian": {
+            "attack_pct": 0.01
+          }
+        }
+      },
+      "after": {
+        "agility": 16,
+        "luck": 8,
+        "troop_stat_bonus": {
+          "jian": {
+            "attack_pct": 0.01
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_baguajing",
+      "name": "八卦镜",
+      "rarity": "purple",
+      "slot": "ornament",
+      "role": "文官辅助",
+      "required_level": 50,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 500,
+        "intellect": 30,
+        "luck": 30
+      },
+      "after": {
+        "hp": 400,
+        "intellect": 30,
+        "luck": 24
+      }
+    },
+    {
+      "key": "equip_hunyuansan",
+      "name": "混元伞",
+      "rarity": "purple",
+      "slot": "ornament",
+      "role": "武将辅助",
+      "required_level": 60,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 800,
+        "defense": 14,
+        "force": 42,
+        "luck": 5
+      },
+      "after": {
+        "hp": 400,
+        "defense": 14,
+        "force": 26,
+        "luck": 5
+      }
+    },
+    {
+      "key": "equip_zijinhulu",
+      "name": "紫金葫芦",
+      "rarity": "purple",
+      "slot": "ornament",
+      "role": "文官辅助",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 225,
+        "defense": 20,
+        "intellect": 37
+      },
+      "after": {
+        "hp": 225,
+        "defense": 18,
+        "intellect": 30
+      }
+    },
+    {
+      "key": "equip_tianyinguqin",
+      "name": "天音古琴",
+      "rarity": "purple",
+      "slot": "ornament",
+      "role": "文官辅助",
+      "required_level": 45,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 300,
+        "intellect": 40,
+        "luck": 17
+      },
+      "after": {
+        "hp": 300,
+        "intellect": 30,
+        "luck": 17
+      }
+    },
+    {
+      "key": "equip_xuanmingdeng",
+      "name": "玄冥灯",
+      "rarity": "purple",
+      "slot": "ornament",
+      "role": "文官辅助",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 256,
+        "defense": 13,
+        "intellect": 43,
+        "luck": 4
+      },
+      "after": {
+        "hp": 256,
+        "defense": 13,
+        "intellect": 30,
+        "luck": 4
+      }
+    },
+    {
+      "key": "equip_jiguanxiong",
+      "name": "机关熊",
+      "rarity": "purple",
+      "slot": "device",
+      "role": "器械辅助",
+      "required_level": 50,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 800,
+        "defense": 15,
+        "force": 45,
+        "troop_stat_bonus": {
+          "quan": {
+            "attack_pct": 0.01
+          }
+        }
+      },
+      "after": {
+        "hp": 450,
+        "defense": 15,
+        "force": 24,
+        "troop_stat_bonus": {
+          "quan": {
+            "attack_pct": 0.01
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_muniuliuma",
+      "name": "木牛流马",
+      "rarity": "purple",
+      "slot": "device",
+      "role": "器械辅助",
+      "required_level": 45,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 300,
+        "intellect": 34,
+        "agility": 13,
+        "luck": 11,
+        "troop_stat_bonus": {
+          "dao": {
+            "hp_pct": 0.005
+          },
+          "qiang": {
+            "hp_pct": 0.005
+          },
+          "jian": {
+            "hp_pct": 0.005
+          },
+          "quan": {
+            "hp_pct": 0.005
+          },
+          "gong": {
+            "hp_pct": 0.005
+          },
+          "scout": {
+            "hp_pct": 0.005
+          }
+        }
+      },
+      "after": {
+        "hp": 300,
+        "intellect": 24,
+        "agility": 12,
+        "luck": 10,
+        "troop_stat_bonus": {
+          "dao": {
+            "hp_pct": 0.005
+          },
+          "qiang": {
+            "hp_pct": 0.005
+          },
+          "jian": {
+            "hp_pct": 0.005
+          },
+          "quan": {
+            "hp_pct": 0.005
+          },
+          "gong": {
+            "hp_pct": 0.005
+          },
+          "scout": {
+            "hp_pct": 0.005
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_kuileiren",
+      "name": "傀儡人",
+      "rarity": "purple",
+      "slot": "device",
+      "role": "器械辅助",
+      "required_level": 45,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 179,
+        "defense": 10,
+        "intellect": 37,
+        "agility": 13,
+        "troop_stat_bonus": {
+          "jian": {
+            "attack_pct": 0.005,
+            "defense_pct": 0.005,
+            "hp_pct": 0.005
+          }
+        }
+      },
+      "after": {
+        "hp": 179,
+        "defense": 10,
+        "intellect": 24,
+        "agility": 12,
+        "troop_stat_bonus": {
+          "jian": {
+            "attack_pct": 0.005,
+            "defense_pct": 0.005,
+            "hp_pct": 0.005
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_xuanwujigui",
+      "name": "玄武机龟",
+      "rarity": "purple",
+      "slot": "device",
+      "role": "器械辅助",
+      "required_level": 60,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 800,
+        "defense": 45,
+        "luck": 15,
+        "troop_stat_bonus": {
+          "qiang": {
+            "attack_pct": 0.005,
+            "defense_pct": 0.005,
+            "hp_pct": 0.005
+          }
+        }
+      },
+      "after": {
+        "hp": 450,
+        "defense": 18,
+        "luck": 10,
+        "troop_stat_bonus": {
+          "qiang": {
+            "attack_pct": 0.005,
+            "defense_pct": 0.005,
+            "hp_pct": 0.005
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_fengshenbang",
+      "name": "封神榜",
+      "rarity": "orange",
+      "slot": "ornament",
+      "role": "文官辅助",
+      "required_level": 70,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 350,
+        "defense": 5,
+        "intellect": 45,
+        "luck": 20
+      },
+      "after": {
+        "hp": 350,
+        "defense": 5,
+        "intellect": 34,
+        "luck": 20
+      }
+    },
+    {
+      "key": "equip_shanheshejitu",
+      "name": "山河社稷图",
+      "rarity": "orange",
+      "slot": "ornament",
+      "role": "统兵",
+      "required_level": 75,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 350,
+        "agility": 15,
+        "intellect": 45,
+        "luck": 10
+      },
+      "after": {
+        "hp": 350,
+        "agility": 15,
+        "intellect": 34,
+        "luck": 10,
+        "troop_capacity": 60
+      }
+    },
+    {
+      "key": "equip_zhoutianxingpan",
+      "name": "周天星盘",
+      "rarity": "orange",
+      "slot": "ornament",
+      "role": "运势辅助",
+      "required_level": 75,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "defense": 30,
+        "agility": 10,
+        "luck": 30
+      },
+      "after": {
+        "defense": 20,
+        "agility": 10,
+        "luck": 25
+      }
+    },
+    {
+      "key": "equip_taiqingyuce",
+      "name": "太清玉册",
+      "rarity": "orange",
+      "slot": "ornament",
+      "role": "文官辅助",
+      "required_level": 65,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 500,
+        "intellect": 47,
+        "luck": 16
+      },
+      "after": {
+        "hp": 400,
+        "intellect": 34,
+        "luck": 16
+      }
+    },
+    {
+      "key": "equip_feiyuan",
+      "name": "飞鸢",
+      "rarity": "orange",
+      "slot": "device",
+      "role": "器械辅助",
+      "required_level": 65,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 500,
+        "intellect": 40,
+        "agility": 30,
+        "luck": 10,
+        "troop_stat_bonus": {
+          "dao": {
+            "attack_pct": 0.005
+          },
+          "qiang": {
+            "attack_pct": 0.005
+          },
+          "jian": {
+            "attack_pct": 0.005
+          },
+          "quan": {
+            "attack_pct": 0.005
+          },
+          "gong": {
+            "attack_pct": 0.005
+          },
+          "scout": {
+            "attack_pct": 0.005
+          }
+        }
+      },
+      "after": {
+        "hp": 450,
+        "intellect": 26,
+        "agility": 12,
+        "luck": 8,
+        "troop_stat_bonus": {
+          "dao": {
+            "attack_pct": 0.005
+          },
+          "qiang": {
+            "attack_pct": 0.005
+          },
+          "jian": {
+            "attack_pct": 0.005
+          },
+          "quan": {
+            "attack_pct": 0.005
+          },
+          "gong": {
+            "attack_pct": 0.005
+          },
+          "scout": {
+            "attack_pct": 0.005
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_chixiaojifeng",
+      "name": "赤霄机凤",
+      "rarity": "orange",
+      "slot": "device",
+      "role": "器械辅助",
+      "required_level": 75,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 300,
+        "force": 45,
+        "agility": 35,
+        "luck": 10,
+        "troop_stat_bonus": {
+          "gong": {
+            "attack_pct": 0.015
+          }
+        }
+      },
+      "after": {
+        "hp": 300,
+        "force": 26,
+        "agility": 12,
+        "luck": 8,
+        "troop_stat_bonus": {
+          "gong": {
+            "attack_pct": 0.015
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_mojiajiguanren",
+      "name": "墨家机关人",
+      "rarity": "orange",
+      "slot": "device",
+      "role": "器械辅助",
+      "required_level": 80,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 800,
+        "defense": 15,
+        "force": 25,
+        "intellect": 25,
+        "agility": 15,
+        "luck": 10,
+        "troop_stat_bonus": {
+          "dao": {
+            "attack_pct": 0.005,
+            "defense_pct": 0.005,
+            "hp_pct": 0.005
+          },
+          "qiang": {
+            "attack_pct": 0.005,
+            "defense_pct": 0.005,
+            "hp_pct": 0.005
+          },
+          "jian": {
+            "attack_pct": 0.005,
+            "defense_pct": 0.005,
+            "hp_pct": 0.005
+          },
+          "quan": {
+            "attack_pct": 0.005,
+            "defense_pct": 0.005,
+            "hp_pct": 0.005
+          },
+          "gong": {
+            "attack_pct": 0.005,
+            "defense_pct": 0.005,
+            "hp_pct": 0.005
+          },
+          "scout": {
+            "attack_pct": 0.005,
+            "defense_pct": 0.005,
+            "hp_pct": 0.005
+          }
+        }
+      },
+      "after": {
+        "hp": 450,
+        "defense": 12,
+        "force": 25,
+        "intellect": 25,
+        "agility": 12,
+        "luck": 8,
+        "troop_stat_bonus": {
+          "dao": {
+            "attack_pct": 0.005,
+            "defense_pct": 0.005,
+            "hp_pct": 0.005
+          },
+          "qiang": {
+            "attack_pct": 0.005,
+            "defense_pct": 0.005,
+            "hp_pct": 0.005
+          },
+          "jian": {
+            "attack_pct": 0.005,
+            "defense_pct": 0.005,
+            "hp_pct": 0.005
+          },
+          "quan": {
+            "attack_pct": 0.005,
+            "defense_pct": 0.005,
+            "hp_pct": 0.005
+          },
+          "gong": {
+            "attack_pct": 0.005,
+            "defense_pct": 0.005,
+            "hp_pct": 0.005
+          },
+          "scout": {
+            "attack_pct": 0.005,
+            "defense_pct": 0.005,
+            "hp_pct": 0.005
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_qingtongzhijiaodoushi",
+      "name": "青铜之角斗士",
+      "rarity": "green",
+      "slot": "device",
+      "role": "器械辅助",
+      "required_level": 20,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 300,
+        "defense": 8,
+        "force": 18,
+        "agility": 8,
+        "troop_stat_bonus": {
+          "quan": {
+            "attack_pct": 0.005
+          }
+        }
+      },
+      "after": {
+        "hp": 300,
+        "defense": 8,
+        "force": 12,
+        "agility": 8,
+        "troop_stat_bonus": {
+          "quan": {
+            "attack_pct": 0.005
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_baiyinzhijiaodoushi",
+      "name": "白银之角斗士",
+      "rarity": "blue",
+      "slot": "device",
+      "role": "器械辅助",
+      "required_level": 40,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 500,
+        "defense": 10,
+        "force": 27,
+        "agility": 12,
+        "troop_stat_bonus": {
+          "quan": {
+            "attack_pct": 0.01
+          }
+        }
+      },
+      "after": {
+        "hp": 400,
+        "defense": 10,
+        "force": 18,
+        "agility": 12,
+        "troop_stat_bonus": {
+          "quan": {
+            "attack_pct": 0.01
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_huangjinzhijiaodoushi",
+      "name": "黄金之角斗士",
+      "rarity": "purple",
+      "slot": "device",
+      "role": "器械辅助",
+      "required_level": 60,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 750,
+        "defense": 15,
+        "force": 38,
+        "agility": 16,
+        "troop_stat_bonus": {
+          "quan": {
+            "attack_pct": 0.01,
+            "defense_pct": 0.005
+          }
+        }
+      },
+      "after": {
+        "hp": 450,
+        "defense": 15,
+        "force": 24,
+        "agility": 12,
+        "troop_stat_bonus": {
+          "quan": {
+            "attack_pct": 0.01,
+            "defense_pct": 0.005
+          }
+        }
+      }
+    },
+    {
+      "key": "equip_zaohongma",
+      "name": "枣红马",
+      "rarity": "black",
+      "slot": "mount",
+      "role": "先手机动",
+      "required_level": 1,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 40,
+        "defense": 4,
+        "force": 4,
+        "agility": 9
+      },
+      "after": {
+        "hp": 40,
+        "defense": 4,
+        "force": 4,
+        "agility": 9
+      }
+    },
+    {
+      "key": "equip_huangbiaoma",
+      "name": "黄膘马",
+      "rarity": "black",
+      "slot": "mount",
+      "role": "先手机动",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 160,
+        "defense": 8,
+        "agility": 12
+      },
+      "after": {
+        "hp": 160,
+        "defense": 8,
+        "agility": 12
+      }
+    },
+    {
+      "key": "equip_dawanma",
+      "name": "大宛马",
+      "rarity": "green",
+      "slot": "mount",
+      "role": "先手机动",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": true,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 160,
+        "defense": 4,
+        "agility": 16
+      },
+      "after": {
+        "hp": 160,
+        "defense": 4,
+        "agility": 16
+      }
+    },
+    {
+      "key": "equip_qingcongma",
+      "name": "青骢马",
+      "rarity": "black",
+      "slot": "mount",
+      "role": "先手机动",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 150,
+        "defense": 5,
+        "force": 5,
+        "agility": 12
+      },
+      "after": {
+        "hp": 150,
+        "defense": 5,
+        "force": 5,
+        "agility": 12
+      }
+    },
+    {
+      "key": "equip_xiaomaolv",
+      "name": "小毛驴",
+      "rarity": "black",
+      "slot": "mount",
+      "role": "先手机动",
+      "required_level": 5,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": false,
+      "in_current_shop": false,
+      "changed": false,
+      "reasons": [
+        "保留现有基础属性，加入穿戴等级"
+      ],
+      "before": {
+        "hp": 80,
+        "defense": 5,
+        "agility": 10,
+        "luck": 5
+      },
+      "after": {
+        "hp": 80,
+        "defense": 5,
+        "agility": 10,
+        "luck": 5
+      }
+    },
+    {
+      "key": "equip_xiliangma",
+      "name": "西凉马",
+      "rarity": "green",
+      "slot": "mount",
+      "role": "先手机动",
+      "required_level": 20,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 200,
+        "defense": 5,
+        "force": 10,
+        "agility": 25
+      },
+      "after": {
+        "hp": 180,
+        "defense": 5,
+        "force": 8,
+        "agility": 25
+      }
+    },
+    {
+      "key": "equip_mengguma",
+      "name": "蒙古马",
+      "rarity": "green",
+      "slot": "mount",
+      "role": "先手机动",
+      "required_level": 15,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 250,
+        "defense": 8,
+        "force": 5,
+        "agility": 20
+      },
+      "after": {
+        "hp": 180,
+        "defense": 8,
+        "force": 5,
+        "agility": 20
+      }
+    },
+    {
+      "key": "equip_taxuema",
+      "name": "踏雪马",
+      "rarity": "green",
+      "slot": "mount",
+      "role": "先手机动",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "defense": 5,
+        "agility": 35
+      },
+      "after": {
+        "defense": 5,
+        "agility": 26
+      }
+    },
+    {
+      "key": "equip_qingzongma",
+      "name": "青鬃马",
+      "rarity": "green",
+      "slot": "mount",
+      "role": "先手机动",
+      "required_level": 20,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 200,
+        "defense": 10,
+        "agility": 25
+      },
+      "after": {
+        "hp": 180,
+        "defense": 8,
+        "agility": 25
+      }
+    },
+    {
+      "key": "equip_chibiao",
+      "name": "赤骠",
+      "rarity": "green",
+      "slot": "mount",
+      "role": "先手机动",
+      "required_level": 10,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 250,
+        "defense": 5,
+        "force": 10,
+        "agility": 20
+      },
+      "after": {
+        "hp": 180,
+        "defense": 5,
+        "force": 8,
+        "agility": 20
+      }
+    },
+    {
+      "key": "equip_feiyunzui",
+      "name": "飞云锥",
+      "rarity": "blue",
+      "slot": "mount",
+      "role": "先手机动",
+      "required_level": 25,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 245,
+        "defense": 10,
+        "force": 5,
+        "agility": 40
+      },
+      "after": {
+        "hp": 220,
+        "defense": 10,
+        "force": 5,
+        "agility": 30
+      }
+    },
+    {
+      "key": "equip_zhaoyeyushizi",
+      "name": "照夜玉狮子",
+      "rarity": "blue",
+      "slot": "mount",
+      "role": "先手机动",
+      "required_level": 40,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 270,
+        "defense": 15,
+        "force": 13,
+        "agility": 33
+      },
+      "after": {
+        "hp": 220,
+        "defense": 10,
+        "force": 10,
+        "agility": 30
+      }
+    },
+    {
+      "key": "equip_juanmaochitu",
+      "name": "卷毛赤兔",
+      "rarity": "blue",
+      "slot": "mount",
+      "role": "先手机动",
+      "required_level": 30,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 300,
+        "defense": 13,
+        "force": 5,
+        "agility": 35
+      },
+      "after": {
+        "hp": 220,
+        "defense": 10,
+        "force": 5,
+        "agility": 30
+      }
+    },
+    {
+      "key": "equip_qianliju",
+      "name": "千里驹",
+      "rarity": "blue",
+      "slot": "mount",
+      "role": "先手机动",
+      "required_level": 25,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 235,
+        "defense": 11,
+        "agility": 40
+      },
+      "after": {
+        "hp": 220,
+        "defense": 10,
+        "agility": 30
+      }
+    },
+    {
+      "key": "equip_zhuidian",
+      "name": "追电",
+      "rarity": "blue",
+      "slot": "mount",
+      "role": "先手机动",
+      "required_level": 40,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 240,
+        "defense": 12,
+        "agility": 39,
+        "luck": 10
+      },
+      "after": {
+        "hp": 220,
+        "defense": 10,
+        "agility": 30,
+        "luck": 10
+      }
+    },
+    {
+      "key": "equip_bailongju",
+      "name": "白龙驹",
+      "rarity": "blue",
+      "slot": "mount",
+      "role": "先手机动",
+      "required_level": 35,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 270,
+        "defense": 15,
+        "agility": 25,
+        "luck": 15
+      },
+      "after": {
+        "hp": 220,
+        "defense": 10,
+        "agility": 25,
+        "luck": 12
+      }
+    },
+    {
+      "key": "equip_wuzhuima",
+      "name": "乌骓马",
+      "rarity": "purple",
+      "slot": "mount",
+      "role": "武将机动",
+      "required_level": 45,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 292,
+        "defense": 15,
+        "force": 16,
+        "agility": 45
+      },
+      "after": {
+        "hp": 260,
+        "defense": 13,
+        "force": 16,
+        "agility": 35
+      }
+    },
+    {
+      "key": "equip_jueying",
+      "name": "绝影",
+      "rarity": "purple",
+      "slot": "mount",
+      "role": "先手机动",
+      "required_level": 45,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 305,
+        "defense": 14,
+        "agility": 42,
+        "luck": 16
+      },
+      "after": {
+        "hp": 260,
+        "defense": 13,
+        "agility": 35,
+        "luck": 15
+      }
+    },
+    {
+      "key": "equip_zhaohuangfeidian",
+      "name": "爪黄飞电",
+      "rarity": "purple",
+      "slot": "mount",
+      "role": "武将机动",
+      "required_level": 50,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 330,
+        "defense": 17,
+        "force": 22,
+        "agility": 38
+      },
+      "after": {
+        "hp": 260,
+        "defense": 13,
+        "force": 16,
+        "agility": 35
+      }
+    },
+    {
+      "key": "equip_dilu",
+      "name": "的卢",
+      "rarity": "purple",
+      "slot": "mount",
+      "role": "先手机动",
+      "required_level": 60,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 360,
+        "defense": 19,
+        "agility": 42,
+        "luck": 14
+      },
+      "after": {
+        "hp": 260,
+        "defense": 13,
+        "agility": 35,
+        "luck": 14
+      }
+    },
+    {
+      "key": "equip_qingshuanglu",
+      "name": "青霜鹿",
+      "rarity": "purple",
+      "slot": "mount",
+      "role": "先手机动",
+      "required_level": 55,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 320,
+        "defense": 17,
+        "agility": 42,
+        "luck": 16
+      },
+      "after": {
+        "hp": 260,
+        "defense": 13,
+        "agility": 35,
+        "luck": 15
+      }
+    },
+    {
+      "key": "equip_xuanjiazhanju",
+      "name": "玄甲战驹",
+      "rarity": "purple",
+      "slot": "mount",
+      "role": "统兵",
+      "required_level": 60,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 312,
+        "defense": 16,
+        "force": 22,
+        "agility": 38
+      },
+      "after": {
+        "hp": 260,
+        "defense": 13,
+        "force": 16,
+        "agility": 35,
+        "troop_capacity": 30
+      }
+    },
+    {
+      "key": "equip_chituma",
+      "name": "赤兔马",
+      "rarity": "orange",
+      "slot": "mount",
+      "role": "统兵",
+      "required_level": 80,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "补齐统兵进阶，带兵独立于个人战斗属性预算",
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 362,
+        "defense": 16,
+        "force": 26,
+        "agility": 44
+      },
+      "after": {
+        "hp": 300,
+        "defense": 14,
+        "force": 20,
+        "agility": 36,
+        "troop_capacity": 40
+      }
+    },
+    {
+      "key": "equip_hanxuebaoma",
+      "name": "汗血宝马",
+      "rarity": "orange",
+      "slot": "mount",
+      "role": "先手机动",
+      "required_level": 70,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 450,
+        "defense": 20,
+        "agility": 58
+      },
+      "after": {
+        "hp": 300,
+        "defense": 14,
+        "agility": 36
+      }
+    },
+    {
+      "key": "equip_qilin",
+      "name": "麒麟",
+      "rarity": "orange",
+      "slot": "mount",
+      "role": "运势/机动",
+      "required_level": 65,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 443,
+        "defense": 18,
+        "luck": 35,
+        "agility": 20
+      },
+      "after": {
+        "hp": 300,
+        "defense": 14,
+        "luck": 25,
+        "agility": 20
+      }
+    },
+    {
+      "key": "equip_qingluan",
+      "name": "青鸾",
+      "rarity": "orange",
+      "slot": "mount",
+      "role": "文官机动",
+      "required_level": 75,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 307,
+        "defense": 14,
+        "intellect": 27,
+        "agility": 49
+      },
+      "after": {
+        "hp": 300,
+        "defense": 14,
+        "intellect": 20,
+        "agility": 36
+      }
+    },
+    {
+      "key": "equip_shendiao",
+      "name": "神雕",
+      "rarity": "orange",
+      "slot": "mount",
+      "role": "先手机动",
+      "required_level": 80,
+      "level_reason": "沿用v1逐件穿戴等级；本轮只调整属性与带兵预算",
+      "prefix_eligible": true,
+      "in_current_shop": false,
+      "changed": true,
+      "reasons": [
+        "按槽位与原有特点收紧属性峰值/套装预算，保留兵种器械百分比"
+      ],
+      "before": {
+        "hp": 470,
+        "defense": 18,
+        "agility": 56,
+        "luck": 14
+      },
+      "after": {
+        "hp": 300,
+        "defense": 14,
+        "agility": 36,
+        "luck": 14
+      }
+    }
+  ]
+}

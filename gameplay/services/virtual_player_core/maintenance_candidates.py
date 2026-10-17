@@ -14,6 +14,7 @@ from guests.services.equipment_payloads import (
     build_gear_template_preview,
     normalize_active_set_bonus,
     normalize_extra_stats,
+    same_base_equipment,
 )
 from guests.services.equipment_stats import slot_capacity
 from guests.services.skills import (
@@ -505,10 +506,12 @@ def build_equipment_equip_candidates(
         persisted_state = {field: int(getattr(guest, field) or 0) for field in _PROJECTED_GUEST_FIELDS}
         current_set_bonus = normalize_active_set_bonus(guest.gear_set_bonus)
         for item, preview in equipment_options:
+            if guest.level < preview.required_level:
+                continue
             slot = str(preview.slot)
             capacity = slot_capacity(slot)
             same_slot = [gear for gear in equipped if str(gear.template.slot) == slot]
-            if any(str(gear.template.name) == str(preview.name) for gear in same_slot):
+            if any(same_base_equipment(gear.template, preview) for gear in same_slot):
                 continue
             if capacity > 1 and len(same_slot) >= capacity:
                 continue

@@ -21,7 +21,27 @@ GEAR_EXTRA_STAT_FIELDS = {
     "troop_capacity": "troop_capacity_bonus",
 }
 
-GEAR_TEMPLATE_META_FIELDS = {"set_key", "set_description", "set_bonus", "troop_stat_bonus"}
+GEAR_TEMPLATE_META_FIELDS = {
+    "set_key",
+    "set_description",
+    "set_bonus",
+    "troop_stat_bonus",
+    "required_level",
+    "equipment_base_key",
+    "equipment_base_name",
+    "equipment_affix",
+    "equipment_attack_bonus",
+    "equipment_defense_bonus",
+}
+
+
+def same_base_equipment(left: GearTemplate, right: GearTemplate) -> bool:
+    """前缀保留基础装备身份；不同来源的同名魂饰仍不可重复穿戴。"""
+    left_key = left.base_key or left.key
+    right_key = right.base_key or right.key
+    left_name = left.base_name or left.name
+    right_name = right.base_name or right.name
+    return left_key == right_key or left_name == right_name
 
 
 def require_mapping(raw: Any, *, field_name: str) -> dict[str, Any]:
@@ -115,6 +135,13 @@ def build_gear_template_defaults(item_template: Any, *, slot: str) -> dict[str, 
     extra_stats = extract_extra_stats_from_item_payload(payload)
     return {
         "name": require_string(getattr(item_template, "name", None), field_name="item_template.name"),
+        "required_level": require_int(payload.get("required_level", 1), field_name="required_level", minimum=1),
+        "base_key": require_string(
+            payload.get("equipment_base_key", item_template.key), field_name="equipment_base_key"
+        ),
+        "base_name": require_string(
+            payload.get("equipment_base_name", item_template.name), field_name="equipment_base_name"
+        ),
         "slot": slot,
         "rarity": getattr(item_template, "rarity", GuestRarity.GRAY),
         "set_key": require_string(payload.get("set_key", ""), field_name="set_key", allow_blank=True),
@@ -124,8 +151,8 @@ def build_gear_template_defaults(item_template: Any, *, slot: str) -> dict[str, 
             allow_blank=True,
         ),
         "set_bonus": normalize_template_set_bonus(payload.get("set_bonus")),
-        "attack_bonus": 0,
-        "defense_bonus": 0,
+        "attack_bonus": require_int(payload.get("equipment_attack_bonus", 0), field_name="equipment_attack_bonus"),
+        "defense_bonus": require_int(payload.get("equipment_defense_bonus", 0), field_name="equipment_defense_bonus"),
         "extra_stats": extra_stats,
     }
 

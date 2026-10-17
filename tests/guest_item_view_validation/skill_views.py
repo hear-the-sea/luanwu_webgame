@@ -133,8 +133,10 @@ def test_skill_book_modal_shows_non_equipment_attribute_shortfall(game_data, dja
     assert response.status_code == 200
     content = response.content.decode()
     minimum = ((base_force + 200) * 65 + 99) // 100
+    assert f"武力需 ≥ {base_force + 200}（当前 {base_force + 200}）" in content
     assert f"非装备武力需 ≥ {minimum}" in content
-    assert f"当前不足：非装备武力需 ≥ {minimum}（当前 {base_force}）" in content
+    assert f"非装备武力需 ≥ {minimum}（当前 {base_force}）" in content
+    assert "当前不足：" not in content
 
 
 @pytest.mark.django_db

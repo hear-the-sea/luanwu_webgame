@@ -7,7 +7,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
-      avatar: monkey_wu_male7.png
+      avatar: monkey/任务/贱王之王.png
       custom_stats:
         force: 35
         intellect: 12
@@ -19,7 +19,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
-      avatar: monkey_mission.png
+      avatar: monkey/任务/顶级贱精.png
       custom_stats:
         force: 30
         intellect: 12
@@ -31,7 +31,7 @@ heroes:
       archetype: civil
       recruitable: false
       default_gender: male
-      avatar: buyi.png
+      avatar: monkey/任务/观众甲.png
       custom_stats:
         force: 15
         intellect: 32
@@ -43,7 +43,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
-      avatar: menghu.png
+      avatar: monkey/任务/猛虎.png
       custom_stats:
         force: 55
         intellect: 46
@@ -56,7 +56,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
-      avatar: monkey_wu_male10.png
+      avatar: monkey/任务/武师教头.png
       custom_stats:
         force: 126
         intellect: 72
@@ -69,7 +69,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
-      avatar: equip_jiguanxiong.png
+      avatar: monkey/任务/机关熊.png
       custom_stats:
         force: 138
         intellect: 38
@@ -79,7 +79,7 @@ heroes:
         base_hp: 19600
     - key: task_orchard_wraith
       name: 孤魂野鬼
-      avatar: monkey_wen_male6.png
+      avatar: monkey/任务/孤魂野鬼.png
       archetype: civil
       recruitable: false
       default_gender: male
@@ -96,7 +96,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
-      avatar: monkey_mission.png
+      avatar: monkey/任务/钻山豹.png
       custom_stats:
         force: 166
         intellect: 90
@@ -109,7 +109,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
-      avatar: monkey_mission.png
+      avatar: monkey/任务/座山雕.png
       custom_stats:
         force: 166
         intellect: 90
@@ -119,7 +119,7 @@ heroes:
         base_hp: 1880
     - key: task_shiren_xiaomimi
       name: 萧咪咪
-      avatar: monkey_wen_female2.png
+      avatar: monkey/任务/萧咪咪.png
       archetype: civil
       recruitable: false
       default_gender: female
@@ -131,7 +131,7 @@ heroes:
         luck: 120
     - key: task_shiren_xuanyuansanguang
       name: 轩辕三光
-      avatar: pig_wen_male4.png
+      avatar: monkey/任务/轩辕三光.png
       archetype: civil
       recruitable: false
       default_gender: male
@@ -143,7 +143,7 @@ heroes:
         luck: 120
     - key: task_shiren_tiezhan
       name: 铁战
-      avatar: pig/武048.png
+      avatar: monkey/任务/铁战.png
       archetype: military
       recruitable: false
       default_gender: male
@@ -155,7 +155,7 @@ heroes:
         luck: 50
     - key: task_shiren_luoshixiongdi
       name: 罗氏兄弟
-      avatar: pig/武021.png
+      avatar: monkey/任务/罗氏兄弟.png
       archetype: military
       recruitable: false
       default_gender: male
@@ -167,7 +167,7 @@ heroes:
         luck: 50
     - key: task_shizipo_sun_erniang
       name: 孙二娘
-      avatar: monkey_wu_female6.png
+      avatar: monkey/任务/孙二娘.png
       archetype: military
       recruitable: false
       default_gender: female
@@ -180,7 +180,7 @@ heroes:
         base_hp: 1920
     - key: task_shizipo_zhang_qing
       name: 张青
-      avatar: monkey/其他随机角色/武066_男_.png
+      avatar: monkey/任务/张青.png
       archetype: military
       default_gender: male
       recruitable: false
@@ -196,7 +196,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
-      avatar: equip_jixiemao.png
+      avatar: monkey/任务/机械猫.png
       custom_stats:
         force: 60
         intellect: 78
@@ -209,7 +209,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
-      avatar: monkey_mistry.png
+      avatar: monkey/任务/黑衣人.png
       custom_stats:
         force: 150
         intellect: 96
@@ -222,7 +222,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
-      avatar: monkey_mission.png
+      avatar: monkey/任务/土匪.png
       custom_stats:
         force: 170
         intellect: 86
@@ -232,7 +232,7 @@ heroes:
         base_hp: 1900
     - key: guild_wulinzhai_night_watch
       name: 乌鳞夜哨
-      avatar: pig_wu_male6.png
+      avatar: pig/武047.png
       archetype: military
       recruitable: false
       default_gender: male
@@ -247,7 +247,7 @@ heroes:
         base_hp: 1980
     - key: guild_wulinzhai_blade_ambusher
       name: 乌鳞伏刀手
-      avatar: pig/武048.png
+      avatar: pig/武050.png
       archetype: military
       recruitable: false
       default_gender: male
@@ -262,7 +262,7 @@ heroes:
         base_hp: 2020
     - key: guild_wulinzhai_torch_archer
       name: 乌鳞火把弓手
-      avatar: pig/武015.png
+      avatar: pig/武057.png
       archetype: military
       recruitable: false
       default_gender: male
@@ -277,7 +277,7 @@ heroes:
         base_hp: 1960
     - key: guild_wulinzhai_path_scout
       name: 乌鳞探路哨
-      avatar: pig/武023.png
+      avatar: pig/武055.png
       archetype: military
       recruitable: false
       default_gender: male
@@ -295,7 +295,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
-      avatar: monkey_mission.png
+      avatar: pig/武061.png
       custom_stats:
         force: 50
         intellect: 40
@@ -309,7 +309,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
-      avatar: pig_wu_male3.png
+      avatar: monkey/任务/守卫.png
       custom_stats:
         force: 196
         intellect: 110
@@ -337,7 +337,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
-      avatar: monkey_wu_male16.png
+      avatar: monkey/任务/金甲神兵.png
       skills:
         - dragon_roar
       custom_stats:
@@ -352,6 +352,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: pig/武032.png
       skills:
         - guild_wulinzhai_shadow_raid
         - guild_wulinzhai_torch_volley
@@ -367,6 +368,7 @@ heroes:
       archetype: civil
       recruitable: false
       default_gender: male
+      avatar: pig/文032.png
       skills:
         - guild_wulinzhai_night_signal
       custom_stats:
@@ -381,6 +383,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: pig/武048.png
       skills:
         - guild_bloodflag_convoy_command
         - guild_bloodflag_pressing_blade
@@ -396,6 +399,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: pig/武011.png
       skills:
         - guild_bloodflag_pressing_blade
       custom_stats:
@@ -410,6 +414,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: pig/武052.png
       skills:
         - guild_bloodflag_rearguard_counter
       custom_stats:
@@ -424,6 +429,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: pig/武047.png
       skills:
         - guild_bloodflag_pressing_blade
       custom_stats:
@@ -438,6 +444,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: pig/武063.png
       skills:
         - guild_bloodflag_arrow_screen
       custom_stats:
@@ -452,6 +459,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: pig/武080.png
       skills:
         - guild_bloodflag_rearguard_counter
       custom_stats:
@@ -466,6 +474,7 @@ heroes:
       archetype: civil
       recruitable: false
       default_gender: male
+      avatar: pig/武077.png
       skills:
         - guild_bloodflag_convoy_command
       custom_stats:
@@ -480,6 +489,7 @@ heroes:
       archetype: civil
       recruitable: false
       default_gender: male
+      avatar: pig/文050.png
       skills:
         - guild_blackwind_overseer_order
       custom_stats:
@@ -494,6 +504,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: pig/武046.png
       skills:
         - guild_blackwind_countercharge
       custom_stats:
@@ -508,6 +519,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: pig/武005.png
       skills:
         - guild_blackwind_arrow_barrage
       custom_stats:
@@ -522,6 +534,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: pig/武007.png
       skills:
         - guild_blackwind_gate_breaker
       custom_stats:
@@ -536,6 +549,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: pig/武015.png
       skills:
         - guild_blackwind_overseer_order
       custom_stats:
@@ -550,6 +564,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: pig/武014.png
       skills:
         - guild_blackwind_countercharge
       custom_stats:
@@ -564,6 +579,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: pig/武010.png
       skills:
         - guild_blackwind_countercharge
       custom_stats:
@@ -595,6 +611,7 @@ heroes:
         base_hp: 6200
     - key: arena_gl_top_yang_xiao_guard
       name: 杨逍
+      avatar: monkey/任务/杨逍.png
       archetype: military
       recruitable: false
       default_gender: male
@@ -611,6 +628,7 @@ heroes:
         base_hp: 3600
     - key: arena_gl_top_wei_yixiao_guard
       name: 韦一笑
+      avatar: monkey/任务/韦一笑.png
       archetype: military
       recruitable: false
       default_gender: male
@@ -629,6 +647,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: pig/武079.png
       skills:
         - gl_top_guard_morale
         - gl_top_five_flags_barrier
@@ -645,6 +664,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: pig/武079.png
       skills:
         - gl_top_guard_morale
         - gl_top_five_flags_barrier
@@ -710,6 +730,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
+      avatar: monkey/任务/座山雕.png
       custom_stats:
         force: 228
         intellect: 104
@@ -720,7 +741,7 @@ heroes:
   orange:
     - key: task_wanxian_nangong_lie
       name: 南宫烈
-      avatar: monkey_wu_male1.png
+      avatar: monkey/任务/南宫烈.png
       flavor: "万仙阵旗折断，碧游残灯将熄，南宫烈仍立在阵门敌阵之中。周营清剿军与玉虚巡阵者封住退路，他的身影也横在残众求生的道路上。灯火未灭，这场阵门交锋便尚未结束。"
       archetype: military
       recruitable: false
@@ -734,7 +755,7 @@ heroes:
         base_hp: 2860
     - key: task_wanxian_lu_xuanqing
       name: 陆玄清
-      avatar: monkey_wen_male11.png
+      avatar: monkey/任务/陆玄清.png
       flavor: "陆玄清现身万仙阵门，列于封锁残阵的敌阵之中。阵外碧游残灯尚有余光，阵内清算却已开始。尚未入榜的残众等着一条生路，而他所在的阵线，正横在救援与逃亡之间。"
       archetype: civil
       recruitable: false
@@ -750,7 +771,7 @@ heroes:
         base_hp: 2640
     - key: task_wanxian_baihe_fushi
       name: 白鹤符使
-      avatar: pig/文028.png
+      avatar: monkey/任务/白鹤符使.png
       flavor: "白鹤符使立于万仙阵门，与清剿军、巡阵者同列敌阵。折断的阵旗之下，碧游残灯只余一线火光，榜外残众的退路却已被封住。符使所在之处，正是残阵内外相争的关口。"
       archetype: civil
       recruitable: false
@@ -766,6 +787,7 @@ heroes:
         base_hp: 2520
     - key: task_wanxian_zhuxian_canfeng
       name: 诛仙残锋
+      avatar: monkey/任务/诛仙残锋.png
       flavor: "诛仙残锋列于万仙阵门，四周尽是尚未平息的失控剑痕。大阵虽残，杀伐之势未散，折断的阵旗也未能带走旧日锋芒。它与清剿军、巡阵者一道阻住救援之路，将残众的生机隔在重重剑影之外。"
       archetype: military
       recruitable: false
@@ -781,7 +803,7 @@ heroes:
         base_hp: 2760
     - key: task_wanxian_yuzhu
       name: 余烛
-      avatar: monkey_wu_male16.png
+      avatar: monkey/任务/余烛.png
       flavor: "余烛立在万仙阵门的敌阵之中。头顶清算符诏正抹去榜外残名，四周阵旗折断，残灯将熄。他的身影守在这片封锁里，与越过仙门而来的救援相对，也与阵中残众仅存的生路相隔。"
       archetype: military
       recruitable: false
@@ -797,6 +819,7 @@ heroes:
         base_hp: 3100
     - key: task_wanxian_qingsuan_fuzhao
       name: 清算符诏
+      avatar: monkey/任务/清算符诏.png
       flavor: "悬于万仙阵门上方的清算符诏，没有凡人的面目，却把败局化作不容分说的敕令。符诏凌空落笔，一笔一笔勾去榜外残名。下方碧游残灯仍在燃烧，它所执行的清算，却不会因那一点微光而停下。"
       archetype: civil
       recruitable: false
@@ -812,6 +835,7 @@ heroes:
         base_hp: 3300
     - key: task_wanxian_nezha
       name: 哪吒
+      avatar: monkey/任务/哪吒.png
       flavor: "哪吒之名随玉虚仙印降入万仙阵，杀星在前，锋芒开路。阵中所见并非仙人本尊，而是法宝、道统与杀伐意志凝成的显化。它奉天命封住残阵，将一切援助截教的来者，都视作扰乱封榜的异数。"
       archetype: military
       recruitable: false
@@ -827,6 +851,7 @@ heroes:
         base_hp: 3520
     - key: task_wanxian_yangjian
       name: 杨戬
+      avatar: monkey/任务/杨戬.png
       flavor: "杨戬之名凝于玉虚仙印，以玄功镇身，立在万仙阵中层。那并非仙人本尊，而是法宝与道统意志映出的身影。十二印将合未合，截教残众的去路再次收紧，这道显化也成为天命封锁残阵的一环。"
       archetype: military
       recruitable: false
@@ -843,7 +868,7 @@ heroes:
         base_hp: 3900
     - key: task_wanxian_taiyi
       name: 太乙
-      avatar: pig/武026.png
+      avatar: monkey/任务/太乙.png
       flavor: "太乙之名随玉虚仙印显现，神火映照万仙残阵。降临此地的并非仙人本尊，而是法宝、道统与杀伐意志的化现。大阵虽破，火势却未息；它与诸印一道压住截教余众，将刚刚燃起的反攻之机重新逼向死局。"
       archetype: civil
       recruitable: false
@@ -859,7 +884,7 @@ heroes:
         base_hp: 3440
     - key: task_wanxian_guangchengzi
       name: 广成子
-      avatar: monkey_wu_male13.png
+      avatar: monkey/任务/广成子.png
       flavor: "广成子之名随玉虚仙印降下，番天印的威势压向截教残存的气运。这道身影并非仙人本尊，而是法宝与道统意志在阵中的显化。万仙阵中层的封锁由此更重，残部才见生路，头顶便又笼上仙印的阴影。"
       archetype: military
       recruitable: false
@@ -875,7 +900,7 @@ heroes:
         base_hp: 3820
     - key: task_wanxian_chijingzi
       name: 赤精子
-      avatar: pig/文040.png
+      avatar: monkey/任务/赤精子.png
       flavor: "赤精子之名显于万仙阵中层的玉虚仙印。此身并非仙人本尊，而由法宝、道统与杀伐意志凝成，与诸印共同承载封锁残阵的天命。截教残众试图重开退路时，这道显化便横在逃亡与反攻的交界。"
       archetype: civil
       recruitable: false
@@ -891,7 +916,7 @@ heroes:
         base_hp: 3360
     - key: task_wanxian_cihang
       name: 慈航
-      avatar: pig/武066.png
+      avatar: monkey/任务/慈航.png
       flavor: "慈航之名随玉虚仙印降临万仙阵中层。此处显现的并非仙人本尊，而是法宝与道统意志映出的身影。它同诸印一道镇住残阵，使刚刚挣出生路的截教余众，再次置身天命的围拢之中。"
       archetype: civil
       recruitable: false
@@ -908,7 +933,7 @@ heroes:
         base_hp: 3600
     - key: task_wanxian_juliusun
       name: 惧留孙
-      avatar: monkey_wen_male10.png
+      avatar: monkey/任务/惧留孙.png
       flavor: "惧留孙之名列于降下的玉虚仙印之间。阵中显现的并非仙人本尊，而是法宝、道统与杀伐意志凝结的身影。它与诸印同守万仙阵中层，将截教残部才见起色的生路，再度纳入封榜天命的围锁。"
       archetype: civil
       recruitable: false
@@ -924,6 +949,7 @@ heroes:
         base_hp: 3480
     - key: task_wanxian_shier_xianyin
       name: 十二仙印
+      avatar: monkey/任务/十二仙印.png
       flavor: "十二道玉虚仙印降在万仙阵中层，诸仙虽未亲临，法宝、道统与杀伐意志却已尽入印中。它们合拢时，残众的退路便将封死；它们破碎时，残阵才有重开的可能。截教由逃亡转向反攻的一线机会，正被镇在十二印下。"
       archetype: civil
       recruitable: false
@@ -939,7 +965,7 @@ heroes:
         base_hp: 4300
     - key: task_wanxian_randeng
       name: 燃灯
-      avatar: monkey/其他随机角色/文041_男.png
+      avatar: monkey/任务/燃灯.png
       flavor: "燃灯道人立在封榜天门前，点起过去佛灯。灯火照见前尘因果，也照向尚未被清算的截教残众。十二仙印已碎，封神榜裂页显门，他却仍以佛灯守在这道天命之前，让碧游残火直面更深一重的清算。"
       archetype: civil
       recruitable: false
@@ -955,7 +981,7 @@ heroes:
         base_hp: 4300
     - key: task_wanxian_nanji_xianweng
       name: 南极仙翁
-      avatar: pig/文036.png
+      avatar: monkey/任务/南极仙翁.png
       flavor: "南极仙翁现身封榜天门，与持榜的姜子牙、点灯的燃灯同列敌阵。十二仙印已经破碎，截教最后的榜外残命却仍悬于一线。封神榜金光与玉虚天罚之间，这位仙翁守在天门之前，未让争命之路就此敞开。"
       archetype: civil
       recruitable: false
@@ -976,7 +1002,7 @@ heroes:
       archetype: civil
       recruitable: false
       default_gender: male
-      avatar: pig_male_special2.png
+      avatar: monkey/任务/姜子牙.png
       skills:
         - wanxian_fengbang_zhiming
       custom_stats:
@@ -988,6 +1014,7 @@ heroes:
         base_hp: 4400
     - key: task_wanxian_dashenbian
       name: 打神鞭
+      avatar: monkey/任务/打神鞭.png
       flavor: "打神鞭于封榜天门前化为天罚，鞭影如天律长痕，直指逆命之魂。它是封榜清算之力显出的锋芒。封神榜金光铺开之时，神鞭也随之横过前阵，把敕令化作难以越过的界线。"
       archetype: military
       recruitable: false
@@ -1003,6 +1030,7 @@ heroes:
         base_hp: 4100
     - key: task_wanxian_bangshangming
       name: 榜上名
+      avatar: monkey/任务/榜上名.png
       flavor: "封神榜金光流转，榜上神名从中逐一醒来。它们汇作天门前的身影，随封榜敕命齐鸣，共同映出即将落定的秩序。榜内神名已醒，榜外残生未尽，两者在门前相对，使这一纸名册也有了沉重的锋芒。"
       archetype: civil
       recruitable: false
@@ -1018,6 +1046,7 @@ heroes:
         base_hp: 4200
     - key: task_wanxian_yuxu_tianfa
       name: 玉虚天罚
+      avatar: monkey/任务/玉虚天罚.png
       flavor: "玉虚敕令引动雷火，天罚显于封榜天门之前。敕令将天命的裁断化作万法齐坠，指向试图夺榜改命的来者。截教榜外残命尚悬一线，这道清算却已从高处落下，要将最后的逆命之争一并镇住。"
       archetype: civil
       recruitable: false
@@ -1033,7 +1062,7 @@ heroes:
         base_hp: 5200
     - key: task_kasukabe_patrol_captain
       name: 春日部巡逻队长
-      avatar: monkey/其他随机角色/武038_男.png
+      avatar: monkey/任务/春日部巡逻队长.png
       flavor: "春日部巡逻队长现身临时游乐战场，列在防卫队试炼的阵前。追查神奇蜡笔的行动尚未结束，庄园四周却已被涂鸦迷宫搅乱。这位队长也成了混乱中的一道关口，与玩具机关、恶作剧陷阱一同挡在回收蜡笔的路上。"
       archetype: military
       recruitable: false
@@ -1049,6 +1078,7 @@ heroes:
         base_hp: 2500
     - key: task_kasukabe_toy_crocodile
       name: 玩具机关鳄鱼
+      avatar: monkey/任务/玩具机关鳄鱼.png
       flavor: "玩具机关鳄鱼盘踞在春日部游乐战场，与恶作剧陷阱一道拦住去路。神奇蜡笔把粮仓、演武场和巡逻路线搅得面目全非，这只机关玩具也成了混乱的一部分。它虽顶着玩具之名，置身这场试炼时却并不好绕过。"
       archetype: military
       recruitable: false
@@ -1064,7 +1094,7 @@ heroes:
         base_hp: 2800
     - key: task_kasukabe_defense_member
       name: 迷路的防卫队员
-      avatar: monkey_male_special2.png
+      avatar: monkey/任务/迷路的防卫队员.png
       flavor: "这名防卫队员迷失在春日部游乐战场中。队伍本为追查被夺走的神奇蜡笔而来，四周却已被涂鸦和机关变得面目全非。他列在这场试炼之中，与前来平息混乱的人相遇，也让寻回蜡笔的道路更添波折。"
       archetype: civil
       recruitable: false
@@ -1080,6 +1110,7 @@ heroes:
         base_hp: 2300
     - key: task_kasukabe_crayon_clone
       name: 蜡笔恶作剧分身
+      avatar: monkey/任务/蜡笔恶作剧分身.png
       flavor: "蜡笔恶作剧分身现于春日部游乐战场，与涂鸦迷宫和玩具机关一同拦住去路。神奇蜡笔的力量尚未平息，恶作剧也仍在这片临时战场延续。它的身影混在层层陷阱之间，使通往涂鸦大魔王的道路更显曲折。"
       archetype: civil
       recruitable: false
@@ -1095,6 +1126,7 @@ heroes:
         base_hp: 2400
     - key: task_kasukabe_doodle_boss
       name: 涂鸦大魔王
+      avatar: monkey/任务/涂鸦大魔王.png
       flavor: "受神奇蜡笔力量影响的涂鸦大魔王，现身于春日部游乐战场。四周粮仓长出大象鼻子，演武场化作蹦床，巡逻路线也被涂鸦迷宫打乱。它立在这片荒唐又热闹的混乱深处，是回收蜡笔时绕不开的身影。"
       archetype: military
       recruitable: false
@@ -1128,7 +1160,7 @@ heroes:
         base_hp: 5400
     - key: task_zhuolu_fengbo
       name: 风伯
-      avatar: pig_male_special2.png
+      avatar: monkey/任务/风伯.png
       flavor: "九黎战旗从中原地脉升起，风伯随蚩尤再入涿鹿战局。封神余威惊动上古兵主命格，也让旧日兵争重返人间。他与雨师同列兵主阵中，随着九黎兵锋直指中原龙脉，在轩辕剑光示警的天地间再现身影。"
       archetype: civil
       recruitable: false
@@ -1145,7 +1177,7 @@ heroes:
         base_hp: 4300
     - key: task_zhuolu_yushi
       name: 雨师
-      avatar: pig/文014.png
+      avatar: monkey/任务/雨师.png
       flavor: "雨师随蚩尤、风伯重开涿鹿战局，立于再起的九黎战旗之下。中原龙脉受封神余威震动，令上古兵争从地脉中苏醒。旧日战阵因而重现，而他的身影也再次投向这场关乎中原归属的交锋。"
       archetype: civil
       recruitable: false
@@ -1162,6 +1194,7 @@ heroes:
         base_hp: 4500
     - key: task_zhuolu_shitieshou
       name: 食铁兽
+      avatar: monkey/任务/食铁兽.png
       flavor: "食铁兽列于逐鹿中原的九黎战阵，与蚩尤、风伯、雨师一道再现。封神余威惊动龙脉，上古战旗自地脉升起，兽影也随之踏入重新开启的兵争。它们簇于兵主阵中，使再争中原的锋芒更添沉重威势。"
       archetype: military
       recruitable: false
@@ -1199,7 +1232,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
-      avatar: pubayi.png
+      avatar: monkey/任务/单于.png
       skills:
         - dragon_roar
       custom_stats:
@@ -1243,7 +1276,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
-      avatar: pig_wu_male8.png
+      avatar: monkey/任务/华雄.png
       skills:
         - bloodthirsty_fury
         - desperate_beast
@@ -1277,7 +1310,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
-      avatar: pig_wu_male3.png
+      avatar: monkey/任务/高顺.png
       skills:
         - iron_wall_heart
         - prison_break_blade
@@ -1310,7 +1343,7 @@ heroes:
       flavor: "下邳被围，白门楼已近末路，陈宫仍在推演一条不必投降的路。吕布盼着再次冲阵，旧部各自支撑危局，他则试着从合围中寻出另一种可能。暗中流转的招贤帖尚未落定，飞将的最后一段故事也仍存变数。"
       archetype: civil
       recruitable: false
-      avatar: monkey_wen_male8.png
+      avatar: monkey/任务/陈宫.png
       default_gender: male
       skills:
         - stratagem_burst
@@ -1328,7 +1361,7 @@ heroes:
       archetype: military
       recruitable: false
       default_gender: male
-      avatar: monkey_wu_male10.png
+      avatar: monkey/任务/臧霸.png
       skills:
         - desperate_beast
         - iron_wall_heart
@@ -1341,7 +1374,7 @@ heroes:
         base_hp: 6400
     - key: task_huashan_huang_shang
       name: 黄裳
-      avatar: monkey/其他随机角色/文101_男.png
+      avatar: monkey/任务/黄裳.png
       flavor: "无名论剑帖传遍江湖，黄裳也现身华山九重关，与扫地僧、张三丰、独孤求败等高手同列峰顶。这里不凭年龄论资排辈，也没有客套寒暄。他作为守关者之一静候来客，要以手中本领，回应这场重排江湖座次的论剑。"
       archetype: civil
       recruitable: false

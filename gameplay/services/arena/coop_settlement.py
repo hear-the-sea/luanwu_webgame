@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import random
 from datetime import datetime
 from typing import Callable
 
@@ -16,7 +17,7 @@ from core.utils.infrastructure import (
 )
 from core.utils.side_effects import schedule_best_effort_after_commit
 from gameplay.models import ArenaCoopContribution, ArenaCoopEntry, ArenaCoopEvent, ItemTemplate, Manor, Message
-from gameplay.services.inventory.core import add_item_to_inventory_locked
+from gameplay.services.equipment_affixes import grant_item_with_equipment_affixes_locked
 
 from .coop_battle import extract_boss_hp_snapshot, load_runtime_rules_for_event
 from .coop_damage import aggregate_event_damage
@@ -31,7 +32,9 @@ ARENA_COOP_SETTLEMENT_MESSAGE_EXCEPTIONS: InfrastructureExceptions = combine_inf
 CreateMessageFn = Callable[..., Message]
 
 
-def grant_coop_reward_locked(locked_manor: Manor, *, total_coins: int, rare_drop_item_key: str) -> None:
+def grant_coop_reward_locked(
+    locked_manor: Manor, *, total_coins: int, rare_drop_item_key: str, rng: random.Random | None = None
+) -> str:
     if total_coins > 0:
         locked_manor.arena_coins = F("arena_coins") + int(total_coins)
         locked_manor.save(update_fields=["arena_coins"])
@@ -43,7 +46,9 @@ def grant_coop_reward_locked(locked_manor: Manor, *, total_coins: int, rare_drop
         if rare_drop_key not in load_blueprint_catalog():
             raise AssertionError(f"invalid coop blueprint drop: {rare_drop_key}")
     if rare_drop_key and ItemTemplate.objects.filter(key=rare_drop_key).exists():
-        add_item_to_inventory_locked(locked_manor, rare_drop_key, 1)
+        rows = grant_item_with_equipment_affixes_locked(locked_manor, rare_drop_key, 1, rng=rng)
+        return next(iter(rows))
+    return rare_drop_key
 
 
 def format_rare_drop_summary(rare_drop_item_key: str) -> str:
@@ -195,11 +200,16 @@ def settle_coop_event_locked(
             continue
         locked_manor = Manor.objects.select_for_update().get(pk=entry.manor_id)
         contribution = contribution_map[entry.id]
-        grant_coop_reward_locked(
+        actual_drop_key = grant_coop_reward_locked(
             locked_manor,
             total_coins=contribution.total_coins,
             rare_drop_item_key=contribution.rare_drop_item_key,
+            rng=replay_context(locked_event).rng(RNG_STREAM_RARE_DROP, discriminator=f"equipment_affixes:{entry.id}"),
         )
+        if actual_drop_key != contribution.rare_drop_item_key:
+            contribution.rare_drop_item_key = actual_drop_key
+            contribution.reward_payload = {**contribution.reward_payload, "rare_drop_item_key": actual_drop_key}
+            contribution.save(update_fields=["rare_drop_item_key", "reward_payload"])
 
         def _send_settlement_messages(
             *,

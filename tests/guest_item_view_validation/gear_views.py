@@ -135,7 +135,7 @@ def test_gear_options_view_exposes_device_troop_bonus(game_data, django_user_mod
 
     assert response.status_code == 200
     option = next(entry for entry in response.json()["options"] if entry["template_key"] == template.key)
-    assert option["title"] == "武力+25；护院加成：弓系生命+1%"
+    assert option["title"] == "需求：门客Lv.1；武力+25；护院加成：弓系生命+1%"
 
 
 @pytest.mark.django_db

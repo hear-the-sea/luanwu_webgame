@@ -2,6 +2,7 @@ import math
 
 from django import forms
 
+from battle.utils.battle_calculator import validate_ally_min_formula
 from core.utils.yaml_validators import validate_guest_skills
 
 from .models import Skill
@@ -58,6 +59,11 @@ class SkillAdminForm(forms.ModelForm):
                 raise forms.ValidationError("伤害公式的己方和敌方属性加成必须是对象。")
             for coefficient in stats.values():
                 _finite_number(coefficient)
+        if "ally_min" in formula:
+            try:
+                validate_ally_min_formula(formula["ally_min"])
+            except ValueError as exc:
+                raise forms.ValidationError(str(exc)) from None
         return formula
 
     def clean_passive_config(self):

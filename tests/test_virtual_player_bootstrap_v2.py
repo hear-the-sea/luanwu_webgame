@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
+from types import SimpleNamespace
 
 import pytest
 from django.contrib.auth import get_user_model
@@ -41,6 +42,79 @@ from gameplay.services.virtual_player_core.projection import BootstrapInventoryT
 from guests.models import GearItem, GearTemplate, Guest, GuestSkill, GuestTemplate, Skill
 
 FIXED_NOW = datetime(2026, 7, 28, 8, 0, tzinfo=UTC)
+
+
+@pytest.mark.parametrize("guest_level,eligible", [(29, False), (30, True)])
+def test_bootstrap_gear_planning_respects_exact_required_level(guest_level, eligible):
+    from gameplay.services.virtual_player_core.bootstrap_assets import EMPTY_PAYLOAD_DIGEST, _gear_targets
+    from gameplay.services.virtual_player_core.bootstrap_catalog import GearCatalogEntry
+    from gameplay.services.virtual_player_core.random_context import RandomContext
+
+    gear = GearCatalogEntry(
+        key="level_boundary_gear",
+        slot="weapon",
+        rarity="black",
+        set_key="",
+        attack_bonus=0,
+        defense_bonus=0,
+        extra_stats_digest=EMPTY_PAYLOAD_DIGEST,
+        set_bonus_digest=EMPTY_PAYLOAD_DIGEST,
+        required_level=30,
+    )
+    selected = _gear_targets(
+        context=RandomContext(1, 42, 1, 1, 2, 0),
+        plan=SimpleNamespace(preferred_gear_stats=()),
+        catalog=SimpleNamespace(gear=(gear,)),
+        guest_ordinal=1,
+        guest_level=guest_level,
+        growth_stage=7,
+    )
+    assert selected == ((gear.key,) if eligible else ())
+
+
+@pytest.mark.django_db
+def test_bootstrap_rejects_injected_underlevel_equipment_without_writes(released_v2_policy, game_data):
+    gear = GearTemplate.objects.create(
+        key="bootstrap_underlevel_gear",
+        name="受限装备",
+        slot="weapon",
+        rarity="black",
+        required_level=101,
+    )
+    plan = bootstrap.build_virtual_player_v2_bootstrap_plan(
+        "east",
+        "middle",
+        BotProfile.Archetype.GUARD,
+        993_103,
+        FIXED_NOW,
+    )
+    assert all(gear.key not in target.gear_template_keys for target in plan.blueprint.assets.guests)
+    first = plan.blueprint.assets.guests[0]
+    invalid = replace(first, gear_template_keys=(gear.key,), gear_acquired_day_offsets=(first.created_day_offset,))
+    assets = replace(plan.blueprint.assets, guests=(invalid, *plan.blueprint.assets.guests[1:]))
+    invalid_plan = replace(plan, blueprint=replace(plan.blueprint, assets=assets))
+    before = (get_user_model().objects.count(), Manor.objects.count(), GearItem.objects.count())
+    with pytest.raises(bootstrap.V2BootstrapError, match="higher guest level"):
+        _materialize_v2_plan(invalid_plan)
+    assert (get_user_model().objects.count(), Manor.objects.count(), GearItem.objects.count()) == before
+
+
+@pytest.mark.django_db
+def test_bootstrap_required_level_change_invalidates_catalog_fingerprint(released_v2_policy, game_data):
+    gear = GearTemplate.objects.create(key="bootstrap_level_drift", name="等级漂移", slot="weapon", rarity="black")
+    plan = bootstrap.build_virtual_player_v2_bootstrap_plan(
+        "east",
+        "middle",
+        BotProfile.Archetype.GUARD,
+        993_104,
+        FIXED_NOW,
+    )
+    gear.required_level = 80
+    gear.save(update_fields=["required_level"])
+    before = get_user_model().objects.count()
+    with pytest.raises(bootstrap.V2BootstrapError, match="catalog changed"):
+        _materialize_v2_plan(plan)
+    assert get_user_model().objects.count() == before
 
 
 @pytest.fixture

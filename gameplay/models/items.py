@@ -243,9 +243,27 @@ def _equipment_set_summary(payload: dict) -> str:
 def _equipment_summary(payload: dict) -> str:
     parts = []
     for key, value in payload.items():
-        if value is None or key in {"set_key", "set_bonus", "set_description", "troop_stat_bonus"}:
+        if value is None or key in {
+            "set_key",
+            "set_bonus",
+            "set_description",
+            "troop_stat_bonus",
+            "required_level",
+            "equipment_base_key",
+            "equipment_base_name",
+            "equipment_affix",
+            "equipment_attack_bonus",
+            "equipment_defense_bonus",
+        }:
             continue
         parts.append(f"{_ITEM_EFFECT_STAT_LABELS.get(key, '未知属性')}+{value}")
+
+    required_level = payload.get("required_level")
+    for key, label in (("equipment_attack_bonus", "攻击"), ("equipment_defense_bonus", "防御加成")):
+        if payload.get(key):
+            parts.append(f"{label}+{payload[key]}")
+    if isinstance(required_level, int) and not isinstance(required_level, bool) and required_level > 1:
+        parts.append(f"需求：门客Lv.{required_level}")
 
     troop_bonus_text = format_raw_troop_device_bonus(payload.get("troop_stat_bonus"))
     if troop_bonus_text:

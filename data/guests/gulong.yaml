@@ -100,7 +100,7 @@ heroes:
       agility: 30
   - key: hero_hahaer
     name: 哈哈儿
-    avatar: duck_wu_male1.png
+    avatar: monkey/任务/哈哈儿.png
     archetype: military
     flavor: 恶人谷十大恶人之一，外号"笑里藏刀"。他整日满面笑容，看似和蔼可亲，实则心机深沉，最擅长在谈笑间取人性命。他教导小鱼儿要学会伪装自己，用笑容来掩饰内心的真实想法。他的武功虽非顶尖，但其阴险狡诈却让人防不胜防。他是江湖中"口蜜腹剑"的典型代表，用笑声掩盖了所有的罪恶与杀机。出自古龙小说《绝代双骄》
     default_gender: male
@@ -116,7 +116,7 @@ heroes:
       agility: 25
   - key: hero_bai_kaixin
     name: 白开心
-    avatar: duck_wu_male1.png
+    avatar: monkey/任务/白开心.png
     archetype: military
     flavor: 恶人谷十大恶人之一，外号"损人不利己"。他性格乖张，行事完全不按常理出牌，最喜欢做损人不利己的事情，以此为乐。他是恶人谷中最令人头疼的人物之一，连其他恶人都对他敬而远之。他教会了小鱼儿许多整人的手段和诡计。他的一生充满了荒诞与戏谑，是古龙笔下一个极具讽刺意味的丑角。出自古龙小说《绝代双骄》
     default_gender: male
@@ -244,7 +244,7 @@ heroes:
       agility: 20
   - key: hero_li_dazui
     name: 李大嘴
-    avatar: pig/武016.png
+    avatar: monkey/任务/李大嘴.png
     archetype: military
     flavor: 恶人谷十大恶人之一，外号"不吃人头"。他生性粗鲁，相貌凶恶，常以吃人肉来恐吓他人，实则内心并未完全泯灭良知。作为小鱼儿的养父之一，他对小鱼儿虽然严厉，却也倾注了独特的关爱。他厨艺精湛，堪称恶人谷第一大厨。他是古龙笔下典型的"恶人"，却也有着诙谐幽默和温情的一面，是一个立体而鲜活的角色。出自古龙小说《绝代双骄》
     default_gender: male
@@ -260,7 +260,7 @@ heroes:
       agility: 25
   - key: hero_du_sha
     name: 杜杀
-    avatar: pig/武056.png
+    avatar: monkey/任务/杜杀.png
     archetype: military
     flavor: 恶人谷十大恶人之一，排名第一，人称"血手"。他冷酷无情，杀人如麻，双手沾满了鲜血。作为小鱼儿的主要武功启蒙老师，他以极其残酷的方式训练小鱼儿，教会了他如何在险恶的江湖中生存。他沉默寡言，性格坚毅，虽然行事狠辣，但对恶人谷的兄弟们却有着一种特殊的义气。在小鱼儿成长的过程中，他扮演了一个严父般的角色。出自古龙小说《绝代双骄》
     default_gender: male
@@ -276,7 +276,7 @@ heroes:
       agility: 20
   - key: hero_yin_jiuyou
     name: 阴九幽
-    avatar: pig_wu_male7.png
+    avatar: monkey/任务/阴九幽.png
     archetype: military
     flavor: 恶人谷十大恶人之一，外号"半人半鬼"。他轻功卓绝，行踪诡秘，常年生活在阴暗之中，如同鬼魅一般。他生性阴沉，极少说话，给人一种毛骨悚然的感觉。他负责教授小鱼儿轻功和潜伏之术。在十大恶人中，他显得最为神秘莫测，是一个游离于人鬼边缘的异类，给小鱼儿的童年投下了阴森的影子。出自古龙小说《绝代双骄》
     default_gender: male
@@ -596,7 +596,7 @@ heroes:
       agility: 30
   - key: hero_tu_jiaojiao
     name: 屠娇娇
-    avatar: monkey_wen_female1.png
+    avatar: monkey/任务/屠娇娇.png
     archetype: civil
     flavor: 恶人谷十大恶人之一，外号"不男不女"。她精通易容术，千变万化，让人难以捉摸其真实面目。她性格泼辣张扬，说话尖酸刻薄，却对小鱼儿有着独特的喜爱，教会了他易容和演戏的本领。她做事全凭喜好，既可以为了朋友两肋插刀，也可以翻脸不认人。她是恶人谷中一道独特的风景线，用她的反复无常和精湛的易容术，为小鱼儿的成长增添了无数变数。出自古龙小说《绝代双骄》
     default_gender: female

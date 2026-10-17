@@ -273,6 +273,24 @@ skills:
     required_agility: 160
     targets: 1
 
+  - key: shenyi_poxu
+    name: 神意破虚
+    rarity: purple
+    description: 神意洞察虚实，内劲直贯破绽。武力与智力相济时，方能尽展此招威力。
+    base_probability: 0.75
+    kind: active
+    damage_formula:
+      base: 5000
+      ally_min:
+        stats: [force, intellect]
+        coefficient: 15
+      enemy:
+        defense: 0.3
+    required_level: 80
+    required_force: 400
+    required_intellect: 400
+    targets: 1
+
   # ---------- 万仙逆命关键首领专属技能 ----------
   - key: wanxian_qingsuan_fuzhao
     name: 符诏清算

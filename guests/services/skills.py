@@ -80,15 +80,28 @@ def _iter_skill_requirements(guest: Guest | None, skill: Skill) -> Iterator[tupl
         yield requirement_type, label, required, actual
 
 
-def collect_skill_requirements(skill: Skill | None) -> list[str]:
+def collect_skill_requirements(
+    skill: Skill | None,
+    *,
+    guest: Guest | None = None,
+    non_equipment_attributes: Mapping[str, int] | None = None,
+) -> list[str]:
     if skill is None:
         return []
+    if guest is not None and non_equipment_attributes is None and has_non_equipment_skill_requirements(skill):
+        non_equipment_attributes = collect_non_equipment_skill_attributes(guest)
     requirements: list[str] = []
-    for requirement_type, label, required, _actual in _iter_skill_requirements(None, skill):
-        requirements.append(f"{label}需 ≥ {required}")
+    for requirement_type, label, required, actual in _iter_skill_requirements(guest, skill):
+        current = f"（当前 {actual}）" if actual is not None else ""
+        requirements.append(f"{label}需 ≥ {required}{current}")
         minimum = _non_equipment_minimum(skill, required) if requirement_type != "level" else 0
         if minimum:
-            requirements.append(f"非装备{label}需 ≥ {minimum}")
+            current = (
+                f"（当前 {int(non_equipment_attributes[requirement_type])}）"
+                if guest is not None and non_equipment_attributes is not None
+                else ""
+            )
+            requirements.append(f"非装备{label}需 ≥ {minimum}{current}")
     return requirements
 
 

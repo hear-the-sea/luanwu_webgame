@@ -422,9 +422,9 @@ def finalize_horse_production(production: HorseProduction, send_notification: bo
             return False
 
         # 添加马匹到仓库（按数量添加）
-        from ..inventory.core import add_item_to_inventory_locked
+        from ..equipment_affixes import grant_item_with_equipment_affixes_locked
 
-        add_item_to_inventory_locked(locked_manor, locked_production.horse_key, locked_production.quantity)
+        grant_item_with_equipment_affixes_locked(locked_manor, locked_production.horse_key, locked_production.quantity)
 
         # 更新生产状态
         finished_at = timezone.now()

@@ -89,6 +89,12 @@ def _skill_admin_payload(skill):
         ("damage_formula", {"enemy": {"defense": "错误数值"}}),
         ("damage_formula", {"base": "Infinity"}),
         ("damage_formula", {"base": float("nan")}),
+        ("damage_formula", {"ally_min": None}),
+        ("damage_formula", {"ally_min": {"stats": ["force", "force"], "coefficient": 14}}),
+        ("damage_formula", {"ally_min": {"stats": ["force", "unknown"], "coefficient": 14}}),
+        ("damage_formula", {"ally_min": {"stats": ["force"], "coefficient": 14}}),
+        ("damage_formula", {"ally_min": {"stats": ["force", "intellect"], "coefficient": True}}),
+        ("damage_formula", {"ally_min": {"stats": ["force", "intellect"], "coefficient": "14"}}),
         ("passive_config", [1]),
         ("passive_config", {"triggers": [1]}),
         (
@@ -147,7 +153,12 @@ def test_skill_admin_saves_valid_runtime_config(client, django_user_model):
     client.force_login(user)
     skill = Skill.objects.create(key="valid_admin_skill", name="测试技能")
     payload = _skill_admin_payload(skill)
-    formula = {"base": 100, "ally": {"force": 1.5}, "enemy": {"defense": 0.2}}
+    formula = {
+        "base": 100,
+        "ally": {"force": 1.5},
+        "enemy": {"defense": 0.2},
+        "ally_min": {"stats": ["force", "intellect"], "coefficient": 14},
+    }
     config = {
         "triggers": [
             {

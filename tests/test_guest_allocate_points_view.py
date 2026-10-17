@@ -63,6 +63,45 @@ def test_allocate_points_ajax_returns_attribute_panel_html(client, django_user_m
 
 
 @pytest.mark.django_db
+def test_allocate_points_refreshes_non_equipment_skill_requirements_and_unlocks_learning(client, django_user_model):
+    from gameplay.models import InventoryItem, ItemTemplate
+    from guests.models import GearItem, GearTemplate, Skill
+
+    user = django_user_model.objects.create_user(username="allocate_skill_requirements", password="pass123")
+    manor = ensure_manor(user)
+    guest = _create_guest_with_points(manor, "skill_requirements")
+    guest.force = 100
+    guest.save(update_fields=["force"])
+    gear = GearTemplate.objects.create(
+        key="allocate_skill_gear", name="试学装备", slot="weapon", extra_stats={"force": 36}
+    )
+    GearItem.objects.create(manor=manor, guest=guest, template=gear)
+    skill = Skill.objects.create(key="allocate_skill_requirement", name="试学武艺", rarity="blue", required_force=100)
+    book = ItemTemplate.objects.create(
+        key="allocate_skill_book", name="试学秘籍", effect_type="skill_book", effect_payload={"skill_key": skill.key}
+    )
+    InventoryItem.objects.create(manor=manor, template=book, quantity=1)
+    client.force_login(user)
+    before = client.get(reverse("guests:detail", args=[guest.pk])).content.decode()
+    assert "非装备武力需 ≥ 65（当前 64）" in before
+    assert "条件不足" in before
+
+    response = client.post(
+        reverse("guests:allocate_points", args=[guest.pk]),
+        {"guest": guest.pk, "attribute": "force", "points": 1},
+        HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+    )
+
+    assert response.status_code == 200
+    modal = response.json()["skill_book_modal_html"]
+    assert "武力需 ≥ 100（当前 101）" in modal
+    assert "非装备武力需 ≥ 65（当前 65）" in modal
+    assert "条件不足" not in modal
+    assert "disabled" not in modal
+    assert "当前不足：" not in modal
+
+
+@pytest.mark.django_db
 def test_allocate_points_accept_json_without_ajax_header_returns_json(client, django_user_model):
     user = django_user_model.objects.create_user(username="alloc_points_accept_json", password="pass123")
     manor = ensure_manor(user)

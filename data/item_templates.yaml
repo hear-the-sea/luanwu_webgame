@@ -1229,7 +1229,7 @@ items:
           choices:
             - item_key: experience_pineapple
               weight: 1
-        - chance: 0.05
+        - chance: 0.0125
           min_quantity: 1
           max_quantity: 1
           choices:
@@ -1953,10 +1953,13 @@ items:
         - item_key: fangdajing
           min_quantity: 0
           max_quantity: 2
-        - item_key: mission_card
-          min_quantity: 0
-          max_quantity: 1
       random_item_groups:
+        - chance: 0.125
+          min_quantity: 1
+          max_quantity: 1
+          choices:
+            - item_key: mission_card
+              weight: 1
         - chance: 0.80
           min_quantity: 1
           max_quantity: 2
@@ -2029,10 +2032,13 @@ items:
         - item_key: fangdajing
           min_quantity: 1
           max_quantity: 2
-        - item_key: mission_card
-          min_quantity: 0
-          max_quantity: 2
       random_item_groups:
+        - chance: 0.16666666666666666
+          min_quantity: 1
+          max_quantity: 1
+          choices:
+            - item_key: mission_card
+              weight: 1
         - chance: 1.00
           min_quantity: 1
           max_quantity: 2
@@ -2126,10 +2132,13 @@ items:
         - item_key: fangdajing
           min_quantity: 1
           max_quantity: 3
-        - item_key: mission_card
-          min_quantity: 1
-          max_quantity: 3
       random_item_groups:
+        - chance: 0.25
+          min_quantity: 1
+          max_quantity: 1
+          choices:
+            - item_key: mission_card
+              weight: 1
         - chance: 1.00
           min_quantity: 2
           max_quantity: 3
@@ -2998,6 +3007,20 @@ items:
     price: 750000
     storage_space: 125
 
+  - key: book_shenyi_poxu
+    name: 《神意破虚》秘笈
+    description: 记载神意与内劲相合的破敌之法，可供门客研习「神意破虚」。
+    effect_type: skill_book
+    image: skill3.png
+    rarity: purple
+    effect_payload:
+      skill_key: shenyi_poxu
+      skill_name: 神意破虚
+    tradeable: true
+    price: 750000
+    storage_space: 125
+    is_usable: false
+
   # ---------- 通用被动技能书（紫色品质）----------
   - key: book_comrade_command
     name: 《同袍号令》秘术
@@ -3126,20 +3149,21 @@ items:
     effect_payload:
       hp: 300
       defense: 5
-      force: 20
+      force: 18
       agility: 15
       set_key: kasukabe_defense_set
       set_description: 春日部防卫队
       set_bonus:
         - pieces: 2
           bonus:
-            defense: 20
-            attack: 30
+            defense: 15
+            attack: 20
         - pieces: 4
           bonus:
-            hp: 600
-            agility: 20
-            luck: 15
+            hp: 400
+            agility: 15
+            luck: 10
+      required_level: 25
   - key: equip_shiro_leash
     name: 小白的散步绳
     description: 看似普通的牵绳，却能在混战中稳住阵脚，守住不该乱跑的人。
@@ -3150,8 +3174,8 @@ items:
     storage_space: 100
     image: equip_shiro_leash.png
     effect_payload:
-      hp: 360
-      defense: 15
+      hp: 300
+      defense: 14
       force: 5
       luck: 10
       set_key: kasukabe_defense_set
@@ -3159,13 +3183,14 @@ items:
       set_bonus:
         - pieces: 2
           bonus:
-            defense: 20
-            attack: 30
+            defense: 15
+            attack: 20
         - pieces: 4
           bonus:
-            hp: 600
-            agility: 20
-            luck: 15
+            hp: 400
+            agility: 15
+            luck: 10
+      required_level: 25
   - key: equip_kasukabe_satchel
     name: 春日部小书包
     description: 塞满点心、画纸和奇怪作战计划的小书包，防护意外地可靠。
@@ -3176,7 +3201,7 @@ items:
     storage_space: 100
     image: equip_kasukabe_satchel.png
     effect_payload:
-      hp: 420
+      hp: 400
       defense: 20
       agility: 10
       luck: 10
@@ -3185,13 +3210,14 @@ items:
       set_bonus:
         - pieces: 2
           bonus:
-            defense: 20
-            attack: 30
+            defense: 15
+            attack: 20
         - pieces: 4
           bonus:
-            hp: 600
-            agility: 20
-            luck: 15
+            hp: 400
+            agility: 15
+            luck: 10
+      required_level: 25
   - key: equip_action_beam_glove
     name: 动感光波手套
     description: 模仿动感超人招式制作的手套，挥动时能带出夸张的战斗节奏。
@@ -3209,13 +3235,14 @@ items:
       set_bonus:
         - pieces: 2
           bonus:
-            defense: 20
-            attack: 30
+            defense: 15
+            attack: 20
         - pieces: 4
           bonus:
-            hp: 600
-            agility: 20
-            luck: 15
+            hp: 400
+            agility: 15
+            luck: 10
+      required_level: 25
   - key: equip_nohara_pan
     name: 野原家的平底锅
     description: 厨房里磨炼出的实战兵器，攻守兼备，敲起来声势惊人。
@@ -3227,20 +3254,21 @@ items:
     image: equip_nohara_pan.png
     effect_payload:
       hp: 180
-      defense: 18
+      defense: 12
       force: 36
       set_key: kasukabe_defense_set
       set_description: 春日部防卫队
       set_bonus:
         - pieces: 2
           bonus:
-            defense: 20
-            attack: 30
+            defense: 15
+            attack: 20
         - pieces: 4
           bonus:
-            hp: 600
-            agility: 20
-            luck: 15
+            hp: 400
+            agility: 15
+            luck: 10
+      required_level: 25
   - key: equip_caomao
     name: 斗笠
     description: 由棕叶编织而成的宽边帽，可以简单遮蔽风雨。
@@ -3260,6 +3288,7 @@ items:
           force: 20
           troop_capacity: 20
           luck: 15
+      required_level: 1
     tradeable: false
     price: 0
     storage_space: 50
@@ -3283,6 +3312,7 @@ items:
           force: 20
           troop_capacity: 20
           luck: 15
+      required_level: 1
     tradeable: false
     price: 0
     storage_space: 50
@@ -3307,6 +3337,7 @@ items:
           force: 20
           troop_capacity: 20
           luck: 15
+      required_level: 1
     tradeable: false
     price: 0
     storage_space: 50
@@ -3329,6 +3360,7 @@ items:
           force: 20
           troop_capacity: 20
           luck: 15
+      required_level: 1
     tradeable: false
     price: 0
     storage_space: 50
@@ -3351,6 +3383,7 @@ items:
       defense: 5
       intellect: 8
       agility: 5
+      required_level: 1
 
   - key: equip_niupimao
     name: 牛皮帽
@@ -3366,6 +3399,7 @@ items:
       defense: 10
       force: 5
       agility: 5
+      required_level: 10
 
   - key: equip_tieyekui
     name: 铁叶盔
@@ -3380,6 +3414,7 @@ items:
       hp: 120
       defense: 8
       force: 12
+      required_level: 10
 
   - key: equip_yulindin
     name: 鱼鳞顶
@@ -3391,10 +3426,11 @@ items:
     storage_space: 75
     image: equip_yulindin.png
     effect_payload:
-      hp: 400
+      hp: 250
       defense: 12
       force: 1
       agility: 4
+      required_level: 10
 
   - key: equip_baihongkui
     name: 白虹盔
@@ -3409,7 +3445,8 @@ items:
       hp: 160
       defense: 12
       force: 4
-      troop_capacity: 16
+      troop_capacity: 10
+      required_level: 10
 
   - key: equip_zhubiankui
     name: 竹编盔
@@ -3423,9 +3460,9 @@ items:
     effect_payload:
       hp: 300
       defense: 15
+      required_level: 10
 
   # ---------- 头盔 - 绿色品质（成长期）----------
-
   - key: equip_yemantoukie
     name: 野蛮头盔
     description: 北方蛮族的战利品，以兽皮与铁铆拼制，带有异域风格。
@@ -3438,15 +3475,16 @@ items:
     effect_payload:
       hp: 150
       defense: 10
-      force: 20
+      force: 16
       set_key: yeman_set
       set_description: 野蛮套装
       set_bonus:
         pieces: 2
         bonus:
-          hp: 300
-          force: 25
-          defense: 10
+          hp: 250
+          force: 20
+          defense: 8
+      required_level: 15
   - key: equip_huwenkui
     name: 虎纹盔
     description: 据说是某位虎将的遗物，虎纹威猛，煞气逼人。
@@ -3460,6 +3498,7 @@ items:
       hp: 220
       defense: 18
       force: 15
+      required_level: 20
 
   - key: equip_baoutoukui
     name: 豹头盔
@@ -3472,8 +3511,9 @@ items:
     image: equip_baoutoukui.png
     effect_payload:
       hp: 200
-      defense: 20
-      agility: 15
+      defense: 18
+      agility: 12
+      required_level: 20
 
   - key: equip_yanlingmao
     name: 雁翎帽
@@ -3487,7 +3527,8 @@ items:
     effect_payload:
       hp: 200
       defense: 15
-      agility: 15
+      agility: 12
+      required_level: 20
 
   - key: equip_qingtengguan
     name: 青藤冠
@@ -3503,9 +3544,9 @@ items:
       defense: 10
       intellect: 15
       luck: 5
+      required_level: 15
 
   # ---------- 头盔 - 蓝色品质（发展期）----------
-
   - key: equip_xiaoweitoukui
     name: 校尉头盔
     description: 军中校尉制式头盔，上有龙纹标识，象征军阶与荣誉。
@@ -3516,19 +3557,20 @@ items:
     storage_space: 100
     image: equip_xiaoweitoukui.png
     effect_payload:
-      hp: 350
+      hp: 300
       defense: 20
       force: 15
-      troop_capacity: 20
+      troop_capacity: 15
       set_key: xiaowei_set
       set_description: 校尉套装
       set_bonus:
         pieces: 4
         bonus:
-          hp: 360
-          defense: 15
-          force: 40
-          troop_capacity: 100
+          hp: 300
+          defense: 12
+          force: 30
+          troop_capacity: 50
+      required_level: 30
   - key: equip_jiaodoushitoukui
     name: 角斗士头盔
     description: 角斗场老兵常用的重盔，面甲刻有胜场纹记，兼顾防护与压迫感。
@@ -3539,18 +3581,19 @@ items:
     storage_space: 100
     image: equip_jiaodoushitoukui.png
     effect_payload:
-      hp: 350
+      hp: 300
       defense: 25
-      force: 20
+      force: 18
       set_key: jiaodoushi_set
       set_description: 角斗士套装
       set_bonus:
         pieces: 4
         bonus:
-          hp: 280
-          defense: 10
-          force: 30
-          agility: 15
+          hp: 240
+          defense: 8
+          force: 24
+          agility: 12
+      required_level: 35
   - key: equip_xuantiekui
     name: 玄铁盔
     description: 以罕见玄铁锻成，据传耗费了三位铁匠十年心血。
@@ -3561,9 +3604,10 @@ items:
     storage_space: 100
     image: equip_xuantiekui.png
     effect_payload:
-      hp: 340
-      defense: 40
+      hp: 300
+      defense: 26
       force: 15
+      required_level: 40
 
   - key: equip_qinglongkui
     name: 青龙盔
@@ -3575,7 +3619,7 @@ items:
     storage_space: 100
     image: equip_qinglongkui.png
     effect_payload:
-      hp: 400
+      hp: 300
       defense: 20
       intellect: 22
       set_key: sixiang_set
@@ -3583,10 +3627,11 @@ items:
       set_bonus:
         pieces: 4
         bonus:
-          hp: 360
-          force: 35
-          intellect: 35
-          agility: 20
+          hp: 300
+          force: 25
+          intellect: 25
+          agility: 15
+      required_level: 35
   - key: equip_hantiekui
     name: 寒铁盔
     description: 以极北寒铁铸就，触之冰凉入骨，常年不受寒侵。
@@ -3597,9 +3642,10 @@ items:
     storage_space: 100
     image: equip_hantiekui.png
     effect_payload:
-      hp: 380
-      defense: 35
+      hp: 300
+      defense: 26
       force: 5
+      required_level: 40
 
   - key: equip_langyakui
     name: 狼牙盔
@@ -3613,8 +3659,9 @@ items:
     effect_payload:
       hp: 300
       defense: 20
-      force: 20
+      force: 18
       agility: 15
+      required_level: 40
 
   - key: equip_feiyukui
     name: 飞羽盔
@@ -3626,10 +3673,11 @@ items:
     storage_space: 100
     image: equip_feiyukui.png
     effect_payload:
-      hp: 400
+      hp: 300
       defense: 15
-      agility: 25
+      agility: 15
       luck: 10
+      required_level: 35
 
   - key: equip_yunwenkui
     name: 云纹盔
@@ -3643,11 +3691,11 @@ items:
     effect_payload:
       hp: 300
       defense: 15
-      intellect: 25
+      intellect: 22
       luck: 10
+      required_level: 30
 
   # ---------- 头盔 - 紫色品质（成熟期）----------
-
   - key: equip_qilinkui
     name: 麒麟盔
     description: 仿麒麟头颅锻造，相传是某位开国将军的传家之宝。
@@ -3658,19 +3706,20 @@ items:
     storage_space: 150
     image: equip_qilinkui.png
     effect_payload:
-      hp: 440
-      defense: 33
-      force: 28
+      hp: 360
+      defense: 32
+      force: 24
       intellect: 3
       set_key: qilin_set
       set_description: 麒麟套装
       set_bonus:
         pieces: 4
         bonus:
-          hp: 420
-          force: 38
-          agility: 18
-          luck: 30
+          hp: 320
+          force: 28
+          agility: 12
+          luck: 20
+      required_level: 55
   - key: equip_fenglingguan
     name: 凤翎冠
     description: 以凤凰翎羽点缀的华冠，曾是后宫贵妃所赐之物。
@@ -3683,15 +3732,16 @@ items:
     effect_payload:
       hp: 360
       defense: 21
-      intellect: 32
+      intellect: 28
       luck: 11
       set_key: fengling_set
       set_description: 凤翎套装
       set_bonus:
         pieces: 3
         bonus:
-          intellect: 60
-          luck: 30
+          intellect: 40
+          luck: 20
+      required_level: 55
   - key: equip_bawangkui
     name: 霸王盔
     description: 相传为西楚霸王项羽的遗物，气势撼人，威压四方。
@@ -3702,9 +3752,11 @@ items:
     storage_space: 150
     image: equip_bawangkui.png
     effect_payload:
-      hp: 500
+      hp: 360
       defense: 30
-      force: 35
+      force: 24
+      troop_capacity: 15
+      required_level: 60
 
   - key: equip_xuanwukui
     name: 玄武盔
@@ -3716,8 +3768,8 @@ items:
     storage_space: 150
     image: equip_xuanwukui.png
     effect_payload:
-      hp: 545
-      defense: 44
+      hp: 360
+      defense: 32
       force: 10
       intellect: 10
       set_key: xuanwu_set
@@ -3725,9 +3777,10 @@ items:
       set_bonus:
         pieces: 4
         bonus:
-          hp: 260
-          defense: 70
-          force: 20
+          hp: 220
+          defense: 40
+          force: 12
+      required_level: 55
   - key: equip_pojunkui
     name: 破军盔
     description: 破军星位所铸，据传戴者必成一方悍将。
@@ -3738,10 +3791,12 @@ items:
     storage_space: 150
     image: equip_pojunkui.png
     effect_payload:
-      hp: 445
+      hp: 360
       defense: 26
-      force: 27
+      force: 24
       agility: 15
+      troop_capacity: 20
+      required_level: 55
 
   - key: equip_tianjiguan
     name: 天机冠
@@ -3753,13 +3808,13 @@ items:
     storage_space: 150
     image: equip_tianjiguan.png
     effect_payload:
-      hp: 390
+      hp: 360
       defense: 20
-      intellect: 38
-      luck: 14
+      intellect: 28
+      luck: 12
+      required_level: 45
 
   # ---------- 头盔 - 橙色品质（巅峰期）----------
-
   - key: equip_longhuangguan
     name: 龙皇冠
     description: 相传为远古龙皇遗落人间的宝物，冠身隐有龙吟。
@@ -3770,11 +3825,12 @@ items:
     storage_space: 200
     image: equip_longhuangguan.png
     effect_payload:
-      hp: 620
+      hp: 400
       defense: 26
       force: 12
-      intellect: 32
-      troop_capacity: 20
+      intellect: 30
+      troop_capacity: 40
+      required_level: 65
 
   - key: equip_diwangkui
     name: 帝王盔
@@ -3786,10 +3842,12 @@ items:
     storage_space: 200
     image: equip_diwangkui.png
     effect_payload:
-      hp: 503
+      hp: 400
       defense: 29
-      force: 29
+      force: 24
       intellect: 29
+      troop_capacity: 30
+      required_level: 80
 
   - key: equip_taixudiguan
     name: 太虚帝冠
@@ -3801,15 +3859,15 @@ items:
     storage_space: 200
     image: equip_taixudiguan.png
     effect_payload:
-      hp: 560
+      hp: 400
       defense: 30
-      intellect: 34
+      intellect: 30
       luck: 14
+      required_level: 75
 
   # ══════════════════════════════════════════════════════════════════════════════
   #                         装备类 - 护甲
   # ══════════════════════════════════════════════════════════════════════════════
-
   - key: equip_bupao
     name: 布袍
     description: 普通老百姓穿的衣服，所谓布衣。
@@ -3823,6 +3881,7 @@ items:
       hp: 80
       defense: 6
       intellect: 8
+      required_level: 1
 
   - key: equip_shengpijia
     name: 生皮甲
@@ -3837,6 +3896,7 @@ items:
       hp: 160
       defense: 12
       force: 4
+      required_level: 5
 
   - key: equip_housipao
     name: 厚丝袍
@@ -3852,6 +3912,7 @@ items:
       defense: 12
       intellect: 4
       agility: 6
+      required_level: 10
 
   - key: equip_shapijia
     name: 鲨皮甲
@@ -3867,6 +3928,7 @@ items:
       defense: 14
       force: 4
       agility: 4
+      required_level: 10
 
   - key: equip_cubujia
     name: 粗布甲
@@ -3882,9 +3944,9 @@ items:
       defense: 10
       force: 5
       agility: 5
+      required_level: 10
 
   # ---------- 护甲 - 绿色品质（成长期）----------
-
   - key: equip_suozijia
     name: 锁子甲
     description: 西域工匠的杰作，环环相扣，传入中原已逾百年。
@@ -3896,8 +3958,9 @@ items:
     image: equip_suozijia.png
     effect_payload:
       hp: 500
-      defense: 25
+      defense: 22
       force: 5
+      required_level: 20
 
   - key: equip_xuantiejia
     name: 玄铁甲
@@ -3909,8 +3972,9 @@ items:
     storage_space: 75
     image: equip_xuantiejia.png
     effect_payload:
-      hp: 800
-      defense: 30
+      hp: 500
+      defense: 22
+      required_level: 20
 
   - key: equip_shanwenjia
     name: 山纹甲
@@ -3925,6 +3989,7 @@ items:
       hp: 500
       defense: 20
       force: 10
+      required_level: 15
 
   - key: equip_qingzhujia
     name: 青竹甲
@@ -3939,7 +4004,8 @@ items:
       hp: 200
       defense: 20
       force: 5
-      agility: 12
+      agility: 10
+      required_level: 15
 
   - key: equip_tiexianjia
     name: 铁线甲
@@ -3951,9 +4017,10 @@ items:
     storage_space: 75
     image: equip_tiexianjia.png
     effect_payload:
-      hp: 800
+      hp: 500
       defense: 15
-      force: 15
+      force: 12
+      required_level: 15
 
   - key: equip_nichangyuyi
     name: 霓裳羽衣
@@ -3974,10 +4041,11 @@ items:
       set_bonus:
         pieces: 3
         bonus:
-          hp: 150
-          intellect: 20
-          agility: 10
-          luck: 15
+          hp: 120
+          intellect: 15
+          agility: 8
+          luck: 12
+      required_level: 15
   - key: equip_xiaoweikaijia
     name: 校尉铠甲
     description: 军中校尉的制式铠甲，胸口铸有军阶徽记。
@@ -3988,19 +4056,20 @@ items:
     storage_space: 100
     image: equip_xiaoweikaijia.png
     effect_payload:
-      hp: 440
+      hp: 400
       defense: 25
       force: 10
-      troop_capacity: 30
+      troop_capacity: 20
       set_key: xiaowei_set
       set_description: 校尉套装
       set_bonus:
         pieces: 4
         bonus:
-          hp: 360
-          defense: 15
-          force: 40
-          troop_capacity: 100
+          hp: 300
+          defense: 12
+          force: 30
+          troop_capacity: 50
+      required_level: 30
   - key: equip_jiaodoushixiongjia
     name: 角斗士胸甲
     description: 胸甲以整片锻钢打造，常见于斗技场前排猛士，抗冲击能力出众。
@@ -4011,18 +4080,19 @@ items:
     storage_space: 100
     image: equip_jiaodoushixiongjia.png
     effect_payload:
-      hp: 450
-      defense: 35
-      force: 20
+      hp: 400
+      defense: 28
+      force: 18
       set_key: jiaodoushi_set
       set_description: 角斗士套装
       set_bonus:
         pieces: 4
         bonus:
-          hp: 280
-          defense: 10
-          force: 30
-          agility: 15
+          hp: 240
+          defense: 8
+          force: 24
+          agility: 12
+      required_level: 35
   - key: equip_qinglongjia
     name: 青龙甲
     description: 甲身绘有青龙图腾，相传曾是青龙堂护法所穿。
@@ -4042,10 +4112,11 @@ items:
       set_bonus:
         pieces: 4
         bonus:
-          hp: 360
-          force: 35
-          intellect: 35
-          agility: 20
+          hp: 300
+          force: 25
+          intellect: 25
+          agility: 15
+      required_level: 35
   - key: equip_wujinjia
     name: 乌金甲
     description: 以乌金铸就的战甲，出自西域某个神秘的铸甲世家。
@@ -4058,7 +4129,8 @@ items:
     effect_payload:
       hp: 400
       defense: 25
-      force: 20
+      force: 18
+      required_level: 30
 
   - key: equip_linwenzhanjia
     name: 鳞纹战甲
@@ -4070,9 +4142,10 @@ items:
     storage_space: 100
     image: equip_linwenzhanjia.png
     effect_payload:
-      hp: 500
-      defense: 30
+      hp: 400
+      defense: 28
       force: 15
+      required_level: 35
 
   - key: equip_yunwenfayi
     name: 云纹法衣
@@ -4086,8 +4159,9 @@ items:
     effect_payload:
       hp: 350
       defense: 10
-      intellect: 30
+      intellect: 25
       luck: 10
+      required_level: 25
 
   - key: equip_xuanjiazhanbao
     name: 玄甲战袍
@@ -4099,12 +4173,12 @@ items:
     storage_space: 100
     image: equip_xuanjiazhanbao.png
     effect_payload:
-      hp: 550
-      defense: 30
+      hp: 400
+      defense: 28
       intellect: 20
+      required_level: 40
 
   # ---------- 护甲 - 紫色品质（成熟期）----------
-
   - key: equip_huxianpao
     name: 狐仙袍
     description: 相传为涂山狐族遗物，袍上隐有狐狸图纹。
@@ -4115,18 +4189,19 @@ items:
     storage_space: 150
     image: equip_huxianpao.png
     effect_payload:
-      hp: 535
+      hp: 500
       defense: 25
       force: 3
-      intellect: 34
+      intellect: 28
       set_key: huxian_set
       set_description: 狐仙套装
       set_bonus:
         pieces: 3
         bonus:
-          hp: 280
-          intellect: 64
-          luck: 18
+          hp: 220
+          intellect: 45
+          luck: 15
+      required_level: 50
   - key: equip_qilinjia
     name: 麒麟甲
     description: 仿麒麟鳞甲锻造，相传曾是某位麒麟卫统领的战甲。
@@ -4137,19 +4212,20 @@ items:
     storage_space: 150
     image: equip_qilinjia.png
     effect_payload:
-      hp: 575
+      hp: 500
       defense: 35
-      force: 25
+      force: 22
       intellect: 4
       set_key: qilin_set
       set_description: 麒麟套装
       set_bonus:
         pieces: 4
         bonus:
-          hp: 420
-          force: 38
-          agility: 18
-          luck: 30
+          hp: 320
+          force: 28
+          agility: 12
+          luck: 20
+      required_level: 55
   - key: equip_xuanwujia
     name: 玄武甲
     description: 以玄武为形铸造，龟纹蛇鳞交织，出自玄武山庄。
@@ -4160,8 +4236,8 @@ items:
     storage_space: 150
     image: equip_xuanwujia.png
     effect_payload:
-      hp: 676
-      defense: 48
+      hp: 500
+      defense: 36
       force: 7
       intellect: 7
       set_key: xuanwu_set
@@ -4169,9 +4245,10 @@ items:
       set_bonus:
         pieces: 4
         bonus:
-          hp: 260
-          defense: 70
-          force: 20
+          hp: 220
+          defense: 40
+          force: 12
+      required_level: 55
   - key: equip_tiancanbaoyi
     name: 天蚕宝衣
     description: 以雪域天蚕丝织就，轻若无物却刀枪不入。
@@ -4182,10 +4259,11 @@ items:
     storage_space: 150
     image: equip_tiancanbaoyi.png
     effect_payload:
-      hp: 560
+      hp: 500
       defense: 30
       force: 6
-      agility: 34
+      agility: 18
+      required_level: 60
 
   - key: equip_pojunzhanjia
     name: 破军战甲
@@ -4197,9 +4275,11 @@ items:
     storage_space: 150
     image: equip_pojunzhanjia.png
     effect_payload:
-      hp: 630
+      hp: 500
       defense: 29
-      force: 31
+      force: 22
+      troop_capacity: 20
+      required_level: 55
 
   - key: equip_tianjidaopao
     name: 天机道袍
@@ -4213,11 +4293,11 @@ items:
     effect_payload:
       hp: 376
       defense: 19
-      intellect: 35
-      luck: 17
+      intellect: 28
+      luck: 15
+      required_level: 45
 
   # ---------- 护甲 - 橙色品质（巅峰期）----------
-
   - key: equip_longlinzhanjia
     name: 龙鳞战甲
     description: 以真龙脱落之鳞锻造，极为稀有，世间仅存数件。
@@ -4228,10 +4308,11 @@ items:
     storage_space: 200
     image: equip_longlinzhanjia.png
     effect_payload:
-      hp: 720
+      hp: 550
       defense: 38
-      force: 39
+      force: 26
       intellect: 3
+      required_level: 75
 
   - key: equip_jinsirujia
     name: 金丝软甲
@@ -4243,10 +4324,11 @@ items:
     storage_space: 200
     image: equip_jinsirujia.png
     effect_payload:
-      hp: 640
+      hp: 550
       defense: 32
-      agility: 28
-      luck: 18
+      agility: 18
+      luck: 16
+      required_level: 70
 
   - key: equip_hundunlongpao
     name: 混沌龙袍
@@ -4260,8 +4342,9 @@ items:
     effect_payload:
       hp: 540
       defense: 23
-      intellect: 40
+      intellect: 32
       luck: 15
+      required_level: 65
 
   - key: equip_ruanweijia
     name: 软猬甲
@@ -4273,15 +4356,15 @@ items:
     storage_space: 200
     image: equip_ruanweijia.png
     effect_payload:
-      hp: 665
-      defense: 46
+      hp: 550
+      defense: 38
       force: 8
-      agility: 28
+      agility: 18
+      required_level: 80
 
   # ══════════════════════════════════════════════════════════════════════════════
   #                         装备类 - 鞋子
   # ══════════════════════════════════════════════════════════════════════════════
-
   - key: equip_buxie
     name: 布鞋
     description: 手工缝制的布鞋，价格和质量一样低劣。
@@ -4296,6 +4379,7 @@ items:
       defense: 4
       intellect: 4
       agility: 6
+      required_level: 5
 
   - key: equip_yangpixue
     name: 羊皮靴
@@ -4311,6 +4395,7 @@ items:
       defense: 2
       force: 4
       agility: 8
+      required_level: 1
 
   - key: equip_gangpianxue
     name: 钢片靴
@@ -4322,10 +4407,11 @@ items:
     storage_space: 75
     image: equip_gangpianxue.png
     effect_payload:
-      hp: 240
+      hp: 200
       defense: 8
       force: 4
       agility: 10
+      required_level: 10
 
   - key: equip_yanyuxue
     name: 燕羽靴
@@ -4341,6 +4427,7 @@ items:
       defense: 8
       force: 4
       agility: 14
+      required_level: 10
 
   - key: equip_mabuxue
     name: 麻布靴
@@ -4356,9 +4443,9 @@ items:
       defense: 8
       intellect: 5
       agility: 6
+      required_level: 10
 
   # ---------- 鞋子 - 绿色品质（成长期）----------
-
   - key: equip_hupixue
     name: 虎皮靴
     description: 以猛虎皮革制成，相传是某位打虎英雄的战利品。
@@ -4369,10 +4456,11 @@ items:
     storage_space: 75
     image: equip_hupixue.png
     effect_payload:
-      hp: 300
+      hp: 200
       defense: 5
-      force: 10
+      force: 8
       agility: 15
+      required_level: 10
 
   - key: equip_tayunxue
     name: 踏云靴
@@ -4387,7 +4475,8 @@ items:
       hp: 100
       defense: 5
       force: 5
-      agility: 25
+      agility: 22
+      required_level: 15
 
   - key: equip_jifengxue
     name: 疾风靴
@@ -4399,9 +4488,10 @@ items:
     storage_space: 75
     image: equip_jifengxue.png
     effect_payload:
-      hp: 240
-      defense: 10
-      agility: 25
+      hp: 200
+      defense: 8
+      agility: 22
+      required_level: 20
 
   - key: equip_youxiaxue
     name: 游侠靴
@@ -4415,8 +4505,9 @@ items:
     effect_payload:
       hp: 200
       defense: 5
-      force: 10
+      force: 8
       agility: 20
+      required_level: 20
 
   - key: equip_zhuyelu
     name: 竹叶履
@@ -4432,6 +4523,7 @@ items:
       defense: 5
       agility: 20
       luck: 8
+      required_level: 15
 
   - key: equip_nichangwuxie
     name: 霓裳舞鞋
@@ -4452,10 +4544,11 @@ items:
       set_bonus:
         pieces: 3
         bonus:
-          hp: 150
-          intellect: 20
-          agility: 10
-          luck: 15
+          hp: 120
+          intellect: 15
+          agility: 8
+          luck: 12
+      required_level: 15
   - key: equip_xiaoweichangxue
     name: 校尉长靴
     description: 军中校尉的制式长靴，靴筒刻有军阶标识。
@@ -4466,20 +4559,21 @@ items:
     storage_space: 100
     image: equip_xiaoweichangxue.png
     effect_payload:
-      hp: 250
-      defense: 20
+      hp: 200
+      defense: 14
       force: 5
       agility: 20
-      troop_capacity: 20
+      troop_capacity: 10
       set_key: xiaowei_set
       set_description: 校尉套装
       set_bonus:
         pieces: 4
         bonus:
-          hp: 360
-          defense: 15
-          force: 40
-          troop_capacity: 100
+          hp: 300
+          defense: 12
+          force: 30
+          troop_capacity: 50
+      required_level: 30
   - key: equip_jiaodoushizhixue
     name: 角斗士之靴
     description: 靴底嵌有防滑钢钉，专为近身缠斗设计，步法稳定且爆发力更强。
@@ -4490,19 +4584,20 @@ items:
     storage_space: 100
     image: equip_jiaodoushizhixue.png
     effect_payload:
-      hp: 250
-      defense: 16
-      force: 13
+      hp: 200
+      defense: 14
+      force: 12
       agility: 24
       set_key: jiaodoushi_set
       set_description: 角斗士套装
       set_bonus:
         pieces: 4
         bonus:
-          hp: 280
-          defense: 10
-          force: 30
-          agility: 15
+          hp: 240
+          defense: 8
+          force: 24
+          agility: 12
+      required_level: 35
   - key: equip_qinglongxue
     name: 青龙靴
     description: 绣有青龙纹样的战靴，相传曾是青龙门弟子所穿。
@@ -4513,20 +4608,21 @@ items:
     storage_space: 100
     image: equip_qinglongxue.png
     effect_payload:
-      hp: 216
+      hp: 200
       defense: 10
-      force: 15
-      intellect: 15
+      force: 12
+      intellect: 12
       agility: 20
       set_key: sixiang_set
       set_description: 四象套装
       set_bonus:
         pieces: 4
         bonus:
-          hp: 360
-          force: 35
-          intellect: 35
-          agility: 20
+          hp: 300
+          force: 25
+          intellect: 25
+          agility: 15
+      required_level: 35
   - key: equip_lingboxie
     name: 凌波鞋
     description: 据传是凌波微步的配套之物，出自逍遥派遗藏。
@@ -4537,9 +4633,10 @@ items:
     storage_space: 100
     image: equip_lingboxie.png
     effect_payload:
-      hp: 220
+      hp: 200
       defense: 10
-      agility: 40
+      agility: 30
+      required_level: 30
 
   - key: equip_zhuifengxue
     name: 追风靴
@@ -4553,7 +4650,8 @@ items:
     effect_payload:
       hp: 180
       defense: 8
-      agility: 42
+      agility: 30
+      required_level: 25
 
   - key: equip_pojunxue
     name: 破军靴
@@ -4565,10 +4663,11 @@ items:
     storage_space: 100
     image: equip_pojunxue.png
     effect_payload:
-      hp: 270
-      defense: 16
-      force: 15
+      hp: 200
+      defense: 14
+      force: 12
       agility: 20
+      required_level: 30
 
   - key: equip_yingxingxue
     name: 影行靴
@@ -4582,7 +4681,8 @@ items:
     effect_payload:
       hp: 200
       defense: 10
-      agility: 35
+      agility: 30
+      required_level: 25
 
   - key: equip_jinlinxue
     name: 金鳞靴
@@ -4595,12 +4695,12 @@ items:
     image: equip_jinlinxue.png
     effect_payload:
       hp: 200
-      defense: 18
+      defense: 14
       force: 11
       agility: 26
+      required_level: 40
 
   # ---------- 鞋子 - 紫色品质（成熟期）----------
-
   - key: equip_huxianxie
     name: 狐仙鞋
     description: 涂山狐族遗留人间的宝物，轻巧灵动如狐步。
@@ -4611,18 +4711,19 @@ items:
     storage_space: 150
     image: equip_huxianxie.png
     effect_payload:
-      hp: 320
+      hp: 240
       defense: 10
-      intellect: 24
+      intellect: 18
       agility: 32
       set_key: huxian_set
       set_description: 狐仙套装
       set_bonus:
         pieces: 3
         bonus:
-          hp: 280
-          intellect: 64
-          luck: 18
+          hp: 220
+          intellect: 45
+          luck: 15
+      required_level: 50
   - key: equip_qilinxue
     name: 麒麟靴
     description: 仿麒麟蹄形锻造，相传是麒麟卫的标志装备。
@@ -4633,19 +4734,20 @@ items:
     storage_space: 150
     image: equip_qilinxue.png
     effect_payload:
-      hp: 308
-      defense: 21
-      force: 18
+      hp: 240
+      defense: 20
+      force: 14
       agility: 30
       set_key: qilin_set
       set_description: 麒麟套装
       set_bonus:
         pieces: 4
         bonus:
-          hp: 420
-          force: 38
-          agility: 18
-          luck: 30
+          hp: 320
+          force: 28
+          agility: 12
+          luck: 20
+      required_level: 55
   - key: equip_xuanwuxue
     name: 玄武靴
     description: 玄武山庄的传承之物，靴底刻有玄武阵图。
@@ -4656,8 +4758,8 @@ items:
     storage_space: 150
     image: equip_xuanwuxue.png
     effect_payload:
-      hp: 362
-      defense: 30
+      hp: 240
+      defense: 20
       force: 7
       agility: 30
       set_key: xuanwu_set
@@ -4665,9 +4767,10 @@ items:
       set_bonus:
         pieces: 4
         bonus:
-          hp: 260
-          defense: 70
-          force: 20
+          hp: 220
+          defense: 40
+          force: 12
+      required_level: 55
   - key: equip_zhurixue
     name: 逐日靴
     description: 相传夸父逐日时所穿，后来落入人间被重新锻造。
@@ -4678,10 +4781,11 @@ items:
     storage_space: 150
     image: equip_zhurixue.png
     effect_payload:
-      hp: 266
-      defense: 23
+      hp: 240
+      defense: 20
       force: 10
-      agility: 45
+      agility: 36
+      required_level: 60
 
   - key: equip_tianjilu
     name: 天机履
@@ -4693,10 +4797,11 @@ items:
     storage_space: 150
     image: equip_tianjilu.png
     effect_payload:
-      hp: 283
+      hp: 240
       defense: 15
-      intellect: 22
-      agility: 39
+      intellect: 18
+      agility: 36
+      required_level: 55
 
   - key: equip_liekongxue
     name: 裂空靴
@@ -4708,13 +4813,13 @@ items:
     storage_space: 150
     image: equip_liekongxue.png
     effect_payload:
-      hp: 286
+      hp: 240
       defense: 16
-      force: 16
-      agility: 40
+      force: 14
+      agility: 36
+      required_level: 45
 
   # ---------- 鞋子 - 橙色品质（巅峰期）----------
-
   - key: equip_tatianxue
     name: 踏天靴
     description: 相传可踏天而行，是凌霄宫遗落凡间的神物。
@@ -4725,11 +4830,12 @@ items:
     storage_space: 200
     image: equip_tatianxue.png
     effect_payload:
-      hp: 340
-      defense: 15
-      force: 14
-      intellect: 9
-      agility: 44
+      hp: 220
+      defense: 12
+      force: 20
+      intellect: 7
+      agility: 32
+      required_level: 70
 
   - key: equip_shenxingxue
     name: 神行靴
@@ -4741,10 +4847,11 @@ items:
     storage_space: 200
     image: equip_shenxingxue.png
     effect_payload:
-      hp: 330
-      defense: 24
+      hp: 180
+      defense: 10
       force: 5
-      agility: 60
+      agility: 42
+      required_level: 80
 
   - key: equip_wujixingxue
     name: 无极行靴
@@ -4756,15 +4863,15 @@ items:
     storage_space: 200
     image: equip_wujixingxue.png
     effect_payload:
-      hp: 330
-      defense: 24
+      hp: 240
+      defense: 18
       force: 7
-      agility: 60
+      agility: 38
+      required_level: 75
 
   # ══════════════════════════════════════════════════════════════════════════════
   #                         装备类 - 武器（剑）
   # ══════════════════════════════════════════════════════════════════════════════
-
   - key: equip_duanjian
     name: 短剑
     description: 粗钢打造的剑，勉强够防身用。
@@ -4778,6 +4885,7 @@ items:
       hp: 80
       force: 8
       agility: 6
+      required_level: 1
 
   - key: equip_changjian
     name: 长剑
@@ -4792,6 +4900,7 @@ items:
       hp: 120
       defense: 1
       force: 14
+      required_level: 5
 
   - key: equip_qingmangjian
     name: 青芒剑
@@ -4806,6 +4915,7 @@ items:
       defense: 4
       force: 16
       agility: 5
+      required_level: 15
 
   - key: equip_duanmajian
     name: 断马剑
@@ -4819,11 +4929,11 @@ items:
     effect_payload:
       force: 20
       agility: 8
+      required_level: 10
 
   # ══════════════════════════════════════════════════════════════════════════════
   #                         装备类 - 武器（刀）
   # ══════════════════════════════════════════════════════════════════════════════
-
   - key: equip_duandao
     name: 短刀
     description: 粗钢打造的刀，勉强够防身用。
@@ -4837,6 +4947,7 @@ items:
       hp: 40
       force: 12
       agility: 4
+      required_level: 1
 
   - key: equip_dakandao
     name: 大砍刀
@@ -4850,6 +4961,7 @@ items:
     effect_payload:
       hp: 80
       force: 16
+      required_level: 5
 
   - key: equip_tongchangdao
     name: 铜长刀
@@ -4864,6 +4976,7 @@ items:
       hp: 80
       defense: 4
       force: 22
+      required_level: 20
 
   - key: equip_jingtiedao
     name: 精铁刀
@@ -4877,11 +4990,11 @@ items:
     effect_payload:
       hp: 40
       force: 28
+      required_level: 15
 
   # ══════════════════════════════════════════════════════════════════════════════
   #                         装备类 - 武器（枪）
   # ══════════════════════════════════════════════════════════════════════════════
-
   - key: equip_changqiang
     name: 长枪
     description: 普通的红缨点钢枪，士兵常使的武器。
@@ -4895,7 +5008,8 @@ items:
       hp: 160
       defense: 0
       force: 9
-      troop_capacity: 12
+      troop_capacity: 15
+      required_level: 1
 
   - key: equip_baoweiqiang
     name: 豹尾枪
@@ -4909,7 +5023,8 @@ items:
     effect_payload:
       defense: 4
       force: 8
-      troop_capacity: 20
+      troop_capacity: 25
+      required_level: 10
 
   - key: equip_hutoumao
     name: 虎头矛
@@ -4923,7 +5038,8 @@ items:
     effect_payload:
       defense: 4
       force: 16
-      troop_capacity: 16
+      troop_capacity: 15
+      required_level: 10
 
   - key: equip_pansheqiang
     name: 盘蛇枪
@@ -4937,12 +5053,12 @@ items:
     effect_payload:
       force: 16
       agility: 4
-      troop_capacity: 16
+      troop_capacity: 20
+      required_level: 10
 
   # ══════════════════════════════════════════════════════════════════════════════
   #                         装备类 - 武器（弓）
   # ══════════════════════════════════════════════════════════════════════════════
-
   - key: equip_changgong
     name: 长弓
     description: 白木制的弓，随处可见的东西。
@@ -4955,6 +5071,7 @@ items:
     effect_payload:
       force: 12
       agility: 4
+      required_level: 1
 
   - key: equip_fanqugong
     name: 反曲弓
@@ -4968,6 +5085,7 @@ items:
     effect_payload:
       force: 12
       agility: 6
+      required_level: 5
 
   - key: equip_tietaigong
     name: 铁胎弓
@@ -4982,6 +5100,7 @@ items:
       defense: 4
       force: 12
       agility: 9
+      required_level: 15
 
   - key: equip_shenbigong
     name: 神臂弓
@@ -4995,11 +5114,11 @@ items:
     effect_payload:
       force: 16
       agility: 12
+      required_level: 10
 
   # ══════════════════════════════════════════════════════════════════════════════
   #                         装备类 - 武器（鞭）
   # ══════════════════════════════════════════════════════════════════════════════
-
   - key: equip_changbian
     name: 长鞭
     description: 细藤搓成的鞭子，通常只能用来赶羊。
@@ -5012,6 +5131,7 @@ items:
     effect_payload:
       force: 12
       agility: 8
+      required_level: 10
 
   - key: equip_niupibian
     name: 牛皮鞭
@@ -5026,6 +5146,7 @@ items:
       force: 10
       agility: 6
       luck: 4
+      required_level: 10
 
   - key: equip_jicibian
     name: 棘刺鞭
@@ -5040,6 +5161,7 @@ items:
       force: 12
       agility: 6
       luck: 6
+      required_level: 10
 
   - key: equip_jiulonggangbian
     name: 九龙钢鞭
@@ -5054,6 +5176,7 @@ items:
       force: 12
       agility: 8
       luck: 6
+      required_level: 10
 
   - key: equip_mingshejiebian
     name: 冥蛇节鞭
@@ -5069,11 +5192,10 @@ items:
       force: 12
       agility: 6
       luck: 8
+      required_level: 15
 
   # ---------- 武器 - 扩展（成长期及以后）----------
-
   # ---------- 武器 - 绿色品质（成长期）----------
-
   - key: equip_yemankandao
     name: 野蛮砍刀
     description: 北方蛮族的战利品，刀身带有异域纹饰，做工粗犷。
@@ -5090,9 +5212,10 @@ items:
       set_bonus:
         pieces: 2
         bonus:
-          hp: 300
-          force: 25
-          defense: 10
+          hp: 250
+          force: 20
+          defense: 8
+      required_level: 15
   - key: equip_tiegugun
     name: 铁骨棍
     description: 以精铁为芯、硬木为皮的哨棍，是少林护法僧的常用兵器。
@@ -5105,6 +5228,7 @@ items:
     effect_payload:
       defense: 5
       force: 30
+      required_level: 20
 
   - key: equip_tongshanchui
     name: 铜山锤
@@ -5116,9 +5240,10 @@ items:
     storage_space: 75
     image: equip_tongshanchui.png
     effect_payload:
-      hp: 200
+      hp: 160
       defense: 5
       force: 32
+      required_level: 20
 
   - key: equip_pofengji
     name: 破风戟
@@ -5132,7 +5257,8 @@ items:
     effect_payload:
       force: 25
       agility: 5
-      troop_capacity: 50
+      troop_capacity: 25
+      required_level: 20
 
   - key: equip_shushengzhesan
     name: 书生折扇
@@ -5147,9 +5273,9 @@ items:
       force: 5
       intellect: 25
       luck: 10
+      required_level: 20
 
   # ---------- 武器 - 蓝色品质（发展期）----------
-
   - key: equip_xiaoweichangjian
     name: 校尉长剑
     description: 军中校尉的制式配剑，剑柄刻有军阶徽记。
@@ -5162,16 +5288,17 @@ items:
     effect_payload:
       hp: 72
       force: 45
-      troop_capacity: 20
+      troop_capacity: 25
       set_key: xiaowei_set
       set_description: 校尉套装
       set_bonus:
         pieces: 4
         bonus:
-          hp: 360
-          defense: 15
-          force: 40
-          troop_capacity: 100
+          hp: 300
+          defense: 12
+          force: 30
+          troop_capacity: 50
+      required_level: 30
   - key: equip_nichangjian
     name: 霓裳剑
     description: 剑身修长如舞袖起落，出招时既能借势压人，也适合以灵思与节奏带动战局。
@@ -5190,10 +5317,11 @@ items:
       set_bonus:
         pieces: 3
         bonus:
-          hp: 150
-          intellect: 20
-          agility: 10
-          luck: 15
+          hp: 120
+          intellect: 15
+          agility: 8
+          luck: 12
+      required_level: 25
   - key: equip_jiaodoushizhichui
     name: 角斗士之锤
     description: 角斗场常见的重型战锤，锤头配重厚实，擅长正面破防压制。
@@ -5212,10 +5340,11 @@ items:
       set_bonus:
         pieces: 4
         bonus:
-          hp: 280
-          defense: 10
-          force: 30
-          agility: 15
+          hp: 240
+          defense: 8
+          force: 24
+          agility: 12
+      required_level: 35
   - key: equip_junzijian
     name: 君子剑
     description: 传说是某位儒门宗师以仁义为剑名所铸，剑身刻有《论语》句。
@@ -5229,6 +5358,7 @@ items:
       force: 25
       intellect: 35
       agility: 15
+      required_level: 40
 
   - key: equip_qinglongdao
     name: 青龙刀
@@ -5240,7 +5370,7 @@ items:
     storage_space: 100
     image: qinglongdao.png
     effect_payload:
-      hp: 500
+      hp: 300
       force: 30
       intellect: 25
       set_key: sixiang_set
@@ -5248,10 +5378,11 @@ items:
       set_bonus:
         pieces: 4
         bonus:
-          hp: 360
-          force: 35
-          intellect: 35
-          agility: 20
+          hp: 300
+          force: 25
+          intellect: 25
+          agility: 15
+      required_level: 35
   - key: equip_pozhenqiang
     name: 破阵枪
     description: 岳家军破阵用的制式长枪，枪头带有倒钩设计。
@@ -5264,7 +5395,8 @@ items:
     effect_payload:
       hp: 150
       force: 50
-      troop_capacity: 50
+      troop_capacity: 40
+      required_level: 30
 
   - key: equip_chuanyungong
     name: 穿云弓
@@ -5278,6 +5410,7 @@ items:
     effect_payload:
       force: 40
       agility: 18
+      required_level: 25
 
   - key: equip_hanyuejian
     name: 寒月剑
@@ -5292,6 +5425,7 @@ items:
       defense: 10
       force: 35
       agility: 15
+      required_level: 35
 
   - key: equip_lieyandao
     name: 烈焰刀
@@ -5304,7 +5438,8 @@ items:
     image: equip_lieyandao.png
     effect_payload:
       hp: 160
-      force: 55
+      force: 50
+      required_level: 25
 
   - key: equip_duanhunbian
     name: 断魂鞭
@@ -5319,6 +5454,7 @@ items:
       force: 35
       agility: 20
       luck: 10
+      required_level: 35
 
   - key: equip_zhenyuechui
     name: 镇岳锤
@@ -5330,9 +5466,10 @@ items:
     storage_space: 100
     image: equip_zhenyuechui.png
     effect_payload:
-      hp: 500
-      defense: 20
+      hp: 300
+      defense: 12
       force: 35
+      required_level: 40
 
   - key: equip_xuanbinggong
     name: 玄冰弓
@@ -5345,7 +5482,8 @@ items:
     image: equip_xuanbinggong.png
     effect_payload:
       force: 40
-      agility: 25
+      agility: 22
+      required_level: 35
 
   - key: equip_xingluoshan
     name: 星罗扇
@@ -5357,11 +5495,11 @@ items:
     storage_space: 100
     image: equip_xingluoshan.png
     effect_payload:
-      intellect: 45
+      intellect: 40
       luck: 15
+      required_level: 30
 
   # ---------- 武器 - 紫色品质（成熟期）----------
-
   - key: equip_huxianjian
     name: 狐仙剑
     description: 相传是涂山狐族遗落人间的宝剑，剑身隐有狐影流转。
@@ -5380,9 +5518,10 @@ items:
       set_bonus:
         pieces: 3
         bonus:
-          hp: 280
-          intellect: 64
-          luck: 18
+          hp: 220
+          intellect: 45
+          luck: 15
+      required_level: 50
   - key: equip_bawangqiang
     name: 霸王枪
     description: 仿西楚霸王项羽的虎头鲛皮枪所铸，气势雄浑。
@@ -5396,7 +5535,8 @@ items:
       hp: 237
       force: 46
       agility: 12
-      troop_capacity: 39
+      troop_capacity: 50
+      required_level: 45
 
   - key: equip_qilindao
     name: 麒麟刀
@@ -5409,16 +5549,17 @@ items:
     image: equip_qilindao.png
     effect_payload:
       hp: 211
-      force: 70
+      force: 68
       set_key: qilin_set
       set_description: 麒麟套装
       set_bonus:
         pieces: 4
         bonus:
-          hp: 420
-          force: 38
-          agility: 18
-          luck: 30
+          hp: 320
+          force: 28
+          agility: 12
+          luck: 20
+      required_level: 55
   - key: equip_xuanwuchui
     name: 玄武锤
     description: 锤头铸成玄武形状，是玄武山庄的传承之物。
@@ -5429,17 +5570,18 @@ items:
     storage_space: 150
     image: equip_xuanwuchui.png
     effect_payload:
-      hp: 350
-      defense: 13
-      force: 64
+      hp: 300
+      defense: 12
+      force: 52
       set_key: xuanwu_set
       set_description: 玄武套装
       set_bonus:
         pieces: 4
         bonus:
-          hp: 260
-          defense: 70
-          force: 20
+          hp: 220
+          defense: 40
+          force: 12
+      required_level: 55
   - key: equip_fenglingshan
     name: 凤翎扇
     description: 以凤凰翎羽装饰的雅扇，传说是某位宫廷术士的遗物。
@@ -5451,15 +5593,16 @@ items:
     image: fenglingshan.png
     effect_payload:
       force: 15
-      intellect: 45
+      intellect: 48
       luck: 20
       set_key: fengling_set
       set_description: 凤翎套装
       set_bonus:
         pieces: 3
         bonus:
-          intellect: 60
-          luck: 30
+          intellect: 40
+          luck: 20
+      required_level: 55
   - key: equip_qixingjian
     name: 七星剑
     description: 剑身铸有北斗七星纹路，是道门镇压邪祟的法器。
@@ -5473,6 +5616,7 @@ items:
       force: 47
       intellect: 19
       agility: 16
+      required_level: 45
 
   - key: equip_tulongdao
     name: 屠龙刀
@@ -5485,7 +5629,8 @@ items:
     image: equip_tulongdao.png
     effect_payload:
       hp: 271
-      force: 77
+      force: 68
+      required_level: 60
 
   - key: equip_tianjizhang
     name: 天机杖
@@ -5498,9 +5643,10 @@ items:
     image: equip_tianjizhang.png
     effect_payload:
       hp: 187
-      force: 41
-      intellect: 22
+      force: 15
+      intellect: 50
       luck: 15
+      required_level: 60
 
   - key: equip_baguadao
     name: 八卦刀
@@ -5516,6 +5662,7 @@ items:
       defense: 5
       force: 40
       intellect: 20
+      required_level: 40
 
   - key: equip_pojunji
     name: 破军戟
@@ -5530,7 +5677,8 @@ items:
       hp: 214
       force: 50
       agility: 12
-      troop_capacity: 34
+      troop_capacity: 45
+      required_level: 45
 
   - key: equip_shuanghuagong
     name: 霜华弓
@@ -5545,6 +5693,7 @@ items:
       force: 44
       agility: 22
       luck: 14
+      required_level: 50
 
   - key: equip_jinshejian
     name: 金蛇剑
@@ -5559,6 +5708,7 @@ items:
       force: 45
       agility: 20
       luck: 15
+      required_level: 50
 
   - key: equip_duomingfeidao
     name: 夺命飞刀
@@ -5571,8 +5721,9 @@ items:
     image: equip_duomingfeidao.png
     effect_payload:
       force: 38
-      agility: 27
+      agility: 26
       luck: 16
+      required_level: 55
 
   - key: equip_ziweiruanjian
     name: 紫薇软剑
@@ -5587,6 +5738,7 @@ items:
       force: 46
       agility: 22
       luck: 13
+      required_level: 55
 
   - key: equip_yuxiao
     name: 玉箫
@@ -5599,9 +5751,10 @@ items:
     image: equip_yuxiao.png
     effect_payload:
       hp: 85
-      force: 36
-      intellect: 29
-      luck: 13
+      force: 20
+      intellect: 40
+      luck: 16
+      required_level: 60
 
   - key: equip_jinlun
     name: 金轮
@@ -5615,7 +5768,8 @@ items:
     effect_payload:
       hp: 280
       defense: 8
-      force: 69
+      force: 68
+      required_level: 60
 
   - key: equip_xuedao
     name: 血刀
@@ -5630,6 +5784,7 @@ items:
       hp: 170
       force: 63
       agility: 17
+      required_level: 50
 
   - key: equip_yuanyangdao
     name: 鸳鸯刀
@@ -5644,6 +5799,7 @@ items:
       force: 49
       agility: 20
       luck: 13
+      required_level: 60
 
   - key: equip_jinshezui
     name: 金蛇锥
@@ -5656,8 +5812,9 @@ items:
     image: equip_jinshezui.png
     effect_payload:
       force: 43
-      agility: 27
+      agility: 26
       luck: 12
+      required_level: 55
 
   - key: equip_wuqiaojian
     name: 乌鞘剑
@@ -5672,6 +5829,7 @@ items:
       force: 53
       agility: 16
       luck: 12
+      required_level: 50
 
   - key: equip_biyudao
     name: 碧玉刀
@@ -5686,6 +5844,7 @@ items:
       force: 48
       agility: 20
       luck: 13
+      required_level: 55
 
   - key: equip_libiegou
     name: 离别钩
@@ -5700,6 +5859,7 @@ items:
       force: 50
       agility: 17
       luck: 13
+      required_level: 50
 
   - key: equip_duoqinghuan
     name: 多情环
@@ -5715,6 +5875,7 @@ items:
       force: 40
       intellect: 26
       luck: 12
+      required_level: 45
 
   - key: equip_xiuhuazhen
     name: 绣花针
@@ -5727,11 +5888,11 @@ items:
     image: equip_xiuhuazhen.png
     effect_payload:
       force: 42
-      agility: 29
+      agility: 26
       luck: 11
+      required_level: 55
 
   # ---------- 武器 - 橙色品质（巅峰期）----------
-
   - key: equip_yitianjian
     name: 倚天剑
     description: 传说中的神兵之一，与屠龙刀齐名，"倚天不出，谁与争锋"。
@@ -5742,12 +5903,13 @@ items:
     storage_space: 200
     image: equip_yitianjian.png
     effect_payload:
-      hp: 518
+      hp: 180
       defense: 3
-      force: 41
-      intellect: 24
+      force: 64
+      intellect: 16
       agility: 14
       luck: 5
+      required_level: 65
 
   - key: equip_tuwujian
     name: 屠巫剑
@@ -5759,12 +5921,13 @@ items:
     storage_space: 200
     image: equip_tuwujian.png
     effect_payload:
-      hp: 514
+      hp: 160
       defense: 3
-      force: 40
-      intellect: 22
-      agility: 15
+      force: 70
+      intellect: 12
+      agility: 12
       luck: 3
+      required_level: 65
 
   - key: equip_fangtianhuaji
     name: 方天画戟
@@ -5776,11 +5939,12 @@ items:
     storage_space: 200
     image: equip_fangtianhuaji.png
     effect_payload:
-      hp: 650
-      defense: 12
-      force: 50
-      agility: 10
-      troop_capacity: 24
+      hp: 240
+      defense: 10
+      force: 55
+      agility: 8
+      troop_capacity: 70
+      required_level: 75
 
   - key: equip_xuanyuanjian
     name: 轩辕剑
@@ -5792,11 +5956,12 @@ items:
     storage_space: 200
     image: equip_xuanyuanjian.png
     effect_payload:
-      hp: 538
-      defense: 7
-      force: 33
-      intellect: 29
-      luck: 14
+      hp: 220
+      defense: 6
+      force: 62
+      intellect: 24
+      luck: 12
+      required_level: 80
 
   - key: equip_panlonggun
     name: 盘龙棍
@@ -5808,11 +5973,12 @@ items:
     storage_space: 200
     image: equip_panlonggun.png
     effect_payload:
-      hp: 680
-      defense: 12
-      force: 48
-      agility: 12
-      luck: 8
+      hp: 240
+      defense: 10
+      force: 72
+      agility: 10
+      luck: 6
+      required_level: 65
 
   - key: equip_zhuxianjian
     name: 诛仙剑
@@ -5824,12 +5990,13 @@ items:
     storage_space: 200
     image: zhuxianjian.png
     effect_payload:
-      hp: 530
-      defense: 5
-      force: 36
-      intellect: 28
-      agility: 7
-      luck: 5
+      hp: 160
+      defense: 4
+      force: 28
+      intellect: 58
+      agility: 6
+      luck: 10
+      required_level: 80
 
   - key: equip_qiankunshengong
     name: 乾坤神弓
@@ -5841,12 +6008,13 @@ items:
     storage_space: 200
     image: equip_qiankunshengong.png
     effect_payload:
-      hp: 555
-      defense: 7
-      force: 36
-      intellect: 9
-      agility: 25
-      luck: 9
+      hp: 120
+      defense: 5
+      force: 58
+      intellect: 7
+      agility: 28
+      luck: 8
+      required_level: 75
 
   - key: equip_xuantiechongjian
     name: 玄铁重剑
@@ -5858,10 +6026,11 @@ items:
     storage_space: 200
     image: equip_xuantiechongjian.png
     effect_payload:
-      hp: 760
-      defense: 15
-      force: 58
-      agility: 8
+      hp: 280
+      defense: 12
+      force: 78
+      agility: 5
+      required_level: 80
 
   - key: equip_dagoubang
     name: 打狗棒
@@ -5873,11 +6042,12 @@ items:
     storage_space: 200
     image: equip_dagoubang.png
     effect_payload:
-      hp: 567
-      defense: 9
-      force: 37
-      agility: 21
-      luck: 14
+      hp: 180
+      defense: 7
+      force: 56
+      agility: 24
+      luck: 15
+      required_level: 70
 
   - key: equip_xiaolifeidao
     name: 小李飞刀
@@ -5889,11 +6059,12 @@ items:
     storage_space: 200
     image: equip_xiaolifeidao.png
     effect_payload:
-      hp: 585
-      force: 36
-      intellect: 7
-      agility: 22
-      luck: 15
+      hp: 100
+      force: 58
+      intellect: 5
+      agility: 30
+      luck: 18
+      required_level: 75
 
   - key: equip_kongquelin
     name: 孔雀翎
@@ -5905,11 +6076,12 @@ items:
     storage_space: 200
     image: equip_kongquelin.png
     effect_payload:
-      hp: 610
-      force: 36
-      intellect: 9
-      agility: 23
-      luck: 14
+      hp: 120
+      force: 50
+      intellect: 22
+      agility: 26
+      luck: 18
+      required_level: 80
 
   - key: equip_tianyamingyuedao
     name: 天涯明月刀
@@ -5921,10 +6093,11 @@ items:
     storage_space: 200
     image: equip_tianyamingyuedao.png
     effect_payload:
-      hp: 680
-      defense: 10
-      force: 58
-      agility: 18
+      hp: 220
+      defense: 8
+      force: 74
+      agility: 16
+      required_level: 70
 
   - key: equip_yuanyuewandao
     name: 圆月弯刀
@@ -5936,11 +6109,12 @@ items:
     storage_space: 200
     image: equip_yuanyuewandao.png
     effect_payload:
-      hp: 577
-      defense: 9
-      force: 44
-      agility: 21
-      luck: 11
+      hp: 160
+      defense: 7
+      force: 62
+      agility: 22
+      luck: 14
+      required_level: 80
 
   - key: equip_changshengjian
     name: 长生剑
@@ -5952,16 +6126,16 @@ items:
     storage_space: 200
     image: equip_changshengjian.png
     effect_payload:
-      hp: 533
+      hp: 220
       defense: 10
-      force: 32
-      intellect: 27
-      luck: 12
+      force: 48
+      intellect: 34
+      luck: 15
+      required_level: 80
 
   # ══════════════════════════════════════════════════════════════════════════════
   #                         装备类 - 饰品
   # ══════════════════════════════════════════════════════════════════════════════
-
   - key: equip_zhuyuye
     name: 茱萸叶
     description: 佩戴茱萸叶，象征着防止灾祸和祈求健康平安。
@@ -5973,6 +6147,7 @@ items:
       defense: 14
       force: 21
       luck: 22
+      required_level: 55
     tradeable: false
     price: 0
     storage_space: 150
@@ -5992,7 +6167,8 @@ items:
     image: equip_tongling.png
     effect_payload:
       agility: 10
-      luck: 20
+      luck: 16
+      required_level: 10
 
   - key: equip_yupei
     name: 玉佩
@@ -6005,7 +6181,8 @@ items:
     image: equip_yupei.png
     effect_payload:
       hp: 50
-      troop_capacity: 100
+      troop_capacity: 60
+      required_level: 15
 
   - key: equip_hushenfu
     name: 护身符
@@ -6018,9 +6195,10 @@ items:
     image: equip_hushenfu.png
     effect_payload:
       hp: 100
-      defense: 15
+      defense: 14
       force: 5
       luck: 5
+      required_level: 20
 
   - key: equip_taomupai
     name: 桃木牌
@@ -6032,9 +6210,10 @@ items:
     storage_space: 75
     image: equip_taomupai.png
     effect_payload:
-      defense: 20
+      defense: 14
       intellect: 5
       luck: 10
+      required_level: 20
 
   - key: equip_fudai
     name: 福袋
@@ -6048,7 +6227,8 @@ items:
     effect_payload:
       hp: 100
       defense: 5
-      luck: 20
+      luck: 16
+      required_level: 10
 
   - key: equip_tiehufu
     name: 铁护符
@@ -6061,7 +6241,8 @@ items:
     image: equip_tiehufu.png
     effect_payload:
       hp: 200
-      defense: 20
+      defense: 14
+      required_level: 20
 
   - key: equip_tanmunianzhu
     name: 檀木念珠
@@ -6076,8 +6257,9 @@ items:
       defense: 5
       force: 5
       intellect: 15
-      troop_capacity: 20
+      troop_capacity: 15
       luck: 10
+      required_level: 20
 
   - key: equip_yiqiyaopai
     name: 义气腰牌
@@ -6091,10 +6273,11 @@ items:
     effect_payload:
       hp: 100
       defense: 5
-      force: 25
+      force: 20
+      troop_capacity: 20
+      required_level: 20
 
   # ---------- 饰品 - 蓝色品质 ----------
-
   - key: equip_longwenyupei
     name: 龙纹玉佩
     description: 雕有龙纹的上等玉佩，据传是某位王爷的旧物。
@@ -6107,8 +6290,9 @@ items:
     effect_payload:
       hp: 100
       force: 12
-      troop_capacity: 50
+      troop_capacity: 60
       luck: 15
+      required_level: 30
 
   - key: equip_fengyuzan
     name: 凤羽簪
@@ -6123,6 +6307,7 @@ items:
       hp: 100
       intellect: 15
       luck: 20
+      required_level: 25
 
   - key: equip_huyaxianglian
     name: 虎牙项链
@@ -6137,6 +6322,7 @@ items:
       hp: 250
       force: 20
       agility: 15
+      required_level: 25
 
   - key: equip_linghuzhui
     name: 灵狐坠
@@ -6151,6 +6337,7 @@ items:
       hp: 150
       intellect: 25
       agility: 15
+      required_level: 30
 
   - key: equip_xingshashouchuan
     name: 星砂手串
@@ -6165,6 +6352,7 @@ items:
       hp: 150
       intellect: 16
       luck: 20
+      required_level: 30
 
   - key: equip_xueyuzhuo
     name: 血玉镯
@@ -6178,7 +6366,8 @@ items:
     effect_payload:
       hp: 200
       force: 20
-      agility: 18
+      agility: 15
+      required_level: 25
 
   - key: equip_xuantiejie
     name: 玄铁戒
@@ -6190,9 +6379,10 @@ items:
     storage_space: 100
     image: equip_xuantiejie.png
     effect_payload:
-      hp: 500
-      defense: 15
+      hp: 300
+      defense: 14
       force: 15
+      required_level: 40
 
   - key: equip_liuyunpei
     name: 流云佩
@@ -6208,9 +6398,9 @@ items:
       intellect: 9
       agility: 15
       luck: 15
+      required_level: 30
 
   # ---------- 饰品 - 紫色品质 ----------
-
   - key: equip_qilinzui
     name: 麒麟坠
     description: 以麒麟形玉石雕成的坠饰，是麒麟卫的身份标识。
@@ -6224,16 +6414,17 @@ items:
       hp: 235
       force: 24
       intellect: 6
-      luck: 28
+      luck: 24
       set_key: qilin_set
       set_description: 麒麟套装
       set_bonus:
         pieces: 4
         bonus:
-          hp: 420
-          force: 38
-          agility: 18
-          luck: 30
+          hp: 320
+          force: 28
+          agility: 12
+          luck: 20
+      required_level: 55
   - key: equip_fenghuangyu
     name: 凤凰羽
     description: 传说中凤凰脱落的羽毛，通体金红，价值连城。
@@ -6253,8 +6444,9 @@ items:
       set_bonus:
         pieces: 3
         bonus:
-          intellect: 60
-          luck: 30
+          intellect: 40
+          luck: 20
+      required_level: 55
   - key: equip_longjingzhu
     name: 龙睛珠
     description: 据传是真龙眼中凝结的宝珠，内有流光转动。
@@ -6267,8 +6459,9 @@ items:
     effect_payload:
       hp: 229
       force: 19
-      agility: 22
+      agility: 16
       luck: 18
+      required_level: 45
 
   - key: equip_xuanwuyufu
     name: 玄武玉符
@@ -6281,9 +6474,10 @@ items:
     image: equip_xuanwuyufu.png
     effect_payload:
       hp: 286
-      defense: 22
-      force: 25
-      intellect: 14
+      defense: 18
+      force: 16
+      intellect: 10
+      required_level: 60
 
   - key: equip_tianjiyupei
     name: 天机玉佩
@@ -6299,6 +6493,7 @@ items:
       force: 7
       intellect: 26
       luck: 22
+      required_level: 45
 
   - key: equip_pojunhufu
     name: 破军虎符
@@ -6311,9 +6506,11 @@ items:
     image: equip_pojunhufu.png
     effect_payload:
       hp: 267
-      force: 31
+      force: 26
       intellect: 9
-      agility: 22
+      agility: 16
+      troop_capacity: 80
+      required_level: 55
 
   - key: equip_guiyuanzhu
     name: 归元珠
@@ -6328,7 +6525,8 @@ items:
       hp: 297
       force: 4
       intellect: 23
-      luck: 26
+      luck: 24
+      required_level: 45
 
   - key: equip_shenghuoling
     name: 圣火令
@@ -6344,9 +6542,10 @@ items:
       force: 14
       intellect: 17
       luck: 22
+      troop_capacity: 80
+      required_level: 50
 
   # ---------- 饰品 - 橙色品质 ----------
-
   - key: equip_heshibi
     name: 和氏璧
     description: 相传为卞和所献的绝世美玉，历经多朝流传至今。
@@ -6361,6 +6560,7 @@ items:
       defense: 7
       intellect: 32
       luck: 25
+      required_level: 65
 
   - key: equip_chuanguoyuxi
     name: 传国玉玺
@@ -6376,8 +6576,9 @@ items:
       defense: 5
       force: 16
       intellect: 16
-      troop_capacity: 200
+      troop_capacity: 160
       luck: 15
+      required_level: 80
 
   - key: equip_qiankunzhu
     name: 乾坤珠
@@ -6395,6 +6596,7 @@ items:
       intellect: 10
       agility: 15
       luck: 10
+      required_level: 70
 
   - key: equip_businiaoyu
     name: 不死鸟羽
@@ -6407,8 +6609,9 @@ items:
     image: equip_businiaoyu.png
     effect_payload:
       hp: 315
-      force: 35
-      agility: 35
+      force: 28
+      agility: 20
+      required_level: 65
 
   - key: equip_jianghuling
     name: 江湖令
@@ -6423,8 +6626,9 @@ items:
       hp: 350
       force: 20
       intellect: 20
-      agility: 30
-      troop_capacity: 100
+      agility: 20
+      troop_capacity: 80
+      required_level: 75
 
   - key: equip_shangshanfaeling
     name: 赏善罚恶令
@@ -6441,29 +6645,49 @@ items:
       force: 21
       intellect: 18
       luck: 22
+      troop_capacity: 60
+      required_level: 70
 
   # ══════════════════════════════════════════════════════════════════════════════
   #                         装备类 - 器械
   # ══════════════════════════════════════════════════════════════════════════════
-
   - key: equip_taotieding
     name: 饕餮鼎
     description: 鼎身上的饕餮图案而得名，象征着权力和财富，常用于祭祀或重要场合。
     effect_type: equip_device
     rarity: purple
     effect_payload:
-      hp: 500
+      hp: 450
       defense: 15
       force: 18
-      intellect: 25
+      intellect: 24
       luck: 10
       troop_stat_bonus:
-        dao: {attack_pct: 0.0025, defense_pct: 0.0025, hp_pct: 0.0025}
-        qiang: {attack_pct: 0.0025, defense_pct: 0.0025, hp_pct: 0.0025}
-        jian: {attack_pct: 0.0025, defense_pct: 0.0025, hp_pct: 0.0025}
-        quan: {attack_pct: 0.0025, defense_pct: 0.0025, hp_pct: 0.0025}
-        gong: {attack_pct: 0.0025, defense_pct: 0.0025, hp_pct: 0.0025}
-        scout: {attack_pct: 0.0025, defense_pct: 0.0025, hp_pct: 0.0025}
+        dao:
+          attack_pct: 0.0025
+          defense_pct: 0.0025
+          hp_pct: 0.0025
+        qiang:
+          attack_pct: 0.0025
+          defense_pct: 0.0025
+          hp_pct: 0.0025
+        jian:
+          attack_pct: 0.0025
+          defense_pct: 0.0025
+          hp_pct: 0.0025
+        quan:
+          attack_pct: 0.0025
+          defense_pct: 0.0025
+          hp_pct: 0.0025
+        gong:
+          attack_pct: 0.0025
+          defense_pct: 0.0025
+          hp_pct: 0.0025
+        scout:
+          attack_pct: 0.0025
+          defense_pct: 0.0025
+          hp_pct: 0.0025
+      required_level: 55
     tradeable: true
     price: 0
     storage_space: 150
@@ -6486,6 +6710,7 @@ items:
       defense: 10
       intellect: 15
       luck: 5
+      required_level: 15
 
   - key: equip_tongjing
     name: 铜镜
@@ -6497,9 +6722,10 @@ items:
     storage_space: 75
     image: equip_tongjing.png
     effect_payload:
-      hp: 500
-      defense: 20
+      hp: 250
+      defense: 14
       intellect: 5
+      required_level: 15
 
   - key: equip_luopan
     name: 罗盘
@@ -6514,6 +6740,7 @@ items:
       intellect: 20
       agility: 5
       luck: 5
+      required_level: 10
 
   - key: equip_zhujian
     name: 竹简
@@ -6526,7 +6753,8 @@ items:
     image: equip_zhujian.png
     effect_payload:
       defense: 5
-      intellect: 30
+      intellect: 24
+      required_level: 15
 
   - key: equip_moyuyan
     name: 墨玉砚
@@ -6540,7 +6768,8 @@ items:
     effect_payload:
       hp: 200
       defense: 5
-      intellect: 25
+      intellect: 24
+      required_level: 15
 
   - key: equip_qingtongsuanchou
     name: 青铜算筹
@@ -6554,6 +6783,7 @@ items:
     effect_payload:
       intellect: 20
       luck: 15
+      required_level: 10
 
   - key: equip_xiaoxingjiguanshu
     name: 小型机关鼠
@@ -6565,16 +6795,23 @@ items:
     storage_space: 75
     image: equip_xiaoxingjiguanshu.png
     effect_payload:
-      hp: 800
-      force: 15
-      agility: 15
+      hp: 400
+      force: 12
+      agility: 12
       troop_stat_bonus:
-        dao: {hp_pct: 0.005}
-        qiang: {hp_pct: 0.005}
-        jian: {hp_pct: 0.005}
-        quan: {hp_pct: 0.005}
-        gong: {hp_pct: 0.005}
-        scout: {hp_pct: 0.005}
+        dao:
+          hp_pct: 0.005
+        qiang:
+          hp_pct: 0.005
+        jian:
+          hp_pct: 0.005
+        quan:
+          hp_pct: 0.005
+        gong:
+          hp_pct: 0.005
+        scout:
+          hp_pct: 0.005
+      required_level: 15
 
   - key: equip_tongchanjiguan
     name: 铜蝉机关
@@ -6587,19 +6824,25 @@ items:
     image: equip_tongchanjiguan.png
     effect_payload:
       hp: 200
-      agility: 18
-      force: 15
+      agility: 12
+      force: 12
       intellect: 5
       troop_stat_bonus:
-        dao: {attack_pct: 0.005}
-        qiang: {attack_pct: 0.005}
-        jian: {attack_pct: 0.005}
-        quan: {attack_pct: 0.005}
-        gong: {attack_pct: 0.005}
-        scout: {attack_pct: 0.005}
+        dao:
+          attack_pct: 0.005
+        qiang:
+          attack_pct: 0.005
+        jian:
+          attack_pct: 0.005
+        quan:
+          attack_pct: 0.005
+        gong:
+          attack_pct: 0.005
+        scout:
+          attack_pct: 0.005
+      required_level: 10
 
   # ---------- 器械 - 蓝色品质 ----------
-
   - key: equip_zhaoyaojing
     name: 照妖镜
     description: 据说可照出妖邪真形的宝镜，镜面寒光摄人。
@@ -6610,9 +6853,10 @@ items:
     storage_space: 100
     image: equip_zhaoyaojing.png
     effect_payload:
-      hp: 500
-      force: 25
+      hp: 300
+      force: 22
       luck: 15
+      required_level: 35
 
   - key: equip_qiankunquan
     name: 乾坤圈
@@ -6625,8 +6869,9 @@ items:
     image: equip_qiankunquan.png
     effect_payload:
       defense: 10
-      force: 25
+      force: 22
       agility: 12
+      required_level: 40
 
   - key: equip_tianjiluopan
     name: 天机罗盘
@@ -6641,6 +6886,7 @@ items:
       intellect: 25
       agility: 5
       luck: 20
+      required_level: 40
 
   - key: equip_lingwenyubi
     name: 灵纹玉笔
@@ -6655,6 +6901,7 @@ items:
       hp: 200
       intellect: 25
       luck: 15
+      required_level: 30
 
   - key: equip_guanxingdeng
     name: 观星灯
@@ -6668,7 +6915,8 @@ items:
     effect_payload:
       hp: 100
       intellect: 10
-      luck: 30
+      luck: 22
+      required_level: 35
 
   - key: equip_jixiemao
     name: 机械猫
@@ -6680,12 +6928,14 @@ items:
     storage_space: 100
     image: equip_jixiemao.png
     effect_payload:
-      hp: 500
+      hp: 400
       intellect: 10
       agility: 10
-      force: 25
+      force: 18
       troop_stat_bonus:
-        gong: {hp_pct: 0.01}
+        gong:
+          hp_pct: 0.01
+      required_level: 30
 
   - key: equip_jiguanchuniao
     name: 机关雏鸟
@@ -6697,11 +6947,13 @@ items:
     storage_space: 100
     image: equip_jiguanchuniao.png
     effect_payload:
-      hp: 500
+      hp: 400
       force: 15
-      agility: 30
+      agility: 16
       troop_stat_bonus:
-        gong: {attack_pct: 0.01}
+        gong:
+          attack_pct: 0.01
+      required_level: 30
 
   - key: equip_kuileimuren
     name: 傀儡木人
@@ -6715,10 +6967,12 @@ items:
     effect_payload:
       hp: 150
       defense: 5
-      force: 20
-      intellect: 25
+      force: 18
+      intellect: 18
       troop_stat_bonus:
-        qiang: {hp_pct: 0.01}
+        qiang:
+          hp_pct: 0.01
+      required_level: 40
 
   - key: equip_qingji
     name: 庆忌
@@ -6730,13 +6984,14 @@ items:
     storage_space: 100
     image: equip_qingji.png
     effect_payload:
-      agility: 35
-      luck: 12
+      agility: 16
+      luck: 8
       troop_stat_bonus:
-        jian: {attack_pct: 0.01}
+        jian:
+          attack_pct: 0.01
+      required_level: 25
 
   # ---------- 器械 - 紫色品质 ----------
-
   - key: equip_baguajing
     name: 八卦镜
     description: 按先天八卦方位铸造的铜镜，背刻河图洛书，是道门镇宅之宝。
@@ -6747,9 +7002,10 @@ items:
     storage_space: 150
     image: equip_baguajing.png
     effect_payload:
-      hp: 500
+      hp: 400
       intellect: 30
-      luck: 30
+      luck: 24
+      required_level: 50
 
   - key: equip_hunyuansan
     name: 混元伞
@@ -6761,10 +7017,11 @@ items:
     storage_space: 150
     image: equip_hunyuansan.png
     effect_payload:
-      hp: 800
+      hp: 400
       defense: 14
-      force: 42
+      force: 26
       luck: 5
+      required_level: 60
 
   - key: equip_zijinhulu
     name: 紫金葫芦
@@ -6777,8 +7034,9 @@ items:
     image: equip_zijinhulu.png
     effect_payload:
       hp: 225
-      defense: 20
-      intellect: 37
+      defense: 18
+      intellect: 30
+      required_level: 55
 
   - key: equip_tianyinguqin
     name: 天音古琴
@@ -6791,8 +7049,9 @@ items:
     image: equip_tianyinguqin.png
     effect_payload:
       hp: 300
-      intellect: 40
+      intellect: 30
       luck: 17
+      required_level: 45
 
   - key: equip_xuanmingdeng
     name: 玄冥灯
@@ -6806,8 +7065,9 @@ items:
     effect_payload:
       hp: 256
       defense: 13
-      intellect: 43
+      intellect: 30
       luck: 4
+      required_level: 55
 
   - key: equip_jiguanxiong
     name: 机关熊
@@ -6819,11 +7079,13 @@ items:
     storage_space: 150
     image: equip_jiguanxiong.png
     effect_payload:
-      hp: 800
+      hp: 450
       defense: 15
-      force: 45
+      force: 24
       troop_stat_bonus:
-        quan: {attack_pct: 0.01}
+        quan:
+          attack_pct: 0.01
+      required_level: 50
 
   - key: equip_muniuliuma
     name: 木牛流马
@@ -6836,16 +7098,23 @@ items:
     image: equip_muniuliuma.png
     effect_payload:
       hp: 300
-      intellect: 34
-      agility: 13
-      luck: 11
+      intellect: 24
+      agility: 12
+      luck: 10
       troop_stat_bonus:
-        dao: {hp_pct: 0.005}
-        qiang: {hp_pct: 0.005}
-        jian: {hp_pct: 0.005}
-        quan: {hp_pct: 0.005}
-        gong: {hp_pct: 0.005}
-        scout: {hp_pct: 0.005}
+        dao:
+          hp_pct: 0.005
+        qiang:
+          hp_pct: 0.005
+        jian:
+          hp_pct: 0.005
+        quan:
+          hp_pct: 0.005
+        gong:
+          hp_pct: 0.005
+        scout:
+          hp_pct: 0.005
+      required_level: 45
 
   - key: equip_kuileiren
     name: 傀儡人
@@ -6859,10 +7128,14 @@ items:
     effect_payload:
       hp: 179
       defense: 10
-      intellect: 37
-      agility: 13
+      intellect: 24
+      agility: 12
       troop_stat_bonus:
-        jian: {attack_pct: 0.005, defense_pct: 0.005, hp_pct: 0.005}
+        jian:
+          attack_pct: 0.005
+          defense_pct: 0.005
+          hp_pct: 0.005
+      required_level: 45
 
   - key: equip_xuanwujigui
     name: 玄武机龟
@@ -6874,14 +7147,17 @@ items:
     storage_space: 150
     image: equip_xuanwujigui.png
     effect_payload:
-      hp: 800
-      defense: 45
-      luck: 15
+      hp: 450
+      defense: 18
+      luck: 10
       troop_stat_bonus:
-        qiang: {attack_pct: 0.005, defense_pct: 0.005, hp_pct: 0.005}
+        qiang:
+          attack_pct: 0.005
+          defense_pct: 0.005
+          hp_pct: 0.005
+      required_level: 60
 
   # ---------- 器械 - 橙色品质 ----------
-
   - key: equip_fengshenbang
     name: 封神榜
     description: 姜子牙封神时所用的天书，记载三百六十五位正神之名。
@@ -6894,8 +7170,9 @@ items:
     effect_payload:
       hp: 350
       defense: 5
-      intellect: 45
+      intellect: 34
       luck: 20
+      required_level: 70
 
   - key: equip_shanheshejitu
     name: 山河社稷图
@@ -6909,8 +7186,10 @@ items:
     effect_payload:
       hp: 350
       agility: 15
-      intellect: 45
+      intellect: 34
       luck: 10
+      troop_capacity: 60
+      required_level: 75
 
   - key: equip_zhoutianxingpan
     name: 周天星盘
@@ -6922,9 +7201,10 @@ items:
     storage_space: 200
     image: equip_zhoutianxingpan.png
     effect_payload:
-      defense: 30
+      defense: 20
       agility: 10
-      luck: 30
+      luck: 25
+      required_level: 75
 
   - key: equip_taiqingyuce
     name: 太清玉册
@@ -6936,9 +7216,10 @@ items:
     storage_space: 200
     image: equip_taiqingyuce.png
     effect_payload:
-      hp: 500
-      intellect: 47
+      hp: 400
+      intellect: 34
       luck: 16
+      required_level: 65
 
   - key: equip_feiyuan
     name: 飞鸢
@@ -6950,17 +7231,24 @@ items:
     storage_space: 200
     image: equip_feiyuan.png
     effect_payload:
-      hp: 500
-      intellect: 40
-      agility: 30
-      luck: 10
+      hp: 450
+      intellect: 26
+      agility: 12
+      luck: 8
       troop_stat_bonus:
-        dao: {attack_pct: 0.005}
-        qiang: {attack_pct: 0.005}
-        jian: {attack_pct: 0.005}
-        quan: {attack_pct: 0.005}
-        gong: {attack_pct: 0.005}
-        scout: {attack_pct: 0.005}
+        dao:
+          attack_pct: 0.005
+        qiang:
+          attack_pct: 0.005
+        jian:
+          attack_pct: 0.005
+        quan:
+          attack_pct: 0.005
+        gong:
+          attack_pct: 0.005
+        scout:
+          attack_pct: 0.005
+      required_level: 65
 
   - key: equip_chixiaojifeng
     name: 赤霄机凤
@@ -6973,11 +7261,13 @@ items:
     image: equip_chixiaojifeng.png
     effect_payload:
       hp: 300
-      force: 45
-      agility: 35
-      luck: 10
+      force: 26
+      agility: 12
+      luck: 8
       troop_stat_bonus:
-        gong: {attack_pct: 0.015}
+        gong:
+          attack_pct: 0.015
+      required_level: 75
 
   - key: equip_mojiajiguanren
     name: 墨家机关人
@@ -6989,22 +7279,40 @@ items:
     storage_space: 200
     image: equip_mojiajiguanren.png
     effect_payload:
-      hp: 800
-      defense: 15
+      hp: 450
+      defense: 12
       force: 25
       intellect: 25
-      agility: 15
-      luck: 10
+      agility: 12
+      luck: 8
       troop_stat_bonus:
-        dao: {attack_pct: 0.005, defense_pct: 0.005, hp_pct: 0.005}
-        qiang: {attack_pct: 0.005, defense_pct: 0.005, hp_pct: 0.005}
-        jian: {attack_pct: 0.005, defense_pct: 0.005, hp_pct: 0.005}
-        quan: {attack_pct: 0.005, defense_pct: 0.005, hp_pct: 0.005}
-        gong: {attack_pct: 0.005, defense_pct: 0.005, hp_pct: 0.005}
-        scout: {attack_pct: 0.005, defense_pct: 0.005, hp_pct: 0.005}
+        dao:
+          attack_pct: 0.005
+          defense_pct: 0.005
+          hp_pct: 0.005
+        qiang:
+          attack_pct: 0.005
+          defense_pct: 0.005
+          hp_pct: 0.005
+        jian:
+          attack_pct: 0.005
+          defense_pct: 0.005
+          hp_pct: 0.005
+        quan:
+          attack_pct: 0.005
+          defense_pct: 0.005
+          hp_pct: 0.005
+        gong:
+          attack_pct: 0.005
+          defense_pct: 0.005
+          hp_pct: 0.005
+        scout:
+          attack_pct: 0.005
+          defense_pct: 0.005
+          hp_pct: 0.005
+      required_level: 80
 
   # ---------- 竞技场兑换器械 ----------
-
   - key: equip_qingtongzhijiaodoushi
     name: 青铜之角斗士
     description: 青铜甲片与机簧拼装的角斗士机关偶，持剑护卫冲锋阵线。
@@ -7017,10 +7325,12 @@ items:
     effect_payload:
       hp: 300
       defense: 8
-      force: 18
+      force: 12
       agility: 8
       troop_stat_bonus:
-        quan: {attack_pct: 0.005}
+        quan:
+          attack_pct: 0.005
+      required_level: 20
 
   - key: equip_baiyinzhijiaodoushi
     name: 白银之角斗士
@@ -7032,12 +7342,14 @@ items:
     storage_space: 100
     image: equip_baiyinzhijiaodoushi.png
     effect_payload:
-      hp: 500
+      hp: 400
       defense: 10
-      force: 27
+      force: 18
       agility: 12
       troop_stat_bonus:
-        quan: {attack_pct: 0.01}
+        quan:
+          attack_pct: 0.01
+      required_level: 40
 
   - key: equip_huangjinzhijiaodoushi
     name: 黄金之角斗士
@@ -7049,17 +7361,19 @@ items:
     storage_space: 150
     image: equip_huangjinzhijiaodoushi.png
     effect_payload:
-      hp: 750
+      hp: 450
       defense: 15
-      force: 38
-      agility: 16
+      force: 24
+      agility: 12
       troop_stat_bonus:
-        quan: {attack_pct: 0.01, defense_pct: 0.005}
+        quan:
+          attack_pct: 0.01
+          defense_pct: 0.005
+      required_level: 60
 
   # ══════════════════════════════════════════════════════════════════════════════
   #                         装备类 - 坐骑
   # ══════════════════════════════════════════════════════════════════════════════
-
   - key: equip_zaohongma
     name: 枣红马
     description: 原马系统，体形高大,背脊宽厚,紫红鬃毛,四蹄粗壮，速度快且极能负重。
@@ -7074,6 +7388,7 @@ items:
       defense: 4
       force: 4
       agility: 9
+      required_level: 1
 
   - key: equip_huangbiaoma
     name: 黄膘马
@@ -7088,6 +7403,7 @@ items:
       hp: 160
       defense: 8
       agility: 12
+      required_level: 10
 
   - key: equip_dawanma
     name: 大宛马
@@ -7102,11 +7418,10 @@ items:
       hp: 160
       defense: 4
       agility: 16
+      required_level: 10
 
   # ---------- 坐骑 - 扩展 ----------
-
   # ---------- 坐骑 - 白色品质（新手期）----------
-
   - key: equip_qingcongma
     name: 青骢马
     description: 毛色青白相间的良驹，常见于江南水乡的驿站马厩。
@@ -7121,6 +7436,7 @@ items:
       defense: 5
       force: 5
       agility: 12
+      required_level: 10
 
   - key: equip_xiaomaolv
     name: 小毛驴
@@ -7136,9 +7452,9 @@ items:
       defense: 5
       agility: 10
       luck: 5
+      required_level: 5
 
   # ---------- 坐骑 - 绿色品质（成长期）----------
-
   - key: equip_xiliangma
     name: 西凉马
     description: 产自西凉边塞的战马，历经风沙磨砺，耐力惊人。
@@ -7149,10 +7465,11 @@ items:
     storage_space: 100
     image: equip_xiliangma.png
     effect_payload:
-      hp: 200
+      hp: 180
       defense: 5
-      force: 10
+      force: 8
       agility: 25
+      required_level: 20
 
   - key: equip_mengguma
     name: 蒙古马
@@ -7164,10 +7481,11 @@ items:
     storage_space: 100
     image: equip_mengguma.png
     effect_payload:
-      hp: 250
+      hp: 180
       defense: 8
       force: 5
       agility: 20
+      required_level: 15
 
   - key: equip_taxuema
     name: 踏雪马
@@ -7180,7 +7498,8 @@ items:
     image: equip_taxuema.png
     effect_payload:
       defense: 5
-      agility: 35
+      agility: 26
+      required_level: 10
 
   - key: equip_qingzongma
     name: 青鬃马
@@ -7192,9 +7511,10 @@ items:
     storage_space: 100
     image: equip_qingzongma.png
     effect_payload:
-      hp: 200
-      defense: 10
+      hp: 180
+      defense: 8
       agility: 25
+      required_level: 20
 
   - key: equip_chibiao
     name: 赤骠
@@ -7206,13 +7526,13 @@ items:
     storage_space: 100
     image: equip_chibiao.png
     effect_payload:
-      hp: 250
+      hp: 180
       defense: 5
-      force: 10
+      force: 8
       agility: 20
+      required_level: 10
 
   # ---------- 坐骑 - 蓝色品质（发展期）----------
-
   - key: equip_feiyunzui
     name: 飞云锥
     description: 奔跑时如云飞逝的骏马，是镖局押运的首选坐骑。
@@ -7223,10 +7543,11 @@ items:
     storage_space: 125
     image: equip_feiyunzui.png
     effect_payload:
-      hp: 245
+      hp: 220
       defense: 10
       force: 5
-      agility: 40
+      agility: 30
+      required_level: 25
 
   - key: equip_zhaoyeyushizi
     name: 照夜玉狮子
@@ -7238,10 +7559,11 @@ items:
     storage_space: 125
     image: equip_zhaoyeyushizi.png
     effect_payload:
-      hp: 270
-      defense: 15
-      force: 13
-      agility: 33
+      hp: 220
+      defense: 10
+      force: 10
+      agility: 30
+      required_level: 40
 
   - key: equip_juanmaochitu
     name: 卷毛赤兔
@@ -7253,10 +7575,11 @@ items:
     storage_space: 125
     image: equip_juanmaochitu.png
     effect_payload:
-      hp: 300
-      defense: 13
+      hp: 220
+      defense: 10
       force: 5
-      agility: 35
+      agility: 30
+      required_level: 30
 
   - key: equip_qianliju
     name: 千里驹
@@ -7268,9 +7591,10 @@ items:
     storage_space: 125
     image: equip_qianliju.png
     effect_payload:
-      hp: 235
-      defense: 11
-      agility: 40
+      hp: 220
+      defense: 10
+      agility: 30
+      required_level: 25
 
   - key: equip_zhuidian
     name: 追电
@@ -7282,10 +7606,11 @@ items:
     storage_space: 125
     image: equip_zhuidian.png
     effect_payload:
-      hp: 240
-      defense: 12
-      agility: 39
+      hp: 220
+      defense: 10
+      agility: 30
       luck: 10
+      required_level: 40
 
   - key: equip_bailongju
     name: 白龙驹
@@ -7297,13 +7622,13 @@ items:
     storage_space: 125
     image: equip_bailongju.png
     effect_payload:
-      hp: 270
-      defense: 15
+      hp: 220
+      defense: 10
       agility: 25
-      luck: 15
+      luck: 12
+      required_level: 35
 
   # ---------- 坐骑 - 紫色品质（成熟期）----------
-
   - key: equip_wuzhuima
     name: 乌骓马
     description: 西楚霸王项羽的坐骑遗种，通体乌黑，性烈难驯。
@@ -7314,10 +7639,11 @@ items:
     storage_space: 175
     image: equip_wuzhuima.png
     effect_payload:
-      hp: 292
-      defense: 15
+      hp: 260
+      defense: 13
       force: 16
-      agility: 45
+      agility: 35
+      required_level: 45
 
   - key: equip_jueying
     name: 绝影
@@ -7329,10 +7655,11 @@ items:
     storage_space: 175
     image: equip_jueying.png
     effect_payload:
-      hp: 305
-      defense: 14
-      agility: 42
-      luck: 16
+      hp: 260
+      defense: 13
+      agility: 35
+      luck: 15
+      required_level: 45
 
   - key: equip_zhaohuangfeidian
     name: 爪黄飞电
@@ -7344,10 +7671,11 @@ items:
     storage_space: 175
     image: equip_zhaohuangfeidian.png
     effect_payload:
-      hp: 330
-      defense: 17
-      force: 22
-      agility: 38
+      hp: 260
+      defense: 13
+      force: 16
+      agility: 35
+      required_level: 50
 
   - key: equip_dilu
     name: 的卢
@@ -7359,10 +7687,11 @@ items:
     storage_space: 175
     image: equip_dilu.png
     effect_payload:
-      hp: 360
-      defense: 19
-      agility: 42
+      hp: 260
+      defense: 13
+      agility: 35
       luck: 14
+      required_level: 60
 
   - key: equip_qingshuanglu
     name: 青霜鹿
@@ -7374,10 +7703,11 @@ items:
     storage_space: 175
     image: equip_qingshuanglu.png
     effect_payload:
-      hp: 320
-      defense: 17
-      agility: 42
-      luck: 16
+      hp: 260
+      defense: 13
+      agility: 35
+      luck: 15
+      required_level: 55
 
   - key: equip_xuanjiazhanju
     name: 玄甲战驹
@@ -7389,13 +7719,14 @@ items:
     storage_space: 175
     image: equip_xuanjiazhanju.png
     effect_payload:
-      hp: 312
-      defense: 16
-      force: 22
-      agility: 38
+      hp: 260
+      defense: 13
+      force: 16
+      agility: 35
+      troop_capacity: 30
+      required_level: 60
 
   # ---------- 坐骑 - 橙色品质（巅峰期）----------
-
   - key: equip_chituma
     name: 赤兔马
     description: 传说中的千里神驹，曾为吕布、关羽所乘，名震天下。
@@ -7406,10 +7737,12 @@ items:
     storage_space: 250
     image: equip_chituma.png
     effect_payload:
-      hp: 362
-      defense: 16
-      force: 26
-      agility: 44
+      hp: 300
+      defense: 14
+      force: 20
+      agility: 36
+      troop_capacity: 40
+      required_level: 80
 
   - key: equip_hanxuebaoma
     name: 汗血宝马
@@ -7421,9 +7754,10 @@ items:
     storage_space: 250
     image: equip_hanxuebaoma.png
     effect_payload:
-      hp: 450
-      defense: 20
-      agility: 58
+      hp: 300
+      defense: 14
+      agility: 36
+      required_level: 70
 
   - key: equip_qilin
     name: 麒麟
@@ -7435,11 +7769,11 @@ items:
     storage_space: 250
     image: equip_qilin.png
     effect_payload:
-      hp: 443
-      defense: 18
-      force: 18
-      intellect: 11
-      agility: 40
+      hp: 300
+      defense: 14
+      luck: 25
+      agility: 20
+      required_level: 65
 
   - key: equip_qingluan
     name: 青鸾
@@ -7451,10 +7785,11 @@ items:
     storage_space: 250
     image: equip_qingluan.png
     effect_payload:
-      hp: 307
+      hp: 300
       defense: 14
-      intellect: 27
-      agility: 49
+      intellect: 20
+      agility: 36
+      required_level: 75
 
   - key: equip_shendiao
     name: 神雕
@@ -7466,11 +7801,11 @@ items:
     storage_space: 250
     image: equip_shendiao.png
     effect_payload:
-      hp: 470
-      defense: 18
-      agility: 56
+      hp: 300
+      defense: 14
+      agility: 36
       luck: 14
-
+      required_level: 80
   # ---------- 个人任务专属宝箱：银两之外的奖励统一在仓库开启 ----------
   - key: mission_chest_mid_autumn_moon_palace_trial
     name: 广寒宫试炼宝箱
@@ -7632,7 +7967,7 @@ items:
         - item_key: fangdajing
           weight: 1
       - label: mission_card
-        chance: 0.08
+        chance: 0.02
         min_quantity: 1
         max_quantity: 1
         choices:
@@ -10786,7 +11121,7 @@ items:
         - item_key: fangdajing
           weight: 1
       - label: mission_card
-        chance: 0.08
+        chance: 0.02
         min_quantity: 1
         max_quantity: 1
         choices:

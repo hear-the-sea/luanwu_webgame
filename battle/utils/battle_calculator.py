@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import math
 import random
 from typing import TYPE_CHECKING, Any, Dict, List
 
@@ -28,6 +29,30 @@ STAT_LOOKUP = {
 
 # 基础伤亡概率
 CASUALTY_BASE_PROBABILITY = 0.8
+
+
+def validate_ally_min_formula(value: Any) -> tuple[tuple[str, str], float]:
+    """最小值项仅接受两个不同的已知属性和有限数值系数。"""
+    if not isinstance(value, dict) or set(value) != {"stats", "coefficient"}:
+        raise ValueError("ally_min必须包含stats与coefficient。")
+    stats = value["stats"]
+    if (
+        not isinstance(stats, list)
+        or len(stats) != 2
+        or any(not isinstance(stat, str) or stat not in STAT_LOOKUP for stat in stats)
+        or stats[0] == stats[1]
+    ):
+        raise ValueError("ally_min.stats必须是两个不同的有效战斗属性。")
+    coefficient = value["coefficient"]
+    if isinstance(coefficient, bool) or not isinstance(coefficient, (int, float)):
+        raise ValueError("ally_min.coefficient必须是有限数字。")
+    try:
+        coefficient = float(coefficient)
+    except OverflowError:
+        raise ValueError("ally_min.coefficient必须是有限数字。") from None
+    if not math.isfinite(coefficient):
+        raise ValueError("ally_min.coefficient必须是有限数字。")
+    return (stats[0], stats[1]), coefficient
 
 
 def resolve_stat(combatant: "Combatant", stat: str) -> float:
@@ -85,6 +110,10 @@ def calculate_skill_bonus(skill: dict, actor: "Combatant", target: "Combatant") 
     # 己方属性加成
     for stat, coeff in (formula.get("ally") or {}).items():
         total += float(coeff) * resolve_stat(actor, stat)
+
+    if "ally_min" in formula:
+        stats, coefficient = validate_ally_min_formula(formula["ally_min"])
+        total += coefficient * min(resolve_stat(actor, stat) for stat in stats)
 
     # 敌方属性减免
     for stat, coeff in (formula.get("enemy") or {}).items():

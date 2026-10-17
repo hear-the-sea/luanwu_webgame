@@ -9,6 +9,7 @@ from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.models import Manor as ManorModel
 
 from .. import technology as technology_service
+from ..equipment_affixes import roll_equipment_reward_items_locked
 from ..inventory.core import add_items_to_inventory_locked, consume_inventory_item_locked
 from .forge_helpers import build_blueprint_synthesis_option, build_inventory_quantity_map, collect_recipe_related_keys
 
@@ -202,14 +203,33 @@ def synthesize_equipment_with_blueprint(
                 bound_craft_count = max(bound_craft_count, (bound_used + per_craft - 1) // per_craft)
 
         output_quantity = recipe["quantity_out"] * quantity
+        bound_output_quantity = bound_craft_count * recipe["quantity_out"]
+        actual_items: dict[str, int] = {}
+        actual_templates: dict[str, ItemTemplate] = {}
+        bound_items: dict[str, int] = {}
+        for amount, is_bound in (
+            (bound_output_quantity, True),
+            (output_quantity - bound_output_quantity, False),
+        ):
+            if not amount:
+                continue
+            rolled_items, rolled_templates = roll_equipment_reward_items_locked({result_item_key: amount})
+            actual_templates.update(rolled_templates)
+            for actual_key, actual_amount in rolled_items.items():
+                actual_items[actual_key] = actual_items.get(actual_key, 0) + actual_amount
+                bound_items.setdefault(actual_key, 0)
+                if is_bound:
+                    bound_items[actual_key] += actual_amount
         add_items_to_inventory_locked(
             locked_manor,
-            {result_item_key: output_quantity},
-            bound_quantities={result_item_key: bound_craft_count * recipe["quantity_out"]},
+            actual_items,
+            templates=actual_templates,
+            bound_quantities=bound_items,
         )
 
     return {
         "blueprint_key": blueprint_key,
+        "items": actual_items,
         "result_key": result_item_key,
         "result_name": result_template.name,
         "quantity": output_quantity,

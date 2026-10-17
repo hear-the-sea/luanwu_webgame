@@ -13,6 +13,7 @@ from gameplay.models import ItemTemplate, Manor
 from gameplay.services.recruitment.recruitment import TroopRecruitmentQuote
 from gameplay.services.recruitment.templates import get_troop_template
 from guests.models import GearItem, GearTemplate, Guest, GuestSkill, GuestStatus, Skill
+from guests.services.equipment_payloads import same_base_equipment
 from guests.services.equipment_stats import apply_set_bonuses, apply_template_stats_to_guest, slot_capacity
 from guests.services.skills import (
     MAX_GUEST_SKILL_SLOTS,
@@ -457,11 +458,13 @@ def build_virtual_equipment_candidates(
             continue
         before_power = _guest_power(guest)
         for template in sorted(gear_templates, key=lambda item: (str(item.slot), str(item.key), int(item.id))):
+            if guest.level < template.required_level:
+                continue
             if RARITY_RANK.get(str(template.rarity).strip().lower(), len(RARITY_RANK)) > rarity_cap:
                 continue
             slot = str(template.slot)
             same_slot = [item for item in equipped_by_guest[int(guest.id)] if str(item.template.slot) == slot]
-            if any(str(item.template.name) == str(template.name) for item in same_slot):
+            if any(same_base_equipment(item.template, template) for item in same_slot):
                 continue
             if slot_capacity(slot) > 1 and len(same_slot) >= slot_capacity(slot):
                 continue

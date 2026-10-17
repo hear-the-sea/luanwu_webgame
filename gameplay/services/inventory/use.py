@@ -28,9 +28,9 @@ from gameplay.services.resources import grant_resources, grant_resources_locked,
 from guests.constants import SUPER_GUEST_SUMMON_ACTION
 
 from ..action_points import ACTION_POINTS_MAX, get_current_action_points, restore_action_points
+from ..equipment_affixes import roll_equipment_reward_items_locked
 from .core import (
     add_item_to_inventory,
-    add_item_to_inventory_locked,
     add_items_to_inventory_locked,
     consume_inventory_item_for_manor_locked,
     consume_inventory_item_locked,
@@ -507,17 +507,16 @@ def _apply_item_synthesis(item: InventoryItem) -> Dict[str, Any]:
         output_is_bound = (source_is_bound and item.template.key.startswith("blueprint_")) or any(
             count for key, count in bound_counts.items() if key.startswith("blueprint_")
         )
-    add_item_to_inventory_locked(
-        item.manor,
-        result_key,
-        result_quantity,
-        template=result_template,
-        is_bound=output_is_bound,
+    actual_items, actual_templates = roll_equipment_reward_items_locked(
+        {result_key: result_quantity}, templates={result_key: result_template}, rng=inventory_random
     )
+    add_items_to_inventory_locked(item.manor, actual_items, templates=actual_templates, is_bound=output_is_bound)
     return {
+        "items": actual_items,
         "result_item_key": result_key,
         "result_quantity": result_quantity,
-        "_message": f"合成 {result_template.name} ×{result_quantity}",
+        "_message": "合成 "
+        + "、".join(f"{actual_templates[key].name} ×{amount}" for key, amount in actual_items.items()),
     }
 
 
@@ -764,10 +763,13 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
         if quantity <= 0:
             continue
         try:
-            add_item_to_inventory(manor, item_key, quantity, is_bound=inventory_use_source_is_bound(item))
-            reward_template = ItemTemplate.objects.filter(key=item_key).first()
-            reward_name = reward_template.name if reward_template else "未知物品"
-            rewards.append(f"物品【{reward_name}】×{quantity}")
+            actual_items, actual_templates = roll_equipment_reward_items_locked(
+                {item_key: quantity}, rng=inventory_random
+            )
+            add_items_to_inventory_locked(
+                manor, actual_items, templates=actual_templates, is_bound=inventory_use_source_is_bound(item)
+            )
+            rewards.extend(f"物品【{actual_templates[key].name}】×{amount}" for key, amount in actual_items.items())
             _grant_blueprint_material_support(item, item_key, quantity, blueprint_support, reward_templates, rewards)
         except ItemNotFoundError as exc:
             if payload.get("mission_reward_version") == 1 or blueprint_support:
@@ -802,10 +804,13 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
         if quantity <= 0:
             continue
         try:
-            add_item_to_inventory(manor, item_key, quantity, is_bound=inventory_use_source_is_bound(item))
-            reward_template = ItemTemplate.objects.filter(key=item_key).first()
-            reward_name = reward_template.name if reward_template else "未知物品"
-            rewards.append(f"物品【{reward_name}】×{quantity}")
+            actual_items, actual_templates = roll_equipment_reward_items_locked(
+                {item_key: quantity}, rng=inventory_random
+            )
+            add_items_to_inventory_locked(
+                manor, actual_items, templates=actual_templates, is_bound=inventory_use_source_is_bound(item)
+            )
+            rewards.extend(f"物品【{actual_templates[key].name}】×{amount}" for key, amount in actual_items.items())
             _grant_blueprint_material_support(item, item_key, quantity, blueprint_support, reward_templates, rewards)
         except ItemNotFoundError as exc:
             if payload.get("mission_reward_version") == 1 or blueprint_support:
@@ -871,15 +876,20 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
 
         item_template = ItemTemplate.objects.filter(key=gear_key).first()
         if item_template and item_template.effect_type in EQUIP_SLOT_MAP:
-            add_item_to_inventory(manor, gear_key, 1, is_bound=inventory_use_source_is_bound(item))
-            rewards.append(f"装备【{item_template.name}】")
+            actual_items, actual_templates = roll_equipment_reward_items_locked(
+                {gear_key: 1}, templates={gear_key: item_template}, rng=inventory_random
+            )
+            add_items_to_inventory_locked(
+                manor, actual_items, templates=actual_templates, is_bound=inventory_use_source_is_bound(item)
+            )
+            rewards.extend(f"装备【{actual_templates[key].name}】" for key in actual_items)
         else:
             gear_template = GearTemplate.objects.filter(key=gear_key).first()
             if gear_template:
                 # Keep supporting legacy gear-only keys that do not have an
                 # ItemTemplate representation in the warehouse.
-                give_gear(manor, gear_template, is_bound=inventory_use_source_is_bound(item))
-                rewards.append(f"装备【{gear_template.name}】")
+                gear = give_gear(manor, gear_template, is_bound=inventory_use_source_is_bound(item))
+                rewards.append(f"装备【{gear.template.name}】")
             else:
                 skipped_bonus_items.append(gear_key)
 

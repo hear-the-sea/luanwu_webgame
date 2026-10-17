@@ -15,7 +15,8 @@ from gameplay.models import Manor as ManorModel
 from gameplay.services.utils.notifications import notify_user
 
 from .. import technology as technology_service
-from ..inventory.core import add_item_to_inventory_locked, consume_inventory_item_locked
+from ..equipment_affixes import grant_item_with_equipment_affixes_locked
+from ..inventory.core import consume_inventory_item_locked
 from .forge_flow_helpers import (
     build_total_material_costs,
     consume_forging_materials_locked,
@@ -208,7 +209,7 @@ def finalize_equipment_forging(
             equipment_production_model=EquipmentProduction,
             production=production,
             current_time=timezone.now(),
-            add_item_to_inventory_locked=add_item_to_inventory_locked,
+            add_item_to_inventory_locked=grant_item_with_equipment_affixes_locked,
         )
         if locked_production is None:
             return False

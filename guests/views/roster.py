@@ -82,6 +82,9 @@ def _load_guest_detail(manor, guest_pk: int):
                     "template__key",
                     "template__slot",
                     "template__name",
+                    "template__required_level",
+                    "template__base_key",
+                    "template__base_name",
                     "template__rarity",
                     "template__set_key",
                     "template__set_description",
@@ -208,7 +211,7 @@ def _build_skill_books_context(manor, guest, guest_skill_records, gear_items):
     non_equipment_attributes = collect_non_equipment_skill_attributes(guest, gear_items=gear_items) if skills else None
     for entry, key, payload in skill_key_entries:
         skill = skills.get(key)
-        requirements = collect_skill_requirements(skill)
+        requirements = collect_skill_requirements(skill, guest=guest, non_equipment_attributes=non_equipment_attributes)
         unmet_requirements = collect_unmet_skill_requirements(
             guest, skill, non_equipment_attributes=non_equipment_attributes
         )
@@ -223,7 +226,6 @@ def _build_skill_books_context(manor, guest, guest_skill_records, gear_items):
                 "requirements": requirements,
                 "requirements_text": "，".join(requirements),
                 "unmet_requirements": unmet_requirements,
-                "unmet_requirements_text": "，".join(unmet_requirements),
                 "already_learned": already_learned,
                 "can_learn": bool(skill) and not already_learned and not unmet_requirements and entry.quantity > 0,
             }
