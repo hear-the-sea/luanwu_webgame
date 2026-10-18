@@ -67,6 +67,11 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Frontend Browser Regression
+        env:
+          DJANGO_DEBUG: "0"
+          DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
+          DJANGO_SECRET_KEY: "ci-only-not-a-real-secret-key-change-me-1234567890"
+          DJANGO_STRICT_INFRA_CONFIG: "0"
         run: npm run test:browser
 
       - name: Frontend Template Contract
