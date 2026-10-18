@@ -31,7 +31,8 @@ def test_exchange_price_migration_preserves_stock_and_charges_new_price(guild_me
         for item in get_technology_production_items(key, level)
         if item.item_key in price_keys
     }
-    assert len(expected_prices) == 20
+    # The retired fixed blueprint remains exchangeable; active production now yields mechanism boxes.
+    assert set(expected_prices) == price_keys - {"blueprint_taotieding"}
     for item_key in expected_prices:
         GuildWarehouse.objects.create(
             guild=guild, item_key=item_key, quantity=2, contribution_cost=99, total_produced=7, total_exchanged=3

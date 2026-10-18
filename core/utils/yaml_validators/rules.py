@@ -467,6 +467,7 @@ VALID_WAREHOUSE_TECH_KEYS = {
     "sheep_silver_card",
     "sheep_wrath",
     "forging_mechanism_blueprint",
+    "legacy_forging_mechanism_blueprint",
     "forging_slave_card",
     "forging_theft_card",
     "forging_injury_card",
