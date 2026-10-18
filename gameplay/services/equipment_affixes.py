@@ -157,6 +157,20 @@ def _variant_defaults(base: ItemTemplate, affix: str, payload: dict[str, Any]) -
     }
 
 
+def _sync_variant_template(variant: ItemTemplate, defaults: Mapping[str, Any]) -> bool:
+    updates = []
+    for field, value in defaults.items():
+        current = getattr(variant, field)
+        if field == "image":
+            current = current.name
+        if current != value:
+            setattr(variant, field, value)
+            updates.append(field)
+    if updates:
+        variant.save(update_fields=updates)
+    return bool(updates)
+
+
 def get_or_create_equipment_affix_template(
     base: ItemTemplate,
     affix: str,
@@ -167,12 +181,16 @@ def get_or_create_equipment_affix_template(
     transformed = payload if payload is not None else build_equipment_affix_payload(base, affix)
     if transformed is None:
         raise AssertionError("cannot create an empty equipment affix")
-    variant, _ = ItemTemplate.objects.get_or_create(
+    variant, created = ItemTemplate.objects.get_or_create(
         key=equipment_affix_key(base.key, affix),
         defaults=_variant_defaults(base, affix, transformed),
     )
     if variant.effect_payload.get(BASE_KEY_FIELD) != base.key or variant.effect_payload.get(AFFIX_FIELD) != affix:
         raise AssertionError("equipment affix template identity collision")
+    if not created:
+        # Existing variants are derived from the base too. Keep their payload
+        # metadata (including set membership) in sync when they are reused.
+        _sync_variant_template(variant, _variant_defaults(base, affix, transformed))
     return variant
 
 
@@ -191,16 +209,7 @@ def refresh_equipment_affix_templates(bases: Mapping[str, ItemTemplate]) -> set[
             payload = copy.deepcopy(base.effect_payload)
             payload.update({BASE_KEY_FIELD: base.key, BASE_NAME_FIELD: base.name, AFFIX_FIELD: affix})
         defaults = _variant_defaults(base, affix, payload)
-        updates = []
-        for field, value in defaults.items():
-            current = getattr(variant, field)
-            if field == "image":
-                current = current.name
-            if current != value:
-                setattr(variant, field, value)
-                updates.append(field)
-        if updates:
-            variant.save(update_fields=updates)
+        _sync_variant_template(variant, defaults)
         refreshed.add(variant.key)
     return refreshed
 

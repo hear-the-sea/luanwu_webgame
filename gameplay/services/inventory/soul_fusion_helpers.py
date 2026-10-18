@@ -13,10 +13,12 @@ from django.conf import settings
 from core.config import GUEST
 from core.utils.image_utils import compress_and_resize_image
 from gameplay.models import ItemTemplate
+from guests.growth_rules import CIVIL_ATTRIBUTE_WEIGHTS, MILITARY_ATTRIBUTE_WEIGHTS
 from guests.models import Guest, GuestArchetype, GuestRarity, GuestStatus
 
 SOUL_FUSION_DEFAULT_MIN_LEVEL = 30
-SOUL_FUSION_STAT_KEYS = ("force", "intellect", "agility", "luck")
+SOUL_FUSION_STAT_KEYS = ("force", "intellect", "defense", "agility", "luck")
+SOUL_FUSION_GROWTH_STAT_KEYS = ("force", "intellect", "defense", "agility")
 SOUL_FUSION_DEFAULT_ALLOWED_RARITIES = frozenset(
     {
         GuestRarity.GREEN,
@@ -25,6 +27,7 @@ SOUL_FUSION_DEFAULT_ALLOWED_RARITIES = frozenset(
     }
 )
 SOUL_FUSION_ALLOWED_GUEST_STATUSES = frozenset({GuestStatus.IDLE, GuestStatus.VACATION})
+# Retained for callers that inspect the former archetype weights.
 SOUL_FUSION_ARCHETYPE_BASE_WEIGHTS: dict[str, dict[str, float]] = {
     GuestArchetype.MILITARY: {
         "force": 44.0,
@@ -39,28 +42,30 @@ SOUL_FUSION_ARCHETYPE_BASE_WEIGHTS: dict[str, dict[str, float]] = {
         "luck": 18.0,
     },
 }
+SOUL_FUSION_ARCHETYPE_LUCK_WEIGHTS: dict[str, float] = {
+    GuestArchetype.MILITARY: 14.0,
+    GuestArchetype.CIVIL: 20.0,
+}
 SOUL_FUSION_RESULT_CONFIG: dict[str, dict[str, object]] = {
     GuestRarity.GREEN: {
         "name": "玉海棠",
         "image": "yuhaitang.png",
         "description": "南方苗人的圣物，融合顶级绿色门客的灵魂，能给佩戴者带来不可思议的能力。",
-        "rarity": GuestRarity.GREEN,
+        "rarity": GuestRarity.BLUE,
         "price": 36000,
         "stat_total_range": (48, 65),
         "hp_range": (600, 1000),
         "required_level": 30,
-        "stat_floor": {"force": 13, "intellect": 12, "agility": 13, "luck": 10},
     },
     GuestRarity.BLUE: {
         "name": "北冥冰链",
         "image": "beiming.png",
         "description": "由北冥永不融化的冰珠串起来，并融合了蓝色精英门客的灵魂，拥有冰封十里的威能。",
-        "rarity": GuestRarity.BLUE,
+        "rarity": GuestRarity.PURPLE,
         "price": 98000,
         "stat_total_range": (67, 85),
         "hp_range": (1000, 1600),
         "required_level": 40,
-        "stat_floor": {"force": 15, "intellect": 13, "agility": 15, "luck": 11},
     },
     GuestRarity.PURPLE: {
         "name": "龙纹赤血佩",
@@ -69,12 +74,11 @@ SOUL_FUSION_RESULT_CONFIG: dict[str, dict[str, object]] = {
             "传闻由天外陨铁与昆仑暖玉合铸而成，玉身天生血纹，隐约有龙吟之声。"
             "唯有融合了紫色门客的坚韧灵魂，才能镇压住佩玉中暴戾的气血。"
         ),
-        "rarity": GuestRarity.PURPLE,
+        "rarity": GuestRarity.ORANGE,
         "price": 220000,
         "stat_total_range": (87, 110),
         "hp_range": (1600, 2200),
         "required_level": 55,
-        "stat_floor": {"force": 17, "intellect": 15, "agility": 17, "luck": 13},
     },
 }
 
@@ -141,7 +145,7 @@ def _extract_soul_fusion_source_stats(guest: Guest) -> dict[str, int]:
 
     set_bonus = guest.gear_set_bonus or {}
     source_stats = {}
-    for stat in SOUL_FUSION_STAT_KEYS:
+    for stat in ("force", "intellect", "agility", "luck"):
         set_bonus_value = int(set_bonus.get(stat, 0) or 0)
         source_stats[stat] = max(1, int(getattr(guest, stat) - gear_bonus[stat] - set_bonus_value))
 
@@ -154,39 +158,46 @@ def _extract_soul_fusion_source_stats(guest: Guest) -> dict[str, int]:
 
 
 def _build_soul_fusion_weights(guest: Guest, source_stats: dict[str, int], rng) -> dict[str, float]:
-    base_weights = SOUL_FUSION_ARCHETYPE_BASE_WEIGHTS.get(
+    # source_stats remains in the signature for compatibility; allocation now uses template growth weights.
+    raw_growth_weights = getattr(getattr(guest, "template", None), "attribute_weights", {}) or {}
+    growth_weights = {
+        stat: int(raw_growth_weights.get(stat, 0) or 0) if isinstance(raw_growth_weights, dict) else 0
+        for stat in SOUL_FUSION_GROWTH_STAT_KEYS
+    }
+    if sum(growth_weights.values()) <= 0:
+        defaults = MILITARY_ATTRIBUTE_WEIGHTS if guest.archetype == GuestArchetype.MILITARY else CIVIL_ATTRIBUTE_WEIGHTS
+        growth_weights = {stat: int(defaults.get(stat, 0) or 0) for stat in SOUL_FUSION_GROWTH_STAT_KEYS}
+
+    # Luck is independent of growth allocation and its share stays fixed through stat fluctuation.
+    luck_weight = SOUL_FUSION_ARCHETYPE_LUCK_WEIGHTS.get(
         guest.archetype,
-        SOUL_FUSION_ARCHETYPE_BASE_WEIGHTS[GuestArchetype.CIVIL],
+        SOUL_FUSION_ARCHETYPE_LUCK_WEIGHTS[GuestArchetype.CIVIL],
     )
-    source_total = sum(max(1, source_stats.get(stat, 1)) for stat in SOUL_FUSION_STAT_KEYS)
-    source_weights = {stat: max(1, source_stats.get(stat, 1)) / source_total * 100.0 for stat in SOUL_FUSION_STAT_KEYS}
+    growth_total = sum(growth_weights.values())
+    source_weights = {
+        stat: growth_weights[stat] / growth_total * (1.0 - luck_weight / 100.0) for stat in SOUL_FUSION_GROWTH_STAT_KEYS
+    }
+    source_weights["luck"] = luck_weight / 100.0
 
-    blended = {}
-    dominant_stat = max(SOUL_FUSION_STAT_KEYS, key=lambda stat: source_stats.get(stat, 0))
-    for stat in SOUL_FUSION_STAT_KEYS:
-        weight = base_weights[stat] * 0.6 + source_weights[stat] * 0.4
-        weight *= 1.0 + float(rng.uniform(-0.12, 0.12))
-        if stat == dominant_stat:
-            weight *= 1.08
-        blended[stat] = max(0.1, weight)
-
-    total_weight = sum(blended.values())
-    return {stat: blended[stat] / total_weight for stat in SOUL_FUSION_STAT_KEYS}
+    fluctuated = {
+        stat: source_weights[stat] * (1.0 + float(rng.uniform(-0.12, 0.12))) for stat in SOUL_FUSION_GROWTH_STAT_KEYS
+    }
+    fluctuated_total = sum(fluctuated.values())
+    return {
+        **{
+            stat: fluctuated[stat] / fluctuated_total * (1.0 - luck_weight / 100.0)
+            for stat in SOUL_FUSION_GROWTH_STAT_KEYS
+        },
+        "luck": luck_weight / 100.0,
+    }
 
 
 def _allocate_soul_fusion_secondary_stats(
     total_budget: int,
     weights: dict[str, float],
-    floor_map: dict[str, int],
 ) -> dict[str, int]:
-    allocations = {stat: int(floor_map.get(stat, 0) or 0) for stat in SOUL_FUSION_STAT_KEYS}
-    floor_total = sum(allocations.values())
-    target_total = max(int(total_budget), floor_total)
-    remaining = target_total - floor_total
-    if remaining <= 0:
-        return allocations
-
-    raw_allocations = {stat: weights.get(stat, 0.0) * remaining for stat in SOUL_FUSION_STAT_KEYS}
+    allocations = {stat: 0 for stat in SOUL_FUSION_STAT_KEYS}
+    raw_allocations = {stat: weights.get(stat, 0.0) * int(total_budget) for stat in SOUL_FUSION_STAT_KEYS}
     consumed = 0
     fractions = []
     for stat in SOUL_FUSION_STAT_KEYS:
@@ -195,7 +206,7 @@ def _allocate_soul_fusion_secondary_stats(
         consumed += points
         fractions.append((raw_allocations[stat] - points, stat))
 
-    leftover = remaining - consumed
+    leftover = int(total_budget) - consumed
     for _fraction, stat in sorted(fractions, reverse=True):
         if leftover <= 0:
             break
@@ -214,7 +225,7 @@ def _roll_soul_fusion_stats(guest: Guest, source_stats: dict[str, int], config: 
         rng=rng,
     )
     weights = _build_soul_fusion_weights(guest, source_stats, rng)
-    secondary_stats = _allocate_soul_fusion_secondary_stats(stat_total, weights, config["stat_floor"])
+    secondary_stats = _allocate_soul_fusion_secondary_stats(stat_total, weights)
 
     core_average = max(
         1.0,
@@ -233,6 +244,7 @@ def _roll_soul_fusion_stats(guest: Guest, source_stats: dict[str, int], config: 
         "hp": hp_value,
         "force": secondary_stats["force"],
         "intellect": secondary_stats["intellect"],
+        "defense": secondary_stats["defense"],
         "agility": secondary_stats["agility"],
         "luck": secondary_stats["luck"],
     }
@@ -270,6 +282,6 @@ def _create_soul_fusion_ornament_template(guest: Guest, config: dict[str, Any], 
 
 def _format_soul_fusion_stat_summary(stats: dict[str, int]) -> str:
     return (
-        f"生命+{stats['hp']}、武力+{stats['force']}、智力+{stats['intellect']}、"
+        f"生命+{stats['hp']}、武力+{stats['force']}、智力+{stats['intellect']}、防御+{stats['defense']}、"
         f"敏捷+{stats['agility']}、运势+{stats['luck']}"
     )

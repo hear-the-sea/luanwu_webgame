@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict
 
-from ..models import GearSlot
+from ..models import GearSlot, GearTemplate
 
 if TYPE_CHECKING:
     pass
@@ -62,15 +62,40 @@ def _normalize_set_bonus_definitions(raw_bonus) -> list[tuple[int | None, dict]]
 
 
 def _collect_set_info(gear_items) -> Dict[str, Dict[str, object]]:
+    gear_items = list(gear_items)
+    base_keys = set()
+    for gear in gear_items:
+        tpl = getattr(gear, "template", None)
+        if not tpl:
+            continue
+        base_key = getattr(tpl, "base_key", "") or ""
+        set_key = getattr(tpl, "set_key", "") or ""
+        set_bonus = getattr(tpl, "set_bonus", None)
+        if base_key and base_key != getattr(tpl, "key", "") and (not set_key or not set_bonus):
+            base_keys.add(base_key)
+
+    base_set_info = {
+        key: (set_key, set_bonus)
+        for key, set_key, set_bonus in GearTemplate.objects.filter(key__in=base_keys).values_list(
+            "key", "set_key", "set_bonus"
+        )
+    }
+
     sets: Dict[str, Dict[str, object]] = {}
     for gear in gear_items:
         tpl = getattr(gear, "template", None)
         if not tpl:
             continue
         set_key = getattr(tpl, "set_key", "") or ""
+        raw_set_bonus = getattr(tpl, "set_bonus", None)
+        base_key = getattr(tpl, "base_key", "") or ""
+        inherited_set_info = base_set_info.get(base_key)
+        if inherited_set_info:
+            set_key = set_key or inherited_set_info[0]
+            raw_set_bonus = raw_set_bonus or inherited_set_info[1]
         if not set_key:
             continue
-        bonus_definitions = _normalize_set_bonus_definitions(getattr(tpl, "set_bonus", None))
+        bonus_definitions = _normalize_set_bonus_definitions(raw_set_bonus)
         if not bonus_definitions:
             continue
 

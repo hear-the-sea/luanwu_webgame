@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 import pytest
 from django.core.files.storage import FileSystemStorage
 from PIL import Image
@@ -5,8 +7,8 @@ from PIL import Image
 from core.exceptions import GuestItemConfigurationError, GuestNotRequirementError
 from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.inventory.guest_items import use_soul_container
-from gameplay.services.inventory.soul_fusion_helpers import SOUL_FUSION_RESULT_CONFIG
-from guests.models import GearItem, GearSlot, Guest, GuestStatus, GuestTemplate
+from gameplay.services.inventory.soul_fusion_helpers import SOUL_FUSION_RESULT_CONFIG, _build_soul_fusion_weights
+from guests.models import GearItem, GearSlot, Guest, GuestArchetype, GuestStatus, GuestTemplate
 from guests.services.equipment import ensure_inventory_gears, equip_guest, unequip_guest_item
 from tests.inventory_guest_items.support_upgrade import (
     _attach_soul_fusion_gear_state,
@@ -24,51 +26,76 @@ def temporary_item_image_storage(tmp_path, monkeypatch):
 def test_soul_fusion_ornament_has_bounded_hp_and_rarity_required_levels():
     expected = {
         "green": {
+            "rarity": "blue",
             "stat_total_range": (48, 65),
             "hp_range": (600, 1000),
             "required_level": 30,
-            "stat_floor": {"force": 13, "intellect": 12, "agility": 13, "luck": 10},
         },
         "blue": {
+            "rarity": "purple",
             "stat_total_range": (67, 85),
             "hp_range": (1000, 1600),
             "required_level": 40,
-            "stat_floor": {"force": 15, "intellect": 13, "agility": 15, "luck": 11},
         },
         "purple": {
+            "rarity": "orange",
             "stat_total_range": (87, 110),
             "hp_range": (1600, 2200),
             "required_level": 55,
-            "stat_floor": {"force": 17, "intellect": 15, "agility": 17, "luck": 13},
         },
     }
 
     actual = {
         rarity: {
+            "rarity": config["rarity"],
             "stat_total_range": config["stat_total_range"],
             "hp_range": config["hp_range"],
             "required_level": config["required_level"],
-            "stat_floor": config["stat_floor"],
         }
         for rarity, config in SOUL_FUSION_RESULT_CONFIG.items()
     }
 
     assert actual == expected
+    assert all("stat_floor" not in config for config in SOUL_FUSION_RESULT_CONFIG.values())
+
+
+def test_soul_fusion_weights_follow_template_growth_and_keep_civil_luck_higher():
+    template = SimpleNamespace(attribute_weights={"force": 10, "intellect": 20, "defense": 60, "agility": 10})
+    civil_guest = SimpleNamespace(template=template, archetype=GuestArchetype.CIVIL)
+    military_guest = SimpleNamespace(template=template, archetype=GuestArchetype.MILITARY)
+
+    civil_weights = _build_soul_fusion_weights(civil_guest, {}, _SoulFusionFixedRng())
+    military_weights = _build_soul_fusion_weights(military_guest, {}, _SoulFusionFixedRng())
+
+    class _MaximumGrowthFluctuationRng:
+        def uniform(self, _minimum, maximum):
+            return maximum
+
+    fluctuated_civil_weights = _build_soul_fusion_weights(civil_guest, {}, _MaximumGrowthFluctuationRng())
+
+    assert civil_weights["defense"] > civil_weights["intellect"] > civil_weights["force"]
+    assert civil_weights["defense"] > civil_weights["agility"]
+    assert civil_weights["luck"] > military_weights["luck"]
+    assert civil_weights["luck"] == pytest.approx(0.20)
+    assert military_weights["luck"] == pytest.approx(0.14)
+    assert fluctuated_civil_weights["luck"] == pytest.approx(civil_weights["luck"])
+    assert sum(civil_weights.values()) == pytest.approx(1.0)
 
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    ("guest_rarity", "expected_image"),
+    ("guest_rarity", "expected_image", "expected_item_rarity"),
     [
-        ("green", "items/yuhaitang.webp"),
-        ("blue", "items/beiming.webp"),
-        ("purple", "items/chixue.webp"),
+        ("green", "items/yuhaitang.webp", "blue"),
+        ("blue", "items/beiming.webp", "purple"),
+        ("purple", "items/chixue.webp", "orange"),
     ],
 )
 def test_soul_fusion_ornament_saves_configured_image(
     django_user_model,
     guest_rarity,
     expected_image,
+    expected_item_rarity,
     temporary_item_image_storage,
 ):
     manor, guest, item = _prepare_soul_container_case(
@@ -88,13 +115,14 @@ def test_soul_fusion_ornament_saves_configured_image(
 
     template = InventoryItem.objects.select_related("template").get(pk=result["generated_item_id"]).template
     assert template.image.name == expected_image
+    assert template.rarity == expected_item_rarity
     with Image.open(template.image.path) as saved_image:
         assert saved_image.format == "WEBP"
         assert saved_image.size == (200, 200)
 
 
 @pytest.mark.django_db
-def test_use_soul_container_generates_green_ornament_with_military_bias_and_returns_gear(
+def test_use_soul_container_generates_blue_ornament_from_green_guest_with_military_bias_and_returns_gear(
     monkeypatch,
     django_user_model,
     temporary_item_image_storage,
@@ -129,14 +157,16 @@ def test_use_soul_container_generates_green_ornament_with_military_bias_and_retu
     payload = generated_item.template.effect_payload
 
     assert generated_item.template.name == "玉海棠"
-    assert generated_item.template.rarity == "green"
+    assert generated_item.template.rarity == "blue"
     assert generated_item.template.effect_type == "equip_ornament"
-    assert set(payload.keys()) == {"hp", "force", "intellect", "agility", "luck", "required_level"}
-    assert 48 <= payload["force"] + payload["intellect"] + payload["agility"] + payload["luck"] <= 65
+    assert set(payload.keys()) == {"hp", "force", "intellect", "defense", "agility", "luck", "required_level"}
+    secondary_total = sum(payload[stat] for stat in ("force", "intellect", "defense", "agility", "luck"))
+    assert 48 <= secondary_total <= 65
     assert 600 <= payload["hp"] <= 1000
     assert payload["required_level"] == 30
     assert payload["force"] > payload["intellect"]
     assert payload["agility"] >= payload["luck"]
+    assert payload["defense"] > 0
     assert not Guest.objects.filter(pk=guest.pk).exists()
     assert not InventoryItem.objects.filter(pk=item.pk).exists()
     returned_gear = InventoryItem.objects.get(manor=manor, template=gear_item_template)
@@ -297,6 +327,7 @@ def test_use_soul_container_generated_ornament_can_be_equipped_and_unequipped(
     assert wearer.gear_items.filter(template__key=generated_item.template.key).exists()
     assert wearer.force == 180 + int(generated_stats.get("force", 0) or 0)
     assert wearer.intellect == 220 + int(generated_stats.get("intellect", 0) or 0)
+    assert wearer.defense_stat == 170 + int(generated_stats.get("defense", 0) or 0)
     assert wearer.agility == 165 + int(generated_stats.get("agility", 0) or 0)
     assert wearer.luck == 95 + int(generated_stats.get("luck", 0) or 0)
     assert wearer.hp_bonus == int(generated_stats.get("hp", 0) or 0)
@@ -318,13 +349,14 @@ def test_use_soul_container_generated_ornament_can_be_equipped_and_unequipped(
     assert wearer.gear_items.filter(template__key=generated_item.template.key).count() == 0
     assert wearer.force == 180
     assert wearer.intellect == 220
+    assert wearer.defense_stat == 170
     assert wearer.agility == 165
     assert wearer.luck == 95
     assert wearer.hp_bonus == 0
 
 
 @pytest.mark.django_db
-def test_use_soul_container_generates_blue_ornament_with_civil_bias(
+def test_use_soul_container_generates_purple_ornament_from_blue_guest_with_civil_bias(
     monkeypatch,
     django_user_model,
     temporary_item_image_storage,
@@ -351,13 +383,14 @@ def test_use_soul_container_generates_blue_ornament_with_civil_bias(
     payload = generated_item.template.effect_payload
 
     assert generated_item.template.name == "北冥冰链"
-    assert generated_item.template.rarity == "blue"
-    assert 67 <= payload["force"] + payload["intellect"] + payload["agility"] + payload["luck"] <= 85
+    assert generated_item.template.rarity == "purple"
+    secondary_total = sum(payload[stat] for stat in ("force", "intellect", "defense", "agility", "luck"))
+    assert 67 <= secondary_total <= 85
     assert 1000 <= payload["hp"] <= 1600
     assert payload["required_level"] == 40
-    assert payload["intellect"] > payload["force"]
+    assert payload["intellect"] >= payload["force"]
     assert payload["intellect"] >= payload["agility"]
-    assert all(payload[stat] > 0 for stat in ["force", "intellect", "agility", "luck"])
+    assert all(payload[stat] > 0 for stat in ["force", "intellect", "defense", "agility", "luck"])
     assert not Guest.objects.filter(pk=guest.pk).exists()
     assert not InventoryItem.objects.filter(pk=item.pk).exists()
 

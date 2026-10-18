@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import random
+from types import SimpleNamespace
 
 import pytest
 from django.db import transaction
@@ -22,6 +23,7 @@ from gameplay.services.manor.core import ensure_manor
 from guests.models import GearItem, GearTemplate, Guest, GuestTemplate
 from guests.services.equipment_payloads import build_gear_template_defaults
 from guests.services.equipment_stats import apply_template_stats_to_guest
+from guests.utils.equipment_utils import compute_set_bonus
 
 
 class AlwaysAffixed:
@@ -86,6 +88,43 @@ def test_affix_example_and_integer_rounding(base_equipment):
     assert (payload["force"], payload["defense"], payload["agility"]) == (44, 8, 21)
     base_equipment.effect_payload = {"force": 4, "defense": 4}
     assert all(build_equipment_affix_payload(base_equipment, affix) is None for affix in AFFIX_LABELS)
+
+
+@pytest.mark.django_db
+def test_prefixed_set_items_inherit_set_membership_from_base_templates():
+    set_bonus = {"pieces": 2, "bonus": {"force": 25}}
+    base_helmet = GearTemplate.objects.create(
+        key="xuanwu_helmet",
+        name="玄武盔",
+        slot="helmet",
+        set_key="xuanwu_set",
+        set_bonus=set_bonus,
+    )
+    base_armor = GearTemplate.objects.create(
+        key="xuanwu_armor",
+        name="玄武甲",
+        slot="armor",
+        set_key="xuanwu_set",
+        set_bonus=set_bonus,
+    )
+    prefixed_helmet = GearTemplate.objects.create(
+        key="affix_force__xuanwu_helmet",
+        name="力量之玄武盔",
+        slot="helmet",
+        base_key=base_helmet.key,
+        base_name=base_helmet.name,
+    )
+    prefixed_armor = GearTemplate.objects.create(
+        key="affix_force__xuanwu_armor",
+        name="力量之玄武甲",
+        slot="armor",
+        base_key=base_armor.key,
+        base_name=base_armor.name,
+    )
+
+    assert compute_set_bonus([SimpleNamespace(template=prefixed_helmet), SimpleNamespace(template=prefixed_armor)]) == {
+        "force": 25
+    }
 
 
 @pytest.mark.parametrize(
