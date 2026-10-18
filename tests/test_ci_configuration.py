@@ -40,6 +40,8 @@ def test_real_service_gate_uses_dedicated_database_creation_credentials():
     )
     assert assignments["REAL_SERVICE_TEST_ENV"].count("DJANGO_DB_USER=$(REAL_SERVICES_TEST_DB_USER)") == 1
     assert assignments["REAL_SERVICE_TEST_ENV"].count("DJANGO_DB_PASSWORD=$(REAL_SERVICES_TEST_DB_PASSWORD)") == 1
+    assert "CELERY_BROKER_URL=$(REDIS_BROKER_URL)" not in assignments["REAL_SERVICE_TEST_ENV"]
+    assert "CELERY_RESULT_BACKEND=$(REDIS_RESULT_URL)" not in assignments["REAL_SERVICE_TEST_ENV"]
     assert "DJANGO_DB_ROOT_PASSWORD=$(DJANGO_DB_ROOT_PASSWORD)" in assignments["REAL_SERVICE_COMPOSE_ENV"]
 
 

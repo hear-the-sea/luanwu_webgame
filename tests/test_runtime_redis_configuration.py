@@ -5,6 +5,7 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
+from urllib.parse import urlparse
 
 import pytest
 import yaml
@@ -20,6 +21,27 @@ APPLICATIONS = (
     "worker_timer_maintenance",
     "beat",
 )
+
+
+def test_celery_redis_environment_urls_receive_the_shared_password(monkeypatch):
+    from django.conf import settings
+
+    from config.celery import _normalize_celery_redis_environment
+
+    password = "dummy-redis-password"
+    monkeypatch.setattr(settings, "REDIS_PASSWORD", password)
+    variables = (
+        "CELERY_BROKER_URL",
+        "CELERY_RESULT_BACKEND",
+        "CELERY_BROKER_READ_URL",
+        "CELERY_BROKER_WRITE_URL",
+    )
+    for name in variables:
+        monkeypatch.setenv(name, "redis://127.0.0.1:16379/0")
+
+    _normalize_celery_redis_environment()
+
+    assert {urlparse(os.environ[name]).password for name in variables} == {password}
 
 
 def test_runtime_redis_keeps_locks_and_capacity_keys_without_aof_or_public_ports():

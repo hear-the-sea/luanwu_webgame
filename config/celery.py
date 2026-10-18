@@ -9,6 +9,33 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 
 app = Celery("config")
 app.config_from_object("django.conf:settings", namespace="CELERY", force=True)
+
+
+def _normalize_celery_redis_environment() -> None:
+    """Keep Celery's environment-first URL overrides aligned with Django settings."""
+    from django.conf import settings
+
+    from config.settings.database import _redis_url_with_password
+
+    redis_password = settings.REDIS_PASSWORD
+    if not redis_password:
+        return
+
+    for name in (
+        "CELERY_BROKER_URL",
+        "CELERY_RESULT_BACKEND",
+        "CELERY_BROKER_READ_URL",
+        "CELERY_BROKER_WRITE_URL",
+    ):
+        url = os.environ.get(name)
+        if url:
+            os.environ[name] = _redis_url_with_password(url, redis_password)
+
+
+# Celery reads these variables before its Django settings mapping. Normalize
+# them here so a separate REDIS_PASSWORD is not bypassed by a raw URL override.
+_normalize_celery_redis_environment()
+
 app.autodiscover_tasks()
 
 # `core` is not a Django app, so its shared tasks need explicit import for registration.
