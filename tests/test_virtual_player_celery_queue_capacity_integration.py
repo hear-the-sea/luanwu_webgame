@@ -28,6 +28,7 @@ _TASK_BATCH_LIMIT = 200
 _SCAN_PERIOD_SECONDS = 3_600.0
 _WORKER_SHUTDOWN_TIMEOUT_SECONDS = 60.0
 _HEARTBEAT_JOIN_TIMEOUT_SECONDS = 20.0
+_QUEUE_CAPACITY_TEST_TASK_BUDGET_SECONDS = 60.0
 _QUEUE_CASES = ((1, 200), (3, 500), (5, 1000))
 
 
@@ -55,6 +56,13 @@ def test_real_timer_maintenance_queue_preserves_fair_batches(
     """
 
     _require_mysql()
+    # This test measures queue fairness, independent of the production task deadline.
+    monkeypatch.setattr(
+        settings,
+        "VIRTUAL_PLAYER_MAINTENANCE_TASK_BUDGET_SECONDS",
+        _QUEUE_CAPACITY_TEST_TASK_BUDGET_SECONDS,
+        raising=False,
+    )
     _activate_v2_maintenance()
     _install_permissive_reference(monkeypatch)
 
