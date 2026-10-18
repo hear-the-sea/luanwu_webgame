@@ -51,12 +51,12 @@ def _is_cavalry_unlocked(guild: Guild) -> bool:
     return GuildTechnology.objects.filter(guild=guild, tech_key=CAVALRY_UNLOCK_TECH, level__gte=1).exists()
 
 
-def _validate_quantity(quantity: int, *, action: str) -> None:
+def _validate_quantity(quantity: int, *, operation_label: str) -> None:
     if isinstance(quantity, bool) or not isinstance(quantity, int) or quantity <= 0:
-        raise GuildWarehouseError(f"{action}数量必须为正整数")
+        raise GuildWarehouseError(f"{operation_label}数量必须为正整数")
     max_batch = get_cavalry_recruitment_config()["max_batch"]
     if quantity > max_batch:
-        raise GuildWarehouseError(f"每次最多{action}{max_batch}名嗜血铁骑")
+        raise GuildWarehouseError(f"每次最多{operation_label}{max_batch}名嗜血铁骑")
 
 
 def _validate_guild(guild: Guild) -> None:
@@ -156,7 +156,7 @@ def recruit_guild_cavalry(guild: Guild, operator: Any, quantity: int) -> dict[st
     """帮主管理员预付帮会资源开始训练，整批完成后入库。"""
     from .warehouse import spend_guild_warehouse_items_locked
 
-    _validate_quantity(quantity, action="训练")
+    _validate_quantity(quantity, operation_label="训练")
     try:
         membership = get_active_membership(guild, operator, "只有帮主和管理员可以训练嗜血铁骑")
     except GuildMembershipError as exc:
@@ -220,7 +220,7 @@ def exchange_guild_cavalry(member: GuildMember, quantity: int = 1) -> None:
     """贡献兑换直接发放护院；与普通仓库共用每日次数和兑换日志。"""
     from .warehouse import _validate_weekly_personal_limit
 
-    _validate_quantity(quantity, action="兑换")
+    _validate_quantity(quantity, operation_label="兑换")
     unit_cost = get_cavalry_recruitment_config()["contribution_per_unit"]
     total_cost = quantity * unit_cost
     with transaction.atomic():

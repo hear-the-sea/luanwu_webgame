@@ -263,7 +263,7 @@ def test_equipment_forge_is_in_the_forging_tree_and_shows_daily_boxes(technology
     assert "帮会精铸紫装箱 ×2" in node["daily_output"]
 
 
-def test_sheep_wrath_node_shows_redeemable_item_cycle_and_icon(technology_world, client):
+def test_sheep_wrath_node_hides_redeemable_item_details(technology_world, client):
     guild, member = technology_world
     GuildTechnology.objects.create(guild=guild, tech_key="sheep_wrath", level=1, max_level=1)
     client.force_login(member.user)
@@ -272,8 +272,9 @@ def test_sheep_wrath_node_shows_redeemable_item_cycle_and_icon(technology_world,
 
     content = response.content.decode("utf-8")
     assert response.status_code == 200
-    assert "帮会资产道具 · 羊的愤怒" in content
-    assert "每 3 天产出 1 个" in content
-    assert "images/guild_item_icons/guild_sheep_wrath.webp" in content
-    assert "5000 贡献兑换" in content
+    assert "帮会资产道具 · 羊的愤怒" not in content
+    assert "每 3 天产出 1 个" not in content
+    assert content.count("guild_sheep_wrath.webp") == 1
+    assert "5000 贡献兑换" not in content
+    assert "10 根金条" not in content
     assert "每位成员每 7 天" not in content

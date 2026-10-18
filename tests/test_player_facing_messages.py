@@ -179,10 +179,10 @@ def test_guild_technology_cost_hides_unknown_resource_key(monkeypatch):
     monkeypatch.setattr(
         technology.technology_service,
         "calculate_tech_upgrade_cost",
-        lambda *_args: {"future_resource": 2},
+        lambda *_args, **_kwargs: {"future_resource": 2},
     )
 
-    assert technology._format_upgrade_cost(SimpleNamespace(tech_key="future_technology", level=0)) == "未知资源 ×2"
+    assert technology._format_upgrade_cost("future_technology", 0, SimpleNamespace()) == "未知资源×2"
 
 
 def test_guild_warehouse_error_hides_unknown_item_key(monkeypatch):

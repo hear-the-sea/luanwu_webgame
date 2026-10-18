@@ -36,7 +36,7 @@ RESOURCE_LABELS = {
 
 def _format_upgrade_cost(tech_key: str, level: int, guild: Any) -> str:
     cost = technology_service.calculate_tech_upgrade_cost(tech_key, level, guild=guild)
-    parts = [f"{RESOURCE_LABELS.get(key, key)}×{amount}" for key, amount in cost.items() if amount > 0]
+    parts = [f"{RESOURCE_LABELS.get(key, '未知资源')}×{amount}" for key, amount in cost.items() if amount > 0]
     return "、".join(parts) if parts else "无"
 
 

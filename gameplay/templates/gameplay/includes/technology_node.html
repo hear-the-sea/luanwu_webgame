@@ -1,5 +1,5 @@
 {% load gameplay_extras static %}
-{% with icon_key=tech.icon_key|default:tech.key %}
+{% with icon_key=tech.icon_key|default:'architecture' %}
 {% with icon_path='images/technology/qstyle/'|add:icon_key|add:'.webp' %}
 <article class="research-node{% if tech.is_upgrading %} is-studying{% elif tech.level >= tech.max_level %} is-maxed{% elif manor.silver >= tech.upgrade_cost and tech.can_upgrade %} is-ready{% else %} is-unaffordable{% endif %}" id="tech-{{ tech.key }}">
     <button type="button" class="research-node-button" data-research-open="research-detail-{{ tech.key }}" aria-haspopup="dialog" aria-controls="research-detail-{{ tech.key }}" aria-label="{{ tech.name }}，等级 {{ tech.level }} / {{ tech.max_level }}，{% if tech.is_upgrading %}研究中{% elif tech.level >= tech.max_level %}已满级{% elif manor.silver >= tech.upgrade_cost and tech.can_upgrade %}可研究{% else %}银两不足{% endif %}，查看详情">

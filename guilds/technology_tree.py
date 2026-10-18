@@ -303,7 +303,7 @@ TECHNOLOGY_ROUTES: tuple[dict[str, Any], ...] = (
             _node(
                 "sheep_wrath",
                 "羊的愤怒",
-                "研究后每 3 天为帮会资产产出 1 个羊的愤怒。成员可消耗 5000 贡献兑换；使用时消耗 10 根金条，使目标庄园全部门客生命降至 1，并清空其银两和粮食。",
+                "将目标庄园全部门客生命降至 1，并清空其银两和粮食。",
                 1,
                 24,
                 requires=("sheep_grain_card", "sheep_silver_card"),

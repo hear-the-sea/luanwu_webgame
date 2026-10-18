@@ -340,7 +340,7 @@ def _get_tech_name(tech_key: str) -> str:
 
     guild_node = TECHNOLOGY_NODE_BY_KEY.get(tech_key)
     if guild_node:
-        return str(guild_node.get("name") or tech_key)
+        return str(guild_node.get("name") or "未知科技")
 
     from ..technology import get_technology_template
 
