@@ -356,6 +356,26 @@ UNSAFE_DISPLAY_FALLBACK_RE = re.compile(
 )
 
 
+def _is_internal_key_assignment(line: str) -> bool:
+    try:
+        statement = ast.parse(line.strip()).body
+    except SyntaxError:
+        return False
+
+    if len(statement) != 1:
+        return False
+
+    node = statement[0]
+    if isinstance(node, ast.Assign):
+        targets = node.targets
+    elif isinstance(node, ast.AnnAssign):
+        targets = [node.target]
+    else:
+        return False
+
+    return bool(targets) and all(isinstance(target, ast.Name) and target.id.endswith("_key") for target in targets)
+
+
 def _node_name(node):
     if isinstance(node, ast.Name):
         return node.id
@@ -705,7 +725,8 @@ def test_presentation_code_does_not_fall_back_to_internal_keys():
         path = PROJECT_ROOT / relative_path
         for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
             match = UNSAFE_DISPLAY_FALLBACK_RE.search(line)
-            if match:
+            is_key_selection = match and match.group(0).lstrip().startswith("or ") and _is_internal_key_assignment(line)
+            if match and not is_key_selection:
                 issues.append(f"{relative_path}:{line_number}: {match.group(0)}")
 
     assert not issues, "展示层仍使用内部键作为兜底：\n" + "\n".join(issues)

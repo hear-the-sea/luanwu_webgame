@@ -2814,6 +2814,156 @@ items:
         - item_key: equip_qilinzui
           weight: 10
 
+  # ---------- 帮会机关兽图纸箱 ----------
+
+  - key: guild_mechanism_blueprint_box_1
+    name: 帮会机关兽图纸宝箱·初阶
+    description: 打开后随机获得一张绿色机关兽图纸。
+    effect_type: loot_box
+    rarity: green
+    tradeable: false
+    price: 0
+    storage_space: 25
+    is_usable: true
+    image: guild_gear_box_green.png
+    effect_payload:
+      random_item_groups:
+        - chance: 1
+          min_quantity: 1
+          max_quantity: 1
+          choices:
+            - item_key: blueprint_xiaoxingjiguanshu
+              weight: 1
+            - item_key: blueprint_tongchanjiguan
+              weight: 1
+
+  - key: guild_mechanism_blueprint_box_2
+    name: 帮会机关兽图纸宝箱·进阶
+    description: 打开后有90%概率获得一张绿色机关兽图纸，10%概率获得一张蓝色机关兽图纸。
+    effect_type: loot_box
+    rarity: green
+    tradeable: false
+    price: 0
+    storage_space: 25
+    is_usable: true
+    image: guild_gear_box_green.png
+    effect_payload:
+      random_item_groups:
+        - chance: 1
+          min_quantity: 1
+          max_quantity: 1
+          # 2张绿图纸各18权重、4张蓝图纸各1权重，合计90%绿、10%蓝。
+          choices:
+            - item_key: blueprint_xiaoxingjiguanshu
+              weight: 18
+            - item_key: blueprint_tongchanjiguan
+              weight: 18
+            - item_key: blueprint_jixiemao
+              weight: 1
+            - item_key: blueprint_jiguanchuniao
+              weight: 1
+            - item_key: blueprint_kuileimuren
+              weight: 1
+            - item_key: blueprint_qingji
+              weight: 1
+
+  - key: guild_mechanism_blueprint_box_3
+    name: 帮会机关兽图纸宝箱·精锐
+    description: 打开后有90%概率获得一张蓝色机关兽图纸，10%概率获得一张紫色机关兽图纸。
+    effect_type: loot_box
+    rarity: blue
+    tradeable: false
+    price: 0
+    storage_space: 50
+    is_usable: true
+    image: guild_gear_box_blue.png
+    effect_payload:
+      random_item_groups:
+        - chance: 1
+          min_quantity: 1
+          max_quantity: 1
+          # 4张蓝图纸各45权重、5张紫图纸各4权重，合计90%蓝、10%紫。
+          choices:
+            - item_key: blueprint_jixiemao
+              weight: 45
+            - item_key: blueprint_jiguanchuniao
+              weight: 45
+            - item_key: blueprint_kuileimuren
+              weight: 45
+            - item_key: blueprint_qingji
+              weight: 45
+            - item_key: blueprint_taotieding
+              weight: 4
+            - item_key: blueprint_jiguanxiong
+              weight: 4
+            - item_key: blueprint_muniuliuma
+              weight: 4
+            - item_key: blueprint_kuileiren
+              weight: 4
+            - item_key: blueprint_xuanwujigui
+              weight: 4
+
+  - key: guild_mechanism_blueprint_box_4
+    name: 帮会机关兽图纸宝箱·珍藏
+    description: 打开后随机获得一张紫色机关兽图纸。
+    effect_type: loot_box
+    rarity: purple
+    tradeable: false
+    price: 0
+    storage_space: 100
+    is_usable: true
+    image: guild_gear_box_purple.png
+    effect_payload:
+      random_item_groups:
+        - chance: 1
+          min_quantity: 1
+          max_quantity: 1
+          choices:
+            - item_key: blueprint_taotieding
+              weight: 1
+            - item_key: blueprint_jiguanxiong
+              weight: 1
+            - item_key: blueprint_muniuliuma
+              weight: 1
+            - item_key: blueprint_kuileiren
+              weight: 1
+            - item_key: blueprint_xuanwujigui
+              weight: 1
+
+  - key: guild_mechanism_blueprint_box_5
+    name: 帮会机关兽图纸宝箱·宗师
+    description: 打开后有90%概率获得一张紫色机关兽图纸，10%概率获得一张橙色机关兽图纸。
+    effect_type: loot_box
+    rarity: purple
+    tradeable: false
+    price: 0
+    storage_space: 100
+    is_usable: true
+    image: guild_gear_box_purple.png
+    effect_payload:
+      random_item_groups:
+        - chance: 1
+          min_quantity: 1
+          max_quantity: 1
+          # 5张紫图纸各27权重、3张橙图纸各5权重，合计90%紫、10%橙。
+          choices:
+            - item_key: blueprint_taotieding
+              weight: 27
+            - item_key: blueprint_jiguanxiong
+              weight: 27
+            - item_key: blueprint_muniuliuma
+              weight: 27
+            - item_key: blueprint_kuileiren
+              weight: 27
+            - item_key: blueprint_xuanwujigui
+              weight: 27
+            - item_key: blueprint_feiyuan
+              weight: 5
+            - item_key: blueprint_chixiaojifeng
+              weight: 5
+            - item_key: blueprint_mojiajiguanren
+              weight: 5
+
   # ══════════════════════════════════════════════════════════════════════════════
   #                              技能书
   # ══════════════════════════════════════════════════════════════════════════════

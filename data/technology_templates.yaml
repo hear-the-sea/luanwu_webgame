@@ -435,6 +435,7 @@ technologies:
   # ==================== 生产技术 ====================
   - key: farming
     name: 农耕术
+    icon_key: farming_v2
     category: production
     description: 种地的学问，让庄稼长得比隔壁老王家的好。升级提升粮食产量
     effect_type: resource_production

@@ -333,13 +333,13 @@ TECHNOLOGY_ROUTES: tuple[dict[str, Any], ...] = (
             _node(
                 "forging_mechanism_blueprint",
                 "机关兽合成图纸",
-                "每日产出机关兽合成图纸；等级提升图纸稀有度和产量。",
+                "每日产出机关兽图纸宝箱，成员可使用贡献兑换并开启；升级逐步提高蓝、紫、橙色图纸的获取机会。",
                 5,
                 25,
                 requires=("forging_equipment_forge",),
                 cost={"gold_bar": 5, "red_ruby": 5},
                 curve="research_5",
-                effect="每日产出更高稀有度的机关兽图纸",
+                effect="每日产出机关兽图纸宝箱",
                 production=True,
             ),
             _node(

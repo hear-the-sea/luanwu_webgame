@@ -704,6 +704,35 @@ sheep_wrath:
 forging_mechanism_blueprint:
   levels:
     1:
+      - item_key: guild_mechanism_blueprint_box_1
+        quantity: 1
+        contribution_cost: 100
+        weekly_personal_limit: 5
+    2:
+      - item_key: guild_mechanism_blueprint_box_2
+        quantity: 1
+        contribution_cost: 200
+        weekly_personal_limit: 5
+    3:
+      - item_key: guild_mechanism_blueprint_box_3
+        quantity: 2
+        contribution_cost: 500
+        weekly_personal_limit: 4
+    4:
+      - item_key: guild_mechanism_blueprint_box_4
+        quantity: 2
+        contribution_cost: 1000
+        weekly_personal_limit: 4
+    5:
+      - item_key: guild_mechanism_blueprint_box_5
+        quantity: 2
+        contribution_cost: 2000
+        weekly_personal_limit: 3
+
+# 旧版固定图纸产出，仅供兑换升级前已入库的图纸；科技调度不会读取此配置。
+legacy_forging_mechanism_blueprint:
+  levels:
+    1:
       - item_key: blueprint_xiaoxingjiguanshu
         quantity: 1
         contribution_cost: 100

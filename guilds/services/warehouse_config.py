@@ -171,7 +171,7 @@ def get_technology_production_items(tech_key: str, level: int) -> List[Productio
 
 
 def get_warehouse_production_item_keys() -> frozenset[str]:
-    """获取所有帮会科技会产出的仓库物品键。"""
+    """获取帮会仓库产出与兼容兑换物品键。"""
     return frozenset(
         item.item_key
         for production in get_warehouse_production().values()
