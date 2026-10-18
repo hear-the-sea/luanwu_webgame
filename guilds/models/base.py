@@ -48,6 +48,15 @@ class Guild(models.Model):
     # 等级与容量
     level = models.PositiveIntegerField(default=1, verbose_name="帮会等级")
 
+    # 科技路线。公共科技可并行升级，专精路线一次只能研究一条。
+    active_technology_route = models.CharField(
+        max_length=20,
+        blank=True,
+        default="",
+        verbose_name="当前科技路线",
+    )
+    completed_technology_routes = models.JSONField(default=list, blank=True, verbose_name="已完成科技路线")
+
     # 资源池
     silver = models.PositiveIntegerField(default=0, verbose_name="银两")
     grain = models.PositiveIntegerField(default=0, verbose_name="粮食")

@@ -28,6 +28,7 @@ technologies:
   # ==================== 基本技术 ====================
   - key: scout_art
     name: 侦查术
+    icon_key: scout_tools_v2
     category: basic
     description: 探子眼神更毒辣，打听消息更有一套。升级提升侦察和反侦察能力，每达到50级，还能多摸清一层庄园底细
     effect_type: scout_bonus
@@ -41,6 +42,7 @@ technologies:
 
   - key: march_art
     name: 行军术
+    icon_key: march_boots_v2
     category: basic
     description: 腿脚利索点，别让敌人跑了，也别让自己跑不掉。升级提升部队移动速度
     effect_type: march_speed
@@ -54,6 +56,7 @@ technologies:
 
   - key: architecture
     name: 建筑学
+    icon_key: architecture_tools_v2
     category: basic
     description: 学会砍价和偷工减料的艺术，盖房子更省钱。升级降低建筑成本
     effect_type: building_cost_reduction
@@ -162,11 +165,23 @@ technologies:
     name: 狂狼必杀
     category: martial
     troop_class: dao
-    description: 砍一刀送一刀，买一送一大酬宾。升级提升双击概率
+    description: 砍一刀送一刀，买一送一大酬宾。升级提升造成双倍伤害的概率。
     effect_type: double_strike_chance
     effect_per_level: 0.10
     max_level: 5
     base_cost: 20000
+
+  - key: dao_armor_break
+    name: 破甲一击
+    category: martial
+    troop_class: dao
+    description: 刀系攻击所有目标时，每级无视2%防御；攻击剑系护院时，每级额外增加10%伤害。最高10级，满级无视20%防御，对剑系额外增加100%伤害。
+    effect_type: sword_damage_bonus
+    effect_per_level: 0.10
+    defense_ignore_per_level: 0.02
+    max_level: 10
+    base_cost: 20000
+    icon_key: dao_armor_chick_v3
 
   # ==================== 武艺技术 - 枪类 ====================
   - key: qiang_attack

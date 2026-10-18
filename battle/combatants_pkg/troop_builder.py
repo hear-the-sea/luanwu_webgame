@@ -8,6 +8,7 @@ from decimal import Decimal
 from typing import Dict, List, Optional
 
 from battle.troops import default_troop_loadout, load_troop_templates
+from core.game_data.cavalry import CAVALRY_PREEMPT_PRIORITY
 
 from .core import Combatant
 from .tech_effects import build_tech_effects
@@ -62,9 +63,14 @@ def build_troop_combatants(
     templates = load_troop_templates()
     troops: List[Combatant] = []
 
-    effective_levels = tech_levels
-    if effective_levels is None and manor is not None:
-        effective_levels = {t.tech_key: t.level for t in manor.technologies.all()}
+    effective_levels = dict(tech_levels or {})
+    if tech_levels is None and manor is not None:
+        effective_levels.update({t.tech_key: t.level for t in manor.technologies.all()})
+    if manor is not None:
+        from guilds.services.technology import get_manor_guild_troop_tech_levels
+
+        for tech_key, level in get_manor_guild_troop_tech_levels(manor).items():
+            effective_levels.setdefault(tech_key, level)
 
     for key, count in loadout.items():
         if count <= 0:
@@ -135,11 +141,16 @@ def build_troop_combatants(
 
         priority = int(definition["priority"])
 
+        if key == "bloodthirsty_cavalry":
+            priority = CAVALRY_PREEMPT_PRIORITY
+
         if troop_class == "jian" and tech_effects_dict.get("preemptive_damage", 0) > 0:
             priority = -1
 
         if troop_class == "gong" and tech_effects_dict.get("extra_range_damage", 0) > 0:
             priority = -2
+
+        skills = _bloodthirsty_cavalry_skills(effective_levels, key)
 
         troops.append(
             Combatant(
@@ -161,9 +172,34 @@ def build_troop_combatants(
                 unit_defense=unit_defense,
                 unit_hp=unit_hp,
                 template_key=key,
-                skills=[],
+                skills=skills,
                 troop_class=troop_class,
                 tech_effects=tech_effects_dict,
             )
         )
     return troops
+
+
+def _bloodthirsty_cavalry_skills(tech_levels: dict[str, int], troop_key: str) -> list[dict]:
+    if troop_key != "bloodthirsty_cavalry":
+        return []
+    from core.game_data.cavalry import (
+        CAVALRY_BERSERK_CHANCE_PER_LEVEL,
+        CAVALRY_BERSERK_MAX_LEVEL,
+        CAVALRY_BERSERK_MULTI_DAMAGE_MULTIPLIER,
+        CAVALRY_BERSERK_SINGLE_DAMAGE_MULTIPLIER,
+    )
+
+    level = max(0, min(CAVALRY_BERSERK_MAX_LEVEL, int(tech_levels.get("wolf_berserk", 0) or 0)))
+    if level <= 0:
+        return []
+    return [
+        {
+            "name": "铁骑冲阵",
+            "kind": "active",
+            "targets": 2,
+            "trigger_chance": CAVALRY_BERSERK_CHANCE_PER_LEVEL * level,
+            "damage_multiplier": CAVALRY_BERSERK_MULTI_DAMAGE_MULTIPLIER,
+            "single_target_damage_multiplier": CAVALRY_BERSERK_SINGLE_DAMAGE_MULTIPLIER,
+        }
+    ]

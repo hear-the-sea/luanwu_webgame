@@ -498,6 +498,48 @@
   gap: 0.75rem;
 }
 
+.tw-guild-troop-assets {
+  padding: 1rem;
+  border: 1px solid var(--guild-rule-strong);
+  border-top: 3px solid var(--accent-gold);
+  border-radius: 6px;
+  background: var(--bg-panel);
+}
+
+.tw-guild-troop-summary {
+  display: flex;
+  min-height: 2rem;
+  align-items: center;
+  gap: 0.65rem;
+  cursor: pointer;
+  list-style: none;
+}
+.tw-guild-troop-summary::-webkit-details-marker { display: none; }
+.tw-guild-troop-summary::after { width: 0.55rem; height: 0.55rem; flex: 0 0 0.55rem; margin-left: auto; transform: rotate(45deg); border-right: 2px solid var(--text-muted); border-bottom: 2px solid var(--text-muted); content: ""; transition: transform 160ms ease; }
+.tw-guild-troop-assets[open] > .tw-guild-troop-summary { margin-bottom: 0.85rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--guild-rule); }
+.tw-guild-troop-assets[open] > .tw-guild-troop-summary::after { transform: rotate(225deg); }
+.tw-guild-troop-summary h2 { margin: 0; padding-left: 0.65rem; border-left: 3px solid var(--guild-ink); color: var(--guild-ink-strong); font-size: 1.08rem; line-height: 1.35; letter-spacing: 0; }
+.tw-guild-troop-summary .tw-muted { font-size: 0.76rem; }
+.tw-guild-troop-summary:focus-visible { border-radius: 3px; outline: 2px solid var(--accent-gold); outline-offset: 3px; }
+.tw-guild-troop-content { min-width: 0; }
+.tw-guild-troop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); gap: 0.45rem; margin-top: 0; font-variant-numeric: tabular-nums; }
+.tw-guild-troop-card { min-width: 0; padding: 0.5rem; border: 1px solid var(--guild-rule); border-radius: 5px; background: var(--guild-paper-deep); }
+.tw-guild-troop-card-main { display: flex; min-width: 0; align-items: center; gap: 0.45rem; }
+.tw-guild-troop-avatar { display: grid; width: 2.15rem; height: 2.15rem; flex: 0 0 2.15rem; place-items: center; overflow: hidden; border: 1px solid var(--guild-rule-strong); border-radius: 5px; background: var(--bg-panel); color: var(--guild-ink-strong); font-size: 0.85rem; }
+.tw-guild-troop-avatar img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.tw-guild-troop-copy { min-width: 0; }
+.tw-guild-troop-copy strong { display: block; overflow: hidden; color: var(--guild-ink-strong); font-size: 0.88rem; text-overflow: ellipsis; white-space: nowrap; }
+.tw-guild-troop-copy span { display: block; margin-top: 0.12rem; color: var(--text-muted); font-size: 0.76rem; }
+.tw-guild-troop-status { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.2rem; margin: 0.45rem 0 0; padding-top: 0.35rem; border-top: 1px solid var(--guild-rule); }
+.tw-guild-troop-status > div { min-width: 0; text-align: center; }
+.tw-guild-troop-status dt { overflow: hidden; color: var(--text-muted); font-size: 0.66rem; text-overflow: ellipsis; white-space: nowrap; }
+.tw-guild-troop-status dd { margin: 0.08rem 0 0; color: var(--guild-ink-strong); font-size: 0.74rem; }
+
+@media (max-width: 520px) {
+  .tw-guild-troop-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tw-guild-exchange-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
 .tw-guild-exchange-card {
   display: flex;
   min-width: 0;
@@ -523,9 +565,40 @@
 
 .tw-guild-exchange-head {
   display: flex;
-  gap: 0.55rem;
-  align-items: flex-start;
-  justify-content: space-between;
+  align-items: center;
+  min-width: 0;
+}
+
+.tw-guild-exchange-identity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.tw-guild-exchange-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  flex: 0 0 3.5rem;
+  border-radius: 0.55rem;
+  background: linear-gradient(145deg, #fffdf7, #e7dfcf);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.65), 0 2px 5px rgba(58, 43, 22, 0.12);
+}
+
+.tw-guild-exchange-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0.2rem;
+  object-fit: contain;
+}
+
+.tw-guild-exchange-icon .tw-icon-placeholder {
+  color: var(--guild-ink-strong);
+  font-size: 1.35rem;
+}
+
+.tw-guild-exchange-item-copy {
   min-width: 0;
 }
 
@@ -541,7 +614,8 @@
 }
 
 .tw-guild-exchange-cost {
-  flex: 0 0 auto;
+  display: inline-block;
+  margin-top: 0.35rem;
   padding: 0.15rem 0.45rem;
   border: 1px solid rgba(122, 61, 23, 0.3);
   border-radius: 999px;
@@ -1373,5 +1447,1518 @@
   .tw-guild-page .tw-building-card,
   .tw-guild-exchange-card {
     transition: none;
+  }
+}
+
+/* Guild technology tree */
+.tw-guild-page .tw-tech-page {
+  --tech-cinnabar: #923f2e;
+  --tech-copper: #956d36;
+  --tech-olive: #72703c;
+  --tech-paper-line: rgba(109, 74, 39, 0.14);
+  min-width: 0;
+}
+
+.tw-guild-page .tw-tech-page-header {
+  align-items: center;
+  margin-bottom: 1.45rem;
+}
+
+.tw-tech-page-header h1 {
+  margin: 0.15rem 0 0.35rem;
+  color: var(--guild-ink-strong);
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: clamp(1.55rem, 2.5vw, 2rem);
+  letter-spacing: 0.08em;
+}
+
+.tw-tech-page-header p {
+  max-width: 48rem;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.tw-tech-eyebrow {
+  color: var(--tech-cinnabar);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+}
+
+.tw-tech-seal {
+  display: grid;
+  flex: 0 0 3.4rem;
+  place-items: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  transform: rotate(-7deg);
+  border: 2px double rgba(146, 63, 46, 0.65);
+  border-radius: 8px 3px 8px 3px;
+  color: var(--tech-cinnabar);
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 1.55rem;
+  font-weight: 800;
+  box-shadow: inset 0 0 0 3px rgba(146, 63, 46, 0.09);
+}
+
+.tw-guild-page .tw-tech-section {
+  min-width: 0;
+  margin-top: 1.6rem;
+}
+
+.tw-tech-section-heading {
+  display: flex;
+  gap: 1rem;
+  align-items: end;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+  padding: 0 0.15rem 0.6rem;
+  border-bottom: 1px solid var(--guild-rule);
+}
+
+.tw-tech-section-heading h2 {
+  margin: 0.08rem 0 0;
+  color: var(--guild-ink-strong);
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 1.35rem;
+  letter-spacing: 0.04em;
+}
+
+.tw-tech-section-heading > p {
+  max-width: 32rem;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  text-align: right;
+}
+
+.tw-tech-route-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+.tw-tech-route {
+  --route-accent: #84553d;
+  --route-wash: rgba(132, 85, 61, 0.075);
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--guild-rule-strong);
+  border-top: 3px solid var(--route-accent);
+  border-radius: 6px;
+  background:
+    radial-gradient(ellipse at 95% 3%, var(--route-wash), transparent 31%),
+    linear-gradient(180deg, var(--bg-panel), var(--bg-card));
+  box-shadow: 0 6px 16px rgba(58, 43, 22, 0.08);
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.tw-tech-route:hover {
+  border-color: var(--route-accent);
+  box-shadow: 0 9px 20px rgba(58, 43, 22, 0.12);
+  transform: translateY(-1px);
+}
+
+.tw-tech-route--hero {
+  --route-accent: #943f30;
+  --route-wash: rgba(148, 63, 48, 0.1);
+}
+
+.tw-tech-route--wolf {
+  --route-accent: #75502f;
+  --route-wash: rgba(117, 80, 47, 0.105);
+}
+
+.tw-tech-route--sheep {
+  --route-accent: #73723b;
+  --route-wash: rgba(115, 114, 59, 0.105);
+}
+
+.tw-tech-route--forging {
+  --route-accent: #53635b;
+  --route-wash: rgba(83, 99, 91, 0.1);
+}
+
+.tw-tech-route.is-active {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--route-accent) 24%, transparent), 0 8px 20px rgba(58, 43, 22, 0.1);
+}
+
+.tw-tech-route.is-completed {
+  --route-wash: rgba(112, 123, 82, 0.1);
+}
+
+.tw-tech-route-header {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
+  gap: 0.8rem;
+  align-items: center;
+  padding: 0.9rem 1rem 0.8rem;
+  border-bottom: 1px solid var(--guild-rule);
+  background: linear-gradient(100deg, var(--route-wash), transparent 72%);
+}
+
+.tw-tech-route-mark {
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  transform: rotate(-4deg);
+  border: 1px solid color-mix(in srgb, var(--route-accent) 55%, transparent);
+  border-radius: 5px 11px 5px 11px;
+  background: rgba(255, 250, 232, 0.72);
+  color: var(--route-accent);
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 1.55rem;
+  font-weight: 800;
+  box-shadow: inset 0 0 0 3px rgba(109, 74, 39, 0.055);
+}
+
+.tw-tech-route-copy,
+.tw-tech-route-copy h3,
+.tw-tech-route-copy p {
+  min-width: 0;
+  margin: 0;
+}
+
+.tw-tech-route-overline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.6rem;
+  align-items: center;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+.tw-tech-route-copy h3 {
+  margin: 0.15rem 0 0.12rem;
+  color: var(--route-accent);
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 1.23rem;
+  letter-spacing: 0.045em;
+}
+
+.tw-tech-route-copy p {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.tw-tech-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.25rem;
+  padding: 0.08rem 0.42rem;
+  border: 1px solid var(--guild-rule);
+  border-radius: 999px;
+  background: rgba(255, 250, 232, 0.62);
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.tw-tech-status--active {
+  border-color: rgba(146, 63, 46, 0.32);
+  background: rgba(146, 63, 46, 0.1);
+  color: var(--tech-cinnabar);
+}
+
+.tw-tech-status--complete {
+  border-color: rgba(95, 113, 69, 0.3);
+  background: rgba(95, 113, 69, 0.1);
+  color: #596b43;
+}
+
+.tw-tech-route-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px dashed var(--guild-rule);
+  background: rgba(151, 113, 59, 0.045);
+}
+
+.tw-tech-route-multiplier,
+.tw-tech-route-note {
+  color: var(--text-muted);
+  font-size: 0.73rem;
+}
+
+.tw-tech-route-multiplier strong {
+  color: var(--route-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.tw-tech-route-note {
+  text-align: right;
+}
+
+.tw-tech-tree {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.72rem;
+  padding: 1rem;
+  background-image: linear-gradient(var(--tech-paper-line) 1px, transparent 1px), linear-gradient(90deg, var(--tech-paper-line) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+.tw-tech-node {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr);
+  gap: 0.65rem;
+  min-width: 0;
+  padding: 0.7rem;
+  border: 1px solid var(--guild-rule);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--bg-panel) 92%, #fff5d8);
+  box-shadow: 0 2px 6px rgba(74, 48, 24, 0.06);
+  transition: border-color 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
+}
+
+.tw-tech-node::before {
+  position: absolute;
+  top: -0.74rem;
+  left: 50%;
+  height: 0.68rem;
+  border-left: 1px dashed color-mix(in srgb, var(--route-accent) 50%, transparent);
+  content: "";
+}
+
+.tw-tech-node.is-available {
+  border-color: color-mix(in srgb, var(--route-accent) 55%, var(--guild-rule-strong));
+  box-shadow: 0 3px 9px rgba(74, 48, 24, 0.1);
+}
+
+.tw-tech-node.is-maxed {
+  border-color: rgba(95, 113, 69, 0.42);
+  background: linear-gradient(145deg, rgba(244, 246, 232, 0.96), var(--bg-panel));
+}
+
+.tw-tech-node.is-locked {
+  background: rgba(232, 225, 208, 0.58);
+  box-shadow: none;
+}
+
+.tw-tech-node.is-locked .tw-tech-node-icon {
+  filter: grayscale(0.78) saturate(0.45);
+  opacity: 0.68;
+}
+
+.tw-tech-node-icon-wrap {
+  position: relative;
+  align-self: start;
+  width: 3.25rem;
+  height: 3.75rem;
+}
+
+.tw-guild-page .tw-tech-node-icon {
+  display: block;
+  width: 3.25rem;
+  height: 3.25rem;
+  overflow: hidden;
+  border: 1px solid rgba(132, 85, 61, 0.3);
+  border-radius: 8px;
+  background-color: #fff8d9;
+  background-repeat: no-repeat;
+  background-size: 700% 700%;
+  box-shadow: 0 2px 5px rgba(74, 48, 24, 0.09), inset 0 0 0 1px rgba(255, 255, 255, 0.48);
+}
+
+.tw-tech-node-level {
+  position: absolute;
+  right: -0.38rem;
+  bottom: 0;
+  min-width: 2.25rem;
+  padding: 0.13rem 0.28rem;
+  border: 1px solid rgba(117, 80, 47, 0.26);
+  border-radius: 999px;
+  background: var(--bg-panel);
+  color: var(--guild-ink-strong);
+  font-size: 0.67rem;
+  font-weight: 800;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.tw-tech-node-level i {
+  padding: 0 0.05rem;
+  color: var(--text-muted);
+  font-style: normal;
+  font-weight: 500;
+}
+
+.tw-tech-node-body {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.tw-tech-node-title-row {
+  display: flex;
+  gap: 0.35rem;
+  align-items: start;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.tw-tech-node-title-row h4,
+.tw-tech-public-node h3 {
+  min-width: 0;
+  margin: 0;
+  color: var(--guild-ink-strong);
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.tw-tech-node-state {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.tw-tech-node-state--ready {
+  color: var(--route-accent);
+}
+
+.tw-tech-node-state--complete {
+  color: #596b43;
+}
+
+.tw-tech-node-description {
+  margin: 0.28rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.tw-tech-prerequisite {
+  margin: 0.35rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  line-height: 1.35;
+}
+
+.tw-tech-prerequisite span {
+  margin-right: 0.12rem;
+  color: var(--route-accent);
+  font-weight: 800;
+}
+
+.tw-tech-node-effects {
+  display: grid;
+  gap: 0.28rem;
+  margin: 0.55rem 0 0;
+}
+
+.tw-tech-node-effects > div {
+  display: grid;
+  grid-template-columns: 3.3rem minmax(0, 1fr);
+  gap: 0.35rem;
+  align-items: baseline;
+  padding-top: 0.25rem;
+  border-top: 1px dotted var(--guild-rule);
+}
+
+.tw-tech-node-effects dt,
+.tw-tech-node-cost > span,
+.tw-tech-public-cost > span {
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  white-space: nowrap;
+}
+
+.tw-tech-node-effects dd {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.tw-tech-node-effects > div:first-child dd {
+  color: var(--accent-green);
+}
+
+.tw-tech-ability {
+  margin-top: 0.6rem;
+  padding: 0.55rem;
+  border: 1px solid rgba(146, 63, 46, 0.24);
+  border-radius: 4px;
+  background: linear-gradient(145deg, rgba(248, 229, 223, 0.58), rgba(255, 249, 230, 0.72));
+}
+
+.tw-tech-ability-heading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.45rem;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.tw-tech-ability-heading strong {
+  color: var(--tech-cinnabar);
+  font-size: 0.76rem;
+}
+
+.tw-tech-ability-heading span,
+.tw-tech-ability > p {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
+.tw-tech-ability > p {
+  margin: 0.28rem 0 0;
+}
+
+.tw-guild-page .tw-tech-wrath-form.tw-warehouse-card {
+  display: flex;
+  max-height: none;
+  gap: 0.4rem;
+  margin: 0.55rem 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.tw-guild-page .tw-tech-wrath-form label {
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.tw-guild-page .tw-tech-wrath-form .tw-target-manor-search-row {
+  gap: 0.3rem;
+}
+
+.tw-guild-page .tw-tech-wrath-form .tw-target-manor-search,
+.tw-guild-page .tw-tech-wrath-form .tw-target-manor-results {
+  min-height: 2.1rem;
+  border-color: var(--guild-rule-strong);
+  border-radius: 4px;
+  background: var(--bg-panel);
+  font-size: 0.72rem;
+}
+
+.tw-guild-page .tw-tech-wrath-form > .tw-btn-primary,
+.tw-guild-page .tw-tech-wrath-form .tw-btn-secondary {
+  min-height: 2.05rem;
+  align-self: stretch;
+  padding: 0.32rem 0.55rem;
+  font-size: 0.72rem;
+  line-height: 1.25;
+  white-space: normal;
+}
+
+.tw-tech-ability-locked {
+  padding-top: 0.25rem;
+  color: var(--tech-cinnabar) !important;
+  font-weight: 700;
+}
+
+.tw-tech-node-footer {
+  display: flex;
+  gap: 0.45rem;
+  align-items: end;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 0.6rem;
+}
+
+.tw-tech-node-cost {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+
+.tw-tech-node-cost strong,
+.tw-tech-public-cost strong {
+  color: var(--tech-copper);
+  font-size: 0.72rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.tw-guild-page .tw-tech-action,
+.tw-tech-route-actions .tw-btn-primary,
+.tw-tech-route-actions .tw-btn-secondary,
+.tw-tech-public-action .tw-btn-primary,
+.tw-tech-public-action .tw-btn-secondary {
+  min-height: 2rem;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.74rem;
+  white-space: nowrap;
+}
+
+.tw-tech-action-form,
+.tw-tech-action-form > button,
+.tw-tech-route-actions form {
+  min-width: 0;
+}
+
+.tw-tech-action-form {
+  margin-left: auto;
+}
+
+.tw-tech-route-actions {
+  display: flex;
+  min-height: 3.3rem;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0.65rem 1rem;
+  border-top: 1px solid var(--guild-rule);
+  background: rgba(151, 113, 59, 0.045);
+}
+
+.tw-tech-route-finished,
+.tw-tech-route-current {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.tw-tech-route-finished {
+  color: #596b43;
+}
+
+.tw-tech-route-finished span {
+  margin-right: 0.25rem;
+  font-size: 1rem;
+}
+
+.tw-tech-public-section {
+  padding: 1rem;
+  border: 1px solid var(--guild-rule-strong);
+  border-radius: 6px;
+  background: linear-gradient(145deg, rgba(245, 234, 216, 0.42), var(--bg-panel));
+  box-shadow: var(--guild-shadow);
+}
+
+.tw-tech-public-section .tw-tech-section-heading {
+  margin-bottom: 1rem;
+}
+
+.tw-tech-public-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.tw-tech-public-node {
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  min-width: 0;
+  padding: 0.8rem;
+  border: 1px solid var(--guild-rule);
+  border-radius: 5px;
+  background: rgba(255, 252, 241, 0.68);
+  box-shadow: 0 2px 7px rgba(74, 48, 24, 0.06);
+}
+
+.tw-tech-public-node.is-maxed {
+  border-color: rgba(95, 113, 69, 0.4);
+  background: rgba(244, 246, 232, 0.72);
+}
+
+.tw-tech-public-node .tw-tech-node-icon {
+  width: 3.25rem;
+  height: 3.25rem;
+}
+
+.tw-tech-public-copy {
+  min-width: 0;
+}
+
+.tw-tech-public-copy p {
+  margin: 0.28rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.tw-tech-public-level {
+  flex: 0 0 auto;
+  color: var(--tech-copper);
+  font-size: 0.72rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tw-tech-public-copy .tw-tech-public-effect {
+  color: var(--accent-green);
+  font-size: 0.7rem;
+}
+
+.tw-tech-public-cost {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.45rem;
+  align-items: baseline;
+  margin-top: 0.42rem;
+  padding-top: 0.35rem;
+  border-top: 1px dotted var(--guild-rule);
+}
+
+.tw-tech-public-action {
+  align-self: end;
+}
+
+.tw-tech-public-action form {
+  margin: 0;
+}
+
+
+@media (max-width: 1100px) {
+  .tw-tech-route-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tw-tech-route {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 720px) {
+  .tw-tech-section-heading {
+    align-items: start;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .tw-tech-section-heading > p {
+    text-align: left;
+  }
+
+  .tw-tech-route-grid,
+  .tw-tech-public-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tw-tech-route-meta {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .tw-tech-route-note {
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .tw-guild-page .tw-tech-page-header {
+    align-items: start;
+  }
+
+  .tw-tech-seal {
+    flex-basis: 2.65rem;
+    width: 2.65rem;
+    height: 2.65rem;
+    font-size: 1.2rem;
+  }
+
+  .tw-tech-tree {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.65rem;
+    padding: 0.75rem;
+  }
+
+  .tw-tech-node {
+    grid-template-columns: 3rem minmax(0, 1fr);
+    padding: 0.65rem;
+  }
+
+  .tw-tech-node-icon-wrap,
+  .tw-guild-page .tw-tech-node-icon {
+    width: 3rem;
+  }
+
+  .tw-tech-node-icon-wrap {
+    height: 3.5rem;
+  }
+
+  .tw-tech-node-footer {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .tw-tech-action-form,
+  .tw-tech-node-footer .tw-tech-action {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .tw-guild-page .tw-tech-wrath-form.tw-warehouse-card {
+    align-items: stretch;
+  }
+
+  .tw-guild-page .tw-tech-wrath-form > .tw-btn-primary {
+    width: 100%;
+  }
+
+  .tw-tech-public-node {
+    grid-template-columns: 3rem minmax(0, 1fr);
+  }
+
+  .tw-tech-public-node .tw-tech-node-icon {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .tw-tech-public-action {
+    grid-column: 2;
+  }
+
+  .tw-tech-public-action > form,
+  .tw-tech-public-action .tw-btn-primary,
+  .tw-tech-public-action .tw-btn-secondary {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tw-tech-route,
+  .tw-tech-node {
+    transition: none;
+  }
+}
+
+/* Talent-tree layout: route nodes are placed by their prerequisite depth. */
+.tw-tech-route[hidden],
+.tw-tech-detail[hidden] {
+  display: none !important;
+}
+
+.tw-tech-route-tabs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.tw-tech-route-tab {
+  --route-accent: #84553d;
+  display: flex;
+  min-width: 0;
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--guild-rule-strong);
+  border-bottom: 3px solid color-mix(in srgb, var(--route-accent) 45%, transparent);
+  border-radius: 6px;
+  background: linear-gradient(145deg, var(--bg-panel), var(--bg-card));
+  color: var(--guild-ink-strong);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+}
+
+.tw-tech-route-tab--public { --route-accent: #716044; }
+.tw-tech-route-tab--hero { --route-accent: #943f30; }
+.tw-tech-route-tab--wolf { --route-accent: #75502f; }
+.tw-tech-route-tab--sheep { --route-accent: #73723b; }
+.tw-tech-route-tab--forging { --route-accent: #53635b; }
+
+.tw-tech-route-tab:hover,
+.tw-tech-route-tab:focus-visible {
+  border-color: color-mix(in srgb, var(--route-accent) 60%, var(--guild-rule-strong));
+  outline: none;
+  box-shadow: 0 3px 10px rgba(74, 48, 24, 0.1);
+}
+
+.tw-tech-route-tab.is-selected,
+.tw-tech-route-tab[aria-selected="true"] {
+  border-color: color-mix(in srgb, var(--route-accent) 62%, var(--guild-rule-strong));
+  border-bottom-color: var(--route-accent);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--route-accent) 10%, var(--bg-panel)), var(--bg-card));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--route-accent) 8%, transparent), 0 4px 11px rgba(74, 48, 24, 0.08);
+}
+
+.tw-tech-route-tab-mark {
+  display: grid;
+  flex: 0 0 2.4rem;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 1px solid color-mix(in srgb, var(--route-accent) 45%, var(--guild-rule));
+  border-radius: 6px;
+  background: rgba(255, 250, 232, 0.76);
+  color: var(--route-accent);
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.tw-tech-route-tab-mark img {
+  display: block;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
+.tw-tech-route-tab-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+
+.tw-tech-route-tab-copy strong {
+  overflow: hidden;
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 0.94rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tw-tech-route-tab-copy small {
+  color: var(--text-muted);
+  font-size: 0.67rem;
+}
+
+.tw-tech-route-tab-state {
+  color: var(--route-accent);
+  font-size: 0.78rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.tw-tech-route-grid {
+  display: block;
+}
+
+.tw-tech-route {
+  --route-accent: #84553d;
+  overflow: hidden;
+  border-top-width: 3px;
+}
+
+.tw-tech-route--public {
+  --route-accent: #716044;
+  --route-wash: rgba(113, 96, 68, 0.075);
+}
+
+.tw-tech-route-header {
+  grid-template-columns: 3.25rem minmax(0, 1fr);
+}
+
+.tw-tech-route-mark img {
+  display: block;
+  width: 2.9rem;
+  height: 2.9rem;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
+.tw-tech-tree-scroll {
+  max-width: 100%;
+  overflow: auto hidden;
+  overscroll-behavior-inline: contain;
+  scrollbar-color: color-mix(in srgb, var(--route-accent) 42%, #b9a27b) rgba(135, 107, 65, 0.09);
+  scrollbar-width: thin;
+  background: #f7efd9;
+}
+
+.tw-tech-route--hero .tw-tech-tree-scroll { --route-accent: #943f30; }
+.tw-tech-route--wolf .tw-tech-tree-scroll { --route-accent: #75502f; }
+.tw-tech-route--sheep .tw-tech-tree-scroll { --route-accent: #73723b; }
+.tw-tech-route--forging .tw-tech-tree-scroll { --route-accent: #53635b; }
+
+.tw-tech-tree {
+  position: relative;
+  display: block;
+  min-width: 680px;
+  margin: 0 auto;
+  overflow: hidden;
+  background-color: #f7efd9;
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 252, 229, 0.88), transparent 56%),
+    radial-gradient(circle at 1px 1px, rgba(123, 98, 59, 0.075) 1px, transparent 1.5px),
+    linear-gradient(90deg, transparent 49.9%, rgba(129, 103, 62, 0.035) 50%, transparent 50.1%);
+  background-size: auto, 14px 14px, 100% 100%;
+}
+
+.tw-tech-public-tree {
+  min-height: 190px;
+  --route-accent: #716044;
+}
+
+.tw-tech-edges {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.tw-tech-edge {
+  fill: none;
+  stroke: rgba(112, 103, 82, 0.43);
+  stroke-width: 5px;
+  stroke-linecap: round;
+  filter: drop-shadow(0 1px 1px rgba(83, 66, 37, 0.16));
+  transition: stroke 160ms ease, filter 160ms ease;
+}
+
+.tw-tech-edge.is-open {
+  stroke: #bd8f36;
+  filter: drop-shadow(0 0 3px rgba(228, 179, 70, 0.72));
+}
+
+.tw-guild-page .tw-tech-tree .tw-tech-node {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  width: 112px;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.16rem;
+  padding: 0 0.2rem 0.3rem;
+  transform: translateX(-50%);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--guild-ink-strong);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+  transition: filter 150ms ease, transform 150ms ease;
+}
+
+.tw-guild-page .tw-tech-tree .tw-tech-node:hover,
+.tw-guild-page .tw-tech-tree .tw-tech-node:focus-visible {
+  z-index: 3;
+  transform: translateX(-50%) translateY(-3px);
+  outline: none;
+  filter: drop-shadow(0 4px 7px rgba(68, 48, 24, 0.23));
+}
+
+.tw-guild-page .tw-tech-tree .tw-tech-node::before {
+  display: none;
+}
+
+.tw-guild-page .tw-tech-tree .tw-tech-node-icon-wrap {
+  display: grid;
+  flex: 0 0 68px;
+  place-items: center;
+  width: 68px;
+  height: 68px;
+  padding: 4px;
+  border: 2px solid #655b48;
+  border-radius: 7px;
+  background: linear-gradient(145deg, #ebe3cd, #9c9175);
+  box-shadow: 0 3px 7px rgba(57, 43, 26, 0.28), inset 0 0 0 2px rgba(255, 251, 231, 0.55);
+}
+
+.tw-guild-page .tw-tech-tree .tw-tech-node-icon-wrap::before {
+  position: absolute;
+  z-index: 2;
+  inset: 3px;
+  border: 1px solid rgba(47, 42, 34, 0.55);
+  border-radius: 4px;
+  content: "";
+  pointer-events: none;
+}
+
+.tw-guild-page .tw-tech-tree .tw-tech-node-icon {
+  width: 52px;
+  height: 52px;
+  padding: 3px;
+  border: 1px solid rgba(50, 45, 37, 0.62);
+  border-radius: 3px;
+  background-color: #2e2b27;
+  background-origin: content-box;
+  background-clip: content-box;
+  background-size: 700% 700%;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.26);
+}
+
+.tw-guild-page .tw-tech-tree .tw-tech-node-art {
+  display: block;
+  width: 52px;
+  height: 52px;
+  border-radius: 3px;
+  background: #fff7df;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.tw-guild-page .tw-tech-tree .tw-tech-node-art--illustration {
+  image-rendering: auto;
+}
+
+.tw-guild-page .tw-tech-tree .tw-tech-node-level {
+  right: -0.48rem;
+  bottom: -0.2rem;
+  min-width: 2.2rem;
+  padding: 0.12rem 0.25rem;
+  border: 1px solid #695a3b;
+  background: #fff5d7;
+  box-shadow: 0 1px 4px rgba(55, 40, 21, 0.24);
+  font-size: 0.68rem;
+}
+
+.tw-tech-node-label {
+  display: block;
+  width: 100%;
+  min-height: 2.1em;
+  color: #3e382c;
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  text-shadow: 0 1px rgba(255, 250, 228, 0.9);
+}
+
+.tw-tech-node-caption {
+  display: inline-flex;
+  min-height: 1rem;
+  align-items: center;
+  padding: 0.02rem 0.34rem;
+  border: 1px solid rgba(102, 87, 58, 0.22);
+  border-radius: 999px;
+  background: rgba(250, 244, 223, 0.82);
+  color: #756b58;
+  font-size: 0.58rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.tw-tech-node-caption.is-ready {
+  border-color: rgba(169, 120, 34, 0.42);
+  background: #fbf0cb;
+  color: #8a5d14;
+}
+
+.tw-tech-node-caption.is-complete {
+  border-color: rgba(79, 112, 67, 0.38);
+  background: #edf0d9;
+  color: #536840;
+}
+
+.tw-guild-page .tw-tech-tree .tw-tech-node.is-available .tw-tech-node-icon-wrap {
+  border-color: #b68b3f;
+  background: linear-gradient(145deg, #f3e4b6, #b89c60);
+  box-shadow: 0 0 0 2px rgba(214, 170, 72, 0.22), 0 0 13px rgba(207, 164, 63, 0.34), inset 0 0 0 2px rgba(255, 252, 230, 0.72);
+}
+
+.tw-guild-page .tw-tech-tree .tw-tech-node.is-maxed .tw-tech-node-icon-wrap {
+  border-color: #718054;
+  background: linear-gradient(145deg, #e9e9c9, #8e9a68);
+  box-shadow: 0 0 0 2px rgba(108, 132, 78, 0.2), 0 0 11px rgba(108, 132, 78, 0.26), inset 0 0 0 2px rgba(255, 255, 237, 0.68);
+}
+
+.tw-guild-page .tw-tech-tree .tw-tech-node.is-locked .tw-tech-node-icon,
+.tw-guild-page .tw-tech-tree .tw-tech-node.is-locked .tw-tech-node-art {
+  filter: grayscale(1) brightness(0.78);
+  opacity: 0.8;
+}
+
+.tw-guild-page .tw-tech-tree .tw-tech-node.is-locked .tw-tech-node-icon-wrap {
+  border-color: #77715f;
+  background: linear-gradient(145deg, #c7c0af, #817a69);
+}
+
+.tw-guild-page .tw-tech-tree .tw-tech-node[data-route-locked] .tw-tech-node-icon,
+.tw-guild-page .tw-tech-tree .tw-tech-node[data-route-locked] .tw-tech-node-art {
+  filter: grayscale(0.68) saturate(0.48);
+  opacity: 0.76;
+}
+
+.tw-guild-page .tw-tech-tree .tw-tech-node[data-route-locked] .tw-tech-node-icon-wrap {
+  border-color: #8c836f;
+  background: linear-gradient(145deg, #ded5c0, #9b9078);
+}
+
+.tw-tech-public-section {
+  overflow: hidden;
+  padding: 1rem 0 0;
+}
+
+.tw-tech-public-section > .tw-tech-section-heading {
+  margin-right: 1rem;
+  margin-left: 1rem;
+}
+
+.tw-tech-public-tree-scroll {
+  --route-accent: #716044;
+  border-top: 1px solid var(--guild-rule);
+  border-radius: 0 0 6px 6px;
+}
+
+.tw-tech-dialog {
+  position: fixed;
+  width: min(39rem, calc(100vw - 2rem));
+  max-width: calc(100vw - 2rem);
+  max-height: min(86vh, 54rem);
+  overflow: auto;
+  padding: 1.5rem;
+  border: 1px solid var(--guild-rule-strong);
+  border-top: 4px solid var(--tech-cinnabar);
+  border-radius: 8px;
+  background:
+    radial-gradient(ellipse at 100% 0, rgba(165, 128, 67, 0.12), transparent 40%),
+    linear-gradient(160deg, var(--bg-panel), #fbf5e6);
+  color: var(--guild-ink-strong);
+  box-shadow: 0 22px 72px rgba(35, 26, 16, 0.34);
+}
+
+.tw-tech-dialog::backdrop {
+  background: rgba(31, 27, 22, 0.58);
+  backdrop-filter: blur(3px);
+}
+
+.tw-tech-dialog-close {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  float: right;
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  margin: -0.7rem -0.7rem 0 0;
+  border: 1px solid var(--guild-rule);
+  border-radius: 50%;
+  background: rgba(255, 252, 241, 0.9);
+  color: var(--guild-ink-strong);
+  font-size: 1.45rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tw-tech-dialog-close:hover,
+.tw-tech-dialog-close:focus-visible {
+  border-color: var(--tech-cinnabar);
+  color: var(--tech-cinnabar);
+  outline: 2px solid color-mix(in srgb, var(--tech-cinnabar) 30%, transparent);
+}
+
+.tw-tech-dialog-content {
+  clear: both;
+}
+
+.tw-tech-detail h2 {
+  margin: 0.2rem 0 0.55rem;
+  color: var(--tech-cinnabar);
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 1.65rem;
+  letter-spacing: 0.035em;
+}
+
+.tw-tech-detail-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+  margin-bottom: 0.8rem;
+}
+
+.tw-tech-detail-level {
+  color: var(--tech-copper);
+  font-size: 0.78rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.tw-tech-detail-description {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+
+.tw-tech-detail .tw-tech-prerequisite {
+  margin-top: 0.5rem;
+  font-size: 0.76rem;
+}
+
+.tw-tech-detail-effects {
+  gap: 0.45rem;
+  margin-top: 0.85rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--guild-rule);
+  border-radius: 5px;
+  background: rgba(255, 252, 240, 0.72);
+}
+
+.tw-tech-detail-effects > div {
+  grid-template-columns: 5.2rem minmax(0, 1fr);
+  padding-top: 0.42rem;
+}
+
+.tw-tech-detail-effects dt {
+  font-size: 0.74rem;
+}
+
+.tw-tech-detail-effects dd {
+  font-size: 0.82rem;
+}
+
+.tw-tech-detail-footer {
+  align-items: center;
+  margin-top: 0.9rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--guild-rule);
+}
+
+.tw-tech-detail-footer .tw-tech-node-cost > span {
+  font-size: 0.72rem;
+}
+
+.tw-tech-detail-footer .tw-tech-node-cost strong {
+  font-size: 0.84rem;
+}
+
+.tw-tech-dialog .tw-tech-ability {
+  margin-top: 0.85rem;
+  padding: 0.75rem;
+}
+
+.tw-cavalry-training-form {
+  margin-top: 0.65rem;
+}
+
+.tw-cavalry-training-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.tw-cavalry-training-controls input {
+  flex: 1 1 7rem;
+  min-width: 0;
+  width: 7rem;
+}
+
+.tw-cavalry-training-form p {
+  margin: 0.4rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.tw-guild-page .tw-tech-dialog .tw-tech-wrath-form.tw-warehouse-card {
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.5rem;
+}
+
+.tw-guild-page .tw-tech-dialog .tw-tech-wrath-form label {
+  flex: 0 0 100%;
+}
+
+.tw-guild-page .tw-tech-dialog .tw-tech-wrath-form .tw-target-manor-search-row {
+  flex: 1 1 15rem;
+}
+
+.tw-guild-page .tw-tech-dialog .tw-tech-wrath-form .tw-target-manor-results {
+  flex: 1 1 100%;
+}
+
+@media (max-width: 720px) {
+  .tw-tech-route-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tw-tech-route-tab {
+    padding: 0.55rem;
+  }
+
+  .tw-tech-route-header {
+    grid-template-columns: 2.8rem minmax(0, 1fr);
+    padding: 0.75rem;
+  }
+
+  .tw-tech-route-mark {
+    width: 2.6rem;
+    height: 2.6rem;
+    font-size: 1.25rem;
+  }
+
+  .tw-tech-route-mark img {
+    width: 2.3rem;
+    height: 2.3rem;
+  }
+
+  .tw-tech-route-meta {
+    padding-right: 0.75rem;
+    padding-left: 0.75rem;
+  }
+
+  .tw-tech-dialog {
+    width: calc(100vw - 1rem);
+    max-width: calc(100vw - 1rem);
+    max-height: 92vh;
+    padding: 1.1rem;
+  }
+
+  .tw-tech-detail-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .tw-tech-detail-footer .tw-tech-action-form,
+  .tw-tech-detail-footer .tw-tech-action-form button,
+  .tw-tech-detail-footer > .tw-tech-action {
+    width: 100%;
+  }
+
+  .tw-tech-detail-footer .tw-tech-action-form {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 390px) {
+  .tw-tech-route-tabs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tw-tech-route-tab {
+    min-height: 3.4rem;
+  }
+}
+
+.tw-guild-page .tw-tech-page > .tw-tech-route-section {
+  margin-top: 0;
+}
+
+.tw-tech-route-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.75rem;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.tw-tech-route-title-row h3 {
+  flex: 0 1 auto;
+  margin: 0.15rem 0 0.12rem;
+}
+
+.tw-tech-route-select-form {
+  display: flex;
+  flex: 0 0 auto;
+  margin: 0 0 0 auto;
+}
+
+.tw-tech-route-select-form .tw-btn-primary {
+  min-height: 2rem;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.74rem;
+  white-space: nowrap;
+}
+
+.tw-tech-route-reset-form {
+  display: inline-flex;
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.tw-tech-route-reset-button {
+  display: grid;
+  place-items: center;
+  align-self: center;
+  width: 1.2rem;
+  height: 1.2rem;
+  padding: 0.1rem;
+  border: 1px solid color-mix(in srgb, var(--text-highlight) 48%, var(--guild-rule));
+  border-radius: 50%;
+  color: var(--text-highlight);
+  background: rgba(255, 250, 232, 0.82);
+  cursor: pointer;
+}
+
+.tw-tech-route-reset-button:hover {
+  border-color: var(--text-highlight);
+  background: color-mix(in srgb, var(--text-highlight) 10%, var(--bg-panel));
+}
+
+.tw-tech-route-reset-button svg {
+  width: 0.65rem;
+  height: 0.65rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.tw-tech-route-reset-button:focus-visible {
+  outline: 2px solid var(--border-primary);
+  outline-offset: 2px;
+}
+
+.tw-tech-route-confirm {
+  width: min(34rem, calc(100vw - 2rem));
+}
+
+.tw-tech-route-confirm-body {
+  padding-top: 0.15rem;
+}
+
+.tw-tech-route-confirm-body h2 {
+  margin: 0.3rem 0 0.55rem;
+  color: var(--tech-cinnabar);
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 1.5rem;
+}
+
+.tw-tech-route-confirm-body p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+.tw-tech-route-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  justify-content: flex-end;
+  margin-top: 1.1rem;
+}
+
+.tw-tech-route-confirm-actions button {
+  min-width: 6.5rem;
+}
+
+@media (max-width: 480px) {
+  .tw-tech-route-title-row {
+    gap: 0.35rem;
+  }
+
+  .tw-tech-route-select-form {
+    margin-left: 0;
+  }
+
+  .tw-tech-route-confirm-actions {
+    justify-content: stretch;
+  }
+
+  .tw-tech-route-confirm-actions button {
+    flex: 1 1 7rem;
   }
 }

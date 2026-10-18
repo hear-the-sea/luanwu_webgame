@@ -1,375 +1,829 @@
+.gpvp-page {
+  --gpvp-red: #923f2e;
+  --gpvp-red-soft: #f8e7df;
+  --gpvp-gold: #96713e;
+  --gpvp-green: #58744b;
+  --gpvp-ink: var(--guild-ink-strong);
+  --gpvp-rule: var(--guild-rule);
+  --gpvp-rule-strong: var(--guild-rule-strong);
+  min-width: 0;
+  color: var(--gpvp-ink);
+}
+
+.gpvp-page [hidden] {
+  display: none !important;
+}
+
+.gpvp-page .gpvp-section-kicker {
+  display: inline-flex;
+  align-items: center;
+  color: var(--gpvp-red);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.gpvp-page .gpvp-count-pill i {
+  margin-left: 0.1rem;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 600;
+}
+
+.gpvp-page .gpvp-current-section {
+  margin-bottom: 1.25rem;
+  padding: 0.9rem;
+  border: 1px solid var(--gpvp-rule-strong);
+  border-top: 3px solid var(--gpvp-red);
+  border-radius: 6px;
+  background: linear-gradient(145deg, var(--bg-panel), #f6edda);
+  box-shadow: 0 5px 16px rgba(74, 38, 18, 0.07);
+}
+
+.gpvp-page .gpvp-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin-bottom: 0.65rem;
+}
+
+.gpvp-page .gpvp-section-heading h2 {
+  margin: 0.12rem 0 0;
+  color: var(--gpvp-ink);
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.gpvp-page .gpvp-live-pill {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.28rem 0.58rem;
+  border: 1px solid rgba(88, 116, 75, 0.28);
+  border-radius: 999px;
+  background: rgba(88, 116, 75, 0.08);
+  color: var(--gpvp-green);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.gpvp-page .gpvp-live-pill i {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 3px rgba(88, 116, 75, 0.12);
+}
+
+.gpvp-page .gpvp-run-list {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.gpvp-page .gpvp-run-card {
+  display: grid;
+  grid-template-columns: 2.65rem minmax(0, 1fr) auto auto;
+  gap: 0.75rem;
+  align-items: center;
+  min-width: 0;
+  padding: 0.62rem 0.75rem;
+  border: 1px solid var(--gpvp-rule);
+  border-left: 3px solid var(--gpvp-gold);
+  border-radius: 5px;
+  background: rgba(255, 252, 241, 0.82);
+}
+
+.gpvp-page .gpvp-run-card--incoming {
+  border-left-color: var(--gpvp-red);
+  background: linear-gradient(100deg, rgba(248, 231, 223, 0.7), rgba(255, 252, 241, 0.9));
+}
+
+.gpvp-page .gpvp-run-emblem {
+  display: grid;
+  width: 2.4rem;
+  height: 2.4rem;
+  place-items: center;
+  border: 1px solid var(--gpvp-rule-strong);
+  border-radius: 5px;
+  background: var(--gpvp-red-soft);
+  color: var(--gpvp-red);
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 1.15rem;
+  font-weight: 900;
+}
+
+.gpvp-page .gpvp-run-card--outgoing .gpvp-run-emblem {
+  border-color: rgba(150, 113, 62, 0.4);
+  background: #f5ead8;
+  color: var(--gpvp-gold);
+}
+
+.gpvp-page .gpvp-run-copy {
+  display: grid;
+  min-width: 0;
+  gap: 0.1rem;
+}
+
+.gpvp-page .gpvp-run-kicker,
+.gpvp-page .gpvp-run-eta small {
+  color: var(--text-muted);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.gpvp-page .gpvp-run-copy strong {
+  overflow: hidden;
+  color: var(--gpvp-ink);
+  font-size: 0.88rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gpvp-page .gpvp-run-copy p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+.gpvp-page .gpvp-run-eta {
+  display: grid;
+  min-width: 7.5rem;
+  gap: 0.1rem;
+  padding-left: 0.65rem;
+  border-left: 1px solid var(--gpvp-rule);
+  text-align: right;
+}
+
+.gpvp-page .gpvp-run-eta .countdown {
+  color: var(--gpvp-red);
+  font-size: 0.86rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.gpvp-page .gpvp-command {
+  min-width: 0;
+}
+
 .gpvp-page .gpvp-shell {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
+  padding: 0;
 }
 
 .gpvp-page .gpvp-inline-state {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border: 1px solid var(--gpvp-rule);
+  border-radius: 5px;
+  background: rgba(255, 252, 241, 0.82);
 }
 
-.gpvp-page .gpvp-inline-state h2 {
-  margin: 0;
+.gpvp-page .gpvp-inline-state h3 {
+  margin: 0 0 0.1rem;
+  color: var(--gpvp-ink);
+  font-size: 0.95rem;
+}
+
+.gpvp-page .gpvp-inline-state p {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.gpvp-page .gpvp-inline-state--locked {
+  border-left: 3px solid var(--gpvp-gold);
+}
+
+.gpvp-page .gpvp-inline-state--busy {
+  border-left: 3px solid var(--gpvp-red);
+}
+
+.gpvp-page .gpvp-state-mark {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 2.5rem;
+  place-items: center;
+  border: 1px solid var(--gpvp-rule-strong);
+  border-radius: 50%;
+  background: #f5ead8;
+  color: var(--gpvp-red);
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 1.2rem;
+  font-weight: 900;
 }
 
 .gpvp-page .gpvp-grid {
   display: grid;
-  grid-template-columns: minmax(17rem, 1.02fr) minmax(0, 1.34fr) minmax(15rem, 0.94fr);
-  gap: 0.75rem;
-  align-items: start;
+  grid-template-columns: minmax(18rem, 1.08fr) minmax(19rem, 1.1fr) minmax(16rem, 0.88fr);
+  gap: 0.7rem;
+  align-items: stretch;
 }
 
 .gpvp-page .gpvp-panel {
   display: flex;
+  min-width: 0;
+  min-height: 22rem;
   flex-direction: column;
-  gap: 0.6rem;
-  min-height: 0;
+  gap: 0.65rem;
+  padding: 0.8rem;
+  border: 1px solid var(--gpvp-rule);
+  border-top: 3px solid var(--panel-accent, var(--gpvp-gold));
+  border-radius: 5px;
+  background: linear-gradient(155deg, rgba(255, 253, 246, 0.97), rgba(246, 239, 220, 0.92));
+  box-shadow: 0 3px 8px rgba(74, 38, 18, 0.055);
 }
 
-.gpvp-page .gpvp-panel .caption {
-  font-size: 0.84rem;
-  line-height: 1.35;
+.gpvp-page .gpvp-panel--targets {
+  --panel-accent: var(--gpvp-red);
 }
 
-.gpvp-page [data-guild-capacity-status].is-over-limit {
-  color: var(--accent-red);
-  font-weight: 600;
+.gpvp-page .gpvp-panel--guests {
+  --panel-accent: var(--gpvp-gold);
+}
+
+.gpvp-page .gpvp-panel--troops {
+  --panel-accent: #5f6852;
 }
 
 .gpvp-page .gpvp-panel-head {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 0.75rem;
+  gap: 0.6rem;
+  min-height: 3.45rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid var(--gpvp-rule);
+}
+
+.gpvp-page .gpvp-panel-head > div {
+  min-width: 0;
 }
 
 .gpvp-page .gpvp-panel-head h2 {
-  margin: 0 0 0.1rem;
-  font-size: 1.08rem;
+  margin: 0 0 0.08rem;
+  color: var(--gpvp-ink);
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 1.06rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.gpvp-page .gpvp-panel .caption {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  line-height: 1.4;
+}
+
+.gpvp-page [data-guild-capacity-status].is-over-limit {
+  color: var(--gpvp-red);
+  font-weight: 800;
 }
 
 .gpvp-page .gpvp-count-pill {
-  padding: 0.3rem 0.62rem;
-  border: 1px solid var(--border-light);
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: baseline;
+  gap: 0.15rem;
+  padding: 0.28rem 0.5rem;
+  border: 1px solid var(--gpvp-rule);
   border-radius: 999px;
-  background: var(--bg-hover);
+  background: rgba(238, 228, 206, 0.55);
   color: var(--text-secondary);
+  font-size: 0.68rem;
   white-space: nowrap;
+}
+
+.gpvp-page .gpvp-count-pill strong {
+  color: var(--gpvp-red);
   font-size: 0.86rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .gpvp-page .gpvp-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.42rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(7.5rem, 0.62fr);
+  gap: 0.4rem;
   align-items: center;
 }
 
-.gpvp-page .gpvp-search-input {
-  flex: 1 1 12rem;
-  min-width: 10rem;
-  font-size: 0.9rem;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
+.gpvp-page .gpvp-search-input,
+.gpvp-page .gpvp-region-select {
+  min-width: 0;
+  min-height: 2.35rem;
+  padding: 0.42rem 0.6rem;
+  border-color: var(--gpvp-rule-strong);
+  border-radius: 4px;
+  background: rgba(255, 253, 246, 0.9);
+  color: var(--gpvp-ink);
+  font-size: 0.76rem;
 }
 
-.gpvp-page .gpvp-region-select {
-  flex: 0 0 8.75rem;
-  min-width: 8.75rem;
-  font-size: 0.9rem;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
+.gpvp-page .gpvp-search-input:focus,
+.gpvp-page .gpvp-region-select:focus,
+.gpvp-page .gpvp-troop-input:focus {
+  border-color: var(--gpvp-gold);
+  outline: 2px solid rgba(150, 113, 62, 0.2);
+  outline-offset: 1px;
 }
 
 .gpvp-page .gpvp-chip-row {
   display: flex;
-  gap: 0.35rem;
+  grid-column: 1 / -1;
+  gap: 0.28rem;
   flex-wrap: wrap;
 }
 
 .gpvp-page .gpvp-chip {
-  padding: 0.36rem 0.72rem;
-  border: 1px solid var(--border-light);
+  display: inline-flex;
+  min-height: 1.8rem;
+  align-items: center;
+  gap: 0.24rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--gpvp-rule);
   border-radius: 999px;
-  background: var(--bg-panel);
+  background: rgba(255, 253, 246, 0.72);
   color: var(--text-secondary);
   cursor: pointer;
-  font-size: 0.84rem;
+  font-size: 0.67rem;
+  font-weight: 700;
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease;
+}
+
+.gpvp-page .gpvp-chip:hover,
+.gpvp-page .gpvp-chip:focus-visible {
+  border-color: var(--gpvp-gold);
+  outline: none;
 }
 
 .gpvp-page .gpvp-chip.is-active {
-  border-color: var(--accent-gold);
-  background: #fdf6e3;
-  color: var(--text-primary);
-  box-shadow: 0 0 0 1px var(--accent-gold);
+  border-color: var(--gpvp-red);
+  background: var(--gpvp-red-soft);
+  color: var(--gpvp-red);
+  box-shadow: inset 0 0 0 1px rgba(146, 63, 46, 0.1);
 }
 
 .gpvp-page .gpvp-target-list {
   display: flex;
+  min-height: 10rem;
+  max-height: 25rem;
   flex-direction: column;
   gap: 0.38rem;
-  max-height: 16.25rem;
   overflow: auto;
-  padding-right: 0.15rem;
+  padding: 0.05rem 0.2rem 0.05rem 0.02rem;
+  scrollbar-color: rgba(139, 69, 19, 0.32) transparent;
+  scrollbar-width: thin;
 }
 
 .gpvp-page .gpvp-target-row {
-  display: block;
-  width: 100%;
-  padding: 0.6rem 0.75rem;
-  border: 1px solid var(--border-light);
-  border-radius: 0.375rem;
-  background: linear-gradient(180deg, var(--bg-panel), var(--bg-hover));
-  color: var(--text-primary);
-  text-align: left;
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.35rem minmax(0, 1fr);
+  gap: 0.55rem;
+  align-items: center;
+  min-width: 0;
+  padding: 0.52rem 0.58rem;
+  border: 1px solid var(--gpvp-rule);
+  border-radius: 4px;
+  background: linear-gradient(110deg, rgba(255, 253, 246, 0.94), rgba(244, 235, 215, 0.72));
+  color: var(--gpvp-ink);
   cursor: pointer;
-  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 140ms ease, background-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
 }
 
 .gpvp-page .gpvp-target-radio {
   position: absolute;
-  opacity: 0;
-  pointer-events: none;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
 }
 
 .gpvp-page .gpvp-target-row:hover {
-  border-color: var(--border-primary);
   transform: translateY(-1px);
+  border-color: var(--gpvp-rule-strong);
 }
 
-.gpvp-page .gpvp-target-row.is-active {
-  border-color: var(--accent-gold);
-  box-shadow: 0 0 0 1px var(--accent-gold);
+.gpvp-page .gpvp-target-row:focus-within {
+  outline: 2px solid rgba(150, 113, 62, 0.48);
+  outline-offset: 2px;
 }
 
 .gpvp-page .gpvp-target-row.is-selected-target {
-  background: linear-gradient(180deg, #fffaf0, #f8ecd0);
+  border-color: var(--gpvp-red);
+  background: linear-gradient(110deg, #fff9e9, #f2dfc1);
+  box-shadow: inset 3px 0 var(--gpvp-red), 0 2px 7px rgba(100, 55, 32, 0.1);
 }
 
 .gpvp-page .gpvp-target-row.is-blocked {
-  opacity: 0.82;
+  background: rgba(232, 225, 208, 0.62);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.gpvp-page .gpvp-target-seal {
+  display: grid;
+  width: 2.15rem;
+  height: 2.15rem;
+  place-items: center;
+  border: 1px solid rgba(146, 63, 46, 0.28);
+  border-radius: 50%;
+  background: rgba(146, 63, 46, 0.08);
+  color: var(--gpvp-red);
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.gpvp-page .gpvp-target-row.is-blocked .gpvp-target-seal {
+  border-color: var(--gpvp-rule);
+  background: rgba(117, 107, 88, 0.08);
+  color: var(--text-muted);
+}
+
+.gpvp-page .gpvp-target-content {
+  display: grid;
+  min-width: 0;
+  gap: 0.16rem;
 }
 
 .gpvp-page .gpvp-target-row-main,
 .gpvp-page .gpvp-target-row-meta {
   display: flex;
-  justify-content: space-between;
-  gap: 0.55rem;
+  min-width: 0;
   align-items: center;
+  justify-content: space-between;
+  gap: 0.42rem;
 }
 
 .gpvp-page .gpvp-target-row-main strong {
-  min-width: 0;
   overflow: hidden;
+  color: var(--gpvp-ink);
+  font-size: 0.79rem;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 1rem;
-}
-
-.gpvp-page .gpvp-target-row-meta {
-  margin-top: 0.14rem;
-  color: var(--text-muted);
-  font-size: 0.82rem;
-}
-
-.gpvp-page .gpvp-target-row-note {
-  margin-top: 0.16rem;
-  font-size: 0.78rem;
-  line-height: 1.25;
-  color: var(--text-muted);
-}
-
-.gpvp-page .gpvp-target-row-note.is-attackable {
-  color: var(--accent-green);
-}
-
-.gpvp-page .gpvp-target-row-note.is-blocked {
-  color: var(--accent-red);
 }
 
 .gpvp-page .gpvp-target-badge,
 .gpvp-page .gpvp-status-pill {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  padding: 0.16rem 0.48rem;
+  padding: 0.1rem 0.35rem;
+  border: 1px solid var(--gpvp-rule);
   border-radius: 999px;
-  font-size: 0.76rem;
+  background: rgba(255, 252, 241, 0.7);
+  color: var(--text-muted);
+  font-size: 0.6rem;
+  line-height: 1.35;
   white-space: nowrap;
 }
 
-.gpvp-page .gpvp-target-badge {
-  background: rgba(139, 69, 19, 0.08);
-  color: var(--text-secondary);
-}
-
-.gpvp-page .gpvp-status-pill {
-  border: 1px solid var(--border-light);
-  background: var(--bg-panel);
-}
-
 .gpvp-page .gpvp-status-pill.is-attackable {
-  color: var(--accent-green);
-  border-color: rgba(5, 150, 105, 0.35);
-  background: rgba(5, 150, 105, 0.08);
+  border-color: rgba(88, 116, 75, 0.3);
+  background: rgba(88, 116, 75, 0.08);
+  color: var(--gpvp-green);
 }
 
 .gpvp-page .gpvp-status-pill.is-blocked {
-  color: var(--accent-red);
-  border-color: rgba(220, 20, 60, 0.25);
-  background: rgba(220, 20, 60, 0.06);
+  border-color: rgba(146, 63, 46, 0.22);
+  background: rgba(146, 63, 46, 0.07);
+  color: var(--gpvp-red);
+}
+
+.gpvp-page .gpvp-target-row-meta > span:first-child {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 0.62rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gpvp-page .gpvp-target-row-note {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 0.63rem;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gpvp-page .gpvp-target-row-note.is-attackable {
+  color: var(--gpvp-green);
+}
+
+.gpvp-page .gpvp-target-row-note.is-blocked {
+  color: var(--gpvp-red);
 }
 
 .gpvp-page .gpvp-guest-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(10.6rem, 10.6rem));
-  gap: 0.6rem;
+  gap: 0.45rem;
   justify-content: flex-start;
 }
 
 .gpvp-page .gpvp-scroll-panel {
-  max-height: 16.25rem;
+  max-height: 25rem;
   overflow: auto;
   align-content: start;
-  padding-right: 0.15rem;
+  padding: 0.08rem 0.2rem 0.08rem 0.02rem;
+  scrollbar-color: rgba(139, 69, 19, 0.32) transparent;
+  scrollbar-width: thin;
+}
+
+.gpvp-page .gpvp-guest-option {
+  position: relative;
+  display: block;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.gpvp-page .gpvp-guest-option > input {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
 }
 
 .gpvp-page .gpvp-guest-option .tw-guest-card {
-  min-height: 4.35rem;
-  gap: 0.6rem;
-  padding: 0.52rem 0.6rem;
+  display: flex;
+  min-height: 4.1rem;
   align-items: center;
-  border-width: 1px;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.45rem 0.5rem;
+  border: 1px solid var(--gpvp-rule);
+  border-radius: 5px;
+  background: linear-gradient(145deg, rgba(255, 253, 246, 0.96), rgba(240, 231, 211, 0.8));
+  transition: border-color 140ms ease, background-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+}
+
+.gpvp-page .gpvp-guest-option:hover .tw-guest-card {
+  transform: translateY(-1px);
+  border-color: var(--gpvp-rule-strong);
+}
+
+.gpvp-page .gpvp-guest-option > input:focus-visible + .gpvp-guest-select-mark + .tw-guest-card {
+  outline: 2px solid var(--gpvp-gold);
+  outline-offset: 2px;
+}
+
+.gpvp-page .gpvp-guest-option > input:checked ~ .tw-guest-card {
+  border-color: var(--gpvp-gold);
+  background: linear-gradient(145deg, #fff9e9, #edddb9);
+  box-shadow: inset 0 0 0 1px rgba(150, 113, 62, 0.28), 0 2px 8px rgba(100, 70, 33, 0.1);
 }
 
 .gpvp-page .gpvp-guest-option .tw-guest-avatar {
+  display: grid;
   width: 2.7rem;
   height: 2.7rem;
-  border-radius: 0.375rem;
+  flex: 0 0 2.7rem;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--gpvp-rule-strong);
+  border-radius: 4px;
+  background: #e8deca;
 }
 
-.gpvp-page .gpvp-guest-option .tw-guest-name-sm,
-.gpvp-page .gpvp-guest-option .tw-guest-level-sm,
-.gpvp-page .gpvp-guest-option .tw-guest-stats-sm {
-  font-size: 0.75rem;
-  line-height: 1.2;
-}
-
-.gpvp-page .gpvp-guest-option .tw-guest-info-row {
-  gap: 0.3rem;
-  align-items: center;
-  justify-content: space-between;
+.gpvp-page .gpvp-guest-option .tw-guest-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .gpvp-page .gpvp-guest-option .tw-guest-details {
+  display: grid;
+  min-width: 0;
+  gap: 0.16rem;
+}
+
+.gpvp-page .gpvp-guest-option .tw-guest-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
   min-width: 0;
 }
 
 .gpvp-page .gpvp-guest-option .tw-guest-name-sm {
+  display: block;
   flex: 1 1 auto;
   min-width: 0;
+  overflow: hidden;
+  font-size: 0.73rem;
+  font-weight: 800;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .gpvp-page .gpvp-guest-option .tw-guest-level-sm {
-  padding: 0.12rem 0.3rem;
+  flex: 0 0 auto;
+  padding: 0.1rem 0.26rem;
+  border-radius: 3px;
+  background: rgba(126, 96, 52, 0.1);
+  color: var(--text-muted);
+  font-size: 0.58rem;
+  font-weight: 700;
+  line-height: 1.25;
 }
 
-.gpvp-page .gpvp-guest-option .tw-guest-level-sm,
 .gpvp-page .gpvp-guest-option .tw-guest-stats-sm {
+  display: block;
   color: var(--text-muted);
+  font-size: 0.63rem;
+  line-height: 1.3;
+}
+
+.gpvp-page .gpvp-guest-select-mark {
+  position: absolute;
+  z-index: 3;
+  top: -0.22rem;
+  right: -0.22rem;
+  display: grid;
+  width: 1.15rem;
+  height: 1.15rem;
+  place-items: center;
+  transform: scale(0.6);
+  border: 1px solid #fff8e8;
+  border-radius: 50%;
+  background: var(--gpvp-green);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 900;
+  opacity: 0;
+  transition: transform 130ms ease, opacity 130ms ease;
+  pointer-events: none;
+}
+
+.gpvp-page .gpvp-guest-option > input:checked ~ .gpvp-guest-select-mark {
+  transform: scale(1);
+  opacity: 1;
 }
 
 .gpvp-page .gpvp-troop-list {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.34rem;
 }
 
 .gpvp-page .gpvp-troop-row {
   display: flex;
-  justify-content: space-between;
+  min-width: 0;
   align-items: center;
-  gap: 0.7rem;
-  padding: 0.56rem 0.62rem;
-  border: 1px solid var(--border-light);
-  border-radius: 0.375rem;
-  background: linear-gradient(180deg, var(--bg-panel), var(--bg-hover));
+  justify-content: space-between;
+  gap: 0.48rem;
+  padding: 0.42rem;
+  border: 1px solid var(--gpvp-rule);
+  border-radius: 4px;
+  background: linear-gradient(110deg, rgba(255, 253, 246, 0.92), rgba(239, 231, 213, 0.72));
 }
 
 .gpvp-page .gpvp-troop-main {
   display: flex;
-  align-items: center;
-  gap: 0.6rem;
   min-width: 0;
+  align-items: center;
+  gap: 0.45rem;
 }
 
 .gpvp-page .gpvp-troop-avatar {
-  width: 2.5rem;
-  height: 2.5rem;
+  display: grid;
+  width: 2.45rem;
+  height: 2.45rem;
+  flex: 0 0 2.45rem;
+  place-items: center;
   overflow: hidden;
-  border-radius: 0.375rem;
-  background: var(--bg-secondary);
-  flex-shrink: 0;
+  border: 1px solid var(--gpvp-rule-strong);
+  border-radius: 4px;
+  background: #e8deca;
+  color: var(--gpvp-ink);
+  font-size: 0.8rem;
 }
 
 .gpvp-page .gpvp-troop-avatar img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
 .gpvp-page .gpvp-troop-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 0.14rem;
-  font-size: 0.84rem;
-  line-height: 1.15;
+  display: grid;
+  min-width: 0;
+  gap: 0.12rem;
+  line-height: 1.2;
+}
+
+.gpvp-page .gpvp-troop-copy strong {
+  overflow: hidden;
+  color: var(--gpvp-ink);
+  font-size: 0.76rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gpvp-page .gpvp-troop-copy span {
+  color: var(--text-muted);
+  font-size: 0.62rem;
 }
 
 .gpvp-page .gpvp-troop-controls {
   display: flex;
-  gap: 0.18rem;
+  flex: 0 0 auto;
   align-items: center;
-  flex-wrap: wrap;
   justify-content: flex-end;
+  gap: 0.18rem;
 }
 
 .gpvp-page .gpvp-troop-controls .tw-btn-sm {
-  padding: 0.2rem 0.48rem;
-  min-width: 0;
-  font-size: 0.78rem;
+  display: inline-grid;
+  min-width: 1.85rem;
+  min-height: 1.85rem;
+  place-items: center;
+  padding: 0.16rem 0.32rem;
+  border-color: var(--gpvp-rule-strong);
+  border-radius: 4px;
+  background: #f6edda;
+  color: var(--gpvp-ink);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.gpvp-page .gpvp-troop-controls .tw-btn-sm:hover,
+.gpvp-page .gpvp-troop-controls .tw-btn-sm:focus-visible {
+  border-color: var(--gpvp-gold);
+  background: #efe0bf;
 }
 
 .gpvp-page .gpvp-troop-input {
-  width: 3.2rem;
+  width: 3rem;
+  min-height: 1.9rem;
+  padding: 0.2rem 0.22rem;
+  border-color: var(--gpvp-rule-strong);
+  border-radius: 3px;
+  background: #fffdf6;
+  color: var(--gpvp-ink);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
   text-align: center;
-  padding: 0.26rem 0.34rem;
-  font-size: 0.82rem;
+}
+
+.gpvp-page .gpvp-troop-controls .gpvp-fill-button {
+  min-width: 2.4rem;
+  color: var(--gpvp-red);
+  font-size: 0.66rem;
 }
 
 .gpvp-page .gpvp-submit-actions {
-  display: flex;
+  position: sticky;
+  z-index: 5;
+  bottom: 0.55rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding-top: 0.1rem;
+  margin-top: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--gpvp-rule-strong);
+  border-top: 3px solid var(--gpvp-red);
+  border-radius: 5px;
+  background: rgba(255, 251, 238, 0.96);
+  box-shadow: 0 5px 18px rgba(50, 36, 20, 0.16);
+  backdrop-filter: blur(8px);
 }
 
 .gpvp-page .gpvp-launch-summary {
   display: flex;
-  align-items: stretch;
-  gap: 0;
   min-width: 0;
+  align-items: stretch;
 }
 
 .gpvp-page .gpvp-launch-summary > span {
   display: grid;
-  gap: 0.15rem;
-  min-width: 7rem;
-  padding: 0.2rem 1rem;
-  border-right: 1px solid var(--border-light);
+  min-width: 6.5rem;
+  gap: 0.08rem;
+  padding: 0.05rem 0.75rem;
+  border-right: 1px solid var(--gpvp-rule);
 }
 
 .gpvp-page .gpvp-launch-summary > span:first-child {
@@ -382,31 +836,74 @@
 
 .gpvp-page .gpvp-launch-summary small {
   color: var(--text-muted);
-  font-size: 0.75rem;
+  font-size: 0.62rem;
+  font-weight: 700;
 }
 
 .gpvp-page .gpvp-launch-summary strong {
-  font-size: 0.9rem;
+  overflow: hidden;
+  color: var(--gpvp-ink);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .gpvp-page .gpvp-submit-actions .tw-btn-primary {
-  min-width: 12rem;
-  font-size: 0.95rem;
-  padding: 0.72rem 1.2rem;
+  min-width: 12.5rem;
+  min-height: 2.65rem;
+  padding: 0.58rem 1rem;
+  border: 1px solid #713020;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #a64f38, #873b2d);
+  box-shadow: 0 2px 0 #693023, 0 3px 8px rgba(96, 42, 31, 0.18);
+  color: #fff8e9;
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 0.98rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.gpvp-page .gpvp-submit-actions .tw-btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: linear-gradient(180deg, #b35a40, #923f2e);
+}
+
+.gpvp-page .gpvp-submit-actions .tw-btn-primary:focus-visible {
+  outline: 3px solid rgba(146, 63, 46, 0.3);
+  outline-offset: 3px;
+}
+
+.gpvp-page .gpvp-submit-actions .tw-btn-primary:disabled {
+  border-color: #8d8676;
+  background: linear-gradient(180deg, #aaa18d, #817a69);
+  box-shadow: none;
+  color: rgba(255, 252, 241, 0.8);
+  cursor: not-allowed;
 }
 
 .gpvp-page .gpvp-empty-state {
-  padding: 0.85rem;
-  border: 1px dashed var(--border-light);
-  border-radius: 0.375rem;
+  display: grid;
+  min-height: 6rem;
+  align-content: center;
+  justify-items: center;
+  gap: 0.32rem;
+  padding: 0.75rem;
+  border: 1px dashed var(--gpvp-rule-strong);
+  border-radius: 4px;
+  background: rgba(244, 235, 215, 0.52);
+  color: var(--text-muted);
+  font-size: 0.8rem;
   text-align: center;
-  background: rgba(255, 248, 231, 0.6);
 }
 
-@media (max-width: 1280px) {
+.gpvp-page .gpvp-empty-state p {
+  font-size: 0.73rem;
+}
+
+@media (max-width: 1180px) {
   .gpvp-page .gpvp-grid {
-    grid-template-columns: minmax(0, 1.28fr) minmax(17rem, 0.92fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .gpvp-page .gpvp-panel--targets {
@@ -414,61 +911,176 @@
   }
 }
 
-@media (max-width: 960px) {
+@media (max-width: 760px) {
   .gpvp-page .gpvp-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .gpvp-page .gpvp-panel--targets {
     grid-column: auto;
   }
+
+  .gpvp-page .gpvp-panel {
+    min-height: 0;
+  }
+
+  .gpvp-page .gpvp-target-list,
+  .gpvp-page .gpvp-scroll-panel {
+    max-height: 21rem;
+  }
 }
 
-@media (max-width: 720px) {
-  .gpvp-page .gpvp-panel-head,
-  .gpvp-page .gpvp-toolbar,
-  .gpvp-page .gpvp-troop-row {
-    flex-direction: column;
-    align-items: stretch;
+@media (max-width: 560px) {
+  .gpvp-page .gpvp-current-section {
+    padding: 0.68rem;
   }
 
-  .gpvp-page .gpvp-region-select {
+  .gpvp-page .gpvp-run-card {
+    grid-template-columns: 2.1rem minmax(0, 1fr) auto;
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+
+  .gpvp-page .gpvp-run-emblem {
+    width: 1.9rem;
+    height: 1.9rem;
+    font-size: 0.9rem;
+  }
+
+  .gpvp-page .gpvp-run-copy strong {
+    font-size: 0.76rem;
+  }
+
+  .gpvp-page .gpvp-run-copy p {
+    font-size: 0.66rem;
+  }
+
+  .gpvp-page .gpvp-run-eta {
     min-width: 0;
-    flex-basis: auto;
+    padding-left: 0.4rem;
   }
 
-  .gpvp-page .gpvp-search-input {
-    flex: 0 0 auto;
+  .gpvp-page .gpvp-run-eta .countdown {
+    font-size: 0.7rem;
+  }
+
+  .gpvp-page .gpvp-run-action {
+    grid-column: 2 / -1;
+    justify-self: start;
+  }
+
+  .gpvp-page .gpvp-shell {
+    padding: 0;
+  }
+
+  .gpvp-page .gpvp-panel {
+    padding: 0.65rem;
+  }
+
+  .gpvp-page .gpvp-panel-head {
+    align-items: flex-start;
+  }
+
+  .gpvp-page .gpvp-toolbar {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 7.5rem);
+  }
+
+  .gpvp-page .gpvp-chip-row {
+    gap: 0.24rem;
+  }
+
+  .gpvp-page .gpvp-chip {
+    padding-right: 0.4rem;
+    padding-left: 0.4rem;
+    font-size: 0.62rem;
+  }
+
+  .gpvp-page .gpvp-target-row {
+    grid-template-columns: 1.9rem minmax(0, 1fr);
+    gap: 0.4rem;
+    padding: 0.45rem;
+  }
+
+  .gpvp-page .gpvp-target-seal {
+    width: 1.75rem;
+    height: 1.75rem;
+    font-size: 0.84rem;
+  }
+
+  .gpvp-page .gpvp-target-row-meta > span:first-child {
+    font-size: 0.57rem;
+  }
+
+  .gpvp-page .gpvp-target-row-note {
+    max-width: 17rem;
+    font-size: 0.58rem;
+  }
+
+  .gpvp-page .gpvp-guest-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(10.6rem, 100%), 1fr));
+  }
+
+  .gpvp-page .gpvp-troop-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .gpvp-page .gpvp-troop-main {
     width: 100%;
-    min-height: 2.5rem;
   }
 
   .gpvp-page .gpvp-troop-controls {
+    width: 100%;
     justify-content: flex-start;
-    flex-wrap: wrap;
+  }
+
+  .gpvp-page .gpvp-troop-controls .tw-btn-sm {
+    min-width: 2.15rem;
+    min-height: 2.1rem;
+  }
+
+  .gpvp-page .gpvp-troop-input {
+    width: 3.6rem;
+    min-height: 2.1rem;
   }
 
   .gpvp-page .gpvp-submit-actions {
-    align-items: stretch;
-    flex-direction: column;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.45rem;
+    bottom: 0.25rem;
+    padding: 0.55rem;
   }
 
   .gpvp-page .gpvp-launch-summary {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    justify-content: space-between;
   }
 
   .gpvp-page .gpvp-launch-summary > span {
     min-width: 0;
-    padding: 0.2rem 0.6rem;
+    flex: 1 1 0;
+    padding: 0.03rem 0.42rem;
+  }
+
+  .gpvp-page .gpvp-launch-summary small {
+    font-size: 0.57rem;
+  }
+
+  .gpvp-page .gpvp-launch-summary strong {
+    font-size: 0.68rem;
   }
 
   .gpvp-page .gpvp-submit-actions .tw-btn-primary {
     width: 100%;
+    min-height: 2.55rem;
   }
+}
 
-  .gpvp-page .gpvp-scroll-panel,
-  .gpvp-page .gpvp-target-list {
-    max-height: 32rem;
+@media (prefers-reduced-motion: reduce) {
+  .gpvp-page *,
+  .gpvp-page *::before,
+  .gpvp-page *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
   }
 }

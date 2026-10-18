@@ -1,199 +1,219 @@
 {% extends "guilds/base.html" %}
-{% load static guild_extras %}
+{% load static %}
 
-{% block title %}科技研究 - {{ guild.name }}{% endblock %}
+{% block title %}帮会科技 - {{ guild.name }}{% endblock %}
 
 {% block guild_content %}
-<section class="dashboard">
-    <div class="tw-section-header">
-        <div>
-            <h1>科技研究</h1>
-        </div>
-    </div>
-
-    <nav class="tw-category-tabs mb-6" aria-label="科技分类">
-        {% for tab in tech_category_tabs %}
-        <a href="{% url 'guilds:technology' %}?category={{ tab.key }}"
-           class="tw-tab-item {% if tab.active %}active{% endif %}">
-            {{ tab.label }}
-        </a>
-        {% endfor %}
-    </nav>
-
-    <!-- 生产类科技 -->
-    {% if current_tech_category == 'production' %}
-    <section class="tw-guild-section tw-guild-tech-board">
-        <p class="tw-muted">每日自动生产道具，存入帮会仓库供成员兑换</p>
-        <div class="tw-building-grid">
-            {% for tech in filtered_technologies %}
-                <article class="tw-building-card">
-                    <header>
-                        <div>
-                            <h3>{{ tech_names|get_item:tech.tech_key|default:"未知科技" }}</h3>
-                            <p class="tw-muted">{{ tech_display_meta|get_item:tech.tech_key|get_item:'description' }}</p>
-                        </div>
-                        <span class="tw-badge-gold">等级 {{ tech.level }}</span>
-                    </header>
-                    <dl class="tw-guild-dl">
-                        <div>
-                            <dt>当前等级</dt>
-                            <dd>{{ tech.level }} / {{ tech.effective_max_level }}</dd>
-                        </div>
-                        <div>
-                            <dt>每日产出</dt>
-                            {% with tech_meta=tech_display_meta|get_item:tech.tech_key %}
-                            <dd>{{ tech_meta.daily_output|default:"暂无产出" }}</dd>
-                            {% endwith %}
-                        </div>
-                        {% if tech.last_production_at %}
-                        <div>
-                            <dt>最后产出</dt>
-                            <dd>{{ tech.last_production_at|date:"m-d H:i" }}</dd>
-                        </div>
-                        {% endif %}
-                        {% if tech.can_upgrade %}
-                        <div>
-                            <dt>升级成本</dt>
-                            <dd class="tw-muted">{{ tech_display_meta|get_item:tech.tech_key|get_item:'upgrade_cost' }}</dd>
-                        </div>
-                        {% endif %}
-                    </dl>
-                    <div class="tw-card-actions tw-guild-tech-actions">
-                        {% if member.can_manage %}
-                            <form method="post" action="{% url 'guilds:upgrade_tech' tech.tech_key %}?category={{ current_tech_category }}">
-                                {% csrf_token %}
-                                <button type="submit" class="tw-btn-primary tw-guild-tech-action-button" {% if not tech.can_upgrade %}disabled{% endif %}>
-                                    {% if not tech.can_upgrade %}已满级{% else %}升级{% endif %}
-                                </button>
-                            </form>
-                        {% else %}
-                            <button type="button" class="tw-btn-secondary tw-guild-tech-action-button" disabled>需管理权限</button>
-                        {% endif %}
-                    </div>
-                </article>
+<section class="dashboard tw-tech-page">
+    <h1 class="sr-only">帮会科技</h1>
+    <section class="tw-tech-section tw-tech-route-section" aria-label="帮会科技">
+        <div class="tw-tech-route-tabs" role="tablist" aria-label="科技系别">
+            <button type="button"
+                    class="tw-tech-route-tab tw-tech-route-tab--public"
+                    id="tw-tech-tab-public"
+                    role="tab"
+                    aria-controls="tw-tech-panel-public"
+                    aria-selected="{% if technology_routes %}false{% else %}true{% endif %}"
+                    data-route-tab="public">
+                <span class="tw-tech-route-tab-mark" aria-hidden="true"><img src="{% static 'images/guild_technology/route_public.png' %}" alt="" width="256" height="256"></span>
+                <span class="tw-tech-route-tab-copy">
+                    <strong>公共科技</strong>
+                    <small>独立升级</small>
+                </span>
+            </button>
+            {% for route in technology_routes %}
+            <button type="button"
+                    class="tw-tech-route-tab tw-tech-route-tab--{{ route.key }}{% if route.active %} is-active{% endif %}{% if route.completed %} is-completed{% endif %}"
+                    id="tw-tech-tab-{{ route.key }}"
+                    role="tab"
+                    aria-controls="tw-tech-panel-{{ route.key }}"
+                    aria-selected="{% if route.is_default %}true{% else %}false{% endif %}"
+                    data-route-tab="{{ route.key }}">
+                <span class="tw-tech-route-tab-mark" aria-hidden="true"><img src="{% static route.icon_asset %}" alt="" width="48" height="48"></span>
+                <span class="tw-tech-route-tab-copy">
+                    <strong>{{ route.title }}</strong>
+                    <small>{% if route.active %}正在研究{% elif route.completed %}已完成{% elif route.selectable %}待开启{% else %}尚未开放{% endif %}</small>
+                </span>
+                <span class="tw-tech-route-tab-state" aria-hidden="true">{% if route.completed %}✓{% elif route.active %}●{% else %}{{ forloop.counter|stringformat:"02d" }}{% endif %}</span>
+            </button>
             {% endfor %}
         </div>
-    </section>
-    {% endif %}
 
-    <!-- 战斗类科技 -->
-    {% if current_tech_category == 'combat' %}
-    <section class="tw-guild-section tw-guild-tech-board">
-        <p class="tw-muted">提升全体成员门客的战斗属性</p>
-        <div class="tw-building-grid">
-            {% for tech in filtered_technologies %}
-                <article class="tw-building-card">
-                    <header>
-                        <div>
-                            <h3>{{ tech_names|get_item:tech.tech_key|default:"未知科技" }}</h3>
-                            <p class="tw-muted">{{ tech_display_meta|get_item:tech.tech_key|get_item:'description' }}</p>
+        <div class="tw-tech-route-grid">
+            <article class="tw-tech-route tw-tech-route--public"
+                     id="tw-tech-panel-public"
+                     role="tabpanel"
+                     aria-labelledby="tw-tech-tab-public"
+                     data-route-panel="public"
+                     {% if technology_routes %}hidden{% endif %}>
+                <header class="tw-tech-route-header">
+                    <div class="tw-tech-route-mark" aria-hidden="true"><img src="{% static 'images/guild_technology/route_public.png' %}" alt="" width="256" height="256"></div>
+                    <div class="tw-tech-route-copy">
+                        <div class="tw-tech-route-overline"><span>全系共通 · 独立升级</span></div>
+                        <h3>公共科技</h3>
+                        <p>公共科技不占用专精路线，可与路线研究并行推进。点击图标查看详情。</p>
+                    </div>
+                </header>
+
+                {% if public_technologies %}
+                <div class="tw-tech-tree-scroll tw-tech-public-tree-scroll" tabindex="0" aria-label="公共科技树，可横向滚动查看">
+                    <div class="tw-tech-tree tw-tech-public-tree" data-tech-tree data-route-key="public" aria-label="公共科技树">
+                        <svg class="tw-tech-edges" aria-hidden="true" focusable="false"></svg>
+                        {% for node in public_technologies %}
+                        <button type="button"
+                                class="tw-tech-node tw-tech-public-node{% if node.level >= node.max_level %} is-maxed{% elif node.available %} is-available{% endif %}"
+                                data-tech-node
+                                data-node-key="{{ node.key }}"
+                                data-requires=""
+                                data-level="{{ node.level }}"
+                                aria-haspopup="dialog"
+                                aria-controls="tw-tech-dialog"
+                                aria-label="{{ node.name }}，等级 {{ node.level }} / {{ node.max_level }}，点击查看详情">
+                            <span class="tw-tech-node-icon-wrap">
+                                <span class="tw-tech-node-icon tw-tech-node-icon--{{ node.icon_index }}" style="background-image: url('{% static 'images/guild_technology/talent_icon_atlas.png' %}')" aria-hidden="true"></span>
+                                <span class="tw-tech-node-level">{{ node.level }}<i>/</i>{{ node.max_level }}</span>
+                            </span>
+                            <span class="tw-tech-node-label">{{ node.name }}</span>
+                            {% if not node.enabled %}<span class="tw-tech-node-caption">暂未开放</span>
+                            {% elif node.level >= node.max_level %}<span class="tw-tech-node-caption is-complete">满级</span>
+                            {% elif node.available and member.can_manage %}<span class="tw-tech-node-caption is-ready">可研究</span>
+                            {% elif node.available %}<span class="tw-tech-node-caption">需管理</span>
+                            {% else %}<span class="tw-tech-node-caption">等待中</span>{% endif %}
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="tw-guild-empty-state"><strong>暂无可研究的公共科技</strong><p>请稍后再来查看。</p></div>
+                {% endif %}
+            </article>
+
+            {% for route in technology_routes %}
+            <article class="tw-tech-route tw-tech-route--{{ route.key }}{% if route.active %} is-active{% endif %}{% if route.completed %} is-completed{% endif %}"
+                     id="tw-tech-panel-{{ route.key }}"
+                     role="tabpanel"
+                     aria-labelledby="tw-tech-tab-{{ route.key }}"
+                     data-route-panel="{{ route.key }}"
+                     {% if not route.is_default %}hidden{% endif %}>
+                <header class="tw-tech-route-header">
+                    <div class="tw-tech-route-mark" aria-hidden="true"><img src="{% static route.icon_asset %}" alt="" width="64" height="64"></div>
+                    <div class="tw-tech-route-copy">
+                        <div class="tw-tech-route-overline">
+                            <span>路线 {{ forloop.counter|stringformat:"02d" }}</span>
+                            {% if route.ready_to_complete %}<span class="tw-tech-status tw-tech-status--complete">开放节点已全部研究完成，可开启其他路线。</span>
+                            {% elif route.active %}<span class="tw-tech-status tw-tech-status--active">正在研究，当前路线开放节点全部完成后，可开启其他路线。</span>
+                            {% elif route.completed %}<span class="tw-tech-status tw-tech-status--complete">已完成</span>
+                            {% elif route.selectable %}<span class="tw-tech-status">待开启</span>
+                            {% else %}<span class="tw-tech-status">尚未开放</span>{% endif %}
                         </div>
-                        <span class="tw-badge-gold">等级 {{ tech.level }}</span>
-                    </header>
-                    <dl class="tw-guild-dl">
-                        <div>
-                            <dt>当前等级</dt>
-                            <dd>{{ tech.level }} / {{ tech.effective_max_level }}</dd>
+                        <div class="tw-tech-route-title-row">
+                            <h3>{{ route.title }}</h3>
+                            {% if route.resettable and member.can_manage %}
+                            <form method="post"
+                                  action="{% url 'guilds:reset_technology_route' route.key %}"
+                                  class="tw-tech-route-reset-form"
+                                  data-route-reset-form
+                                  data-route-name="{{ route.title }}">
+                                {% csrf_token %}
+                                <button type="submit" class="tw-tech-route-reset-button" aria-label="取消{{ route.title }}路线" title="取消并重置此路线">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                        <path d="M20 7v5h-5M4 17v-5h5" />
+                                        <path d="M5.6 9a7 7 0 0 1 12-2l2.4 2M4 15l2.4 2a7 7 0 0 0 12-2" />
+                                    </svg>
+                                </button>
+                            </form>
+                            {% endif %}
+                            {% if route.selectable and member.can_manage %}
+                            <form method="post"
+                                  action="{% url 'guilds:select_technology_route' route.key %}"
+                                  class="tw-tech-route-select-form"
+                                  data-route-select-form
+                                  data-route-name="{{ route.title }}">
+                                {% csrf_token %}
+                                <button type="submit" class="tw-btn-primary">选择此路线</button>
+                            </form>
+                            {% endif %}
                         </div>
-                        <div>
-                            <dt>当前效果</dt>
-                            <dd>
-                                {% with current_effect=tech_display_meta|get_item:tech.tech_key|get_item:'current_effect' %}
-                                {% if current_effect == '未激活' %}
-                                    <span class="tw-guild-tech-inactive">未激活</span>
+                        <p>{{ route.description }}</p>
+                    </div>
+                </header>
+
+                <div class="tw-tech-tree-scroll" tabindex="0" aria-label="{{ route.title }}天赋树，可横向滚动查看">
+                    <div class="tw-tech-tree" data-tech-tree data-route-key="{{ route.key }}" aria-label="{{ route.title }}科技树">
+                        <svg class="tw-tech-edges" aria-hidden="true" focusable="false"></svg>
+                        {% for node in route.nodes %}
+                        <button type="button"
+                                class="tw-tech-node{% if not node.unlocked %} is-locked{% elif node.level >= node.max_level %} is-maxed{% elif node.available %} is-available{% endif %}"
+                                {% if not route.active and not route.completed %}data-route-locked="true"{% endif %}
+                                data-tech-node
+                                data-node-key="{{ node.key }}"
+                                data-requires="{{ node.requires|join:',' }}"
+                                data-level="{{ node.level }}"
+                                aria-haspopup="dialog"
+                                aria-controls="tw-tech-dialog"
+                                aria-label="{{ node.name }}，等级 {{ node.level }} / {{ node.max_level }}，点击查看详情">
+                            <span class="tw-tech-node-icon-wrap">
+                                {% if node.key == 'wolf_bloodthirsty_cavalry' %}
+                                <img class="tw-tech-node-art" src="{% static 'images/guild_technology/shixuetieqi.png' %}" alt="" width="512" height="512" loading="lazy" decoding="async">
+                                {% elif node.key == 'sheep_wrath' %}
+                                <img class="tw-tech-node-art tw-tech-node-art--illustration" src="{% static 'images/guild_item_icons/guild_sheep_wrath.webp' %}" alt="" width="256" height="256" loading="lazy" decoding="async">
                                 {% else %}
-                                    <span class="tw-guild-tech-effect">{{ current_effect }}</span>
+                                <span class="tw-tech-node-icon tw-tech-node-icon--{{ node.icon_index }}" style="background-image: url('{% static 'images/guild_technology/talent_icon_atlas.png' %}')" aria-hidden="true"></span>
                                 {% endif %}
-                                {% endwith %}
-                            </dd>
-                        </div>
-                        {% if tech.can_upgrade %}
-                        <div>
-                            <dt>下级效果</dt>
-                            <dd class="tw-guild-tech-effect">{{ tech_display_meta|get_item:tech.tech_key|get_item:'next_effect' }}</dd>
-                        </div>
-                        <div>
-                            <dt>升级成本</dt>
-                            <dd class="tw-muted">{{ tech_display_meta|get_item:tech.tech_key|get_item:'upgrade_cost' }}</dd>
-                        </div>
-                        {% endif %}
-                    </dl>
-                    <div class="tw-card-actions tw-guild-tech-actions">
-                        {% if member.can_manage %}
-                            <form method="post" action="{% url 'guilds:upgrade_tech' tech.tech_key %}?category={{ current_tech_category }}">
-                                {% csrf_token %}
-                                <button type="submit" class="tw-btn-primary tw-guild-tech-action-button" {% if not tech.can_upgrade %}disabled{% endif %}>
-                                    {% if not tech.can_upgrade %}已满级{% else %}升级{% endif %}
-                                </button>
-                            </form>
-                        {% else %}
-                            <button type="button" class="tw-btn-secondary tw-guild-tech-action-button" disabled>需管理权限</button>
-                        {% endif %}
+                                <span class="tw-tech-node-level">{{ node.level }}<i>/</i>{{ node.max_level }}</span>
+                            </span>
+                            <span class="tw-tech-node-label">{{ node.name }}</span>
+                            {% if not node.enabled %}<span class="tw-tech-node-caption">暂未开放</span>
+                            {% elif node.level >= node.max_level %}<span class="tw-tech-node-caption is-complete">满级</span>
+                            {% elif node.available and member.can_manage %}<span class="tw-tech-node-caption is-ready">可研究</span>
+                            {% elif node.available %}<span class="tw-tech-node-caption">需管理</span>
+                            {% elif not node.unlocked %}<span class="tw-tech-node-caption">未解锁</span>
+                            {% elif not route.active and not route.completed %}<span class="tw-tech-node-caption">路线未开</span>
+                            {% else %}<span class="tw-tech-node-caption">等待中</span>{% endif %}
+                        </button>
+                        {% empty %}
+                        <div class="tw-guild-empty-state"><strong>此路线暂无可研究的天赋</strong><p>请稍后再来查看。</p></div>
+                        {% endfor %}
                     </div>
-                </article>
+                </div>
+            </article>
             {% endfor %}
         </div>
     </section>
-    {% endif %}
 
-    <!-- 福利类科技 -->
-    {% if current_tech_category == 'welfare' %}
-    <section class="tw-guild-section tw-guild-tech-board">
-        <p class="tw-muted">提升全体成员的资源产出和行动效率</p>
-        <div class="tw-building-grid">
-            {% for tech in filtered_technologies %}
-                <article class="tw-building-card">
-                    <header>
-                        <div>
-                            <h3>{{ tech_names|get_item:tech.tech_key|default:"未知科技" }}</h3>
-                            <p class="tw-muted">{{ tech_display_meta|get_item:tech.tech_key|get_item:'description' }}</p>
-                        </div>
-                        <span class="tw-badge-gold">等级 {{ tech.level }}</span>
-                    </header>
-                    <dl class="tw-guild-dl">
-                        <div>
-                            <dt>当前等级</dt>
-                            <dd>{{ tech.level }} / {{ tech.effective_max_level }}</dd>
-                        </div>
-                        <div>
-                            <dt>当前效果</dt>
-                            <dd>
-                                {% with current_effect=tech_display_meta|get_item:tech.tech_key|get_item:'current_effect' %}
-                                {% if current_effect == '未激活' %}
-                                    <span class="tw-guild-tech-inactive">未激活</span>
-                                {% else %}
-                                    <span class="tw-guild-tech-effect">{{ current_effect }}</span>
-                                {% endif %}
-                                {% endwith %}
-                            </dd>
-                        </div>
-                        {% if tech.can_upgrade %}
-                        <div>
-                            <dt>下级效果</dt>
-                            <dd><span class="tw-guild-tech-effect">{{ tech_display_meta|get_item:tech.tech_key|get_item:'next_effect' }}</span></dd>
-                        </div>
-                        <div>
-                            <dt>升级成本</dt>
-                            <dd class="tw-muted">{{ tech_display_meta|get_item:tech.tech_key|get_item:'upgrade_cost' }}</dd>
-                        </div>
-                        {% endif %}
-                    </dl>
-                    <div class="tw-card-actions tw-guild-tech-actions">
-                        {% if member.can_manage %}
-                            <form method="post" action="{% url 'guilds:upgrade_tech' tech.tech_key %}?category={{ current_tech_category }}">
-                                {% csrf_token %}
-                                <button type="submit" class="tw-btn-primary tw-guild-tech-action-button" {% if not tech.can_upgrade %}disabled{% endif %}>
-                                    {% if not tech.can_upgrade %}已满级{% else %}升级{% endif %}
-                                </button>
-                            </form>
-                        {% else %}
-                            <button type="button" class="tw-btn-secondary tw-guild-tech-action-button" disabled>需管理权限</button>
-                        {% endif %}
-                    </div>
-                </article>
+    <dialog class="tw-tech-dialog tw-tech-route-confirm" id="tw-tech-route-confirm" aria-labelledby="tw-tech-route-confirm-title">
+        <button type="button" class="tw-tech-dialog-close" data-route-confirm-close aria-label="关闭路线确认">×</button>
+        <div class="tw-tech-dialog-content">
+            <div class="tw-tech-route-confirm-body">
+                <span class="tw-tech-eyebrow">路线开启确认</span>
+                <h2 id="tw-tech-route-confirm-title">确认开启<span data-route-confirm-name></span>吗？</h2>
+                <p>开启后，帮会将专注研究这条路线；本系已开放天赋全部研究完成后，可开启下一条路线。暂未开放的节点不计入完成条件。</p>
+                <div class="tw-tech-route-confirm-actions">
+                    <button type="button" class="tw-btn-secondary" data-route-confirm-cancel>返回</button>
+                    <button type="button" class="tw-btn-primary" data-route-confirm-submit>确认开启</button>
+                </div>
+            </div>
+        </div>
+    </dialog>
+
+    <dialog class="tw-tech-dialog" id="tw-tech-dialog" aria-label="科技节点详情">
+        <button type="button" class="tw-tech-dialog-close" data-tech-dialog-close aria-label="关闭详情">×</button>
+        <div class="tw-tech-dialog-content">
+            {% for route in technology_routes %}
+                {% for node in route.nodes %}
+                    {% include "guilds/_technology_node_detail.html" with node=node route=route public_technology=False member=member cavalry=cavalry csrf_token=csrf_token only %}
+                {% endfor %}
+            {% endfor %}
+            {% for node in public_technologies %}
+                {% include "guilds/_technology_node_detail.html" with node=node public_technology=True member=member csrf_token=csrf_token only %}
             {% endfor %}
         </div>
-    </section>
-    {% endif %}
+    </dialog>
 </section>
+{% endblock %}
+
+{% block guild_extra_scripts %}
+<script src="{% static 'js/warehouse_page_core.js' %}"></script>
+<script src="{% static 'js/warehouse-page.js' %}"></script>
+<script src="{% static 'js/guild-technology-tree.js' %}"></script>
 {% endblock %}

@@ -3,190 +3,57 @@
 
 {% block title %}技术研究{% endblock %}
 
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/technology.css' %}">
+{% endblock %}
+
 {% block content %}
-<section class="dashboard">
-    <div class="tw-section-header">
-        <div>
-            <h1>技术研究</h1>
-            <p class="caption">研究技术提升庄园实力，当前银两：<strong>{{ manor.silver }}</strong></p>
-        </div>
-    </div>
+<section class="dashboard research-page" data-research-page>
+    <header class="research-heading">
+        <h1>技术研究</h1>
+        <div class="research-treasury"><span>府库银两</span><strong>{{ manor.silver }}</strong></div>
+    </header>
 
-    <!-- 分类标签页 -->
-    <nav class="tw-tech-tabs">
+    <nav class="research-tabs" aria-label="技术分类">
         {% for category in categories %}
-        <a href="?tab={{ category.key }}"
-           class="tw-tech-tab {% if current_tab == category.key %}active{% endif %}">
-            {{ category.name }}
+        <a href="?tab={{ category.key }}" class="research-tab{% if current_tab == category.key %} is-selected{% endif %}"{% if current_tab == category.key %} aria-current="page"{% endif %}>
+            <img class="research-tab-art" src="{% if category.key == 'basic' %}{% static 'images/technology/qstyle/category_basic.webp' %}{% elif category.key == 'martial' %}{% static 'images/technology/qstyle/category_martial.webp' %}{% else %}{% static 'images/technology/qstyle/category_production.webp' %}{% endif %}" alt="" width="48" height="48">
+            <span><strong>{{ category.name }}</strong><small>{% if category.key == 'basic' %}行军 · 侦察 · 营造{% elif category.key == 'martial' %}兵种属性 · 武学研习{% else %}农牧 · 冶炼 · 锻造{% endif %}</small></span>
         </a>
         {% endfor %}
     </nav>
 
-    <!-- 武艺技术：兵种子标签页 -->
-    {% if troop_classes %}
-    <nav class="tw-troop-subtabs">
-        {% for tc in troop_classes %}
-        <a href="?tab=martial&troop={{ tc.key }}"
-           class="tw-troop-subtab {% if current_troop_class == tc.key %}active{% endif %}">
-            {{ tc.name }}
-        </a>
-        {% endfor %}
-    </nav>
-    {% endif %}
-
-    <!-- 武艺技术：当前兵种技术列表 -->
-    {% if martial_groups %}
-        {% for group in martial_groups %}
-        <section class="building-section">
-            <div class="tw-building-grid">
-                {% for tech in group.technologies %}
-                <article class="tw-building-card {% if tech.is_upgrading %}tw-tech-upgrading{% elif not tech.can_upgrade and tech.level >= tech.max_level %}tw-tech-maxed{% endif %}" id="tech-{{ tech.key }}">
-                    <header>
-                        <div>
-                            <div class="tw-building-headline">
-                                <h3>{{ tech.name }}</h3>
-                                <span class="tw-level-badge {% if tech.level >= tech.max_level %}tw-badge-maxed{% elif tech.is_upgrading %}tw-badge-upgrading{% endif %}">
-                                    等级 {{ tech.level }} / {{ tech.max_level }}
-                                </span>
-                            </div>
-                            <p class="tw-building-desc">{{ tech.description }}</p>
-                        </div>
-                    </header>
-                    <dl>
-                        {% if tech.is_upgrading %}
-                        <div>
-                            <dt>研究完成</dt>
-                            <dd>
-                                <span class="countdown" data-countdown="{{ tech.upgrade_complete_at|date:'c' }}" data-format="hours-minutes" data-refresh="1" data-refresh-url="{% url 'gameplay:refresh_technology_upgrades_api' %}" data-refresh-method="post" data-complete-text="完成">
-                                    {{ tech.time_remaining|duration_hours_minutes }}
-                                </span>
-                            </dd>
-                        </div>
-                        {% elif tech.can_upgrade %}
-                        <div>
-                            <dt>升级费用</dt>
-                            <dd class="{% if manor.silver < tech.upgrade_cost %}tw-cost-insufficient{% endif %}">
-                                {{ tech.upgrade_cost }} 银两
-                            </dd>
-                        </div>
-                        <div>
-                            <dt>研究耗时</dt>
-                            <dd>{{ tech.upgrade_duration|duration_hours_minutes }}</dd>
-                        </div>
-                        {% endif %}
-                    </dl>
-                    <form method="post" action="{% url 'gameplay:upgrade_technology' tech.key %}" class="tw-card-actions mt-4 pt-4 border-t border-border-light">
-                        {% csrf_token %}
-                        <input type="hidden" name="tab" value="{{ current_tab }}">
-                        <input type="hidden" name="troop" value="{{ current_troop_class }}">
-                        <input type="hidden" name="next" value="{{ request.get_full_path }}#tech-{{ tech.key }}">
-                        {% if tech.is_upgrading %}
-                            <button type="button" class="tw-btn-secondary w-full" disabled>研究进行中</button>
-                        {% elif tech.can_upgrade %}
-                            {% if manor.silver >= tech.upgrade_cost %}
-                                <button type="submit" class="tw-btn-primary w-full">升级</button>
-                            {% else %}
-                                <button type="button" class="tw-btn-secondary w-full" disabled>银两不足</button>
-                            {% endif %}
-                        {% else %}
-                            <button type="button" class="tw-btn-secondary w-full" disabled>已满级</button>
-                        {% endif %}
-                    </form>
-                </article>
-                {% endfor %}
-            </div>
-        </section>
-        {% endfor %}
-    {% endif %}
-
-    <!-- 基本技术/生产技术：直接列表 -->
-    {% if technologies %}
-    <section class="building-section">
-        <div class="tw-building-grid">
-            {% for tech in technologies %}
-            <article class="tw-building-card {% if tech.is_upgrading %}tw-tech-upgrading{% elif not tech.can_upgrade and tech.level >= tech.max_level %}tw-tech-maxed{% endif %}" id="tech-{{ tech.key }}">
-                <header>
-                    <div>
-                        <div class="tw-building-headline">
-                            <h3>{{ tech.name }}</h3>
-                            <span class="tw-level-badge {% if tech.level >= tech.max_level %}tw-badge-maxed{% elif tech.is_upgrading %}tw-badge-upgrading{% endif %}">
-                                等级 {{ tech.level }} / {{ tech.max_level }}
-                            </span>
-                        </div>
-                        <p class="tw-building-desc">{{ tech.description }}</p>
-                    </div>
-                </header>
-                <dl>
-                    {% if tech.scout_intel_progress %}
-                    <div>
-                        <dt>侦察情报</dt>
-                        <dd>基础情报{% for unlock in tech.scout_intel_progress.unlocked %}、{{ unlock.name }}{% endfor %}</dd>
-                    </div>
-                    {% if tech.scout_intel_progress.next_unlock %}
-                    <div>
-                        <dt>下次解锁</dt>
-                        <dd>{{ tech.scout_intel_progress.next_unlock.level }}级 · {{ tech.scout_intel_progress.next_unlock.name }}</dd>
-                    </div>
-                    <div>
-                        <dt>探子本事</dt>
-                        <dd>{{ tech.scout_intel_progress.next_unlock.description }}</dd>
-                    </div>
-                    {% else %}
-                    <div>
-                        <dt>探子本事</dt>
-                        <dd>庄园底细已全部解锁</dd>
-                    </div>
-                    {% endif %}
-                    {% endif %}
-                    {% if tech.is_upgrading %}
-                    <div>
-                        <dt>研究完成</dt>
-                        <dd>
-                            <span class="countdown" data-countdown="{{ tech.upgrade_complete_at|date:'c' }}" data-format="hours-minutes" data-refresh="1" data-refresh-url="{% url 'gameplay:refresh_technology_upgrades_api' %}" data-refresh-method="post" data-complete-text="完成">
-                                {{ tech.time_remaining|duration_hours_minutes }}
-                            </span>
-                        </dd>
-                    </div>
-                    {% elif tech.can_upgrade %}
-                    <div>
-                        <dt>升级费用</dt>
-                        <dd class="{% if manor.silver < tech.upgrade_cost %}tw-cost-insufficient{% endif %}">
-                            {{ tech.upgrade_cost }} 银两
-                        </dd>
-                    </div>
-                    <div>
-                        <dt>研究耗时</dt>
-                        <dd>{{ tech.upgrade_duration|duration_hours_minutes }}</dd>
-                    </div>
-                    {% endif %}
-                </dl>
-                <form method="post" action="{% url 'gameplay:upgrade_technology' tech.key %}" class="tw-card-actions mt-4 pt-4 border-t border-border-light">
-                    {% csrf_token %}
-                    <input type="hidden" name="tab" value="{{ current_tab }}">
-                    <input type="hidden" name="next" value="{{ request.get_full_path }}#tech-{{ tech.key }}">
-                    {% if tech.is_upgrading %}
-                        <button type="button" class="tw-btn-secondary w-full" disabled>研究进行中</button>
-                    {% elif tech.can_upgrade %}
-                        {% if manor.silver >= tech.upgrade_cost %}
-                            <button type="submit" class="tw-btn-primary w-full">升级</button>
-                        {% else %}
-                            <button type="button" class="tw-btn-secondary w-full" disabled>银两不足</button>
-                        {% endif %}
-                    {% else %}
-                        <button type="button" class="tw-btn-secondary w-full" disabled>已满级</button>
-                    {% endif %}
-                </form>
-            </article>
-            {% empty %}
-            <p class="tw-empty-hint">暂无可研究的技术</p>
+    <section class="research-atlas" aria-labelledby="research-atlas-title">
+        <header class="research-atlas-heading">
+            <h2 id="research-atlas-title">{% if current_tab == 'martial' %}兵种武学{% elif current_tab == 'production' %}生产技艺{% else %}庄园经略{% endif %}</h2>
+            <p>点击科技查看详情与升级</p>
+        </header>
+        {% if troop_classes %}
+        <nav class="research-subtabs" aria-label="武艺兵种">
+            {% for tc in troop_classes %}
+            <a href="?tab=martial&amp;troop={{ tc.key }}" class="research-subtab{% if current_troop_class == tc.key %} is-selected{% endif %}"{% if current_troop_class == tc.key %} aria-current="page"{% endif %}>{{ tc.name }}</a>
             {% endfor %}
+        </nav>
+        {% endif %}
+        <div class="research-grid">
+            {% for group in martial_groups %}
+                {% for tech in group.technologies %}
+                    {% include "gameplay/includes/technology_node.html" %}
+                {% endfor %}
+            {% endfor %}
+            {% for tech in technologies %}
+                {% include "gameplay/includes/technology_node.html" %}
+            {% endfor %}
+            {% if not martial_groups and not technologies %}
+            <p class="research-empty">典籍尚未收录，暂无可研究的技术。</p>
+            {% endif %}
         </div>
+        <footer class="research-legend" aria-label="科技状态说明"><span><i class="research-dot research-dot--ready"></i>可研究</span><span><i class="research-dot research-dot--studying"></i>研究中</span><span><i class="research-dot research-dot--maxed"></i>已满级</span></footer>
     </section>
-    {% endif %}
-
 </section>
 {% endblock %}
 
 {% block extra_scripts %}
 <script src="{% static 'js/dashboard.js' %}"></script>
+<script src="{% static 'js/technology-page.js' %}"></script>
 {% endblock %}

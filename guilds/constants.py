@@ -14,6 +14,14 @@ from typing import Any
 
 from core.utils.yaml_loader import ensure_mapping, load_yaml_data
 
+from .technology_tree import (
+    GUILD_TECHNOLOGY_CONFIGS,
+    TECHNOLOGY_DEFAULT_COSTS,
+    TECHNOLOGY_DEFAULT_CURVE_BY_KEY,
+    TECHNOLOGY_DEFAULT_DESCRIPTIONS,
+    TECHNOLOGY_DEFAULT_NAMES,
+)
+
 logger = logging.getLogger(__name__)
 GUILD_RULES_PATH = Path(__file__).resolve().parent.parent / "data" / "guild_rules.yaml"
 
@@ -38,18 +46,7 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
         "min_donation_amount": 1,
     },
     "technology": {
-        "upgrade_costs": {
-            "equipment_forge": {"gold_bar": 3},
-            "guard_armory": {"silver": 307220, "grain": 307220},
-            "experience_refine": {"gold_bar": 3},
-            "resource_supply": {"silver": 4000, "grain": 3000, "gold_bar": 1},
-            "mysticism": {"red_ruby": 200},
-            "troop_tactics": {"silver": 307220, "grain": 307220},
-            "resource_boost": {"silver": 2173913, "grain": 2173913},
-            "march_speed": {"gold_bar": 2},
-            "guild_lineup_capacity": {"red_ruby": 5},
-            "guild_dispatch_capacity": {"gold_bar": 2},
-        },
+        "upgrade_costs": TECHNOLOGY_DEFAULT_COSTS,
         "upgrade_cost_curves": {
             "standard_10": {
                 "2": 2,
@@ -68,6 +65,9 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
                 "4": 20,
                 "5": 60,
             },
+            "research_3": {"2": 3, "3": 6},
+            "research_5": {"2": 2, "3": 4, "4": 7, "5": 12},
+            "cavalry_10": {"2": 1, "3": 2, "4": 2, "5": 3, "6": 4, "7": 5, "8": 6, "9": 8, "10": 10},
             "capacity_20": {
                 "2": 2,
                 "3": 3,
@@ -90,76 +90,10 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
                 "20": 20,
             },
         },
-        "upgrade_cost_curve_by_tech": {
-            "equipment_forge": "standard_10",
-            "guard_armory": "standard_10",
-            "experience_refine": "standard_10",
-            "resource_supply": "standard_10",
-            "troop_tactics": "standard_10",
-            "resource_boost": "welfare_5",
-            "march_speed": "welfare_5",
-            "guild_lineup_capacity": "capacity_20",
-            "guild_dispatch_capacity": "capacity_20",
-        },
-        "upgrade_cost_overrides": {
-            "equipment_forge": {
-                "8": {"gold_bar": 210, "red_ruby": 24},
-                "9": {"gold_bar": 450, "red_ruby": 53},
-                "10": {"gold_bar": 1097, "red_ruby": 123},
-            },
-            "guard_armory": {
-                "10": {"silver": 107526780, "grain": 107526780},
-            },
-            "experience_refine": {
-                "8": {"gold_bar": 210, "red_ruby": 24},
-                "9": {"gold_bar": 450, "red_ruby": 53},
-                "10": {"gold_bar": 1097, "red_ruby": 123},
-            },
-            "mysticism": {
-                "2": {"red_ruby": 300, "gold_bar": 150},
-                "3": {"red_ruby": 300, "gold_bar": 200},
-            },
-            "troop_tactics": {
-                "10": {"silver": 107526780, "grain": 107526780},
-            },
-            "resource_boost": {
-                "5": {"silver": 130434784, "grain": 130434784},
-            },
-            "march_speed": {
-                "5": {"gold_bar": 136},
-            },
-            "guild_dispatch_capacity": {
-                "16": {"gold_bar": 32, "red_ruby": 36},
-                "17": {"gold_bar": 34, "red_ruby": 38},
-                "18": {"gold_bar": 36, "red_ruby": 40},
-                "19": {"gold_bar": 38, "red_ruby": 42},
-                "20": {"gold_bar": 120, "red_ruby": 44},
-            },
-        },
-        "names": {
-            "equipment_forge": "装备锻造",
-            "guard_armory": "护院军备",
-            "experience_refine": "武学研习",
-            "resource_supply": "资源补给",
-            "mysticism": "神秘学",
-            "troop_tactics": "强兵战术",
-            "resource_boost": "资源增产",
-            "march_speed": "行军加速",
-            "guild_lineup_capacity": "出战位扩容",
-            "guild_dispatch_capacity": "出征位扩容",
-        },
-        "descriptions": {
-            "equipment_forge": "每日生产装备道具",
-            "guard_armory": "每日生产护院招募装备箱",
-            "experience_refine": "每日生产技能书箱",
-            "resource_supply": "每日生产资源礼包",
-            "mysticism": "每日生产灵魂容器，2级新增门客重生卡和洗点卡，3级新增洗髓丹",
-            "troop_tactics": "可以增强帮会战斗中护院的能力",
-            "resource_boost": "提升庄园资源产出",
-            "march_speed": "减少行军时间",
-            "guild_lineup_capacity": "提升帮会已上阵名单总容量",
-            "guild_dispatch_capacity": "提升单次帮会任务最多可派出的门客人数",
-        },
+        "upgrade_cost_curve_by_tech": TECHNOLOGY_DEFAULT_CURVE_BY_KEY,
+        "upgrade_cost_overrides": {},
+        "names": TECHNOLOGY_DEFAULT_NAMES,
+        "descriptions": TECHNOLOGY_DEFAULT_DESCRIPTIONS,
     },
     "warehouse": {
         "exchange_costs": {
@@ -174,6 +108,13 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
             "resource_pack_advanced": 80,
         },
         "daily_exchange_limit": 10,
+    },
+    "cavalry_recruitment": {
+        "silver_per_unit": 1500,
+        "grain_per_unit": 5000,
+        "contribution_per_unit": 3,
+        "max_batch": 2000,
+        "seconds_per_unit": 30,
     },
     "blueprint_rewards": {"choices": {}},
     "hero_pool": {
@@ -196,19 +137,6 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
         "warehouse_loot_whitelist": ["grain", "gold_bar", "red_ruby"],
     },
 }
-
-GUILD_TECHNOLOGY_CONFIGS: tuple[tuple[str, str, int], ...] = (
-    ("equipment_forge", "production", 10),
-    ("guard_armory", "production", 10),
-    ("experience_refine", "production", 10),
-    ("resource_supply", "production", 10),
-    ("mysticism", "production", 3),
-    ("troop_tactics", "combat", 10),
-    ("resource_boost", "welfare", 5),
-    ("march_speed", "welfare", 5),
-    ("guild_lineup_capacity", "combat", 20),
-    ("guild_dispatch_capacity", "combat", 20),
-)
 
 
 def _to_positive_int(raw: Any, default: int, *, minimum: int = 1, maximum: int | None = None) -> int:
@@ -300,6 +228,9 @@ def normalize_guild_rules(raw: Any) -> dict[str, Any]:
         "contribution": ensure_mapping(root.get("contribution"), logger=logger, context="guild rules.contribution"),
         "technology": ensure_mapping(root.get("technology"), logger=logger, context="guild rules.technology"),
         "warehouse": ensure_mapping(root.get("warehouse"), logger=logger, context="guild rules.warehouse"),
+        "cavalry_recruitment": ensure_mapping(
+            root.get("cavalry_recruitment"), logger=logger, context="guild rules.cavalry_recruitment"
+        ),
         "blueprint_rewards": ensure_mapping(
             root.get("blueprint_rewards"), logger=logger, context="guild rules.blueprint_rewards"
         ),
@@ -409,6 +340,10 @@ def normalize_guild_rules(raw: Any) -> dict[str, Any]:
                 for rarity, keys in config["blueprint_rewards"].get("choices", {}).items()
                 if isinstance(keys, list)
             },
+        },
+        "cavalry_recruitment": {
+            key: _to_positive_int(config["cavalry_recruitment"].get(key), value)
+            for key, value in DEFAULT_GUILD_RULES["cavalry_recruitment"].items()
         },
         "hero_pool": {
             "slot_limit": _to_positive_int(

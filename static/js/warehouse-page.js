@@ -62,6 +62,10 @@
     selectedImageKey: null,
     lastTriggerElement: null,
   };
+  const targetManorModalState = {
+    lastTriggerElement: null,
+    searchGeneration: 0,
+  };
 
   const showErrorDialog = (message, title = "错误") => {
     if (window.gameDialog?.error) {
@@ -80,6 +84,9 @@
   };
 
   const confirmWarehouseUseForm = async (form) => {
+    if (form.dataset.targetModal === "true") {
+      return true;
+    }
     const statusSummary = form.dataset.worldUniqueStatusSummary;
     const guestName = form.dataset.worldUniqueGuestName || "该门客";
     const configuredConfirmText = form.dataset.confirmText;
@@ -375,7 +382,7 @@
   };
 
   const bindWarehouseActionForms = (root = document) => {
-    root.querySelectorAll(".tw-warehouse-actions form, .tw-action-return-form").forEach((form) => {
+    root.querySelectorAll(".tw-warehouse-actions form, .tw-action-return-form, #target-item-use-form").forEach((form) => {
       if (form.dataset.ajaxBound === "1") {
         return;
       }
@@ -452,6 +459,251 @@
           window.location.reload();
         }
       });
+    });
+  };
+
+  const bindTargetManorSearch = (root = document) => {
+    root.querySelectorAll(".js-target-item-form").forEach((form) => {
+      if (form.dataset.targetSearchBound === "1") {
+        return;
+      }
+      form.dataset.targetSearchBound = "1";
+      const searchInput = form.querySelector(".tw-target-manor-search");
+      const searchButton = form.querySelector(".js-search-target-manors");
+      const results = form.querySelector(".tw-target-manor-results");
+      const status = form.querySelector("[data-target-manor-status]");
+      const confirmButton = form.querySelector("#target-manor-confirm-btn");
+      if (!searchInput || !searchButton || !results) {
+        return;
+      }
+
+      searchInput.addEventListener("input", () => {
+        targetManorModalState.searchGeneration += 1;
+        results.replaceChildren();
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = "请重新搜索并选择庄园";
+        results.appendChild(placeholder);
+        if (confirmButton) confirmButton.disabled = true;
+        searchButton.disabled = false;
+        searchButton.textContent = "搜索";
+        if (status) status.textContent = "";
+      });
+      results.addEventListener("change", () => {
+        if (confirmButton) confirmButton.disabled = !results.value;
+      });
+      searchInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          searchButton.click();
+        }
+      });
+      searchButton.addEventListener("click", async () => {
+        const query = searchInput.value.trim();
+        if (query.length < 2) {
+          await showErrorDialog("请输入至少两个字的庄园名称", "查找目标庄园");
+          return;
+        }
+
+        const originalText = searchButton.textContent;
+        const searchGeneration = ++targetManorModalState.searchGeneration;
+        searchButton.disabled = true;
+        searchButton.textContent = "查找中…";
+        if (status) status.textContent = "正在查找庄园…";
+        try {
+          const url = new URL(form.dataset.targetSearchUrl, window.location.origin);
+          url.searchParams.set("type", "name");
+          url.searchParams.set("q", query);
+          const response = await fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } });
+          const data = await response.json();
+          if (!response.ok || !data.success) {
+            throw new Error(data.error || "目标庄园搜索失败");
+          }
+          if (
+            searchGeneration !== targetManorModalState.searchGeneration ||
+            searchInput.value.trim() !== query
+          ) {
+            return;
+          }
+
+          results.replaceChildren();
+          const placeholder = document.createElement("option");
+          placeholder.value = "";
+          placeholder.textContent = data.results?.length ? "请选择目标庄园" : "没有找到庄园";
+          results.appendChild(placeholder);
+          const manors = Array.isArray(data.results) ? data.results : [];
+          manors.forEach((manor) => {
+            const option = document.createElement("option");
+            option.value = String(manor.id);
+            const location = manor.location_display || manor.region_display || "未知地区";
+            const protection = manor.can_attack ? "" : ` · ${manor.attack_reason || "当前受保护"}`;
+            option.textContent = `${manor.name}（${location} · 声望${manor.prestige}${protection}）`;
+            option.disabled = manor.can_attack === false;
+            results.appendChild(option);
+          });
+          results.value = "";
+          if (confirmButton) confirmButton.disabled = true;
+          if (status) {
+            const attackableCount = manors.filter((manor) => manor.can_attack === true).length;
+            status.textContent = !manors.length
+              ? "没有找到匹配的庄园。"
+              : attackableCount
+                ? `找到 ${manors.length} 个庄园，其中 ${attackableCount} 个可攻击。`
+                : `找到 ${manors.length} 个庄园，当前都受攻击保护。`;
+          }
+        } catch (error) {
+          if (searchGeneration !== targetManorModalState.searchGeneration) {
+            return;
+          }
+          if (status) status.textContent = "庄园搜索失败，请稍后重试。";
+          await showErrorDialog(error instanceof Error ? error.message : "目标庄园搜索失败", "查找目标庄园");
+        } finally {
+          if (searchGeneration === targetManorModalState.searchGeneration) {
+            searchButton.disabled = false;
+            searchButton.textContent = originalText;
+          }
+        }
+      });
+    });
+  };
+
+  const closeTargetManorModal = () => {
+    targetManorModalState.searchGeneration += 1;
+    const modal = document.getElementById("target-manor-modal");
+    const form = document.getElementById("target-item-use-form");
+    if (modal) {
+      modal.style.display = "none";
+      modal.setAttribute("aria-hidden", "true");
+    }
+    if (form) {
+      form.action = "#";
+      form.dataset.itemName = "";
+      const searchInput = form.querySelector(".tw-target-manor-search");
+      const results = form.querySelector(".tw-target-manor-results");
+      const status = form.querySelector("[data-target-manor-status]");
+      const searchButton = form.querySelector(".js-search-target-manors");
+      const confirmButton = form.querySelector("#target-manor-confirm-btn");
+      const bindingMode = form.querySelector('input[name="binding_mode"]');
+      if (searchInput) searchInput.value = "";
+      if (results) {
+        results.replaceChildren();
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = "先搜索并选择庄园";
+        results.appendChild(placeholder);
+      }
+      if (status) status.textContent = "";
+      if (searchButton) {
+        searchButton.disabled = false;
+        searchButton.textContent = "搜索";
+      }
+      if (confirmButton) {
+        confirmButton.disabled = true;
+        confirmButton.textContent = "确认使用";
+      }
+      if (bindingMode) bindingMode.value = "";
+    }
+    const lastTriggerElement = targetManorModalState.lastTriggerElement;
+    targetManorModalState.lastTriggerElement = null;
+    if (lastTriggerElement && lastTriggerElement.isConnected && typeof lastTriggerElement.focus === "function") {
+      lastTriggerElement.focus();
+    }
+  };
+
+  const openTargetManorModal = (triggerElement) => {
+    const modal = document.getElementById("target-manor-modal");
+    const form = document.getElementById("target-item-use-form");
+    const title = document.getElementById("target-manor-modal-title");
+    const hint = document.getElementById("target-manor-modal-hint");
+    const searchInput = form?.querySelector(".tw-target-manor-search");
+    const results = form?.querySelector(".tw-target-manor-results");
+    const status = form?.querySelector("[data-target-manor-status]");
+    const searchButton = form?.querySelector(".js-search-target-manors");
+    const confirmButton = form?.querySelector("#target-manor-confirm-btn");
+    const bindingMode = form?.querySelector('input[name="binding_mode"]');
+    if (!modal || !form || !triggerElement?.dataset?.actionUrl) {
+      return;
+    }
+
+    targetManorModalState.searchGeneration += 1;
+    const itemName = triggerElement.dataset.itemName || "道具";
+    form.action = triggerElement.dataset.actionUrl;
+    form.dataset.itemName = itemName;
+    if (searchInput) searchInput.value = "";
+    if (results) {
+      results.replaceChildren();
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = "先搜索并选择庄园";
+      results.appendChild(placeholder);
+    }
+    if (status) status.textContent = "";
+    if (searchButton) {
+      searchButton.disabled = false;
+      searchButton.textContent = "搜索";
+    }
+    if (confirmButton) {
+      confirmButton.disabled = true;
+      confirmButton.textContent = "确认使用";
+    }
+    if (bindingMode) bindingMode.value = triggerElement.dataset.bindingMode || "";
+    if (title) title.textContent = `选择目标庄园 · ${itemName}`;
+    if (hint) {
+      hint.textContent = `选择要使用「${itemName}」的庄园。目标需符合攻击保护规则，同类道具对同一庄园有1小时冷却。`;
+    }
+    targetManorModalState.lastTriggerElement = triggerElement;
+    modal.style.display = "flex";
+    modal.setAttribute("aria-hidden", "false");
+    searchInput?.focus();
+  };
+
+  const handleTargetManorModalKeydown = (event) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeTargetManorModal();
+      return;
+    }
+    if (event.key !== "Tab") {
+      return;
+    }
+    const modal = document.getElementById("target-manor-modal");
+    const focusables = modal
+      ? [...modal.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled])')]
+        .filter((element) => element.getClientRects().length > 0)
+      : [];
+    if (focusables.length === 0) {
+      return;
+    }
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+
+  const bindTargetItemModalControls = (root = document) => {
+    root.querySelectorAll(".js-open-target-item-modal").forEach((button) => {
+      if (button.dataset.boundClick === "1") return;
+      button.dataset.boundClick = "1";
+      button.addEventListener("click", () => openTargetManorModal(button));
+    });
+
+    root.querySelectorAll(".js-close-target-manor-modal").forEach((button) => {
+      if (button.dataset.boundClick === "1") return;
+      button.dataset.boundClick = "1";
+      button.addEventListener("click", closeTargetManorModal);
+    });
+
+    const modal = root.getElementById ? root.getElementById("target-manor-modal") : document.getElementById("target-manor-modal");
+    if (!modal || modal.dataset.boundClick === "1") return;
+    modal.dataset.boundClick = "1";
+    modal.addEventListener("keydown", handleTargetManorModalKeydown);
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) closeTargetManorModal();
     });
   };
 
@@ -553,6 +805,8 @@
     }
 
     bindWarehouseActionForms();
+    bindTargetItemModalControls();
+    bindTargetManorSearch();
     bindGuestModalControls();
     bindGuestModalSelection();
     restoreScrollPosition();

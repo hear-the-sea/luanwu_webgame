@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 import pytest
 from django.contrib.messages import get_messages
 from django.test import Client
@@ -7,6 +9,7 @@ from django.urls import reverse
 
 from gameplay.services.manor.core import ensure_manor
 from guilds.models import Guild, GuildMember, GuildTechnology
+from guilds.technology_tree import PUBLIC_TECHNOLOGIES, TECHNOLOGY_NODE_BY_KEY, TECHNOLOGY_ROUTES
 
 
 @pytest.fixture
@@ -22,294 +25,156 @@ def guild_tech_client(django_user_model):
 
 
 @pytest.mark.django_db
-def test_technology_page_renders_capacity_tech_with_count_effect_and_cost(guild_tech_client):
+def test_technology_page_renders_public_capacity_effects_and_costs(guild_tech_client):
     client, _user, guild = guild_tech_client
     GuildTechnology.objects.create(
-        guild=guild, tech_key="guild_lineup_capacity", category="combat", level=0, max_level=20
+        guild=guild, tech_key="guild_lineup_capacity", category="public", level=0, max_level=20
     )
     GuildTechnology.objects.create(
-        guild=guild, tech_key="guild_dispatch_capacity", category="combat", level=1, max_level=20
+        guild=guild, tech_key="guild_dispatch_capacity", category="public", level=1, max_level=20
     )
 
     response = client.get(reverse("guilds:technology"))
 
+    public_nodes = {node["key"]: node for node in response.context["public_technologies"]}
     content = response.content.decode("utf-8")
     assert response.status_code == 200
-    assert "提升帮会已上阵名单总容量" in content
-    assert "提升单次帮会任务最多可派出的门客人数" in content
-    assert "20 名" in content
-    assert "6 名" in content
-    assert "红宝石 ×5" in content
-    assert "金条 ×4" in content
+    assert public_nodes["guild_lineup_capacity"]["current_effect"] == "20 名"
+    assert public_nodes["guild_dispatch_capacity"]["current_effect"] == "6 名"
+    assert public_nodes["guild_dispatch_capacity"]["next_effect"] == "7 名"
+    assert "红宝石×5" in content
+    assert "金条×4" in content
+    assert 'data-route-tab="public"' in content
+
+
+@pytest.mark.parametrize(
+    ("tech_key", "level", "expected"),
+    [
+        ("guild_lineup_capacity", 1, "21 名"),
+        ("guild_dispatch_capacity", 1, "6 名"),
+        ("wolf_force", 10, "嗜血铁骑攻击 +100%"),
+    ],
+)
+def test_level_effect_uses_tree_definition(tech_key, level, expected):
+    from guilds.views.technology import _format_level_effect
+
+    assert _format_level_effect(TECHNOLOGY_NODE_BY_KEY[tech_key], level) == expected
 
 
 @pytest.mark.django_db
-def test_capacity_display_reuses_loaded_levels_without_queries(guild_tech_client, django_assert_num_queries):
-    from guilds.views.technology import _build_tech_display_meta
-
-    _client, _user, guild = guild_tech_client
-    for key in ("guild_lineup_capacity", "guild_dispatch_capacity"):
-        GuildTechnology.objects.create(guild=guild, tech_key=key, category="combat", level=1, max_level=20)
-    technologies = list(GuildTechnology.objects.filter(guild_id=guild.pk))
-
-    with django_assert_num_queries(0):
-        display = {tech.tech_key: _build_tech_display_meta(tech) for tech in technologies}
-
-    assert display["guild_lineup_capacity"]["current_effect"] == "21 名"
-    assert display["guild_lineup_capacity"]["next_effect"] == "22 名"
-    assert display["guild_dispatch_capacity"]["current_effect"] == "6 名"
-    assert display["guild_dispatch_capacity"]["next_effect"] == "7 名"
-
-
-@pytest.mark.django_db
-@pytest.mark.parametrize("category", ["production", "combat", "welfare"])
-def test_technology_page_builds_only_selected_category_display(guild_tech_client, category, monkeypatch):
-    from guilds.views import technology as technology_view
-
+def test_technology_page_builds_the_complete_route_and_public_tree(guild_tech_client):
     client, _user, guild = guild_tech_client
-    categories = {
-        "equipment_forge": "production",
-        "guild_lineup_capacity": "combat",
-        "guild_dispatch_capacity": "combat",
-        "resource_boost": "welfare",
+    GuildTechnology.objects.create(guild=guild, tech_key="forging_mechanism_blueprint", category="forging", level=1)
+
+    response = client.get(reverse("guilds:technology"))
+
+    routes = {route["key"]: route for route in response.context["technology_routes"]}
+    assert response.status_code == 200
+    assert set(routes) == {route["key"] for route in TECHNOLOGY_ROUTES}
+    for route_definition in TECHNOLOGY_ROUTES:
+        rendered_route = routes[route_definition["key"]]
+        assert {node["key"] for node in rendered_route["nodes"]} == {node["key"] for node in route_definition["nodes"]}
+    assert {node["key"] for node in response.context["public_technologies"]} == {
+        node["key"] for node in PUBLIC_TECHNOLOGIES
     }
-    for key, tech_category in categories.items():
-        GuildTechnology.objects.create(guild=guild, tech_key=key, category=tech_category, level=1, max_level=20)
-    built_keys = []
-    original = technology_view._build_tech_display_meta
-
-    def record_display(tech):
-        built_keys.append(tech.tech_key)
-        return original(tech)
-
-    monkeypatch.setattr(technology_view, "_build_tech_display_meta", record_display)
-    response = client.get(reverse("guilds:technology"), {"category": category})
-
-    assert response.status_code == 200
-    expected_keys = {key for key, value in categories.items() if value == category}
-    assert set(built_keys) == expected_keys
-    assert set(response.context["tech_display_meta"]) == expected_keys
-    assert {tech.tech_key for tech in response.context["technologies"]} == set(categories)
-    assert {tech.tech_key for tech in response.context["filtered_technologies"]} == expected_keys
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("level,lineup,dispatch", [(0, 20, 5), (1, 21, 6), (20, 40, 25), (21, 40, 25)])
-def test_capacity_display_and_service_share_limits(
-    guild_tech_client, django_assert_num_queries, level, lineup, dispatch
-):
-    from guilds.services import technology as technology_service
-    from guilds.views.technology import _build_tech_display_meta
-
-    _client, _user, guild = guild_tech_client
-    for key, expected, calculate, load in (
-        (
-            "guild_lineup_capacity",
-            lineup,
-            technology_service.calculate_guild_lineup_capacity,
-            technology_service.get_guild_lineup_capacity,
-        ),
-        (
-            "guild_dispatch_capacity",
-            dispatch,
-            technology_service.calculate_guild_dispatch_capacity,
-            technology_service.get_guild_dispatch_capacity,
-        ),
-    ):
-        GuildTechnology.objects.create(guild=guild, tech_key=key, category="combat", level=level, max_level=20)
-        tech = GuildTechnology.objects.get(guild_id=guild.pk, tech_key=key)
-        with django_assert_num_queries(0):
-            assert calculate(level) == expected
-            display = _build_tech_display_meta(tech)
-        assert display["current_effect"] == f"{expected} 名"
-        assert display["next_effect"] == f"{calculate(min(20, level + 1))} 名"
-        with django_assert_num_queries(1):
-            assert load(guild) == expected
-
-
-@pytest.mark.django_db
-def test_technology_page_uses_category_switches_and_removes_caption(guild_tech_client):
+def test_technology_page_uses_active_route_and_prerequisites_for_upgrade_actions(guild_tech_client):
     client, _user, guild = guild_tech_client
-    GuildTechnology.objects.create(
-        guild=guild, tech_key="equipment_forge", category="production", level=1, max_level=10
-    )
-    GuildTechnology.objects.create(guild=guild, tech_key="troop_tactics", category="combat", level=1, max_level=10)
-    GuildTechnology.objects.create(guild=guild, tech_key="resource_boost", category="welfare", level=1, max_level=5)
+    guild.active_technology_route = "forging"
+    guild.save(update_fields=["active_technology_route"])
+    GuildTechnology.objects.create(guild=guild, tech_key="forging_mechanism_blueprint", category="forging", level=1)
+    GuildTechnology.objects.create(guild=guild, tech_key="forging_equipment_forge", category="forging", level=0)
 
     response = client.get(reverse("guilds:technology"))
 
+    forging = next(route for route in response.context["technology_routes"] if route["key"] == "forging")
+    node = next(node for node in forging["nodes"] if node["key"] == "forging_equipment_forge")
     content = response.content.decode("utf-8")
     assert response.status_code == 200
-    assert "科技视图帮 · 提升全员生产战斗能力" not in content
-    assert "?category=production" in content
-    assert "?category=combat" in content
-    assert "?category=welfare" in content
-    assert "生产类科技" in content
-    assert "战斗类科技" in content
-    assert "福利类科技" in content
-    assert "每日生产装备道具" in content
-    assert "可以增强帮会战斗中护院的能力" not in content
-    assert "提升庄园资源产出" not in content
+    assert forging["active"] is True
+    assert node["unlocked"] is True and node["available"] is True
+    assert f'action="{reverse("guilds:upgrade_tech", args=["forging_equipment_forge"])}"' in content
+    assert 'class="tw-tech-action-form"' in content
 
 
 @pytest.mark.django_db
-def test_technology_page_renders_configured_daily_outputs_for_all_production_technologies(guild_tech_client):
+def test_technology_page_shows_reset_control_for_active_incomplete_route(guild_tech_client):
     client, _user, guild = guild_tech_client
-    technologies = (
-        ("equipment_forge", 3, 10),
-        ("guard_armory", 3, 10),
-        ("experience_refine", 3, 10),
-        ("resource_supply", 5, 10),
-        ("mysticism", 3, 3),
-    )
-    for tech_key, level, max_level in technologies:
-        GuildTechnology.objects.create(
-            guild=guild,
-            tech_key=tech_key,
-            category="production",
-            level=level,
-            max_level=max_level,
-        )
+    guild.active_technology_route = "hero"
+    guild.save(update_fields=["active_technology_route"])
+    GuildTechnology.objects.create(guild=guild, tech_key="hero_fruit_blueprint", category="hero", level=1)
 
-    response = client.get(reverse("guilds:technology") + "?category=production")
+    response = client.get(reverse("guilds:technology"))
 
+    hero = next(route for route in response.context["technology_routes"] if route["key"] == "hero")
     content = response.content.decode("utf-8")
     assert response.status_code == 200
-    assert "帮会蓝装箱 ×1、帮会绿装箱 ×2" in content
-    assert "帮会进阶护院箱 ×1、帮会基础护院箱 ×1" in content
-    assert "帮会中级技能书箱 ×1、帮会初级技能书箱 ×2" in content
-    assert "帮会高级补给包 ×3、帮会混合补给包 ×1" in content
-    assert "灵魂容器 ×1、门客重生卡 ×1、洗点卡 ×1、洗髓丹 ×1" in content
-    assert "未知项目" not in content
+    assert hero["resettable"] is True
+    assert f'action="{reverse("guilds:reset_technology_route", args=["hero"])}"' in content
+    assert 'aria-label="取消英雄系路线"' in content
+    title_row = re.search(r'<div class="tw-tech-route-title-row">(.*?)</div>\s*<p>', content, re.DOTALL)
+    assert title_row is not None
+    assert "data-route-reset-form" in title_row.group(1)
 
 
 @pytest.mark.django_db
-def test_technology_page_filters_to_selected_category(guild_tech_client):
-    client, _user, guild = guild_tech_client
-    GuildTechnology.objects.create(
-        guild=guild, tech_key="equipment_forge", category="production", level=1, max_level=10
+def test_guild_upgrade_form_posts_with_a_valid_csrf_cookie_and_token(guild_tech_client, monkeypatch):
+    _default_client, user, guild = guild_tech_client
+    client = Client(enforce_csrf_checks=True)
+    assert client.login(username=user.username, password="pass12345")
+    monkeypatch.setattr("guilds.views.membership._upgrade_guild_and_get_level", lambda *_args: 2)
+
+    detail_url = reverse("guilds:detail", kwargs={"guild_id": guild.pk})
+    page = client.get(detail_url)
+    token_match = re.search(r'name="csrfmiddlewaretoken" value="([^"]+)"', page.content.decode("utf-8"))
+
+    assert page.status_code == 200
+    assert "csrftoken" in client.cookies
+    assert token_match is not None
+
+    response = client.post(
+        reverse("guilds:upgrade"),
+        {"csrfmiddlewaretoken": token_match.group(1)},
+        HTTP_REFERER=f"http://testserver{detail_url}",
     )
-    GuildTechnology.objects.create(guild=guild, tech_key="troop_tactics", category="combat", level=1, max_level=10)
-    GuildTechnology.objects.create(guild=guild, tech_key="resource_boost", category="welfare", level=1, max_level=5)
 
-    response = client.get(reverse("guilds:technology") + "?category=combat")
+    assert response.status_code == 302
+    assert response.url == detail_url
 
-    content = response.content.decode("utf-8")
+
+@pytest.mark.django_db
+def test_technology_page_renders_current_production_outputs(guild_tech_client):
+    client, _user, guild = guild_tech_client
+    GuildTechnology.objects.create(guild=guild, tech_key="wolf_soul_container", category="wolf", level=3, max_level=3)
+
+    response = client.get(reverse("guilds:technology"))
+
+    wolf = next(route for route in response.context["technology_routes"] if route["key"] == "wolf")
+    soul_container = next(node for node in wolf["nodes"] if node["key"] == "wolf_soul_container")
     assert response.status_code == 200
-    assert "可以增强帮会战斗中护院的能力" in content
-    assert "每日生产装备道具" not in content
-    assert "提升庄园资源产出" not in content
+    assert soul_container["daily_output"] == "灵魂容器 ×3"
+    assert "灵魂容器 ×3" in response.content.decode("utf-8")
 
 
 @pytest.mark.django_db
 def test_technology_page_uses_runtime_description_config(guild_tech_client, monkeypatch):
-    client, _user, guild = guild_tech_client
-    GuildTechnology.objects.create(
-        guild=guild, tech_key="equipment_forge", category="production", level=1, max_level=10
-    )
-    monkeypatch.setitem(
-        __import__("guilds.constants", fromlist=["TECH_DESCRIPTIONS"]).TECH_DESCRIPTIONS,
-        "equipment_forge",
-        "运行时配置的科技简介",
-    )
+    from guilds import constants as guild_constants
 
-    response = client.get(reverse("guilds:technology") + "?category=production")
+    client, _user, _guild = guild_tech_client
+    monkeypatch.setitem(guild_constants.TECH_DESCRIPTIONS, "wolf_soul_container", "运行时配置的科技简介")
+
+    response = client.get(reverse("guilds:technology"))
 
     assert response.status_code == 200
     assert "运行时配置的科技简介" in response.content.decode("utf-8")
 
 
 @pytest.mark.django_db
-def test_technology_page_uses_unified_card_style_without_section_title(guild_tech_client):
+def test_technology_page_hides_removed_legacy_technology(guild_tech_client):
     client, _user, guild = guild_tech_client
-    GuildTechnology.objects.create(guild=guild, tech_key="troop_tactics", category="combat", level=1, max_level=10)
-
-    response = client.get(reverse("guilds:technology") + "?category=combat")
-
-    content = response.content.decode("utf-8")
-    assert response.status_code == 200
-    assert "<h2>生产类科技</h2>" not in content
-    assert "<h2>战斗类科技</h2>" not in content
-    assert "<h2>福利类科技</h2>" not in content
-    assert 'class="building-grid"' not in content
-    assert 'class="building-card"' not in content
-    assert 'class="tw-building-grid"' in content
-    assert 'class="tw-building-card"' in content
-
-
-@pytest.mark.parametrize(
-    ("level", "expected_output", "expected_cost"),
-    [
-        (0, "灵魂容器 ×1", "红宝石 ×200"),
-        (1, "灵魂容器 ×1", "红宝石 ×300、金条 ×150"),
-        (2, "灵魂容器 ×1、门客重生卡 ×1、洗点卡 ×1", "红宝石 ×300、金条 ×200"),
-        (3, "灵魂容器 ×1、门客重生卡 ×1、洗点卡 ×1、洗髓丹 ×1", None),
-    ],
-)
-@pytest.mark.django_db
-def test_technology_page_renders_mysticism_cost_cap_and_daily_output(
-    guild_tech_client,
-    level,
-    expected_output,
-    expected_cost,
-):
-    client, _user, guild = guild_tech_client
-    GuildTechnology.objects.create(
-        guild=guild,
-        tech_key="mysticism",
-        category="production",
-        level=level,
-        max_level=3,
-    )
-
-    response = client.get(reverse("guilds:technology") + "?category=production")
-
-    content = response.content.decode("utf-8")
-    assert response.status_code == 200
-    assert "神秘学" in content
-    assert "2级新增门客重生卡和洗点卡，3级新增洗髓丹" in content
-    assert f"{level} / 3" in content
-    assert expected_output in content
-    if expected_cost is None:
-        assert "已满级" in content
-    else:
-        assert expected_cost in content
-
-
-@pytest.mark.django_db
-def test_technology_upgrade_action_is_centered_with_spacing(guild_tech_client):
-    client, _user, guild = guild_tech_client
-    GuildTechnology.objects.create(
-        guild=guild, tech_key="equipment_forge", category="production", level=1, max_level=10
-    )
-
-    response = client.get(reverse("guilds:technology") + "?category=production")
-
-    content = response.content.decode("utf-8")
-    assert response.status_code == 200
-    assert 'class="tw-card-actions tw-guild-tech-actions"' in content
-    assert 'class="tw-btn-primary tw-guild-tech-action-button"' in content
-    assert 'action="/guilds/technology/equipment_forge/upgrade/?category=production"' in content
-    assert content.index('class="tw-card-actions tw-guild-tech-actions"') > content.index('class="tw-guild-dl"')
-    assert "升级" in content
-
-
-@pytest.mark.django_db
-def test_upgrade_technology_redirect_preserves_selected_category(guild_tech_client, monkeypatch):
-    client, _user, _guild = guild_tech_client
-
-    monkeypatch.setattr("guilds.views.technology.technology_service.upgrade_technology", lambda *_a, **_k: None)
-
-    response = client.post(reverse("guilds:upgrade_tech", kwargs={"tech_key": "troop_tactics"}) + "?category=combat")
-
-    assert response.status_code == 302
-    assert response.url == reverse("guilds:technology") + "?category=combat"
-
-
-@pytest.mark.django_db
-def test_technology_page_hides_removed_military_study_even_if_legacy_row_exists(guild_tech_client):
-    client, _user, guild = guild_tech_client
-    GuildTechnology.objects.create(guild=guild, tech_key="military_study", category="combat", level=3, max_level=5)
+    GuildTechnology.objects.create(guild=guild, tech_key="military_study", category="public", level=3, max_level=5)
 
     response = client.get(reverse("guilds:technology"))
 
@@ -317,22 +182,32 @@ def test_technology_page_hides_removed_military_study_even_if_legacy_row_exists(
     assert response.status_code == 200
     assert "兵法研习" not in content
     assert "提升门客攻击力" not in content
-    assert "武力 +6%，智力 +2%，防御 +0%" not in content
 
 
 @pytest.mark.django_db
-def test_technology_page_projects_legacy_troop_tactics_to_runtime_max_and_mapping_copy(guild_tech_client):
+def test_technology_page_projects_legacy_troop_tactics_to_runtime_max(guild_tech_client):
     client, _user, guild = guild_tech_client
-    GuildTechnology.objects.create(guild=guild, tech_key="troop_tactics", category="combat", level=5, max_level=5)
+    GuildTechnology.objects.create(guild=guild, tech_key="troop_tactics", category="public", level=5, max_level=5)
 
     response = client.get(reverse("guilds:technology"))
 
-    content = response.content.decode("utf-8")
+    public_nodes = {node["key"]: node for node in response.context["public_technologies"]}
+    troop_tactics = public_nodes["troop_tactics"]
     assert response.status_code == 200
-    assert "可以增强帮会战斗中护院的能力" in content
-    assert "5 / 10" in content
-    assert "按 5 / 10 级线性映射个人兵种科技" in content
-    assert "按 6 / 10 级线性映射个人兵种科技" in content
+    assert troop_tactics["level"] == 5 and troop_tactics["max_level"] == 10
+    assert troop_tactics["current_effect"] == "帮会战斗中强化护院兵种能力（5 / 10级）"
+    assert troop_tactics["next_effect"] == "帮会战斗中强化护院兵种能力（6 / 10级）"
+
+
+@pytest.mark.django_db
+def test_upgrade_technology_redirects_to_tree(guild_tech_client, monkeypatch):
+    client, _user, _guild = guild_tech_client
+    monkeypatch.setattr("guilds.views.technology.technology_service.upgrade_technology", lambda *_a, **_k: None)
+
+    response = client.post(reverse("guilds:upgrade_tech", kwargs={"tech_key": "troop_tactics"}))
+
+    assert response.status_code == 302
+    assert response.url == reverse("guilds:technology")
 
 
 @pytest.mark.django_db

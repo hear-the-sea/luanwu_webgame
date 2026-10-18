@@ -120,19 +120,19 @@ def test_daily_feed_limit_counts_pieces_and_resets_next_day(manor, custom, monke
         effect_type="equip_weapon",
         effect_payload={"equipment_affix": "force"},
     )
-    item = InventoryItem.objects.create(manor=manor, template=template, quantity=103)
+    item = InventoryItem.objects.create(manor=manor, template=template, quantity=53)
     today = timezone.localdate()
-    consume_custom_guest_equipment(manor, custom.pk, item.pk, 60)
-    consume_custom_guest_equipment(manor, custom.pk, item.pk, 40)
+    consume_custom_guest_equipment(manor, custom.pk, item.pk, 30)
+    consume_custom_guest_equipment(manor, custom.pk, item.pk, 20)
     with pytest.raises(GameError, match="今日还可吞噬0件"):
         consume_custom_guest_equipment(manor, custom.pk, item.pk, 1)
     custom.refresh_from_db()
     item.refresh_from_db()
     assert item.quantity == 3
-    assert custom.custom_progress.feeding_count == 100
-    assert custom.custom_progress.weights["force"] == 2000
+    assert custom.custom_progress.feeding_count == 50
+    assert custom.custom_progress.weights["force"] == 1250
     monkeypatch.setattr("guests.services.custom_guest.timezone.localdate", lambda: today + timedelta(days=1))
-    assert get_custom_guest_context(custom)["feeding_remaining"] == 100
+    assert get_custom_guest_context(custom)["feeding_remaining"] == 50
     consume_custom_guest_equipment(manor, custom.pk, item.pk, 1)
     custom.refresh_from_db()
     assert custom.custom_progress.feeding_count == 1
@@ -155,8 +155,28 @@ def test_failed_feed_and_weight_reset_do_not_restore_daily_allowance(manor, cust
     stock(manor, "millennium_zhuguo", 1)
     reset_custom_guest_weights(manor, custom.pk)
     custom.refresh_from_db()
-    assert get_custom_guest_context(custom)["feeding_remaining"] == 98
+    assert get_custom_guest_context(custom)["feeding_remaining"] == 48
     assert sum(custom.custom_progress.weights.values()) == 2000
+
+
+def test_reduced_daily_limit_preserves_usage_already_above_50(manor, custom):
+    progress = custom.custom_progress
+    progress.feeding_count = 75
+    progress.feeding_date = timezone.localdate()
+    progress.save(update_fields=["feeding_count", "feeding_date"])
+    template = ItemTemplate.objects.create(
+        key="over_limit_custom_feed",
+        rarity="blue",
+        effect_type="equip_weapon",
+        effect_payload={"equipment_affix": "force"},
+    )
+    item = InventoryItem.objects.create(manor=manor, template=template, quantity=1)
+    assert get_custom_guest_context(custom)["feeding_remaining"] == 0
+    with pytest.raises(GameError, match="今日还可吞噬0件"):
+        consume_custom_guest_equipment(manor, custom.pk, item.pk, 1)
+    item.refresh_from_db()
+    progress.refresh_from_db()
+    assert item.quantity == 1 and progress.feeding_count == 75
 
 
 class FixedRandom:

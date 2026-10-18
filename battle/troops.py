@@ -54,6 +54,14 @@ def load_troop_templates_from_db() -> Dict[str, dict]:
     # 尝试从缓存获取
     templates = cache.get(TROOP_TEMPLATES_CACHE_KEY)
     if templates is not None:
+        templates = dict(templates)
+        missing_templates = False
+        for key, payload in load_troop_templates_from_yaml().items():
+            if key not in templates:
+                templates[key] = payload
+                missing_templates = True
+        if missing_templates:
+            cache.set(TROOP_TEMPLATES_CACHE_KEY, templates, timeout=TROOP_TEMPLATES_CACHE_TIMEOUT)
         return templates
 
     from battle.models import TroopTemplate
@@ -71,6 +79,9 @@ def load_troop_templates_from_db() -> Dict[str, dict]:
             "default_count": troop.default_count,
             "avatar": troop.avatar.url if troop.avatar else None,
         }
+
+    for key, payload in load_troop_templates_from_yaml().items():
+        templates.setdefault(key, payload)
 
     # 只有数据库有数据时才缓存
     if templates:

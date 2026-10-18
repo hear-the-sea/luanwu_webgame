@@ -9,7 +9,16 @@
             {% for reward in reward_rows %}
             <article class="tw-arena-reward-card {% if not reward.can_afford %}tw-arena-reward-card--disabled{% endif %}">
                 <div class="tw-arena-reward-head">
-                    <p class="tw-arena-reward-name">{{ reward.name }}</p>
+                    <div class="tw-arena-reward-identity">
+                        {% if reward.display_image_url %}
+                        <span class="tw-arena-reward-icon" aria-hidden="true">
+                            <img src="{{ reward.display_image_url }}" alt="" width="56" height="56" loading="lazy" decoding="async">
+                        </span>
+                        {% elif reward.display_icon %}
+                        <span class="tw-arena-reward-icon tw-arena-reward-icon--fallback" aria-hidden="true">{{ reward.display_icon }}</span>
+                        {% endif %}
+                        <p class="tw-arena-reward-name">{{ reward.name }}</p>
+                    </div>
                     <span class="tw-arena-reward-cost">{{ reward.cost_coins }} 币</span>
                 </div>
                 {% if reward.description %}
@@ -21,47 +30,73 @@
                 {% if reward.weekly_limit %}
                 <p class="tw-arena-reward-limit">周限 {{ reward.weekly_limit }}</p>
                 {% endif %}
-                <div>
-                    <p class="tw-arena-reward-subtitle">奖励</p>
+                <section aria-label="兑换内容">
                     <ul class="tw-arena-reward-list">
                         {% for resource in reward.resource_rows %}
-                        <li class="tw-arena-reward-item">{{ resource.label }} ×{{ resource.amount }}</li>
+                        <li class="tw-arena-reward-resource">
+                            <span>{{ resource.label }}</span>
+                            <strong>×{{ resource.amount }}</strong>
+                        </li>
                         {% endfor %}
                         {% for item in reward.item_rows %}
-                        <li class="tw-arena-reward-item">{{ item.label }} ×{{ item.amount }}</li>
+                        <li class="tw-arena-reward-resource">
+                            <span>{{ item.label }}</span>
+                            <strong>×{{ item.amount }}</strong>
+                        </li>
                         {% endfor %}
                         {% if reward.rotating_blueprint_row %}
-                        <li class="tw-arena-reward-item">本周图纸：{{ reward.rotating_blueprint_row.label }} ×{{ reward.rotating_blueprint_row.amount }}</li>
+                        <li class="tw-arena-reward-resource">
+                            <span>本周图纸：{{ reward.rotating_blueprint_row.label }}</span>
+                            <strong>×{{ reward.rotating_blueprint_row.amount }}</strong>
+                        </li>
                         {% endif %}
                         {% if reward.random_blueprint_row %}
-                        <li class="tw-arena-reward-item">{{ reward.random_blueprint_row.label }} ×{{ reward.random_blueprint_row.amount }}</li>
+                        <li class="tw-arena-reward-resource">
+                            <span>{{ reward.random_blueprint_row.label }}</span>
+                            <strong>随机×{{ reward.random_blueprint_row.amount }}</strong>
+                        </li>
                         {% endif %}
                         {% if reward.random_item_rows %}
-                        {% if reward.key == "gladiator_chest" %}
-                        <li class="tw-arena-reward-item">随机角斗士装备</li>
-                        {% else %}
-                        <li class="tw-arena-reward-item">随机奖励</li>
-                        {% endif %}
+                        <li class="tw-arena-reward-resource">
+                            <span>{% if reward.key == "gladiator_chest" %}随机角斗士装备{% else %}随机奖励{% endif %}</span>
+                            <strong>随机</strong>
+                        </li>
                         {% endif %}
                         {% if not reward.resource_rows and not reward.item_rows and not reward.random_item_rows and not reward.rotating_blueprint_row and not reward.random_blueprint_row %}
-                        <li class="tw-arena-reward-item">无奖励配置</li>
+                        <li class="tw-arena-reward-resource"><span>无奖励配置</span></li>
                         {% endif %}
                     </ul>
-                </div>
+                </section>
                 <form method="post" action="{% url 'gameplay:arena_exchange' %}" class="tw-arena-reward-form">
                     {% csrf_token %}
                     <input type="hidden" name="reward_key" value="{{ reward.key }}">
                     <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                    <input type="number" name="quantity" value="1" min="1" max="99" class="tw-arena-qty-input">
+                    <label class="sr-only" for="arena-reward-quantity-{{ reward.key }}">兑换{{ reward.name }}数量</label>
+                    <input id="arena-reward-quantity-{{ reward.key }}" type="number" name="quantity" value="1" min="1" max="99" step="1" inputmode="numeric" autocomplete="off" class="tw-arena-qty-input">
                     <button type="submit" class="tw-btn-secondary tw-btn-sm" {% if not reward.can_afford %}disabled{% endif %}>
                         兑换
                     </button>
                 </form>
             </article>
             {% empty %}
-            <p class="tw-empty-hint">暂无可兑换奖励配置。</p>
+            <p class="tw-empty-hint">暂无可兑换的奖励。</p>
             {% endfor %}
         </div>
+        {% if reward_page.has_other_pages %}
+        <nav class="tw-pagination tw-arena-reward-pagination" aria-label="竞技场奖励兑换分页">
+            {% if reward_page.has_previous %}
+            <a href="?page={{ reward_page.previous_page_number }}" class="tw-btn-secondary tw-btn-sm">上一页</a>
+            {% else %}
+            <span class="tw-btn-secondary tw-btn-sm disabled" aria-disabled="true">上一页</span>
+            {% endif %}
+            <span class="tw-page-info">{{ reward_page.number }} / {{ reward_page.paginator.num_pages }}</span>
+            {% if reward_page.has_next %}
+            <a href="?page={{ reward_page.next_page_number }}" class="tw-btn-secondary tw-btn-sm">下一页</a>
+            {% else %}
+            <span class="tw-btn-secondary tw-btn-sm disabled" aria-disabled="true">下一页</span>
+            {% endif %}
+        </nav>
+        {% endif %}
     </div>
 </section>
 

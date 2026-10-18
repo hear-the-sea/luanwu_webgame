@@ -25,13 +25,28 @@ def _normalize_recruit_config(raw: Any, *, troop_key: str) -> dict[str, Any] | N
     equipment_raw = ensure_list(recruit.get("equipment"), logger=logger, context=f"{troop_key}.recruit.equipment")
     equipment = [item_key for item in equipment_raw if (item_key := str(item or "").strip())]
     tech_key = str(recruit.get("tech_key") or "").strip() or None
+    guild_tech_key = str(recruit.get("guild_tech_key") or "").strip() or None
+    guild_only_raw = recruit.get("guild_only")
+    guild_only = guild_only_raw is True
+    if guild_only_raw is not None and not isinstance(guild_only_raw, bool):
+        logger.error(
+            "Invalid guild_only value in troop_templates[%s].recruit; restricting troop to guild use", troop_key
+        )
+        guild_only = True
 
     return {
         "tech_key": tech_key,
+        "guild_tech_key": guild_tech_key,
+        "guild_only": guild_only,
         "tech_level": safe_non_negative_int(recruit.get("tech_level"), 0),
+        "max_quantity_per_level": safe_positive_int(recruit.get("max_quantity_per_level"), 0),
         "equipment": equipment,
-        "retainer_cost": safe_positive_int(recruit.get("retainer_cost"), 1),
-        "base_duration": safe_positive_int(recruit.get("base_duration"), DEFAULT_TROOP_RECRUITMENT_BASE_DURATION),
+        "retainer_cost": 0 if guild_only else safe_positive_int(recruit.get("retainer_cost"), 1),
+        "base_duration": (
+            0
+            if guild_only
+            else safe_positive_int(recruit.get("base_duration"), DEFAULT_TROOP_RECRUITMENT_BASE_DURATION)
+        ),
     }
 
 

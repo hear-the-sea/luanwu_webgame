@@ -17,15 +17,18 @@ class ArenaRingError(GameError):
     error_code = "ARENA_RING_ERROR"
 
 
-def build_ring_technology_payload() -> dict[str, dict[str, int]]:
+def build_ring_technology_payload(manor: Manor | None = None) -> dict[str, dict[str, int]]:
     """演武台临时满级科技，不修改玩家的实际科技。"""
-    return {
-        "levels": {
-            tech["key"]: int(tech["max_level"])
-            for tech in load_technology_templates().get("technologies", [])
-            if tech.get("category") == "martial"
-        }
+    levels = {
+        tech["key"]: int(tech["max_level"])
+        for tech in load_technology_templates().get("technologies", [])
+        if tech.get("category") == "martial"
     }
+    if manor is not None:
+        from guilds.services.technology import get_manor_guild_troop_tech_levels
+
+        levels.update(get_manor_guild_troop_tech_levels(manor))
+    return {"levels": levels}
 
 
 def build_ring_lineup(
@@ -77,7 +80,7 @@ def build_ring_lineup(
     return {
         "guests": snapshots,
         "troops": troops,
-        "technology": build_ring_technology_payload(),
+        "technology": build_ring_technology_payload(manor),
         "guest_count": len(snapshots),
         "troop_count": sum(troops.values()),
         "power": sum(g["attack"] + g["defense"] + g["max_hp"] for g in snapshots),

@@ -33,6 +33,7 @@ from .bots import (
     VirtualPlayerGrowthControlSnapshot,
 )
 from .chat import WorldChatSendAttempt
+from .item_effects import ManorResourceProductionBuff, TargetItemEffectCooldown, TemporaryGuestOccupation
 from .items import GlobalMailCampaign, GlobalMailDelivery, InventoryItem, ItemTemplate, Message, ResourceEvent
 from .manor import (
     ACTION_POINTS_MAX,
@@ -104,6 +105,9 @@ __all__ = [
     "ResourceEvent",
     "ItemTemplate",
     "InventoryItem",
+    "TargetItemEffectCooldown",
+    "TemporaryGuestOccupation",
+    "ManorResourceProductionBuff",
     "Message",
     "GlobalMailCampaign",
     "GlobalMailDelivery",

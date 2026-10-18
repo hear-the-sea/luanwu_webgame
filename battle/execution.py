@@ -42,6 +42,8 @@ from .random_context import (
 from .rewards import dispatch_battle_message, grant_battle_rewards
 from .simulation_core import simulate_battle
 
+_DEFAULT_ATTACKER_MANOR = object()
+
 
 @dataclass
 class BattleOptions:
@@ -70,7 +72,7 @@ class BattleOptions:
     attacker_tech_levels: Dict[str, int] | None = None
     attacker_guest_bonuses: Dict[str, float] | None = None
     attacker_guest_skills: List[str] | None = None
-    attacker_manor: Any | None = None
+    attacker_manor: Any = _DEFAULT_ATTACKER_MANOR
     defender_manor: Any | None = None
     validate_attacker_troop_capacity: bool = True
     attacker_troop_loss_rate: float | None = None
@@ -228,7 +230,7 @@ def _build_attacker_units(
         override_skill_keys=options.attacker_guest_skills,
     )
 
-    attacker_manor = manor if options.attacker_manor is None else options.attacker_manor
+    attacker_manor = manor if options.attacker_manor is _DEFAULT_ATTACKER_MANOR else options.attacker_manor
     attacker_device_summary = build_troop_device_bonus_summary(active_guests)
     attacker_troops = build_troop_combatants(
         normalized_loadout,
@@ -266,6 +268,7 @@ def _build_defender_units(
     defender_troops = build_troop_combatants(
         defender_loadout,
         side="defender",
+        manor=options.defender_manor,
         tech_levels=defender_tech_levels or None,
         device_bonuses=defender_device_summary.bonuses,
     )

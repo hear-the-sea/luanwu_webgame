@@ -32,7 +32,7 @@
                 <a href="{% url 'guilds:detail' guild.id %}" class="tw-guild-subnav-link{% if url_name == 'detail' or url_name == 'info' or url_name == 'donation_logs' or url_name == 'resource_logs' %} is-active{% endif %}">总览</a>
                 <a href="{% url 'guilds:members' %}" class="tw-guild-subnav-link{% if url_name == 'members' or url_name == 'applications' %} is-active{% endif %}">成员</a>
                 <a href="{% url 'guilds:technology' %}" class="tw-guild-subnav-link{% if url_name == 'technology' %} is-active{% endif %}">科技</a>
-                <a href="{% url 'guilds:warehouse' %}" class="tw-guild-subnav-link{% if url_name == 'warehouse' or url_name == 'exchange_logs' %} is-active{% endif %}">仓库</a>
+                <a href="{% url 'guilds:warehouse' %}" class="tw-guild-subnav-link{% if url_name == 'warehouse' or url_name == 'exchange_logs' %} is-active{% endif %}">帮会资产</a>
                 <a href="{% url 'guilds:hero_pool' %}" class="tw-guild-subnav-link{% if url_name == 'hero_pool' %} is-active{% endif %}">门客池</a>
                 <a href="{% url 'guilds:missions' %}" class="tw-guild-subnav-link{% if url_name == 'missions' %} is-active{% endif %}">任务</a>
                 <a href="{% url 'guilds:pvp' %}" class="tw-guild-subnav-link{% if url_name == 'pvp' %} is-active{% endif %}">对战</a>

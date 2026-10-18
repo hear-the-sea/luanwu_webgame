@@ -447,7 +447,30 @@ def validate_trade_market_rules(data: dict, *, file: str = "trade_market_rules.y
 # Schema: warehouse_production.yaml
 # ---------------------------------------------------------------------------
 
-VALID_WAREHOUSE_TECH_KEYS = {"equipment", "experience", "guard", "mysticism", "resource"}
+VALID_WAREHOUSE_TECH_KEYS = {
+    "equipment",
+    "experience",
+    "guard",
+    "mysticism",
+    "resource",
+    "hero_fruit_blueprint",
+    "hero_rebirth_card",
+    "hero_green_blue_pill",
+    "hero_blue_purple_pill",
+    "hero_reset_card",
+    "hero_marrow_pill",
+    "wolf_plunder_card",
+    "wolf_lightning_horse",
+    "wolf_golden_white_horse",
+    "wolf_soul_container",
+    "sheep_grain_card",
+    "sheep_silver_card",
+    "sheep_wrath",
+    "forging_mechanism_blueprint",
+    "forging_slave_card",
+    "forging_theft_card",
+    "forging_injury_card",
+}
 
 
 def validate_warehouse_production(data: dict, *, file: str = "warehouse_production.yaml") -> ValidationResult:
@@ -612,6 +635,17 @@ def validate_guild_rules(data: dict, *, file: str = "guild_rules.yaml") -> Valid
     if not isinstance(data, dict):
         result.add(file, "<root>", "expected a mapping at root level")
         return result
+
+    cavalry = data.get("cavalry_recruitment")
+    if cavalry is not None:
+        if not isinstance(cavalry, dict):
+            result.add(file, "cavalry_recruitment", "expected a mapping")
+        else:
+            for key in ("silver_per_unit", "grain_per_unit", "contribution_per_unit", "max_batch", "seconds_per_unit"):
+                if key in cavalry and (
+                    not isinstance(cavalry[key], int) or isinstance(cavalry[key], bool) or cavalry[key] <= 0
+                ):
+                    result.add(file, f"cavalry_recruitment.{key}", "expected a positive integer")
 
     for section in ("pagination", "creation", "contribution"):
         section_data = data.get(section)

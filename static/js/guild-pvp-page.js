@@ -205,7 +205,11 @@
     filterButtons.forEach((button) => {
       button.addEventListener("click", () => {
         activeFilter = button.dataset.targetFilter || "all";
-        filterButtons.forEach((node) => node.classList.toggle("is-active", node === button));
+        filterButtons.forEach((node) => {
+          const isActive = node === button;
+          node.classList.toggle("is-active", isActive);
+          node.setAttribute("aria-pressed", isActive ? "true" : "false");
+        });
         updateTargetVisibility();
       });
     });

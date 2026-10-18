@@ -181,6 +181,9 @@ def complete_work_assignments() -> int:
     性能优化：使用批量更新替代逐条更新，减少数据库查询
     """
     now = timezone.now()
+    from gameplay.services.inventory.target_items import release_expired_guest_occupations
+
+    release_expired_guest_occupations(now=now)
 
     with transaction.atomic():
         # 查找所有到期的打工任务

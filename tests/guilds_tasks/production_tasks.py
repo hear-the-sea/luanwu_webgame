@@ -15,16 +15,8 @@ def test_guild_tech_daily_production_runs_and_updates_last_production_at(monkeyp
     calls: list[tuple[str, int]] = []
 
     monkeypatch.setattr(
-        "guilds.tasks.produce_equipment",
-        lambda guild, level: calls.append(("equipment", int(level))),
-    )
-    monkeypatch.setattr(
-        "guilds.tasks.produce_experience_items",
-        lambda guild, level: calls.append(("exp", int(level))),
-    )
-    monkeypatch.setattr(
-        "guilds.tasks.produce_resource_packs",
-        lambda guild, level: calls.append(("packs", int(level))),
+        "guilds.tasks.produce_technology_items",
+        lambda guild, tech_key, level: calls.append((tech_key, int(level))),
     )
     monkeypatch.setattr(
         guild_tech_daily_production,
@@ -36,12 +28,16 @@ def test_guild_tech_daily_production_runs_and_updates_last_production_at(monkeyp
     founder = django_user_model.objects.create_user(username="g_founder", password="pass")
     guild = Guild.objects.create(name="G1", founder=founder, is_active=True)
 
-    for key in ("equipment_forge", "experience_refine", "resource_supply"):
+    for key in ("forging_equipment_forge", "hero_skill_books", "sheep_grain_card"):
         GuildTechnology.objects.create(guild=guild, tech_key=key, level=2)
 
     result = guild_tech_daily_production.run()
     assert result == "dispatched 1 guild tasks"
-    assert sorted(calls) == [("equipment", 2), ("exp", 2), ("packs", 2)]
+    assert sorted(calls) == [
+        ("forging_equipment_forge", 2),
+        ("hero_skill_books", 2),
+        ("sheep_grain_card", 2),
+    ]
 
     updated = {t.tech_key: t.last_production_at for t in GuildTechnology.objects.filter(guild=guild)}
     assert all(updated.values())
@@ -54,18 +50,12 @@ def test_guild_tech_daily_production_handles_inner_errors(monkeypatch, django_us
 
     calls: list[str] = []
 
-    def _boom(_guild, _level):
-        raise DatabaseError("boom")
+    def produce(_guild, tech_key, _level):
+        if tech_key == "forging_equipment_forge":
+            raise DatabaseError("boom")
+        calls.append(tech_key)
 
-    monkeypatch.setattr("guilds.tasks.produce_equipment", _boom)
-    monkeypatch.setattr(
-        "guilds.tasks.produce_experience_items",
-        lambda guild, level: calls.append("exp"),
-    )
-    monkeypatch.setattr(
-        "guilds.tasks.produce_resource_packs",
-        lambda guild, level: calls.append("packs"),
-    )
+    monkeypatch.setattr("guilds.tasks.produce_technology_items", produce)
     monkeypatch.setattr(
         guild_tech_daily_production,
         "retry",
@@ -75,13 +65,13 @@ def test_guild_tech_daily_production_handles_inner_errors(monkeypatch, django_us
 
     founder = django_user_model.objects.create_user(username="g_founder2", password="pass")
     guild = Guild.objects.create(name="G2", founder=founder, is_active=True)
-    GuildTechnology.objects.create(guild=guild, tech_key="equipment_forge", level=2)
-    GuildTechnology.objects.create(guild=guild, tech_key="experience_refine", level=2)
-    GuildTechnology.objects.create(guild=guild, tech_key="resource_supply", level=2)
+    GuildTechnology.objects.create(guild=guild, tech_key="forging_equipment_forge", level=2)
+    GuildTechnology.objects.create(guild=guild, tech_key="hero_skill_books", level=2)
+    GuildTechnology.objects.create(guild=guild, tech_key="sheep_grain_card", level=2)
 
     result = guild_tech_daily_production.run()
     assert result == "dispatched 1 guild tasks"
-    assert sorted(calls) == ["exp", "packs"]
+    assert sorted(calls) == ["hero_skill_books", "sheep_grain_card"]
 
 
 @pytest.mark.django_db
@@ -89,21 +79,24 @@ def test_process_single_guild_production_is_idempotent_per_day(monkeypatch, djan
     from guilds.models import Guild, GuildTechnology
     from guilds.tasks import process_single_guild_production
 
-    calls: list[int] = []
+    calls: list[tuple[str, int]] = []
 
-    monkeypatch.setattr("guilds.tasks.produce_equipment", lambda guild, level: calls.append(level))
+    monkeypatch.setattr(
+        "guilds.tasks.produce_technology_items",
+        lambda _guild, tech_key, level: calls.append((tech_key, int(level))),
+    )
 
     founder = django_user_model.objects.create_user(username="g_founder_daily_once", password="pass")
     guild = Guild.objects.create(name="G-once", founder=founder, is_active=True)
-    tech = GuildTechnology.objects.create(guild=guild, tech_key="equipment_forge", level=2)
+    tech = GuildTechnology.objects.create(guild=guild, tech_key="forging_equipment_forge", level=2)
 
     first = process_single_guild_production.run(guild.id)
     second = process_single_guild_production.run(guild.id)
 
     tech.refresh_from_db()
-    assert first == f"processed guild {guild.id}: equipment"
+    assert first == f"processed guild {guild.id}: forging_equipment_forge"
     assert second == f"processed guild {guild.id}: "
-    assert calls == [2]
+    assert calls == [("forging_equipment_forge", 2)]
     assert tech.last_production_at is not None
 
 
@@ -115,7 +108,7 @@ def test_process_single_guild_production_does_not_mark_timestamp_on_failure(monk
     captured: dict[str, object] = {}
 
     monkeypatch.setattr(
-        "guilds.tasks.produce_equipment",
+        "guilds.tasks.produce_technology_items",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(DatabaseError("boom")),
     )
     monkeypatch.setattr(
@@ -125,7 +118,7 @@ def test_process_single_guild_production_does_not_mark_timestamp_on_failure(monk
 
     founder = django_user_model.objects.create_user(username="g_founder_daily_fail", password="pass")
     guild = Guild.objects.create(name="G-fail", founder=founder, is_active=True)
-    tech = GuildTechnology.objects.create(guild=guild, tech_key="equipment_forge", level=2)
+    tech = GuildTechnology.objects.create(guild=guild, tech_key="forging_equipment_forge", level=2)
 
     result = process_single_guild_production.run(guild.id)
 
@@ -149,14 +142,14 @@ def test_process_single_guild_production_persists_failed_ids_when_retry_dispatch
     cache.delete(FAILED_GUILD_PRODUCTION_IDS_CACHE_KEY)
 
     monkeypatch.setattr(
-        "guilds.tasks.produce_equipment",
+        "guilds.tasks.produce_technology_items",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(DatabaseError("boom")),
     )
     monkeypatch.setattr("common.utils.celery.safe_apply_async", lambda *_args, **_kwargs: False)
 
     founder = django_user_model.objects.create_user(username="g_founder_dispatch_persist", password="pass")
     guild = Guild.objects.create(name="G-dispatch-persist", founder=founder, is_active=True)
-    GuildTechnology.objects.create(guild=guild, tech_key="equipment_forge", level=2)
+    GuildTechnology.objects.create(guild=guild, tech_key="forging_equipment_forge", level=2)
 
     result = process_single_guild_production.run(guild.id)
 
@@ -174,10 +167,10 @@ def test_process_single_guild_production_programming_error_bubbles_up(monkeypatc
 
     founder = django_user_model.objects.create_user(username="g_founder_programming_error", password="pass")
     guild = Guild.objects.create(name="G-programming-error", founder=founder, is_active=True)
-    tech = GuildTechnology.objects.create(guild=guild, tech_key="equipment_forge", level=2)
+    tech = GuildTechnology.objects.create(guild=guild, tech_key="forging_equipment_forge", level=2)
 
     monkeypatch.setattr(
-        "guilds.tasks.produce_equipment",
+        "guilds.tasks.produce_technology_items",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("broken guild production contract")),
     )
 
@@ -189,22 +182,22 @@ def test_process_single_guild_production_programming_error_bubbles_up(monkeypatc
 
 
 @pytest.mark.django_db
-def test_process_single_guild_production_runs_mysticism_once_per_day(monkeypatch, django_user_model):
+def test_process_single_guild_production_runs_soul_container_once_per_day(monkeypatch, django_user_model):
     from guilds.models import Guild, GuildTechnology
     from guilds.tasks import process_single_guild_production
 
-    calls: list[tuple[int, int]] = []
+    calls: list[tuple[str, int]] = []
     monkeypatch.setattr(
-        "guilds.tasks.produce_soul_containers",
-        lambda guild, level: calls.append((guild.id, int(level))),
+        "guilds.tasks.produce_technology_items",
+        lambda guild, tech_key, level: calls.append((tech_key, int(level))),
     )
 
-    founder = django_user_model.objects.create_user(username="g_mysticism_founder", password="pass")
-    guild = Guild.objects.create(name="G-mysticism", founder=founder, is_active=True)
+    founder = django_user_model.objects.create_user(username="g_soul_container_founder", password="pass")
+    guild = Guild.objects.create(name="G-soul-container", founder=founder, is_active=True)
     tech = GuildTechnology.objects.create(
         guild=guild,
-        tech_key="mysticism",
-        category="production",
+        tech_key="wolf_soul_container",
+        category="wolf",
         level=3,
         max_level=3,
     )
@@ -212,9 +205,9 @@ def test_process_single_guild_production_runs_mysticism_once_per_day(monkeypatch
     first_result = process_single_guild_production.run(guild.id)
     second_result = process_single_guild_production.run(guild.id)
 
-    assert first_result == f"processed guild {guild.id}: soul_container"
+    assert first_result == f"processed guild {guild.id}: wolf_soul_container"
     assert second_result == f"processed guild {guild.id}: "
-    assert calls == [(guild.id, 3)]
+    assert calls == [("wolf_soul_container", 3)]
     tech.refresh_from_db()
     assert tech.last_production_at is not None
 

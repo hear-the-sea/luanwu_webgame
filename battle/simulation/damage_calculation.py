@@ -73,6 +73,15 @@ def _apply_attack_and_defense_tech_effects(
         if melee_bonus > 0:
             attack_value = attack_value * (1 + melee_bonus)
 
+    if actor.kind == "troop" and actor.troop_class == "dao":
+        defense_ignore = max(0.0, min(1.0, actor.tech_effects.get("defense_ignore", 0)))
+        if defense_ignore > 0:
+            defense_value = defense_value * (1 - defense_ignore)
+        if target.kind == "troop" and target.troop_class == "jian":
+            sword_bonus = max(0.0, actor.tech_effects.get("sword_damage_bonus", 0))
+            if sword_bonus > 0:
+                attack_value = attack_value * (1 + sword_bonus)
+
     return attack_value, defense_value
 
 
@@ -341,7 +350,7 @@ def calculate_attack_damage(
     覆盖内容（与历史实现保持一致的顺序）：
     1) 计算有效攻击
     2) 计算目标防御（按小兵/门客、攻击者类型区分）
-    3) 应用武艺技术影响（远程防御值、弓近战加成）
+    3) 应用武艺技术影响（远程防御值、弓近战加成、刀系破甲与对剑增伤）
     4) 应用五行相克固定倍率
     5) 按战斗双方类型计算防御减伤（含软/硬上限）
     6) 伤害随机波动
@@ -379,6 +388,9 @@ def calculate_attack_damage(
     bonus = skill_damage_bonus(skills, actor, target)
     base_damage_value = base_damage
     total_damage_value = base_damage + bonus
+    for skill in skills:
+        if "damage_multiplier" in skill:
+            total_damage_value *= max(0.0, float(skill.get("damage_multiplier") or 0.0))
 
     is_double_strike = _roll_double_strike(actor, rng)
     base_damage_value = _apply_post_damage_modifiers(

@@ -14,7 +14,8 @@ def trigger_skills(attacker, rng: random.Random) -> List[Dict]:
     Ensures at most one active skill fires per turn while passives accumulate.
 
     触发率公式：chance = 0.95 * (luck / 300) ^ 0.85，上限95%，下限5%
-    - 技能不再有独立触发率，统一由运势决定
+    - 主动技能默认按运势触发，可通过 trigger_chance 覆盖
+    - 被动技能始终生效
     - 运势50（武将典型）：20.2% 触发率
     - 运势100：36.2% 触发率
     - 运势150（文官典型）：52.6% 触发率
@@ -29,7 +30,7 @@ def trigger_skills(attacker, rng: random.Random) -> List[Dict]:
     triggered: List[Dict] = []
     triggered_active: List[Dict] = []
 
-    # 运势决定触发率，所有技能共用同一个触发概率
+    # 运势决定默认触发率；主动技能可通过 trigger_chance 单独覆盖
     # 幂函数公式：低运势差距大，高运势收敛到95%上限
     # 安全修复：设置最小触发率5%，防止luck=1时触发率过低(0.03%)
     MIN_SKILL_CHANCE = 0.05  # 最小触发率5%
@@ -42,7 +43,9 @@ def trigger_skills(attacker, rng: random.Random) -> List[Dict]:
         if not _is_active_skill(skill):
             triggered.append(skill)
             continue
-        if rng.random() > chance:
+        skill_chance = float(skill.get("trigger_chance", chance))
+        skill_chance = max(0.0, min(1.0, skill_chance))
+        if rng.random() > skill_chance:
             continue
         triggered_active.append(skill)
     if triggered_active:

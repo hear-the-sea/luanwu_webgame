@@ -60,7 +60,9 @@ def test_start_horse_production_scales_duration_by_quantity(django_user_model, m
         },
     )
     monkeypatch.setattr("gameplay.services.technology.get_player_technology_level", lambda *_args, **_kwargs: 5)
-    monkeypatch.setattr("gameplay.services.buildings.stable.calculate_production_duration", lambda *_args: 30)
+    monkeypatch.setattr(
+        "gameplay.services.buildings.stable.calculate_production_duration", lambda *_args, **_kwargs: 30
+    )
     monkeypatch.setattr("gameplay.services.buildings.stable._schedule_production_completion", lambda *_args: None)
 
     production = start_horse_production(manor, "war_horse", 3)
@@ -83,7 +85,7 @@ def test_start_livestock_production_scales_duration_by_quantity(django_user_mode
         },
     )
     monkeypatch.setattr("gameplay.services.technology.get_player_technology_level", lambda *_args, **_kwargs: 5)
-    monkeypatch.setattr("gameplay.services.buildings.ranch.calculate_livestock_duration", lambda *_args: 30)
+    monkeypatch.setattr("gameplay.services.buildings.ranch.calculate_livestock_duration", lambda *_args, **_kwargs: 30)
     monkeypatch.setattr("gameplay.services.buildings.ranch._schedule_livestock_completion", lambda *_args: None)
 
     production = start_livestock_production(manor, "chicken", 3)

@@ -1,0 +1,1273 @@
+{
+  "scope": "当前工作区代码及隔离数据库测试；未核验线上数据库、迁移和Celery实际执行记录",
+  "production_nodes": 17,
+  "routes": [
+    {
+      "key": "hero",
+      "title": "英雄系",
+      "nodes": [
+        {
+          "key": "hero_fruit_blueprint",
+          "name": "经验果图纸",
+          "description": "每日产出经验果与合成图纸。1级：经验果500、桃子图纸20；2级：经验果1000、桃子图纸20、菠萝图纸20；3级：经验果1500、桃子图纸20、菠萝图纸20、西瓜图纸20。",
+          "max_level": 3,
+          "production": true,
+          "levels": {
+            "1": [
+              {
+                "item_key": "experience_fruit",
+                "name": "经验果",
+                "quantity": 500,
+                "contribution_cost": 1,
+                "configured_weekly_personal_limit": 0
+              },
+              {
+                "item_key": "experience_peach_recipe",
+                "name": "经验桃子合成图纸",
+                "quantity": 20,
+                "contribution_cost": 50,
+                "configured_weekly_personal_limit": 5
+              }
+            ],
+            "2": [
+              {
+                "item_key": "experience_fruit",
+                "name": "经验果",
+                "quantity": 1000,
+                "contribution_cost": 1,
+                "configured_weekly_personal_limit": 0
+              },
+              {
+                "item_key": "experience_peach_recipe",
+                "name": "经验桃子合成图纸",
+                "quantity": 20,
+                "contribution_cost": 50,
+                "configured_weekly_personal_limit": 5
+              },
+              {
+                "item_key": "experience_pineapple_recipe",
+                "name": "经验菠萝合成图纸",
+                "quantity": 20,
+                "contribution_cost": 100,
+                "configured_weekly_personal_limit": 4
+              }
+            ],
+            "3": [
+              {
+                "item_key": "experience_fruit",
+                "name": "经验果",
+                "quantity": 1500,
+                "contribution_cost": 1,
+                "configured_weekly_personal_limit": 0
+              },
+              {
+                "item_key": "experience_peach_recipe",
+                "name": "经验桃子合成图纸",
+                "quantity": 20,
+                "contribution_cost": 50,
+                "configured_weekly_personal_limit": 5
+              },
+              {
+                "item_key": "experience_pineapple_recipe",
+                "name": "经验菠萝合成图纸",
+                "quantity": 20,
+                "contribution_cost": 100,
+                "configured_weekly_personal_limit": 4
+              },
+              {
+                "item_key": "experience_watermelon_recipe",
+                "name": "经验西瓜合成图纸",
+                "quantity": 20,
+                "contribution_cost": 200,
+                "configured_weekly_personal_limit": 3
+              }
+            ]
+          },
+          "enabled": true
+        },
+        {
+          "key": "hero_skill_books",
+          "name": "门客技能书",
+          "description": "每日产出随机技能书箱并计入帮会资产，升级可提高产量并解锁更高品质的书箱。",
+          "max_level": 10,
+          "production": true,
+          "levels": {
+            "1": [
+              {
+                "item_key": "guild_skill_book_box_green",
+                "name": "帮会初级技能书箱",
+                "quantity": 1,
+                "contribution_cost": 80,
+                "configured_weekly_personal_limit": 4
+              }
+            ],
+            "2": [
+              {
+                "item_key": "guild_skill_book_box_green",
+                "name": "帮会初级技能书箱",
+                "quantity": 2,
+                "contribution_cost": 80,
+                "configured_weekly_personal_limit": 4
+              }
+            ],
+            "3": [
+              {
+                "item_key": "guild_skill_book_box_blue",
+                "name": "帮会中级技能书箱",
+                "quantity": 1,
+                "contribution_cost": 180,
+                "configured_weekly_personal_limit": 3
+              },
+              {
+                "item_key": "guild_skill_book_box_green",
+                "name": "帮会初级技能书箱",
+                "quantity": 2,
+                "contribution_cost": 80,
+                "configured_weekly_personal_limit": 4
+              }
+            ],
+            "4": [
+              {
+                "item_key": "guild_skill_book_box_blue",
+                "name": "帮会中级技能书箱",
+                "quantity": 2,
+                "contribution_cost": 180,
+                "configured_weekly_personal_limit": 3
+              },
+              {
+                "item_key": "guild_skill_book_box_green",
+                "name": "帮会初级技能书箱",
+                "quantity": 2,
+                "contribution_cost": 80,
+                "configured_weekly_personal_limit": 4
+              }
+            ],
+            "5": [
+              {
+                "item_key": "guild_skill_book_box_purple",
+                "name": "帮会高级技能书箱",
+                "quantity": 1,
+                "contribution_cost": 500,
+                "configured_weekly_personal_limit": 1
+              },
+              {
+                "item_key": "guild_skill_book_box_blue",
+                "name": "帮会中级技能书箱",
+                "quantity": 2,
+                "contribution_cost": 180,
+                "configured_weekly_personal_limit": 3
+              },
+              {
+                "item_key": "guild_skill_book_box_green",
+                "name": "帮会初级技能书箱",
+                "quantity": 2,
+                "contribution_cost": 80,
+                "configured_weekly_personal_limit": 4
+              }
+            ],
+            "6": [
+              {
+                "item_key": "guild_skill_book_box_purple",
+                "name": "帮会高级技能书箱",
+                "quantity": 2,
+                "contribution_cost": 500,
+                "configured_weekly_personal_limit": 1
+              },
+              {
+                "item_key": "guild_skill_book_box_blue",
+                "name": "帮会中级技能书箱",
+                "quantity": 2,
+                "contribution_cost": 180,
+                "configured_weekly_personal_limit": 3
+              },
+              {
+                "item_key": "guild_skill_book_box_green",
+                "name": "帮会初级技能书箱",
+                "quantity": 2,
+                "contribution_cost": 80,
+                "configured_weekly_personal_limit": 4
+              }
+            ],
+            "7": [
+              {
+                "item_key": "guild_skill_book_box_refined",
+                "name": "帮会精研技能书箱",
+                "quantity": 1,
+                "contribution_cost": 1000,
+                "configured_weekly_personal_limit": 1
+              },
+              {
+                "item_key": "guild_skill_book_box_purple",
+                "name": "帮会高级技能书箱",
+                "quantity": 2,
+                "contribution_cost": 500,
+                "configured_weekly_personal_limit": 1
+              },
+              {
+                "item_key": "guild_skill_book_box_blue",
+                "name": "帮会中级技能书箱",
+                "quantity": 2,
+                "contribution_cost": 180,
+                "configured_weekly_personal_limit": 3
+              },
+              {
+                "item_key": "guild_skill_book_box_green",
+                "name": "帮会初级技能书箱",
+                "quantity": 2,
+                "contribution_cost": 80,
+                "configured_weekly_personal_limit": 4
+              }
+            ],
+            "8": [
+              {
+                "item_key": "guild_skill_book_box_refined",
+                "name": "帮会精研技能书箱",
+                "quantity": 2,
+                "contribution_cost": 1000,
+                "configured_weekly_personal_limit": 1
+              },
+              {
+                "item_key": "guild_skill_book_box_purple",
+                "name": "帮会高级技能书箱",
+                "quantity": 2,
+                "contribution_cost": 500,
+                "configured_weekly_personal_limit": 1
+              },
+              {
+                "item_key": "guild_skill_book_box_blue",
+                "name": "帮会中级技能书箱",
+                "quantity": 2,
+                "contribution_cost": 180,
+                "configured_weekly_personal_limit": 3
+              },
+              {
+                "item_key": "guild_skill_book_box_green",
+                "name": "帮会初级技能书箱",
+                "quantity": 2,
+                "contribution_cost": 80,
+                "configured_weekly_personal_limit": 4
+              }
+            ],
+            "9": [
+              {
+                "item_key": "guild_skill_book_box_master",
+                "name": "帮会宗师技能秘匣",
+                "quantity": 1,
+                "contribution_cost": 2000,
+                "configured_weekly_personal_limit": 1
+              },
+              {
+                "item_key": "guild_skill_book_box_refined",
+                "name": "帮会精研技能书箱",
+                "quantity": 2,
+                "contribution_cost": 1000,
+                "configured_weekly_personal_limit": 1
+              },
+              {
+                "item_key": "guild_skill_book_box_purple",
+                "name": "帮会高级技能书箱",
+                "quantity": 2,
+                "contribution_cost": 500,
+                "configured_weekly_personal_limit": 1
+              },
+              {
+                "item_key": "guild_skill_book_box_blue",
+                "name": "帮会中级技能书箱",
+                "quantity": 2,
+                "contribution_cost": 180,
+                "configured_weekly_personal_limit": 3
+              },
+              {
+                "item_key": "guild_skill_book_box_green",
+                "name": "帮会初级技能书箱",
+                "quantity": 2,
+                "contribution_cost": 80,
+                "configured_weekly_personal_limit": 4
+              }
+            ],
+            "10": [
+              {
+                "item_key": "guild_skill_book_box_master",
+                "name": "帮会宗师技能秘匣",
+                "quantity": 2,
+                "contribution_cost": 2000,
+                "configured_weekly_personal_limit": 1
+              },
+              {
+                "item_key": "guild_skill_book_box_refined",
+                "name": "帮会精研技能书箱",
+                "quantity": 2,
+                "contribution_cost": 1000,
+                "configured_weekly_personal_limit": 1
+              },
+              {
+                "item_key": "guild_skill_book_box_purple",
+                "name": "帮会高级技能书箱",
+                "quantity": 2,
+                "contribution_cost": 500,
+                "configured_weekly_personal_limit": 1
+              },
+              {
+                "item_key": "guild_skill_book_box_blue",
+                "name": "帮会中级技能书箱",
+                "quantity": 2,
+                "contribution_cost": 180,
+                "configured_weekly_personal_limit": 3
+              },
+              {
+                "item_key": "guild_skill_book_box_green",
+                "name": "帮会初级技能书箱",
+                "quantity": 2,
+                "contribution_cost": 80,
+                "configured_weekly_personal_limit": 4
+              }
+            ]
+          },
+          "enabled": true
+        },
+        {
+          "key": "hero_rebirth_card",
+          "name": "生产重生卡",
+          "description": "每日产出门客重生卡，等级提升增加每日产量。",
+          "max_level": 3,
+          "production": true,
+          "levels": {
+            "1": [
+              {
+                "item_key": "guest_rebirth_card",
+                "name": "门客重生卡",
+                "quantity": 1,
+                "contribution_cost": 300,
+                "configured_weekly_personal_limit": 3
+              }
+            ],
+            "2": [
+              {
+                "item_key": "guest_rebirth_card",
+                "name": "门客重生卡",
+                "quantity": 2,
+                "contribution_cost": 300,
+                "configured_weekly_personal_limit": 5
+              }
+            ],
+            "3": [
+              {
+                "item_key": "guest_rebirth_card",
+                "name": "门客重生卡",
+                "quantity": 3,
+                "contribution_cost": 300,
+                "configured_weekly_personal_limit": 8
+              }
+            ]
+          },
+          "enabled": true
+        },
+        {
+          "key": "hero_green_blue_pill",
+          "name": "门客转生丸·绿转蓝",
+          "description": "每日产出绿色门客转生为蓝色门客所需的转生丸。",
+          "max_level": 3,
+          "production": true,
+          "levels": {
+            "1": [
+              {
+                "item_key": "green_to_blue_pill",
+                "name": "绿转蓝丸子",
+                "quantity": 1,
+                "contribution_cost": 1000,
+                "configured_weekly_personal_limit": 3
+              }
+            ],
+            "2": [
+              {
+                "item_key": "green_to_blue_pill",
+                "name": "绿转蓝丸子",
+                "quantity": 2,
+                "contribution_cost": 1000,
+                "configured_weekly_personal_limit": 5
+              }
+            ],
+            "3": [
+              {
+                "item_key": "green_to_blue_pill",
+                "name": "绿转蓝丸子",
+                "quantity": 3,
+                "contribution_cost": 1000,
+                "configured_weekly_personal_limit": 8
+              }
+            ]
+          },
+          "enabled": true
+        },
+        {
+          "key": "hero_blue_purple_pill",
+          "name": "门客转生丸·蓝转紫",
+          "description": "暂未开放，不可研究且不产出，不计入英雄系路线完成条件。",
+          "max_level": 3,
+          "production": true,
+          "levels": {},
+          "enabled": false
+        },
+        {
+          "key": "hero_reset_card",
+          "name": "生产洗点卡",
+          "description": "每日产出门客洗点卡，等级提升增加每日产量。",
+          "max_level": 3,
+          "production": true,
+          "levels": {
+            "1": [
+              {
+                "item_key": "xidianka",
+                "name": "洗点卡",
+                "quantity": 1,
+                "contribution_cost": 250,
+                "configured_weekly_personal_limit": 3
+              }
+            ],
+            "2": [
+              {
+                "item_key": "xidianka",
+                "name": "洗点卡",
+                "quantity": 2,
+                "contribution_cost": 250,
+                "configured_weekly_personal_limit": 5
+              }
+            ],
+            "3": [
+              {
+                "item_key": "xidianka",
+                "name": "洗点卡",
+                "quantity": 3,
+                "contribution_cost": 250,
+                "configured_weekly_personal_limit": 8
+              }
+            ]
+          },
+          "enabled": true
+        },
+        {
+          "key": "hero_marrow_pill",
+          "name": "洗髓丹",
+          "description": "每日产出洗髓丹，等级提升增加每日产量。",
+          "max_level": 3,
+          "production": true,
+          "levels": {
+            "1": [
+              {
+                "item_key": "xisuidan",
+                "name": "洗髓丹",
+                "quantity": 1,
+                "contribution_cost": 3000,
+                "configured_weekly_personal_limit": 2
+              }
+            ],
+            "2": [
+              {
+                "item_key": "xisuidan",
+                "name": "洗髓丹",
+                "quantity": 2,
+                "contribution_cost": 3000,
+                "configured_weekly_personal_limit": 4
+              }
+            ],
+            "3": [
+              {
+                "item_key": "xisuidan",
+                "name": "洗髓丹",
+                "quantity": 3,
+                "contribution_cost": 3000,
+                "configured_weekly_personal_limit": 6
+              }
+            ]
+          },
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "key": "wolf",
+      "title": "狼系",
+      "nodes": [
+        {
+          "key": "wolf_bloodthirsty_cavalry",
+          "name": "训练嗜血铁骑",
+          "description": "披甲执锐的帮会精骑，行动迅捷，可在先攻回合出击。研习铁骑冲阵后，有机会同时攻击两名敌人。研究后，帮主和管理员可在此训练铁骑，完成后计入帮会资产，供成员使用贡献兑换。",
+          "max_level": 1,
+          "production": false,
+          "enabled": true
+        },
+        {
+          "key": "wolf_berserk",
+          "name": "铁骑冲阵",
+          "description": "攻击时有机会发动铁骑冲阵，每级增加10个百分点的触发概率，满级为50%。触发时攻击两名不同敌人，各造成普通攻击70%的伤害；场上仅剩一名敌人时，造成普通攻击120%的伤害。",
+          "max_level": 5,
+          "production": false,
+          "enabled": true
+        },
+        {
+          "key": "wolf_force",
+          "name": "嗜血铁骑·武力",
+          "description": "提高嗜血铁骑武力，每级提升 10%，最高 10 级。",
+          "max_level": 10,
+          "production": false,
+          "enabled": true
+        },
+        {
+          "key": "wolf_defense",
+          "name": "嗜血铁骑·防御",
+          "description": "提高嗜血铁骑防御，每级提升 10%，最高 10 级。",
+          "max_level": 10,
+          "production": false,
+          "enabled": true
+        },
+        {
+          "key": "wolf_agility",
+          "name": "嗜血铁骑·敏捷",
+          "description": "提高嗜血铁骑敏捷，每级提升 5%，最高 10 级。",
+          "max_level": 10,
+          "production": false,
+          "enabled": true
+        },
+        {
+          "key": "wolf_hp",
+          "name": "嗜血铁骑·生命",
+          "description": "提高嗜血铁骑生命，每级提升 10%，最高 10 级。",
+          "max_level": 10,
+          "production": false,
+          "enabled": true
+        },
+        {
+          "key": "wolf_plunder_card",
+          "name": "生产抢夺卡",
+          "description": "1／2／3级每日分别产出抢夺卡3／5／7张，与锻造系产出累加；随机取得目标庄园一件未绑定且可交易的蓝色以上物品。",
+          "max_level": 3,
+          "production": true,
+          "levels": {
+            "1": [
+              {
+                "item_key": "guild_theft_card",
+                "name": "抢夺卡",
+                "quantity": 3,
+                "contribution_cost": 900,
+                "configured_weekly_personal_limit": 2
+              }
+            ],
+            "2": [
+              {
+                "item_key": "guild_theft_card",
+                "name": "抢夺卡",
+                "quantity": 5,
+                "contribution_cost": 900,
+                "configured_weekly_personal_limit": 2
+              }
+            ],
+            "3": [
+              {
+                "item_key": "guild_theft_card",
+                "name": "抢夺卡",
+                "quantity": 7,
+                "contribution_cost": 900,
+                "configured_weekly_personal_limit": 4
+              }
+            ]
+          },
+          "enabled": true
+        },
+        {
+          "key": "wolf_lightning_horse",
+          "name": "驯养闪电虬龙驹",
+          "description": "解锁并每日驯养闪电虬龙驹，等级提升增加产量。",
+          "max_level": 3,
+          "production": true,
+          "levels": {
+            "1": [
+              {
+                "item_key": "equip_shandianqiulongju",
+                "name": "闪电虬龙驹",
+                "quantity": 1,
+                "contribution_cost": 1800,
+                "configured_weekly_personal_limit": 2
+              }
+            ],
+            "2": [
+              {
+                "item_key": "equip_shandianqiulongju",
+                "name": "闪电虬龙驹",
+                "quantity": 2,
+                "contribution_cost": 1800,
+                "configured_weekly_personal_limit": 3
+              }
+            ],
+            "3": [
+              {
+                "item_key": "equip_shandianqiulongju",
+                "name": "闪电虬龙驹",
+                "quantity": 3,
+                "contribution_cost": 1800,
+                "configured_weekly_personal_limit": 4
+              }
+            ]
+          },
+          "enabled": true
+        },
+        {
+          "key": "wolf_golden_white_horse",
+          "name": "驯养金睛白龙驹",
+          "description": "解锁并每日驯养金睛白龙驹，等级提升增加产量。",
+          "max_level": 3,
+          "production": true,
+          "levels": {
+            "1": [
+              {
+                "item_key": "equip_jinjingbailongju",
+                "name": "金睛白龙驹",
+                "quantity": 1,
+                "contribution_cost": 3500,
+                "configured_weekly_personal_limit": 1
+              }
+            ],
+            "2": [
+              {
+                "item_key": "equip_jinjingbailongju",
+                "name": "金睛白龙驹",
+                "quantity": 2,
+                "contribution_cost": 3500,
+                "configured_weekly_personal_limit": 2
+              }
+            ],
+            "3": [
+              {
+                "item_key": "equip_jinjingbailongju",
+                "name": "金睛白龙驹",
+                "quantity": 3,
+                "contribution_cost": 3500,
+                "configured_weekly_personal_limit": 3
+              }
+            ]
+          },
+          "enabled": true
+        },
+        {
+          "key": "wolf_soul_container",
+          "name": "灵魂容器",
+          "description": "每日产出灵魂容器，等级提升增加每日产量。",
+          "max_level": 3,
+          "production": true,
+          "levels": {
+            "1": [
+              {
+                "item_key": "soul_container",
+                "name": "灵魂容器",
+                "quantity": 1,
+                "contribution_cost": 5000,
+                "configured_weekly_personal_limit": 2
+              }
+            ],
+            "2": [
+              {
+                "item_key": "soul_container",
+                "name": "灵魂容器",
+                "quantity": 2,
+                "contribution_cost": 5000,
+                "configured_weekly_personal_limit": 4
+              }
+            ],
+            "3": [
+              {
+                "item_key": "soul_container",
+                "name": "灵魂容器",
+                "quantity": 3,
+                "contribution_cost": 5000,
+                "configured_weekly_personal_limit": 6
+              }
+            ]
+          },
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "key": "sheep",
+      "title": "羊系",
+      "nodes": [
+        {
+          "key": "sheep_farmland",
+          "name": "屯田",
+          "description": "帮会全体成员的庄园粮食产出速度提高，每级增加 5%。",
+          "max_level": 3,
+          "production": false,
+          "enabled": true
+        },
+        {
+          "key": "sheep_silver_mine",
+          "name": "开采银矿",
+          "description": "帮会全体成员的庄园银两产出速度提高，每级增加 5%。",
+          "max_level": 3,
+          "production": false,
+          "enabled": true
+        },
+        {
+          "key": "sheep_grain_card",
+          "name": "生产均粮卡",
+          "description": "1／2／3级每日分别产出均粮卡3／5／7张，使用后 24 小时内提高使用者粮食产出 25%。",
+          "max_level": 3,
+          "production": true,
+          "levels": {
+            "1": [
+              {
+                "item_key": "guild_grain_boost_card",
+                "name": "均粮卡",
+                "quantity": 3,
+                "contribution_cost": 200,
+                "configured_weekly_personal_limit": 3
+              }
+            ],
+            "2": [
+              {
+                "item_key": "guild_grain_boost_card",
+                "name": "均粮卡",
+                "quantity": 5,
+                "contribution_cost": 200,
+                "configured_weekly_personal_limit": 5
+              }
+            ],
+            "3": [
+              {
+                "item_key": "guild_grain_boost_card",
+                "name": "均粮卡",
+                "quantity": 7,
+                "contribution_cost": 200,
+                "configured_weekly_personal_limit": 8
+              }
+            ]
+          },
+          "enabled": true
+        },
+        {
+          "key": "sheep_silver_card",
+          "name": "生产均贫卡",
+          "description": "1／2／3级每日分别产出均贫卡3／5／7张，使用后 24 小时内提高使用者银两产出 25%。",
+          "max_level": 3,
+          "production": true,
+          "levels": {
+            "1": [
+              {
+                "item_key": "guild_silver_boost_card",
+                "name": "均贫卡",
+                "quantity": 3,
+                "contribution_cost": 200,
+                "configured_weekly_personal_limit": 3
+              }
+            ],
+            "2": [
+              {
+                "item_key": "guild_silver_boost_card",
+                "name": "均贫卡",
+                "quantity": 5,
+                "contribution_cost": 200,
+                "configured_weekly_personal_limit": 5
+              }
+            ],
+            "3": [
+              {
+                "item_key": "guild_silver_boost_card",
+                "name": "均贫卡",
+                "quantity": 7,
+                "contribution_cost": 200,
+                "configured_weekly_personal_limit": 8
+              }
+            ]
+          },
+          "enabled": true
+        },
+        {
+          "key": "sheep_metallurgy",
+          "name": "冶炼研究",
+          "description": "提升庄园冶炼速度与单次处理上限，并降低材料消耗。",
+          "max_level": 3,
+          "production": false,
+          "enabled": true
+        },
+        {
+          "key": "sheep_breeding",
+          "name": "养殖术研究",
+          "description": "提升庄园牲畜驯养速度与单次上限，并降低消耗。",
+          "max_level": 3,
+          "production": false,
+          "enabled": true
+        },
+        {
+          "key": "sheep_horsemanship",
+          "name": "驯马术研究",
+          "description": "提升庄园马匹驯养速度与单次上限，并降低消耗。",
+          "max_level": 3,
+          "production": false,
+          "enabled": true
+        },
+        {
+          "key": "sheep_wrath",
+          "name": "羊的愤怒",
+          "description": "每位使用者每 7 天可对一个目标庄园使用一次，使其全部门客重伤并降至 1 点生命。",
+          "max_level": 1,
+          "production": false,
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "key": "forging",
+      "title": "锻造系",
+      "nodes": [
+        {
+          "key": "forging_mechanism_blueprint",
+          "name": "机关兽合成图纸",
+          "description": "每日产出机关兽合成图纸；等级提升图纸稀有度和产量。",
+          "max_level": 5,
+          "production": true,
+          "levels": {
+            "1": [
+              {
+                "item_key": "blueprint_xiaoxingjiguanshu",
+                "name": "小型机关鼠图纸",
+                "quantity": 1,
+                "contribution_cost": 100,
+                "configured_weekly_personal_limit": 5
+              }
+            ],
+            "2": [
+              {
+                "item_key": "blueprint_tongchanjiguan",
+                "name": "铜蝉机关图纸",
+                "quantity": 1,
+                "contribution_cost": 200,
+                "configured_weekly_personal_limit": 5
+              }
+            ],
+            "3": [
+              {
+                "item_key": "blueprint_jixiemao",
+                "name": "机械猫图纸",
+                "quantity": 2,
+                "contribution_cost": 500,
+                "configured_weekly_personal_limit": 4
+              }
+            ],
+            "4": [
+              {
+                "item_key": "blueprint_jiguanchuniao",
+                "name": "机关雏鸟图纸",
+                "quantity": 2,
+                "contribution_cost": 800,
+                "configured_weekly_personal_limit": 4
+              }
+            ],
+            "5": [
+              {
+                "item_key": "blueprint_taotieding",
+                "name": "饕餮鼎图纸",
+                "quantity": 2,
+                "contribution_cost": 2500,
+                "configured_weekly_personal_limit": 3
+              }
+            ]
+          },
+          "enabled": true
+        },
+        {
+          "key": "forging_equipment_forge",
+          "name": "装备锻造",
+          "description": "每日产出随机装备箱并计入帮会资产。升级可提高产量，并逐步解锁蓝装箱、紫装箱、精铸紫装箱与宗师秘匣；成员使用贡献兑换后，可开出一件随机装备。",
+          "max_level": 10,
+          "production": true,
+          "enabled": true,
+          "requires": [
+            "forging_mechanism_blueprint"
+          ],
+          "levels": {
+            "1": [
+              {
+                "item_key": "guild_gear_box_green",
+                "name": "帮会绿装箱",
+                "quantity": 1,
+                "contribution_cost": 70,
+                "configured_weekly_personal_limit": 4
+              }
+            ],
+            "2": [
+              {
+                "item_key": "guild_gear_box_green",
+                "name": "帮会绿装箱",
+                "quantity": 2,
+                "contribution_cost": 70,
+                "configured_weekly_personal_limit": 4
+              }
+            ],
+            "3": [
+              {
+                "item_key": "guild_gear_box_blue",
+                "name": "帮会蓝装箱",
+                "quantity": 1,
+                "contribution_cost": 300,
+                "configured_weekly_personal_limit": 3
+              },
+              {
+                "item_key": "guild_gear_box_green",
+                "name": "帮会绿装箱",
+                "quantity": 2,
+                "contribution_cost": 70,
+                "configured_weekly_personal_limit": 4
+              }
+            ],
+            "4": [
+              {
+                "item_key": "guild_gear_box_blue",
+                "name": "帮会蓝装箱",
+                "quantity": 2,
+                "contribution_cost": 300,
+                "configured_weekly_personal_limit": 3
+              },
+              {
+                "item_key": "guild_gear_box_green",
+                "name": "帮会绿装箱",
+                "quantity": 2,
+                "contribution_cost": 70,
+                "configured_weekly_personal_limit": 4
+              }
+            ],
+            "5": [
+              {
+                "item_key": "guild_gear_box_purple",
+                "name": "帮会紫装箱",
+                "quantity": 1,
+                "contribution_cost": 1000,
+                "configured_weekly_personal_limit": 1
+              },
+              {
+                "item_key": "guild_gear_box_blue",
+                "name": "帮会蓝装箱",
+                "quantity": 2,
+                "contribution_cost": 300,
+                "configured_weekly_personal_limit": 3
+              },
+              {
+                "item_key": "guild_gear_box_green",
+                "name": "帮会绿装箱",
+                "quantity": 2,
+                "contribution_cost": 70,
+                "configured_weekly_personal_limit": 4
+              }
+            ],
+            "6": [
+              {
+                "item_key": "guild_gear_box_purple",
+                "name": "帮会紫装箱",
+                "quantity": 2,
+                "contribution_cost": 1000,
+                "configured_weekly_personal_limit": 1
+              },
+              {
+                "item_key": "guild_gear_box_blue",
+                "name": "帮会蓝装箱",
+                "quantity": 2,
+                "contribution_cost": 300,
+                "configured_weekly_personal_limit": 3
+              },
+              {
+                "item_key": "guild_gear_box_green",
+                "name": "帮会绿装箱",
+                "quantity": 2,
+                "contribution_cost": 70,
+                "configured_weekly_personal_limit": 4
+              }
+            ],
+            "7": [
+              {
+                "item_key": "guild_gear_box_refined_purple",
+                "name": "帮会精铸紫装箱",
+                "quantity": 1,
+                "contribution_cost": 1500,
+                "configured_weekly_personal_limit": 1
+              },
+              {
+                "item_key": "guild_gear_box_purple",
+                "name": "帮会紫装箱",
+                "quantity": 2,
+                "contribution_cost": 1000,
+                "configured_weekly_personal_limit": 1
+              },
+              {
+                "item_key": "guild_gear_box_blue",
+                "name": "帮会蓝装箱",
+                "quantity": 2,
+                "contribution_cost": 300,
+                "configured_weekly_personal_limit": 3
+              },
+              {
+                "item_key": "guild_gear_box_green",
+                "name": "帮会绿装箱",
+                "quantity": 2,
+                "contribution_cost": 70,
+                "configured_weekly_personal_limit": 4
+              }
+            ],
+            "8": [
+              {
+                "item_key": "guild_gear_box_refined_purple",
+                "name": "帮会精铸紫装箱",
+                "quantity": 2,
+                "contribution_cost": 1500,
+                "configured_weekly_personal_limit": 1
+              },
+              {
+                "item_key": "guild_gear_box_purple",
+                "name": "帮会紫装箱",
+                "quantity": 2,
+                "contribution_cost": 1000,
+                "configured_weekly_personal_limit": 1
+              },
+              {
+                "item_key": "guild_gear_box_blue",
+                "name": "帮会蓝装箱",
+                "quantity": 2,
+                "contribution_cost": 300,
+                "configured_weekly_personal_limit": 3
+              },
+              {
+                "item_key": "guild_gear_box_green",
+                "name": "帮会绿装箱",
+                "quantity": 2,
+                "contribution_cost": 70,
+                "configured_weekly_personal_limit": 4
+              }
+            ],
+            "9": [
+              {
+                "item_key": "guild_gear_box_master",
+                "name": "帮会宗师秘匣",
+                "quantity": 1,
+                "contribution_cost": 2500,
+                "configured_weekly_personal_limit": 1
+              },
+              {
+                "item_key": "guild_gear_box_refined_purple",
+                "name": "帮会精铸紫装箱",
+                "quantity": 2,
+                "contribution_cost": 1500,
+                "configured_weekly_personal_limit": 1
+              },
+              {
+                "item_key": "guild_gear_box_purple",
+                "name": "帮会紫装箱",
+                "quantity": 2,
+                "contribution_cost": 1000,
+                "configured_weekly_personal_limit": 1
+              },
+              {
+                "item_key": "guild_gear_box_blue",
+                "name": "帮会蓝装箱",
+                "quantity": 2,
+                "contribution_cost": 300,
+                "configured_weekly_personal_limit": 3
+              },
+              {
+                "item_key": "guild_gear_box_green",
+                "name": "帮会绿装箱",
+                "quantity": 2,
+                "contribution_cost": 70,
+                "configured_weekly_personal_limit": 4
+              }
+            ],
+            "10": [
+              {
+                "item_key": "guild_gear_box_master",
+                "name": "帮会宗师秘匣",
+                "quantity": 2,
+                "contribution_cost": 2500,
+                "configured_weekly_personal_limit": 1
+              },
+              {
+                "item_key": "guild_gear_box_refined_purple",
+                "name": "帮会精铸紫装箱",
+                "quantity": 2,
+                "contribution_cost": 1500,
+                "configured_weekly_personal_limit": 1
+              },
+              {
+                "item_key": "guild_gear_box_purple",
+                "name": "帮会紫装箱",
+                "quantity": 2,
+                "contribution_cost": 1000,
+                "configured_weekly_personal_limit": 1
+              },
+              {
+                "item_key": "guild_gear_box_blue",
+                "name": "帮会蓝装箱",
+                "quantity": 2,
+                "contribution_cost": 300,
+                "configured_weekly_personal_limit": 3
+              },
+              {
+                "item_key": "guild_gear_box_green",
+                "name": "帮会绿装箱",
+                "quantity": 2,
+                "contribution_cost": 70,
+                "configured_weekly_personal_limit": 4
+              }
+            ]
+          }
+        },
+        {
+          "key": "forging_slave_card",
+          "name": "奴隶卡",
+          "description": "1／2／3级每日分别产出奴隶卡3／5／7张；使用后随机使目标庄园一名空闲门客打工 1 小时。",
+          "max_level": 3,
+          "production": true,
+          "levels": {
+            "1": [
+              {
+                "item_key": "guild_slave_card",
+                "name": "奴隶卡",
+                "quantity": 3,
+                "contribution_cost": 500,
+                "configured_weekly_personal_limit": 3
+              }
+            ],
+            "2": [
+              {
+                "item_key": "guild_slave_card",
+                "name": "奴隶卡",
+                "quantity": 5,
+                "contribution_cost": 500,
+                "configured_weekly_personal_limit": 5
+              }
+            ],
+            "3": [
+              {
+                "item_key": "guild_slave_card",
+                "name": "奴隶卡",
+                "quantity": 7,
+                "contribution_cost": 500,
+                "configured_weekly_personal_limit": 8
+              }
+            ]
+          },
+          "enabled": true
+        },
+        {
+          "key": "forging_theft_card",
+          "name": "抢夺卡",
+          "description": "1／2／3级每日分别产出抢夺卡3／5／7张，与狼系产出累加；随机取得目标庄园一件未绑定且可交易的蓝色以上物品。",
+          "max_level": 3,
+          "production": true,
+          "levels": {
+            "1": [
+              {
+                "item_key": "guild_theft_card",
+                "name": "抢夺卡",
+                "quantity": 3,
+                "contribution_cost": 900,
+                "configured_weekly_personal_limit": 2
+              }
+            ],
+            "2": [
+              {
+                "item_key": "guild_theft_card",
+                "name": "抢夺卡",
+                "quantity": 5,
+                "contribution_cost": 900,
+                "configured_weekly_personal_limit": 2
+              }
+            ],
+            "3": [
+              {
+                "item_key": "guild_theft_card",
+                "name": "抢夺卡",
+                "quantity": 7,
+                "contribution_cost": 900,
+                "configured_weekly_personal_limit": 4
+              }
+            ]
+          },
+          "enabled": true
+        },
+        {
+          "key": "forging_injury_card",
+          "name": "重伤卡",
+          "description": "1／2／3级每日分别产出重伤卡3／5／7张；随机使目标庄园一名门客重伤并降至 1 点生命。",
+          "max_level": 3,
+          "production": true,
+          "levels": {
+            "1": [
+              {
+                "item_key": "guild_injury_card",
+                "name": "重伤卡",
+                "quantity": 3,
+                "contribution_cost": 700,
+                "configured_weekly_personal_limit": 2
+              }
+            ],
+            "2": [
+              {
+                "item_key": "guild_injury_card",
+                "name": "重伤卡",
+                "quantity": 5,
+                "contribution_cost": 700,
+                "configured_weekly_personal_limit": 3
+              }
+            ],
+            "3": [
+              {
+                "item_key": "guild_injury_card",
+                "name": "重伤卡",
+                "quantity": 7,
+                "contribution_cost": 700,
+                "configured_weekly_personal_limit": 4
+              }
+            ]
+          },
+          "enabled": true
+        }
+      ]
+    }
+  ],
+  "schedule": "每日Asia/Shanghai 00:00，通过Celery Beat派发",
+  "repaired": "羊系屯田、银矿增产漏接资源计算，已接入单庄园与批量结算",
+  "source_sha256": {
+    "guilds/technology_tree.py": "3be8f2b99edd7e42738215dbb591cd54058f2efb7a865f6b4045178834a9d6ef",
+    "guilds/services/warehouse.py": "a83f4bfdc4006329e0a1971fab8dff2951930191e4c272a05327c7a980aada67",
+    "guilds/services/warehouse_config.py": "e534f4e696b2ddab0ee6c78c1f7d2b93fcd64daf7f82586c57ddd17d7a992c88",
+    "guilds/services/technology.py": "36b0d5e3e700375a2ea9c0ba1c47ce9fde9f1a2986dfb2d88839b45ec23cefae",
+    "guilds/tasks.py": "ae3b020cdbca892b494686d9ec1d7f11233b77a0cfa8f2094938be5dc4b265c0",
+    "data/warehouse_production.yaml": "6cf4968a24468ecff45edfcb1fccc9380d037ff83dce4cb8211ff0e0a4ed9391",
+    "data/item_templates.yaml": "40f9139ca533f573d470c8e87a0c8bfd17ebcdb29b1dc8a0f3c46fc0a943725c",
+    "config/settings/celery_conf.py": "cc6f938700c3a490a819ffa0219a31e9da8edc5c216b6bf9ade0c3855c24aa18",
+    "gameplay/services/resources.py": "5a006566508fc98726f77eeeb0493d5afe3d418261832637bb973a806ba8bdbd",
+    "gameplay/utils/resource_calculator.py": "1c19c73112d00916daa60a18debbe746a941ed44c8c28a6c42cc83f28082d421",
+    "gameplay/services/technology.py": "6d5014035284947386fd81d3095149efa42cdf68d911c855fec956d0e03beaea",
+    "guilds/views/technology.py": "91e5e272356dfca0e23075e2575dadb3671abe3160fa796ee73bd8373f8aa4b0",
+    "guilds/templates/guilds/technology.html": "93b9060fc47da54d4542127aacc744ffec3ff3569ae5fae27984b3486819fb13",
+    "guilds/templates/guilds/_technology_node_detail.html": "03be99b470de1fde9048581da8717e505729fbce7d67cd46997b4e8ec444e2cd",
+    "static/js/guild-technology-tree.js": "735ffeba2e8eb4d31ff2c4bcf92a4b42f314fc9f481c985ed8862c9b1ab42784",
+    "guilds/services/cavalry.py": "cd022b80867c99c325dc6aee90988afb1c2f71e11bb7faef5d583913261b2655",
+    "guilds/models/cavalry.py": "e3b4d919cc14445cf029ee67a7867ae44b0d13e4dea8f0f8cb5690d698671da7",
+    "data/guild_rules.yaml": "ef7154f98830cb16089cef12b5bf3e71f3a56f326f4df501c2aee118c55803f8",
+    "data/troop_templates.yaml": "01f29c82e3e0fb9cff0c928b7957128db14306e917e5bf30229c78ca049583d8",
+    "guilds/constants.py": "d1287f655db28b891f8525bd615c00eecf5b4b554b776d3212b2d6a68de50c68",
+    "guilds/migrations/0034_warehouse_exchange_prices.py": "4ef13c4d13799561dadab7f403ee93243a92aa9d88a8f3489947473922982060",
+    "guilds/migrations/0035_forging_equipment_forge.py": "e6ce0a855a567ad57ea02b59f5c750584db9ff279ca0174d85258efe9e24cd55",
+    "guilds/services/assets.py": "47163f74e2ba511175c47abc968d3e386e850bdbd8fb33592b3b9395cf92ad80",
+    "guilds/migrations/0036_guild_assets_copy.py": "f3914940a7a81c0c238b2abc5ee105b2981d1ef54cf6a28f0ce363c2960add2d",
+    "guilds/migrations/0037_equipment_box_prices.py": "6873bd4e609068e6fbb5c5b2e08ea2af620cd83eb074e67e26f9c3724f55272e"
+  },
+  "disabled_production_nodes": [
+    "hero_blue_purple_pill"
+  ],
+  "route_completion_rule": "所有已开放节点升满后可切换路线；暂未开放的蓝转紫节点不计入完成条件。",
+  "cavalry_training": {
+    "silver_per_unit": 1500,
+    "grain_per_unit": 5000,
+    "contribution_per_unit": 3,
+    "max_batch": 2000,
+    "seconds_per_unit": 30
+  }
+}

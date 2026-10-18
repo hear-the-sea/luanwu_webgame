@@ -29,7 +29,7 @@ from .deployment import recover_orphaned_deployed_guests as _recover_orphaned_de
 from .deployment import (
     recover_orphaned_locked_guest_statuses as _recover_orphaned_locked_guest_statuses_from_deployment,
 )
-from .execution import BattleOptions
+from .execution import _DEFAULT_ATTACKER_MANOR, BattleOptions
 from .execution import execute_battle as _execute_battle
 from .locking import collect_guest_ids as _collect_guest_ids
 from .locking import collect_manor_ids as _collect_manor_ids
@@ -239,7 +239,7 @@ def simulate_report(
     attacker_tech_levels: Dict[str, int] | None = None,
     attacker_guest_bonuses: Dict[str, float] | None = None,
     attacker_guest_skills: List[str] | None = None,
-    attacker_manor=None,
+    attacker_manor=_DEFAULT_ATTACKER_MANOR,
     defender_manor=None,
     validate_attacker_troop_capacity: bool = True,
     attacker_troop_loss_rate: float | None = None,
@@ -273,7 +273,7 @@ def simulate_report(
         attacker_tech_levels: 攻击方科技等级字典（可选，供敌方使用）
         attacker_guest_bonuses: 攻击方门客属性加成（可选）
         attacker_guest_skills: 攻击方门客临时技能覆盖（可选）
-        attacker_manor: 攻击方科技来源庄园（可选，默认为 manor）
+        attacker_manor: 攻击方科技来源庄园；省略时默认为 manor，显式传 None 时不读取庄园科技
         defender_manor: 防守方庄园（可选，用于城防建筑）
         validate_attacker_troop_capacity: 是否校验攻击方带兵上限（默认开启）
         attacker_troop_loss_rate: 攻击方被击败护院的阵亡概率（可选）

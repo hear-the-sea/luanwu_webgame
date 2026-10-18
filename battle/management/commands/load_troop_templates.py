@@ -21,7 +21,7 @@ def _build_troop_defaults(data: dict) -> dict:
     default_count = safe_int(data.get("default_count"), default=120)
     if priority is None:
         priority = 0
-    if default_count is None or default_count <= 0:
+    if default_count is None or default_count < 0:
         default_count = 120
     return {
         "name": str(data.get("name") or ""),

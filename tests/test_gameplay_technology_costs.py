@@ -45,7 +45,7 @@ def test_configured_technology_budgets_are_exact_and_scout_has_200_levels():
     configured = {str(template["key"]): template for template in templates if template.get("upgrade_cost_budget")}
 
     assert configured["scout_art"]["max_level"] == 200
-    assert len(configured) == 42
+    assert len(configured) == 43
 
     for tech_key, template in configured.items():
         max_level = int(template["max_level"])

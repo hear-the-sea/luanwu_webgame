@@ -1,0 +1,29 @@
+{
+  "method": "Built-in image_gen tool; one generated illustration per icon",
+  "references": [
+    "static/images/technology/qstyle/category_basic.webp",
+    "static/images/technology/qstyle/category_production.webp"
+  ],
+  "icons": [
+    {
+      "key": "scout_tools_v2",
+      "prompt": "Use case: stylized-concept. Create ONE square icon for existing Chinese browser game. Q版、平面、手绘, cute chunky exaggerated inventory objects, warm brown hand-inked outlines, large simple silhouettes, restrained tan/ochre/sage/iron-grey colors, paper grain and only 1-2 flat shadow patches. Match reference inventory illustrations, not glossy fantasy concept art. Central objects fill 78% of square, cream parchment #fff8e7 backdrop with safe margins. NO people, NO humanoids, NO chicks, NO animals, NO faces, NO anthropomorphic objects, NO text, letters, numbers, borders, watermarks, 3D rendering, metallic shine, magical glow, gold filigree or complex FX. Scouting technology: a squat brass-and-dark-wood spyglass lies diagonally on a small partly unfolded parchment reconnaissance map. Map has just one hill, one path and a red location mark. Telescope, map only. Round simple hand-drawn objects. No eye or face symbols.",
+      "output": "static/images/technology/qstyle/scout_tools_v2.webp"
+    },
+    {
+      "key": "march_boots_v2",
+      "prompt": "Use case: stylized-concept. Create ONE square icon for existing Chinese browser game. Q版、平面、手绘, cute chunky exaggerated inventory objects, warm brown hand-inked outlines, large simple silhouettes, restrained tan/ochre/sage/iron-grey colors, paper grain and only 1-2 flat shadow patches. Match reference inventory illustrations, not glossy fantasy concept art. Central objects fill 78% of square, cream parchment #fff8e7 backdrop with safe margins. NO people, NO humanoids, NO chicks, NO animals, NO faces, NO anthropomorphic objects, NO text, letters, numbers, borders, watermarks, 3D rendering, metallic shine, magical glow, gold filigree or complex FX. Marching technology: one PAIR of chunky short brown cloth-and-leather traveling boots, simple tan wrappings and folded cuffs, angled as if mid-stride. Two short ochre motion strokes behind the boots. No wearer, legs, feet or body, only EMPTY boots. Cute flat inventory item drawing.",
+      "output": "static/images/technology/qstyle/march_boots_v2.webp"
+    },
+    {
+      "key": "architecture_tools_v2",
+      "prompt": "Use case: stylized-concept. Create ONE square icon for existing Chinese browser game. Q版、平面、手绘, cute chunky exaggerated inventory objects, warm brown hand-inked outlines, large simple silhouettes, restrained tan/ochre/sage/iron-grey colors, paper grain and only 1-2 flat shadow patches. Match reference inventory illustrations, not glossy fantasy concept art. Central objects fill 78% of square, cream parchment #fff8e7 backdrop with safe margins. NO people, NO humanoids, NO chicks, NO animals, NO faces, NO anthropomorphic objects, NO text, letters, numbers, borders, watermarks, 3D rendering, metallic shine, magical glow, gold filigree or complex FX. Architecture technology: a rolled-edge building blueprint with a simple brown ink drawing of a Chinese tiled gate, a wooden triangular set square and a short carpenter pencil on top. Only these tools and paper. Large simple shapes, flat paper drawing. No builder, hat or character.",
+      "output": "static/images/technology/qstyle/architecture_tools_v2.webp"
+    },
+    {
+      "key": "dao_armor_pierce_v2",
+      "prompt": "Use case: stylized-concept. Create ONE square icon for existing Chinese browser game. Q版、平面、手绘, cute chunky exaggerated inventory objects, warm brown hand-inked outlines, large simple silhouettes, restrained tan/ochre/sage/iron-grey colors, paper grain and only 1-2 flat shadow patches. Match reference inventory illustrations, not glossy fantasy concept art. Central objects fill 78% of square, cream parchment #fff8e7 backdrop with safe margins. NO people, NO humanoids, NO chicks, NO animals, NO faces, NO anthropomorphic objects, NO text, letters, numbers, borders, watermarks, 3D rendering, metallic shine, magical glow, gold filigree or complex FX. Armor-breaking strike skill: CLOSE-UP of a single large grey iron lamellar BREASTPLATE, clearly recognizable torso armor with shoulder straps and rows of broad plates. A plain silver Chinese saber blade plunges diagonally THROUGH its CENTER, separating two plate sections with one jagged crack and ONE tiny flat orange impact star. NO wielder, character, rock, mountain, ground, flying rubble or broad swing trail. Main silhouette must be the chunky iron BREASTPLATE pierced by blade, radically distinct from a chick slashing a rock. Flat hand-painted inventory objects, blunt cartoon geometry, no gore.",
+      "output": "static/images/technology/qstyle/dao_armor_pierce_v2.webp"
+    }
+  ]
+}

@@ -38,6 +38,24 @@ class TestTechnologyViews:
         assert "升级后" not in content
         assert "小时" in content and "分钟" in content
 
+    def test_dao_armor_break_is_visible_and_researchable(self, manor_with_user):
+        from gameplay.services.technology import get_technology_template, quote_technology_upgrade
+
+        manor, client = manor_with_user
+        template = get_technology_template("dao_armor_break")
+        assert template["max_level"] == 10
+        quote = quote_technology_upgrade(manor, "dao_armor_break")
+        assert quote.target_level == 1 and quote.silver_cost > 0
+        response = client.get(reverse("gameplay:technology") + "?tab=martial&troop=dao")
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert 'id="tech-dao_armor_break"' in content
+        assert "破甲一击" in content and "每级无视2%防御" in content
+        assert "images/technology/qstyle/dao_attack.webp" in content
+        armor_break_node = content.split('id="tech-dao_armor_break"', 1)[1].split("</article>", 1)[0]
+        assert "images/technology/qstyle/dao_armor_chick_v3.webp" in armor_break_node
+        assert "images/technology/qstyle/dao_attack.webp" not in armor_break_node
+
     def test_technology_invalid_tab_falls_back_to_basic(self, manor_with_user):
         """非法科技标签页应回退到基础分类。"""
         _manor, client = manor_with_user

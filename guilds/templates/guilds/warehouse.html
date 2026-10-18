@@ -1,13 +1,13 @@
 {% extends "guilds/base.html" %}
-{% load static %}
+{% load static gameplay_extras %}
 
-{% block title %}帮会仓库 - {{ guild.name }}{% endblock %}
+{% block title %}帮会资产 - {{ guild.name }}{% endblock %}
 
 {% block guild_content %}
-<section class="dashboard">
+<section class="dashboard tw-guild-assets-page">
     <div class="tw-section-header">
         <div>
-            <h1>帮会仓库</h1>
+            <h1>帮会资产</h1>
             <p class="caption">{{ guild.name }} · 我的贡献度：{{ member.current_contribution|floatformat:0 }}</p>
         </div>
         <div class="flex gap-2">
@@ -16,17 +16,28 @@
     </div>
 
     <section class="tw-guild-section tw-guild-collection">
-        <h2>可兑换物品</h2>
+        <h2>物品与道具</h2>
         {% if pagination.total_count > 0 %}
-            <p class="tw-muted mb-4">共 {{ pagination.total_count }} 件物品 · 第 {{ pagination.page }}/{{ pagination.total_pages }} 页</p>
+            <p class="tw-muted mb-4">共 {{ pagination.total_count }} 种物品 · 第 {{ pagination.page }}/{{ pagination.total_pages }} 页</p>
         {% endif %}
         {% if warehouse_items %}
             <div class="tw-guild-exchange-grid">
                 {% for item in warehouse_items %}
                 <article class="tw-guild-exchange-card{% if not item.can_exchange %} tw-guild-exchange-card--disabled{% endif %}">
                     <div class="tw-guild-exchange-head">
-                        <h3 class="tw-guild-exchange-name">{{ item.display_name|default:"未知物品" }}</h3>
-                        <span class="tw-guild-exchange-cost">{{ item.exchange_unit_cost }} 贡献</span>
+                        <div class="tw-guild-exchange-identity">
+                            <div class="tw-item-icon tw-guild-exchange-icon rarity-{{ item.display_rarity }}" aria-hidden="true">
+                                {% if item.item_key == "bloodthirsty_cavalry" %}
+                                    <img src="{% static 'images/guild_technology/shixuetieqi.png' %}" alt="" width="56" height="56" loading="lazy" decoding="async">
+                                {% else %}
+                                    {% item_icon item.item_key item.display_image_url item.display_name item.display_icon %}
+                                {% endif %}
+                            </div>
+                            <div class="tw-guild-exchange-item-copy">
+                                <h3 class="tw-guild-exchange-name">{{ item.display_name|default:"未知物品" }}</h3>
+                                <span class="tw-guild-exchange-cost">{{ item.exchange_unit_cost }} 贡献</span>
+                            </div>
+                        </div>
                     </div>
 
                     <p class="tw-guild-exchange-desc">{{ item.display_description }}</p>
@@ -69,7 +80,7 @@
             </div>
         {% else %}
             <div class="tw-guild-empty-state">
-                <strong>仓库暂无物品</strong>
+                <strong>暂无可兑换物品</strong>
                 <p>帮会科技产出的物品会存入这里。</p>
             </div>
         {% endif %}
@@ -96,5 +107,45 @@
         </nav>
         {% endif %}
     </section>
+
+    <details class="tw-guild-section tw-guild-troop-assets">
+        <summary class="tw-guild-troop-summary" aria-controls="guild-troop-details">
+            <h2 id="guild-troop-assets-title">护院详情</h2>
+            {% if troop_assets.kinds > 0 %}
+            <span class="tw-muted">{{ troop_assets.kinds }} 种护院</span>
+            {% endif %}
+        </summary>
+        <div id="guild-troop-details" class="tw-guild-troop-content">
+            {% if troop_assets.rows %}
+            <div class="tw-guild-troop-grid" role="list" aria-label="帮会各兵种护院数量与状态">
+                {% for troop in troop_assets.rows %}
+                <article class="tw-guild-troop-card" data-troop-key="{{ troop.key }}" role="listitem">
+                    <div class="tw-guild-troop-card-main">
+                        <div class="tw-guild-troop-avatar" aria-hidden="true">
+                            {% if troop.avatar_url %}
+                            <img src="{{ troop.avatar_url }}" alt="" width="48" height="48" loading="lazy" decoding="async">
+                            {% else %}
+                            <span>{{ troop.name|slice:":1" }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="tw-guild-troop-copy">
+                            <strong title="{{ troop.name }}">{{ troop.name }}</strong>
+                            <span>现有 {{ troop.total }} 名</span>
+                        </div>
+                    </div>
+                    <dl class="tw-guild-troop-status" aria-label="护院状态数量">
+                        <div><dt title="驻守可派遣">驻守</dt><dd>{{ troop.stationed }}</dd></div>
+                        <div><dt title="出征待返">出征</dt><dd>{{ troop.deployed }}</dd></div>
+                        <div><dt title="待兑换">待兑</dt><dd>{{ troop.redeemable }}</dd></div>
+                        <div><dt title="训练中">训练</dt><dd>{{ troop.training }}</dd></div>
+                    </dl>
+                </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="tw-guild-empty-state"><strong>暂无帮会护院</strong><p>成员可捐赠护院，帮主或管理员也可研究狼系天赋，训练嗜血铁骑。</p></div>
+            {% endif %}
+        </div>
+    </details>
 </section>
 {% endblock %}

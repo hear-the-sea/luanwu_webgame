@@ -30,8 +30,8 @@ from .views.membership import (
 )
 from .views.missions import donate_troops, launch_mission, missions, refresh_mission_runs_api, retreat_mission
 from .views.pvp import launch_guild_raid, pvp_page, refresh_pvp_activity_api, retreat_guild_raid
-from .views.technology import technology_list, upgrade_technology
-from .views.warehouse import exchange_item, exchange_logs, warehouse
+from .views.technology import reset_technology_route, select_technology_route, technology_list, upgrade_technology
+from .views.warehouse import exchange_item, exchange_logs, recruit_cavalry, warehouse
 
 app_name = "guilds"
 
@@ -84,9 +84,12 @@ urlpatterns = [
     path("contribution/ranking/", contribution_ranking, name="contribution_ranking"),
     # 科技系统
     path("technology/", technology_list, name="technology"),
+    path("technology/routes/<str:route_key>/select/", select_technology_route, name="select_technology_route"),
+    path("technology/routes/<str:route_key>/reset/", reset_technology_route, name="reset_technology_route"),
     path("technology/<str:tech_key>/upgrade/", upgrade_technology, name="upgrade_tech"),
     # 仓库与兑换
     path("warehouse/", warehouse, name="warehouse"),
+    path("warehouse/cavalry/recruit/", recruit_cavalry, name="recruit_cavalry"),
     path("warehouse/<str:item_key>/exchange/", exchange_item, name="exchange_item"),
     path("warehouse/logs/", exchange_logs, name="exchange_logs"),
     path("blueprints/<str:blueprint_key>/claim/", claim_blueprint_reward, name="claim_blueprint_reward"),

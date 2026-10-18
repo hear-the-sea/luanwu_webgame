@@ -73,11 +73,11 @@ def test_guild_rules_rejects_empty_technology_description():
         "pagination": {"guild_list_page_size": 20, "guild_hall_display_limit": 20},
         "creation": {},
         "contribution": {},
-        "technology": {"descriptions": {"equipment_forge": ""}},
+        "technology": {"descriptions": {"forging_equipment_forge": ""}},
     }
     result = validate_guild_rules(data)
     assert_invalid(result, substring="non-empty string")
-    assert result.errors[0].path == "technology.descriptions.equipment_forge"
+    assert result.errors[0].path == "technology.descriptions.forging_equipment_forge"
 
 
 def test_guild_rules_accepts_target_level_upgrade_cost_overrides():
@@ -87,7 +87,7 @@ def test_guild_rules_accepts_target_level_upgrade_cost_overrides():
         "contribution": {},
         "technology": {
             "upgrade_cost_overrides": {
-                "mysticism": {2: {"red_ruby": 300, "gold_bar": 150}},
+                "wolf_soul_container": {2: {"red_ruby": 300, "gold_bar": 150}},
             },
         },
     }
@@ -104,7 +104,7 @@ def test_guild_rules_accepts_non_exponential_upgrade_cost_curve():
         "contribution": {},
         "technology": {
             "upgrade_cost_curves": {"staged": {2: 2, 3: 5, 4: 12}},
-            "upgrade_cost_curve_by_tech": {"equipment_forge": "staged"},
+            "upgrade_cost_curve_by_tech": {"forging_equipment_forge": "staged"},
         },
     }
 
@@ -120,7 +120,7 @@ def test_guild_rules_rejects_unknown_upgrade_cost_curve_reference():
         "contribution": {},
         "technology": {
             "upgrade_cost_curves": {"staged": {2: 2}},
-            "upgrade_cost_curve_by_tech": {"equipment_forge": "missing"},
+            "upgrade_cost_curve_by_tech": {"forging_equipment_forge": "missing"},
         },
     }
 
@@ -136,7 +136,7 @@ def test_guild_rules_rejects_negative_target_level_upgrade_cost():
         "contribution": {},
         "technology": {
             "upgrade_cost_overrides": {
-                "mysticism": {2: {"red_ruby": 300, "gold_bar": -1}},
+                "wolf_soul_container": {2: {"red_ruby": 300, "gold_bar": -1}},
             },
         },
     }
@@ -144,7 +144,7 @@ def test_guild_rules_rejects_negative_target_level_upgrade_cost():
     result = validate_guild_rules(data)
 
     assert_invalid(result, substring="non-negative integer")
-    assert result.errors[0].path == "technology.upgrade_cost_overrides.mysticism.2.gold_bar"
+    assert result.errors[0].path == "technology.upgrade_cost_overrides.wolf_soul_container.2.gold_bar"
 
 
 def test_guest_growth_rules_rejects_non_dict_root():

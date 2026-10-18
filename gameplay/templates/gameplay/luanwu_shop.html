@@ -91,6 +91,21 @@
                     </article>
                     {% endfor %}
                 </div>
+                {% if luanwu_shop_page.has_other_pages %}
+                <nav class="tw-pagination luanwu-shop__pagination" aria-label="乱舞商城商品分页">
+                    {% if luanwu_shop_page.has_previous %}
+                    <a href="?page={{ luanwu_shop_page.previous_page_number }}" class="tw-btn-secondary tw-btn-sm">上一页</a>
+                    {% else %}
+                    <span class="tw-btn-secondary tw-btn-sm disabled" aria-disabled="true">上一页</span>
+                    {% endif %}
+                    <span class="tw-page-info">{{ luanwu_shop_page.number }} / {{ luanwu_shop_page.paginator.num_pages }}</span>
+                    {% if luanwu_shop_page.has_next %}
+                    <a href="?page={{ luanwu_shop_page.next_page_number }}" class="tw-btn-secondary tw-btn-sm">下一页</a>
+                    {% else %}
+                    <span class="tw-btn-secondary tw-btn-sm disabled" aria-disabled="true">下一页</span>
+                    {% endif %}
+                </nav>
+                {% endif %}
             </div>
         </section>
 

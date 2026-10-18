@@ -1,7 +1,7 @@
 """庄园内外护院容量规则。
 
 庄园内的 ``PlayerTroop`` 与庄园外的钱庄 ``TroopBankStorage`` 是两套
-独立存储，分别执行 5000 名上限。所有运行时增加护院的服务都应在已锁定
+独立存储，分别执行 8000 名与 5000 名上限。所有运行时增加护院的服务都应在已锁定
 Manor 的事务中调用本模块，避免真实玩家、虚拟玩家或并发请求绕过容量校验。
 """
 
@@ -13,7 +13,7 @@ from core.exceptions import TroopCapacityFullError
 
 from ...models import Manor, PlayerTroop, TroopRecruitment
 
-MANOR_TROOP_CAPACITY = 5000
+MANOR_TROOP_CAPACITY = 8000
 TROOP_BANK_CAPACITY = 5000
 
 
@@ -47,7 +47,7 @@ def get_manor_troop_remaining_space(
     include_pending_recruitment: bool = True,
     exclude_recruitment_id: int | None = None,
 ) -> int:
-    """返回在不突破庄园内 5000 上限前还可增加的护院数量。"""
+    """返回在不突破庄园内 8000 上限前还可增加的护院数量。"""
 
     reserved = (
         get_pending_troop_recruitment_space(

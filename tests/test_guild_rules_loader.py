@@ -32,14 +32,14 @@ def test_normalize_guild_rules_merges_and_clamps_values():
                 "min_donation_amount": "1",
             },
             "technology": {
-                "upgrade_costs": {"equipment_forge": {"silver": "6000", "grain": 2500, "gold_bar": 2}},
+                "upgrade_costs": {"forging_equipment_forge": {"silver": "6000", "grain": 2500, "gold_bar": 2}},
                 "upgrade_cost_curves": {"standard_10": {2: "3"}},
-                "upgrade_cost_curve_by_tech": {"equipment_forge": "standard_10"},
+                "upgrade_cost_curve_by_tech": {"forging_equipment_forge": "standard_10"},
                 "upgrade_cost_overrides": {
-                    "mysticism": {2: {"red_ruby": "333", "gold_bar": "155"}},
+                    "wolf_soul_container": {2: {"red_ruby": "333", "gold_bar": "155"}},
                 },
-                "names": {"equipment_forge": "新装备锻造"},
-                "descriptions": {"equipment_forge": "新的科技简介"},
+                "names": {"forging_equipment_forge": "新装备锻造"},
+                "descriptions": {"forging_equipment_forge": "新的科技简介"},
             },
             "warehouse": {
                 "exchange_costs": {"gear_green": "60"},
@@ -64,29 +64,25 @@ def test_normalize_guild_rules_merges_and_clamps_values():
     assert loaded["contribution"]["troop_rates"] == {"0": 1, "1": 1, "3": 3, "5": 6, "7": 12}
     assert loaded["contribution"]["daily_troop_contribution_limit"] == 300
     assert loaded["contribution"]["min_donation_amount"] == 1
-    assert loaded["technology"]["upgrade_costs"]["equipment_forge"]["silver"] == 6000
-    assert loaded["technology"]["upgrade_costs"]["equipment_forge"]["grain"] == 2500
-    assert loaded["technology"]["upgrade_costs"]["equipment_forge"]["gold_bar"] == 2
-    assert loaded["technology"]["names"]["equipment_forge"] == "新装备锻造"
+    assert loaded["technology"]["upgrade_costs"]["forging_equipment_forge"]["silver"] == 6000
+    assert loaded["technology"]["upgrade_costs"]["forging_equipment_forge"]["grain"] == 2500
+    assert loaded["technology"]["upgrade_costs"]["forging_equipment_forge"]["gold_bar"] == 2
+    assert loaded["technology"]["names"]["forging_equipment_forge"] == "新装备锻造"
     assert loaded["technology"]["names"]["guild_lineup_capacity"] == "出战位扩容"
-    assert loaded["technology"]["descriptions"]["equipment_forge"] == "新的科技简介"
-    assert loaded["technology"]["descriptions"]["guild_lineup_capacity"] == "提升帮会已上阵名单总容量"
+    assert loaded["technology"]["descriptions"]["forging_equipment_forge"] == "新的科技简介"
+    assert loaded["technology"]["descriptions"]["guild_lineup_capacity"] == "提高帮会任务上阵护院容量。"
     assert loaded["technology"]["upgrade_costs"]["guild_lineup_capacity"] == {"red_ruby": 5}
     assert loaded["technology"]["upgrade_costs"]["guild_dispatch_capacity"] == {"gold_bar": 2}
     assert loaded["technology"]["upgrade_cost_overrides"].get("guild_lineup_capacity", {}) == {}
-    assert loaded["technology"]["upgrade_cost_overrides"]["guild_dispatch_capacity"]["20"] == {
-        "gold_bar": 120,
-        "red_ruby": 44,
-    }
-    assert loaded["technology"]["upgrade_costs"]["mysticism"] == {"red_ruby": 200}
+    assert "guild_dispatch_capacity" not in loaded["technology"]["upgrade_cost_overrides"]
+    assert loaded["technology"]["upgrade_costs"]["wolf_soul_container"] == {"red_ruby": 200}
     assert loaded["technology"]["upgrade_cost_curves"]["standard_10"]["2"] == 3
     assert loaded["technology"]["upgrade_cost_curves"]["standard_10"]["10"] == 350
-    assert loaded["technology"]["upgrade_cost_curve_by_tech"]["equipment_forge"] == "standard_10"
-    assert loaded["technology"]["upgrade_cost_overrides"]["mysticism"] == {
+    assert loaded["technology"]["upgrade_cost_curve_by_tech"]["forging_equipment_forge"] == "standard_10"
+    assert loaded["technology"]["upgrade_cost_overrides"]["wolf_soul_container"] == {
         "2": {"red_ruby": 333, "gold_bar": 155},
-        "3": {"red_ruby": 300, "gold_bar": 200},
     }
-    assert loaded["technology"]["names"]["mysticism"] == "神秘学"
+    assert loaded["technology"]["names"]["wolf_soul_container"] == "灵魂容器"
     assert loaded["warehouse"]["exchange_costs"]["gear_green"] == 60
     assert loaded["warehouse"]["daily_exchange_limit"] == 12
     assert loaded["hero_pool"]["slot_limit"] == 2

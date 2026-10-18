@@ -136,7 +136,7 @@ def apply_troop_recruitment_result_locked(
     # The active queue already reserves its own quantity. Exclude this record
     # so completion checks the actual stock plus any other reservation exactly
     # once, while still preventing a concurrent bank withdrawal or recruitment
-    # from pushing the manor above 5000.
+    # from pushing the manor above 8000.
     ensure_manor_troop_capacity_locked(
         recruitment.manor,
         recruitment.quantity,

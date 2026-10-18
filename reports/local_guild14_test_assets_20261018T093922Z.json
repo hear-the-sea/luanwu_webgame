@@ -1,0 +1,308 @@
+{
+  "scope": "user-authorized local development guild only",
+  "guild_id": 14,
+  "guild_name": "请问请问",
+  "leader_member_id": 14,
+  "item_kinds": 32,
+  "troop_kinds": 22,
+  "missing_troop_templates": [],
+  "minimum_per_regular_item": 100,
+  "minimum_per_troop": 5000,
+  "minimum_leader_contribution": 1000000,
+  "current_leader_contribution": 0,
+  "current_item_kinds": 0,
+  "current_troop_kinds": 0,
+  "applied_at": "20261018T093922Z",
+  "backup": "/tmp/guild14_test_seed_20261018T093922Z_before.json",
+  "guild_silver": 0,
+  "leader_current_contribution": 1000000,
+  "items": [
+    {
+      "item_key": "bloodthirsty_cavalry",
+      "quantity": 2000,
+      "contribution_cost": 3
+    },
+    {
+      "item_key": "blueprint_jiguanchuniao",
+      "quantity": 100,
+      "contribution_cost": 800
+    },
+    {
+      "item_key": "blueprint_jixiemao",
+      "quantity": 100,
+      "contribution_cost": 500
+    },
+    {
+      "item_key": "blueprint_taotieding",
+      "quantity": 100,
+      "contribution_cost": 2500
+    },
+    {
+      "item_key": "blueprint_tongchanjiguan",
+      "quantity": 100,
+      "contribution_cost": 200
+    },
+    {
+      "item_key": "blueprint_xiaoxingjiguanshu",
+      "quantity": 100,
+      "contribution_cost": 100
+    },
+    {
+      "item_key": "equip_jinjingbailongju",
+      "quantity": 100,
+      "contribution_cost": 3500
+    },
+    {
+      "item_key": "equip_shandianqiulongju",
+      "quantity": 100,
+      "contribution_cost": 1800
+    },
+    {
+      "item_key": "experience_fruit",
+      "quantity": 50000,
+      "contribution_cost": 1
+    },
+    {
+      "item_key": "experience_peach_recipe",
+      "quantity": 100,
+      "contribution_cost": 50
+    },
+    {
+      "item_key": "experience_pineapple_recipe",
+      "quantity": 100,
+      "contribution_cost": 100
+    },
+    {
+      "item_key": "experience_watermelon_recipe",
+      "quantity": 100,
+      "contribution_cost": 200
+    },
+    {
+      "item_key": "green_to_blue_pill",
+      "quantity": 100,
+      "contribution_cost": 1000
+    },
+    {
+      "item_key": "guest_rebirth_card",
+      "quantity": 100,
+      "contribution_cost": 300
+    },
+    {
+      "item_key": "guild_gear_box_blue",
+      "quantity": 100,
+      "contribution_cost": 300
+    },
+    {
+      "item_key": "guild_gear_box_green",
+      "quantity": 100,
+      "contribution_cost": 70
+    },
+    {
+      "item_key": "guild_gear_box_master",
+      "quantity": 100,
+      "contribution_cost": 2500
+    },
+    {
+      "item_key": "guild_gear_box_purple",
+      "quantity": 100,
+      "contribution_cost": 1000
+    },
+    {
+      "item_key": "guild_gear_box_refined_purple",
+      "quantity": 100,
+      "contribution_cost": 1500
+    },
+    {
+      "item_key": "guild_grain_boost_card",
+      "quantity": 100,
+      "contribution_cost": 200
+    },
+    {
+      "item_key": "guild_injury_card",
+      "quantity": 100,
+      "contribution_cost": 700
+    },
+    {
+      "item_key": "guild_silver_boost_card",
+      "quantity": 100,
+      "contribution_cost": 200
+    },
+    {
+      "item_key": "guild_skill_book_box_blue",
+      "quantity": 100,
+      "contribution_cost": 180
+    },
+    {
+      "item_key": "guild_skill_book_box_green",
+      "quantity": 100,
+      "contribution_cost": 80
+    },
+    {
+      "item_key": "guild_skill_book_box_master",
+      "quantity": 100,
+      "contribution_cost": 2000
+    },
+    {
+      "item_key": "guild_skill_book_box_purple",
+      "quantity": 100,
+      "contribution_cost": 500
+    },
+    {
+      "item_key": "guild_skill_book_box_refined",
+      "quantity": 100,
+      "contribution_cost": 1000
+    },
+    {
+      "item_key": "guild_slave_card",
+      "quantity": 100,
+      "contribution_cost": 500
+    },
+    {
+      "item_key": "guild_theft_card",
+      "quantity": 100,
+      "contribution_cost": 900
+    },
+    {
+      "item_key": "soul_container",
+      "quantity": 100,
+      "contribution_cost": 5000
+    },
+    {
+      "item_key": "xidianka",
+      "quantity": 100,
+      "contribution_cost": 250
+    },
+    {
+      "item_key": "xisuidan",
+      "quantity": 100,
+      "contribution_cost": 3000
+    }
+  ],
+  "troops": [
+    {
+      "troop_template__key": "scout",
+      "troop_template__name": "探子",
+      "count": 5000
+    },
+    {
+      "troop_template__key": "dao_ke",
+      "troop_template__name": "刀客",
+      "count": 5000
+    },
+    {
+      "troop_template__key": "dao_jie",
+      "troop_template__name": "刀杰",
+      "count": 5000
+    },
+    {
+      "troop_template__key": "dao_ba",
+      "troop_template__name": "刀霸",
+      "count": 5000
+    },
+    {
+      "troop_template__key": "dao_sheng",
+      "troop_template__name": "刀圣",
+      "count": 5000
+    },
+    {
+      "troop_template__key": "qiang_ke",
+      "troop_template__name": "枪客",
+      "count": 5000
+    },
+    {
+      "troop_template__key": "qiang_hao",
+      "troop_template__name": "枪豪",
+      "count": 5000
+    },
+    {
+      "troop_template__key": "qiang_ba",
+      "troop_template__name": "枪霸",
+      "count": 5000
+    },
+    {
+      "troop_template__key": "qiang_wang",
+      "troop_template__name": "枪王",
+      "count": 5000
+    },
+    {
+      "troop_template__key": "jian_shi",
+      "troop_template__name": "剑士",
+      "count": 5000
+    },
+    {
+      "troop_template__key": "jian_xia",
+      "troop_template__name": "剑侠",
+      "count": 5000
+    },
+    {
+      "troop_template__key": "jian_hao",
+      "troop_template__name": "剑豪",
+      "count": 5000
+    },
+    {
+      "troop_template__key": "jian_sheng",
+      "troop_template__name": "剑圣",
+      "count": 5000
+    },
+    {
+      "troop_template__key": "quan_shi",
+      "troop_template__name": "拳师",
+      "count": 5000
+    },
+    {
+      "troop_template__key": "quan_ba",
+      "troop_template__name": "拳霸",
+      "count": 5000
+    },
+    {
+      "troop_template__key": "quan_wang",
+      "troop_template__name": "拳王",
+      "count": 5000
+    },
+    {
+      "troop_template__key": "quan_sheng",
+      "troop_template__name": "拳圣",
+      "count": 5000
+    },
+    {
+      "troop_template__key": "archer",
+      "troop_template__name": "弓箭手",
+      "count": 5000
+    },
+    {
+      "troop_template__key": "fast_archer",
+      "troop_template__name": "快箭手",
+      "count": 5000
+    },
+    {
+      "troop_template__key": "divine_archer",
+      "troop_template__name": "神箭手",
+      "count": 5000
+    },
+    {
+      "troop_template__key": "arrow_god",
+      "troop_template__name": "箭神",
+      "count": 5000
+    },
+    {
+      "troop_template__key": "bloodthirsty_cavalry",
+      "troop_template__name": "嗜血铁骑",
+      "count": 5000
+    }
+  ],
+  "verification": {
+    "asset_item_kinds": 32,
+    "stationed_troops": 110000,
+    "redeemable_cavalry": 2000,
+    "total_troops": 112000,
+    "leader_contribution": 1000000,
+    "cavalry_unlock_required": true,
+    "all_other_seeded_items_exchangeable": true,
+    "related_tests_passed": 90,
+    "guide_text_and_tasks_work_links_verified": true
+  },
+  "changed_source_sha256": {
+    "gameplay/templates/gameplay/guide.html": "64d334d16111eef403dcf6fe87afe03465fb1004190f3de6d22a83be2eb37080",
+    "guilds/services/warehouse.py": "a83f4bfdc4006329e0a1971fab8dff2951930191e4c272a05327c7a980aada67"
+  }
+}

@@ -46,14 +46,14 @@ def test_direct_battle_and_mission_troop_adds_enforce_manor_capacity(django_user
     user = django_user_model.objects.create_user(username=f"troop_return_{add_troops_batch.__module__}")
     manor = ensure_manor(user)
     template = _create_troop_template(f"capacity_return_{add_troops_batch.__module__.split('.')[-1]}")
-    PlayerTroop.objects.create(manor=manor, troop_template=template, count=4999)
+    PlayerTroop.objects.create(manor=manor, troop_template=template, count=7999)
 
     with pytest.raises(TroopCapacityFullError, match="庄园内护院容量不足"):
         with transaction.atomic():
             locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
             add_troops_batch(locked_manor, {template.key: 2})
 
-    assert PlayerTroop.objects.get(manor=manor, troop_template=template).count == 4999
+    assert PlayerTroop.objects.get(manor=manor, troop_template=template).count == 7999
 
 
 @pytest.mark.django_db
@@ -94,7 +94,7 @@ def test_returned_troops_use_available_space_then_discard_overflow(django_user_m
     manor = ensure_manor(user)
     return_template = _create_troop_template("return_bank_partial")
     bank_template = _create_troop_template("return_bank_reserve")
-    PlayerTroop.objects.create(manor=manor, troop_template=return_template, count=4990)
+    PlayerTroop.objects.create(manor=manor, troop_template=return_template, count=7990)
     TroopBankStorage.objects.create(
         manor=manor,
         troop_template=bank_template,
@@ -111,7 +111,7 @@ def test_returned_troops_use_available_space_then_discard_overflow(django_user_m
             )
         )
 
-    assert PlayerTroop.objects.get(manor=manor, troop_template=return_template).count == 5000
+    assert PlayerTroop.objects.get(manor=manor, troop_template=return_template).count == 8000
     assert sum(TroopBankStorage.objects.filter(manor=manor).values_list("count", flat=True)) == 5000
     assert TroopBankStorage.objects.get(manor=manor, troop_template=return_template).count == 10
 

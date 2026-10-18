@@ -14,11 +14,11 @@ mysticism:
     1:
       - item_key: soul_container
         quantity: 1
-        contribution_cost: 1000
+        contribution_cost: 5000
     2:
       - item_key: soul_container
         quantity: 1
-        contribution_cost: 1000
+        contribution_cost: 5000
       - item_key: guest_rebirth_card
         quantity: 1
         contribution_cost: 1000
@@ -28,7 +28,7 @@ mysticism:
     3:
       - item_key: soul_container
         quantity: 1
-        contribution_cost: 1000
+        contribution_cost: 5000
       - item_key: guest_rebirth_card
         quantity: 1
         contribution_cost: 1000
@@ -37,7 +37,7 @@ mysticism:
         contribution_cost: 1000
       - item_key: xisuidan
         quantity: 1
-        contribution_cost: 1000
+        contribution_cost: 3000
 
 # 装备锻造科技
 equipment:
@@ -55,7 +55,7 @@ equipment:
     3:
       - item_key: guild_gear_box_blue
         quantity: 1
-        contribution_cost: 180
+        contribution_cost: 300
         weekly_personal_limit: 3
       - item_key: guild_gear_box_green
         quantity: 2
@@ -64,7 +64,7 @@ equipment:
     4:
       - item_key: guild_gear_box_blue
         quantity: 2
-        contribution_cost: 180
+        contribution_cost: 300
         weekly_personal_limit: 3
       - item_key: guild_gear_box_green
         quantity: 2
@@ -73,11 +73,11 @@ equipment:
     5:
       - item_key: guild_gear_box_purple
         quantity: 1
-        contribution_cost: 500
+        contribution_cost: 1000
         weekly_personal_limit: 1
       - item_key: guild_gear_box_blue
         quantity: 2
-        contribution_cost: 180
+        contribution_cost: 300
         weekly_personal_limit: 3
       - item_key: guild_gear_box_green
         quantity: 2
@@ -86,11 +86,11 @@ equipment:
     6:
       - item_key: guild_gear_box_purple
         quantity: 2
-        contribution_cost: 500
+        contribution_cost: 1000
         weekly_personal_limit: 1
       - item_key: guild_gear_box_blue
         quantity: 2
-        contribution_cost: 180
+        contribution_cost: 300
         weekly_personal_limit: 3
       - item_key: guild_gear_box_green
         quantity: 2
@@ -99,15 +99,15 @@ equipment:
     7:
       - item_key: guild_gear_box_refined_purple
         quantity: 1
-        contribution_cost: 650
+        contribution_cost: 1500
         weekly_personal_limit: 1
       - item_key: guild_gear_box_purple
         quantity: 2
-        contribution_cost: 500
+        contribution_cost: 1000
         weekly_personal_limit: 1
       - item_key: guild_gear_box_blue
         quantity: 2
-        contribution_cost: 180
+        contribution_cost: 300
         weekly_personal_limit: 3
       - item_key: guild_gear_box_green
         quantity: 2
@@ -115,16 +115,16 @@ equipment:
         weekly_personal_limit: 4
     8:
       - item_key: guild_gear_box_refined_purple
-        quantity: 3
-        contribution_cost: 650
+        quantity: 2
+        contribution_cost: 1500
         weekly_personal_limit: 1
       - item_key: guild_gear_box_purple
         quantity: 2
-        contribution_cost: 500
+        contribution_cost: 1000
         weekly_personal_limit: 1
       - item_key: guild_gear_box_blue
         quantity: 2
-        contribution_cost: 180
+        contribution_cost: 300
         weekly_personal_limit: 3
       - item_key: guild_gear_box_green
         quantity: 2
@@ -133,19 +133,19 @@ equipment:
     9:
       - item_key: guild_gear_box_master
         quantity: 1
-        contribution_cost: 800
+        contribution_cost: 2500
         weekly_personal_limit: 1
       - item_key: guild_gear_box_refined_purple
-        quantity: 3
-        contribution_cost: 650
+        quantity: 2
+        contribution_cost: 1500
         weekly_personal_limit: 1
       - item_key: guild_gear_box_purple
         quantity: 2
-        contribution_cost: 500
+        contribution_cost: 1000
         weekly_personal_limit: 1
       - item_key: guild_gear_box_blue
         quantity: 2
-        contribution_cost: 180
+        contribution_cost: 300
         weekly_personal_limit: 3
       - item_key: guild_gear_box_green
         quantity: 2
@@ -154,19 +154,19 @@ equipment:
     10:
       - item_key: guild_gear_box_master
         quantity: 2
-        contribution_cost: 800
+        contribution_cost: 2500
         weekly_personal_limit: 1
       - item_key: guild_gear_box_refined_purple
-        quantity: 3
-        contribution_cost: 650
+        quantity: 2
+        contribution_cost: 1500
         weekly_personal_limit: 1
       - item_key: guild_gear_box_purple
         quantity: 2
-        contribution_cost: 500
+        contribution_cost: 1000
         weekly_personal_limit: 1
       - item_key: guild_gear_box_blue
         quantity: 2
-        contribution_cost: 180
+        contribution_cost: 300
         weekly_personal_limit: 3
       - item_key: guild_gear_box_green
         quantity: 2
@@ -293,7 +293,7 @@ experience:
     5:
       - item_key: guild_skill_book_box_purple
         quantity: 1
-        contribution_cost: 400
+        contribution_cost: 500
         weekly_personal_limit: 1
       - item_key: guild_skill_book_box_blue
         quantity: 2
@@ -306,7 +306,7 @@ experience:
     6:
       - item_key: guild_skill_book_box_purple
         quantity: 2
-        contribution_cost: 400
+        contribution_cost: 500
         weekly_personal_limit: 1
       - item_key: guild_skill_book_box_blue
         quantity: 2
@@ -319,11 +319,11 @@ experience:
     7:
       - item_key: guild_skill_book_box_refined
         quantity: 1
-        contribution_cost: 500
+        contribution_cost: 1000
         weekly_personal_limit: 1
       - item_key: guild_skill_book_box_purple
         quantity: 2
-        contribution_cost: 400
+        contribution_cost: 500
         weekly_personal_limit: 1
       - item_key: guild_skill_book_box_blue
         quantity: 2
@@ -336,11 +336,11 @@ experience:
     8:
       - item_key: guild_skill_book_box_refined
         quantity: 2
-        contribution_cost: 500
+        contribution_cost: 1000
         weekly_personal_limit: 1
       - item_key: guild_skill_book_box_purple
         quantity: 2
-        contribution_cost: 400
+        contribution_cost: 500
         weekly_personal_limit: 1
       - item_key: guild_skill_book_box_blue
         quantity: 2
@@ -353,15 +353,15 @@ experience:
     9:
       - item_key: guild_skill_book_box_master
         quantity: 1
-        contribution_cost: 650
+        contribution_cost: 2000
         weekly_personal_limit: 1
       - item_key: guild_skill_book_box_refined
         quantity: 2
-        contribution_cost: 500
+        contribution_cost: 1000
         weekly_personal_limit: 1
       - item_key: guild_skill_book_box_purple
         quantity: 2
-        contribution_cost: 400
+        contribution_cost: 500
         weekly_personal_limit: 1
       - item_key: guild_skill_book_box_blue
         quantity: 2
@@ -374,15 +374,15 @@ experience:
     10:
       - item_key: guild_skill_book_box_master
         quantity: 2
-        contribution_cost: 650
+        contribution_cost: 2000
         weekly_personal_limit: 1
       - item_key: guild_skill_book_box_refined
         quantity: 2
-        contribution_cost: 500
+        contribution_cost: 1000
         weekly_personal_limit: 1
       - item_key: guild_skill_book_box_purple
         quantity: 2
-        contribution_cost: 400
+        contribution_cost: 500
         weekly_personal_limit: 1
       - item_key: guild_skill_book_box_blue
         quantity: 2
@@ -454,3 +454,331 @@ resource:
       - item_key: resource_pack_mixed
         quantity: 2
         contribution_cost: 20
+
+# 新科技树产出。旧 gear/guard/resource 规则保留用于兼容历史库存上限显示，
+# 新生产任务只读取科技树中声明的节点键，因此这些旧项不会继续新增库存。
+hero_fruit_blueprint:
+  levels:
+    1:
+      - item_key: experience_fruit
+        quantity: 500
+        contribution_cost: 1
+      - item_key: experience_peach_recipe
+        quantity: 20
+        contribution_cost: 50
+        weekly_personal_limit: 5
+    2:
+      - item_key: experience_fruit
+        quantity: 1000
+        contribution_cost: 1
+      - item_key: experience_peach_recipe
+        quantity: 20
+        contribution_cost: 50
+        weekly_personal_limit: 5
+      - item_key: experience_pineapple_recipe
+        quantity: 20
+        contribution_cost: 100
+        weekly_personal_limit: 4
+    3:
+      - item_key: experience_fruit
+        quantity: 1500
+        contribution_cost: 1
+      - item_key: experience_peach_recipe
+        quantity: 20
+        contribution_cost: 50
+        weekly_personal_limit: 5
+      - item_key: experience_pineapple_recipe
+        quantity: 20
+        contribution_cost: 100
+        weekly_personal_limit: 4
+      - item_key: experience_watermelon_recipe
+        quantity: 20
+        contribution_cost: 200
+        weekly_personal_limit: 3
+
+hero_rebirth_card:
+  levels:
+    1:
+      - item_key: guest_rebirth_card
+        quantity: 1
+        contribution_cost: 300
+        weekly_personal_limit: 3
+    2:
+      - item_key: guest_rebirth_card
+        quantity: 2
+        contribution_cost: 300
+        weekly_personal_limit: 5
+    3:
+      - item_key: guest_rebirth_card
+        quantity: 3
+        contribution_cost: 300
+        weekly_personal_limit: 8
+
+hero_green_blue_pill:
+  levels:
+    1:
+      - item_key: green_to_blue_pill
+        quantity: 1
+        contribution_cost: 1000
+        weekly_personal_limit: 3
+    2:
+      - item_key: green_to_blue_pill
+        quantity: 2
+        contribution_cost: 1000
+        weekly_personal_limit: 5
+    3:
+      - item_key: green_to_blue_pill
+        quantity: 3
+        contribution_cost: 1000
+        weekly_personal_limit: 8
+
+hero_blue_purple_pill:
+  levels:
+    1:
+      - item_key: blue_to_purple_pill
+        quantity: 1
+        contribution_cost: 600
+        weekly_personal_limit: 2
+    2:
+      - item_key: blue_to_purple_pill
+        quantity: 2
+        contribution_cost: 600
+        weekly_personal_limit: 4
+    3:
+      - item_key: blue_to_purple_pill
+        quantity: 3
+        contribution_cost: 600
+        weekly_personal_limit: 6
+
+hero_reset_card:
+  levels:
+    1:
+      - item_key: xidianka
+        quantity: 1
+        contribution_cost: 250
+        weekly_personal_limit: 3
+    2:
+      - item_key: xidianka
+        quantity: 2
+        contribution_cost: 250
+        weekly_personal_limit: 5
+    3:
+      - item_key: xidianka
+        quantity: 3
+        contribution_cost: 250
+        weekly_personal_limit: 8
+
+hero_marrow_pill:
+  levels:
+    1:
+      - item_key: xisuidan
+        quantity: 1
+        contribution_cost: 3000
+        weekly_personal_limit: 2
+    2:
+      - item_key: xisuidan
+        quantity: 2
+        contribution_cost: 3000
+        weekly_personal_limit: 4
+    3:
+      - item_key: xisuidan
+        quantity: 3
+        contribution_cost: 3000
+        weekly_personal_limit: 6
+
+wolf_plunder_card:
+  levels:
+    1:
+      - item_key: guild_theft_card
+        quantity: 3
+        contribution_cost: 900
+        weekly_personal_limit: 2
+    2:
+      - item_key: guild_theft_card
+        quantity: 5
+        contribution_cost: 900
+        weekly_personal_limit: 2
+    3:
+      - item_key: guild_theft_card
+        quantity: 7
+        contribution_cost: 900
+        weekly_personal_limit: 4
+
+wolf_lightning_horse:
+  levels:
+    1:
+      - item_key: equip_shandianqiulongju
+        quantity: 1
+        contribution_cost: 1800
+        weekly_personal_limit: 2
+    2:
+      - item_key: equip_shandianqiulongju
+        quantity: 2
+        contribution_cost: 1800
+        weekly_personal_limit: 3
+    3:
+      - item_key: equip_shandianqiulongju
+        quantity: 3
+        contribution_cost: 1800
+        weekly_personal_limit: 4
+
+wolf_golden_white_horse:
+  levels:
+    1:
+      - item_key: equip_jinjingbailongju
+        quantity: 1
+        contribution_cost: 3500
+        weekly_personal_limit: 1
+    2:
+      - item_key: equip_jinjingbailongju
+        quantity: 2
+        contribution_cost: 3500
+        weekly_personal_limit: 2
+    3:
+      - item_key: equip_jinjingbailongju
+        quantity: 3
+        contribution_cost: 3500
+        weekly_personal_limit: 3
+
+wolf_soul_container:
+  levels:
+    1:
+      - item_key: soul_container
+        quantity: 1
+        contribution_cost: 5000
+        weekly_personal_limit: 2
+    2:
+      - item_key: soul_container
+        quantity: 2
+        contribution_cost: 5000
+        weekly_personal_limit: 4
+    3:
+      - item_key: soul_container
+        quantity: 3
+        contribution_cost: 5000
+        weekly_personal_limit: 6
+
+sheep_grain_card:
+  levels:
+    1:
+      - item_key: guild_grain_boost_card
+        quantity: 3
+        contribution_cost: 200
+        weekly_personal_limit: 3
+    2:
+      - item_key: guild_grain_boost_card
+        quantity: 5
+        contribution_cost: 200
+        weekly_personal_limit: 5
+    3:
+      - item_key: guild_grain_boost_card
+        quantity: 7
+        contribution_cost: 200
+        weekly_personal_limit: 8
+
+sheep_silver_card:
+  levels:
+    1:
+      - item_key: guild_silver_boost_card
+        quantity: 3
+        contribution_cost: 200
+        weekly_personal_limit: 3
+    2:
+      - item_key: guild_silver_boost_card
+        quantity: 5
+        contribution_cost: 200
+        weekly_personal_limit: 5
+    3:
+      - item_key: guild_silver_boost_card
+        quantity: 7
+        contribution_cost: 200
+        weekly_personal_limit: 8
+
+sheep_wrath:
+  levels:
+    1:
+      - item_key: guild_sheep_wrath
+        quantity: 1
+        contribution_cost: 5000
+
+forging_mechanism_blueprint:
+  levels:
+    1:
+      - item_key: blueprint_xiaoxingjiguanshu
+        quantity: 1
+        contribution_cost: 100
+        weekly_personal_limit: 5
+    2:
+      - item_key: blueprint_tongchanjiguan
+        quantity: 1
+        contribution_cost: 200
+        weekly_personal_limit: 5
+    3:
+      - item_key: blueprint_jixiemao
+        quantity: 2
+        contribution_cost: 500
+        weekly_personal_limit: 4
+    4:
+      - item_key: blueprint_jiguanchuniao
+        quantity: 2
+        contribution_cost: 800
+        weekly_personal_limit: 4
+    5:
+      - item_key: blueprint_taotieding
+        quantity: 2
+        contribution_cost: 2500
+        weekly_personal_limit: 3
+
+forging_slave_card:
+  levels:
+    1:
+      - item_key: guild_slave_card
+        quantity: 3
+        contribution_cost: 500
+        weekly_personal_limit: 3
+    2:
+      - item_key: guild_slave_card
+        quantity: 5
+        contribution_cost: 500
+        weekly_personal_limit: 5
+    3:
+      - item_key: guild_slave_card
+        quantity: 7
+        contribution_cost: 500
+        weekly_personal_limit: 8
+
+forging_theft_card:
+  levels:
+    1:
+      - item_key: guild_theft_card
+        quantity: 3
+        contribution_cost: 900
+        weekly_personal_limit: 2
+    2:
+      - item_key: guild_theft_card
+        quantity: 5
+        contribution_cost: 900
+        weekly_personal_limit: 2
+    3:
+      - item_key: guild_theft_card
+        quantity: 7
+        contribution_cost: 900
+        weekly_personal_limit: 4
+
+forging_injury_card:
+  levels:
+    1:
+      - item_key: guild_injury_card
+        quantity: 3
+        contribution_cost: 700
+        weekly_personal_limit: 2
+    2:
+      - item_key: guild_injury_card
+        quantity: 5
+        contribution_cost: 700
+        weekly_personal_limit: 3
+    3:
+      - item_key: guild_injury_card
+        quantity: 7
+        contribution_cost: 700
+        weekly_personal_limit: 4

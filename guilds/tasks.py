@@ -24,6 +24,7 @@ from gameplay.tasks._scheduled import DEFAULT_TASK_DEDUP_TIMEOUT, maybe_reschedu
 
 from .models import (
     Guild,
+    GuildCavalryTraining,
     GuildDonationLog,
     GuildExchangeLog,
     GuildMissionRun,
@@ -35,13 +36,8 @@ from .services.contribution import reset_weekly_contributions
 from .services.guild_missions import finalize_guild_mission_run
 from .services.guild_raids import finalize_guild_raid, process_due_guild_raid, process_guild_raid_battle
 from .services.hero_pool import cleanup_invalid_hero_pool_entries
-from .services.warehouse import (
-    produce_equipment,
-    produce_experience_items,
-    produce_guard_items,
-    produce_resource_packs,
-    produce_soul_containers,
-)
+from .services.warehouse import produce_technology_items
+from .technology_tree import PRODUCTION_TECH_KEYS, TECHNOLOGY_NODE_BY_KEY
 
 logger = logging.getLogger(__name__)
 GUILD_PRODUCTION_PARTIAL_RETRY_LIMIT = 1
@@ -50,6 +46,36 @@ GUILD_TASK_RETRY_EXCEPTIONS: InfrastructureExceptions = combine_infrastructure_e
     *celery_utils.CELERY_DISPATCH_INFRA_EXCEPTIONS,
     infrastructure_exceptions=DATABASE_INFRASTRUCTURE_EXCEPTIONS,
 )
+
+
+@shared_task(name="guilds.complete_cavalry_training", bind=True, max_retries=3, default_retry_delay=30)
+def complete_guild_cavalry_training(self, guild_id: int):
+    from .services.cavalry import finalize_guild_cavalry_training
+
+    try:
+        return finalize_guild_cavalry_training(guild_id)
+    except DATABASE_INFRASTRUCTURE_EXCEPTIONS as exc:
+        raise self.retry(exc=exc)
+
+
+@shared_task(name="guilds.scan_cavalry_trainings")
+def scan_guild_cavalry_trainings(limit: int = 200):
+    from .services.cavalry import finalize_guild_cavalry_training
+
+    guild_ids = list(
+        GuildCavalryTraining.objects.filter(
+            completed_at__isnull=True, complete_at__lte=timezone.now(), guild__is_active=True
+        )
+        .order_by("complete_at")
+        .values_list("guild_id", flat=True)[:limit]
+    )
+    completed = 0
+    for guild_id in guild_ids:
+        try:
+            completed += bool(finalize_guild_cavalry_training(guild_id))
+        except DATABASE_INFRASTRUCTURE_EXCEPTIONS:
+            logger.exception("Failed to complete guild cavalry training: guild_id=%s", guild_id)
+    return completed
 
 
 class GuildMissionTaskRetryRequested(RuntimeError):
@@ -84,8 +110,16 @@ def _process_daily_technology_production(
         if not tech or tech.level <= 0:
             return False
 
-        if tech.last_production_at and timezone.localdate(tech.last_production_at) >= timezone.localdate(now):
-            return False
+        if tech.last_production_at:
+            interval_days = max(
+                1,
+                int(TECHNOLOGY_NODE_BY_KEY.get(tech_key, {}).get("production_interval_days", 1) or 1),
+            )
+            if interval_days == 1:
+                if timezone.localdate(tech.last_production_at) >= timezone.localdate(now):
+                    return False
+            elif tech.last_production_at + timedelta(days=interval_days) > now:
+                return False
 
         producer(guild, tech.level)
         tech.last_production_at = now
@@ -345,70 +379,18 @@ def _process_guild_production_once(guild_id: int) -> tuple[str, bool]:
     now = timezone.now()
     partial_failure = False
 
-    # 装备锻造
-    partial_failure = (
-        _run_guild_production_step(
-            guild,
-            tech_key="equipment_forge",
-            producer=produce_equipment,
-            produced_items=produced_items,
-            item_label="equipment",
-            now=now,
+    for tech_key in PRODUCTION_TECH_KEYS:
+        partial_failure = (
+            _run_guild_production_step(
+                guild,
+                tech_key=tech_key,
+                producer=lambda target_guild, level, key=tech_key: produce_technology_items(target_guild, key, level),
+                produced_items=produced_items,
+                item_label=tech_key,
+                now=now,
+            )
+            or partial_failure
         )
-        or partial_failure
-    )
-
-    # 经验炼制
-    partial_failure = (
-        _run_guild_production_step(
-            guild,
-            tech_key="experience_refine",
-            producer=produce_experience_items,
-            produced_items=produced_items,
-            item_label="experience",
-            now=now,
-        )
-        or partial_failure
-    )
-
-    # 护院军备
-    partial_failure = (
-        _run_guild_production_step(
-            guild,
-            tech_key="guard_armory",
-            producer=produce_guard_items,
-            produced_items=produced_items,
-            item_label="guard",
-            now=now,
-        )
-        or partial_failure
-    )
-
-    # 资源补给
-    partial_failure = (
-        _run_guild_production_step(
-            guild,
-            tech_key="resource_supply",
-            producer=produce_resource_packs,
-            produced_items=produced_items,
-            item_label="resource",
-            now=now,
-        )
-        or partial_failure
-    )
-
-    # 神秘学
-    partial_failure = (
-        _run_guild_production_step(
-            guild,
-            tech_key="mysticism",
-            producer=produce_soul_containers,
-            produced_items=produced_items,
-            item_label="soul_container",
-            now=now,
-        )
-        or partial_failure
-    )
 
     summary = f"processed guild {guild_id}: {', '.join(produced_items)}"
     if partial_failure:

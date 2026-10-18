@@ -98,6 +98,10 @@ function createFilterButton(filter) {
   return {
     dataset: { targetFilter: filter },
     classList: createClassList(),
+    attributes: {},
+    setAttribute(name, value) {
+      this.attributes[name] = value;
+    },
     addEventListener(type, listener) {
       this[`on_${type}`] = listener;
     },
@@ -263,6 +267,8 @@ test("works with projector rows that expose explicit data-display-status without
   assert.equal(blocked.hidden, false);
   assert.equal(blocked.radio.checked, false);
   assert.equal(root._targetEmpty.hidden, true);
+  assert.equal(blockedFilter.attributes["aria-pressed"], "true");
+  assert.equal(attackableFilter.attributes["aria-pressed"], "false");
 });
 
 test("auto-initializes in browser-like environments when the script is loaded", () => {

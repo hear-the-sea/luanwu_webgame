@@ -1,0 +1,10 @@
+{
+  "method": "Built-in image_gen",
+  "output": "static/images/technology/qstyle/dao_armor_chick_v3.webp",
+  "references": [
+    "dao_attack.webp",
+    "dao_defense.webp",
+    "dao_double_strike.webp"
+  ],
+  "prompt": "Use case: stylized-concept. Create ONE square skill icon for 破甲一击 (armor breaking strike) matching the THREE adjacent existing skill icons provided as STYLE AND CHARACTER REFERENCES. EXACT same cute round YELLOW CHICK guard, tiny orange beak and feet, feather tuft, black cloth headband, brown irregular ink outline, flat hand-painted yellow shapes, only one or two shadow patches, very light paper grain, cream parchment #fff8e7 background. New action and composition: the chick is on the LEFT, in a low forward lunging stance, thrusting its simple broad SILVER CHINESE SABER HORIZONTALLY to the RIGHT straight through a clearly visible upright GREY IRON LAMELLAR BREASTPLATE on the right. The breastplate is the attack target and occupies about 35% of icon, has rounded shoulder straps, rivets and broad iron plates with one large central jagged crack where saber strikes. Two plate pieces separate sideways, ONE tiny flat orange impact star. Whole chick and armor visible with 10% safe margin. Strongly different silhouette from reference 1's downward sword swing into rocks: use SIDEWAYS FORWARD THRUST into UPRIGHT ARMOR. NO rocks, mountain, ground rubble or overhead swing. Cute determined squinting expression. Same line thickness and simplicity as references, readable at 88px. NO realistic people, photorealism, 3D, glossy rendering, filigree, radiant magical swirls, text, letters, border or watermark."
+}

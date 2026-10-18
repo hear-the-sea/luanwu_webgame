@@ -46,6 +46,14 @@
   /* 强调色 - 绿色 */
   --accent-gold: #DAA520;
   /* 强调色 - 金色 */
+  --rarity-green: #00A040;
+  --rarity-blue: #0000FF;
+  --rarity-purple: #A020F0;
+  --rarity-orange: #fe8421;
+  --rarity-green-on-dark: color-mix(in srgb, var(--rarity-green) 45%, white);
+  --rarity-blue-on-dark: color-mix(in srgb, var(--rarity-blue) 45%, white);
+  --rarity-purple-on-dark: color-mix(in srgb, var(--rarity-purple) 45%, white);
+  --rarity-orange-on-dark: color-mix(in srgb, var(--rarity-orange) 45%, white);
   --border-decorative: #B8860B;
   /* 装饰边框 - 暗金色 */
 
@@ -1344,11 +1352,11 @@ table.table tbody tr+tr {
 }
 
 .team-member.rarity-green {
-  border-color: #10b981;
+  border-color: var(--rarity-green);
 }
 
 .team-member.rarity-blue {
-  border-color: #2563eb;
+  border-color: var(--rarity-blue);
 }
 
 .team-member.rarity-red {
@@ -1356,11 +1364,11 @@ table.table tbody tr+tr {
 }
 
 .team-member.rarity-purple {
-  border-color: #7c3aed;
+  border-color: var(--rarity-purple);
 }
 
 .team-member.rarity-orange {
-  border-color: #f59e0b;
+  border-color: var(--rarity-orange);
 }
 
 .member-avatar {
@@ -2045,6 +2053,62 @@ table.table tbody tr+tr {
   margin: 0;
 }
 
+#target-manor-modal .tw-modal-content {
+  max-width: 520px;
+}
+
+#target-manor-modal .tw-target-item-form {
+  min-height: 0;
+}
+
+#target-manor-modal .tw-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+#target-manor-modal .tw-modal-hint {
+  margin: 0 0 0.35rem;
+}
+
+#target-manor-modal label {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.tw-target-manor-status {
+  min-height: 1.2rem;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.tw-target-manor-search-row {
+  display: flex;
+  min-width: 0;
+  gap: 0.35rem;
+}
+
+.tw-target-manor-search,
+.tw-target-manor-results {
+  min-width: 0;
+  width: 100%;
+  border: 1px solid var(--border-primary);
+  border-radius: 0.25rem;
+  background: var(--bg-primary);
+  padding: 0.35rem 0.5rem;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+}
+
+.tw-target-manor-search-row .tw-btn-secondary {
+  flex: none;
+}
+
+#target-manor-modal .tw-modal-footer {
+  flex-shrink: 0;
+}
+
 .empty-state {
   text-align: center;
   color: var(--text-muted);
@@ -2445,11 +2509,11 @@ a.rarity-text:hover {
 }
 
 .rarity-text.rarity-green {
-  color: #10b981 !important;
+  color: var(--rarity-green) !important;
 }
 
 .rarity-text.rarity-blue {
-  color: #2563eb !important;
+  color: var(--rarity-blue) !important;
 }
 
 .rarity-text.rarity-red {
@@ -2457,11 +2521,11 @@ a.rarity-text:hover {
 }
 
 .rarity-text.rarity-purple {
-  color: #7c3aed !important;
+  color: var(--rarity-purple) !important;
 }
 
 .rarity-text.rarity-orange {
-  color: #ea580c !important;
+  color: var(--rarity-orange) !important;
 }
 
 /* 稀有度圆点背景色 - 仅用于 .rarity-dot */
@@ -2474,11 +2538,11 @@ a.rarity-text:hover {
 }
 
 .rarity-dot.rarity-green {
-  background: #10b981;
+  background: var(--rarity-green);
 }
 
 .rarity-dot.rarity-blue {
-  background: #2563eb;
+  background: var(--rarity-blue);
 }
 
 .rarity-dot.rarity-red {
@@ -2486,11 +2550,11 @@ a.rarity-text:hover {
 }
 
 .rarity-dot.rarity-purple {
-  background: #7c3aed;
+  background: var(--rarity-purple);
 }
 
 .rarity-dot.rarity-orange {
-  background: #ea580c;
+  background: var(--rarity-orange);
 }
 
 /* 任务模态框 */
@@ -2591,11 +2655,11 @@ a.rarity-text:hover {
 }
 
 .rarity-pill.rarity-green {
-  color: #10b981;
+  color: var(--rarity-green);
 }
 
 .rarity-pill.rarity-blue {
-  color: #2563eb;
+  color: var(--rarity-blue);
 }
 
 .rarity-pill.rarity-red {
@@ -2603,11 +2667,11 @@ a.rarity-text:hover {
 }
 
 .rarity-pill.rarity-purple {
-  color: #7c3aed;
+  color: var(--rarity-purple);
 }
 
 .rarity-pill.rarity-orange {
-  color: #ea580c;
+  color: var(--rarity-orange);
 }
 
 /* 辅助类 */
@@ -4485,3 +4549,47 @@ a.rarity-text:hover {
 }
 
 .event-retaliation-effect .event-effect-separator { display: inline; }
+
+/* Shared artwork for guild technology nodes and inventory cards. */
+.tw-item-technology-icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-size: 700% 700%;
+}
+
+/* 6×6 atlas at 700% zoom; each position centers the artwork inside its source tile. */
+.tw-tech-node-icon--0 { background-position: 2.224392% 3.515625%; }
+.tw-tech-node-icon--1 { background-position: 21.213108% 2.528212%; }
+.tw-tech-node-icon--2 { background-position: 39.746094% 2.907986%; }
+.tw-tech-node-icon--3 { background-position: 58.810764% 3.211806%; }
+.tw-tech-node-icon--4 { background-position: 78.407118% 3.287760%; }
+.tw-tech-node-icon--5 { background-position: 97.699653% 3.363715%; }
+.tw-tech-node-icon--6 { background-position: 2.452257% 22.276476%; }
+.tw-tech-node-icon--7 { background-position: 20.8333% 20.8333%; }
+.tw-tech-node-icon--8 { background-position: 40.277778% 21.820747%; }
+.tw-tech-node-icon--9 { background-position: 58.810764% 21.972656%; }
+.tw-tech-node-icon--10 { background-position: 78.027344% 22.352431%; }
+.tw-tech-node-icon--11 { background-position: 97.623698% 21.820747%; }
+.tw-tech-node-icon--12 { background-position: 2.452257% 40.809462%; }
+.tw-tech-node-icon--13 { background-position: 20.8333% 40.2778%; }
+.tw-tech-node-icon--14 { background-position: 39.670139% 41.265191%; }
+.tw-tech-node-icon--15 { background-position: 58.810764% 41.341146%; }
+.tw-tech-node-icon--16 { background-position: 78.331163% 41.493056%; }
+.tw-tech-node-icon--17 { background-position: 97.775608% 41.644965%; }
+.tw-tech-node-icon--18 { background-position: 2.604167% 59.874132%; }
+.tw-tech-node-icon--19 { background-position: 21.061198% 59.570312%; }
+.tw-tech-node-icon--20 { background-position: 39.746094% 59.722222%; }
+.tw-tech-node-icon--21 { background-position: 59.038628% 60.405816%; }
+.tw-tech-node-icon--22 { background-position: 77.723524% 59.950087%; }
+.tw-tech-node-icon--23 { background-position: 97.243924% 60.101997%; }
+.tw-tech-node-icon--24 { background-position: 1.920573% 77.951389%; }
+.tw-tech-node-icon--25 { background-position: 20.757378% 77.951389%; }
+.tw-tech-node-icon--26 { background-position: 39.594184% 77.723524%; }
+.tw-tech-node-icon--27 { background-position: 58.658854% 78.103299%; }
+.tw-tech-node-icon--28 { background-position: 77.799479% 78.179253%; }
+.tw-tech-node-icon--29 { background-position: 97.243924% 77.875434%; }
+.tw-tech-node-icon--30 { background-position: 2.604167% 95.724826%; }
+.tw-tech-node-icon--31 { background-position: 21.365017% 96.104601%; }
+.tw-tech-node-icon--32 { background-position: 40.277778% 96.028646%; }

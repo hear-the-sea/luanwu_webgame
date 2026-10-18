@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static gameplay_extras %}
 
 {% block title %}{% if current_tab == 'treasury' %}藏宝阁{% else %}仓库{% endif %}{% endblock %}
 
@@ -76,11 +76,7 @@
                     <td>
                         <div class="tw-item-cell">
                             <div class="tw-item-icon rarity-{{ entry.template.rarity|default:'black' }}">
-                                {% if entry.template.image %}
-                                    <img src="{{ entry.template.image.url }}" alt="{{ entry.template.name }}" loading="lazy" width="32" height="32">
-                                {% else %}
-                                    <span class="tw-icon-placeholder">{{ entry.template.name|slice:":1" }}</span>
-                                {% endif %}
+                                {% item_icon entry.template.key entry.template.image entry.template.name %}
                             </div>
                             <span class="tw-item-name rarity-{{ entry.template.rarity|default:'black' }}">{{ entry.template.name }}{% if entry.display_is_bound %}（绑定）{% endif %}</span>
                             <div class="tw-item-tooltip">
@@ -179,6 +175,15 @@
                                     <button type="button" class="tw-btn-primary tw-btn-sm js-open-guest-select-modal" data-item-id="{{ entry.id }}" data-binding-mode="{{ entry.binding_mode }}" data-action-type="xidianka" data-action-url="{% url 'gameplay:use_xidianka' entry.id %}" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
                                     {% elif payload.action == 'upgrade_guest_rarity' %}
                                     <button type="button" class="tw-btn-primary tw-btn-sm js-open-guest-select-modal" data-item-id="{{ entry.id }}" data-binding-mode="{{ entry.binding_mode }}" data-action-type="rarity_upgrade" data-action-url="{% url 'gameplay:use_guest_rarity_upgrade' entry.id %}" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
+                                    {% elif payload.action == 'occupy_target_guest' or payload.action == 'steal_target_item' or payload.action == 'injure_target_guest' or payload.action == 'transfer_target_grain' or payload.action == 'transfer_target_silver' or payload.action == 'sheep_wrath_target' %}
+                                    <button
+                                        type="button"
+                                        class="tw-btn-primary tw-btn-sm js-open-target-item-modal"
+                                        data-action-url="{% url 'gameplay:use_item' entry.id %}"
+                                        data-binding-mode="{{ entry.binding_mode }}"
+                                        data-item-name="{{ entry.template.name }}"
+                                        {% if entry.quantity <= 0 %}disabled{% endif %}
+                                    >使用</button>
                                     {% else %}
                                     <form
                                         method="post"
@@ -424,6 +429,51 @@
             <button type="button" class="tw-btn-secondary js-close-guest-select-modal">取消</button>
             <button type="button" class="tw-btn-primary" id="modal-confirm-btn" disabled>确认</button>
         </div>
+    </div>
+</div>
+
+<!-- 目标庄园道具弹窗：从仓库选择“使用”后再搜索并确认庄园 -->
+<div id="target-manor-modal" class="tw-modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="target-manor-modal-title" aria-describedby="target-manor-modal-hint" tabindex="-1">
+    <div class="tw-modal-content">
+        <div class="tw-modal-header">
+            <h3 id="target-manor-modal-title">选择目标庄园</h3>
+            <button type="button" class="tw-modal-close js-close-target-manor-modal" aria-label="关闭">&times;</button>
+        </div>
+        <form
+            id="target-item-use-form"
+            method="post"
+            action="#"
+            class="tw-modal-form tw-target-item-form js-target-item-form"
+            data-target-search-url="{% url 'gameplay:map_search_api' %}"
+            data-target-modal="true"
+        >
+            {% csrf_token %}
+            <input type="hidden" name="binding_mode" value="">
+            <div class="tw-modal-body">
+                <p class="tw-modal-hint" id="target-manor-modal-hint">搜索并选择要使用道具的庄园。目标需符合攻击保护规则，同类道具对同一庄园有1小时冷却。</p>
+                <label for="target-manor-search">目标庄园</label>
+                <div class="tw-target-manor-search-row">
+                    <input
+                        id="target-manor-search"
+                        type="search"
+                        name="target_manor_search"
+                        class="tw-target-manor-search"
+                        placeholder="输入至少两个字的庄园名称"
+                        autocomplete="off"
+                        aria-label="搜索目标庄园"
+                    >
+                    <button type="button" class="tw-btn-secondary tw-btn-sm js-search-target-manors">搜索</button>
+                </div>
+                <p class="tw-target-manor-status" data-target-manor-status role="status" aria-live="polite"></p>
+                <select name="target_manor_id" class="tw-target-manor-results" required aria-label="选择目标庄园">
+                    <option value="">先搜索并选择庄园</option>
+                </select>
+            </div>
+            <div class="tw-modal-footer">
+                <button type="button" class="tw-btn-secondary js-close-target-manor-modal">取消</button>
+                <button type="submit" class="tw-btn-primary" id="target-manor-confirm-btn" disabled>确认使用</button>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}

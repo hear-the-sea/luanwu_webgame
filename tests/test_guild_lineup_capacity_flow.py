@@ -22,7 +22,7 @@ def test_lineup_upgrade_unlocks_slots_and_full_defense_without_expanding_dispatc
 ):
     guild, leader, leader_manor = create_guild_with_leader(django_user_model, f"扩容{initial_level}")
     tech = GuildTechnology.objects.create(
-        guild=guild, tech_key="guild_lineup_capacity", category="combat", level=initial_level, max_level=20
+        guild=guild, tech_key="guild_lineup_capacity", category="public", level=initial_level, max_level=20
     )
     rubies = GuildWarehouse.objects.create(guild=guild, item_key="red_ruby", quantity=upgrade_cost, contribution_cost=0)
     template = create_template(f"lineup_capacity_flow_{initial_level}")

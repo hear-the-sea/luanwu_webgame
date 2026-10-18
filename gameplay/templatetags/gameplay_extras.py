@@ -47,6 +47,33 @@ _WORK_IMAGE_PATHS = {
 
 register = template.Library()
 
+GUILD_CARD_TECHNOLOGY_ICONS = {
+    "guild_slave_card": 26,
+    "guild_theft_card": 27,
+    "guild_injury_card": 28,
+    "guild_grain_boost_card": 19,
+    "guild_silver_boost_card": 20,
+}
+ITEM_ICON_STATIC_OVERRIDES = {
+    "guild_sheep_wrath": "images/guild_item_icons/guild_sheep_wrath.webp",
+    "yijinjing": "images/item_icons/yijinjing.webp",
+}
+
+
+@register.inclusion_tag("gameplay/includes/item_icon.html")
+def item_icon(item_key, image="", label="", icon=""):
+    from django.templatetags.static import static
+
+    image_url = image if isinstance(image, str) else image.url if image else ""
+    if item_key in ITEM_ICON_STATIC_OVERRIDES:
+        image_url = static(ITEM_ICON_STATIC_OVERRIDES[item_key])
+    return {
+        "technology_icon_index": GUILD_CARD_TECHNOLOGY_ICONS.get(item_key),
+        "image_url": image_url,
+        "label": label,
+        "icon": icon or str(label)[:1],
+    }
+
 
 @register.filter
 def duration_hours_minutes(seconds):

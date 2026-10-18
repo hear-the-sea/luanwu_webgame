@@ -63,8 +63,10 @@ class GuildResourceLog(models.Model):
     ACTION_CHOICES = [
         ("donation", "成员捐赠"),
         ("tech_upgrade", "科技升级"),
+        ("tech_reset", "科技路线重置"),
         ("guild_upgrade", "帮会升级"),
         ("production", "科技产出"),
+        ("troop_recruit", "铁骑训练"),
     ]
 
     guild = models.ForeignKey(Guild, on_delete=models.CASCADE, related_name="resource_logs", verbose_name="所属帮会")

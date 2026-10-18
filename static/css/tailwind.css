@@ -1643,11 +1643,11 @@
 }
 
 .tw-item-icon.rarity-green {
-  border-color: #2E8B57;
+  border-color: var(--rarity-green);
 }
 
 .tw-item-icon.rarity-blue {
-  border-color: #4169E1;
+  border-color: var(--rarity-blue);
 }
 
 .tw-item-icon.rarity-red {
@@ -1655,11 +1655,11 @@
 }
 
 .tw-item-icon.rarity-purple {
-  border-color: #9932CC;
+  border-color: var(--rarity-purple);
 }
 
 .tw-item-icon.rarity-orange {
-  border-color: #FF8C00;
+  border-color: var(--rarity-orange);
 }
 
 /* 稀有度文字颜色 */
@@ -1673,11 +1673,11 @@
 }
 
 .tw-item-name.rarity-green {
-  color: #3CB371;
+  color: var(--rarity-green);
 }
 
 .tw-item-name.rarity-blue {
-  color: #6495ED;
+  color: var(--rarity-blue);
 }
 
 .tw-item-name.rarity-red {
@@ -1685,11 +1685,11 @@
 }
 
 .tw-item-name.rarity-purple {
-  color: #BA55D3;
+  color: var(--rarity-purple);
 }
 
 .tw-item-name.rarity-orange {
-  color: #FFA500;
+  color: var(--rarity-orange);
 }
 
 /* ========== 物品 Tooltip ========== */
@@ -1738,11 +1738,11 @@
 }
 
 .tw-tooltip-header.rarity-green {
-  color: #4ADE80;
+  color: var(--rarity-green-on-dark);
 }
 
 .tw-tooltip-header.rarity-blue {
-  color: #60A5FA;
+  color: var(--rarity-blue-on-dark);
 }
 
 .tw-tooltip-header.rarity-red {
@@ -1750,11 +1750,11 @@
 }
 
 .tw-tooltip-header.rarity-purple {
-  color: #C084FC;
+  color: var(--rarity-purple-on-dark);
 }
 
 .tw-tooltip-header.rarity-orange {
-  color: #FBBF24;
+  color: var(--rarity-orange-on-dark);
 }
 
 .tw-tooltip-category {
@@ -2325,11 +2325,11 @@
 }
 
 .rarity-text-green {
-  color: #2E8B57;
+  color: var(--rarity-green);
 }
 
 .rarity-text-blue {
-  color: #4169E1;
+  color: var(--rarity-blue);
 }
 
 .rarity-text-red {
@@ -2337,11 +2337,11 @@
 }
 
 .rarity-text-purple {
-  color: #9932CC;
+  color: var(--rarity-purple);
 }
 
 .rarity-text-orange {
-  color: #FF8C00;
+  color: var(--rarity-orange);
 }
 
 /* ========== 警告/提示框 ========== */
@@ -3366,11 +3366,11 @@
 }
 
 .tw-drop-icon.rarity-green {
-  border-color: #2E8B57;
+  border-color: var(--rarity-green);
 }
 
 .tw-drop-icon.rarity-blue {
-  border-color: #4169E1;
+  border-color: var(--rarity-blue);
 }
 
 .tw-drop-icon.rarity-red {
@@ -3378,11 +3378,11 @@
 }
 
 .tw-drop-icon.rarity-purple {
-  border-color: #9932CC;
+  border-color: var(--rarity-purple);
 }
 
 .tw-drop-icon.rarity-orange {
-  border-color: #FF8C00;
+  border-color: var(--rarity-orange);
 }
 
 /* ========== 门客选择网格 ========== */
@@ -4369,21 +4369,15 @@
 }
 
 .tw-pill.rarity-green {
-  --tw-border-opacity: 1;
-  border-color: rgb(134 239 172 / var(--tw-border-opacity, 1));
-  --tw-bg-opacity: 1;
-  background-color: rgb(220 252 231 / var(--tw-bg-opacity, 1));
-  --tw-text-opacity: 1;
-  color: rgb(22 101 52 / var(--tw-text-opacity, 1));
+  color: var(--rarity-green);
+  border-color: var(--rarity-green);
+  background-color: color-mix(in srgb, var(--rarity-green) 12%, white);
 }
 
 .tw-pill.rarity-blue {
-  --tw-border-opacity: 1;
-  border-color: rgb(147 197 253 / var(--tw-border-opacity, 1));
-  --tw-bg-opacity: 1;
-  background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1));
-  --tw-text-opacity: 1;
-  color: rgb(30 64 175 / var(--tw-text-opacity, 1));
+  color: var(--rarity-blue);
+  border-color: var(--rarity-blue);
+  background-color: color-mix(in srgb, var(--rarity-blue) 12%, white);
 }
 
 .tw-pill.rarity-red {
@@ -4396,21 +4390,15 @@
 }
 
 .tw-pill.rarity-purple {
-  --tw-border-opacity: 1;
-  border-color: rgb(216 180 254 / var(--tw-border-opacity, 1));
-  --tw-bg-opacity: 1;
-  background-color: rgb(243 232 255 / var(--tw-bg-opacity, 1));
-  --tw-text-opacity: 1;
-  color: rgb(107 33 168 / var(--tw-text-opacity, 1));
+  color: var(--rarity-purple);
+  border-color: var(--rarity-purple);
+  background-color: color-mix(in srgb, var(--rarity-purple) 12%, white);
 }
 
 .tw-pill.rarity-orange {
-  --tw-border-opacity: 1;
-  border-color: rgb(253 186 116 / var(--tw-border-opacity, 1));
-  --tw-bg-opacity: 1;
-  background-color: rgb(255 237 213 / var(--tw-bg-opacity, 1));
-  --tw-text-opacity: 1;
-  color: rgb(154 52 18 / var(--tw-text-opacity, 1));
+  color: var(--rarity-orange);
+  border-color: var(--rarity-orange);
+  background-color: color-mix(in srgb, var(--rarity-orange) 12%, white);
 }
 
 /* ========== 技术标签页 ========== */
@@ -4622,7 +4610,7 @@
 .tw-arena-reward-grid {
   display: grid;
   gap: 0.75rem;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .tw-arena-reward-card {
@@ -4641,9 +4629,16 @@
 
 .tw-arena-reward-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
+}
+
+.tw-arena-reward-identity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.7rem;
 }
 
 .tw-arena-reward-name {
@@ -4680,30 +4675,63 @@
   color: var(--text-secondary);
 }
 
-.tw-arena-reward-subtitle {
-  margin: 0 0 0.25rem;
-  font-size: 0.72rem;
-  line-height: 1rem;
-  color: var(--text-secondary);
-}
-
 .tw-arena-reward-list {
   margin: 0;
   padding: 0;
   list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+  gap: 0.45rem;
 }
 
-.tw-arena-reward-item {
-  font-size: 0.72rem;
-  line-height: 1rem;
+.tw-arena-reward-icon {
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  flex: 0 0 3.5rem;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(122, 92, 47, 0.18);
+  border-radius: 0.55rem;
+  background: linear-gradient(145deg, #fffdf7, #e7dfcf);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.65), 0 2px 5px rgba(58, 43, 22, 0.12);
   color: var(--text-primary);
-  background-color: var(--bg-panel);
-  border: 1px solid var(--border-light);
-  border-radius: 999px;
-  padding: 0.1rem 0.45rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.tw-arena-reward-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0.2rem;
+  -o-object-fit: contain;
+     object-fit: contain;
+}
+
+.tw-arena-reward-icon--fallback {
+  color: #7a3d17;
+}
+
+.tw-arena-reward-resource {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid rgba(139, 69, 19, 0.42);
+  border-radius: 0.45rem;
+  background: rgba(255, 253, 247, 0.82);
+  color: var(--text-primary);
+  font-size: 0.76rem;
+  line-height: 1.1rem;
+}
+
+.tw-arena-reward-resource strong {
+  color: var(--text-primary);
+  font-size: 0.76rem;
+  white-space: nowrap;
 }
 
 .tw-arena-reward-form {
@@ -4751,16 +4779,16 @@
 }
 
 @media (max-width: 900px) {
+  .tw-arena-reward-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .tw-arena-rule-list {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 640px) {
-  .tw-arena-reward-grid {
-    grid-template-columns: 1fr;
-  }
-
   .tw-arena-hero-card .tw-building-media {
     flex: 0 0 198px;
     padding: 6px;
@@ -6774,6 +6802,18 @@
   margin-top: 1.5rem;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
 .pointer-events-none {
   pointer-events: none;
 }
@@ -7575,11 +7615,6 @@
   background-color: rgb(220 252 231 / var(--tw-bg-opacity, 1));
 }
 
-.bg-orange-100 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(255 237 213 / var(--tw-bg-opacity, 1));
-}
-
 .bg-purple-100 {
   --tw-bg-opacity: 1;
   background-color: rgb(243 232 255 / var(--tw-bg-opacity, 1));
@@ -7853,11 +7888,6 @@
   color: var(--bg-primary);
 }
 
-.text-blue-800 {
-  --tw-text-opacity: 1;
-  color: rgb(30 64 175 / var(--tw-text-opacity, 1));
-}
-
 .text-gray-100 {
   --tw-text-opacity: 1;
   color: rgb(243 244 246 / var(--tw-text-opacity, 1));
@@ -7873,16 +7903,6 @@
   color: rgb(74 222 128 / var(--tw-text-opacity, 1));
 }
 
-.text-green-800 {
-  --tw-text-opacity: 1;
-  color: rgb(22 101 52 / var(--tw-text-opacity, 1));
-}
-
-.text-orange-800 {
-  --tw-text-opacity: 1;
-  color: rgb(154 52 18 / var(--tw-text-opacity, 1));
-}
-
 .text-purple-400 {
   --tw-text-opacity: 1;
   color: rgb(192 132 252 / var(--tw-text-opacity, 1));
@@ -7891,11 +7911,6 @@
 .text-purple-600 {
   --tw-text-opacity: 1;
   color: rgb(147 51 234 / var(--tw-text-opacity, 1));
-}
-
-.text-purple-800 {
-  --tw-text-opacity: 1;
-  color: rgb(107 33 168 / var(--tw-text-opacity, 1));
 }
 
 .text-red-800 {

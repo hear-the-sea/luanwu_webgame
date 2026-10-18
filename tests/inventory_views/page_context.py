@@ -32,6 +32,36 @@ class TestInventoryPageContext:
         assert response.status_code == 200
         assert response.context["current_tab"] == "treasury"
 
+    def test_target_items_open_a_shared_target_manor_modal(self, manor_with_user):
+        manor, client = manor_with_user
+        actions = (
+            "occupy_target_guest",
+            "steal_target_item",
+            "injure_target_guest",
+            "transfer_target_grain",
+            "transfer_target_silver",
+            "sheep_wrath_target",
+        )
+        for index, action in enumerate(actions):
+            template = ItemTemplate.objects.create(
+                key=f"target_modal_item_{index}",
+                name=f"目标道具{index}",
+                effect_type=ItemTemplate.EffectType.TOOL,
+                effect_payload={"action": action},
+                is_usable=True,
+            )
+            InventoryItem.objects.create(manor=manor, template=template, quantity=1)
+
+        response = client.get(reverse("gameplay:warehouse"))
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert body.count("js-open-target-item-modal") == len(actions)
+        assert body.count('id="target-item-use-form"') == 1
+        assert body.count('id="target-manor-search"') == 1
+        assert 'id="target-manor-search-' not in body
+        assert "搜索并选择要使用道具的庄园" in body
+
     def test_treasury_tab_reports_over_capacity_without_negative_remaining(self, manor_with_user):
         manor, client = manor_with_user
         treasury_type = BuildingType.objects.get(key="treasury")

@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from core.exceptions import GuildValidationError
 from gameplay.models import InventoryItem
+from guilds import constants as guild_constants
 from guilds.models import GuildMember
 from guilds.services import guild as guild_service
 
@@ -26,13 +27,11 @@ class TestGuildCreation:
         membership = GuildMember.objects.get(user=user_with_gold_bars, guild=guild)
         assert membership.position == "leader"
         assert membership.is_active is True
-        assert guild.technologies.count() == 10
+        assert guild.technologies.count() == len(guild_constants.get_supported_guild_technology_configs())
         assert not guild.technologies.filter(tech_key="military_study").exists()
-        assert guild.technologies.get(tech_key="equipment_forge").max_level == 10
-        assert guild.technologies.get(tech_key="guard_armory").max_level == 10
-        assert guild.technologies.get(tech_key="experience_refine").max_level == 10
-        assert guild.technologies.get(tech_key="resource_supply").max_level == 10
-        assert guild.technologies.get(tech_key="mysticism").max_level == 3
+        assert guild.technologies.get(tech_key="forging_equipment_forge").max_level == 10
+        assert guild.technologies.get(tech_key="hero_skill_books").max_level == 10
+        assert guild.technologies.get(tech_key="wolf_soul_container").max_level == 3
         assert guild.technologies.get(tech_key="troop_tactics").max_level == 10
         assert guild.technologies.get(tech_key="guild_lineup_capacity").max_level == 20
         assert guild.technologies.get(tech_key="guild_dispatch_capacity").max_level == 20

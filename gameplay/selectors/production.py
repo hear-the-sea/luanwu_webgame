@@ -32,7 +32,11 @@ from gameplay.services.buildings.stable import (
     get_stable_speed_bonus,
     has_active_production,
 )
-from gameplay.services.technology import get_player_technology_level
+from gameplay.services.technology import (
+    get_guild_production_effects,
+    get_guild_production_technology_level,
+    get_player_technology_level,
+)
 from gameplay.views.production_helpers import (
     annotate_blueprint_synthesis_options,
     build_categories_with_all,
@@ -50,16 +54,18 @@ SMITHY_CATEGORIES = (
 def get_stable_page_context(manor: Any) -> dict[str, Any]:
     from gameplay.services.inventory.core import get_warehouse_grain_quantity
 
-    speed_bonus = get_stable_speed_bonus(manor)
+    guild_tech_level = get_guild_production_technology_level(manor, "sheep_horsemanship")
+    speed_bonus = get_stable_speed_bonus(manor, guild_tech_level=guild_tech_level)
     active_productions = get_active_productions(manor)
     queue_capacity = get_horse_queue_capacity(manor)
     return {
-        "horse_options": get_horse_options(manor),
+        "horse_options": get_horse_options(manor, guild_tech_level=guild_tech_level),
         "active_productions": active_productions,
         "speed_bonus": speed_bonus,
         "speed_bonus_percent": int(speed_bonus * 100),
+        "guild_production_effects": get_guild_production_effects(guild_tech_level),
         "horsemanship_level": get_player_technology_level(manor, "horsemanship"),
-        "max_production_quantity": get_max_production_quantity(manor),
+        "max_production_quantity": get_max_production_quantity(manor, guild_tech_level=guild_tech_level),
         "is_producing": has_active_production(manor),
         "active_production_count": len(active_productions),
         "production_queue_capacity": queue_capacity,
@@ -71,16 +77,18 @@ def get_stable_page_context(manor: Any) -> dict[str, Any]:
 def get_ranch_page_context(manor: Any) -> dict[str, Any]:
     from gameplay.services.inventory.core import get_warehouse_grain_quantity
 
-    speed_bonus = get_ranch_speed_bonus(manor)
+    guild_tech_level = get_guild_production_technology_level(manor, "sheep_breeding")
+    speed_bonus = get_ranch_speed_bonus(manor, guild_tech_level=guild_tech_level)
     active_productions = get_active_livestock_productions(manor)
     queue_capacity = get_livestock_queue_capacity(manor)
     return {
-        "livestock_options": get_livestock_options(manor),
+        "livestock_options": get_livestock_options(manor, guild_tech_level=guild_tech_level),
         "active_productions": active_productions,
         "speed_bonus": speed_bonus,
         "speed_bonus_percent": int(speed_bonus * 100),
+        "guild_production_effects": get_guild_production_effects(guild_tech_level),
         "animal_husbandry_level": get_player_technology_level(manor, "animal_husbandry"),
-        "max_livestock_quantity": get_max_livestock_quantity(manor),
+        "max_livestock_quantity": get_max_livestock_quantity(manor, guild_tech_level=guild_tech_level),
         "is_producing": has_active_livestock_production(manor),
         "active_production_count": len(active_productions),
         "production_queue_capacity": queue_capacity,
@@ -96,12 +104,15 @@ def _normalize_smithy_category(raw_category: str | None) -> str:
 
 
 def get_smithy_page_context(manor: Any, *, current_category: str | None = None) -> dict[str, Any]:
-    speed_bonus = get_smithy_speed_bonus(manor)
+    guild_tech_level = get_guild_production_technology_level(manor, "sheep_metallurgy")
+    speed_bonus = get_smithy_speed_bonus(manor, guild_tech_level=guild_tech_level)
     normalized_category = _normalize_smithy_category(current_category)
-    metal_options = get_metal_options(manor)
-    max_smelting_quantity = get_max_smelting_quantity(manor)
+    metal_options = get_metal_options(manor, guild_tech_level=guild_tech_level)
+    max_smelting_quantity = get_max_smelting_quantity(manor, guild_tech_level=guild_tech_level)
     max_current_quantity = (
-        get_max_smithy_medicine_quantity(manor) if normalized_category == "medicine" else max_smelting_quantity
+        get_max_smithy_medicine_quantity(manor, guild_tech_level=guild_tech_level)
+        if normalized_category == "medicine"
+        else max_smelting_quantity
     )
     active_productions = get_active_smelting_productions(manor)
     queue_capacity = get_smelting_queue_capacity(manor)
@@ -113,6 +124,7 @@ def get_smithy_page_context(manor: Any, *, current_category: str | None = None) 
         "active_productions": active_productions,
         "speed_bonus": speed_bonus,
         "speed_bonus_percent": int(speed_bonus * 100),
+        "guild_production_effects": get_guild_production_effects(guild_tech_level),
         "smelting_level": get_player_technology_level(manor, "smelting"),
         "max_smelting_quantity": max_smelting_quantity,
         "max_current_quantity": max_current_quantity,

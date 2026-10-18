@@ -41,6 +41,8 @@
                                 <span class="tw-guild-action-upgrade">升级</span>
                             {% elif log.action == 'tech_upgrade' or log.action == 'upgrade_tech' %}
                                 <span class="tw-guild-action-tech">科技</span>
+                            {% elif log.action == 'tech_reset' %}
+                                <span class="tw-guild-action-tech">路线重置</span>
                             {% else %}
                                 {{ log.action }}
                             {% endif %}

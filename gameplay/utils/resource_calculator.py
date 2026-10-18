@@ -137,6 +137,8 @@ def has_resources(manor: "Manor", cost: Dict[str, int]) -> bool:
 def calculate_hourly_rates(
     buildings: Iterable[Any],
     technology_levels: Mapping[str, int],
+    *,
+    guild_bonuses: Mapping[str, float] | None = None,
 ) -> Dict[str, float]:
     from ..services.technology import get_resource_production_bonus_from_levels
 
@@ -153,6 +155,9 @@ def calculate_hourly_rates(
         rates[resource_type] += rate
         if building.building_type.key == BuildingKeys.LATRINE:
             rates[ResourceType.SILVER] += rate
+    for resource_type, bonus in (guild_bonuses or {}).items():
+        if resource_type in rates:
+            rates[resource_type] *= 1.0 + bonus
     return dict(rates)
 
 
@@ -170,12 +175,16 @@ def get_hourly_rates(manor: "Manor") -> Dict[str, float]:
     Returns:
         资源产量字典 {"grain": 120.0, "silver": 95.0, ...}
     """
+    from guilds.services.technology import get_guild_resource_bonuses_for_users
+
     from ..services.technology import get_player_technologies
 
     tech_levels = get_player_technologies(manor)
+    guild_bonuses = get_guild_resource_bonuses_for_users((manor.user_id,)).get(manor.user_id, {})
     return calculate_hourly_rates(
         manor.buildings.select_related("building_type"),
         tech_levels,
+        guild_bonuses=guild_bonuses,
     )
 
 

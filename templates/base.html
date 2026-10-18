@@ -31,9 +31,9 @@
             <a href="{% url 'guests:roster' %}" data-partial-nav="1"
                 class="nav-tab {% if 'guests' in request.path %}active{% endif %}">门客</a>
             <a href="{% url 'gameplay:warehouse' %}" data-partial-nav="1"
-                class="nav-tab {% if 'warehouse' in request.path %}active{% endif %}">物品</a>
+                class="nav-tab {% if request.resolver_match.view_name == 'gameplay:warehouse' %}active{% endif %}">物品</a>
             <a href="{% url 'gameplay:technology' %}" data-partial-nav="1"
-                class="nav-tab {% if 'technology' in request.path %}active{% endif %}">技术</a>
+                class="nav-tab {% if request.resolver_match.view_name == 'gameplay:technology' %}active{% endif %}">技术</a>
             <a href="{% url 'trade:trade' %}" data-partial-nav="1" class="nav-tab {% if 'trade' in request.path %}active{% endif %}">交易</a>
             <a href="{% url 'guilds:hall' %}" data-partial-nav="1" class="nav-tab {% if 'guilds' in request.path %}active{% endif %}">帮会</a>
             <a href="{% url 'gameplay:map' %}" data-partial-nav="1" class="nav-tab {% if 'map' in request.path %}active{% endif %}">地图</a>

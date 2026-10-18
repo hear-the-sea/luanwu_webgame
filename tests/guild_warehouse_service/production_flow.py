@@ -135,17 +135,17 @@ def test_produce_equipment_reads_latest_runtime_warehouse_production_config(djan
             3,
             {
                 "guild_gear_box_green": (2, 70),
-                "guild_gear_box_blue": (1, 180),
+                "guild_gear_box_blue": (1, 300),
             },
         ),
         (
             10,
             {
                 "guild_gear_box_green": (2, 70),
-                "guild_gear_box_blue": (2, 180),
-                "guild_gear_box_purple": (2, 500),
-                "guild_gear_box_refined_purple": (3, 650),
-                "guild_gear_box_master": (2, 800),
+                "guild_gear_box_blue": (2, 300),
+                "guild_gear_box_purple": (2, 1000),
+                "guild_gear_box_refined_purple": (2, 1500),
+                "guild_gear_box_master": (2, 2500),
             },
         ),
     ],
@@ -179,9 +179,9 @@ def test_produce_equipment_keeps_earlier_tier_outputs(django_user_model, tech_le
             {
                 "guild_skill_book_box_green": (2, 80),
                 "guild_skill_book_box_blue": (2, 180),
-                "guild_skill_book_box_purple": (2, 400),
-                "guild_skill_book_box_refined": (2, 500),
-                "guild_skill_book_box_master": (2, 650),
+                "guild_skill_book_box_purple": (2, 500),
+                "guild_skill_book_box_refined": (2, 1000),
+                "guild_skill_book_box_master": (2, 2000),
             },
         ),
     ],
@@ -217,7 +217,7 @@ def test_produce_guard_items_level_ten_uses_master_box(django_user_model):
 
 
 @pytest.mark.django_db
-def test_mysticism_produces_and_exchanges_one_soul_container_for_1000_contribution(django_user_model):
+def test_mysticism_produces_and_exchanges_one_soul_container_for_5000_contribution(django_user_model):
     leader = django_user_model.objects.create_user(username="guild_mysticism_leader", password="pass123")
     manor = ensure_manor(leader)
     guild = Guild.objects.create(name="神秘学帮", founder=leader, is_active=True)
@@ -225,14 +225,14 @@ def test_mysticism_produces_and_exchanges_one_soul_container_for_1000_contributi
         guild=guild,
         user=leader,
         position="leader",
-        current_contribution=1000,
+        current_contribution=5000,
     )
 
     produce_soul_containers(guild, 1)
 
     warehouse_item = GuildWarehouse.objects.get(guild=guild, item_key="soul_container")
     assert warehouse_item.quantity == 1
-    assert warehouse_item.contribution_cost == 1000
+    assert warehouse_item.contribution_cost == 5000
 
     exchange_item(member, "soul_container", 1)
 
@@ -259,8 +259,8 @@ def test_mysticism_level_three_produces_each_unlocked_item_once(django_user_mode
         )
     }
     assert produced == {
-        "soul_container": (1, 1000),
+        "soul_container": (1, 5000),
         "guest_rebirth_card": (1, 1000),
         "xidianka": (1, 1000),
-        "xisuidan": (1, 1000),
+        "xisuidan": (1, 3000),
     }

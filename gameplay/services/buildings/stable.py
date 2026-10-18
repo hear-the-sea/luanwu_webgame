@@ -125,7 +125,7 @@ def _get_item_name_map(keys: set[str]) -> Dict[str, str]:
     return {tpl.key: tpl.name for tpl in ItemTemplate.objects.filter(key__in=keys).only("key", "name")}
 
 
-def get_stable_speed_bonus(manor: Manor) -> float:
+def get_stable_speed_bonus(manor: Manor, *, guild_tech_level: int | None = None) -> float:
     """
     获取马房速度加成。
 
@@ -137,9 +137,14 @@ def get_stable_speed_bonus(manor: Manor) -> float:
     Returns:
         速度加成倍率（如0.5表示减少50%时间）
     """
+    from ..technology import combine_guild_production_speed_bonus, get_guild_production_technology_level
+
     level = manor.get_building_level(BuildingKeys.STABLE)
     # 10级满级提升50%
-    return level * 0.05
+    building_time_reduction = level * 0.05
+    if guild_tech_level is None:
+        guild_tech_level = get_guild_production_technology_level(manor, "sheep_horsemanship")
+    return combine_guild_production_speed_bonus(building_time_reduction, guild_tech_level)
 
 
 def get_horse_queue_capacity(manor: Manor) -> int:
@@ -147,7 +152,7 @@ def get_horse_queue_capacity(manor: Manor) -> int:
     return get_production_queue_capacity(manor, BuildingKeys.STABLE)
 
 
-def get_max_production_quantity(manor: Manor) -> int:
+def get_max_production_quantity(manor: Manor, *, guild_tech_level: int | None = None) -> int:
     """
     获取单次生产马匹的最大数量。
 
@@ -159,14 +164,26 @@ def get_max_production_quantity(manor: Manor) -> int:
     Returns:
         最大生产数量
     """
-    from ..technology import get_player_technology_level
+    from ..technology import (
+        apply_guild_production_quantity_bonus,
+        get_guild_production_technology_level,
+        get_player_technology_level,
+    )
 
     horsemanship_level = get_player_technology_level(manor, "horsemanship")
+    if guild_tech_level is None:
+        guild_tech_level = get_guild_production_technology_level(manor, "sheep_horsemanship")
     # 每级100匹，最少1匹（0级时也能生产1匹）
-    return max(1, horsemanship_level * 100)
+    base_quantity = max(1, horsemanship_level * 100)
+    return apply_guild_production_quantity_bonus(base_quantity, guild_tech_level)
 
 
-def calculate_production_duration(base_duration: int, manor: Manor) -> int:
+def calculate_production_duration(
+    base_duration: int,
+    manor: Manor,
+    *,
+    guild_tech_level: int | None = None,
+) -> int:
     """
     计算实际生产时间。
 
@@ -177,7 +194,7 @@ def calculate_production_duration(base_duration: int, manor: Manor) -> int:
     Returns:
         实际生产时间（秒）
     """
-    bonus = get_stable_speed_bonus(manor)
+    bonus = get_stable_speed_bonus(manor, guild_tech_level=guild_tech_level)
     # 加成越高，时间越短
     duration = max(1, int(base_duration * (1 - bonus)))
     return scale_duration(duration, minimum=1)
@@ -196,7 +213,7 @@ def has_active_production(manor: Manor) -> bool:
     return manor.horse_productions.filter(status=HorseProduction.Status.PRODUCING).exists()
 
 
-def get_horse_options(manor: Manor) -> List[Dict[str, Any]]:
+def get_horse_options(manor: Manor, *, guild_tech_level: int | None = None) -> List[Dict[str, Any]]:
     """
     获取马匹生产选项列表。
 
@@ -207,10 +224,16 @@ def get_horse_options(manor: Manor) -> List[Dict[str, Any]]:
         马匹选项列表
     """
     from ..inventory.core import get_warehouse_grain_quantity
-    from ..technology import get_player_technology_level
+    from ..technology import (
+        apply_guild_production_cost_discount,
+        get_guild_production_technology_level,
+        get_player_technology_level,
+    )
 
     horsemanship_level = get_player_technology_level(manor, "horsemanship")
-    max_quantity = get_max_production_quantity(manor)
+    if guild_tech_level is None:
+        guild_tech_level = get_guild_production_technology_level(manor, "sheep_horsemanship")
+    max_quantity = get_max_production_quantity(manor, guild_tech_level=guild_tech_level)
     active_productions = get_active_productions(manor)
     is_producing = bool(active_productions)
     queue_full = len(active_productions) >= get_horse_queue_capacity(manor)
@@ -223,10 +246,13 @@ def get_horse_options(manor: Manor) -> List[Dict[str, Any]]:
             raw_config,
             contract_name=f"stable runtime production config {horse_key}",
         )
-        actual_duration = calculate_production_duration(config["base_duration"], manor)
+        actual_duration = calculate_production_duration(
+            config["base_duration"], manor, guild_tech_level=guild_tech_level
+        )
         required_level = config["required_horsemanship"]
         is_unlocked = horsemanship_level >= required_level
         horse_name = horse_name_map.get(horse_key, "未知马匹")
+        discounted_grain_cost = apply_guild_production_cost_discount(config["grain_cost"], guild_tech_level)
         options.append(
             {
                 "key": horse_key,
@@ -234,7 +260,9 @@ def get_horse_options(manor: Manor) -> List[Dict[str, Any]]:
                 "grain_cost": config["grain_cost"],
                 "base_duration": config["base_duration"],
                 "actual_duration": actual_duration,
-                "can_afford": warehouse_grain_quantity >= config["grain_cost"],
+                "can_afford": warehouse_grain_quantity >= discounted_grain_cost,
+                "effective_grain_cost": discounted_grain_cost,
+                "cost_discount_percent": min(15, guild_tech_level * 5),
                 "required_horsemanship": required_level,
                 "is_unlocked": is_unlocked,
                 "max_quantity": max_quantity,
@@ -272,21 +300,26 @@ def start_horse_production(manor: Manor, horse_key: str, quantity: int = 1) -> H
     horse_name = horse_name_map.get(horse_key, "未知马匹")
 
     # 检查驯马术等级
-    from ..technology import get_player_technology_level
+    from ..technology import (
+        apply_guild_production_cost_discount,
+        get_guild_production_technology_level,
+        get_player_technology_level,
+    )
 
     horsemanship_level = get_player_technology_level(manor, "horsemanship")
+    guild_tech_level = get_guild_production_technology_level(manor, "sheep_horsemanship")
     if horsemanship_level < required_level:
         raise ProductionStartError(f"需要驯马术{required_level}级才能生产{horse_name}")
 
     # 验证生产数量
-    max_quantity = get_max_production_quantity(manor)
+    max_quantity = get_max_production_quantity(manor, guild_tech_level=guild_tech_level)
     if quantity < 1:
         raise ProductionStartError("生产数量至少为1")
     if quantity > max_quantity:
         raise ProductionStartError(f"驯马术等级限制，单次最多生产{max_quantity}匹")
 
     # 计算总消耗
-    total_grain_cost = config["grain_cost"] * quantity
+    total_grain_cost = apply_guild_production_cost_discount(config["grain_cost"] * quantity, guild_tech_level)
 
     with transaction.atomic():
         from gameplay.models import Manor as ManorModel
@@ -316,7 +349,9 @@ def start_horse_production(manor: Manor, horse_key: str, quantity: int = 1) -> H
                 message=f"粮食不足，需要{total_grain_cost}点粮食",
             ) from exc
 
-        unit_duration = calculate_production_duration(config["base_duration"], manor)
+        unit_duration = calculate_production_duration(
+            config["base_duration"], locked_manor, guild_tech_level=guild_tech_level
+        )
         actual_duration = unit_duration * quantity
 
         # 创建生产记录

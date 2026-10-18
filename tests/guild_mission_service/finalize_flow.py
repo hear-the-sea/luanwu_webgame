@@ -552,7 +552,7 @@ def test_finalize_guild_mission_uses_launch_time_troop_tech_snapshot_after_guild
     troop_tactics = GuildTechnology.objects.create(
         guild=guild,
         tech_key="troop_tactics",
-        category="combat",
+        category="public",
         level=2,
         max_level=10,
     )

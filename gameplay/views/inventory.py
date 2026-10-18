@@ -243,11 +243,17 @@ def use_item_view(request: HttpRequest, pk: int) -> HttpResponse:
     is_ajax = is_ajax_request(request)
     try:
         binding_mode = request.POST.get("binding_mode")
-        kwargs = {"binding_mode": binding_mode} if binding_mode is not None else {}
+        target_manor_id: int | None = None
+        raw_target_manor_id = request.POST.get("target_manor_id", "").strip()
+        if raw_target_manor_id:
+            target_manor_id = safe_positive_int(raw_target_manor_id, default=None)
+            if target_manor_id is None:
+                return inventory_error_response(request, is_ajax, "目标庄园参数无效")
         payload = use_inventory_item(
             item,
             manor=manor,
-            **kwargs,
+            binding_mode=binding_mode,
+            target_manor_id=target_manor_id,
             resource_overflow_confirmation=_load_resource_overflow_confirmation(
                 request.POST.get("resource_overflow_confirmation", "")
             ),

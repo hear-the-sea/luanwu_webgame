@@ -52,6 +52,7 @@ def build_technology_display_entry(
 
     entry = {
         "key": tech_key,
+        "icon_key": tech.get("icon_key", tech_key),
         "name": tech["name"],
         "description": tech.get("description", ""),
         "category": tech.get("category"),

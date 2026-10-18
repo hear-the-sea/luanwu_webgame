@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import logging
 from collections import defaultdict
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, Dict, Tuple
@@ -17,12 +17,13 @@ from django.db.models import Count, F, Sum
 from django.utils import timezone
 
 from core.exceptions import InsufficientResourceError, InsufficientSilverError
-from core.utils.time_scale import scale_value
+from core.utils.time_scale import scale_duration, scale_value
 
 from ..models import (
     Building,
     ItemTemplate,
     Manor,
+    ManorResourceProductionBuff,
     PlayerTechnology,
     PlayerTroop,
     ResourceEvent,
@@ -46,6 +47,14 @@ class ResourceProductionBasis:
     personnel_grain_cost_per_hour: int
 
 
+@dataclass(frozen=True, slots=True)
+class ResourceProductionBuffWindow:
+    resource_type: str
+    bonus_percent: int
+    starts_at: datetime
+    expires_at: datetime
+
+
 def load_resource_production_bases(
     manors: Sequence[Manor],
     *,
@@ -65,6 +74,10 @@ def load_resource_production_bases(
     manor_ids = tuple(manor_by_id)
     if not manor_ids:
         return {}
+
+    from guilds.services.technology import get_guild_resource_bonuses_for_users
+
+    guild_bonuses_by_user = get_guild_resource_bonuses_for_users(manor.user_id for manor in manor_by_id.values())
 
     if technology_levels is None:
         resolved_technology_levels: dict[int, dict[str, int]] = defaultdict(dict)
@@ -146,6 +159,7 @@ def load_resource_production_bases(
                     calculate_hourly_rates(
                         resolved_buildings_by_manor.get(manor_id, ()),
                         resolved_technology_levels.get(manor_id, {}),
+                        guild_bonuses=guild_bonuses_by_user.get(manor.user_id, {}),
                     ).items()
                 )
             ),
@@ -197,6 +211,30 @@ def load_resource_production_basis(
         hourly_rates=tuple(sorted(get_hourly_rates(manor).items())),
         personnel_grain_cost_per_hour=get_personnel_grain_cost_per_hour(manor),
     )
+
+
+def load_resource_production_buff_windows(
+    manor_ids: Sequence[int],
+) -> dict[int, tuple[ResourceProductionBuffWindow, ...]]:
+    normalized_ids = tuple(dict.fromkeys(int(manor_id) for manor_id in manor_ids))
+    if not normalized_ids:
+        return {}
+    result: dict[int, list[ResourceProductionBuffWindow]] = defaultdict(list)
+    rows = (
+        ManorResourceProductionBuff.objects.filter(manor_id__in=normalized_ids)
+        .order_by("manor_id", "resource_type")
+        .values_list("manor_id", "resource_type", "bonus_percent", "starts_at", "expires_at")
+    )
+    for manor_id, resource_type, bonus_percent, starts_at, expires_at in rows:
+        result[int(manor_id)].append(
+            ResourceProductionBuffWindow(
+                resource_type=str(resource_type),
+                bonus_percent=int(bonus_percent),
+                starts_at=starts_at,
+                expires_at=expires_at,
+            )
+        )
+    return {manor_id: tuple(windows) for manor_id, windows in result.items()}
 
 
 def _require_resource_key(raw: Any) -> str:
@@ -409,6 +447,7 @@ def _build_production_snapshot(
     *,
     now: datetime,
     production_basis: ResourceProductionBasis | None = None,
+    production_buffs: Sequence[ResourceProductionBuffWindow] | None = None,
     resource_fields: Sequence[str] | None = None,
     current_resources: Mapping[str, int] | None = None,
 ) -> tuple[Dict[str, int], Dict[str, int], bool]:
@@ -418,11 +457,14 @@ def _build_production_snapshot(
 
     scaled_elapsed_seconds = scale_value(elapsed_seconds)
     if production_basis is None:
-        hourly_rates = get_hourly_rates(manor)
+        building_hourly_rates = get_hourly_rates(manor)
         personnel_grain_cost = get_personnel_grain_cost_per_hour(manor)
     else:
-        hourly_rates = dict(production_basis.hourly_rates)
+        building_hourly_rates = dict(production_basis.hourly_rates)
         personnel_grain_cost = production_basis.personnel_grain_cost_per_hour
+    if production_buffs is None:
+        production_buffs = load_resource_production_buff_windows((int(manor.pk),)).get(int(manor.pk), ())
+    hourly_rates = dict(building_hourly_rates)
     hourly_rates[ResourceType.GRAIN] = hourly_rates.get(ResourceType.GRAIN, 0) - personnel_grain_cost
 
     projected_values: Dict[str, int] = {}
@@ -430,7 +472,20 @@ def _build_production_snapshot(
     fields = RESOURCE_FIELDS if resource_fields is None else tuple(resource_fields)
     for resource in fields:
         per_hour = hourly_rates.get(resource, 0)
-        delta = int(per_hour * (scaled_elapsed_seconds / 3600))
+        production_amount = per_hour * (scaled_elapsed_seconds / 3600)
+        for buff in production_buffs:
+            if buff.resource_type != resource or buff.bonus_percent <= 0:
+                continue
+            overlap_start = max(manor.resource_updated_at, buff.starts_at)
+            overlap_end = min(now, buff.expires_at)
+            active_seconds = (overlap_end - overlap_start).total_seconds()
+            if active_seconds <= 0:
+                continue
+            base_production_rate = max(0.0, building_hourly_rates.get(resource, 0.0))
+            production_amount += (
+                base_production_rate * (buff.bonus_percent / 100.0) * (scale_value(active_seconds) / 3600)
+            )
+        delta = int(production_amount)
         if delta == 0:
             continue
 
@@ -467,6 +522,7 @@ def preview_resource_production(
     *,
     now: datetime | None = None,
     production_basis: ResourceProductionBasis | None = None,
+    production_buffs: Sequence[ResourceProductionBuffWindow] | None = None,
     current_resources: Mapping[str, int] | None = None,
 ) -> Dict[str, int]:
     """只读计算截至 ``now`` 的资源产出增量。"""
@@ -483,6 +539,7 @@ def preview_resource_production(
         manor,
         now=current_time,
         production_basis=production_basis,
+        production_buffs=production_buffs,
         current_resources=resolved_current_resources,
     )
     return dict(produced)
@@ -503,6 +560,7 @@ def settle_resource_production_locked(
     positive_limits: Dict[str, int] | None = None,
     note: str = "离线产出",
     production_basis: ResourceProductionBasis | None = None,
+    production_buffs: Sequence[ResourceProductionBuffWindow] | None = None,
     grain_template: ItemTemplate | None = None,
     grain_template_resolved: bool = False,
 ) -> Dict[str, int]:
@@ -534,6 +592,7 @@ def settle_resource_production_locked(
         manor,
         now=current_time,
         production_basis=production_basis,
+        production_buffs=production_buffs,
     )
     if not should_advance_timestamp:
         return {}
@@ -580,11 +639,30 @@ def settle_resource_production_locked(
     return settled
 
 
+def settle_resource_production_for_users_locked(
+    user_ids: Iterable[int],
+    *,
+    now: datetime | None = None,
+    note: str = "帮会资源产出结算",
+) -> None:
+    """Settle member manor resources before a guild production rate changes."""
+    _require_atomic_block("settle_resource_production_for_users_locked")
+    normalized_user_ids = tuple(dict.fromkeys(int(user_id) for user_id in user_ids))
+    if not normalized_user_ids:
+        return
+
+    current_time = now or timezone.now()
+    manors = Manor.objects.select_for_update().filter(user_id__in=normalized_user_ids).order_by("id")
+    for manor in manors:
+        settle_resource_production_locked(manor, now=current_time, note=note)
+
+
 def _sync_resource_production_locked(
     manor: Manor,
     *,
     now: datetime | None = None,
     production_basis: ResourceProductionBasis | None = None,
+    production_buffs: Sequence[ResourceProductionBuffWindow] | None = None,
     grain_template: ItemTemplate | None = None,
     grain_template_resolved: bool = False,
 ) -> Dict[str, int]:
@@ -592,9 +670,47 @@ def _sync_resource_production_locked(
         manor,
         now=now,
         production_basis=production_basis,
+        production_buffs=production_buffs,
         grain_template=grain_template,
         grain_template_resolved=grain_template_resolved,
     )
+
+
+def activate_resource_production_boost_locked(
+    manor: Manor,
+    *,
+    resource_type: str,
+    bonus_percent: int,
+    duration_hours: int,
+    now: datetime | None = None,
+) -> ManorResourceProductionBuff:
+    """Settle existing production, then refresh one resource's timed bonus."""
+    _require_atomic_block("activate_resource_production_boost_locked")
+    if resource_type not in {ResourceType.GRAIN, ResourceType.SILVER}:
+        raise AssertionError(f"invalid resource production boost type: {resource_type!r}")
+    if isinstance(bonus_percent, bool) or not 0 < int(bonus_percent) <= 100:
+        raise AssertionError(f"invalid resource production boost percent: {bonus_percent!r}")
+    if isinstance(duration_hours, bool) or int(duration_hours) <= 0:
+        raise AssertionError(f"invalid resource production boost duration: {duration_hours!r}")
+
+    current_time = now or timezone.now()
+    expires_at = current_time + timedelta(seconds=scale_duration(int(duration_hours) * 3600))
+    settle_resource_production_locked(manor, now=current_time, note="限时资源产出加成生效前结算")
+    buff, created = ManorResourceProductionBuff.objects.select_for_update().get_or_create(
+        manor=manor,
+        resource_type=resource_type,
+        defaults={
+            "bonus_percent": int(bonus_percent),
+            "starts_at": current_time,
+            "expires_at": expires_at,
+        },
+    )
+    if not created:
+        buff.bonus_percent = int(bonus_percent)
+        buff.starts_at = current_time
+        buff.expires_at = expires_at
+        buff.save(update_fields=["bonus_percent", "starts_at", "expires_at", "updated_at"])
+    return buff
 
 
 def spend_resources_locked(
@@ -825,6 +941,7 @@ def sync_resource_production_batch(
             grain_template_resolved = True
 
         production_bases = load_resource_production_bases(locked_manors)
+        production_buffs = load_resource_production_buff_windows([int(manor.pk) for manor in locked_manors])
         processed = 0
         for manor in locked_manors:
             production_basis = production_bases.get(int(manor.pk))
@@ -834,6 +951,7 @@ def sync_resource_production_batch(
                 manor,
                 now=current_time,
                 production_basis=production_basis,
+                production_buffs=production_buffs.get(int(manor.pk), ()),
                 grain_template=grain_template,
                 grain_template_resolved=grain_template_resolved,
             )

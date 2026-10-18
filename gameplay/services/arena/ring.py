@@ -210,7 +210,7 @@ def _action(
                 defender_guests=ring_guest_proxies(tenure.lineup),
                 defender_setup={
                     "troop_loadout": ring_battle_troops(tenure.lineup),
-                    "technology": build_ring_technology_payload(),
+                    "technology": build_ring_technology_payload(defender),
                 },
                 attacker_tech_levels=lineup["technology"]["levels"],
                 attacker_guest_bonuses={},

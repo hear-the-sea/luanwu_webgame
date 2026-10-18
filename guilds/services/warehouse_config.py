@@ -15,16 +15,37 @@ from django.conf import settings
 
 from core.utils import safe_int, safe_non_negative_int, safe_positive_int
 from core.utils.yaml_loader import ensure_list, ensure_mapping, load_yaml_data
+from guilds.technology_tree import TECHNOLOGY_NODE_BY_KEY
 
 WAREHOUSE_PRODUCTION_PATH = settings.BASE_DIR / "data" / "warehouse_production.yaml"
 logger = logging.getLogger(__name__)
 
 TECH_PRODUCTION_CONFIG_KEY_BY_TECH_KEY = {
+    # 保留旧产出服务入口；新科技树仍只展示和调度自己的节点。
     "equipment_forge": "equipment",
     "guard_armory": "guard",
     "experience_refine": "experience",
     "resource_supply": "resource",
     "mysticism": "mysticism",
+    "hero_fruit_blueprint": "hero_fruit_blueprint",
+    "hero_skill_books": "experience",
+    "hero_rebirth_card": "hero_rebirth_card",
+    "hero_green_blue_pill": "hero_green_blue_pill",
+    "hero_blue_purple_pill": "hero_blue_purple_pill",
+    "hero_reset_card": "hero_reset_card",
+    "hero_marrow_pill": "hero_marrow_pill",
+    "wolf_plunder_card": "wolf_plunder_card",
+    "wolf_lightning_horse": "wolf_lightning_horse",
+    "wolf_golden_white_horse": "wolf_golden_white_horse",
+    "wolf_soul_container": "wolf_soul_container",
+    "sheep_grain_card": "sheep_grain_card",
+    "sheep_silver_card": "sheep_silver_card",
+    "sheep_wrath": "sheep_wrath",
+    "forging_mechanism_blueprint": "forging_mechanism_blueprint",
+    "forging_equipment_forge": "equipment",
+    "forging_slave_card": "forging_slave_card",
+    "forging_theft_card": "forging_theft_card",
+    "forging_injury_card": "forging_injury_card",
 }
 
 
@@ -134,7 +155,11 @@ def get_production_items(tech_key: str, level: int) -> List[ProductionItem]:
 
 def get_technology_production_config_key(tech_key: str) -> str | None:
     """将帮会科技标识转换为仓库产出配置标识。"""
-    return TECH_PRODUCTION_CONFIG_KEY_BY_TECH_KEY.get(str(tech_key or "").strip())
+    normalized_key = str(tech_key or "").strip()
+    node = TECHNOLOGY_NODE_BY_KEY.get(normalized_key)
+    if node is not None and not node["enabled"]:
+        return None
+    return TECH_PRODUCTION_CONFIG_KEY_BY_TECH_KEY.get(normalized_key)
 
 
 def get_technology_production_items(tech_key: str, level: int) -> List[ProductionItem]:

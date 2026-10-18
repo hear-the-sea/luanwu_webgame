@@ -304,6 +304,10 @@ def disband_guild(guild, operator):
         # 预加载成员 user_id，确保通知对象来自锁内的当前活跃成员集合。
         member_user_ids = list(guild_locked.members.filter(is_active=True).values_list("user_id", flat=True))
         guild_name = guild_locked.name
+        disbanded_at = timezone.now()
+        from gameplay.services.resources import settle_resource_production_for_users_locked
+
+        settle_resource_production_for_users_locked(member_user_ids, now=disbanded_at)
 
         # 标记帮会为不活跃
         guild_locked.is_active = False
@@ -312,7 +316,7 @@ def disband_guild(guild, operator):
         # 标记所有成员为离开
         guild_locked.members.filter(is_active=True).update(
             is_active=False,
-            left_at=timezone.now(),
+            left_at=disbanded_at,
         )
         GuildHeroPoolEntry.objects.filter(guild=guild_locked).delete()
 

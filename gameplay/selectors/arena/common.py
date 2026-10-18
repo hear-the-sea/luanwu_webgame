@@ -9,9 +9,22 @@ import gameplay.services.arena.coop_core as arena_coop_core
 import gameplay.services.arena.core as arena_core
 from common.constants.resources import ResourceType
 from core.utils.time_scale import scale_duration
-from gameplay.models import ArenaCoopEntry, ArenaEntry, ArenaTournament, Manor
+from gameplay.models import ArenaCoopEntry, ArenaEntry, ArenaTournament, ItemTemplate, Manor
 from gameplay.services.arena.rewards import load_arena_reward_catalog, select_weekly_blueprint_key
-from gameplay.utils.template_loader import get_item_template_names_by_keys
+
+ARENA_RANDOM_REWARD_CHEST_KEY = "huashan_wulin_chest"
+ARENA_RANDOM_REWARD_ICON_BY_KEY = {"wulin_chest": ARENA_RANDOM_REWARD_CHEST_KEY}
+
+
+def _template_image_url(template: ItemTemplate | None) -> str:
+    image = getattr(template, "image", None)
+    if not image:
+        return ""
+    try:
+        return image.url
+    except (OSError, ValueError):
+        return ""
+
 
 ARENA_PRIMARY_EVENT_BASE = {
     "key": "tianxia_buwu",
@@ -36,26 +49,38 @@ def build_reward_rows(manor: Manor) -> list[dict]:
     for reward in catalog.values():
         all_item_keys.update(reward.items.keys())
         all_item_keys.update(option.item_key for option in reward.random_items)
+        random_reward_icon = ARENA_RANDOM_REWARD_ICON_BY_KEY.get(reward.key)
+        if random_reward_icon and (reward.random_items or reward.random_blueprint_pool is not None):
+            all_item_keys.add(random_reward_icon)
         if reward.rotating_blueprint_pool is not None:
             all_item_keys.add(select_weekly_blueprint_key(reward.rotating_blueprint_pool))
-    item_labels = get_item_template_names_by_keys(all_item_keys)
+    item_templates = {
+        template.key: template
+        for template in ItemTemplate.objects.filter(key__in=all_item_keys).only("key", "name", "image")
+    }
+
+    def item_image_url(key: str) -> str:
+        return _template_image_url(item_templates.get(key))
+
+    def item_label(key: str) -> str:
+        template = item_templates.get(key)
+        return template.name if template and template.name else "未知物品"
 
     rows: list[dict] = []
     for reward in catalog.values():
+        rotating_blueprint_image_url = ""
         rotating_blueprint_row = None
         if reward.rotating_blueprint_pool is not None:
             blueprint_key = select_weekly_blueprint_key(reward.rotating_blueprint_pool)
+            rotating_blueprint_image_url = item_image_url(blueprint_key)
             rotating_blueprint_row = {
                 "key": blueprint_key,
-                "label": item_labels.get(blueprint_key, "未知图纸"),
+                "label": item_label(blueprint_key),
                 "amount": 1,
             }
         random_blueprint_row = None
         if reward.random_blueprint_pool is not None:
-            random_blueprint_row = {
-                "label": reward.name,
-                "amount": 1,
-            }
+            random_blueprint_row = {"label": reward.name, "amount": 1}
         resource_rows = [
             {
                 "key": key,
@@ -64,33 +89,37 @@ def build_reward_rows(manor: Manor) -> list[dict]:
             }
             for key, amount in reward.resources.items()
         ]
-        item_rows = [
-            {
-                "key": key,
-                "label": item_labels.get(key, "未知物品"),
-                "amount": amount,
-            }
-            for key, amount in reward.items.items()
-        ]
+        item_rows = [{"key": key, "label": item_label(key), "amount": amount} for key, amount in reward.items.items()]
         total_random_weight = sum(option.weight for option in reward.random_items)
         random_item_rows = []
         for option in reward.random_items:
-            chance = (option.weight * 100 / total_random_weight) if total_random_weight > 0 else 0
-            chance_float = float(chance)
-            chance_text = f"{int(chance_float)}%" if chance_float.is_integer() else f"{chance_float:.2f}%"
+            chance = option.weight * 100 / total_random_weight if total_random_weight > 0 else 0
+            chance_text = f"{int(chance)}%" if chance.is_integer() else f"{chance:.2f}%"
             random_item_rows.append(
                 {
                     "key": option.item_key,
-                    "label": item_labels.get(option.item_key, "未知物品"),
+                    "label": item_label(option.item_key),
                     "amount": option.amount,
-                    "weight": option.weight,
                     "chance_text": chance_text,
                 }
             )
+        random_reward_image_key = ARENA_RANDOM_REWARD_ICON_BY_KEY.get(reward.key)
+        random_reward_image_url = item_image_url(random_reward_image_key) if random_reward_image_key else ""
+        display_image_url = (
+            random_reward_image_url
+            or rotating_blueprint_image_url
+            or (item_image_url(next(iter(reward.items))) if reward.items else "")
+        )
+        has_item_reward = bool(
+            reward.items or reward.random_items or reward.rotating_blueprint_pool or reward.random_blueprint_pool
+        )
+        display_icon = reward.name[:1] if has_item_reward else ""
         rows.append(
             {
                 "key": reward.key,
                 "name": reward.name,
+                "display_image_url": display_image_url,
+                "display_icon": display_icon,
                 "description": reward.description,
                 "cost_coins": reward.cost_coins,
                 "daily_limit": reward.daily_limit,

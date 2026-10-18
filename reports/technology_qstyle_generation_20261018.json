@@ -1,0 +1,465 @@
+{
+  "method": "Built-in image_gen; individual generation per icon",
+  "style": "Q版、平面、手绘，物品库纸上绘画质感，兵种技能采用对应黄鸡护院造型与动作",
+  "encoding": "256×256 WebP quality 90",
+  "icons": [
+    {
+      "key": "category_martial",
+      "output": "static/images/technology/qstyle/category_martial.webp",
+      "references": [
+        "data/images/troops/daoke.png",
+        "data/images/troops/qiangke.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE finished square technology icon for an existing Chinese browser game. User specifically wants Q版、平面、手绘: cute chibi proportions, flat 2D hand-drawn illustration, bold slightly irregular warm brown ink outlines, large simple shapes, limited warm palette, ONLY 1 or 2 flat shadow patches, subtle paper grain. Cream parchment background #fff8e7, central subject fills 78% of square with comfortable safe margins. Readable at 48-88px. Preserve the reference game's visual identity. NO 3D rendering, NO glossy materials, NO metallic shine, NO luminous swirls, NO ornate gold filigree, NO busy FX, NO pixel art, NO text, letters, numbers, border or watermark. Reference 1 is the actual dao swordsman guard character, reference 2 the spear guard, reference 3 an existing hand-drawn scroll item. Design the MARTIAL RESEARCH CATEGORY icon: one cheerful round YELLOW CHICK guard with orange beak and tiny orange feet, black cloth martial headband, standing proudly with one simple silver Chinese broadsword and one small rolled martial manual tucked under its wing. Match the exact chick silhouette and face from reference, not a human, not a duck with a long bill. Keep the simple line drawing and flat coloring. One character only."
+    },
+    {
+      "key": "category_production",
+      "output": "static/images/technology/qstyle/category_production.webp",
+      "references": [
+        "data/images/items/skill1.png",
+        "data/images/items/equip_fudai.png",
+        "data/images/troops/daoke.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE finished square technology icon for an existing Chinese browser game. User specifically wants Q版、平面、手绘: cute chibi proportions, flat 2D hand-drawn illustration, bold slightly irregular warm brown ink outlines, large simple shapes, limited warm palette, ONLY 1 or 2 flat shadow patches, subtle paper grain. Cream parchment background #fff8e7, central subject fills 78% of square with comfortable safe margins. Readable at 48-88px. Preserve the reference game's visual identity. NO 3D rendering, NO glossy materials, NO metallic shine, NO luminous swirls, NO ornate gold filigree, NO busy FX, NO pixel art, NO text, letters, numbers, border or watermark. Reference 1 is an existing hand-drawn item scroll, reference 2 a cloth pouch, reference 3 is the game's round yellow chick guard used only to establish cute character proportions and warm color palette. Design the PRODUCTION RESEARCH CATEGORY icon: a compact still life of a small wooden farm basket with three golden rice ears, one squat iron hammer resting beside it and one simple clay jar. Chubby exaggerated shapes, flat ochre, sage-green and rusty brown colors; drawn on paper like the existing inventory items, simplified for a small icon. No animal required. At most three clearly grouped objects."
+    },
+    {
+      "key": "dao_attack",
+      "output": "static/images/technology/qstyle/dao_attack.webp",
+      "references": [
+        "data/images/troops/daoke.png",
+        "data/images/troops/daosheng.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE finished square technology icon for an existing Chinese browser game. User specifically wants Q版、平面、手绘: cute chibi proportions, flat 2D hand-drawn illustration, bold slightly irregular warm brown ink outlines, large simple shapes, limited warm palette, ONLY 1 or 2 flat shadow patches, subtle paper grain. Cream parchment background #fff8e7, central subject fills 78% of square with comfortable safe margins. Readable at 48-88px. Preserve the reference game's visual identity. NO 3D rendering, NO glossy materials, NO metallic shine, NO luminous swirls, NO ornate gold filigree, NO busy FX, NO pixel art, NO text, letters, numbers, border or watermark. Reference 1 is the EXACT dao guard character identity. Reference 2 a higher-tier dao guard. Reference 3 is an existing hand-drawn item showing ink/paper texture. Icon for 力劈华山, broadsword attack: the same round YELLOW CHICK with black cloth headband, tiny orange feet and orange beak is swinging its broad plain silver Chinese saber downward, chopping a tiny grey rock into two halves. An energetic cute determined face, ONE simple orange flat slash mark, no gore. Entire little chick and blade visible. Match the existing chick identity, NOT a human swordsman. Use flat hand-painted shapes, no elaborate ornaments."
+    },
+    {
+      "key": "category_basic",
+      "output": "static/images/technology/qstyle/category_basic.webp",
+      "references": [
+        "data/images/items/skill1.png",
+        "data/images/items/equip_luopan.png",
+        "data/images/items/equip_fudai.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. References are the existing game's inventory items / scout art: use them for object identity and hand-drawn paper texture, simplifying into Q-style rounded forms. CATEGORY ICON for basic research: one large unfurled simple parchment manor map, a chunky little wooden compass and a short charcoal pencil grouped neatly. The map has only a small stylized hill and path, no lettering. Cute rounded inventory objects, muted tan, sage and terracotta."
+    },
+    {
+      "key": "scout_art",
+      "output": "static/images/technology/qstyle/scout_art.webp",
+      "references": [
+        "data/images/troops/tanzi.png",
+        "data/images/items/skill1.png",
+        "data/images/items/equip_fudai.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. References are the existing game's inventory items / scout art: use them for object identity and hand-drawn paper texture, simplifying into Q-style rounded forms. TECHNOLOGY scouting: the exact round yellow CHICK scout from reference 1, orange beak and feet, black tied headband. The chick peers through its plain brass telescope beside a tiny folded map. Curious squinting face, recognizable round chick silhouette."
+    },
+    {
+      "key": "march_art",
+      "output": "static/images/technology/qstyle/march_art.webp",
+      "references": [
+        "data/images/troops/daoke.png",
+        "data/images/items/equip_yangpixue.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. References are the existing game's inventory items / scout art: use them for object identity and hand-drawn paper texture, simplifying into Q-style rounded forms. TECHNOLOGY marching: the exact round yellow CHICK guard from reference 1, black tied headband, orange beak and tiny feet, running happily in simple brown boots. A rolled travel blanket on its back and TWO short ink motion lines. Entire chick visible, plain flat cartoon."
+    },
+    {
+      "key": "architecture",
+      "output": "static/images/technology/qstyle/architecture.webp",
+      "references": [
+        "data/images/items/skill1.png",
+        "data/images/items/equip_chuanguoyuxi.png",
+        "data/images/items/equip_fudai.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. References are the existing game's inventory items / scout art: use them for object identity and hand-drawn paper texture, simplifying into Q-style rounded forms. TECHNOLOGY architecture: one cute little yellow chick wearing a folded tan paper craftsman cap, holding a wooden set square beside a simple rolled manor blueprint with one miniature tiled roof sketch. Only a few simple big shapes."
+    },
+    {
+      "key": "horsemanship",
+      "output": "static/images/technology/qstyle/horsemanship.webp",
+      "references": [
+        "data/images/items/equip_huangbiaoma.png",
+        "data/images/items/equip_fudai.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. References are the existing game's inventory items / scout art: use them for object identity and hand-drawn paper texture, simplifying into Q-style rounded forms. TECHNOLOGY horsemanship: a very cute chibi brown horse with oversized round head, short legs, a simple brown bridle and small rolled blue saddlecloth. Reference horse establishes its brown coat and tack; simplify heavily into flat hand-drawn warm shapes."
+    },
+    {
+      "key": "animal_husbandry",
+      "output": "static/images/technology/qstyle/animal_husbandry.webp",
+      "references": [
+        "data/images/items/equip_fudai.png",
+        "data/images/items/skill1.png",
+        "data/images/troops/daoke.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. References are the existing game's inventory items / scout art: use them for object identity and hand-drawn paper texture, simplifying into Q-style rounded forms. TECHNOLOGY animal husbandry: one plump little cream sheep and a tiny brown calf nuzzling next to a small wooden feed bucket with two green leaves. Oversized cute heads, compact grouped silhouettes, flat hand-drawn inventory style."
+    },
+    {
+      "key": "smelting",
+      "output": "static/images/technology/qstyle/smelting.webp",
+      "references": [
+        "data/images/items/copper_essence.png",
+        "data/images/items/equip_fudai.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. References are the existing game's inventory items / scout art: use them for object identity and hand-drawn paper texture, simplifying into Q-style rounded forms. TECHNOLOGY smelting: a squat rounded grey brick furnace with a single flat orange flame in its opening and one chunky copper ingot on a small tray. A tiny pair of black tongs rests beside it. Simple flat outlines, subdued warm colors."
+    },
+    {
+      "key": "forging",
+      "output": "static/images/technology/qstyle/forging.webp",
+      "references": [
+        "data/images/troops/daoke.png",
+        "data/images/items/copper_essence.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. References are the existing game's inventory items / scout art: use them for object identity and hand-drawn paper texture, simplifying into Q-style rounded forms. TECHNOLOGY forging: a chubby yellow chick blacksmith with a small brown apron raises a plain wooden-handled iron hammer over a tiny grey anvil. One flat orange impact star and one simple metal bar. Plain flat cartoon, no gold or glow."
+    },
+    {
+      "key": "farming",
+      "output": "static/images/technology/qstyle/farming.webp",
+      "references": [
+        "data/images/troops/daoke.png",
+        "data/images/items/equip_fudai.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. References are the existing game's inventory items / scout art: use them for object identity and hand-drawn paper texture, simplifying into Q-style rounded forms. TECHNOLOGY farming: a cute round yellow chick in a little straw farmer hat holding three ripe rice stalks next to a small brown rice sack. Compact flat ochre-and-sage hand-drawn icon, no scenery."
+    },
+    {
+      "key": "dao_defense",
+      "output": "static/images/technology/qstyle/dao_defense.webp",
+      "references": [
+        "data/images/troops/daoke.png",
+        "data/images/troops/daosheng.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY broadsword defense: the reference yellow broadsword CHICK with black headband stands braced behind a simple rounded brown wood-and-iron shield, its plain silver curved broadsword visible at one side. Determined cute squint, compact guarding pose."
+    },
+    {
+      "key": "dao_agility",
+      "output": "static/images/technology/qstyle/dao_agility.webp",
+      "references": [
+        "data/images/troops/daoke.png",
+        "data/images/troops/daosheng.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY broadsword agility: the reference yellow broadsword CHICK with black headband runs lightly on orange feet while holding its simple silver curved broadsword behind it. TWO short pale cyan motion strokes, lively sideways running pose."
+    },
+    {
+      "key": "dao_hp",
+      "output": "static/images/technology/qstyle/dao_hp.webp",
+      "references": [
+        "data/images/troops/daoke.png",
+        "data/images/troops/daosheng.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY broadsword vitality: the reference yellow broadsword CHICK with black headband sits contentedly cross-legged with its simple silver curved saber resting beside it, a SINGLE small terracotta-red heart above its chest. Peaceful confident face, no aura."
+    },
+    {
+      "key": "dao_double_strike",
+      "output": "static/images/technology/qstyle/dao_double_strike.webp",
+      "references": [
+        "data/images/troops/daoke.png",
+        "data/images/troops/daosheng.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY double broadsword strike: the reference yellow broadsword CHICK with PURPLE advanced headband makes a cheeky determined face while swinging two plain silver curved broadswords, one on each wing, TWO flat coral slash strokes. Entire round chick visible, no wolf embellishment."
+    },
+    {
+      "key": "qiang_attack",
+      "output": "static/images/technology/qstyle/qiang_attack.webp",
+      "references": [
+        "data/images/troops/qiangke.png",
+        "data/images/troops/qiangwang.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY spear attack: the reference yellow spear CHICK with black headband leans forward and thrusts its plain wooden-shaft spear, triangular grey tip and red tassel, into a tiny practice target. One simple orange impact star."
+    },
+    {
+      "key": "qiang_defense",
+      "output": "static/images/technology/qstyle/qiang_defense.webp",
+      "references": [
+        "data/images/troops/qiangke.png",
+        "data/images/troops/qiangwang.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY spear defense: the reference yellow spear CHICK with black headband holds its plain red-tasseled spear upright while sheltering under a simple large bronze-colored temple bell outline. Cute stout defensive stance, flat ochre bell, no radiance."
+    },
+    {
+      "key": "qiang_agility",
+      "output": "static/images/technology/qstyle/qiang_agility.webp",
+      "references": [
+        "data/images/troops/qiangke.png",
+        "data/images/troops/qiangwang.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY spear agility: the reference yellow spear CHICK with black headband pivots on one little foot, swinging its plain red-tasseled spear around in a ONE simple pale cyan curved motion stroke. Playful nimble stance."
+    },
+    {
+      "key": "qiang_hp",
+      "output": "static/images/technology/qstyle/qiang_hp.webp",
+      "references": [
+        "data/images/troops/qiangke.png",
+        "data/images/troops/qiangwang.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY spear vitality: the reference yellow spear CHICK with black headband stands proudly with spear planted beside it and TWO small red heart shapes near its round belly. Cheerful healthy pose, plain flat colors."
+    },
+    {
+      "key": "qiang_siege",
+      "output": "static/images/technology/qstyle/qiang_siege.webp",
+      "references": [
+        "data/images/troops/qiangke.png",
+        "data/images/troops/qiangwang.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY spear siege attack: the reference yellow spear CHICK with PURPLE advanced headband charges a miniature grey brick wall with its plain red-tasseled spear, two or three bricks tumble away, ONE small orange impact star."
+    },
+    {
+      "key": "qiang_counter",
+      "output": "static/images/technology/qstyle/qiang_counter.webp",
+      "references": [
+        "data/images/troops/qiangke.png",
+        "data/images/troops/qiangwang.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY spear counterstrike: the reference yellow spear CHICK with PURPLE advanced headband turns back over its shoulder while making a returning spear thrust, ONE simple red curved return arrow behind it. No lettering, clear single-character action."
+    },
+    {
+      "key": "jian_attack",
+      "output": "static/images/technology/qstyle/jian_attack.webp",
+      "references": [
+        "data/images/troops/jianshi.png",
+        "data/images/troops/jiansheng.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY straight sword attack: the reference yellow sword CHICK with black headband and determined eyebrows swings its PLAIN straight silver Chinese sword in a long clean diagonal cut. ONE flat coral arc shows the swing, tiny orange impact mark."
+    },
+    {
+      "key": "jian_defense",
+      "output": "static/images/technology/qstyle/jian_defense.webp",
+      "references": [
+        "data/images/troops/jianshi.png",
+        "data/images/troops/jiansheng.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY straight sword defense: the reference yellow sword CHICK with black headband holds its PLAIN straight silver sword upright in front of its body, with a small simple ochre shield symbol behind it. Strong little protective stance."
+    },
+    {
+      "key": "jian_agility",
+      "output": "static/images/technology/qstyle/jian_agility.webp",
+      "references": [
+        "data/images/troops/jianshi.png",
+        "data/images/troops/jiansheng.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY straight sword agility: the reference yellow sword CHICK with black headband hops lightly over TWO pale green falling willow leaves, PLAIN straight silver sword held behind, two short motion lines."
+    },
+    {
+      "key": "jian_hp",
+      "output": "static/images/technology/qstyle/jian_hp.webp",
+      "references": [
+        "data/images/troops/jianshi.png",
+        "data/images/troops/jiansheng.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY straight sword vitality: the reference yellow sword CHICK with black headband smiles calmly with a little peach blossom and a green leaf beside its chest, PLAIN straight silver sword resting upright beside it. One small red heart."
+    },
+    {
+      "key": "jian_reflect",
+      "output": "static/images/technology/qstyle/jian_reflect.webp",
+      "references": [
+        "data/images/troops/jianshi.png",
+        "data/images/troops/jiansheng.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY sword reflection: the reference yellow sword CHICK with PURPLE advanced headband parries a single small brown arrow with its PLAIN straight silver sword. A tiny ochre impact star and one short red bounce-back line."
+    },
+    {
+      "key": "jian_preempt",
+      "output": "static/images/technology/qstyle/jian_preempt.webp",
+      "references": [
+        "data/images/troops/jianshi.png",
+        "data/images/troops/jiansheng.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY flying sword first strike: the reference yellow sword CHICK with PURPLE advanced headband points a little wing forward and directs THREE miniature plain silver straight swords flying in a neat row. Two pale cyan speed lines, cheerful confident face."
+    },
+    {
+      "key": "quan_attack",
+      "output": "static/images/technology/qstyle/quan_attack.webp",
+      "references": [
+        "data/images/troops/quanshi.png",
+        "data/images/troops/quansheng.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY fist attack: the reference round yellow kung fu CHICK with black headband punches forward with its little clenched wing-fist, an exaggerated comic determined face and ONE flat ochre impact burst in front. No weapon, no human hands."
+    },
+    {
+      "key": "quan_defense",
+      "output": "static/images/technology/qstyle/quan_defense.webp",
+      "references": [
+        "data/images/troops/quanshi.png",
+        "data/images/troops/quansheng.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY kung fu defense: the reference round yellow kung fu CHICK with black headband crosses both little wing-fists in front of its belly inside a simple drawn bell-shaped bronze outline. Stout comical guarding pose, flat colors."
+    },
+    {
+      "key": "quan_agility",
+      "output": "static/images/technology/qstyle/quan_agility.webp",
+      "references": [
+        "data/images/troops/quanshi.png",
+        "data/images/troops/quansheng.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY kung fu agility: the reference yellow kung fu CHICK with black headband balances on one tiny orange foot over TWO simple pale blue pond ripples, other foot lifted and wings out, playful nimble pose. No weapon."
+    },
+    {
+      "key": "quan_hp",
+      "output": "static/images/technology/qstyle/quan_hp.webp",
+      "references": [
+        "data/images/troops/quanshi.png",
+        "data/images/troops/quansheng.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY kung fu vitality: the reference yellow kung fu CHICK with black headband sits cross-legged with its round belly relaxed, little wings held together and ONE red heart above them. Quiet cute concentration, no magic glow."
+    },
+    {
+      "key": "quan_vs_ranged",
+      "output": "static/images/technology/qstyle/quan_vs_ranged.webp",
+      "references": [
+        "data/images/troops/quanshi.png",
+        "data/images/troops/quansheng.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY ranged defense: the reference yellow kung fu CHICK with PURPLE advanced headband extends one little wing forward and deflects TWO simple brown arrows with a single pale cyan curved barrier stroke. Determined cute expression, no weapon."
+    },
+    {
+      "key": "quan_heal",
+      "output": "static/images/technology/qstyle/quan_heal.webp",
+      "references": [
+        "data/images/troops/quanshi.png",
+        "data/images/troops/quansheng.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY kung fu healing: the reference yellow kung fu CHICK with PURPLE advanced headband meditates on a tiny flat green lotus leaf, FIVE small muted colored dots around its head and one small terracotta heart. Simple cozy flat illustration."
+    },
+    {
+      "key": "gong_attack",
+      "output": "static/images/technology/qstyle/gong_attack.webp",
+      "references": [
+        "data/images/troops/gongjianshou.png",
+        "data/images/troops/jianshen.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY bow attack: the reference round yellow archer CHICK with black headband and orange beak aims its PLAIN curved wooden bow with a single arrow at a small green willow leaf. Clear focused sideways archer pose, no ornate weapon."
+    },
+    {
+      "key": "gong_defense",
+      "output": "static/images/technology/qstyle/gong_defense.webp",
+      "references": [
+        "data/images/troops/gongjianshou.png",
+        "data/images/troops/jianshen.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY archer defense: the reference yellow archer CHICK with black headband crouches behind a small rounded wooden shield, holding its PLAIN wooden bow beside it. Cute serious face, simple protective pose."
+    },
+    {
+      "key": "gong_agility",
+      "output": "static/images/technology/qstyle/gong_agility.webp",
+      "references": [
+        "data/images/troops/gongjianshou.png",
+        "data/images/troops/jianshen.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY archer agility: the reference yellow archer CHICK with black headband skips swiftly with its PLAIN wooden bow in one wing, a tiny pale yellow crescent moon above and TWO short cyan speed lines."
+    },
+    {
+      "key": "gong_hp",
+      "output": "static/images/technology/qstyle/gong_hp.webp",
+      "references": [
+        "data/images/troops/gongjianshou.png",
+        "data/images/troops/jianshen.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY archer vitality: the reference yellow archer CHICK with black headband smiles while holding its PLAIN wooden bow and a little clay cup of nourishing tea, ONE small coral heart above the cup. Relaxed cute round chick."
+    },
+    {
+      "key": "gong_range",
+      "output": "static/images/technology/qstyle/gong_range.webp",
+      "references": [
+        "data/images/troops/gongjianshou.png",
+        "data/images/troops/jianshen.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY long-range arrow: the reference yellow archer CHICK with PURPLE advanced headband draws its PLAIN curved wooden bow upward, one large arrow flies diagonally high with TWO short speed lines and a small flat orange feather at its tail. No phoenix ornament."
+    },
+    {
+      "key": "gong_melee",
+      "output": "static/images/technology/qstyle/gong_melee.webp",
+      "references": [
+        "data/images/troops/gongjianshou.png",
+        "data/images/troops/jianshen.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY archer close combat: the reference yellow archer CHICK with PURPLE advanced headband holds a short plain silver dagger ready in one little wing while its wooden bow is slung on its back, cheeky brave expression, ONE short coral slash mark."
+    },
+    {
+      "key": "dao_recruit",
+      "output": "static/images/technology/qstyle/dao_recruit.webp",
+      "references": [
+        "data/images/troops/daoke.png",
+        "data/images/troops/daosheng.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY recruit broadsword guards: THREE miniature reference yellow broadsword CHICKS standing together, central chick larger in front with plain silver curved saber and black headband, two smaller chicks behind, a tiny blank rolled parchment at their feet."
+    },
+    {
+      "key": "qiang_recruit",
+      "output": "static/images/technology/qstyle/qiang_recruit.webp",
+      "references": [
+        "data/images/troops/qiangke.png",
+        "data/images/troops/qiangwang.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY recruit spear guards: THREE miniature reference yellow spear CHICKS standing together, central chick larger in front with wooden spear and red tassel and black headband, two smaller chicks behind, a tiny blank rolled parchment at their feet."
+    },
+    {
+      "key": "jian_recruit",
+      "output": "static/images/technology/qstyle/jian_recruit.webp",
+      "references": [
+        "data/images/troops/jianshi.png",
+        "data/images/troops/jiansheng.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY recruit straight sword guards: THREE miniature reference yellow sword CHICKS standing together, central chick larger in front with PLAIN straight silver sword and black headband, two smaller chicks behind, a tiny blank rolled parchment at their feet."
+    },
+    {
+      "key": "quan_recruit",
+      "output": "static/images/technology/qstyle/quan_recruit.webp",
+      "references": [
+        "data/images/troops/quanshi.png",
+        "data/images/troops/quansheng.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY recruit fist guards: THREE miniature reference yellow kung fu CHICKS standing together, central chick larger in front raising its two little wing-fists with black headband, two smaller chicks behind, a tiny blank rolled parchment at their feet. No weapons."
+    },
+    {
+      "key": "gong_recruit",
+      "output": "static/images/technology/qstyle/gong_recruit.webp",
+      "references": [
+        "data/images/troops/gongjianshou.png",
+        "data/images/troops/jianshen.png",
+        "data/images/items/skill1.png"
+      ],
+      "prompt": "Use case: stylized-concept. ONE square game technology icon, Q版、平面、手绘. Cute chibi, flat 2D drawing with warm brown slightly irregular ink outlines, large clean rounded shapes, restrained warm palette, subtle paper grain, at most TWO flat cel-shadow patches. Match the existing inventory's paper drawing, simplify rather than add detail. Cream #fff8e7 square background, no scene, central subject 78% of frame with 10-12% safe margin. Readable at 48-88px. NO glossy 3D, NO metallic specular reflections, NO gold filigree or jeweled ornament, NO radiant aura, NO complex FX, NO gradients, NO realistic rendering, NO pixel art, NO text, letters, labels, border or watermark. Reference 1 is the exact low-tier guard identity, reference 2 is the advanced guard identity, reference 3 shows the game's ink-on-paper inventory art. The guard is a ROUND YELLOW CHICK with orange beak and tiny orange feet, short little wings, crown-like feather tuft, tied cloth headband. Keep this bird character identity and its class weapon; NEVER replace it with a human. Reinterpret any pixelated reference as SMOOTH flat hand-drawn outlines, not pixels. TECHNOLOGY recruit archers: THREE miniature reference yellow archer CHICKS standing together, central chick larger in front with PLAIN curved wooden bow and black headband, two smaller chicks behind, a tiny blank rolled parchment at their feet."
+    },
+    {
+      "key": "dao_armor_break",
+      "output": "static/images/technology/qstyle/dao_armor_break.webp",
+      "references": [
+        "static/images/technology/qstyle/dao_attack.webp"
+      ],
+      "prompt": "Q版平面手绘，参考同系刀客护院；黄鸡持朴素银刀劈裂小铁甲，浅奶油纸底，无复杂光效。"
+    }
+  ]
+}

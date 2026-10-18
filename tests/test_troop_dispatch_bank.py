@@ -112,7 +112,7 @@ def test_query_includes_bank_only_types_only_when_requested(inventory):
 @pytest.mark.django_db
 def test_return_respects_recruitment_reservation_and_discards_lowest_tier(inventory, monkeypatch):
     manor, templates = inventory
-    PlayerTroop.objects.create(manor=manor, troop_template=templates["bank_other"], count=4990)
+    PlayerTroop.objects.create(manor=manor, troop_template=templates["bank_other"], count=7990)
     TroopBankStorage.objects.create(manor=manor, troop_template=templates["bank_other"], count=4995)
     TroopRecruitment.objects.create(
         manor=manor,
@@ -138,7 +138,7 @@ def test_return_respects_recruitment_reservation_and_discards_lowest_tier(invent
             ),
         )
     assert result == {"manor": {"bank_high": 2}, "bank": {"bank_high": 4, "bank_low": 1}, "discarded": {"bank_low": 5}}
-    assert _counts(manor, PlayerTroop) == {"bank_other": 4990, "bank_high": 2}
+    assert _counts(manor, PlayerTroop) == {"bank_other": 7990, "bank_high": 2}
     assert _counts(manor, TroopBankStorage) == {"bank_other": 4995, "bank_high": 4, "bank_low": 1}
 
 
@@ -163,7 +163,7 @@ def test_equal_tier_sampling_is_weighted_by_individual_count(monkeypatch, capaci
 @pytest.mark.parametrize("has_report", [False, True])
 def test_return_wrappers_restore_only_survivors_to_bank(inventory, monkeypatch, path, has_report):
     manor, templates = inventory
-    PlayerTroop.objects.create(manor=manor, troop_template=templates["bank_other"], count=5000)
+    PlayerTroop.objects.create(manor=manor, troop_template=templates["bank_other"], count=8000)
     monkeypatch.setattr("battle.troops.load_troop_templates", lambda: {"bank_high": {}})
     report = (
         SimpleNamespace(losses={"attacker": {"casualties": [{"key": "bank_high", "lost": 3}]}}) if has_report else None
@@ -176,7 +176,7 @@ def test_return_wrappers_restore_only_survivors_to_bank(inventory, monkeypatch, 
             troop_ops._return_surviving_troops(
                 SimpleNamespace(attacker=locked, troop_loadout={"bank_high": 10}, battle_report=report)
             )
-    assert _counts(manor, PlayerTroop) == {"bank_other": 5000}
+    assert _counts(manor, PlayerTroop) == {"bank_other": 8000}
     assert _counts(manor, TroopBankStorage) == {"bank_high": 7 if has_report else 10}
 
 
@@ -184,7 +184,7 @@ def test_return_wrappers_restore_only_survivors_to_bank(inventory, monkeypatch, 
 def test_failed_raid_release_settles_full_storage_once(inventory, django_user_model):
     manor, templates = inventory
     defender = ensure_manor(django_user_model.objects.create_user(username="dispatch_bank_defender"))
-    PlayerTroop.objects.create(manor=manor, troop_template=templates["bank_other"], count=5000)
+    PlayerTroop.objects.create(manor=manor, troop_template=templates["bank_other"], count=8000)
     TroopBankStorage.objects.create(manor=manor, troop_template=templates["bank_other"], count=4998)
     run = RaidRun.objects.create(attacker=manor, defender=defender, troop_loadout={"bank_high": 10})
     assert fail_raid_run_and_release_resources(run.pk, failure_reason=RaidRun.FailureReason.INVALID_GUEST_SNAPSHOT)

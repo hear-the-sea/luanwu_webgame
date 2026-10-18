@@ -77,8 +77,11 @@
 
                     <dl class="production-stats production-stats--three">
                         <div>
-                            <dt>单价粮食</dt>
-                            <dd class="production-value production-value--cost">{{ livestock.grain_cost }}</dd>
+                            <dt>单价粮食{% if livestock.cost_discount_percent > 0 %}（折后）{% endif %}</dt>
+                            <dd class="production-value production-value--cost">
+                                {{ livestock.effective_grain_cost }}
+                                {% if livestock.cost_discount_percent > 0 %}<span class="production-meta-item--accent">-{{ livestock.cost_discount_percent }}%</span>{% endif %}
+                            </dd>
                         </div>
                         <div>
                             <dt>基础时间</dt>
@@ -103,11 +106,12 @@
                             <input type="number" name="quantity" id="quantity-{{ livestock.key }}"
                                    value="1" min="1" max="{{ livestock.max_quantity }}" inputmode="numeric" autocomplete="off" class="tw-quantity-input"
                                    data-unit-cost="{{ livestock.grain_cost }}"
+                                   data-cost-discount-percent="{{ livestock.cost_discount_percent }}"
                                    data-unit-label="粮食"
                                    data-total-target="total-{{ livestock.key }}"
                                    data-unit-duration="{{ livestock.actual_duration }}"
                                    data-duration-target="duration-{{ livestock.key }}">
-                            <span id="total-{{ livestock.key }}">{{ livestock.grain_cost }} 粮食</span>
+                            <span id="total-{{ livestock.key }}">{{ livestock.effective_grain_cost }} 粮食</span>
                         </div>
                         {% if livestock.can_afford %}
                         <button type="submit" class="tw-btn-primary w-full">养殖</button>

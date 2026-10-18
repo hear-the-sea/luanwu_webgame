@@ -1,0 +1,548 @@
+.trade-bank-layout {
+  display: grid;
+  grid-template-columns: minmax(18rem, 0.82fr) minmax(0, 1.18fr);
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.trade-bank-layout > .tw-bank-section {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  padding: 0.9rem;
+  border: 1px solid var(--border-light);
+  border-top: 3px solid var(--accent-gold);
+  border-radius: 0.55rem;
+  background: linear-gradient(150deg, var(--bg-panel), var(--bg-card));
+  box-shadow: 0 4px 12px rgba(74, 38, 18, 0.08);
+}
+
+.trade-bank-layout > .tw-bank-section:first-child > h3 {
+  margin: 0 0 0.7rem;
+  padding: 0 0 0.65rem;
+  border: 0;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-primary);
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 1.3rem;
+  letter-spacing: 0.04em;
+}
+
+.trade-bank-layout > .tw-bank-section:first-child .tw-bank-tips {
+  margin-top: auto;
+}
+
+.troop-bank-panel {
+  --troop-bank-red: #8f3b2b;
+  --troop-bank-green: #526b48;
+  min-width: 0;
+  border-top-color: var(--accent-gold) !important;
+}
+
+.troop-bank-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 0.7rem;
+  padding: 0 0 0.65rem;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.troop-bank-header h3,
+.trade-bank-layout .troop-bank-header h3 {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: var(--text-primary);
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 1.3rem;
+  letter-spacing: 0.04em;
+}
+
+.troop-bank-header p {
+  margin: 0.2rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.troop-bank-seal {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 2.5rem;
+  place-items: center;
+  transform: rotate(4deg);
+  border: 3px double rgba(143, 59, 43, 0.62);
+  border-radius: 0.4rem 0.2rem;
+  background: rgba(255, 248, 231, 0.74);
+  color: var(--troop-bank-red);
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 1.25rem;
+  font-weight: 900;
+  box-shadow: inset 0 0 0 3px rgba(143, 59, 43, 0.06);
+}
+
+.troop-bank-capacity-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.troop-bank-capacity-card {
+  min-width: 0;
+  padding: 0.52rem 0.62rem;
+  border: 1px solid var(--border-light);
+  border-radius: 0.4rem;
+  background: rgba(255, 252, 243, 0.78);
+}
+
+.troop-bank-capacity-heading {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.4rem;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.troop-bank-capacity-heading strong {
+  color: var(--text-primary);
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.troop-bank-capacity-heading i {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 600;
+}
+
+.troop-bank-capacity-card progress {
+  display: block;
+  width: 100%;
+  height: 0.42rem;
+  margin: 0.48rem 0 0.25rem;
+  overflow: hidden;
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  background: #e8ddc7;
+  color: var(--troop-bank-red);
+}
+
+.troop-bank-capacity-card progress::-webkit-progress-bar {
+  border-radius: 999px;
+  background: #e8ddc7;
+}
+
+.troop-bank-capacity-card progress::-webkit-progress-value {
+  border-radius: 999px;
+  background: var(--troop-bank-red);
+}
+
+.troop-bank-capacity-card progress::-moz-progress-bar {
+  border-radius: 999px;
+  background: var(--troop-bank-red);
+}
+
+.troop-bank-capacity-card--manor progress::-webkit-progress-value,
+.troop-bank-capacity-card--manor progress::-moz-progress-bar {
+  background: var(--troop-bank-green);
+}
+
+.troop-bank-capacity-card--manor progress {
+  color: var(--troop-bank-green);
+}
+
+.troop-bank-capacity-card small {
+  color: var(--text-muted);
+  font-size: 0.66rem;
+}
+
+.troop-bank-reserved,
+.troop-bank-note {
+  margin: 0.55rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  line-height: 1.55;
+}
+
+.troop-bank-reserved {
+  padding: 0.4rem 0.55rem;
+  border-left: 2px solid var(--accent-gold);
+  background: rgba(218, 165, 32, 0.08);
+}
+
+.troop-bank-categories {
+  display: flex;
+  gap: 0.35rem;
+  margin: 0.85rem 0 0;
+  overflow-x: auto;
+  padding: 0.05rem 0.05rem 0.35rem;
+  scrollbar-width: thin;
+}
+
+.troop-bank-categories .tw-tab-item {
+  min-height: 2.1rem;
+  flex: 0 0 auto;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--border-light);
+  border-radius: 999px;
+  background: rgba(255, 252, 243, 0.72);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  text-decoration: none;
+}
+
+.troop-bank-categories .tw-tab-item:hover {
+  border-color: var(--border-primary);
+  background: var(--bg-hover);
+}
+
+.troop-bank-categories .tw-tab-item.active {
+  border-color: #69351f;
+  background: linear-gradient(180deg, #965332, #713b24);
+  color: #fff8e7;
+  box-shadow: 0 2px 5px rgba(74, 38, 18, 0.18);
+}
+
+.troop-bank-bulk {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  margin-top: 0.55rem;
+  padding: 0.52rem 0.6rem;
+  border: 1px solid var(--border-light);
+  border-radius: 0.4rem;
+  background: linear-gradient(110deg, rgba(235, 220, 190, 0.6), rgba(255, 251, 239, 0.7));
+}
+
+.troop-bank-bulk-copy {
+  display: grid;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
+.troop-bank-bulk-copy strong {
+  color: var(--text-primary);
+  font-size: 0.8rem;
+}
+
+.troop-bank-bulk-copy span {
+  color: var(--text-muted);
+  font-size: 0.66rem;
+}
+
+.troop-bank-bulk-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.4rem;
+}
+
+.troop-bank-bulk-actions form {
+  min-width: 0;
+}
+
+.troop-bank-bulk-button {
+  min-height: 2.3rem;
+  padding: 0.45rem 0.7rem;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.troop-bank-bulk-button--deposit {
+  border-color: #a77b39;
+  background: #f1e4c6;
+  color: #5e4624;
+}
+
+.troop-bank-bulk-button--deposit:hover:not(:disabled) {
+  background: #e8d5ad;
+}
+
+.troop-bank-bulk-button:disabled,
+.troop-bank-transfer-button:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.55);
+  opacity: 0.56;
+}
+
+.troop-bank-note {
+  margin: 0.4rem 0 0.65rem;
+}
+
+.troop-bank-alert {
+  margin: 0.35rem 0;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid rgba(143, 59, 43, 0.2);
+  border-radius: 0.3rem;
+  background: rgba(143, 59, 43, 0.07);
+  color: #7d3529;
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+
+.troop-bank-list {
+  display: grid;
+  max-height: min(65vh, 34rem);
+  gap: 0.4rem;
+  overflow-y: auto;
+  padding: 0.08rem 0.25rem 0.08rem 0.02rem;
+  scrollbar-color: #b99868 transparent;
+  scrollbar-width: thin;
+}
+
+.troop-bank-row {
+  display: grid;
+  grid-template-columns: minmax(9.5rem, 0.72fr) minmax(0, 1.28fr);
+  align-items: center;
+  min-width: 0;
+  gap: 0.55rem;
+  padding: 0.48rem 0.55rem;
+  border: 1px solid var(--border-light);
+  border-left: 3px solid #a47b45;
+  border-radius: 0.4rem;
+  background: linear-gradient(115deg, rgba(255, 253, 247, 0.95), rgba(240, 230, 209, 0.72));
+  transition: border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+}
+
+.troop-bank-row:hover {
+  transform: translateY(-1px);
+  border-color: #b58d55;
+  box-shadow: 0 3px 8px rgba(74, 38, 18, 0.09);
+}
+
+.troop-bank-row-summary {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.48rem;
+}
+
+.troop-bank-avatar {
+  display: grid;
+  width: 2.4rem;
+  height: 2.4rem;
+  flex: 0 0 2.4rem;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid #b89b70;
+  border-radius: 0.34rem;
+  background: #e7d8bb;
+  color: var(--text-primary);
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  box-shadow: inset 0 0 0 3px rgba(255, 248, 231, 0.55);
+}
+
+.troop-bank-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.troop-bank-identity {
+  min-width: 0;
+}
+
+.troop-bank-identity h4 {
+  margin: 0 0 0.25rem;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.troop-bank-stock {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.22rem;
+}
+
+.troop-bank-stock span {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.22rem;
+  padding: 0.14rem 0.32rem;
+  border: 1px solid rgba(139, 111, 71, 0.19);
+  border-radius: 999px;
+  background: rgba(255, 248, 231, 0.72);
+  color: var(--text-muted);
+  font-size: 0.65rem;
+}
+
+.troop-bank-stock strong {
+  color: var(--text-primary);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.troop-bank-transfers {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.troop-bank-transfer {
+  display: grid;
+  min-width: 0;
+  gap: 0.22rem;
+}
+
+.troop-bank-transfer label {
+  color: var(--text-muted);
+  font-size: 0.64rem;
+  font-weight: 700;
+}
+
+.troop-bank-transfer-control {
+  display: flex;
+  min-width: 0;
+  gap: 0.3rem;
+}
+
+.troop-bank-transfer-control .tw-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 2rem;
+  padding: 0.35rem 0.45rem;
+  border-color: #c4a97c;
+  background: rgba(255, 253, 247, 0.95);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.troop-bank-transfer-control .tw-input:focus-visible {
+  border-color: var(--troop-bank-red);
+  outline: 2px solid rgba(143, 59, 43, 0.18);
+  outline-offset: 1px;
+}
+
+.troop-bank-transfer-button {
+  min-width: 3.1rem;
+  min-height: 2rem;
+  padding: 0.35rem 0.52rem;
+  border-radius: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.troop-bank-transfer--deposit .troop-bank-transfer-button {
+  border-color: #a77b39;
+  background: #f1e4c6;
+  color: #5e4624;
+}
+
+.troop-bank-transfer--deposit .troop-bank-transfer-button:hover:not(:disabled) {
+  background: #e8d5ad;
+}
+
+.troop-bank-empty {
+  display: grid;
+  min-height: 11rem;
+  align-content: center;
+  justify-items: center;
+  gap: 0.3rem;
+  padding: 1rem;
+  border: 1px dashed #b89b70;
+  border-radius: 0.45rem;
+  background: rgba(255, 252, 243, 0.58);
+  text-align: center;
+}
+
+.troop-bank-empty > span {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border: 1px solid #b89b70;
+  border-radius: 50%;
+  color: var(--troop-bank-red);
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-weight: 800;
+}
+
+.troop-bank-empty strong {
+  color: var(--text-primary);
+  font-size: 0.85rem;
+}
+
+.troop-bank-empty p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+@media (max-width: 900px) {
+  .trade-bank-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1100px) {
+  .troop-bank-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .trade-bank-layout > .tw-bank-section {
+    padding: 0.68rem;
+  }
+
+  .troop-bank-capacity-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .troop-bank-bulk {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .troop-bank-bulk-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .troop-bank-bulk-button {
+    width: 100%;
+    padding-right: 0.35rem;
+    padding-left: 0.35rem;
+    font-size: 0.67rem;
+  }
+
+  .troop-bank-row {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0.5rem;
+  }
+
+  .troop-bank-avatar {
+    width: 2.1rem;
+    height: 2.1rem;
+    flex-basis: 2.1rem;
+  }
+
+  .troop-bank-transfers {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .troop-bank-row {
+    transition-duration: 0.01ms;
+  }
+}

@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.utils import timezone
 
 from .base import Guild
 
@@ -10,14 +11,18 @@ class GuildTechnology(models.Model):
     """帮会科技"""
 
     CATEGORY_CHOICES = [
-        ("production", "生产类"),
-        ("combat", "战斗类"),
-        ("welfare", "福利类"),
+        ("hero", "英雄系"),
+        ("wolf", "狼系"),
+        ("sheep", "羊系"),
+        ("forging", "锻造系"),
+        ("public", "公共科技"),
     ]
 
     guild = models.ForeignKey(Guild, on_delete=models.CASCADE, related_name="technologies", verbose_name="所属帮会")
-    tech_key = models.CharField(max_length=50, verbose_name="科技标识", help_text="如: equipment_forge, troop_tactics")
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default="production", verbose_name="科技分类")
+    tech_key = models.CharField(
+        max_length=50, verbose_name="科技标识", help_text="如: hero_fruit_blueprint, troop_tactics"
+    )
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default="hero", verbose_name="科技分类")
     level = models.PositiveIntegerField(default=0, verbose_name="科技等级")
     max_level = models.PositiveIntegerField(default=5, verbose_name="最高等级")
 
@@ -44,6 +49,24 @@ class GuildTechnology(models.Model):
     def can_upgrade(self):
         """是否可升级"""
         return self.level < self.effective_max_level
+
+
+class GuildTechnologyAbilityUse(models.Model):
+    """记录绑定到帮会成员的科技主动能力使用时间。"""
+
+    guild = models.ForeignKey(Guild, on_delete=models.CASCADE, related_name="technology_ability_uses")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="guild_technology_ability_uses")
+    tech_key = models.CharField(max_length=50, verbose_name="科技标识")
+    used_at = models.DateTimeField(default=timezone.now, verbose_name="使用时间")
+
+    class Meta:
+        db_table = "guild_technology_ability_uses"
+        verbose_name = "帮会科技能力使用记录"
+        verbose_name_plural = "帮会科技能力使用记录"
+        constraints = [
+            models.UniqueConstraint(fields=["user", "tech_key"], name="guild_tech_ability_user_uniq"),
+        ]
+        indexes = [models.Index(fields=["tech_key", "used_at"], name="guild_tech_ability_time_idx")]
 
 
 class GuildWarehouse(models.Model):

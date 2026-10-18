@@ -10,6 +10,7 @@ from battle.models import TroopTemplate
 from core.exceptions import TradeValidationError
 from gameplay.models import Manor, PlayerTroop, TroopBankStorage, TroopRecruitment
 from gameplay.services.manor.troop_bank import deposit_available_troops_to_bank, withdraw_available_troops_from_bank
+from gameplay.services.manor.troop_capacity import MANOR_TROOP_CAPACITY, TROOP_BANK_CAPACITY
 from tests.test_troop_dispatch_concurrency_integration import _create_manor, _create_template, _run_concurrently
 
 pytestmark = [pytest.mark.integration, pytest.mark.django_db(transaction=True)]
@@ -46,6 +47,7 @@ def test_duplicate_bulk_requests_cannot_transfer_same_inventory_twice(django_use
     second = _create_template()
     source = PlayerTroop if deposit else TroopBankStorage
     target = TroopBankStorage if deposit else PlayerTroop
+    target_capacity = TROOP_BANK_CAPACITY if deposit else MANOR_TROOP_CAPACITY
     action = deposit_available_troops_to_bank if deposit else withdraw_available_troops_from_bank
     source.objects.create(manor=manor, troop_template=first, count=60)
     source.objects.create(manor=manor, troop_template=second, count=35)
@@ -59,7 +61,7 @@ def test_duplicate_bulk_requests_cannot_transfer_same_inventory_twice(django_use
     successes, errors = _run_concurrently(transfer, transfer)
 
     _assert_one_legal_failure(successes, errors, message="暂无")
-    assert results == [{"quantity": 95, "remaining": 0, "target_remaining": 4900}]
+    assert results == [{"quantity": 95, "remaining": 0, "target_remaining": target_capacity - 100}]
     assert sum(_counts(source, manor).values()) == 0
     assert _counts(target, manor) == {first.key: 65, second.key: 35}
     assert _combined_counts(manor) == before
@@ -88,10 +90,11 @@ def test_concurrent_categories_share_capacity_without_overflow(django_user_model
     occupied = _create_template()
     source = PlayerTroop if deposit else TroopBankStorage
     target = TroopBankStorage if deposit else PlayerTroop
+    target_capacity = TROOP_BANK_CAPACITY if deposit else MANOR_TROOP_CAPACITY
     action = deposit_available_troops_to_bank if deposit else withdraw_available_troops_from_bank
     source.objects.create(manor=manor, troop_template=blade, count=10)
     source.objects.create(manor=manor, troop_template=archer, count=20)
-    target.objects.create(manor=manor, troop_template=occupied, count=4993)
+    target.objects.create(manor=manor, troop_template=occupied, count=target_capacity - 7)
     before = _combined_counts(manor)
     results = []
 
@@ -104,9 +107,9 @@ def test_concurrent_categories_share_capacity_without_overflow(django_user_model
     assert len(results) == 1
     category, result = results[0]
     assert result == {"quantity": 7, "remaining": (10 if category == "dao" else 20) - 7, "target_remaining": 0}
-    assert sum(_counts(target, manor).values()) == 5000
+    assert sum(_counts(target, manor).values()) == target_capacity
     assert sum(_counts(source, manor).values()) == 23
-    assert _counts(target, manor)[occupied.key] == 4993
+    assert _counts(target, manor)[occupied.key] == target_capacity - 7
     assert _combined_counts(manor) == before
     winner_key, loser_key = (blade.key, archer.key) if category == "dao" else (archer.key, blade.key)
     assert _counts(target, manor)[winner_key] == 7
@@ -116,7 +119,7 @@ def test_concurrent_categories_share_capacity_without_overflow(django_user_model
 def test_concurrent_bulk_withdrawals_leave_pending_recruitment_capacity_reserved(django_user_model):
     manor = _create_manor(django_user_model)
     template = _create_template()
-    PlayerTroop.objects.create(manor=manor, troop_template=template, count=4970)
+    PlayerTroop.objects.create(manor=manor, troop_template=template, count=MANOR_TROOP_CAPACITY - 30)
     TroopBankStorage.objects.create(manor=manor, troop_template=template, count=50)
     recruitment = TroopRecruitment.objects.create(
         manor=manor,
@@ -139,9 +142,9 @@ def test_concurrent_bulk_withdrawals_leave_pending_recruitment_capacity_reserved
 
     _assert_one_legal_failure(successes, errors, message="募兵预留")
     assert results == [{"quantity": 10, "remaining": 40, "target_remaining": 0}]
-    assert _counts(PlayerTroop, manor) == {template.key: 4980}
+    assert _counts(PlayerTroop, manor) == {template.key: MANOR_TROOP_CAPACITY - 20}
     assert _counts(TroopBankStorage, manor) == {template.key: 40}
     assert _combined_counts(manor) == before
     recruitment.refresh_from_db()
     assert recruitment.status == TroopRecruitment.Status.RECRUITING
-    assert sum(_counts(PlayerTroop, manor).values()) + recruitment.quantity == 5000
+    assert sum(_counts(PlayerTroop, manor).values()) + recruitment.quantity == MANOR_TROOP_CAPACITY

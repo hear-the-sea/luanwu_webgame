@@ -104,6 +104,21 @@ def test_popup_invalid_quantity_returns_json_without_consuming(client, owner, cu
     assert equipment.quantity == 5
 
 
+def test_popup_rejects_more_than_50_pieces_before_confirmation(client, owner, custom, equipment):
+    equipment.quantity = 60
+    equipment.save(update_fields=["quantity"])
+    preview = client.post(
+        reverse("guests:custom_consume", args=[custom.pk]),
+        {"equipment": f"{equipment.pk}:unbound", "quantity": 51},
+        HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+    )
+    assert preview.status_code == 400
+    assert "今日还可吞噬50件" in str(preview.json())
+    equipment.refresh_from_db()
+    assert equipment.quantity == 60
+    assert CustomGuestProgress.objects.get(manor=owner).feeding_count == 0
+
+
 def test_stale_inventory_confirmation_does_not_consume(client, owner, custom, equipment):
     url = reverse("guests:custom_consume", args=[custom.pk])
     preview = client.post(url, {"equipment": f"{equipment.pk}:unbound", "quantity": 1})
@@ -137,6 +152,7 @@ def test_detail_panel_and_avatar_form(client, custom, equipment):
     response = client.get(reverse("guests:detail", args=[custom.pk]))
     assert response.status_code == 200
     assert response.context["custom_guest"]["total_weight"] == 2000
+    assert response.context["custom_guest"]["feeding_limit"] == 50
     rows = response.context["custom_guest"]["equipment_rows"]
     assert [(row["mode"], row["quantity"]) for row in rows if row["item"].pk == equipment.pk] == [
         ("bound", 2),

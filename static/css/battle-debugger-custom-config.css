@@ -266,10 +266,22 @@
 }
 
 .rarity-white { background: #f8f9fa; color: #6c757d; }
-.rarity-green { background: #d4edda; color: #155724; }
-.rarity-blue { background: #d1ecf1; color: #0c5460; }
-.rarity-purple { background: #e2d9f3; color: #5a4b8c; }
-.rarity-orange { background: #ffe5cc; color: #cc5200; }
+.rarity-green {
+    background: color-mix(in srgb, var(--rarity-green) 12%, white);
+    color: var(--rarity-green);
+}
+.rarity-blue {
+    background: color-mix(in srgb, var(--rarity-blue) 12%, white);
+    color: var(--rarity-blue);
+}
+.rarity-purple {
+    background: color-mix(in srgb, var(--rarity-purple) 12%, white);
+    color: var(--rarity-purple);
+}
+.rarity-orange {
+    background: color-mix(in srgb, var(--rarity-orange) 12%, white);
+    color: var(--rarity-orange);
+}
 .rarity-red { background: #f8d7da; color: #721c24; }
 
 /* 参数配置面板 */

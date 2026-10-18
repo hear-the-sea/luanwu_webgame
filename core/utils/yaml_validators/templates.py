@@ -344,6 +344,52 @@ def validate_troop_templates(data: dict, *, file: str = "troop_templates.yaml") 
                     if val is not None:
                         _check_type(val, int, result=result, file=file, path=f"{path}.recruit", field_name=recruit_int)
 
+                guild_only = recruit.get("guild_only")
+                if guild_only is not None:
+                    _check_type(
+                        guild_only,
+                        bool,
+                        result=result,
+                        file=file,
+                        path=f"{path}.recruit",
+                        field_name="guild_only",
+                    )
+                guild_tech_key = recruit.get("guild_tech_key")
+                if guild_tech_key is not None:
+                    _check_type(
+                        guild_tech_key,
+                        str,
+                        result=result,
+                        file=file,
+                        path=f"{path}.recruit",
+                        field_name="guild_tech_key",
+                    )
+                max_quantity_per_level = recruit.get("max_quantity_per_level")
+                if max_quantity_per_level is not None:
+                    if isinstance(max_quantity_per_level, bool):
+                        result.add(
+                            file,
+                            f"{path}.recruit",
+                            "field 'max_quantity_per_level' expected int, got bool",
+                        )
+                    else:
+                        _check_type(
+                            max_quantity_per_level,
+                            int,
+                            result=result,
+                            file=file,
+                            path=f"{path}.recruit",
+                            field_name="max_quantity_per_level",
+                        )
+                        _check_positive(
+                            max_quantity_per_level,
+                            result=result,
+                            file=file,
+                            path=f"{path}.recruit",
+                            field_name="max_quantity_per_level",
+                            allow_zero=False,
+                        )
+
     return result
 
 

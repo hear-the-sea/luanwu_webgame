@@ -23,7 +23,7 @@ CUSTOM_GUEST_TEMPLATE_KEYS = frozenset(f"custom_guest_{rarity}" for rarity in ("
 CUSTOM_GUEST_CARD_KEY = "custom_guest_card"
 WEIGHT_CAP = 25000
 WEIGHT_GAINS = {"blue": 15, "purple": 50, "orange": 100}
-DAILY_FEED_LIMIT = 100
+DAILY_FEED_LIMIT = 50
 
 
 class RandomSource(Protocol):

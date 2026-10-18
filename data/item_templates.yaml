@@ -1886,6 +1886,92 @@ items:
         - blue
         - purple
 
+  # ---------- 帮会目标卡 ----------
+
+  - key: guild_slave_card
+    name: 奴隶卡
+    description: 对可攻击的目标庄园使用，使一名空闲门客被占用1小时。同一庄园1小时内最多受到一张奴隶卡影响。
+    effect_type: tool
+    rarity: blue
+    tradeable: true
+    default_bound: false
+    price: 0
+    storage_space: 25
+    is_usable: true
+    image: guild_slave_card.png
+    effect_payload:
+      action: occupy_target_guest
+
+  - key: guild_theft_card
+    name: 抢夺卡
+    description: 对可攻击的目标庄园使用，随机夺取仓库中一件可交易、未绑定的蓝色及以上物品。同一庄园1小时内最多受到一张抢夺卡影响。
+    effect_type: tool
+    rarity: blue
+    tradeable: true
+    default_bound: false
+    price: 0
+    storage_space: 25
+    is_usable: true
+    image: guild_theft_card.png
+    effect_payload:
+      action: steal_target_item
+
+  - key: guild_injury_card
+    name: 重伤卡
+    description: 对可攻击的目标庄园使用，使一名门客重伤并将生命降至1。同一庄园1小时内最多受到一张重伤卡影响。
+    effect_type: tool
+    rarity: blue
+    tradeable: true
+    default_bound: false
+    price: 0
+    storage_space: 25
+    is_usable: true
+    image: guild_injury_card.png
+    effect_payload:
+      action: injure_target_guest
+
+  - key: guild_grain_boost_card
+    name: 均粮卡
+    description: 对可攻击的目标庄园使用，将双方现有粮食相加后平分，双方各取平均值（向下取整）；超出我方粮仓上限的部分直接丢弃。同一庄园1小时内最多受到一张均粮卡影响。
+    effect_type: tool
+    rarity: blue
+    tradeable: true
+    default_bound: false
+    price: 0
+    storage_space: 25
+    is_usable: true
+    image: guild_grain_boost_card.png
+    effect_payload:
+      action: transfer_target_grain
+
+  - key: guild_silver_boost_card
+    name: 均贫卡
+    description: 对可攻击的目标庄园使用，将双方现有银两相加后平分，双方各取平均值（向下取整）；超出我方银库上限的部分直接丢弃。同一庄园1小时内最多受到一张均贫卡影响。
+    effect_type: tool
+    rarity: blue
+    tradeable: true
+    default_bound: false
+    price: 0
+    storage_space: 25
+    is_usable: true
+    image: guild_silver_boost_card.png
+    effect_payload:
+      action: transfer_target_silver
+
+  - key: guild_sheep_wrath
+    name: 羊的愤怒
+    description: 对可攻击的目标庄园使用，消耗使用者10根金条，使目标全部门客重伤并降至1点生命，同时清空目标庄园的银两和粮食。同一庄园1小时内最多受到一次羊的愤怒影响。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    default_bound: false
+    price: 0
+    storage_space: 50
+    is_usable: true
+    image: guild_sheep_wrath.png
+    effect_payload:
+      action: sheep_wrath_target
+
   # ---------- 任务技能宝箱 ----------
 
   - key: civil_skill_book_box
@@ -3887,9 +3973,9 @@ items:
     image: equip_diwangkui.png
     effect_payload:
       hp: 400
-      defense: 29
-      force: 24
-      intellect: 29
+      defense: 32
+      force: 40
+      intellect: 10
       troop_capacity: 30
       required_level: 80
 
@@ -3904,8 +3990,8 @@ items:
     image: equip_taixudiguan.png
     effect_payload:
       hp: 400
-      defense: 30
-      intellect: 30
+      defense: 20
+      intellect: 40
       luck: 14
       required_level: 75
 
@@ -4353,9 +4439,9 @@ items:
     image: equip_longlinzhanjia.png
     effect_payload:
       hp: 550
-      defense: 38
-      force: 26
-      intellect: 3
+      defense: 29
+      force: 38
+      intellect: 0
       required_level: 75
 
   - key: equip_jinsirujia
@@ -4369,8 +4455,8 @@ items:
     image: equip_jinsirujia.png
     effect_payload:
       hp: 550
-      defense: 32
-      agility: 18
+      defense: 22
+      agility: 28
       luck: 16
       required_level: 70
 
@@ -4385,8 +4471,8 @@ items:
     image: equip_hundunlongpao.png
     effect_payload:
       hp: 540
-      defense: 23
-      intellect: 32
+      defense: 15
+      intellect: 40
       luck: 15
       required_level: 65
 
@@ -4401,9 +4487,9 @@ items:
     image: equip_ruanweijia.png
     effect_payload:
       hp: 550
-      defense: 38
+      defense: 48
       force: 8
-      agility: 18
+      agility: 8
       required_level: 80
 
   # ══════════════════════════════════════════════════════════════════════════════
@@ -4678,8 +4764,8 @@ items:
     image: equip_lingboxie.png
     effect_payload:
       hp: 200
-      defense: 10
-      agility: 30
+      defense: 6
+      agility: 34
       required_level: 30
 
   - key: equip_zhuifengxue
@@ -4724,8 +4810,8 @@ items:
     image: equip_yingxingxue.png
     effect_payload:
       hp: 200
-      defense: 10
-      agility: 30
+      defense: 14
+      agility: 26
       required_level: 25
 
   - key: equip_jinlinxue
@@ -4826,9 +4912,9 @@ items:
     image: equip_zhurixue.png
     effect_payload:
       hp: 240
-      defense: 20
-      force: 10
-      agility: 36
+      defense: 18
+      force: 6
+      agility: 42
       required_level: 60
 
   - key: equip_tianjilu
@@ -4875,10 +4961,10 @@ items:
     image: equip_tatianxue.png
     effect_payload:
       hp: 220
-      defense: 12
-      force: 20
-      intellect: 7
-      agility: 32
+      defense: 8
+      force: 30
+      intellect: 0
+      agility: 33
       required_level: 70
 
   - key: equip_shenxingxue
@@ -4892,9 +4978,9 @@ items:
     image: equip_shenxingxue.png
     effect_payload:
       hp: 180
-      defense: 10
-      force: 5
-      agility: 42
+      defense: 5
+      force: 1
+      agility: 51
       required_level: 80
 
   - key: equip_wujixingxue
@@ -4908,10 +4994,11 @@ items:
     image: equip_wujixingxue.png
     effect_payload:
       hp: 240
-      defense: 18
-      force: 7
-      agility: 38
+      defense: 8
+      force: 0
+      agility: 31
       required_level: 75
+      intellect: 24
 
   # ══════════════════════════════════════════════════════════════════════════════
   #                         装备类 - 武器（剑）
@@ -5749,8 +5836,8 @@ items:
     storage_space: 150
     image: equip_jinshejian.png
     effect_payload:
-      force: 45
-      agility: 20
+      force: 38
+      agility: 27
       luck: 15
       required_level: 50
 
@@ -5779,8 +5866,8 @@ items:
     storage_space: 150
     image: equip_ziweiruanjian.png
     effect_payload:
-      force: 46
-      agility: 22
+      force: 38
+      agility: 30
       luck: 13
       required_level: 55
 
@@ -5855,8 +5942,8 @@ items:
     storage_space: 150
     image: equip_jinshezui.png
     effect_payload:
-      force: 43
-      agility: 26
+      force: 39
+      agility: 30
       luck: 12
       required_level: 55
 
@@ -5870,8 +5957,8 @@ items:
     storage_space: 150
     image: equip_wuqiaojian.png
     effect_payload:
-      force: 53
-      agility: 16
+      force: 59
+      agility: 10
       luck: 12
       required_level: 50
 
@@ -5885,8 +5972,8 @@ items:
     storage_space: 150
     image: equip_biyudao.png
     effect_payload:
-      force: 48
-      agility: 20
+      force: 56
+      agility: 12
       luck: 13
       required_level: 55
 
@@ -5900,8 +5987,8 @@ items:
     storage_space: 150
     image: equip_libiegou.png
     effect_payload:
-      force: 50
-      agility: 17
+      force: 55
+      agility: 12
       luck: 13
       required_level: 50
 
@@ -5931,8 +6018,8 @@ items:
     storage_space: 150
     image: equip_xiuhuazhen.png
     effect_payload:
-      force: 42
-      agility: 26
+      force: 36
+      agility: 32
       luck: 11
       required_level: 55
 
@@ -5949,9 +6036,9 @@ items:
     effect_payload:
       hp: 180
       defense: 3
-      force: 64
-      intellect: 16
-      agility: 14
+      force: 76
+      intellect: 8
+      agility: 10
       luck: 5
       required_level: 65
 
@@ -5967,9 +6054,9 @@ items:
     effect_payload:
       hp: 160
       defense: 3
-      force: 70
-      intellect: 12
-      agility: 12
+      force: 78
+      intellect: 6
+      agility: 10
       luck: 3
       required_level: 65
 
@@ -6019,8 +6106,8 @@ items:
     effect_payload:
       hp: 240
       defense: 10
-      force: 72
-      agility: 10
+      force: 78
+      agility: 4
       luck: 6
       required_level: 65
 
@@ -6036,8 +6123,8 @@ items:
     effect_payload:
       hp: 160
       defense: 4
-      force: 28
-      intellect: 58
+      force: 14
+      intellect: 72
       agility: 6
       luck: 10
       required_level: 80
@@ -6071,9 +6158,9 @@ items:
     image: equip_xuantiechongjian.png
     effect_payload:
       hp: 280
-      defense: 12
-      force: 78
-      agility: 5
+      defense: 10
+      force: 84
+      agility: 1
       required_level: 80
 
   - key: equip_dagoubang
@@ -6104,9 +6191,9 @@ items:
     image: equip_xiaolifeidao.png
     effect_payload:
       hp: 100
-      force: 58
-      intellect: 5
-      agility: 30
+      force: 52
+      intellect: 0
+      agility: 41
       luck: 18
       required_level: 75
 
@@ -6138,9 +6225,9 @@ items:
     image: equip_tianyamingyuedao.png
     effect_payload:
       hp: 220
-      defense: 8
-      force: 74
-      agility: 16
+      defense: 6
+      force: 80
+      agility: 12
       required_level: 70
 
   - key: equip_yuanyuewandao
@@ -6601,8 +6688,8 @@ items:
     image: equip_heshibi.png
     effect_payload:
       hp: 290
-      defense: 7
-      intellect: 32
+      defense: 1
+      intellect: 38
       luck: 25
       required_level: 65
 
@@ -6653,8 +6740,8 @@ items:
     image: equip_businiaoyu.png
     effect_payload:
       hp: 315
-      force: 28
-      agility: 20
+      force: 34
+      agility: 14
       required_level: 65
 
   - key: equip_jianghuling
@@ -7213,8 +7300,8 @@ items:
     image: equip_fengshenbang.png
     effect_payload:
       hp: 350
-      defense: 5
-      intellect: 34
+      defense: 0
+      intellect: 39
       luck: 20
       required_level: 70
 
@@ -7260,8 +7347,8 @@ items:
     storage_space: 200
     image: equip_taiqingyuce.png
     effect_payload:
-      hp: 400
-      intellect: 34
+      hp: 200
+      intellect: 38
       luck: 16
       required_level: 65
 
@@ -7588,9 +7675,9 @@ items:
     image: equip_feiyunzui.png
     effect_payload:
       hp: 220
-      defense: 10
-      force: 5
-      agility: 30
+      defense: 8
+      force: 0
+      agility: 37
       required_level: 25
 
   - key: equip_zhaoyeyushizi
@@ -7621,8 +7708,8 @@ items:
     effect_payload:
       hp: 220
       defense: 10
-      force: 5
-      agility: 30
+      force: 12
+      agility: 23
       required_level: 30
 
   - key: equip_qianliju
@@ -7648,11 +7735,11 @@ items:
     tradeable: true
     price: 6000
     storage_space: 125
-    image: equip_zhuidian.png
+    image: equip_zhuidian_centered.png
     effect_payload:
       hp: 220
-      defense: 10
-      agility: 30
+      defense: 5
+      agility: 35
       luck: 10
       required_level: 40
 
@@ -7664,13 +7751,48 @@ items:
     tradeable: true
     price: 6000
     storage_space: 125
-    image: equip_bailongju.png
+    image: equip_bailongju_centered.png
     effect_payload:
       hp: 220
-      defense: 10
-      agility: 25
+      defense: 16
+      agility: 19
       luck: 12
       required_level: 35
+
+  - key: equip_shandianqiulongju
+    name: 闪电虬龙驹
+    description: 身形矫健如电、鬃毛似龙的战驹，嘶鸣时仿佛有惊雷相随。侧重敏捷与武力，适合追求先手和进攻的门客。
+    effect_type: equip_mount
+    rarity: orange
+    tradeable: true
+    price: 65000
+    storage_space: 250
+    image: equip_zhuidian_centered.png
+    effect_payload:
+      hp: 260
+      defense: 6
+      force: 16
+      agility: 48
+      luck: 12
+      required_level: 80
+
+  - key: equip_jinjingbailongju
+    name: 金睛白龙驹
+    description: 通体银白、双目金黄的珍稀龙驹，传闻能踏云越岭、日行千里。侧重防御、运势与带兵，适合兼顾生存和统率的门客。
+    effect_type: equip_mount
+    rarity: orange
+    tradeable: true
+    price: 65000
+    storage_space: 250
+    image: equip_bailongju_centered.png
+    effect_payload:
+      hp: 260
+      defense: 20
+      force: 0
+      agility: 34
+      luck: 24
+      troop_capacity: 40
+      required_level: 80
 
   # ---------- 坐骑 - 紫色品质（成熟期）----------
   - key: equip_wuzhuima
@@ -7684,9 +7806,9 @@ items:
     image: equip_wuzhuima.png
     effect_payload:
       hp: 260
-      defense: 13
-      force: 16
-      agility: 35
+      defense: 16
+      force: 26
+      agility: 22
       required_level: 45
 
   - key: equip_jueying
@@ -7700,8 +7822,8 @@ items:
     image: equip_jueying.png
     effect_payload:
       hp: 260
-      defense: 13
-      agility: 35
+      defense: 7
+      agility: 41
       luck: 15
       required_level: 45
 
@@ -7716,9 +7838,9 @@ items:
     image: equip_zhaohuangfeidian.png
     effect_payload:
       hp: 260
-      defense: 13
-      force: 16
-      agility: 35
+      defense: 10
+      force: 10
+      agility: 44
       required_level: 50
 
   - key: equip_dilu
@@ -7732,8 +7854,8 @@ items:
     image: equip_dilu.png
     effect_payload:
       hp: 260
-      defense: 13
-      agility: 35
+      defense: 22
+      agility: 26
       luck: 14
       required_level: 60
 
@@ -7748,8 +7870,8 @@ items:
     image: equip_qingshuanglu.png
     effect_payload:
       hp: 260
-      defense: 13
-      agility: 35
+      defense: 18
+      agility: 30
       luck: 15
       required_level: 55
 
@@ -7783,8 +7905,8 @@ items:
     effect_payload:
       hp: 300
       defense: 14
-      force: 20
-      agility: 36
+      force: 34
+      agility: 22
       troop_capacity: 40
       required_level: 80
 
@@ -7799,8 +7921,8 @@ items:
     image: equip_hanxuebaoma.png
     effect_payload:
       hp: 300
-      defense: 14
-      agility: 36
+      defense: 2
+      agility: 48
       required_level: 70
 
   - key: equip_qilin
@@ -7814,9 +7936,9 @@ items:
     image: equip_qilin.png
     effect_payload:
       hp: 300
-      defense: 14
+      defense: 24
       luck: 25
-      agility: 20
+      agility: 10
       required_level: 65
 
   - key: equip_qingluan
@@ -7846,8 +7968,8 @@ items:
     image: equip_shendiao.png
     effect_payload:
       hp: 300
-      defense: 14
-      agility: 36
+      defense: 10
+      agility: 40
       luck: 14
       required_level: 80
   # ---------- 个人任务专属宝箱：银两之外的奖励统一在仓库开启 ----------

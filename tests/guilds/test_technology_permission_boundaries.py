@@ -21,7 +21,7 @@ def test_upgrade_technology_rechecks_operator_permission_inside_transaction(monk
     ensure_manor(operator)
     founder = django_user_model.objects.create_user(username="tech_founder_demoted", password="pass")
     guild = Guild.objects.create(name="TechDemotedGuild", founder=founder, silver=999999, grain=0, gold_bar=0)
-    tech = GuildTechnology.objects.create(guild=guild, tech_key="equipment_forge", level=0, max_level=5)
+    tech = GuildTechnology.objects.create(guild=guild, tech_key="guild_dispatch_capacity", level=0, max_level=20)
     membership = GuildMember.objects.create(guild=guild, user=operator, position="admin")
     _seed_basic_tech_upgrade_warehouse_costs(guild)
 
@@ -36,7 +36,7 @@ def test_upgrade_technology_rechecks_operator_permission_inside_transaction(monk
     monkeypatch.setattr("guilds.services.technology.create_announcement", lambda *_a, **_k: None)
 
     with pytest.raises(technology_service.GuildTechnologyError, match="只有帮主和管理员"):
-        upgrade_technology(guild, "equipment_forge", operator)
+        upgrade_technology(guild, "guild_dispatch_capacity", operator)
 
     tech.refresh_from_db()
     guild.refresh_from_db()

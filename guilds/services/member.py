@@ -103,10 +103,15 @@ def _approve_application_state(application, reviewer, auto=False):
         if existing_membership:
             raise GuildMembershipError("申请人已加入其他帮会")
 
+        joined_at = timezone.now()
+        from gameplay.services.resources import settle_resource_production_for_users_locked
+
+        settle_resource_production_for_users_locked((application_locked.applicant_id,), now=joined_at)
+
         # 更新申请状态
         application_locked.status = "approved"
         application_locked.reviewed_by = reviewer
-        application_locked.reviewed_at = timezone.now()
+        application_locked.reviewed_at = joined_at
         application_locked.save(update_fields=["status", "reviewed_by", "reviewed_at"])
 
         # 创建或更新成员记录
@@ -117,7 +122,7 @@ def _approve_application_state(application, reviewer, auto=False):
             member_record.guild = guild_locked
             member_record.position = "member"
             member_record.is_active = True
-            member_record.joined_at = timezone.now()
+            member_record.joined_at = joined_at
             member_record.left_at = None
             update_fields = ["guild", "position", "is_active", "joined_at", "left_at"]
             if moved_from_another_guild:
@@ -218,14 +223,19 @@ def _leave_guild_state(member):
 
     guild = member.guild
     with transaction.atomic():
+        guild_locked = Guild.objects.select_for_update().get(pk=guild.pk, is_active=True)
         member_locked = lock_active_member_for_guild(member, error_msg="您不在帮会中")
+        left_at = timezone.now()
+        from gameplay.services.resources import settle_resource_production_for_users_locked
+
+        settle_resource_production_for_users_locked((member_locked.user_id,), now=left_at)
 
         member_locked.is_active = False
-        member_locked.left_at = timezone.now()
+        member_locked.left_at = left_at
         member_locked.save(update_fields=["is_active", "left_at"])
         invalidate_member_hero_pool(member_locked)
 
-        return guild, member_locked.user_id, guild.name
+        return guild_locked, member_locked.user_id, guild_locked.name
 
 
 def _send_leave_guild_followups(guild, member_user_id: int, guild_name: str):
@@ -250,6 +260,7 @@ def _kick_member_state(target_member, operator):
 
     guild = target_member.guild
     with transaction.atomic():
+        guild_locked = Guild.objects.select_for_update().get(pk=guild.pk, is_active=True)
         operator_member = lock_active_member_for_guild(operator_member, error_msg="您没有辞退权限")
         if not operator_member.can_manage:
             raise GuildPermissionError("您没有辞退权限")
@@ -260,12 +271,17 @@ def _kick_member_state(target_member, operator):
         if target_locked.user_id == operator.id:
             raise GuildPermissionError("无法辞退自己")
 
+        left_at = timezone.now()
+        from gameplay.services.resources import settle_resource_production_for_users_locked
+
+        settle_resource_production_for_users_locked((target_locked.user_id,), now=left_at)
+
         target_locked.is_active = False
-        target_locked.left_at = timezone.now()
+        target_locked.left_at = left_at
         target_locked.save(update_fields=["is_active", "left_at"])
         invalidate_member_hero_pool(target_locked)
 
-        return guild, target_locked.user_id, guild.name
+        return guild_locked, target_locked.user_id, guild_locked.name
 
 
 def _send_kick_member_followups(guild, target_user_id: int, guild_name: str):

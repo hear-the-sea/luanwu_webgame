@@ -165,6 +165,7 @@ def test_arena_pages_sync_resources_before_loading_context(arena_client, monkeyp
         or {
             "manor": current_manor,
             "completed_event_card_rows": [],
+            "reward_rows": [],
         },
     )
 
@@ -239,18 +240,110 @@ def test_arena_events_view_lists_recent_completed_coop_event(arena_client):
 @pytest.mark.django_db
 def test_arena_exchange_page_view_renders(arena_client):
     client, _manor = arena_client
-    response = client.get(reverse("gameplay:arena_exchange_page"))
+    first_page = client.get(reverse("gameplay:arena_exchange_page"))
+    second_page = client.get(reverse("gameplay:arena_exchange_page"), {"page": 2})
 
-    assert response.status_code == 200
+    assert first_page.status_code == second_page.status_code == 200
+    first_body = first_page.content.decode("utf-8")
+    second_body = second_page.content.decode("utf-8")
+    assert "奖励兑换" in first_body
+    assert "随机蓝色装备图纸" in first_body
+    assert "随机紫色装备图纸" not in first_body
+    assert "随机紫色装备图纸" in second_body
+    assert "武林宝箱" in first_body
+    assert "周限 2" in first_body
+    assert "查看随机奖励概率" not in first_body + second_body
+    assert "48%" not in first_body + second_body
+    assert "30%" not in first_body + second_body
+
+
+@pytest.mark.django_db
+def test_arena_exchange_page_shows_header_icons_without_reward_details(arena_client):
+    client, _manor = arena_client
+    for key, name, image in (
+        ("grain", "粮食", "items/grain-preview.webp"),
+        ("resource_pack_silver", "银两补给包", "items/silver-preview.webp"),
+        ("equip_jiaodoushitoukui", "角斗士头盔", "items/gladiator-preview.webp"),
+        ("blueprint_qinglongkui", "青龙盔图纸", "items/blueprint-preview.webp"),
+        ("blueprint_qilinkui", "麒麟盔图纸", "items/purple-blueprint-preview.webp"),
+        ("huashan_wulin_chest", "武林宝箱", "items/chest-preview.webp"),
+    ):
+        ItemTemplate.objects.update_or_create(
+            key=key,
+            defaults={"name": name, "image": image},
+        )
+    ItemTemplate.objects.filter(key="blueprint_qinglongkui").update(rarity="blue")
+    ItemTemplate.objects.filter(key="blueprint_qilinkui").update(rarity="purple")
+
+    response = client.get(reverse("gameplay:arena_exchange_page"))
+    second_page = client.get(reverse("gameplay:arena_exchange_page"), {"page": 2})
+
+    assert response.status_code == second_page.status_code == 200
     body = response.content.decode("utf-8")
-    assert "奖励兑换" in body
+    second_body = second_page.content.decode("utf-8")
+    assert 'src="/media/items/grain-preview.webp"' not in body
+    assert 'src="/media/items/silver-preview.webp"' not in body
+    assert "粮食" in body
+    assert "银两" in body
+    wulin_name_index = body.index('<p class="tw-arena-reward-name">武林宝箱</p>')
+    wulin_card_start = body.rfind("<article", 0, wulin_name_index)
+    wulin_card_end = body.index("</article>", wulin_name_index)
+    wulin_card = body[wulin_card_start:wulin_card_end]
+    assert wulin_card.index('src="/media/items/chest-preview.webp"') < wulin_card.index(
+        '<p class="tw-arena-reward-name">武林宝箱</p>'
+    )
+    assert 'src="/media/items/chest-preview.webp"' in body
+    gladiator_name_index = body.index('<p class="tw-arena-reward-name">角斗士宝箱</p>')
+    gladiator_card_start = body.rfind("<article", 0, gladiator_name_index)
+    gladiator_card = body[gladiator_card_start : body.index("</article>", gladiator_name_index)]
+    assert 'src="/media/items/chest-preview.webp"' not in gladiator_card
+    assert 'class="tw-arena-reward-icon tw-arena-reward-icon--fallback"' in gladiator_card
+    assert "角</span>" in gladiator_card
+    assert 'src="/media/items/gladiator-preview.webp"' not in body
+    assert 'src="/media/items/blueprint-preview.webp"' not in body
+    assert 'src="/media/items/purple-blueprint-preview.webp"' not in second_body
+    assert 'class="tw-arena-random-preview"' not in body
+    assert "可获得的物品" not in body
+    assert "<details" not in body
     assert "随机蓝色装备图纸" in body
-    assert "随机紫色装备图纸" in body
-    assert "武林宝箱" in body
-    assert "周限 2" in body
-    assert "查看随机奖励概率" not in body
-    assert "48%" not in body
-    assert "30%" not in body
+    assert 'class="tw-arena-random-item-grid"' not in body
+    assert 'class="tw-arena-reward-subtitle"' not in body
+
+
+@pytest.mark.django_db
+def test_arena_exchange_page_paginates_at_eight_reward_types(arena_client, monkeypatch):
+    client, _manor = arena_client
+    reward_rows = [
+        {
+            "key": f"reward_{index}",
+            "name": f"测试奖励{index}",
+            "description": "",
+            "cost_coins": 10,
+            "daily_limit": 0,
+            "weekly_limit": 0,
+            "resource_rows": [],
+            "can_afford": True,
+        }
+        for index in range(17)
+    ]
+    monkeypatch.setattr(
+        "gameplay.views.arena.get_arena_exchange_context",
+        lambda manor: {"manor": manor, "reward_rows": reward_rows},
+    )
+
+    first_page = client.get(reverse("gameplay:arena_exchange_page"))
+    second_page = client.get(reverse("gameplay:arena_exchange_page"), {"page": 2})
+    third_page = client.get(reverse("gameplay:arena_exchange_page"), {"page": 3})
+
+    assert first_page.status_code == second_page.status_code == third_page.status_code == 200
+    assert len(first_page.context["reward_rows"]) == 8
+    assert len(second_page.context["reward_rows"]) == 8
+    assert len(third_page.context["reward_rows"]) == 1
+    assert "测试奖励0" in first_page.content.decode("utf-8")
+    assert "测试奖励8" not in first_page.content.decode("utf-8")
+    assert "测试奖励8" in second_page.content.decode("utf-8")
+    assert "测试奖励16" in third_page.content.decode("utf-8")
+    assert "3 / 3" in third_page.content.decode("utf-8")
 
 
 @pytest.mark.django_db

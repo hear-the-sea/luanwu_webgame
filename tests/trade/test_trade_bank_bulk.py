@@ -12,6 +12,7 @@ from django.utils import timezone
 from battle.models import TroopTemplate
 from gameplay.models import PlayerTroop, TroopBankStorage, TroopRecruitment
 from gameplay.services.manor.core import ensure_manor
+from gameplay.services.manor.troop_capacity import MANOR_TROOP_CAPACITY
 
 pytestmark = pytest.mark.django_db
 
@@ -132,7 +133,7 @@ def test_bulk_bank_view_handles_database_errors(bank_player, monkeypatch, route,
 
 def test_bank_page_limits_manual_and_bulk_quantities_to_remaining_capacity(bank_player):
     manor, client, templates = bank_player
-    PlayerTroop.objects.create(manor=manor, troop_template=templates["dao_ke"], count=4995)
+    PlayerTroop.objects.create(manor=manor, troop_template=templates["dao_ke"], count=MANOR_TROOP_CAPACITY - 5)
     TroopBankStorage.objects.create(manor=manor, troop_template=templates["dao_ke"], count=4990)
 
     response = client.get(reverse("trade:trade"), {"tab": "bank", "troop_category": "dao"})
@@ -152,7 +153,7 @@ def test_bank_page_limits_manual_and_bulk_quantities_to_remaining_capacity(bank_
 
 def test_bank_page_disables_withdrawals_when_pending_recruitment_reserves_all_space(bank_player):
     manor, client, templates = bank_player
-    PlayerTroop.objects.create(manor=manor, troop_template=templates["dao_ke"], count=4990)
+    PlayerTroop.objects.create(manor=manor, troop_template=templates["dao_ke"], count=MANOR_TROOP_CAPACITY - 10)
     TroopBankStorage.objects.create(manor=manor, troop_template=templates["dao_ke"], count=20)
     TroopRecruitment.objects.create(
         manor=manor,

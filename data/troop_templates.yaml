@@ -362,3 +362,21 @@ troops:
       retainer_cost: 1
       equipment: [equip_shenbigong, equip_yanyuxue, equip_shapijia, equip_baihongkui, equip_dawanma]
       base_duration: 300
+
+  - key: bloodthirsty_cavalry
+    name: 嗜血铁骑
+    avatar: shixuetieqi.png
+    description: 披甲执锐的帮会精骑，行动迅捷，可在先攻回合出击。研习铁骑冲阵后，有机会同时攻击两名敌人；场上仅剩一名敌人时，冲阵伤害提高。不参与刀、枪、剑、拳、弓之间的兵种克制。由帮会统一训练，成员可在帮会资产使用贡献兑换。
+    base_attack: 17
+    base_defense: 10
+    base_hp: 72
+    speed_bonus: 28
+    priority: -1
+    default_count: 0
+    recruit:
+      guild_only: true
+      guild_tech_key: wolf_bloodthirsty_cavalry
+      tech_level: 1
+      retainer_cost: 0
+      equipment: []
+      base_duration: 0

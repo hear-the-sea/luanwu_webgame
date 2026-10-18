@@ -2,10 +2,13 @@
 
 import logging
 import math
+from collections.abc import Iterable
+from datetime import datetime
 from typing import SupportsInt, cast
 
 from django.db import transaction
 from django.db.models import F
+from django.utils import timezone
 
 from core.exceptions import GuildMembershipError, GuildTechnologyError, GuildWarehouseError
 from core.game_data.technology import get_troop_stat_bonuses_from_levels
@@ -15,7 +18,8 @@ from gameplay.models import Manor
 from gameplay.services import technology as player_technology_service
 
 from .. import constants as guild_constants
-from ..models import Guild, GuildResourceLog, GuildTechnology
+from ..models import Guild, GuildMember, GuildResourceLog, GuildTechnology, GuildWarehouse
+from ..technology_tree import TECHNOLOGY_NODE_BY_KEY, TECHNOLOGY_ROUTES, is_technology_route_complete
 from .guild import create_announcement
 from .utils import get_active_membership, lock_active_member_for_guild
 from .warehouse import spend_guild_warehouse_items_locked
@@ -32,6 +36,15 @@ MAX_GUILD_LINEUP_CAPACITY = 40
 MAX_GUILD_DISPATCH_CAPACITY = 25
 GUEST_BONUS_TYPES = {"guest_force", "guest_intellect", "guest_defense"}
 TROOP_TACTICS_RUNTIME_MAX_LEVEL = 10
+ROUTE_COST_MULTIPLIER = 1.2
+RESOURCE_PRODUCTION_TECH_KEYS = {"sheep_farmland", "sheep_silver_mine"}
+
+
+def _settle_guild_member_resource_production_locked(guild: Guild, *, now: datetime) -> None:
+    from gameplay.services.resources import settle_resource_production_for_users_locked
+
+    member_user_ids = GuildMember.objects.filter(guild=guild, is_active=True).values_list("user_id", flat=True)
+    settle_resource_production_for_users_locked(member_user_ids, now=now)
 
 
 def _is_supported_tech_key(tech_key: str) -> bool:
@@ -65,10 +78,41 @@ def build_guild_troop_tech_levels(guild: Guild) -> dict[str, int]:
         personal_max_level = safe_non_negative_int(template.get("max_level"))
         mapped_level = (projected_level * personal_max_level) // troop_tactics_max_level
         resolved[tech_key] = min(personal_max_level, mapped_level)
+    guild_levels = get_guild_technology_levels(guild)
+    for tech_key in ("wolf_berserk", "wolf_force", "wolf_defense", "wolf_agility", "wolf_hp"):
+        if tech_key in guild_levels:
+            resolved[tech_key] = guild_levels[tech_key]
     return resolved
 
 
-def calculate_tech_upgrade_cost(tech_key, current_level):
+def get_manor_guild_troop_tech_levels(manor: Manor) -> dict[str, int]:
+    user_id = getattr(manor, "user_id", None)
+    if not user_id:
+        return {}
+
+    membership = (
+        GuildMember.objects.filter(user_id=user_id, is_active=True, guild__is_active=True)
+        .select_related("guild")
+        .first()
+    )
+    if membership is None:
+        return {}
+
+    guild_levels = build_guild_troop_tech_levels(membership.guild)
+    return {key: level for key, level in guild_levels.items() if key.startswith("wolf_")}
+
+
+def _route_cost_multiplier(guild: Guild | None, tech_key: str) -> float:
+    if guild is None or tech_key not in TECHNOLOGY_NODE_BY_KEY:
+        return 1.0
+    node = TECHNOLOGY_NODE_BY_KEY[tech_key]
+    if not any(node in route["nodes"] for route in TECHNOLOGY_ROUTES):
+        return 1.0
+    completed = getattr(guild, "completed_technology_routes", []) or []
+    return ROUTE_COST_MULTIPLIER ** len(completed)
+
+
+def calculate_tech_upgrade_cost(tech_key, current_level, *, guild: Guild | None = None):
     """
     计算科技升级成本
 
@@ -84,17 +128,94 @@ def calculate_tech_upgrade_cost(tech_key, current_level):
     base = guild_constants.TECH_UPGRADE_COSTS.get(tech_key, {"silver": 5000, "grain": 2000, "gold_bar": 1})
     override = guild_constants.TECH_UPGRADE_COST_OVERRIDES.get(tech_key, {}).get(target_level)
     if override is not None:
-        return dict(override)
-    if current_level == 0:
-        return dict(base)
+        level_cost = dict(override)
+    elif current_level == 0:
+        level_cost = dict(base)
+    else:
+        curve_key = guild_constants.TECH_UPGRADE_COST_CURVE_BY_TECH.get(tech_key)
+        level_multiplier = guild_constants.TECH_UPGRADE_COST_CURVES.get(curve_key, {}).get(target_level)
+        if level_multiplier is None:
+            tech_name = guild_constants.TECH_NAMES.get(tech_key, tech_key or "该科技")
+            raise GuildTechnologyError(f"{tech_name}缺少升至{target_level}级的费用配置")
+        level_cost = {
+            resource_key: int(resource_cost) * int(level_multiplier) for resource_key, resource_cost in base.items()
+        }
 
-    curve_key = guild_constants.TECH_UPGRADE_COST_CURVE_BY_TECH.get(tech_key)
-    multiplier = guild_constants.TECH_UPGRADE_COST_CURVES.get(curve_key, {}).get(target_level)
-    if multiplier is None:
-        tech_name = guild_constants.TECH_NAMES.get(tech_key, tech_key or "该科技")
-        raise GuildTechnologyError(f"{tech_name}缺少升至{target_level}级的费用配置")
+    route_multiplier = _route_cost_multiplier(guild, str(tech_key))
+    if route_multiplier == 1:
+        return level_cost
+    return {key: math.ceil(amount * route_multiplier) for key, amount in level_cost.items()}
 
-    return {resource_key: int(resource_cost) * int(multiplier) for resource_key, resource_cost in base.items()}
+
+def _route_for_technology(tech_key: str) -> dict | None:
+    return next(
+        (route for route in TECHNOLOGY_ROUTES if any(node["key"] == tech_key for node in route["nodes"])),
+        None,
+    )
+
+
+def _calculate_route_investment(guild: Guild, route: dict, levels: dict[str, int]) -> dict[str, int]:
+    """按当前路线倍率汇总各科技已升级等级的实际投入。"""
+    invested: dict[str, int] = {}
+    for node in route["nodes"]:
+        if not node["enabled"]:
+            continue
+        level = min(max(0, int(levels.get(node["key"], 0))), int(node["max_level"]))
+        for current_level in range(level):
+            for resource_key, amount in calculate_tech_upgrade_cost(node["key"], current_level, guild=guild).items():
+                invested[resource_key] = invested.get(resource_key, 0) + int(amount)
+    return invested
+
+
+def _credit_guild_warehouse_items_locked(guild: Guild, amounts: dict[str, int]) -> None:
+    """将科技退款记入帮会资产，不计为科技产出。"""
+    for item_key, amount in amounts.items():
+        if amount <= 0:
+            continue
+        item, _created = GuildWarehouse.objects.get_or_create(
+            guild=guild,
+            item_key=item_key,
+            defaults={"contribution_cost": int(guild_constants.CONTRIBUTION_RATES.get(item_key, 0) or 0)},
+        )
+        GuildWarehouse.objects.filter(pk=item.pk).update(quantity=F("quantity") + amount)
+
+
+def get_guild_technology_levels(guild: Guild | None) -> dict[str, int]:
+    if guild is None or not getattr(guild, "pk", None):
+        return {}
+    return {
+        str(tech_key): int(level)
+        for tech_key, level in GuildTechnology.objects.filter(guild_id=guild.pk).values_list("tech_key", "level")
+    }
+
+
+def get_guild_resource_production_bonus(guild: Guild | None, resource_type: str) -> float:
+    """读取全体成员适用的庄园资源产出加成。"""
+    if resource_type == "grain":
+        return 0.05 * get_guild_tech_level(guild, "sheep_farmland")
+    if resource_type == "silver":
+        return 0.05 * get_guild_tech_level(guild, "sheep_silver_mine")
+    return 0.0
+
+
+def get_guild_resource_bonuses_for_users(user_ids: Iterable[int]) -> dict[int, dict[str, float]]:
+    """一次读取多位在帮成员的粮食、银两增产，避免批量结算逐庄园查询。"""
+    normalized_ids = tuple(dict.fromkeys(int(user_id) for user_id in user_ids))
+    if not normalized_ids:
+        return {}
+    resource_by_key = {"sheep_farmland": "grain", "sheep_silver_mine": "silver"}
+    rows = GuildTechnology.objects.filter(
+        guild__members__user_id__in=normalized_ids,
+        guild__members__is_active=True,
+        guild__is_active=True,
+        tech_key__in=resource_by_key,
+        level__gt=0,
+    ).values_list("guild__members__user_id", "tech_key", "level")
+    bonuses: dict[int, dict[str, float]] = {}
+    for user_id, tech_key, level in rows:
+        effective_level = min(TECHNOLOGY_NODE_BY_KEY[tech_key]["max_level"], max(0, int(level)))
+        bonuses.setdefault(int(user_id), {})[resource_by_key[tech_key]] = effective_level * 0.05
+    return bonuses
 
 
 def _format_tech_resource_cost(cost: dict[str, int]) -> str:
@@ -129,6 +250,10 @@ def upgrade_technology(guild, tech_key, operator):
     if not _is_supported_tech_key(tech_key):
         raise GuildTechnologyError("科技不存在")
 
+    node = TECHNOLOGY_NODE_BY_KEY.get(tech_key)
+    if node is not None and not node["enabled"]:
+        raise GuildTechnologyError("该科技暂未开放")
+
     # 获取科技
     try:
         tech = GuildTechnology.objects.get(guild=guild, tech_key=tech_key)
@@ -138,6 +263,8 @@ def upgrade_technology(guild, tech_key, operator):
     # 验证是否可升级
     if not _can_upgrade_guild_technology(tech):
         raise GuildTechnologyError("科技已达最高等级")
+
+    route = _route_for_technology(tech_key)
 
     # 并发安全的事务处理
     with transaction.atomic():
@@ -159,8 +286,20 @@ def upgrade_technology(guild, tech_key, operator):
         if not _can_upgrade_guild_technology(tech_locked):
             raise GuildTechnologyError("科技已达最高等级")
 
+        if route is not None:
+            if guild_locked.active_technology_route != route["key"]:
+                raise GuildTechnologyError("请先选择并开启该科技路线")
+            node = TECHNOLOGY_NODE_BY_KEY[tech_key]
+            missing_prerequisites = [
+                TECHNOLOGY_NODE_BY_KEY[key]["name"]
+                for key in node["requires"]
+                if get_guild_tech_level(guild_locked, key) < 1
+            ]
+            if missing_prerequisites:
+                raise GuildTechnologyError(f"前置科技未达到1级：{'、'.join(missing_prerequisites)}")
+
         # 成本必须基于锁内的当前等级计算，避免并发下低价升级
-        cost = calculate_tech_upgrade_cost(tech_key, tech_locked.level)
+        cost = calculate_tech_upgrade_cost(tech_key, tech_locked.level, guild=guild_locked)
 
         # 科技成本可能由银两和任意仓库资源组成，统一扣费可避免新增纯金条/红宝石科技
         # 误进入旧的 cost["silver"] 分支。所有资源检查和扣减都在同一组行锁内完成。
@@ -173,12 +312,16 @@ def upgrade_technology(guild, tech_key, operator):
 
         if silver_cost > int(guild_locked.silver):
             raise GuildTechnologyError(f"帮会银两不足，需要{silver_cost}")
+
+        if tech_key in RESOURCE_PRODUCTION_TECH_KEYS:
+            _settle_guild_member_resource_production_locked(guild_locked, now=timezone.now())
+
         if warehouse_cost:
             try:
                 spend_guild_warehouse_items_locked(
                     guild_locked,
                     warehouse_cost,
-                    error_prefix="帮会仓库",
+                    error_prefix="帮会资产",
                 )
             except GuildWarehouseError as exc:
                 raise GuildTechnologyError(str(exc)) from exc
@@ -188,6 +331,27 @@ def upgrade_technology(guild, tech_key, operator):
 
         GuildTechnology.objects.filter(pk=tech_locked.pk).update(level=F("level") + 1)
         tech_locked.refresh_from_db(fields=["level"])
+
+        route_completed = False
+        if route is not None:
+            route_levels = {
+                key: int(level)
+                for key, level in GuildTechnology.objects.filter(
+                    guild=guild_locked,
+                    tech_key__in=[node["key"] for node in route["nodes"]],
+                ).values_list("tech_key", "level")
+            }
+            route_completed = is_technology_route_complete(route, route_levels)
+            if route_completed:
+                completed_routes = list(guild_locked.completed_technology_routes or [])
+                if route["key"] not in completed_routes:
+                    completed_routes.append(route["key"])
+                Guild.objects.filter(pk=guild_locked.pk).update(
+                    completed_technology_routes=completed_routes,
+                    active_technology_route="",
+                )
+                guild_locked.completed_technology_routes = completed_routes
+                guild_locked.active_technology_route = ""
 
         GuildResourceLog.objects.create(
             guild=guild_locked,
@@ -220,7 +384,10 @@ def upgrade_technology(guild, tech_key, operator):
         create_announcement(
             guild_locked,
             "system",
-            f"{operator_name}将{tech_name}升至{tech_level}级！",
+            (
+                f"{operator_name}将{tech_name}升至{tech_level}级！"
+                + (f"{route['title']}路线已全部研究完成！" if route is not None and route_completed else "")
+            ),
         )
     except DATABASE_INFRASTRUCTURE_EXCEPTIONS:
         logger.exception(
@@ -230,6 +397,127 @@ def upgrade_technology(guild, tech_key, operator):
             tech_key,
             tech_level,
         )
+
+
+def select_technology_route(guild: Guild, route_key: str, operator) -> None:
+    """由帮会管理者开启一条尚未完成的专精路线。"""
+    try:
+        membership = get_active_membership(guild, operator, "只有帮主和管理员可以开启科技路线")
+    except GuildMembershipError as exc:
+        raise GuildTechnologyError(str(exc)) from exc
+    if not membership.can_manage:
+        raise GuildTechnologyError("只有帮主和管理员可以开启科技路线")
+
+    route = next((route for route in TECHNOLOGY_ROUTES if route["key"] == route_key), None)
+    if route is None:
+        raise GuildTechnologyError("科技路线不存在")
+
+    with transaction.atomic():
+        guild_locked = Guild.objects.select_for_update().get(pk=guild.pk)
+        if getattr(membership, "pk", None) is not None:
+            try:
+                membership = lock_active_member_for_guild(
+                    membership,
+                    error_msg="只有帮主和管理员可以开启科技路线",
+                )
+            except GuildMembershipError as exc:
+                raise GuildTechnologyError(str(exc)) from exc
+        if not membership.can_manage:
+            raise GuildTechnologyError("只有帮主和管理员可以开启科技路线")
+        completed_routes = list(guild_locked.completed_technology_routes or [])
+        if guild_locked.active_technology_route:
+            active_route = next(
+                (route for route in TECHNOLOGY_ROUTES if route["key"] == guild_locked.active_technology_route), None
+            )
+            levels = dict(GuildTechnology.objects.filter(guild=guild_locked).values_list("tech_key", "level"))
+            if active_route is None or not is_technology_route_complete(active_route, levels):
+                raise GuildTechnologyError("当前路线的开放节点尚未全部研究完成")
+            if active_route["key"] not in completed_routes:
+                completed_routes.append(active_route["key"])
+        if route_key in completed_routes:
+            raise GuildTechnologyError("该科技路线已经完成")
+        Guild.objects.filter(pk=guild_locked.pk).update(
+            active_technology_route=route_key, completed_technology_routes=completed_routes
+        )
+        guild_locked.active_technology_route = route_key
+        guild_locked.completed_technology_routes = completed_routes
+
+    try:
+        create_announcement(guild_locked, "system", f"帮会开启了{route['title']}科技路线！")
+    except DATABASE_INFRASTRUCTURE_EXCEPTIONS:
+        logger.exception(
+            "Failed to announce guild technology route selection: guild_id=%s route=%s", guild.pk, route_key
+        )
+
+
+def reset_technology_route(guild: Guild, route_key: str, operator) -> dict[str, int]:
+    """取消当前未完成的专精路线，清空等级并返还一半累计投入。"""
+    try:
+        membership = get_active_membership(guild, operator, "只有帮主和管理员可以重置科技路线")
+    except GuildMembershipError as exc:
+        raise GuildTechnologyError(str(exc)) from exc
+    if not membership.can_manage:
+        raise GuildTechnologyError("只有帮主和管理员可以重置科技路线")
+
+    route = next((item for item in TECHNOLOGY_ROUTES if item["key"] == route_key), None)
+    if route is None:
+        raise GuildTechnologyError("科技路线不存在")
+
+    with transaction.atomic():
+        guild_locked = Guild.objects.select_for_update().get(pk=guild.pk)
+        if getattr(membership, "pk", None) is not None:
+            try:
+                membership = lock_active_member_for_guild(
+                    membership,
+                    error_msg="只有帮主和管理员可以重置科技路线",
+                )
+            except GuildMembershipError as exc:
+                raise GuildTechnologyError(str(exc)) from exc
+        if not membership.can_manage:
+            raise GuildTechnologyError("只有帮主和管理员可以重置科技路线")
+        if guild_locked.active_technology_route != route_key:
+            raise GuildTechnologyError("只能重置当前正在研究的路线")
+
+        route_tech_keys = [node["key"] for node in route["nodes"]]
+        tech_rows = list(
+            GuildTechnology.objects.select_for_update().filter(guild=guild_locked, tech_key__in=route_tech_keys)
+        )
+        levels = {tech.tech_key: int(tech.level) for tech in tech_rows}
+        if is_technology_route_complete(route, levels):
+            raise GuildTechnologyError("已完成的科技路线不能重置")
+
+        if RESOURCE_PRODUCTION_TECH_KEYS.intersection(route_tech_keys):
+            _settle_guild_member_resource_production_locked(guild_locked, now=timezone.now())
+
+        invested = _calculate_route_investment(guild_locked, route, levels)
+        refund = {resource_key: amount // 2 for resource_key, amount in invested.items()}
+        silver_refund = refund.get("silver", 0)
+        warehouse_refund = {
+            resource_key: amount
+            for resource_key, amount in refund.items()
+            if resource_key in WAREHOUSE_TECH_RESOURCE_KEYS and amount > 0
+        }
+
+        if silver_refund:
+            Guild.objects.filter(pk=guild_locked.pk).update(silver=F("silver") + silver_refund)
+        _credit_guild_warehouse_items_locked(guild_locked, warehouse_refund)
+        GuildTechnology.objects.filter(guild=guild_locked, tech_key__in=route_tech_keys).update(
+            level=0,
+            last_production_at=None,
+        )
+        Guild.objects.filter(pk=guild_locked.pk).update(active_technology_route="")
+
+        GuildResourceLog.objects.create(
+            guild=guild_locked,
+            action="tech_reset",
+            silver_change=silver_refund,
+            grain_change=refund.get("grain", 0),
+            gold_bar_change=refund.get("gold_bar", 0),
+            related_user=operator,
+            note=f"取消{route['title']}路线并清零等级，返还已投入资源的50%（{_format_tech_resource_cost(refund)}）",
+        )
+
+    return refund
 
 
 def get_guild_tech_level(guild, tech_key):
@@ -292,8 +580,9 @@ def get_tech_bonus(guild, bonus_type):
         return 0.0
 
     if bonus_type == "resource_production":
-        level = get_guild_tech_level(guild, "resource_boost")
-        return 0.05 * level
+        return get_guild_resource_production_bonus(guild, "grain") + get_guild_resource_production_bonus(
+            guild, "silver"
+        )
 
     if bonus_type == "march_speed":
         level = get_guild_tech_level(guild, "march_speed")

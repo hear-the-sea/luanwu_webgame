@@ -41,6 +41,11 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+GUILD_PRODUCTION_TECH_MAX_LEVEL = 3
+GUILD_PRODUCTION_SPEED_PER_LEVEL = 0.10
+GUILD_PRODUCTION_LIMIT_PER_LEVEL = 0.10
+GUILD_PRODUCTION_COST_REDUCTION_PER_LEVEL = 0.05
+
 TechnologyUpgradeQuote = _technology_runtime.TechnologyUpgradeQuote
 TechnologyUpgradeQuoteStaleError = _technology_runtime.TechnologyUpgradeQuoteStaleError
 
@@ -118,6 +123,65 @@ def get_player_technology_level(manor: Any, tech_key: str) -> int:
         return tech.level
     except PlayerTechnology.DoesNotExist:
         return 0
+
+
+def get_guild_production_technology_level(manor: Any, tech_key: str) -> int:
+    """获取庄园当前所属帮会的生产科技等级。"""
+    user_id = getattr(manor, "user_id", None)
+    if not user_id:
+        return 0
+
+    from guilds.models import GuildTechnology
+
+    level = (
+        GuildTechnology.objects.filter(
+            guild__members__user_id=user_id,
+            guild__members__is_active=True,
+            guild__is_active=True,
+            tech_key=tech_key,
+        )
+        .values_list("level", flat=True)
+        .first()
+    )
+    if level is None:
+        return 0
+    return min(GUILD_PRODUCTION_TECH_MAX_LEVEL, max(0, int(level)))
+
+
+def get_guild_production_effects(level: int) -> dict[str, int | float]:
+    """返回帮会生产科技的速度、批量上限和成本效果。"""
+    normalized_level = min(GUILD_PRODUCTION_TECH_MAX_LEVEL, max(0, int(level)))
+    return {
+        "level": normalized_level,
+        "speed_multiplier": 1.0 + GUILD_PRODUCTION_SPEED_PER_LEVEL * normalized_level,
+        "quantity_multiplier": 1.0 + GUILD_PRODUCTION_LIMIT_PER_LEVEL * normalized_level,
+        "cost_reduction_percent": int(GUILD_PRODUCTION_COST_REDUCTION_PER_LEVEL * normalized_level * 100),
+    }
+
+
+def apply_guild_production_quantity_bonus(base_quantity: int, guild_tech_level: int) -> int:
+    """按帮会科技百分比提高整数批量上限。"""
+    normalized_quantity = max(1, int(base_quantity))
+    normalized_level = min(GUILD_PRODUCTION_TECH_MAX_LEVEL, max(0, int(guild_tech_level)))
+    bonus_percent = int(GUILD_PRODUCTION_LIMIT_PER_LEVEL * normalized_level * 100)
+    return max(1, normalized_quantity * (100 + bonus_percent) // 100)
+
+
+def combine_guild_production_speed_bonus(building_time_reduction: float, guild_tech_level: int) -> float:
+    """将现有建筑时间折减与帮会生产速度倍率合并为最终时间折减。"""
+    effects = get_guild_production_effects(guild_tech_level)
+    building_factor = max(0.0, 1.0 - max(0.0, min(0.99, float(building_time_reduction))))
+    return max(0.0, min(0.99, 1.0 - building_factor / float(effects["speed_multiplier"])))
+
+
+def apply_guild_production_cost_discount(total_cost: int, guild_tech_level: int) -> int:
+    """按帮会科技折减整数资源总消耗，向上取整避免小额消耗变为免费。"""
+    normalized_cost = max(0, int(total_cost))
+    if normalized_cost == 0:
+        return 0
+    normalized_level = min(GUILD_PRODUCTION_TECH_MAX_LEVEL, max(0, int(guild_tech_level)))
+    remaining_percent = 100 - int(GUILD_PRODUCTION_COST_REDUCTION_PER_LEVEL * normalized_level * 100)
+    return max(1, (normalized_cost * remaining_percent + 99) // 100)
 
 
 def get_player_technologies(manor: Any) -> Dict[str, int]:

@@ -127,7 +127,7 @@ def _get_item_name_map(keys: set[str]) -> Dict[str, str]:
     return {tpl.key: tpl.name for tpl in ItemTemplate.objects.filter(key__in=keys).only("key", "name")}
 
 
-def get_ranch_speed_bonus(manor: Manor) -> float:
+def get_ranch_speed_bonus(manor: Manor, *, guild_tech_level: int | None = None) -> float:
     """
     获取畜牧场速度加成。
 
@@ -139,11 +139,16 @@ def get_ranch_speed_bonus(manor: Manor) -> float:
     Returns:
         速度加成倍率（如0.5表示减少50%时间）
     """
+    from ..technology import combine_guild_production_speed_bonus, get_guild_production_technology_level
+
     level = manor.get_building_level(BuildingKeys.RANCH)
-    return level * 0.05
+    building_time_reduction = level * 0.05
+    if guild_tech_level is None:
+        guild_tech_level = get_guild_production_technology_level(manor, "sheep_breeding")
+    return combine_guild_production_speed_bonus(building_time_reduction, guild_tech_level)
 
 
-def get_max_livestock_quantity(manor: Manor) -> int:
+def get_max_livestock_quantity(manor: Manor, *, guild_tech_level: int | None = None) -> int:
     """
     获取单次养殖家畜的最大数量。
 
@@ -155,11 +160,18 @@ def get_max_livestock_quantity(manor: Manor) -> int:
     Returns:
         最大养殖数量
     """
-    from ..technology import get_player_technology_level
+    from ..technology import (
+        apply_guild_production_quantity_bonus,
+        get_guild_production_technology_level,
+        get_player_technology_level,
+    )
 
     animal_husbandry_level = get_player_technology_level(manor, "animal_husbandry")
+    if guild_tech_level is None:
+        guild_tech_level = get_guild_production_technology_level(manor, "sheep_breeding")
     # 每级50只，最少1只（0级时也能养殖1只）
-    return max(1, animal_husbandry_level * 50)
+    base_quantity = max(1, animal_husbandry_level * 50)
+    return apply_guild_production_quantity_bonus(base_quantity, guild_tech_level)
 
 
 def get_livestock_queue_capacity(manor: Manor) -> int:
@@ -167,7 +179,12 @@ def get_livestock_queue_capacity(manor: Manor) -> int:
     return get_production_queue_capacity(manor, BuildingKeys.RANCH)
 
 
-def calculate_livestock_duration(base_duration: int, manor: Manor) -> int:
+def calculate_livestock_duration(
+    base_duration: int,
+    manor: Manor,
+    *,
+    guild_tech_level: int | None = None,
+) -> int:
     """
     计算实际养殖时间。
 
@@ -178,7 +195,7 @@ def calculate_livestock_duration(base_duration: int, manor: Manor) -> int:
     Returns:
         实际养殖时间（秒）
     """
-    bonus = get_ranch_speed_bonus(manor)
+    bonus = get_ranch_speed_bonus(manor, guild_tech_level=guild_tech_level)
     # 加成越高，时间越短
     duration = max(1, int(base_duration * (1 - bonus)))
     return scale_duration(duration, minimum=1)
@@ -197,7 +214,7 @@ def has_active_livestock_production(manor: Manor) -> bool:
     return manor.livestock_productions.filter(status=LivestockProduction.Status.PRODUCING).exists()
 
 
-def get_livestock_options(manor: Manor) -> List[Dict[str, Any]]:
+def get_livestock_options(manor: Manor, *, guild_tech_level: int | None = None) -> List[Dict[str, Any]]:
     """
     获取家畜养殖选项列表。
 
@@ -208,10 +225,16 @@ def get_livestock_options(manor: Manor) -> List[Dict[str, Any]]:
         家畜选项列表
     """
     from ..inventory.core import get_warehouse_grain_quantity
-    from ..technology import get_player_technology_level
+    from ..technology import (
+        apply_guild_production_cost_discount,
+        get_guild_production_technology_level,
+        get_player_technology_level,
+    )
 
     animal_husbandry_level = get_player_technology_level(manor, "animal_husbandry")
-    max_quantity = get_max_livestock_quantity(manor)
+    if guild_tech_level is None:
+        guild_tech_level = get_guild_production_technology_level(manor, "sheep_breeding")
+    max_quantity = get_max_livestock_quantity(manor, guild_tech_level=guild_tech_level)
     active_productions = get_active_livestock_productions(manor)
     is_producing = bool(active_productions)
     queue_full = len(active_productions) >= get_livestock_queue_capacity(manor)
@@ -224,10 +247,13 @@ def get_livestock_options(manor: Manor) -> List[Dict[str, Any]]:
             raw_config,
             contract_name=f"ranch runtime production config {livestock_key}",
         )
-        actual_duration = calculate_livestock_duration(config["base_duration"], manor)
+        actual_duration = calculate_livestock_duration(
+            config["base_duration"], manor, guild_tech_level=guild_tech_level
+        )
         required_level = config["required_animal_husbandry"]
         is_unlocked = animal_husbandry_level >= required_level
         livestock_name = livestock_name_map.get(livestock_key, "未知家畜")
+        discounted_grain_cost = apply_guild_production_cost_discount(config["grain_cost"], guild_tech_level)
         options.append(
             {
                 "key": livestock_key,
@@ -235,7 +261,9 @@ def get_livestock_options(manor: Manor) -> List[Dict[str, Any]]:
                 "grain_cost": config["grain_cost"],
                 "base_duration": config["base_duration"],
                 "actual_duration": actual_duration,
-                "can_afford": warehouse_grain_quantity >= config["grain_cost"],
+                "can_afford": warehouse_grain_quantity >= discounted_grain_cost,
+                "effective_grain_cost": discounted_grain_cost,
+                "cost_discount_percent": min(15, guild_tech_level * 5),
                 "required_animal_husbandry": required_level,
                 "is_unlocked": is_unlocked,
                 "max_quantity": max_quantity,
@@ -273,21 +301,26 @@ def start_livestock_production(manor: Manor, livestock_key: str, quantity: int =
     livestock_name = livestock_name_map.get(livestock_key, "未知家畜")
 
     # 检查养殖术等级
-    from ..technology import get_player_technology_level
+    from ..technology import (
+        apply_guild_production_cost_discount,
+        get_guild_production_technology_level,
+        get_player_technology_level,
+    )
 
     animal_husbandry_level = get_player_technology_level(manor, "animal_husbandry")
+    guild_tech_level = get_guild_production_technology_level(manor, "sheep_breeding")
     if animal_husbandry_level < required_level:
         raise ProductionStartError(f"需要养殖术{required_level}级才能养殖{livestock_name}")
 
     # 验证养殖数量
-    max_quantity = get_max_livestock_quantity(manor)
+    max_quantity = get_max_livestock_quantity(manor, guild_tech_level=guild_tech_level)
     if quantity < 1:
         raise ProductionStartError("养殖数量至少为1")
     if quantity > max_quantity:
         raise ProductionStartError(f"养殖术等级限制，单次最多养殖{max_quantity}只")
 
     # 计算总消耗
-    total_grain_cost = config["grain_cost"] * quantity
+    total_grain_cost = apply_guild_production_cost_discount(config["grain_cost"] * quantity, guild_tech_level)
 
     with transaction.atomic():
         from gameplay.models import Manor as ManorModel
@@ -318,7 +351,9 @@ def start_livestock_production(manor: Manor, livestock_key: str, quantity: int =
                 message=f"粮食不足，需要{total_grain_cost}点粮食",
             ) from exc
 
-        unit_duration = calculate_livestock_duration(config["base_duration"], manor)
+        unit_duration = calculate_livestock_duration(
+            config["base_duration"], locked_manor, guild_tech_level=guild_tech_level
+        )
         actual_duration = unit_duration * quantity
 
         # 创建养殖记录

@@ -169,7 +169,11 @@ class ArenaExchangePageView(BaseArenaView):
     show_arena_hero_card = False
 
     def _build_page_context(self, manor):
-        return get_arena_exchange_context(manor)
+        context = get_arena_exchange_context(manor)
+        reward_page = Paginator(context["reward_rows"], 8).get_page(self.request.GET.get("page", 1))
+        context["reward_rows"] = reward_page
+        context["reward_page"] = reward_page
+        return context
 
 
 class ArenaEventDetailView(BaseArenaView):

@@ -42,8 +42,10 @@ SLOT_CAPACITY = {
 }
 MAX_DIRECT_TROOP_CAPACITY = 500
 MAX_DIRECT_LUCK = 190
-MAX_DIRECT_AGILITY = 250
-MAX_DIRECT_EFFECTIVE_HP = 15000
+# 先手装以防御换敏捷；11 槽直接敏捷实际最大279，对100级紫武将约增加5%。
+MAX_DIRECT_AGILITY = 280
+# 无前缀、无套装的生命+50×防御最高15922；带防御前缀的极端值反而下降。
+MAX_DIRECT_EFFECTIVE_HP = 16000
 MAX_ORANGE_NON_HP_ATTRIBUTE_SUM = 130
 ALL_DEVICE_TROOP_CLASSES = ("dao", "qiang", "jian", "quan", "gong", "scout")
 DEVICE_TROOP_BONUS_DESIGN = {
@@ -692,9 +694,9 @@ def test_tuwujian_is_orange_anti_sorcery_sword():
     assert tuwujian["effect_payload"] == {
         "hp": 160,
         "defense": 3,
-        "force": 70,
-        "intellect": 12,
-        "agility": 12,
+        "force": 78,
+        "intellect": 6,
+        "agility": 10,
         "luck": 3,
         "required_level": 65,
     }

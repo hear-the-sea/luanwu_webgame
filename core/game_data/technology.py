@@ -117,6 +117,16 @@ def get_tech_bonus_from_levels(levels: Dict[str, int], effect_type: str, troop_c
 
 def get_troop_stat_bonuses_from_levels(levels: Dict[str, int], troop_key: str) -> Dict[str, float]:
     """Return per-stat bonus multipliers for a troop key based on provided tech levels."""
+    if troop_key == "bloodthirsty_cavalry":
+        from .cavalry import CAVALRY_STAT_TECHS
+
+        cavalry_bonuses: dict[str, float] = {}
+        for tech_key, (stat_key, per_level, max_level) in CAVALRY_STAT_TECHS.items():
+            level = max(0, min(max_level, _coerce_int(levels.get(tech_key, 0), 0)))
+            if level > 0:
+                cavalry_bonuses[stat_key] = level * per_level
+        return cavalry_bonuses
+
     troop_class = get_troop_class_for_key(troop_key)
     if not troop_class:
         return {}

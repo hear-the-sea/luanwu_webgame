@@ -148,6 +148,7 @@ CELERY_TIMER_SCAN_TASKS = frozenset(
         "gameplay.scan_raid_runs",
         "guilds.scan_due_raids",
         "guilds.scan_due_missions",
+        "guilds.scan_cavalry_trainings",
         "guilds.process_single_guild_production",
         "guilds.tech_daily_production",
     }
@@ -214,6 +215,7 @@ CELERY_TIMER_DEFAULT_TASKS = frozenset(
         "gameplay.refund_world_chat_attempt",
         "guilds.complete_guild_mission",
         "guilds.complete_guild_raid",
+        "guilds.complete_cavalry_training",
     }
 )
 
@@ -319,6 +321,10 @@ CELERY_BEAT_SCHEDULE = {
     "guild-tech-daily-production": {
         "task": "guilds.tech_daily_production",
         "schedule": crontab(hour=0, minute=0),
+    },
+    "scan-guild-cavalry-trainings": {
+        "task": "guilds.scan_cavalry_trainings",
+        "schedule": crontab(minute="*/1"),
     },
     "reset-guild-weekly-stats": {
         "task": "guilds.reset_weekly_stats",

@@ -86,8 +86,11 @@
 
                     <dl class="production-stats production-stats--three">
                         <div>
-                            <dt>消耗</dt>
-                            <dd class="production-value production-value--cost">{{ metal.cost_amount }} {{ metal.cost_type_name }}</dd>
+                            <dt>消耗{% if metal.cost_discount_percent > 0 %}（折后）{% endif %}</dt>
+                            <dd class="production-value production-value--cost">
+                                {{ metal.effective_cost_amount }} {{ metal.cost_type_name }}
+                                {% if metal.cost_discount_percent > 0 %}<span class="production-meta-item--accent">-{{ metal.cost_discount_percent }}%</span>{% endif %}
+                            </dd>
                         </div>
                         <div>
                             <dt>持有</dt>
@@ -113,11 +116,12 @@
                                        value="1" min="1" max="{{ metal.max_quantity }}" step="1" inputmode="numeric" autocomplete="off"
                                    class="tw-quantity-input"
                                    data-unit-cost="{{ metal.cost_amount }}"
+                                   data-cost-discount-percent="{{ metal.cost_discount_percent }}"
                                    data-unit-label="{{ metal.cost_type_name }}"
                                    data-total-target="total-{{ metal.key }}"
                                    data-unit-duration="{{ metal.actual_duration }}"
                                    data-duration-target="duration-{{ metal.key }}">
-                            <span id="total-{{ metal.key }}">{{ metal.cost_amount }} {{ metal.cost_type_name }}</span>
+                            <span id="total-{{ metal.key }}">{{ metal.effective_cost_amount }} {{ metal.cost_type_name }}</span>
                         </div>
                         {% if metal.can_afford %}
                         <button type="submit" class="tw-btn-primary w-full">制作</button>

@@ -143,6 +143,16 @@ def select_attack_targets(
     # 关键：保持 RNG 消耗顺序——先选主目标，再触发技能（历史实现依赖此顺序保证可复现）
     primary_target = select_target_with_priority(actor, opponents, rng)
     skills = _active_attack_skills(trigger_attack_skills_fn(actor, rng))
+    if len(opponents) == 1:
+        # 按本次选目标时的存活敌人数判定，不修改原始技能或在命中途中切换倍率。
+        skills = [
+            (
+                {**skill, "damage_multiplier": skill["single_target_damage_multiplier"]}
+                if "single_target_damage_multiplier" in skill
+                else skill
+            )
+            for skill in skills
+        ]
 
     multi_targets = max(1, max(int(skill.get("targets", 1)) for skill in skills) if skills else 1)
     city_defense_targets = 1

@@ -649,6 +649,56 @@ def _apply_tool(item: InventoryItem) -> Dict[str, Any]:
     """
     payload = _require_effect_payload_dict(item)
     normalized_action = _normalize_optional_tool_action(payload)
+    if normalized_action == "temporary_resource_production_boost":
+        resource_type = _normalize_non_empty_string(payload.get("resource_type"), field_name="resource_type")
+        if resource_type not in {ResourceType.GRAIN, ResourceType.SILVER}:
+            raise ItemNotConfiguredError("resource_type 配置异常")
+        bonus_percent = _normalize_positive_config_int(payload.get("bonus_percent"), field_name="bonus_percent")
+        if bonus_percent > 100:
+            raise ItemNotConfiguredError("bonus_percent 配置异常")
+        duration_hours = _normalize_positive_config_int(payload.get("duration_hours"), field_name="duration_hours")
+        from gameplay.services.resources import activate_resource_production_boost_locked
+
+        buff = activate_resource_production_boost_locked(
+            item.manor,
+            resource_type=resource_type,
+            bonus_percent=bonus_percent,
+            duration_hours=duration_hours,
+        )
+        resource_name = RESOURCE_LABELS.get(resource_type, resource_type)
+        return {
+            "resource_type": resource_type,
+            "bonus_percent": bonus_percent,
+            "starts_at": buff.starts_at.isoformat(),
+            "expires_at": buff.expires_at.isoformat(),
+            "_message": f"{resource_name}建筑产出 +{bonus_percent}%，持续{duration_hours}小时；再次使用将刷新持续时间",
+        }
+    if normalized_action in {
+        "occupy_target_guest",
+        "steal_target_item",
+        "injure_target_guest",
+        "transfer_target_grain",
+        "transfer_target_silver",
+        "sheep_wrath_target",
+    }:
+        from .target_items import (
+            use_grain_transfer_card,
+            use_injury_card,
+            use_sheep_wrath_card,
+            use_silver_transfer_card,
+            use_slave_card,
+            use_steal_card,
+        )
+
+        target_handlers = {
+            "occupy_target_guest": use_slave_card,
+            "steal_target_item": use_steal_card,
+            "injure_target_guest": use_injury_card,
+            "transfer_target_grain": use_grain_transfer_card,
+            "transfer_target_silver": use_silver_transfer_card,
+            "sheep_wrath_target": use_sheep_wrath_card,
+        }
+        return target_handlers[normalized_action](item)
     if normalized_action == "summon_guest":
         return _apply_guest_summon(item)
     if normalized_action == SUPER_GUEST_SUMMON_ACTION:
@@ -951,6 +1001,7 @@ def use_inventory_item(
     *,
     resource_overflow_confirmation: dict[str, object] | None = None,
     binding_mode: str | None = None,
+    target_manor_id: int | None = None,
 ) -> Dict[str, Any]:
     """
     使用背包物品（仓库可用）。
@@ -973,17 +1024,49 @@ def use_inventory_item(
     if not item.pk:
         raise ItemNotFoundError()
 
-    # 死锁预防：统一锁顺序 Manor -> InventoryItem
-    # 商店服务是先锁 Manor 后锁 Item，此处必须保持一致
-    target_manor_id = manor.pk if manor else item.manor_id
-    if target_manor_id:
-        Manor.objects.select_for_update().get(pk=target_manor_id)
+    # 对目标卡按庄园 ID 稳定顺序同时加锁，避免双方互相使用目标卡时反向加锁。
+    # 普通背包物品仍保持 Manor -> InventoryItem 的原有顺序。
+    source_manor_id = manor.pk if manor else item.manor_id
+    if not source_manor_id:
+        raise ItemNotFoundError()
+    normalized_target_manor_id: int | None = None
+    if target_manor_id is not None:
+        if isinstance(target_manor_id, bool):
+            raise ItemNotUsableError(item.template.name, message="目标庄园参数无效")
+        try:
+            normalized_target_manor_id = int(target_manor_id)
+        except (TypeError, ValueError) as exc:
+            raise ItemNotUsableError(item.template.name, message="目标庄园参数无效") from exc
+        if normalized_target_manor_id <= 0:
+            raise ItemNotUsableError(item.template.name, message="目标庄园参数无效")
+        from .target_items import is_target_item_action
+
+        template_payload = item.template.effect_payload
+        target_action = template_payload.get("action") if isinstance(template_payload, dict) else None
+        if not is_target_item_action(target_action):
+            raise ItemNotUsableError(item.template.name, message="此物品不支持选择目标庄园")
+
+    manor_ids = {int(source_manor_id)}
+    if normalized_target_manor_id is not None:
+        manor_ids.add(normalized_target_manor_id)
+    locked_manors = {
+        locked_manor.pk: locked_manor
+        for locked_manor in Manor.objects.select_for_update().filter(pk__in=manor_ids).order_by("pk")
+    }
+    locked_source_manor = locked_manors.get(int(source_manor_id))
+    if locked_source_manor is None:
+        raise ItemNotFoundError("庄园不存在")
+    locked_target_manor = (
+        locked_manors.get(normalized_target_manor_id) if normalized_target_manor_id is not None else None
+    )
+    if normalized_target_manor_id is not None and locked_target_manor is None:
+        raise ItemNotUsableError(item.template.name, message="目标庄园不存在")
 
     # 构建查询条件
     query_filter: dict[str, object] = {"pk": item.pk}
     if manor is not None:
         # 如果提供了manor，校验物品归属
-        query_filter["manor"] = manor
+        query_filter["manor"] = locked_source_manor
 
     locked_item = (
         InventoryItem.objects.select_for_update().select_related("template", "manor").filter(**query_filter).first()
@@ -992,6 +1075,7 @@ def use_inventory_item(
         if manor is not None:
             raise ItemNotFoundError("物品不存在或不属于您的庄园")
         raise InsufficientStockError(item.template.name, 1, 0)
+    setattr(locked_item, "_use_target_manor", locked_target_manor)
     if locked_item.quantity <= 0:
         raise InsufficientStockError(locked_item.template.name, 1, locked_item.quantity)
 
@@ -1005,6 +1089,11 @@ def use_inventory_item(
     template = locked_item.template
     if not template.is_usable:
         raise ItemNotUsableError(template.name, "not_warehouse_usable")
+    if normalized_target_manor_id is not None:
+        locked_payload = template.effect_payload
+        locked_action = locked_payload.get("action") if isinstance(locked_payload, dict) else None
+        if not is_target_item_action(locked_action):
+            raise ItemNotUsableError(template.name, message="此物品不支持选择目标庄园")
 
     handler = ITEM_EFFECT_HANDLERS.get(template.effect_type)
     if handler:

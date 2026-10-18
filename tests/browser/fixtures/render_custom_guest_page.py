@@ -42,14 +42,16 @@ elif page == "appearance":
     context.update(creating=True, avatars=avatars, guest=None)
     print(render_to_string("guests/custom_guest_appearance.html", context))
 else:
+    from guests.services.custom_guest import DAILY_FEED_LIMIT
+
     context["custom_guest"] = {
         "growth_min": 3,
         "growth_max": 7,
         "enhancement_level": 0,
         "total_weight": 5000,
         "feeding_used": 0,
-        "feeding_limit": 100,
-        "feeding_remaining": 100,
+        "feeding_limit": DAILY_FEED_LIMIT,
+        "feeding_remaining": DAILY_FEED_LIMIT,
         "weight_rows": [
             {"label": label, "value": value, "percent": value / 50}
             for label, value in [("武力", 1800), ("智力", 1800), ("防御", 600), ("敏捷", 800)]

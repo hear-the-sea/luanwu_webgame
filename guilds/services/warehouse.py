@@ -6,9 +6,12 @@ import logging
 from collections.abc import Iterable, Mapping
 from datetime import datetime, timedelta
 from functools import lru_cache
+from pathlib import Path
 from typing import Any
 
 from django.conf import settings
+from django.contrib.staticfiles.storage import staticfiles_storage
+from django.core.files.storage import default_storage
 from django.db import transaction
 from django.db.models import F, Sum
 from django.utils import timezone
@@ -26,6 +29,7 @@ from .warehouse_config import (
     get_tech_production,
     get_technology_production_config_key,
     get_technology_production_items,
+    get_warehouse_production_item_keys,
     get_weekly_personal_limit,
 )
 
@@ -41,6 +45,19 @@ PROJECTED_RESOURCE_LABELS = {
 WAREHOUSE_ITEM_LABELS = {
     **PROJECTED_RESOURCE_LABELS,
     "red_ruby": "红宝石",
+    "bloodthirsty_cavalry": "嗜血铁骑",
+}
+GUILD_ASSET_STATIC_IMAGE_PATHS = {
+    "guild_slave_card": "images/guild_item_icons/guild_slave_card.webp",
+    "guild_theft_card": "images/guild_item_icons/guild_theft_card.webp",
+    "guild_injury_card": "images/guild_item_icons/guild_injury_card.webp",
+    "guild_grain_boost_card": "images/guild_item_icons/guild_grain_boost_card.webp",
+    "guild_silver_boost_card": "images/guild_item_icons/guild_silver_boost_card.webp",
+    "guild_sheep_wrath": "images/guild_item_icons/guild_sheep_wrath.webp",
+    "equip_bailongju": "images/guild_item_icons/equip_bailongju_centered.webp",
+    "equip_jinjingbailongju": "images/guild_item_icons/equip_bailongju_centered.webp",
+    "equip_zhuidian": "images/guild_item_icons/equip_zhuidian_centered.webp",
+    "equip_shandianqiulongju": "images/guild_item_icons/equip_zhuidian_centered.webp",
 }
 
 logger = logging.getLogger(__name__)
@@ -65,6 +82,7 @@ def _load_item_display_catalog() -> dict[str, dict[str, Any]]:
             "effect_type": str(entry.get("effect_type") or ItemTemplate.EffectType.RESOURCE_PACK).strip(),
             "effect_payload": entry.get("effect_payload") or {},
             "icon": str(entry.get("icon") or "").strip(),
+            "image": str(entry.get("image") or "").strip(),
             "rarity": str(entry.get("rarity") or "gray").strip(),
             "tradeable": bool(entry.get("tradeable", False)),
             "price": int(entry.get("price", 0) or 0),
@@ -75,11 +93,47 @@ def _load_item_display_catalog() -> dict[str, dict[str, Any]]:
 
 
 def _get_item_display_meta(item_key: str) -> dict[str, Any]:
+    if item_key == "bloodthirsty_cavalry":
+        from .cavalry import CAVALRY_DESCRIPTION, CAVALRY_NAME
+
+        return {"name": CAVALRY_NAME, "description": CAVALRY_DESCRIPTION, "is_usable": True}
     return _load_item_display_catalog().get(str(item_key or "").strip(), {})
 
 
+def _get_item_display_image_url(item_key: str, template: ItemTemplate | None, display_meta: Mapping[str, Any]) -> str:
+    static_image_path = GUILD_ASSET_STATIC_IMAGE_PATHS.get(item_key)
+    if static_image_path:
+        try:
+            return staticfiles_storage.url(static_image_path)
+        except ValueError:
+            pass
+
+    image = getattr(template, "image", None)
+    if image and getattr(image, "name", ""):
+        try:
+            return image.url
+        except ValueError:
+            pass
+
+    image_filename = str(display_meta.get("image") or "").strip()
+    if not image_filename and item_key == "silver":
+        image_filename = "resource_pack_silver.png"
+    if not image_filename:
+        return ""
+
+    source_name = Path(image_filename).name
+    image_paths = (f"items/{Path(source_name).stem}.webp", f"items/{source_name}")
+    for image_path in image_paths:
+        if default_storage.exists(image_path):
+            try:
+                return default_storage.url(image_path)
+            except ValueError:
+                return ""
+    return ""
+
+
 def get_technology_daily_output_display(tech_key: str, tech_level: int) -> str | None:
-    """使用真实仓库产出配置生成科技每日产出文案。"""
+    """使用真实仓库产出配置生成科技产出文案。"""
     production_config_key = get_technology_production_config_key(tech_key)
     if production_config_key is None:
         return None
@@ -302,7 +356,7 @@ def _grant_exchanged_item_locked(manor: Manor, item_key: str, template: Any, qua
         credited, _overflow = grant_resources_locked(
             manor,
             {item_key: quantity},
-            note="帮会仓库兑换",
+            note="帮会资产兑换",
             reason=ResourceEvent.Reason.TASK_REWARD,
             sync_production=False,
         )
@@ -450,6 +504,11 @@ def exchange_item(member: GuildMember, item_key: str, quantity: int = 1) -> None
     Raises:
         GuildWarehouseError: 验证失败
     """
+    if item_key == "bloodthirsty_cavalry":
+        from .cavalry import exchange_guild_cavalry
+
+        exchange_guild_cavalry(member, quantity)
+        return
     if quantity <= 0:
         raise GuildWarehouseError("兑换数量必须为正整数")
 
@@ -516,8 +575,9 @@ def exchange_item(member: GuildMember, item_key: str, quantity: int = 1) -> None
                 not _is_real_guild_resource_item(item_key)
                 and not template.is_usable
                 and not can_claim_free_battle_reward
+                and item_key not in get_warehouse_production_item_keys()
             ):
-                raise GuildWarehouseError("此物品不可在仓库使用")
+                raise GuildWarehouseError("此物品不可在帮会资产中直接使用")
 
         # 步骤3：使用F()表达式扣除贡献度和增加兑换次数
         updated_member = GuildMember.objects.filter(pk=member_locked.pk).update(
@@ -569,6 +629,11 @@ def _produce_items_for_technology(guild: Guild, tech_key: str, tech_level: int) 
     items = get_technology_production_items(tech_key, tech_level)
     for item in items:
         add_item_to_warehouse(guild, item.item_key, item.quantity, item.contribution_cost)
+
+
+def produce_technology_items(guild: Guild, tech_key: str, tech_level: int) -> None:
+    """按科技树节点的等级配置产出帮会仓库物品。"""
+    _produce_items_for_technology(guild, tech_key, tech_level)
 
 
 def produce_equipment(guild: Guild, tech_level: int) -> None:
@@ -690,6 +755,7 @@ def get_warehouse_items(
     weekly_limits = {item.item_key: get_weekly_personal_limit(item.item_key) for item in page_items}
     limited_item_keys = [item_key for item_key, limit in weekly_limits.items() if limit > 0]
     weekly_used_by_key = get_member_weekly_exchange_quantities(member, limited_item_keys)
+    production_item_keys = get_warehouse_production_item_keys()
 
     # 在内存中关联模板信息
     for item in page_items:
@@ -701,6 +767,9 @@ def get_warehouse_items(
         if not getattr(item, "template", None):
             item.template = templates_dict.get(item.item_key)
         display_meta = _get_item_display_meta(item.item_key)
+        item.display_image_url = _get_item_display_image_url(item.item_key, item.template, display_meta)
+        item.display_rarity = getattr(item.template, "rarity", "") or display_meta.get("rarity") or "gray"
+        item.display_icon = getattr(item.template, "icon", "") or display_meta.get("icon", "")
         template_name = (
             item.template.name
             if item.template and item.template.name and item.template.name.strip() != item.item_key
@@ -732,10 +801,17 @@ def get_warehouse_items(
             if item.is_resource_exchange
             else int(item.contribution_cost)
         )
+        if item.item_key == "bloodthirsty_cavalry":
+            from .cavalry import get_cavalry_recruitment_config
+
+            item.exchange_unit_cost = get_cavalry_recruitment_config()["contribution_per_unit"]
         item.max_exchange_quantity = (item.display_quantity // item.exchange_unit) * item.exchange_unit
         if getattr(item, "is_projected", False):
             item.is_usable = True
         elif _is_real_guild_resource_item(item.item_key):
+            item.is_usable = True
+        elif item.item_key in production_item_keys and display_meta:
+            # 兑换只负责发到个人物品栏；坐骑、图纸等无需支持直接使用。
             item.is_usable = True
         elif _is_free_guild_battle_reward_item(
             template=item.template,
@@ -774,6 +850,22 @@ def get_warehouse_items(
             item.exchange_disabled_reason = "贡献度不足"
         else:
             item.exchange_disabled_reason = ""
+        if item.item_key == "bloodthirsty_cavalry":
+            from gameplay.services.manor.troop_capacity import get_manor_troop_remaining_space
+
+            from .cavalry import get_guild_cavalry_recruitment_state
+
+            cavalry_state = get_guild_cavalry_recruitment_state(guild, member)
+            if not cavalry_state["is_unlocked"]:
+                item.can_exchange = False
+                item.exchange_disabled_reason = "请先研究训练嗜血铁骑科技"
+            item.exchange_max_quantity = min(item.exchange_max_quantity, cavalry_state["max_batch"])
+            if member:
+                remaining_space = get_manor_troop_remaining_space(member.user.manor)
+                item.exchange_max_quantity = min(item.exchange_max_quantity, remaining_space)
+                if remaining_space <= 0:
+                    item.can_exchange = False
+                    item.exchange_disabled_reason = "庄园护院容量已满（含募兵预留）"
 
     return {
         "items": page_items,

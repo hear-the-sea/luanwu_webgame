@@ -1,0 +1,98 @@
+<section class="tw-tech-detail" data-tech-detail="{{ node.key }}" aria-labelledby="tw-tech-detail-title-{{ node.key }}" hidden>
+    <span class="tw-tech-eyebrow">{% if public_technology %}公共科技{% else %}{{ route.title }} · 科技节点{% endif %}</span>
+    <h2 id="tw-tech-detail-title-{{ node.key }}">{{ node.name }}</h2>
+    <div class="tw-tech-detail-status">
+        <span class="tw-tech-detail-level">等级 {{ node.level }} / {{ node.max_level }}</span>
+        {% if not node.enabled %}<span class="tw-tech-status">暂未开放</span>
+        {% elif node.level >= node.max_level %}<span class="tw-tech-status tw-tech-status--complete">已满级</span>
+        {% elif node.available and member.can_manage %}<span class="tw-tech-status tw-tech-status--active">可研究</span>
+        {% elif node.available %}<span class="tw-tech-status">需管理权限</span>
+        {% elif not public_technology and not node.unlocked %}<span class="tw-tech-status">前置未完成</span>
+        {% elif not public_technology and not route.active %}<span class="tw-tech-status">路线未开启</span>
+        {% else %}<span class="tw-tech-status">等待中</span>{% endif %}
+    </div>
+
+    <p class="tw-tech-detail-description">{{ node.description }}</p>
+    {% if not public_technology %}
+    <p class="tw-tech-prerequisite"><span aria-hidden="true">↳</span>{% if node.prerequisite_label %}前置：{{ node.prerequisite_label }}{% else %}路线起点{% endif %}</p>
+    {% endif %}
+
+    <dl class="tw-tech-node-effects tw-tech-detail-effects">
+        {% if node.current_effect %}
+        <div><dt>当前效果</dt><dd>{{ node.current_effect }}</dd></div>
+        {% endif %}
+        {% if node.level < node.max_level and node.next_effect %}
+        <div><dt>下级效果</dt><dd>{{ node.next_effect }}</dd></div>
+        {% endif %}
+        {% if node.daily_output %}
+        <div><dt>{% if node.production_interval_days > 1 %}每{{ node.production_interval_days }}天产出{% else %}每日产出{% endif %}</dt><dd>{{ node.daily_output }}</dd></div>
+        {% endif %}
+    </dl>
+
+    {% if node.key == 'wolf_bloodthirsty_cavalry' %}
+    <section class="tw-tech-ability" aria-label="嗜血铁骑训练">
+        <div class="tw-tech-ability-heading">
+            <strong>铁骑训练</strong>
+            <span>待兑换铁骑 {{ cavalry.stock }} 名</span>
+        </div>
+        <p>每名消耗帮会 {{ cavalry.silver_per_unit }} 银两、{{ cavalry.grain_per_unit }} 粮草，训练耗时 {{ cavalry.seconds_per_unit }} 秒。每批最多 {{ cavalry.max_batch }} 名，同一时间可训练一批，整批完成后计入帮会资产。</p>
+        <p>成员每名消耗 {{ cavalry.contribution_per_unit }} 贡献在帮会资产兑换。</p>
+        {% if cavalry.training %}
+        <p role="status">正在训练 {{ cavalry.training.quantity }} 名，预计 {{ cavalry.training.complete_at|date:"m月d日 H:i:s" }} 完成。剩余 <span class="countdown" data-countdown="{{ cavalry.training.complete_at|date:'c' }}" data-format="zh" data-refresh="1" data-complete-text="训练完成">{{ cavalry.training.complete_at|timeuntil }}</span></p>
+        {% endif %}
+        {% if not cavalry.is_unlocked %}
+        <p class="tw-tech-ability-locked">研究此天赋后可开始训练。</p>
+        {% elif not cavalry.can_manage %}
+        <p class="tw-tech-ability-locked">仅帮主和管理员可开始训练。</p>
+        {% elif not cavalry.training %}
+        <form method="post" action="{% url 'guilds:recruit_cavalry' %}"
+              class="tw-cavalry-training-form" data-cavalry-training-form
+              data-silver-per-unit="{{ cavalry.silver_per_unit }}"
+              data-grain-per-unit="{{ cavalry.grain_per_unit }}"
+              data-seconds-per-unit="{{ cavalry.seconds_per_unit }}">
+            {% csrf_token %}
+            <label for="cavalry-training-quantity">训练人数</label>
+            <div class="tw-cavalry-training-controls">
+                <input id="cavalry-training-quantity" type="number" name="quantity" value="1" min="1"
+                       max="{{ cavalry.max_recruitable_quantity }}" step="1" required
+                       {% if not cavalry.can_recruit %}disabled{% endif %}>
+                <button type="submit" class="tw-btn-primary tw-btn-sm" {% if not cavalry.can_recruit %}disabled{% endif %}>开始训练</button>
+            </div>
+            <p aria-live="polite">本批消耗：<span data-cavalry-silver>{{ cavalry.silver_per_unit }}</span> 银两、<span data-cavalry-grain>{{ cavalry.grain_per_unit }}</span> 粮草；预计耗时 <span data-cavalry-duration>{{ cavalry.seconds_per_unit }}秒</span>。</p>
+            <p>帮会现有 {{ cavalry.silver }} 银两、{{ cavalry.grain }} 粮草，本次最多可训练 {{ cavalry.max_recruitable_quantity }} 名。</p>
+            {% if not cavalry.can_recruit %}<p>帮会银两或粮草不足，请补充后再训练。</p>{% endif %}
+        </form>
+        {% endif %}
+    </section>
+    {% endif %}
+
+    <footer class="tw-tech-node-footer tw-tech-detail-footer">
+        <div class="tw-tech-node-cost">
+            <span>下一级升级消耗</span>
+            <strong>{% if not node.enabled %}暂未开放{% elif node.level >= node.max_level %}已达上限{% else %}{{ node.upgrade_cost|default:"—" }}{% endif %}</strong>
+        </div>
+        {% if not node.enabled %}
+            <button type="button" class="tw-btn-secondary tw-tech-action" disabled>暂未开放</button>
+        {% elif node.level >= node.max_level %}
+            <button type="button" class="tw-btn-secondary tw-tech-action" disabled>已满级</button>
+        {% elif not member.can_manage %}
+            <button type="button" class="tw-btn-secondary tw-tech-action" disabled>需管理权限</button>
+        {% elif public_technology and node.available %}
+            <form method="post" action="{% url 'guilds:upgrade_tech' node.key %}" class="tw-tech-action-form">
+                {% csrf_token %}
+                <button type="submit" class="tw-btn-primary tw-tech-action">升级</button>
+            </form>
+        {% elif public_technology %}
+            <button type="button" class="tw-btn-secondary tw-tech-action" disabled>暂不可升级</button>
+        {% elif not route.active or not node.unlocked or not node.available %}
+            <button type="button" class="tw-btn-secondary tw-tech-action" disabled>
+                {% if not node.unlocked %}前置未完成{% elif not route.active %}路线未开启{% else %}暂不可升级{% endif %}
+            </button>
+        {% else %}
+            <form method="post" action="{% url 'guilds:upgrade_tech' node.key %}" class="tw-tech-action-form">
+                {% csrf_token %}
+                <button type="submit" class="tw-btn-primary tw-tech-action">升级</button>
+            </form>
+        {% endif %}
+    </footer>
+</section>

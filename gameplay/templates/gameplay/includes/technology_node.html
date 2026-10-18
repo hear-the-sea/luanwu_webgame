@@ -1,0 +1,54 @@
+{% load gameplay_extras static %}
+{% with icon_key=tech.icon_key|default:tech.key %}
+{% with icon_path='images/technology/qstyle/'|add:icon_key|add:'.webp' %}
+<article class="research-node{% if tech.is_upgrading %} is-studying{% elif tech.level >= tech.max_level %} is-maxed{% elif manor.silver >= tech.upgrade_cost and tech.can_upgrade %} is-ready{% else %} is-unaffordable{% endif %}" id="tech-{{ tech.key }}">
+    <button type="button" class="research-node-button" data-research-open="research-detail-{{ tech.key }}" aria-haspopup="dialog" aria-controls="research-detail-{{ tech.key }}" aria-label="{{ tech.name }}，等级 {{ tech.level }} / {{ tech.max_level }}，{% if tech.is_upgrading %}研究中{% elif tech.level >= tech.max_level %}已满级{% elif manor.silver >= tech.upgrade_cost and tech.can_upgrade %}可研究{% else %}银两不足{% endif %}，查看详情">
+        <span class="research-icon-frame"><img src="{% static icon_path %}" alt="" width="128" height="128" loading="lazy" decoding="async"><span class="research-node-level">{{ tech.level }} <i>/ {{ tech.max_level }}</i></span></span>
+        <strong class="research-node-name">{{ tech.name }}</strong>
+        <span class="research-node-state">{% if tech.is_upgrading %}研究中{% elif tech.level >= tech.max_level %}已满级{% elif manor.silver >= tech.upgrade_cost and tech.can_upgrade %}可研究{% else %}银两不足{% endif %}</span>
+        {% if tech.is_upgrading %}<span class="research-node-note countdown" data-countdown="{{ tech.upgrade_complete_at|date:'c' }}" data-format="hours-minutes" data-refresh="1" data-refresh-url="{% url 'gameplay:refresh_technology_upgrades_api' %}" data-refresh-method="post" data-complete-text="完成">{{ tech.time_remaining|duration_hours_minutes }}</span>{% elif tech.can_upgrade %}<span class="research-node-note">{{ tech.upgrade_cost }} 银两</span>{% else %}<span class="research-node-note">已达最高等级</span>{% endif %}
+    </button>
+    <dialog class="research-dialog" id="research-detail-{{ tech.key }}" aria-labelledby="research-title-{{ tech.key }}">
+        <button type="button" class="research-dialog-close" data-research-close aria-label="关闭科技详情" autofocus>×</button>
+        <header class="research-detail-heading">
+            <img src="{% static icon_path %}" alt="" width="88" height="88">
+            <div><span class="research-eyebrow">{% if current_tab == 'martial' %}武学秘籍{% elif current_tab == 'production' %}百工技艺{% else %}经略典籍{% endif %}</span>
+                <div class="tw-building-headline"><h3 id="research-title-{{ tech.key }}">{{ tech.name }}</h3></div>
+                <span class="research-detail-level">等级 {{ tech.level }} / {{ tech.max_level }}</span>
+            </div>
+        </header>
+        <div class="research-detail-body">
+            <p class="research-description">{{ tech.description }}</p>
+            <div class="research-mastery"><span>研习进度</span><span>{{ tech.level }} / {{ tech.max_level }}</span></div>
+            <progress class="research-progress" value="{{ tech.level }}" max="{{ tech.max_level }}" aria-label="{{ tech.name }}研习等级">{{ tech.level }} / {{ tech.max_level }}</progress>
+            <dl class="research-details">
+                {% if tech.scout_intel_progress %}
+                <div><dt>侦察情报</dt><dd>基础情报{% for unlock in tech.scout_intel_progress.unlocked %}、{{ unlock.name }}{% endfor %}</dd></div>
+                {% if tech.scout_intel_progress.next_unlock %}
+                <div><dt>下次解锁</dt><dd>{{ tech.scout_intel_progress.next_unlock.level }}级 · {{ tech.scout_intel_progress.next_unlock.name }}</dd></div>
+                <div><dt>探子本事</dt><dd>{{ tech.scout_intel_progress.next_unlock.description }}</dd></div>
+                {% else %}<div><dt>探子本事</dt><dd>庄园底细已全部解锁</dd></div>{% endif %}
+                {% endif %}
+                {% if tech.is_upgrading %}
+                <div class="research-remaining"><dt>研究完成</dt><dd><span class="countdown" data-countdown="{{ tech.upgrade_complete_at|date:'c' }}" data-format="hours-minutes" data-refresh="1" data-refresh-url="{% url 'gameplay:refresh_technology_upgrades_api' %}" data-refresh-method="post" data-complete-text="完成">{{ tech.time_remaining|duration_hours_minutes }}</span></dd></div>
+                {% elif tech.can_upgrade %}
+                <div><dt>升级费用</dt><dd{% if manor.silver < tech.upgrade_cost %} class="research-cost-insufficient"{% endif %}>{{ tech.upgrade_cost }} 银两</dd></div>
+                <div><dt>研究耗时</dt><dd>{{ tech.upgrade_duration|duration_hours_minutes }}</dd></div>
+                {% endif %}
+            </dl>
+            <form method="post" action="{% url 'gameplay:upgrade_technology' tech.key %}" class="research-actions">
+                {% csrf_token %}
+                <input type="hidden" name="tab" value="{{ current_tab }}">
+                {% if current_troop_class %}<input type="hidden" name="troop" value="{{ current_troop_class }}">{% endif %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}#tech-{{ tech.key }}">
+                {% if tech.is_upgrading %}<button type="button" class="tw-btn-secondary" disabled>研究进行中</button>
+                {% elif tech.can_upgrade %}
+                    {% if manor.silver >= tech.upgrade_cost %}<button type="submit" class="tw-btn-primary">研习升级 · {{ tech.level|add:'1' }} 级</button>
+                    {% else %}<button type="button" class="tw-btn-secondary" disabled>银两不足</button>{% endif %}
+                {% else %}<button type="button" class="tw-btn-secondary" disabled>已满级</button>{% endif %}
+            </form>
+        </div>
+    </dialog>
+</article>
+{% endwith %}
+{% endwith %}

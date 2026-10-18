@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 import guilds.constants as guild_constants
 from core.utils import safe_int, safe_ordering
@@ -140,6 +141,7 @@ def create_guild(request: Any) -> HttpResponse:
 
 
 @login_required
+@ensure_csrf_cookie
 def guild_detail(request: Any, guild_id: int) -> HttpResponse:
     """帮会详情页面"""
     guild = get_object_or_404(Guild.objects.with_member_count(), id=guild_id, is_active=True)

@@ -289,10 +289,10 @@ def test_reload_runtime_configs_updates_guild_module_constants(monkeypatch):
                     },
                     "technology": {
                         "upgrade_costs": {
-                            "equipment_forge": {"silver": 7000, "grain": 3000, "gold_bar": 2},
+                            "forging_equipment_forge": {"silver": 7000, "grain": 3000, "gold_bar": 2},
                         },
-                        "names": {"equipment_forge": "刷新锻造"},
-                        "descriptions": {"equipment_forge": "刷新后的科技简介"},
+                        "names": {"forging_equipment_forge": "刷新锻造"},
+                        "descriptions": {"forging_equipment_forge": "刷新后的科技简介"},
                     },
                     "warehouse": {"exchange_costs": {"gear_green": 77}, "daily_exchange_limit": 15},
                     "hero_pool": {
@@ -314,7 +314,7 @@ def test_reload_runtime_configs_updates_guild_module_constants(monkeypatch):
             assert guild_constants.TROOP_CONTRIBUTION_RATES == {"0": 1, "1": 1, "3": 3, "5": 6, "7": 12}
             assert guild_constants.DAILY_TROOP_CONTRIBUTION_LIMIT == 321
             assert guild_constants.MIN_DONATION_AMOUNT == 500
-            assert guild_constants.TECH_DESCRIPTIONS["equipment_forge"] == "刷新后的科技简介"
+            assert guild_constants.TECH_DESCRIPTIONS["forging_equipment_forge"] == "刷新后的科技简介"
             assert guild_constants.DAILY_EXCHANGE_LIMIT == 15
             assert guild_constants.GUILD_HERO_POOL_SLOT_LIMIT == 2
             assert guild_constants.GUILD_BATTLE_LINEUP_LIMIT == 20
@@ -337,9 +337,9 @@ def test_reload_runtime_configs_updates_guild_service_runtime_values(monkeypatch
                 "guilds.constants.load_yaml_data",
                 lambda *args, **kwargs: {
                     "technology": {
-                        "upgrade_costs": {"equipment_forge": {"silver": 7000, "grain": 3000, "gold_bar": 2}},
+                        "upgrade_costs": {"forging_equipment_forge": {"silver": 7000, "grain": 3000, "gold_bar": 2}},
                         "upgrade_cost_curves": {"standard_10": {2: 5}},
-                        "upgrade_cost_curve_by_tech": {"equipment_forge": "standard_10"},
+                        "upgrade_cost_curve_by_tech": {"forging_equipment_forge": "standard_10"},
                     },
                     "hero_pool": {
                         "replace_cooldown_seconds": 120,
@@ -349,8 +349,8 @@ def test_reload_runtime_configs_updates_guild_service_runtime_values(monkeypatch
 
             reload_runtime_configs()
 
-            cost = technology_service.calculate_tech_upgrade_cost("equipment_forge", 0)
-            level_two_cost = technology_service.calculate_tech_upgrade_cost("equipment_forge", 1)
+            cost = technology_service.calculate_tech_upgrade_cost("forging_equipment_forge", 0)
+            level_two_cost = technology_service.calculate_tech_upgrade_cost("forging_equipment_forge", 1)
             lineup_cost = technology_service.calculate_tech_upgrade_cost("guild_lineup_capacity", 0)
             submitted_at = timezone.now()
             cooldown_until = hero_pool_service._replace_cooldown_until(

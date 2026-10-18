@@ -181,7 +181,7 @@ def _get_unlock_requirement(config: Dict[str, Any], smelting_level: int, smithy_
     return True, 0, ""
 
 
-def get_smithy_speed_bonus(manor: Manor) -> float:
+def get_smithy_speed_bonus(manor: Manor, *, guild_tech_level: int | None = None) -> float:
     """
     获取冶炼坊速度加成。
 
@@ -193,8 +193,13 @@ def get_smithy_speed_bonus(manor: Manor) -> float:
     Returns:
         速度加成倍率（如0.5表示减少50%时间）
     """
+    from ..technology import combine_guild_production_speed_bonus, get_guild_production_technology_level
+
     level = manor.get_building_level(BuildingKeys.SMITHY)
-    return level * 0.05
+    building_time_reduction = level * 0.05
+    if guild_tech_level is None:
+        guild_tech_level = get_guild_production_technology_level(manor, "sheep_metallurgy")
+    return combine_guild_production_speed_bonus(building_time_reduction, guild_tech_level)
 
 
 def get_smelting_queue_capacity(manor: Manor) -> int:
@@ -202,7 +207,7 @@ def get_smelting_queue_capacity(manor: Manor) -> int:
     return get_production_queue_capacity(manor, BuildingKeys.SMITHY)
 
 
-def get_max_smelting_quantity(manor: Manor) -> int:
+def get_max_smelting_quantity(manor: Manor, *, guild_tech_level: int | None = None) -> int:
     """
     获取单次冶炼金属的最大数量。
 
@@ -214,27 +219,44 @@ def get_max_smelting_quantity(manor: Manor) -> int:
     Returns:
         最大冶炼数量
     """
-    from ..technology import get_player_technology_level
+    from ..technology import (
+        apply_guild_production_quantity_bonus,
+        get_guild_production_technology_level,
+        get_player_technology_level,
+    )
 
     smelting_level = get_player_technology_level(manor, "smelting")
+    if guild_tech_level is None:
+        guild_tech_level = get_guild_production_technology_level(manor, "sheep_metallurgy")
     # 每级100个，最少1个（0级时也能冶炼1个）
-    return max(1, smelting_level * 100)
+    base_quantity = max(1, smelting_level * 100)
+    return apply_guild_production_quantity_bonus(base_quantity, guild_tech_level)
 
 
-def get_max_smithy_medicine_quantity(manor: Manor) -> int:
+def get_max_smithy_medicine_quantity(manor: Manor, *, guild_tech_level: int | None = None) -> int:
     """
     获取单次药品制作的最大数量。
 
     药品按冶炼坊建筑等级解锁，批量制作上限也跟随冶炼坊等级。
     """
+    from ..technology import apply_guild_production_quantity_bonus, get_guild_production_technology_level
+
     smithy_level = manor.get_building_level(BuildingKeys.SMITHY)
-    return max(1, smithy_level * 100)
+    if guild_tech_level is None:
+        guild_tech_level = get_guild_production_technology_level(manor, "sheep_metallurgy")
+    base_quantity = max(1, smithy_level * 100)
+    return apply_guild_production_quantity_bonus(base_quantity, guild_tech_level)
 
 
-def _get_max_quantity_for_config(manor: Manor, config: Dict[str, Any]) -> int:
+def _get_max_quantity_for_config(
+    manor: Manor,
+    config: Dict[str, Any],
+    *,
+    guild_tech_level: int | None = None,
+) -> int:
     if config.get("category") == "medicine":
-        return get_max_smithy_medicine_quantity(manor)
-    return get_max_smelting_quantity(manor)
+        return get_max_smithy_medicine_quantity(manor, guild_tech_level=guild_tech_level)
+    return get_max_smelting_quantity(manor, guild_tech_level=guild_tech_level)
 
 
 def _get_quantity_limit_label(config: Dict[str, Any]) -> str:
@@ -243,7 +265,12 @@ def _get_quantity_limit_label(config: Dict[str, Any]) -> str:
     return "冶炼技等级"
 
 
-def calculate_smelting_duration(base_duration: int, manor: Manor) -> int:
+def calculate_smelting_duration(
+    base_duration: int,
+    manor: Manor,
+    *,
+    guild_tech_level: int | None = None,
+) -> int:
     """
     计算实际冶炼时间。
 
@@ -254,7 +281,7 @@ def calculate_smelting_duration(base_duration: int, manor: Manor) -> int:
     Returns:
         实际冶炼时间（秒）
     """
-    bonus = get_smithy_speed_bonus(manor)
+    bonus = get_smithy_speed_bonus(manor, guild_tech_level=guild_tech_level)
     # 加成越高，时间越短
     duration = max(1, int(base_duration * (1 - bonus)))
     return scale_duration(duration, minimum=1)
@@ -273,7 +300,7 @@ def has_active_smelting_production(manor: Manor) -> bool:
     return manor.smelting_productions.filter(status=SmeltingProduction.Status.PRODUCING).exists()
 
 
-def get_metal_options(manor: Manor) -> List[Dict[str, Any]]:
+def get_metal_options(manor: Manor, *, guild_tech_level: int | None = None) -> List[Dict[str, Any]]:
     """
     获取冶炼坊制作选项列表。
 
@@ -284,9 +311,15 @@ def get_metal_options(manor: Manor) -> List[Dict[str, Any]]:
         物品选项列表
     """
     from ..inventory.core import get_item_quantity
-    from ..technology import get_player_technology_level
+    from ..technology import (
+        apply_guild_production_cost_discount,
+        get_guild_production_technology_level,
+        get_player_technology_level,
+    )
 
     smelting_level = get_player_technology_level(manor, "smelting")
+    if guild_tech_level is None:
+        guild_tech_level = get_guild_production_technology_level(manor, "sheep_metallurgy")
     smithy_level = manor.get_building_level(BuildingKeys.SMITHY)
     active_productions = get_active_smelting_productions(manor)
     is_producing = bool(active_productions)
@@ -305,9 +338,9 @@ def get_metal_options(manor: Manor) -> List[Dict[str, Any]]:
 
     options = []
     for metal_key, config in normalized_configs.items():
-        actual_duration = calculate_smelting_duration(config["base_duration"], manor)
+        actual_duration = calculate_smelting_duration(config["base_duration"], manor, guild_tech_level=guild_tech_level)
         is_unlocked, required_level, required_type_label = _get_unlock_requirement(config, smelting_level, smithy_level)
-        max_quantity = _get_max_quantity_for_config(manor, config)
+        max_quantity = _get_max_quantity_for_config(manor, config, guild_tech_level=guild_tech_level)
         cost_type = config["cost_type"]
         cost_amount = config["cost_amount"]
         category = config["category"]
@@ -319,6 +352,7 @@ def get_metal_options(manor: Manor) -> List[Dict[str, Any]]:
             current_amount = manor.silver
         else:
             current_amount = get_item_quantity(manor, cost_type)
+        effective_cost_amount = apply_guild_production_cost_discount(cost_amount, guild_tech_level)
 
         options.append(
             {
@@ -327,11 +361,13 @@ def get_metal_options(manor: Manor) -> List[Dict[str, Any]]:
                 "cost_type": cost_type,
                 "cost_type_name": cost_type_name,
                 "cost_amount": cost_amount,
+                "effective_cost_amount": effective_cost_amount,
                 "category": category,
                 "category_label": "药品" if category == "medicine" else "金属",
                 "base_duration": config["base_duration"],
                 "actual_duration": actual_duration,
-                "can_afford": current_amount >= cost_amount,
+                "can_afford": current_amount >= effective_cost_amount,
+                "cost_discount_percent": min(15, guild_tech_level * 5),
                 "current_amount": current_amount,
                 "required_level": required_level,
                 "required_type_label": required_type_label,
@@ -368,9 +404,14 @@ def start_smelting_production(manor: Manor, metal_key: str, quantity: int = 1) -
     )
 
     # 检查解锁条件（冶炼技或冶炼坊等级）
-    from ..technology import get_player_technology_level
+    from ..technology import (
+        apply_guild_production_cost_discount,
+        get_guild_production_technology_level,
+        get_player_technology_level,
+    )
 
     smelting_level = get_player_technology_level(manor, "smelting")
+    guild_tech_level = get_guild_production_technology_level(manor, "sheep_metallurgy")
     smithy_level = manor.get_building_level(BuildingKeys.SMITHY)
     is_unlocked, required_level, required_type_label = _get_unlock_requirement(config, smelting_level, smithy_level)
     if not is_unlocked:
@@ -379,7 +420,7 @@ def start_smelting_production(manor: Manor, metal_key: str, quantity: int = 1) -
         raise ProductionStartError(f"需要{required_type_label}{required_level}级才能制作{metal_name_for_level}")
 
     # 验证制作数量
-    max_quantity = _get_max_quantity_for_config(manor, config)
+    max_quantity = _get_max_quantity_for_config(manor, config, guild_tech_level=guild_tech_level)
     if quantity < 1:
         raise ProductionStartError("制作数量至少为1")
     if quantity > max_quantity:
@@ -389,7 +430,7 @@ def start_smelting_production(manor: Manor, metal_key: str, quantity: int = 1) -
     # 获取消耗配置
     cost_type = config["cost_type"]
     cost_amount = config["cost_amount"]
-    total_cost = cost_amount * quantity
+    total_cost = apply_guild_production_cost_discount(cost_amount * quantity, guild_tech_level)
 
     item_name_map = _get_item_name_map({metal_key, cost_type} - {"silver"})
     metal_name = item_name_map.get(metal_key, "未知物品")
@@ -445,7 +486,9 @@ def start_smelting_production(manor: Manor, metal_key: str, quantity: int = 1) -
                 raise ProductionStartError(f"{cost_name}不足")
             output_is_bound = bool(consume_inventory_item_locked(item, total_cost))
 
-        unit_duration = calculate_smelting_duration(config["base_duration"], manor)
+        unit_duration = calculate_smelting_duration(
+            config["base_duration"], locked_manor, guild_tech_level=guild_tech_level
+        )
         actual_duration = unit_duration * quantity
 
         # 创建制作记录

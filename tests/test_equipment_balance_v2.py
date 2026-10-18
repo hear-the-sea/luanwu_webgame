@@ -15,8 +15,14 @@ def test_static_config_matches_immutable_approved_snapshot():
 
     rows = yaml.safe_load((Path(__file__).resolve().parents[1] / "data/item_templates.yaml").read_text())["items"]
     equipment = {row["key"]: row["effect_payload"] for row in rows if row.get("effect_type", "").startswith("equip_")}
-    assert len(equipment) == 265
-    assert equipment == migration.EQUIPMENT_PAYLOADS
+    specialization = importlib.import_module("gameplay.migrations.0211_equipment_specialization")
+    guild_mounts = importlib.import_module("gameplay.migrations.0214_guild_orange_mounts")
+    assert len(equipment) == 267
+    assert equipment == {
+        **migration.EQUIPMENT_PAYLOADS,
+        **specialization.EQUIPMENT_PAYLOADS,
+        **guild_mounts.EQUIPMENT_PAYLOADS,
+    }
 
 
 def test_any_mixed_loadout_with_set_bonuses_adds_at_most_500_troops():

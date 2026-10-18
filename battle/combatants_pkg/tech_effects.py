@@ -20,6 +20,23 @@ def _build_dao_effects(bonus: Callable[[str], float], effects: Dict[str, float])
     _add_effect_if_positive(effects, "double_strike_chance", bonus("double_strike_chance"))
 
 
+def _build_dao_armor_break_effects(effects: Dict[str, float], tech_levels: Dict[str, int]) -> None:
+    from core.game_data.technology import load_technology_templates
+
+    level = max(0, safe_int(tech_levels.get("dao_armor_break", 0), default=0) or 0)
+    if level <= 0:
+        return
+    template = next(
+        (tech for tech in load_technology_templates().get("technologies", []) if tech.get("key") == "dao_armor_break"),
+        None,
+    )
+    if template is None:
+        return
+    level = min(level, int(template["max_level"]))
+    _add_effect_if_positive(effects, "sword_damage_bonus", level * float(template["effect_per_level"]))
+    _add_effect_if_positive(effects, "defense_ignore", level * float(template["defense_ignore_per_level"]))
+
+
 def _build_qiang_effects(bonus: Callable[[str], float], effects: Dict[str, float]) -> None:
     _add_effect_if_positive(effects, "siege_damage", bonus("siege_damage"))
     if _add_effect_if_positive(effects, "counter_attack_chance", bonus("counter_attack_chance")):
@@ -81,6 +98,9 @@ def build_tech_effects(
     builder = builders.get(troop_class)
     if builder is not None:
         builder(_bonus, effects)
+
+    if troop_class == "dao":
+        _build_dao_armor_break_effects(effects, tech_levels or {})
 
     if troop_class == "quan":
         ranged_level = safe_int(tech_levels.get("quan_vs_ranged", 0), default=0)

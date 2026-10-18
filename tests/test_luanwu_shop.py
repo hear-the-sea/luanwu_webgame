@@ -44,27 +44,34 @@ def test_luanwu_shop_page_shows_products_and_warehouse_coin_balance(django_user_
     assert browser.login(username="luanwu_shop_page", password="pass123")
 
     response = browser.get(reverse("gameplay:luanwu_shop"))
+    second_page = browser.get(reverse("gameplay:luanwu_shop"), {"page": 2})
 
-    assert response.status_code == 200
+    assert response.status_code == second_page.status_code == 200
     assert response.context["chunqiu_coin_quantity"] == 12
-    assert "乱舞商城" in response.content.decode()
-    assert "放大镜" in response.content.decode()
-    assert "任务卡" in response.content.decode()
-    assert "招募卡" in response.content.decode()
-    assert "行动力药水" in response.content.decode()
-    assert "门客易容卡" in response.content.decode()
-    assert "×2" in response.content.decode()
-    assert "×3" in response.content.decode()
-    assert "用于增加每日招募次数" in response.content.decode()
-    assert "机关图纸宝箱" in response.content.decode()
-    assert "随机池内共" not in response.content.decode()
-    assert "查看可能获得的图纸" not in response.content.decode()
-    assert "items/large.png" in response.content.decode()
-    assert "items/chunqiu_coin.png" in response.content.decode()
-    assert "今日可兑换" not in response.content.decode()
-    assert "秘市货架" not in response.content.decode()
-    assert "查看仓库" not in response.content.decode()
-    assert "12" in response.content.decode()
+    assert len(response.context["luanwu_shop_page"]) == 8
+    assert len(second_page.context["luanwu_shop_page"]) == 5
+    first_body = response.content.decode()
+    second_body = second_page.content.decode()
+    assert "乱舞商城" in first_body
+    assert "放大镜" in first_body
+    assert "任务卡" in first_body
+    assert "招募卡" in first_body
+    assert "行动力药水" in first_body
+    assert "门客易容卡" not in first_body
+    assert "门客易容卡" in second_body
+    assert "×2" in first_body
+    assert "×3" in first_body
+    assert "用于增加每日招募次数" in first_body
+    assert "机关图纸宝箱" in second_body
+    assert "随机池内共" not in first_body + second_body
+    assert "查看可能获得的图纸" not in first_body + second_body
+    assert "items/large.png" in second_body
+    assert "items/chunqiu_coin.png" in first_body
+    assert "今日可兑换" not in first_body + second_body
+    assert "秘市货架" not in first_body + second_body
+    assert "查看仓库" not in first_body + second_body
+    assert "12" in first_body
+    assert "2 / 2" in second_body
 
 
 @pytest.mark.django_db

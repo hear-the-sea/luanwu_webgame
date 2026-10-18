@@ -53,6 +53,27 @@ def test_exchange_item_rejects_non_positive_quantity(guild_member_with_warehouse
 
 
 @pytest.mark.parametrize(
+    "item_key, unit_cost",
+    [("experience_fruit", 1), ("blueprint_taotieding", 2500), ("equip_shandianqiulongju", 1800)],
+)
+@pytest.mark.django_db
+def test_configured_rewards_can_be_exchanged_without_direct_use(guild_member_with_warehouse_item, item_key, unit_cost):
+    guild, member = guild_member_with_warehouse_item
+    GuildMember.objects.filter(pk=member.pk).update(current_contribution=10000)
+    member.refresh_from_db()
+    GuildWarehouse.objects.create(guild=guild, item_key=item_key, quantity=2, contribution_cost=unit_cost)
+    display = next(item for item in get_warehouse_items(guild, member=member)["items"] if item.item_key == item_key)
+    assert display.can_exchange
+    exchange_item(member, item_key, 1)
+    template = ItemTemplate.objects.get(key=item_key)
+    assert not template.is_usable
+    assert InventoryItem.objects.get(manor=member.user.manor, template=template).quantity == 1
+    member.refresh_from_db()
+    assert member.current_contribution == 10000 - unit_cost
+    assert GuildExchangeLog.objects.get(member=member, item_key=item_key).contribution_cost == unit_cost
+
+
+@pytest.mark.parametrize(
     ("item_key", "effect_type"),
     [
         ("experience_fruit", ItemTemplate.EffectType.EXPERIENCE_ITEM),
@@ -110,7 +131,7 @@ def test_exchange_item_still_rejects_other_free_unusable_items(guild_member_with
     )
     GuildWarehouse.objects.create(guild=guild, item_key=item_key, quantity=1, contribution_cost=0)
 
-    with pytest.raises(GuildWarehouseError, match="此物品不可在仓库使用"):
+    with pytest.raises(GuildWarehouseError, match="此物品不可在帮会资产中直接使用"):
         exchange_item(member, item_key, 1)
 
 

@@ -202,19 +202,19 @@
 }
 
 .luanwu-product-art.rarity-green {
-  border-color: #2e8b57;
+  border-color: var(--rarity-green);
 }
 
 .luanwu-product-art.rarity-blue {
-  border-color: #4169e1;
+  border-color: var(--rarity-blue);
 }
 
 .luanwu-product-art.rarity-purple {
-  border-color: #9932cc;
+  border-color: var(--rarity-purple);
 }
 
 .luanwu-product-art.rarity-orange {
-  border-color: #ff8c00;
+  border-color: var(--rarity-orange);
 }
 
 .luanwu-product-art img {

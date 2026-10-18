@@ -91,8 +91,11 @@
                         <span class="guide-tile__number">03</span>
                         <span class="guide-tag">日常周转</span>
                         <h3>把门客派去任务与打工</h3>
-                        <p>任务看每日剩余和掉落，打工看属性门槛与回报，给日常队列留出行动力。</p>
-                        <a class="tw-btn-secondary tw-btn-sm" href="{% url 'gameplay:tasks' %}">去看任务</a>
+                        <p>任务看每日剩余和掉落，打工看属性门槛与回报，给日常队列留出行动力。打工获得的打工宝箱，从中可以获得多种资源哦！</p>
+                        <div class="flex flex-wrap gap-2">
+                            <a class="tw-btn-secondary tw-btn-sm" href="{% url 'gameplay:tasks' %}">去看任务</a>
+                            <a class="tw-btn-secondary tw-btn-sm" href="{% url 'gameplay:work' %}">去打工</a>
+                        </div>
                     </article>
                     <article class="tw-card guide-tile guide-tile--priority">
                         <span class="guide-tile__number">04</span>
@@ -249,7 +252,7 @@
                 <div class="guide-grid guide-grid--four">
                     <article class="tw-card guide-tile"><span class="guide-tag">技术</span><h3>先基本，再专精</h3><p>基本技术影响外勤与建设；生产技术解锁配方；武艺技术强化护院。</p><a class="tw-btn-secondary tw-btn-sm" href="{% url 'gameplay:technology' %}">升级技术</a></article>
                     <article class="tw-card guide-tile"><span class="guide-tag">生产</span><h3>把原料变成战力</h3><p>畜牧场、马房、冶炼坊和铁匠铺共同决定资源与装备产出。</p><div class="guide-links"><a href="{% url 'gameplay:ranch' %}">畜牧场</a><a href="{% url 'gameplay:smithy' %}">冶炼坊</a><a href="{% url 'gameplay:forge' %}">铁匠铺</a></div></article>
-                    <article class="tw-card guide-tile"><span class="guide-tag">帮会</span><h3>贡献换资源，科技抬上限</h3><p>创建帮会消耗 2 根金条；仓库每天最多兑换 10 次。</p><a class="tw-btn-secondary tw-btn-sm" href="{% url 'guilds:hall' %}">进入帮会大厅</a></article>
+                    <article class="tw-card guide-tile"><span class="guide-tag">帮会</span><h3>贡献换资源，科技抬上限</h3><p>创建帮会消耗 2 根金条；帮会资产每天最多兑换 10 次。</p><a class="tw-btn-secondary tw-btn-sm" href="{% url 'guilds:hall' %}">进入帮会大厅</a></article>
                     <article class="tw-card guide-tile"><span class="guide-tag">城防与特殊</span><h3>城墙、箭塔与监牢</h3><p>城墙和箭塔负责防守，监牢决定俘虏容量，结义林决定结义人数上限。</p><div class="guide-links"><a href="{% url 'gameplay:dashboard' %}">查看建筑</a><a href="{% url 'gameplay:jail' %}">查看监牢</a></div></article>
                 </div>
             </div>

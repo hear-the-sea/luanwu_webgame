@@ -862,20 +862,20 @@
   /* 稀有度边框颜色 */
   .tw-item-icon.rarity-black { border-color: #666; }
   .tw-item-icon.rarity-gray { border-color: #999; }
-  .tw-item-icon.rarity-green { border-color: #2E8B57; }
-  .tw-item-icon.rarity-blue { border-color: #4169E1; }
+  .tw-item-icon.rarity-green { border-color: var(--rarity-green); }
+  .tw-item-icon.rarity-blue { border-color: var(--rarity-blue); }
   .tw-item-icon.rarity-red { border-color: #DC143C; }
-  .tw-item-icon.rarity-purple { border-color: #9932CC; }
-  .tw-item-icon.rarity-orange { border-color: #FF8C00; }
+  .tw-item-icon.rarity-purple { border-color: var(--rarity-purple); }
+  .tw-item-icon.rarity-orange { border-color: var(--rarity-orange); }
 
   /* 稀有度文字颜色 */
   .tw-item-name.rarity-black { color: #333; }
   .tw-item-name.rarity-gray { color: #999; }
-  .tw-item-name.rarity-green { color: #3CB371; }
-  .tw-item-name.rarity-blue { color: #6495ED; }
+  .tw-item-name.rarity-green { color: var(--rarity-green); }
+  .tw-item-name.rarity-blue { color: var(--rarity-blue); }
   .tw-item-name.rarity-red { color: #FF6B6B; }
-  .tw-item-name.rarity-purple { color: #BA55D3; }
-  .tw-item-name.rarity-orange { color: #FFA500; }
+  .tw-item-name.rarity-purple { color: var(--rarity-purple); }
+  .tw-item-name.rarity-orange { color: var(--rarity-orange); }
 
   /* ========== 物品 Tooltip ========== */
   .tw-item-tooltip {
@@ -902,11 +902,11 @@
 
   .tw-tooltip-header.rarity-black { color: #E0E0E0; }
   .tw-tooltip-header.rarity-gray { color: #A0A0A0; }
-  .tw-tooltip-header.rarity-green { color: #4ADE80; }
-  .tw-tooltip-header.rarity-blue { color: #60A5FA; }
+  .tw-tooltip-header.rarity-green { color: var(--rarity-green-on-dark); }
+  .tw-tooltip-header.rarity-blue { color: var(--rarity-blue-on-dark); }
   .tw-tooltip-header.rarity-red { color: #F87171; }
-  .tw-tooltip-header.rarity-purple { color: #C084FC; }
-  .tw-tooltip-header.rarity-orange { color: #FBBF24; }
+  .tw-tooltip-header.rarity-purple { color: var(--rarity-purple-on-dark); }
+  .tw-tooltip-header.rarity-orange { color: var(--rarity-orange-on-dark); }
 
   .tw-tooltip-category {
     @apply text-xs text-gray-300 mb-2;
@@ -1126,11 +1126,11 @@
   /* 门客稀有度颜色 */
   .rarity-text-black { color: #333; }
   .rarity-text-gray { color: #888; }
-  .rarity-text-green { color: #2E8B57; }
-  .rarity-text-blue { color: #4169E1; }
+  .rarity-text-green { color: var(--rarity-green); }
+  .rarity-text-blue { color: var(--rarity-blue); }
   .rarity-text-red { color: #DC143C; }
-  .rarity-text-purple { color: #9932CC; }
-  .rarity-text-orange { color: #FF8C00; }
+  .rarity-text-purple { color: var(--rarity-purple); }
+  .rarity-text-orange { color: var(--rarity-orange); }
 
   /* ========== 警告/提示框 ========== */
   .tw-alert {
@@ -1620,11 +1620,11 @@
 
   .tw-drop-icon.rarity-black { border-color: #666; }
   .tw-drop-icon.rarity-gray { border-color: #999; }
-  .tw-drop-icon.rarity-green { border-color: #2E8B57; }
-  .tw-drop-icon.rarity-blue { border-color: #4169E1; }
+  .tw-drop-icon.rarity-green { border-color: var(--rarity-green); }
+  .tw-drop-icon.rarity-blue { border-color: var(--rarity-blue); }
   .tw-drop-icon.rarity-red { border-color: #DC143C; }
-  .tw-drop-icon.rarity-purple { border-color: #9932CC; }
-  .tw-drop-icon.rarity-orange { border-color: #FF8C00; }
+  .tw-drop-icon.rarity-purple { border-color: var(--rarity-purple); }
+  .tw-drop-icon.rarity-orange { border-color: var(--rarity-orange); }
 
   /* ========== 门客选择网格 ========== */
   .tw-guest-selection {
@@ -2125,11 +2125,27 @@
 
   .tw-pill.rarity-black { @apply bg-gray-200 text-gray-800; }
   .tw-pill.rarity-gray { @apply bg-gray-300 text-gray-700; }
-  .tw-pill.rarity-green { @apply bg-green-100 text-green-800 border-green-300; }
-  .tw-pill.rarity-blue { @apply bg-blue-100 text-blue-800 border-blue-300; }
+  .tw-pill.rarity-green {
+    color: var(--rarity-green);
+    border-color: var(--rarity-green);
+    background-color: color-mix(in srgb, var(--rarity-green) 12%, white);
+  }
+  .tw-pill.rarity-blue {
+    color: var(--rarity-blue);
+    border-color: var(--rarity-blue);
+    background-color: color-mix(in srgb, var(--rarity-blue) 12%, white);
+  }
   .tw-pill.rarity-red { @apply bg-red-100 text-red-800 border-red-300; }
-  .tw-pill.rarity-purple { @apply bg-purple-100 text-purple-800 border-purple-300; }
-  .tw-pill.rarity-orange { @apply bg-orange-100 text-orange-800 border-orange-300; }
+  .tw-pill.rarity-purple {
+    color: var(--rarity-purple);
+    border-color: var(--rarity-purple);
+    background-color: color-mix(in srgb, var(--rarity-purple) 12%, white);
+  }
+  .tw-pill.rarity-orange {
+    color: var(--rarity-orange);
+    border-color: var(--rarity-orange);
+    background-color: color-mix(in srgb, var(--rarity-orange) 12%, white);
+  }
 
   /* ========== 技术标签页 ========== */
   .tw-tech-tabs {
@@ -2256,7 +2272,7 @@
   .tw-arena-reward-grid {
     display: grid;
     gap: 0.75rem;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .tw-arena-reward-card {
@@ -2275,9 +2291,16 @@
 
   .tw-arena-reward-head {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
+  }
+
+  .tw-arena-reward-identity {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.7rem;
   }
 
   .tw-arena-reward-name {
@@ -2314,30 +2337,62 @@
     color: var(--text-secondary);
   }
 
-  .tw-arena-reward-subtitle {
-    margin: 0 0 0.25rem;
-    font-size: 0.72rem;
-    line-height: 1rem;
-    color: var(--text-secondary);
-  }
-
   .tw-arena-reward-list {
     margin: 0;
     padding: 0;
     list-style: none;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.3rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+    gap: 0.45rem;
   }
 
-  .tw-arena-reward-item {
-    font-size: 0.72rem;
-    line-height: 1rem;
+  .tw-arena-reward-icon {
+    display: grid;
+    width: 3.5rem;
+    height: 3.5rem;
+    flex: 0 0 3.5rem;
+    place-items: center;
+    overflow: hidden;
+    border: 1px solid rgba(122, 92, 47, 0.18);
+    border-radius: 0.55rem;
+    background: linear-gradient(145deg, #fffdf7, #e7dfcf);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.65), 0 2px 5px rgba(58, 43, 22, 0.12);
     color: var(--text-primary);
-    background-color: var(--bg-panel);
-    border: 1px solid var(--border-light);
-    border-radius: 999px;
-    padding: 0.1rem 0.45rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  .tw-arena-reward-icon img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0.2rem;
+    object-fit: contain;
+  }
+
+  .tw-arena-reward-icon--fallback {
+    color: #7a3d17;
+  }
+
+  .tw-arena-reward-resource {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-width: 0;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid rgba(139, 69, 19, 0.42);
+    border-radius: 0.45rem;
+    background: rgba(255, 253, 247, 0.82);
+    color: var(--text-primary);
+    font-size: 0.76rem;
+    line-height: 1.1rem;
+  }
+
+  .tw-arena-reward-resource strong {
+    color: var(--text-primary);
+    font-size: 0.76rem;
+    white-space: nowrap;
   }
 
   .tw-arena-reward-form {
@@ -2385,16 +2440,16 @@
   }
 
   @media (max-width: 900px) {
+    .tw-arena-reward-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .tw-arena-rule-list {
       grid-template-columns: 1fr;
     }
   }
 
   @media (max-width: 640px) {
-    .tw-arena-reward-grid {
-      grid-template-columns: 1fr;
-    }
-
     .tw-arena-hero-card .tw-building-media {
       flex: 0 0 198px;
       padding: 6px;

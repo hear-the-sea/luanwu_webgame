@@ -270,6 +270,7 @@ def test_real_battle_uses_full_technology_and_frozen_device_bonuses(
     import battle.execution as execution
     from gameplay.models import ItemTemplate, PlayerTechnology
     from guests.models import GearItem, GearTemplate
+    from guilds.models import Guild, GuildMember, GuildTechnology
 
     a, b, ga, gb = ring_players
     troop, _ = TroopTemplate.objects.update_or_create(
@@ -287,6 +288,12 @@ def test_real_battle_uses_full_technology_and_frozen_device_bonuses(
         PlayerTroop.objects.create(manor=manor, troop_template=troop, count=10)
         PlayerTechnology.objects.update_or_create(manor=manor, tech_key="dao_attack", defaults={"level": 2})
         GearItem.objects.create(manor=manor, guest=guest, template=gear_template)
+    defender_guild = Guild.objects.create(name="RingGuildDefender", founder=a.user, is_active=True)
+    attacker_guild = Guild.objects.create(name="RingGuildAttacker", founder=b.user, is_active=True)
+    GuildMember.objects.create(guild=defender_guild, user=a.user, position="leader", is_active=True)
+    GuildMember.objects.create(guild=attacker_guild, user=b.user, position="leader", is_active=True)
+    GuildTechnology.objects.create(guild=defender_guild, tech_key="wolf_force", level=2)
+    GuildTechnology.objects.create(guild=attacker_guild, tech_key="wolf_force", level=4)
     cache.delete("troop_templates:db")
     if troop_count > 10:
         PlayerTroop.objects.filter(manor=b).delete()
@@ -300,19 +307,24 @@ def test_real_battle_uses_full_technology_and_frozen_device_bonuses(
         tenure.lineup["troops"] = {troop.key: 1000000}
     tenure.save(update_fields=["lineup"])
     seen = {}
+    seen_tech_levels = {}
     original = execution.build_troop_combatants
 
     def capture(loadout, **kwargs):
         units = original(loadout, **kwargs)
         seen[kwargs["side"]] = units
+        seen_tech_levels[kwargs["side"]] = kwargs["tech_levels"]
         from gameplay.services.arena.ring_snapshots import build_ring_technology_payload
 
-        assert kwargs["tech_levels"] == build_ring_technology_payload()["levels"]
+        expected_manor = b if kwargs["side"] == "attacker" else a
+        assert kwargs["tech_levels"] == build_ring_technology_payload(expected_manor)["levels"]
         return units
 
     monkeypatch.setattr(execution, "build_troop_combatants", capture)
     result = ready_challenge_ring(**target(b, occupied), guest_ids=[gb.pk], troop_loadout={troop.key: troop_count})
     report = BattleReport.objects.get(pk=result["battle_report_id"])
+    assert seen_tech_levels["attacker"]["wolf_force"] == 4
+    assert seen_tech_levels["defender"]["wolf_force"] == 2
     assert seen["attacker"][0].attack == pytest.approx(16 * troop_count)
     assert seen["defender"][0].attack == pytest.approx(16 * (ga.troop_capacity if legacy_oversized else troop_count))
     assert report.attacker_equipment_bonuses and report.defender_equipment_bonuses

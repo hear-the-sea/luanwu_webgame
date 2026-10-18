@@ -11,7 +11,7 @@
             <p class="caption">{{ guild.name }}</p>
         </div>
         <div class="flex gap-2">
-            <a href="{% url 'guilds:warehouse' %}" class="tw-btn-secondary">返回仓库</a>
+            <a href="{% url 'guilds:warehouse' %}" class="tw-btn-secondary">返回帮会资产</a>
         </div>
     </div>
 
@@ -52,7 +52,7 @@
         {% else %}
             <div class="tw-guild-empty-state">
                 <strong>暂无兑换记录</strong>
-                <p>成员从仓库兑换物品后会记录在这里。</p>
+                <p>成员从帮会资产兑换护院或物品后会记录在这里。</p>
             </div>
         {% endif %}
     </section>

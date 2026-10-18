@@ -4221,7 +4221,7 @@ def _build_v2_maintenance_plan_from_profile(
                     archetype=str(profile.archetype),
                     config=projection_config,
                     batch_quantity_by_class=batch_quantity_by_class,
-                    # The virtual path shares the same 5000-man manor capacity
+                    # The virtual path shares the same 8000-man manor capacity
                     # service as real recruitment, bank withdrawal, and battle
                     # returns.  The virtual path additionally counts bank
                     # storage and pending recruitment against its prestige-band

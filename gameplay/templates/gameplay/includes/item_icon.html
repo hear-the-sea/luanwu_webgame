@@ -1,0 +1,8 @@
+{% load static %}
+{% if technology_icon_index != None %}
+<span class="tw-item-technology-icon tw-tech-node-icon--{{ technology_icon_index }}" style="background-image: url('{% static 'images/guild_technology/talent_icon_atlas.png' %}')" role="img" aria-label="{{ label }}"></span>
+{% elif image_url %}
+<img src="{{ image_url }}" alt="{{ label }}" width="56" height="56" loading="lazy" decoding="async">
+{% else %}
+<span class="tw-icon-placeholder">{{ icon }}</span>
+{% endif %}

@@ -1,6 +1,7 @@
 from .base import Guild, GuildManager
 from .blueprint_rewards import GuildBlueprintRewardClaim
-from .business import GuildAnnouncement, GuildApplication, GuildTechnology, GuildWarehouse
+from .business import GuildAnnouncement, GuildApplication, GuildTechnology, GuildTechnologyAbilityUse, GuildWarehouse
+from .cavalry import GuildCavalryTraining
 from .hero_pool import GuildBattleLineupEntry, GuildHeroPoolEntry
 from .logs import GuildDonationLog, GuildExchangeLog, GuildResourceLog
 from .member import GuildMember
@@ -16,7 +17,9 @@ __all__ = [
     "GuildBlueprintRewardClaim",
     # Business
     "GuildTechnology",
+    "GuildTechnologyAbilityUse",
     "GuildWarehouse",
+    "GuildCavalryTraining",
     "GuildApplication",
     "GuildAnnouncement",
     "GuildHeroPoolEntry",

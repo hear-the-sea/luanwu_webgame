@@ -25,7 +25,11 @@ from core.utils.time_scale import scale_duration
 
 from ...constants import BuildingKeys
 from ...models import Manor, TroopRecruitment
-from ..manor.troop_capacity import ensure_manor_troop_capacity_locked, get_manor_troop_remaining_space
+from ..manor.troop_capacity import (
+    MANOR_TROOP_CAPACITY,
+    ensure_manor_troop_capacity_locked,
+    get_manor_troop_remaining_space,
+)
 from ..technology import get_player_technology_level, get_technology_template
 from .lifecycle import apply_troop_recruitment_result_locked, finalize_troop_recruitment
 from .lifecycle import schedule_recruitment_completion as _schedule_recruitment_completion
@@ -40,6 +44,7 @@ from .templates import (
 
 logger = logging.getLogger(__name__)
 TROOP_RECRUITMENT_DEFAULT_MAX_QUANTITY = 10
+GUILD_ONLY_RECRUITMENT_ERROR = "该护院由帮会统一训练，请在帮会资产使用贡献兑换"
 __all__ = [
     "calculate_recruitment_duration",
     "check_recruitment_requirements",
@@ -165,12 +170,27 @@ def get_max_recruit_quantity(
     获取单次最大募兵数量。
 
     规则：
+    - 帮会专属兵种：按帮会科技等级乘以配置的单级招募上限；
     - 有造兵术科技时：按 `tech_level * effect_per_level` 计算；
     - 无科技要求（如探子）或配置缺失时：使用默认上限。
     """
     config = recruit_config if isinstance(recruit_config, dict) else get_recruit_config(troop_key)
     if not config:
         return TROOP_RECRUITMENT_DEFAULT_MAX_QUANTITY
+
+    guild_tech_key = str(config.get("guild_tech_key") or "").strip()
+    if guild_tech_key:
+        resolved_tech_level = (
+            safe_non_negative_int(tech_level)
+            if tech_level is not None
+            else _get_guild_technology_level(manor, guild_tech_key)
+        )
+        if resolved_tech_level <= 0:
+            return TROOP_RECRUITMENT_DEFAULT_MAX_QUANTITY
+        quantity_per_level = safe_positive_int(
+            config.get("max_quantity_per_level"), TROOP_RECRUITMENT_DEFAULT_MAX_QUANTITY
+        )
+        return max(1, resolved_tech_level * quantity_per_level)
 
     tech_key = str(config.get("tech_key") or "").strip()
     if not tech_key:
@@ -234,17 +254,26 @@ def check_recruitment_requirements(
     if not recruit_config:
         result["errors"].append("该兵种不可募兵")
         return result
+    if recruit_config.get("guild_only"):
+        result["errors"].append(GUILD_ONLY_RECRUITMENT_ERROR)
+        return result
 
     # 检查科技等级
-    tech_key = recruit_config.get("tech_key")
+    tech_key = str(recruit_config.get("tech_key") or "").strip()
+    guild_tech_key = str(recruit_config.get("guild_tech_key") or "").strip()
+    required_tech_key = guild_tech_key or tech_key
     tech_level_required = recruit_config.get("tech_level", 0)
 
-    if tech_key:
-        player_tech_level = get_player_technology_level(manor, tech_key)
-        if player_tech_level >= tech_level_required:
+    if required_tech_key:
+        required_tech_level = (
+            _get_guild_technology_level(manor, guild_tech_key)
+            if guild_tech_key
+            else get_player_technology_level(manor, tech_key)
+        )
+        if required_tech_level >= tech_level_required:
             result["tech_satisfied"] = True
         else:
-            result["errors"].append(f"需要{_get_tech_name(tech_key)}{tech_level_required}级")
+            result["errors"].append(f"需要{_get_tech_name(required_tech_key)}{tech_level_required}级")
     else:
         result["tech_satisfied"] = True
 
@@ -290,7 +319,9 @@ def check_recruitment_requirements(
     if remaining_space >= quantity:
         result["capacity_satisfied"] = True
     else:
-        result["errors"].append(f"庄园内护院容量不足（剩余{remaining_space}，需要{quantity}，上限5000）")
+        result["errors"].append(
+            f"庄园内护院容量不足（剩余{remaining_space}，需要{quantity}，上限{MANOR_TROOP_CAPACITY}）"
+        )
 
     # 综合判断
     result["can_recruit"] = (
@@ -305,6 +336,12 @@ def check_recruitment_requirements(
 
 def _get_tech_name(tech_key: str) -> str:
     """获取科技名称。"""
+    from guilds.technology_tree import TECHNOLOGY_NODE_BY_KEY
+
+    guild_node = TECHNOLOGY_NODE_BY_KEY.get(tech_key)
+    if guild_node:
+        return str(guild_node.get("name") or tech_key)
+
     from ..technology import get_technology_template
 
     template = get_technology_template(tech_key)
@@ -329,12 +366,13 @@ def get_recruitment_options(manor: Manor) -> List[Dict[str, Any]]:
     from ...models import ItemTemplate
 
     data = load_troop_templates()
-    troops = data.get("troops", [])
+    troops = [troop for troop in data.get("troops", []) if not (troop.get("recruit") or {}).get("guild_only")]
     is_recruiting = has_active_recruitment(manor)
 
     # 收集所有需要的 item_key 和 tech_key，用于批量查询
     all_item_keys: set[str] = set()
     all_tech_keys: set[str] = set()
+    all_guild_tech_keys: set[str] = set()
     for troop in troops:
         recruit_config = troop.get("recruit")
         if not recruit_config:
@@ -343,6 +381,9 @@ def get_recruitment_options(manor: Manor) -> List[Dict[str, Any]]:
         tech_key = recruit_config.get("tech_key")
         if tech_key:
             all_tech_keys.add(tech_key)
+        guild_tech_key = recruit_config.get("guild_tech_key")
+        if guild_tech_key:
+            all_guild_tech_keys.add(guild_tech_key)
 
     # 批量加载 ItemTemplate
     item_templates = {t.key: t for t in ItemTemplate.objects.filter(key__in=all_item_keys)}
@@ -352,6 +393,7 @@ def get_recruitment_options(manor: Manor) -> List[Dict[str, Any]]:
 
     # 批量加载玩家科技等级
     tech_levels = _batch_get_tech_levels(manor, all_tech_keys)
+    guild_tech_levels = _batch_get_guild_tech_levels(manor, all_guild_tech_keys)
     capacity_remaining = get_manor_troop_remaining_space(manor)
 
     options = []
@@ -361,12 +403,14 @@ def get_recruitment_options(manor: Manor) -> List[Dict[str, Any]]:
             continue
 
         troop_key = troop["key"]
-        tech_key = recruit_config.get("tech_key")
+        personal_tech_key = recruit_config.get("tech_key")
+        guild_tech_key = recruit_config.get("guild_tech_key")
+        tech_key = guild_tech_key or personal_tech_key
         tech_level_required = recruit_config.get("tech_level", 0)
 
         # 获取科技等级（从缓存的批量查询结果）
         if tech_key:
-            player_tech_level = tech_levels.get(tech_key, 0)
+            player_tech_level = guild_tech_levels.get(tech_key, 0) if guild_tech_key else tech_levels.get(tech_key, 0)
             is_unlocked = player_tech_level >= tech_level_required
         else:
             player_tech_level = 0
@@ -496,6 +540,36 @@ def _batch_get_tech_levels(manor: Manor, tech_keys: set[str]) -> Dict[str, int]:
     return {t.tech_key: t.level for t in techs}
 
 
+def _get_guild_technology_level(manor: Manor, tech_key: str) -> int:
+    levels = _batch_get_guild_tech_levels(manor, {tech_key})
+    return levels.get(tech_key, 0)
+
+
+def _batch_get_guild_tech_levels(manor: Manor, tech_keys: set[str]) -> Dict[str, int]:
+    if not tech_keys or not getattr(manor, "user_id", None):
+        return {}
+
+    from guilds.models import GuildMember, GuildTechnology
+
+    guild_id = (
+        GuildMember.objects.filter(
+            user_id=manor.user_id,
+            is_active=True,
+            guild__is_active=True,
+        )
+        .values_list("guild_id", flat=True)
+        .first()
+    )
+    if guild_id is None:
+        return {}
+    return {
+        key: int(level)
+        for key, level in GuildTechnology.objects.filter(guild_id=guild_id, tech_key__in=tech_keys).values_list(
+            "tech_key", "level"
+        )
+    }
+
+
 def _validate_start_recruitment_inputs(manor: Manor, troop_key: str, quantity: int) -> dict:
     if quantity < 1:
         raise TroopRecruitmentError("募兵数量至少为1")
@@ -510,6 +584,8 @@ def _validate_start_recruitment_inputs(manor: Manor, troop_key: str, quantity: i
     recruit_config = troop.get("recruit")
     if not recruit_config:
         raise TroopRecruitmentError("该兵种不可募兵")
+    if recruit_config.get("guild_only"):
+        raise TroopRecruitmentError(GUILD_ONLY_RECRUITMENT_ERROR)
 
     max_quantity = get_max_recruit_quantity(manor, troop_key, recruit_config)
     if quantity > max_quantity:
@@ -544,8 +620,15 @@ def quote_troop_recruitment(
         manor,
         {item_key for item_key, _cost in equipment_costs},
     )
-    tech_key = recruit_config.get("tech_key")
-    tech_level = get_player_technology_level(manor, tech_key) if tech_key else 0
+    personal_tech_key = str(recruit_config.get("tech_key") or "").strip()
+    guild_tech_key = str(recruit_config.get("guild_tech_key") or "").strip()
+    tech_key = guild_tech_key or personal_tech_key or None
+    if guild_tech_key:
+        tech_level = _get_guild_technology_level(manor, guild_tech_key)
+    elif personal_tech_key:
+        tech_level = get_player_technology_level(manor, personal_tech_key)
+    else:
+        tech_level = 0
     base_duration = safe_positive_int(
         recruit_config.get("base_duration"),
         DEFAULT_TROOP_RECRUITMENT_BASE_DURATION,

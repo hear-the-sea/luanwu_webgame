@@ -9,26 +9,27 @@
 
 {% block guild_content %}
 <section class="dashboard gpvp-page">
-    <div class="tw-section-header">
-        <div>
-            <h1>帮会对战</h1>
-        </div>
-    </div>
-
+    <h1 class="sr-only">帮会对战</h1>
     {% if active_run or incoming_runs %}
-    <section class="tw-card gpvp-shell" style="margin-bottom: 1.5rem;">
-        <div class="tw-manor-list-header">
-            <h2>当前战况</h2>
-            <span class="tw-manor-count">自动刷新</span>
+    <section class="gpvp-current-section" aria-labelledby="gpvp-current-title">
+        <div class="gpvp-section-heading">
+            <div>
+                <span class="gpvp-section-kicker">战场动态</span>
+                <h2 id="gpvp-current-title">当前战况</h2>
+            </div>
+            <span class="gpvp-live-pill"><i aria-hidden="true"></i>自动刷新</span>
         </div>
-        <div class="flex flex-col gap-3">
+        <div class="gpvp-run-list">
             {% if active_run %}
-            <div class="tw-manor-card">
-                <div class="tw-manor-card-info">
-                    <div class="tw-manor-name">帮会出征：{{ active_run.run.defender_guild.name }}</div>
-                    <div class="tw-manor-location">{{ active_run.display_hint }}</div>
+            <article class="gpvp-run-card gpvp-run-card--outgoing">
+                <span class="gpvp-run-emblem" aria-hidden="true">出</span>
+                <div class="gpvp-run-copy">
+                    <span class="gpvp-run-kicker">我方远征 · {{ active_run.display_status_label }}</span>
+                    <strong>帮会出征：{{ active_run.run.defender_guild.name }}</strong>
+                    <p>{{ active_run.display_hint }}</p>
                 </div>
-                <div class="tw-manor-card-stats">
+                <div class="gpvp-run-eta">
+                    <small>预计{{ active_run.display_eta_label }}</small>
                     {% if active_run.display_eta_at %}
                     <span class="countdown"
                           data-countdown="{{ active_run.display_eta_at|date:'c' }}"
@@ -40,24 +41,27 @@
                     {% else %}
                     <span class="tw-muted">等待更新</span>
                     {% endif %}
-                    {% if active_run.can_retreat %}
-                    <form method="post" action="{% url 'guilds:pvp_retreat' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="run_id" value="{{ active_run.run.id }}">
-                        <button type="submit" class="tw-btn-secondary tw-btn-sm">{{ active_run.action_label }}</button>
-                    </form>
-                    {% endif %}
                 </div>
-            </div>
+                {% if active_run.can_retreat %}
+                <form method="post" action="{% url 'guilds:pvp_retreat' %}" class="gpvp-run-action">
+                    {% csrf_token %}
+                    <input type="hidden" name="run_id" value="{{ active_run.run.id }}">
+                    <button type="submit" class="tw-btn-secondary tw-btn-sm">{{ active_run.action_label }}</button>
+                </form>
+                {% endif %}
+            </article>
             {% endif %}
 
             {% for run in incoming_runs %}
-            <div class="tw-manor-card">
-                <div class="tw-manor-card-info">
-                    <div class="tw-manor-name">帮会来袭：{{ run.run.attacker_guild.name }}</div>
-                    <div class="tw-manor-location">{{ run.display_hint }}</div>
+            <article class="gpvp-run-card gpvp-run-card--incoming">
+                <span class="gpvp-run-emblem" aria-hidden="true">警</span>
+                <div class="gpvp-run-copy">
+                    <span class="gpvp-run-kicker">敌方来袭 · {{ run.display_status_label }}</span>
+                    <strong>帮会来袭：{{ run.run.attacker_guild.name }}</strong>
+                    <p>{{ run.display_hint }}</p>
                 </div>
-                <div class="tw-manor-card-stats">
+                <div class="gpvp-run-eta">
+                    <small>预计{{ run.display_eta_label }}</small>
                     {% if run.display_eta_at %}
                     <span class="countdown"
                           data-countdown="{{ run.display_eta_at|date:'c' }}"
@@ -70,224 +74,248 @@
                     <span class="tw-muted">等待更新</span>
                     {% endif %}
                 </div>
-            </div>
+            </article>
             {% endfor %}
         </div>
     </section>
     {% endif %}
 
-    <section class="gpvp-shell">
-        {% if not member.can_manage %}
-        <p class="tw-muted m-0">仅帮主或管理员可配置帮会出征。</p>
-        {% elif active_run %}
-        <div class="gpvp-inline-state">
-            <h2>暂不可再次出征</h2>
-            <p class="m-0">当前已有帮会部队在外，返程结束前不可再次发起进攻。</p>
-        </div>
-        {% else %}
-        <form
-            id="guild-pvp-launch-form"
-            method="post"
-            action="{% url 'guilds:pvp_launch' %}"
-            data-guild-pvp-page
-            data-default-target-id="{{ default_target_id|default:'' }}"
-            data-dispatch-limit="{{ dispatch_limit }}"
-            data-pvp-base-seconds="{{ pvp_base_travel_time_seconds }}"
-            data-pvp-march-factor="{{ pvp_march_factor|unlocalize }}"
-            data-pvp-time-scale="{{ pvp_time_scale_multiplier|unlocalize }}"
-        >
-            {% csrf_token %}
-
-            <div class="gpvp-grid">
-                <section class="tw-card gpvp-panel gpvp-panel--targets">
-                    <div class="gpvp-panel-head">
-                        <div>
-                            <h2>选择目标帮会</h2>
-                            <p class="caption m-0">目标列表显示基础时间，实际单程与归队时间随出征阵容更新。</p>
-                        </div>
-                    </div>
-
-                    {% if targets %}
-                    <div class="gpvp-toolbar">
-                        <input
-                            type="search"
-                            class="tw-input gpvp-search-input"
-                            placeholder="搜索帮会名称"
-                            aria-label="搜索帮会名称"
-                            data-target-search
-                        >
-                        <select class="tw-input gpvp-region-select" aria-label="按区域筛选帮会" data-target-region-filter>
-                            <option value="">全部区域</option>
-                            {% for region in region_filter_choices %}
-                            <option value="{{ region.value }}">{{ region.label }}</option>
-                            {% endfor %}
-                        </select>
-                        <div class="gpvp-chip-row">
-                            <button type="button" class="gpvp-chip is-active" data-target-filter="all"><span>全部</span> {{ target_filter_counts.all }}</button>
-                            <button type="button" class="gpvp-chip" data-target-filter="attackable"><span>可进攻</span> {{ target_filter_counts.attackable }}</button>
-                            <button type="button" class="gpvp-chip" data-target-filter="blocked"><span>不可进攻</span> {{ target_filter_counts.blocked }}</button>
-                        </div>
-                    </div>
-
-                    <div class="gpvp-target-list gpvp-scroll-panel" data-target-list>
-                        {% for target in targets %}
-                        <label
-                            class="gpvp-target-row{% if target.guild.id == default_target_id and target.status_key == 'attackable' %} is-active is-selected-target{% endif %}{% if target.status_key != 'attackable' %} is-blocked{% endif %}"
-                            data-target-option
-                            data-target-id="{{ target.guild.id }}"
-                            data-target-status="{{ target.status_key }}"
-                            data-display-status="{{ target.status_key }}"
-                            data-target-region="{{ target.region_key }}"
-                            data-target-search="{{ target.search_text|lower }}"
-                        >
-                            <input
-                                type="radio"
-                                name="defender_guild_id"
-                                value="{{ target.guild.id }}"
-                                class="gpvp-target-radio"
-                                data-target-radio
-                                {% if target.guild.id == default_target_id and target.status_key == 'attackable' %}checked{% endif %}
-                                {% if target.status_key != 'attackable' %}disabled{% endif %}
-                            >
-                            <div class="gpvp-target-row-main">
-                                <strong>{{ target.guild.name }}</strong>
-                                <span class="gpvp-target-badge">等级 {{ target.guild.level }}</span>
-                            </div>
-                            <div class="gpvp-target-row-meta">
-                                <span>{{ target.region_display }} · {{ target.travel_projection_label }}</span>
-                                <span class="gpvp-status-pill{% if target.status_key == 'attackable' %} is-attackable{% else %} is-blocked{% endif %}">
-                                    {{ target.status_label }}
-                                </span>
-                            </div>
-                            <div class="gpvp-target-row-note{% if target.status_key == 'attackable' %} is-attackable{% else %} is-blocked{% endif %}">
-                                {{ target.detail_message }}
-                            </div>
-                        </label>
-                        {% endfor %}
-                        <div class="gpvp-empty-state" data-target-empty hidden>
-                            <p class="tw-muted m-0">没有符合筛选条件的目标帮会。</p>
-                        </div>
-                    </div>
-                    {% else %}
-                    <p class="tw-muted m-0">暂无可显示的目标帮会。</p>
-                    {% endif %}
-                </section>
-
-                <section class="tw-card gpvp-panel gpvp-panel--guests">
-                    <div class="gpvp-panel-head">
-                        <div>
-                            <h2>选择门客</h2>
-                            <p class="caption m-0">最多可派遣 {{ dispatch_limit }} 名上阵门客出征。</p>
-                        </div>
-                        <div class="gpvp-count-pill">
-                            已选 <strong data-selected-guest-count>0</strong> / {{ dispatch_limit }}
-                        </div>
-                    </div>
-
-                    {% if lineup_entries %}
-                    <div class="tw-guest-selection gpvp-guest-grid gpvp-scroll-panel">
-                        {% for entry in lineup_entries %}
-                        {% with guest=entry.pool_entry.source_guest %}
-                        <label class="tw-guest-checkbox gpvp-guest-option">
-                            <input
-                                type="checkbox"
-                                name="pool_entry_ids"
-                                value="{{ entry.pool_entry_id }}"
-                                class="guest-input"
-                                data-guest-option
-                                data-avatar-url="{{ guest.avatar_url }}"
-                                data-guest-name="{{ guest.display_name }}"
-                                data-agility="{{ guest.agility }}"
-                                data-troop-capacity="{{ guest.troop_capacity }}"
-                            >
-                            <div class="tw-guest-card">
-                                <div class="tw-guest-avatar">
-                                    {% if guest.avatar_url %}
-                                    <img src="{{ guest.avatar_url }}" alt="{{ guest.display_name }}" loading="lazy" decoding="async">
-                                    {% else %}
-                                    <div class="tw-avatar-placeholder">{{ guest.display_name|slice:":1" }}</div>
-                                    {% endif %}
-                                </div>
-                                <div class="tw-guest-details">
-                                    <div class="tw-guest-info-row">
-                                        <span class="tw-guest-name-sm rarity-text-{{ guest.rarity|lower }}">{{ guest.display_name }}</span>
-                                        <span class="tw-guest-level-sm">等级 {{ guest.level }}</span>
-                                    </div>
-                                    <div class="tw-guest-stats-sm">
-                                        <span>敏捷 {{ guest.agility }} · 带兵 {{ guest.troop_capacity }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </label>
-                        {% endwith %}
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <p class="tw-muted m-0">当前没有可派遣的上阵门客。</p>
-                    {% endif %}
-                </section>
-
-                <section class="tw-card gpvp-panel gpvp-panel--troops">
-                    <div class="gpvp-panel-head">
-                        <div>
-                            <h2>配置护院</h2>
-                            <p class="caption m-0" data-guild-capacity-status>选择门客后计算带兵上限。</p>
-                        </div>
-                    </div>
-
-                    {% if troop_storages %}
-                    <div class="gpvp-troop-list gpvp-scroll-panel">
-                        {% for storage in troop_storages %}
-                        <div class="gpvp-troop-row">
-                            <div class="gpvp-troop-main">
-                                <div class="gpvp-troop-avatar">
-                                    {% if storage.troop_template.avatar %}
-                                    <img src="{{ storage.troop_template.avatar.url }}" alt="{{ storage.troop_template.name }}" loading="lazy" decoding="async">
-                                    {% else %}
-                                    <div class="tw-avatar-placeholder">{{ storage.troop_template.name|slice:":1" }}</div>
-                                    {% endif %}
-                                </div>
-                                <div class="gpvp-troop-copy">
-                                    <strong>{{ storage.troop_template.name }}</strong>
-                                    <span class="tw-muted">当前库存 {{ storage.count }}</span>
-                                </div>
-                            </div>
-                            <div class="gpvp-troop-controls">
-                                <button type="button" class="tw-btn-secondary tw-btn-sm" data-adjust-troop="-1" data-troop-key="{{ storage.troop_template.key }}">-</button>
-                                <input
-                                    class="tw-input gpvp-troop-input"
-                                    type="number"
-                                    name="troop_{{ storage.troop_template.key }}"
-                                    min="0"
-                                    max="{{ storage.count }}"
-                                    value="0"
-                                    data-troop-input
-                                    data-troop-key="{{ storage.troop_template.key }}"
-                                    data-troop-name="{{ storage.troop_template.name }}"
-                                    data-troop-avatar-url="{% if storage.troop_template.avatar %}{{ storage.troop_template.avatar.url }}{% endif %}"
-                                >
-                                <button type="button" class="tw-btn-secondary tw-btn-sm" data-adjust-troop="1" data-troop-key="{{ storage.troop_template.key }}">+</button>
-                                <button type="button" class="tw-btn-secondary tw-btn-sm" data-fill-troop="{{ storage.troop_template.key }}">全部</button>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <p class="tw-muted m-0">当前没有可派遣的帮会护院。</p>
-                    {% endif %}
-                </section>
-            </div>
-
-            <section class="gpvp-submit-actions">
-                <div class="gpvp-launch-summary" aria-live="polite">
-                    <span><small>护院</small><strong data-guild-troop-summary>0 / 0</strong></span>
-                    <span><small>预计到达</small><strong data-guild-travel-arrival>8小时</strong></span>
-                    <span><small>预计归队</small><strong data-guild-travel-return>16小时</strong></span>
+    <section class="gpvp-command" aria-label="帮会出征配置">
+        <div class="gpvp-shell">
+            {% if not member.can_manage %}
+            <div class="gpvp-inline-state gpvp-inline-state--locked" role="note">
+                <span class="gpvp-state-mark" aria-hidden="true">令</span>
+                <div>
+                    <h3>出征权限未开放</h3>
+                    <p class="m-0">仅帮主或管理员可配置帮会出征。</p>
                 </div>
-                <button type="submit" class="tw-btn-primary" data-launch-submit>发起帮会出征</button>
-            </section>
-        </form>
-        {% endif %}
+            </div>
+            {% elif active_run %}
+            <div class="gpvp-inline-state gpvp-inline-state--busy" role="status">
+                <span class="gpvp-state-mark" aria-hidden="true">行</span>
+                <div>
+                    <h3>暂不可再次出征</h3>
+                    <p class="m-0">当前已有帮会部队在外，返程结束前不可再次发起进攻。</p>
+                </div>
+            </div>
+            {% else %}
+            <form
+                id="guild-pvp-launch-form"
+                method="post"
+                action="{% url 'guilds:pvp_launch' %}"
+                data-guild-pvp-page
+                data-default-target-id="{{ default_target_id|default:'' }}"
+                data-dispatch-limit="{{ dispatch_limit }}"
+                data-pvp-base-seconds="{{ pvp_base_travel_time_seconds }}"
+                data-pvp-march-factor="{{ pvp_march_factor|unlocalize }}"
+                data-pvp-time-scale="{{ pvp_time_scale_multiplier|unlocalize }}"
+            >
+                {% csrf_token %}
+
+                <div class="gpvp-grid">
+                    <section class="tw-card gpvp-panel gpvp-panel--targets">
+                        <div class="gpvp-panel-head">
+                            <div>
+                                <h2>选择目标帮会</h2>
+                                <p class="caption m-0">基础行军时间会随出征阵容更新。</p>
+                            </div>
+                            <span class="gpvp-count-pill"><strong>{{ target_filter_counts.attackable }}</strong> 可进攻</span>
+                        </div>
+
+                        {% if targets %}
+                        <div class="gpvp-toolbar">
+                            <input
+                                type="search"
+                                class="tw-input gpvp-search-input"
+                                placeholder="搜索帮会名称"
+                                aria-label="搜索帮会名称"
+                                data-target-search
+                            >
+                            <select class="tw-input gpvp-region-select" aria-label="按区域筛选帮会" data-target-region-filter>
+                                <option value="">全部区域</option>
+                                {% for region in region_filter_choices %}
+                                <option value="{{ region.value }}">{{ region.label }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="gpvp-chip-row" role="group" aria-label="目标状态筛选">
+                                <button type="button" class="gpvp-chip is-active" data-target-filter="all" aria-pressed="true"><span>全部</span> {{ target_filter_counts.all }}</button>
+                                <button type="button" class="gpvp-chip" data-target-filter="attackable" aria-pressed="false"><span>可进攻</span> {{ target_filter_counts.attackable }}</button>
+                                <button type="button" class="gpvp-chip" data-target-filter="blocked" aria-pressed="false"><span>不可进攻</span> {{ target_filter_counts.blocked }}</button>
+                            </div>
+                        </div>
+
+                        <div class="gpvp-target-list gpvp-scroll-panel" data-target-list>
+                            {% for target in targets %}
+                            <label
+                                class="gpvp-target-row{% if target.guild.id == default_target_id and target.status_key == 'attackable' %} is-active is-selected-target{% endif %}{% if target.status_key != 'attackable' %} is-blocked{% endif %}"
+                                data-target-option
+                                data-target-id="{{ target.guild.id }}"
+                                data-target-status="{{ target.status_key }}"
+                                data-display-status="{{ target.status_key }}"
+                                data-target-region="{{ target.region_key }}"
+                                data-target-search="{{ target.search_text|lower }}"
+                            >
+                                <input
+                                    type="radio"
+                                    name="defender_guild_id"
+                                    value="{{ target.guild.id }}"
+                                    class="gpvp-target-radio"
+                                    data-target-radio
+                                    {% if target.guild.id == default_target_id and target.status_key == 'attackable' %}checked{% endif %}
+                                    {% if target.status_key != 'attackable' %}disabled{% endif %}
+                                >
+                                <span class="gpvp-target-seal" aria-hidden="true">战</span>
+                                <span class="gpvp-target-content">
+                                    <span class="gpvp-target-row-main">
+                                        <strong>{{ target.guild.name }}</strong>
+                                        <span class="gpvp-target-badge">等级 {{ target.guild.level }}</span>
+                                    </span>
+                                    <span class="gpvp-target-row-meta">
+                                        <span>{{ target.region_display }} · {{ target.travel_projection_label }}</span>
+                                        <span class="gpvp-status-pill{% if target.status_key == 'attackable' %} is-attackable{% else %} is-blocked{% endif %}">
+                                            {{ target.status_label }}
+                                        </span>
+                                    </span>
+                                    <span class="gpvp-target-row-note{% if target.status_key == 'attackable' %} is-attackable{% else %} is-blocked{% endif %}">
+                                        {{ target.detail_message }}
+                                    </span>
+                                </span>
+                            </label>
+                            {% endfor %}
+                            <div class="gpvp-empty-state" data-target-empty hidden>
+                                <p class="tw-muted m-0">没有符合筛选条件的目标帮会。</p>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="gpvp-empty-state">
+                            <span aria-hidden="true">暂无目标</span>
+                            <p class="tw-muted m-0">暂无可显示的目标帮会。</p>
+                        </div>
+                        {% endif %}
+                    </section>
+
+                    <section class="tw-card gpvp-panel gpvp-panel--guests">
+                        <div class="gpvp-panel-head">
+                            <div>
+                                <h2>选择门客</h2>
+                                <p class="caption m-0">最多派遣 {{ dispatch_limit }} 名上阵门客。</p>
+                            </div>
+                            <div class="gpvp-count-pill">
+                                已选 <strong data-selected-guest-count>0</strong><i>/ {{ dispatch_limit }}</i>
+                            </div>
+                        </div>
+
+                        {% if lineup_entries %}
+                        <div class="tw-guest-selection gpvp-guest-grid gpvp-scroll-panel">
+                            {% for entry in lineup_entries %}
+                            {% with guest=entry.pool_entry.source_guest %}
+                            <label class="tw-guest-checkbox gpvp-guest-option">
+                                <input
+                                    type="checkbox"
+                                    name="pool_entry_ids"
+                                    value="{{ entry.pool_entry_id }}"
+                                    class="guest-input"
+                                    data-guest-option
+                                    data-avatar-url="{{ guest.avatar_url }}"
+                                    data-guest-name="{{ guest.display_name }}"
+                                    data-agility="{{ guest.agility }}"
+                                    data-troop-capacity="{{ guest.troop_capacity }}"
+                                >
+                                <span class="gpvp-guest-select-mark" aria-hidden="true">✓</span>
+                                <span class="tw-guest-card">
+                                    <span class="tw-guest-avatar">
+                                        {% if guest.avatar_url %}
+                                        <img src="{{ guest.avatar_url }}" alt="" width="48" height="48" loading="lazy" decoding="async">
+                                        {% else %}
+                                        <span class="tw-avatar-placeholder">{{ guest.display_name|slice:":1" }}</span>
+                                        {% endif %}
+                                    </span>
+                                    <span class="tw-guest-details">
+                                        <span class="tw-guest-info-row">
+                                            <span class="tw-guest-name-sm rarity-text-{{ guest.rarity|lower }}">{{ guest.display_name }}</span>
+                                            <span class="tw-guest-level-sm">Lv.{{ guest.level }}</span>
+                                        </span>
+                                        <span class="tw-guest-stats-sm">敏捷 {{ guest.agility }} · 带兵 {{ guest.troop_capacity }}</span>
+                                    </span>
+                                </span>
+                            </label>
+                            {% endwith %}
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="gpvp-empty-state">
+                            <span aria-hidden="true">暂无门客</span>
+                            <p class="tw-muted m-0">当前没有可派遣的上阵门客。</p>
+                        </div>
+                        {% endif %}
+                    </section>
+
+                    <section class="tw-card gpvp-panel gpvp-panel--troops">
+                        <div class="gpvp-panel-head">
+                            <div>
+                                <h2>配置护院</h2>
+                                <p class="caption m-0" data-guild-capacity-status>选择门客后计算带兵上限。</p>
+                            </div>
+                        </div>
+
+                        {% if troop_storages %}
+                        <div class="gpvp-troop-list gpvp-scroll-panel">
+                            {% for storage in troop_storages %}
+                            <div class="gpvp-troop-row">
+                                <div class="gpvp-troop-main">
+                                    <div class="gpvp-troop-avatar">
+                                        {% if storage.troop_template.avatar %}
+                                        <img src="{{ storage.troop_template.avatar.url }}" alt="" width="48" height="48" loading="lazy" decoding="async">
+                                        {% else %}
+                                        <span class="tw-avatar-placeholder">{{ storage.troop_template.name|slice:":1" }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="gpvp-troop-copy">
+                                        <strong>{{ storage.troop_template.name }}</strong>
+                                        <span class="tw-muted">库存 {{ storage.count }}</span>
+                                    </div>
+                                </div>
+                                <div class="gpvp-troop-controls">
+                                    <button type="button" class="tw-btn-secondary tw-btn-sm" data-adjust-troop="-1" data-troop-key="{{ storage.troop_template.key }}" aria-label="减少{{ storage.troop_template.name }}数量">−</button>
+                                    <input
+                                        class="tw-input gpvp-troop-input"
+                                        type="number"
+                                        name="troop_{{ storage.troop_template.key }}"
+                                        min="0"
+                                        max="{{ storage.count }}"
+                                        value="0"
+                                        aria-label="{{ storage.troop_template.name }}出征人数"
+                                        data-troop-input
+                                        data-troop-key="{{ storage.troop_template.key }}"
+                                        data-troop-name="{{ storage.troop_template.name }}"
+                                        data-troop-avatar-url="{% if storage.troop_template.avatar %}{{ storage.troop_template.avatar.url }}{% endif %}"
+                                    >
+                                    <button type="button" class="tw-btn-secondary tw-btn-sm" data-adjust-troop="1" data-troop-key="{{ storage.troop_template.key }}" aria-label="增加{{ storage.troop_template.name }}数量">+</button>
+                                    <button type="button" class="tw-btn-secondary tw-btn-sm gpvp-fill-button" data-fill-troop="{{ storage.troop_template.key }}">全部</button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="gpvp-empty-state">
+                            <span aria-hidden="true">暂无护院</span>
+                            <p class="tw-muted m-0">当前没有可派遣的帮会护院。</p>
+                        </div>
+                        {% endif %}
+                    </section>
+                </div>
+
+                <section class="gpvp-submit-actions" aria-label="出征预估与确认">
+                    <div class="gpvp-launch-summary" aria-live="polite">
+                        <span><small>护院</small><strong data-guild-troop-summary>0 / 0</strong></span>
+                        <span><small>预计到达</small><strong data-guild-travel-arrival>8小时</strong></span>
+                        <span><small>预计归队</small><strong data-guild-travel-return>16小时</strong></span>
+                    </div>
+                    <button type="submit" class="tw-btn-primary" data-launch-submit>发起帮会出征</button>
+                </section>
+            </form>
+            {% endif %}
+        </div>
     </section>
 </section>
 {% endblock %}
