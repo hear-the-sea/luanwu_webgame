@@ -148,6 +148,8 @@ def build_virtual_troop_candidates(
             if not isinstance(troop, Mapping):
                 continue
             recruit = troop.get("recruit") or {}
+            if recruit.get("guild_only"):
+                continue
             required_tech_key = str(recruit.get("tech_key") or "").strip() or None
             required_level = max(0, int(recruit.get("tech_level") or 0))
             actual_level = max(0, int(technology_levels.get(required_tech_key, 0))) if required_tech_key else 0

@@ -12,6 +12,7 @@ from django.db import transaction
 from battle.models import TroopTemplate
 from gameplay.constants import BUILDING_MAX_LEVELS, BuildingKeys
 from gameplay.models import BuildingType, ItemTemplate
+from gameplay.services.recruitment.templates import load_troop_templates
 from gameplay.services.technology_catalog import build_technology_index, build_troop_to_class_index
 from guests.models import GearTemplate, GuestTemplate, RecruitmentPoolEntry, Skill
 
@@ -421,12 +422,29 @@ def _load_bootstrap_catalog_uncached(
         )
     )
     available_troop_keys = {str(row["key"]) for row in troop_rows}
+    configured_troop_keys = _configured_values(config, "troop_template_keys")
     selected_troop_keys = _selected_keys(
-        configured=_configured_values(config, "troop_template_keys"),
+        configured=configured_troop_keys,
         available=available_troop_keys,
         all_sentinels=frozenset({ALL_TEMPLATE_SENTINEL}),
         field="troop_template_keys",
     )
+    guild_only_troop_keys = {
+        str(entry.get("key") or "").strip()
+        for entry in (load_troop_templates().get("troops") or ())
+        if isinstance(entry, Mapping)
+        and str(entry.get("key") or "").strip()
+        and bool((entry.get("recruit") or {}).get("guild_only"))
+    }
+    selected_guild_only_troop_keys = selected_troop_keys & guild_only_troop_keys
+    if selected_guild_only_troop_keys:
+        if ALL_TEMPLATE_SENTINEL in configured_troop_keys:
+            selected_troop_keys.difference_update(selected_guild_only_troop_keys)
+        else:
+            raise BootstrapCatalogError(
+                "projection.troop_template_keys includes guild-only troops: "
+                + ", ".join(sorted(selected_guild_only_troop_keys))
+            )
     troop_to_class = build_troop_to_class_index()
     troops = tuple(
         TroopCatalogEntry(

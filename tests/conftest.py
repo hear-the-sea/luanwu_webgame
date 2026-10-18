@@ -19,6 +19,7 @@ from battle.models import TroopTemplate
 from gameplay.constants import BuildingKeys
 from gameplay.models import BuildingType, PlayerTroop
 from gameplay.services.manor.core import ensure_manor
+from gameplay.services.recruitment.templates import load_troop_templates
 from tests.jail_persuasion.conftest import persuasion_world as persuasion_world  # noqa: F401
 
 # 获取项目根目录
@@ -71,7 +72,13 @@ def ensure_test_schema_ready() -> None:
 
 
 def ensure_troop_data_loaded() -> None:
-    if TroopTemplate.objects.exists():
+    expected_keys = {
+        str(entry.get("key") or "").strip()
+        for entry in (load_troop_templates().get("troops") or ())
+        if isinstance(entry, dict) and str(entry.get("key") or "").strip()
+    }
+    loaded_keys = set(TroopTemplate.objects.filter(key__in=expected_keys).values_list("key", flat=True))
+    if expected_keys and loaded_keys == expected_keys:
         return
     _run_project_command("load_troop_templates", verbosity=0, skip_images=True)
 

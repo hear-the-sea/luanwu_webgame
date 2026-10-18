@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
@@ -28,6 +29,7 @@ from gameplay.services.virtual_player_core.asset_policy import (
     useful_virtual_technology_keys,
 )
 from gameplay.services.virtual_player_core.bootstrap_catalog import (
+    BootstrapCatalogError,
     clear_bootstrap_catalog_cache,
     load_bootstrap_catalog,
 )
@@ -401,6 +403,21 @@ def test_unlocked_bootstrap_catalog_is_cached_but_locked_reads_bypass_cache(game
 
 
 @pytest.mark.django_db
+def test_bootstrap_catalog_excludes_guild_only_troops_from_all_projection(game_data) -> None:
+    config = load_virtual_player_config()
+    assert config is not None
+
+    catalog = load_bootstrap_catalog(config)
+    assert "bloodthirsty_cavalry" not in {entry.key for entry in catalog.troops}
+    assert {entry.troop_class for entry in catalog.troops} >= {"dao", "qiang", "jian", "quan", "gong"}
+
+    explicit_config = deepcopy(config)
+    explicit_config["projection"]["troop_template_keys"] = ["bloodthirsty_cavalry"]
+    with pytest.raises(BootstrapCatalogError, match="includes guild-only troops: bloodthirsty_cavalry"):
+        load_bootstrap_catalog(explicit_config)
+
+
+@pytest.mark.django_db
 def test_v2_bootstrap_excludes_event_boss_skills_from_virtual_guests(
     released_v2_policy,
     game_data,
@@ -756,5 +773,6 @@ def test_v2_materialization_stays_within_query_and_write_budgets(
     writes = [
         query["sql"] for query in captured.captured_queries if query["sql"].lstrip().upper().startswith(write_prefixes)
     ]
-    assert len(captured) <= 80
-    assert len(writes) <= 25
+    # Materialization seeds troop rows for the complete five-class game catalog.
+    assert len(captured) <= 100
+    assert len(writes) <= 30

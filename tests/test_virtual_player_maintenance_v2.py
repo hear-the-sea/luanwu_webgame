@@ -1264,12 +1264,21 @@ def _prepare_guest_healing_plan(
     return plan, target, item
 
 
-def _prepare_troop_recruitment_plan(profile: BotProfile, monkeypatch):
+def _prepare_troop_recruitment_plan(profile: BotProfile, monkeypatch, *, include_guild_only: bool = False):
     # The shared permissive-reference fixture suppresses troop projections so
     # unrelated action tests stay deterministic.  This helper explicitly opts
     # back into the policy-2 virtual troop pool and disables the other action
     # families so the assertions exercise the current direct PlayerTroop path.
     monkeypatch.setattr(maintenance, "build_virtual_troop_candidates", build_virtual_troop_candidates_real)
+    if include_guild_only:
+        troop_classes = {
+            class_key: {
+                **class_info,
+                "troops": [*(class_info.get("troops") or ()), "bloodthirsty_cavalry"],
+            }
+            for class_key, class_info in maintenance.get_troop_classes().items()
+        }
+        monkeypatch.setattr(maintenance, "get_troop_classes", lambda: troop_classes)
     monkeypatch.setattr(maintenance, "_training_candidates", lambda **_kwargs: ((), {}))
     monkeypatch.setattr(maintenance, "build_virtual_equipment_candidates", lambda **_kwargs: ((), {}))
     monkeypatch.setattr(maintenance, "build_virtual_skill_learning_candidates", lambda **_kwargs: ((), {}))
@@ -1348,6 +1357,14 @@ def _prepare_troop_recruitment_plan(profile: BotProfile, monkeypatch):
     assert plan.troop_recruitment_quote is not None
     assert plan.intent is not None
     return plan
+
+
+@pytest.mark.django_db
+def test_v2_troop_recruitment_skips_guild_only_troops(active_v2_profile, permissive_reference, monkeypatch) -> None:
+    plan = _prepare_troop_recruitment_plan(active_v2_profile, monkeypatch, include_guild_only=True)
+
+    assert plan.troop_recruitment_quote is not None
+    assert plan.troop_recruitment_quote.troop_key != "bloodthirsty_cavalry"
 
 
 def _troop_domain_state(plan) -> dict[str, object]:
