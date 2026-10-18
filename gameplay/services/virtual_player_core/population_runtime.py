@@ -358,7 +358,7 @@ def try_merge_already_classified_mysql_prestige_transition_cells(
             `created_at`, `updated_at`
         )
         SELECT
-            source.`region`, bands.`prestige_band`, 1,
+            source.`region`, %s, 1,
             0, {database_now_sql}, 0, '',
             {database_now_sql}, {database_now_sql}
         FROM (
@@ -371,29 +371,35 @@ def try_merge_already_classified_mysql_prestige_transition_cells(
               AND manor.`region` = %s
             LIMIT 1
         ) source
-        CROSS JOIN (
-            SELECT %s AS `prestige_band`
-            UNION ALL SELECT %s
-        ) bands
         WHERE TRUE
         ON DUPLICATE KEY UPDATE
             `requested_revision` = `requested_revision` + 1,
             `updated_at` = {database_now_sql}
     """
-    with connection.cursor() as cursor:
-        cursor.execute(
-            sql,
-            [
-                manor_id,
-                after_band,
-                after_prestige,
-                normalized_region,
-                cells[0][1],
-                cells[1][1],
-            ],
-        )
-        if cursor.rowcount == 0:
-            return None
+
+    class _StalePrestigeTransition(Exception):
+        """Rollback a partially applied transition if its source stops matching."""
+
+    try:
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                for index, (_region, prestige_band) in enumerate(cells):
+                    cursor.execute(
+                        sql,
+                        [
+                            prestige_band,
+                            manor_id,
+                            after_band,
+                            after_prestige,
+                            normalized_region,
+                        ],
+                    )
+                    if cursor.rowcount == 0:
+                        if index == 0:
+                            return None
+                        raise _StalePrestigeTransition
+    except _StalePrestigeTransition:
+        return None
     return cells
 
 
