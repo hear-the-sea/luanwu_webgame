@@ -57,9 +57,13 @@ def get_stable_page_context(manor: Any) -> dict[str, Any]:
     guild_tech_level = get_guild_production_technology_level(manor, "sheep_horsemanship")
     speed_bonus = get_stable_speed_bonus(manor, guild_tech_level=guild_tech_level)
     active_productions = get_active_productions(manor)
+    horse_options = get_horse_options(manor, guild_tech_level=guild_tech_level)
+    image_urls = {option["key"]: option["image_url"] for option in horse_options}
+    for production in active_productions:
+        setattr(production, "image_url", image_urls.get(production.horse_key, ""))
     queue_capacity = get_horse_queue_capacity(manor)
     return {
-        "horse_options": get_horse_options(manor, guild_tech_level=guild_tech_level),
+        "horse_options": horse_options,
         "active_productions": active_productions,
         "speed_bonus": speed_bonus,
         "speed_bonus_percent": int(speed_bonus * 100),
@@ -80,9 +84,13 @@ def get_ranch_page_context(manor: Any) -> dict[str, Any]:
     guild_tech_level = get_guild_production_technology_level(manor, "sheep_breeding")
     speed_bonus = get_ranch_speed_bonus(manor, guild_tech_level=guild_tech_level)
     active_productions = get_active_livestock_productions(manor)
+    livestock_options = get_livestock_options(manor, guild_tech_level=guild_tech_level)
+    image_urls = {option["key"]: option["image_url"] for option in livestock_options}
+    for production in active_productions:
+        setattr(production, "image_url", image_urls.get(production.livestock_key, ""))
     queue_capacity = get_livestock_queue_capacity(manor)
     return {
-        "livestock_options": get_livestock_options(manor, guild_tech_level=guild_tech_level),
+        "livestock_options": livestock_options,
         "active_productions": active_productions,
         "speed_bonus": speed_bonus,
         "speed_bonus_percent": int(speed_bonus * 100),
@@ -115,6 +123,9 @@ def get_smithy_page_context(manor: Any, *, current_category: str | None = None) 
         else max_smelting_quantity
     )
     active_productions = get_active_smelting_productions(manor)
+    image_urls = {option["key"]: option["image_url"] for option in metal_options}
+    for production in active_productions:
+        setattr(production, "image_url", image_urls.get(production.metal_key, ""))
     queue_capacity = get_smelting_queue_capacity(manor)
     return {
         "current_smithy_category": normalized_category,
@@ -149,7 +160,7 @@ def get_forge_page_context(
     current_category: str,
     page: str | int,
     items_per_page: int = UIConstants.FORGE_ITEMS_PER_PAGE,
-    decompose_items_per_page: int = 9,
+    decompose_items_per_page: int = UIConstants.FORGE_DECOMPOSE_ITEMS_PER_PAGE,
     blueprint_items_per_page: int = UIConstants.FORGE_BLUEPRINTS_PER_PAGE,
     blueprint_page: str | int = 1,
 ) -> dict[str, Any]:

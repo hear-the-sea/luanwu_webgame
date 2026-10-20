@@ -10,22 +10,13 @@ from battle.services import simulate_report
 from gameplay.models import (
     ArenaRing,
     ArenaRingAction,
+    ArenaRingDaily,
     ArenaRingInspection,
     ArenaRingMatch,
     ArenaRingTenure,
     Manor,
-    ResourceEvent,
 )
-from gameplay.services.resources import log_resource_gain, spend_resources_locked
 
-from .ring_rewards import (
-    credit_coins,
-    credit_streak_chunqiu_reward,
-    credit_streak_reward,
-    daily_for,
-    effective_streak,
-    settle_time,
-)
 from .ring_rules import RING_DEFINITIONS as RING_DEFINITIONS
 from .ring_rules import load_ring_rules, ring_challenge_state
 from .ring_snapshots import (
@@ -37,8 +28,7 @@ from .ring_snapshots import (
 )
 
 
-def _end(ring: ArenaRing, tenure: ArenaRingTenure, manor: Manor, now: datetime, reason: str) -> None:
-    settle_time(tenure, manor, now)
+def _end(ring: ArenaRing, tenure: ArenaRingTenure, now: datetime, reason: str) -> None:
     tenure.ended_at = min(now, tenure.ends_at)
     tenure.end_reason = reason
     tenure.save(update_fields=["ended_at", "end_reason"])
@@ -141,21 +131,6 @@ def _action(
             if tenure.manor_id == actor.pk:
                 result["lineup"] = tenure.lineup
             else:
-                defender = manors[tenure.manor_id]
-                spend_resources_locked(
-                    actor,
-                    {"silver": load_ring_rules()["inspection_cost"]},
-                    "查看擂台阵容（手续费 20000 银两）",
-                    reason=ResourceEvent.Reason.SHOP_PURCHASE,
-                )
-                defender.silver += load_ring_rules()["inspection_income"]
-                defender.save(update_fields=["silver"])
-                log_resource_gain(
-                    defender,
-                    {"silver": load_ring_rules()["inspection_income"]},
-                    ResourceEvent.Reason.SHOP_SELL,
-                    "擂台阵容查看收入（已扣 10% 手续费）",
-                )
                 receipt = ArenaRingInspection.objects.create(
                     buyer=actor,
                     tenure=tenure,
@@ -169,7 +144,7 @@ def _action(
             if tenure.manor_id != actor.pk:
                 raise ArenaRingError("只有擂主可以执行此操作")
             if kind == "leave":
-                _end(ring, tenure, actor, now, "leave")
+                _end(ring, tenure, now, "leave")
             else:
                 tenure.lineup = build_ring_lineup(actor, guest_ids or [], troop_loadout or {})
                 tenure.version += 1
@@ -196,7 +171,7 @@ def _action(
                 raise ArenaRingError(f"对本任擂主最多挑战 {load_ring_rules()['max_tenure_challenges']} 次")
             if challenge_state["challenge_cooldown"]:
                 raise ArenaRingError(f"攻擂冷却中，还需等待 {challenge_state['challenge_cooldown_minutes']} 分钟")
-            attacker_daily = daily_for(actor, timezone.localdate(now))
+            attacker_daily, _ = ArenaRingDaily.objects.get_or_create(manor=actor, date=timezone.localdate(now))
             if attacker_daily.challenges >= load_ring_rules()["daily_challenges"]:
                 raise ArenaRingError("今日擂台挑战次数已用完")
             lineup = build_ring_lineup(actor, guest_ids or [], troop_loadout or {})
@@ -225,7 +200,6 @@ def _action(
             )
             low, high = sorted((actor.pk, defender.pk))
             date = timezone.localdate(now)
-            effective = not ArenaRingMatch.objects.filter(pair_low=low, pair_high=high, reward_date=date).exists()
             winner = actor if report.winner == "attacker" else (defender if report.winner == "defender" else None)
             match = ArenaRingMatch.objects.create(
                 tenure=tenure,
@@ -239,35 +213,13 @@ def _action(
                 created_at=now,
             )
             attacker_daily.challenges += 1
-            if effective and attacker_daily.participation_rewards < load_ring_rules()["daily_participation_rewards"]:
-                credit_coins(actor, load_ring_rules()["participation_coins"], "擂台挑战参与奖励")
-                attacker_daily.participation_rewards += 1
             attacker_daily.save()
-            settle_time(tenure, defender, now)
             if winner == actor:
-                if effective:
-                    streak = effective_streak(tenure)
-                    amount = max(
-                        (coins for count, coins in load_ring_rules()["streak_tiers"] if streak >= count), default=0
-                    )
-                    result["break_streak_coins"] = credit_streak_reward(actor, amount, date, breaking=True)
-                _end(ring, tenure, defender, now, "defeated")
+                _end(ring, tenure, now, "defeated")
                 tenure = _new_tenure(ring, actor, lineup, now)
             elif winner == defender:
                 tenure.defenses += 1
                 tenure.save(update_fields=["defenses"])
-                daily = daily_for(defender, date)
-                if effective and daily.defense_rewards < load_ring_rules()["daily_defense_rewards"]:
-                    credit_coins(defender, load_ring_rules()["defense_coins"], "擂台守擂成功奖励")
-                    daily.defense_rewards += 1
-                    daily.save()
-                if effective:
-                    streak = effective_streak(tenure)
-                    amount = dict(load_ring_rules()["streak_tiers"]).get(streak, 0)
-                    result["streak_coins"] = credit_streak_reward(defender, amount, date)
-                    result["streak_chunqiu_coins"] = credit_streak_chunqiu_reward(defender, streak, date)
-                    if result["streak_chunqiu_coins"]:
-                        result.update(streak_reward_manor_id=defender.pk, streak_reward_date=date.isoformat())
             result.update(match_id=match.pk, battle_report_id=report.pk, won=winner == actor)
         assert tenure is not None
         result.update(tenure_id=tenure.pk, version=ring.version)
@@ -306,20 +258,12 @@ def refresh_due_rings(*, now: datetime | None = None) -> int:
             .filter(pk__in=[r.current_tenure_id for r in rings if r.current_tenure_id])
             .order_by("id")
         }
-        manors = {
-            m.pk: m
-            for m in Manor.objects.select_for_update()
-            .filter(pk__in=[t.manor_id for t in tenures.values()])
-            .order_by("id")
-        }
         now = now or timezone.now()
         count = 0
         for ring in rings:
             tenure = tenures.get(ring.current_tenure_id) if ring.current_tenure_id else None
             if tenure:
                 if tenure.ends_at <= now:
-                    _end(ring, tenure, manors[tenure.manor_id], now, "expired")
+                    _end(ring, tenure, now, "expired")
                     count += 1
-                else:
-                    settle_time(tenure, manors[tenure.manor_id], now)
         return count

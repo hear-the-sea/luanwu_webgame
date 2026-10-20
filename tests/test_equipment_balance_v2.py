@@ -17,11 +17,20 @@ def test_static_config_matches_immutable_approved_snapshot():
     equipment = {row["key"]: row["effect_payload"] for row in rows if row.get("effect_type", "").startswith("equip_")}
     specialization = importlib.import_module("gameplay.migrations.0211_equipment_specialization")
     guild_mounts = importlib.import_module("gameplay.migrations.0214_guild_orange_mounts")
-    assert len(equipment) == 267
+    chiyou = importlib.import_module("gameplay.migrations.0221_chiyou_rewards_and_unique_guests")
+    zhaoyun = importlib.import_module("gameplay.migrations.0222_zhaoyun_equipment_rewards")
+    feature_equipment = {
+        key: item["effect_payload"]
+        for migration in (chiyou, zhaoyun)
+        for key, item in migration.ITEM_DEFAULTS.items()
+        if str(item.get("effect_type", "")).startswith("equip_")
+    }
+    assert len(equipment) == 278
     assert equipment == {
         **migration.EQUIPMENT_PAYLOADS,
         **specialization.EQUIPMENT_PAYLOADS,
         **guild_mounts.EQUIPMENT_PAYLOADS,
+        **feature_equipment,
     }
 
 

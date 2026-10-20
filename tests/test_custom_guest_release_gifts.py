@@ -30,14 +30,26 @@ def release_items():
         ItemTemplate.objects.get_or_create(key=key, defaults={"name": key})
 
 
+@pytest.fixture
+def historical_manor_factory(manor_factory):
+    def create():
+        manor, user = manor_factory()
+        # 上线礼包针对历史玩家；移除新版初始化赠送，保留真实发放逻辑。
+        InventoryItem.objects.filter(manor=manor, template__key="custom_guest_card").delete()
+        CustomGuestProgress.objects.filter(manor=manor).delete()
+        return manor, user
+
+    return create
+
+
 def run(cutoff, *, apply=False):
     output = StringIO()
     call_command("send_custom_guest_release_gifts", cutoff=cutoff.isoformat(), apply=apply, stdout=output)
     return output.getvalue()
 
 
-def test_default_dry_run_has_no_writes_and_preflights_all_items(manor_factory):
-    manor, _ = manor_factory()
+def test_default_dry_run_has_no_writes_and_preflights_all_items(historical_manor_factory):
+    manor, _ = historical_manor_factory()
     cutoff = timezone.now()
     assert "DRY RUN" in run(cutoff)
     assert not GlobalMailCampaign.objects.filter(key=release.CAMPAIGN_KEY).exists()
@@ -48,8 +60,8 @@ def test_default_dry_run_has_no_writes_and_preflights_all_items(manor_factory):
     assert not GlobalMailCampaign.objects.filter(key=release.CAMPAIGN_KEY).exists()
 
 
-def test_missing_card_gets_bound_gifts_once_and_login_does_not_duplicate(manor_factory):
-    manor, _ = manor_factory()
+def test_missing_card_gets_bound_gifts_once_and_login_does_not_duplicate(historical_manor_factory):
+    manor, _ = historical_manor_factory()
     cutoff = timezone.now()
     assert "已发=1" in run(cutoff, apply=True)
     message = Message.objects.get(manor=manor, title=release.TITLE)
@@ -69,8 +81,8 @@ def test_missing_card_gets_bound_gifts_once_and_login_does_not_duplicate(manor_f
 
 
 @pytest.mark.parametrize("ownership", ["inventory", "guest", "pending_bound", "pending_unbound"])
-def test_existing_card_guest_or_unclaimed_card_mail_does_not_get_another(manor_factory, ownership):
-    manor, _ = manor_factory()
+def test_existing_card_guest_or_unclaimed_card_mail_does_not_get_another(historical_manor_factory, ownership):
+    manor, _ = historical_manor_factory()
     if ownership == "inventory":
         InventoryItem.objects.create(
             manor=manor, template=ItemTemplate.objects.get(key="custom_guest_card"), quantity=1, bound_quantity=1
@@ -85,6 +97,20 @@ def test_existing_card_guest_or_unclaimed_card_mail_does_not_get_another(manor_f
     assert message.attachments == {"bound_items": release.GIFTS}
     assert CustomGuestProgress.objects.get(manor=manor).card_issued
     assert not ensure_custom_guest_card(manor)
+
+
+def test_new_player_initial_card_is_not_duplicated_by_release_gifts(manor_factory):
+    manor, _ = manor_factory()
+    card = InventoryItem.objects.get(manor=manor, template__key="custom_guest_card")
+    assert (card.quantity, card.bound_quantity) == (1, 1)
+    run(timezone.now(), apply=True)
+    message = Message.objects.get(manor=manor, title=release.TITLE)
+    assert message.attachments == {"bound_items": release.GIFTS}
+    claim_message_attachments(message)
+    assert not ensure_custom_guest_card(manor)
+    card.refresh_from_db()
+    assert (card.quantity, card.bound_quantity) == (1, 1)
+    assert InventoryItem.objects.filter(manor=manor, template__key="custom_guest_card").count() == 1
 
 
 def test_cutoff_virtual_and_later_accounts_are_excluded_and_campaign_stays_inactive(manor_factory):
@@ -117,9 +143,9 @@ def test_cutoff_virtual_and_later_accounts_are_excluded_and_campaign_stays_inact
         run(cutoff + timedelta(microseconds=1), apply=True)
 
 
-def test_failed_manor_rolls_back_card_marker_and_retries_without_duplicates(manor_factory, monkeypatch):
-    first, _ = manor_factory()
-    second, _ = manor_factory()
+def test_failed_manor_rolls_back_card_marker_and_retries_without_duplicates(historical_manor_factory, monkeypatch):
+    first, _ = historical_manor_factory()
+    second, _ = historical_manor_factory()
     cutoff = timezone.now()
     original = release.create_message
 

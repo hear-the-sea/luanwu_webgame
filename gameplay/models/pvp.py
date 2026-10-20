@@ -268,6 +268,8 @@ class JailPrisoner(models.Model):
     )
     original_guest_name = models.CharField("原门客名", max_length=64, blank=True, default="")
     original_level = models.PositiveIntegerField("原等级", default=1)
+    # 保存被俘前的丸子使用记录，收编后继续限制使用次数。
+    rarity_pill_used = models.BooleanField("已使用升阶丸子", default=False)
     loyalty = models.PositiveIntegerField("忠诚度", default=25)
     captured_loyalty = models.PositiveSmallIntegerField("被俘时忠诚")
     affinity = models.PositiveSmallIntegerField("归心", default=0)

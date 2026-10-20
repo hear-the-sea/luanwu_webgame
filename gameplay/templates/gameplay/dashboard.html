@@ -4,7 +4,7 @@
 {% block title %}{{ category_label }} - 庄园建筑{% endblock %}
 
 {% block content %}
-<section class="dashboard">
+<section class="dashboard manor-buildings-page" data-manor-page>
     <nav class="tw-category-tabs">
         {% for cat_key, cat_label in categories %}
         <a href="{% url 'gameplay:buildings_category' cat_key %}"

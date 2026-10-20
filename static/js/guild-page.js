@@ -40,7 +40,7 @@
       }
       button.addEventListener("click", () => {
         form.action = button.dataset.rejectUrl || "";
-        target.textContent = `确认拒绝 ${button.dataset.username || "该玩家"} 的申请吗？`;
+        target.textContent = `确认拒绝 ${button.dataset.applicantName || "该玩家"} 的申请吗？`;
         openModal(modal, button);
       });
     });

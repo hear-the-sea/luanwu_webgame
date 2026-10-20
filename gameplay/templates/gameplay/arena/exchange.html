@@ -1,11 +1,45 @@
 {% extends "gameplay/arena/base.html" %}
-{% load gameplay_extras %}
+{% load static %}
 
 {% block arena_body %}
 <section class="tw-panel mb-6">
-    <div class="tw-panel-header">奖励兑换</div>
     <div class="tw-panel-content">
+        <p class="tw-arena-exchange-balance">当前角斗币：<strong>{{ manor.arena_coins }}</strong></p>
         <div class="tw-arena-reward-grid">
+            <article class="tw-arena-reward-card {% if not chunqiu_coin_exchange.can_exchange %}tw-arena-reward-card--disabled{% endif %}">
+                <div class="tw-arena-reward-head">
+                    <div class="tw-arena-reward-identity">
+                        <span class="tw-arena-reward-icon" aria-hidden="true">
+                            <img src="{% static 'items/chunqiu_coin.png' %}" alt="" width="56" height="56" loading="lazy" decoding="async">
+                        </span>
+                        <p class="tw-arena-reward-name">春秋币</p>
+                    </div>
+                    <span class="tw-arena-reward-cost">{{ chunqiu_coin_exchange.exchange_rate }} 币</span>
+                </div>
+                <p class="tw-arena-reward-desc">消耗 {{ chunqiu_coin_exchange.exchange_rate }} 角斗币兑换 1 枚春秋币。</p>
+                <p class="tw-arena-reward-limit">日限 {{ chunqiu_coin_exchange.daily_limit }}</p>
+                <form method="post" action="{% url 'gameplay:arena_currency_exchange' %}" class="tw-arena-reward-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <label class="sr-only" for="arena-chunqiu-exchange-quantity">兑换春秋币数量</label>
+                    <input
+                        id="arena-chunqiu-exchange-quantity"
+                        class="tw-arena-qty-input"
+                        type="number"
+                        name="quantity"
+                        value="1"
+                        min="1"
+                        max="{{ chunqiu_coin_exchange.max_quantity|default:1 }}"
+                        step="1"
+                        inputmode="numeric"
+                        autocomplete="off"
+                        {% if not chunqiu_coin_exchange.can_exchange %}disabled{% endif %}
+                    >
+                    <button type="submit" class="tw-btn-secondary tw-btn-sm" {% if not chunqiu_coin_exchange.can_exchange %}disabled{% endif %}>
+                        兑换
+                    </button>
+                </form>
+            </article>
             {% for reward in reward_rows %}
             <article class="tw-arena-reward-card {% if not reward.can_afford %}tw-arena-reward-card--disabled{% endif %}">
                 <div class="tw-arena-reward-head">

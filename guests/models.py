@@ -288,6 +288,9 @@ class Guest(models.Model):
     # 洗髓丹使用次数（每个门客最多使用10次，重生后重置）
     xisuidan_used = models.PositiveIntegerField("洗髓丹已使用次数", default=0)
 
+    # 绿转蓝和蓝转紫共用一次机会，重生和转移归属后保留。
+    rarity_pill_used = models.BooleanField("已使用升阶丸子", default=False)
+
     gender = models.CharField(max_length=16, choices=GENDER_CHOICES, default="unknown")
     morality = models.PositiveIntegerField("品性", default=50)
     status = models.CharField(max_length=16, choices=GuestStatus.choices, default=GuestStatus.IDLE)

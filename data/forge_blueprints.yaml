@@ -715,3 +715,17 @@ recipes:
       earth_stone: 3
       fire_stone: 3
       water_stone: 3
+
+  - blueprint_key: blueprint_chiyoujia
+    result_item_key: equip_chiyoujia
+    required_forging: 10
+    quantity_out: 1
+    description: 消耗北斗七星铠甲各一件与一张图纸，锻造蚩尤甲，无需其他材料。
+    costs:
+      equip_tianshukaijia: 1
+      equip_tianxuankaijia: 1
+      equip_tianjikaijia: 1
+      equip_yaoguangkaijia: 1
+      equip_tianquankaijia: 1
+      equip_yuhengkaijia: 1
+      equip_kaiyangkaijia: 1

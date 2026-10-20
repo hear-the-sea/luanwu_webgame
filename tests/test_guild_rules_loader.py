@@ -6,15 +6,25 @@ def test_normalize_guild_rules_uses_defaults_for_invalid_root():
 
 
 def test_default_daily_donation_limits_match_guild_rules():
+    expected_rates = {"silver": 1, "grain": 1, "gold_bar": 800}
+    expected_troop_rates = {"0": 1, "1": 1, "3": 2, "5": 4, "7": 6}
     assert DEFAULT_GUILD_RULES["contribution"]["daily_limits"] == {
         "silver": 500_000,
-        "grain": 250_000,
+        "grain": 500_000,
         "gold_bar": 5,
     }
     assert load_guild_rules()["contribution"]["daily_limits"] == {
         "silver": 500_000,
-        "grain": 250_000,
+        "grain": 500_000,
         "gold_bar": 5,
+    }
+    assert DEFAULT_GUILD_RULES["contribution"]["rates"] == expected_rates
+    assert load_guild_rules()["contribution"]["rates"] == expected_rates
+    assert DEFAULT_GUILD_RULES["contribution"]["troop_rates"] == expected_troop_rates
+    assert load_guild_rules()["contribution"]["troop_rates"] == expected_troop_rates
+    assert load_guild_rules()["technology"]["production_upkeep"] == {
+        "silver_per_contribution": 60,
+        "grain_per_contribution": 90,
     }
 
 
@@ -38,6 +48,7 @@ def test_normalize_guild_rules_merges_and_clamps_values():
                 "upgrade_cost_overrides": {
                     "wolf_soul_container": {2: {"red_ruby": "333", "gold_bar": "155"}},
                 },
+                "production_upkeep": {"silver_per_contribution": "70"},
                 "names": {"forging_equipment_forge": "新装备锻造"},
                 "descriptions": {"forging_equipment_forge": "新的科技简介"},
             },
@@ -76,6 +87,10 @@ def test_normalize_guild_rules_merges_and_clamps_values():
     assert loaded["technology"]["upgrade_cost_overrides"].get("guild_lineup_capacity", {}) == {}
     assert "guild_dispatch_capacity" not in loaded["technology"]["upgrade_cost_overrides"]
     assert loaded["technology"]["upgrade_costs"]["wolf_soul_container"] == {"red_ruby": 200}
+    assert loaded["technology"]["production_upkeep"] == {
+        "silver_per_contribution": 70,
+        "grain_per_contribution": 90,
+    }
     assert loaded["technology"]["upgrade_cost_curves"]["standard_10"]["2"] == 3
     assert loaded["technology"]["upgrade_cost_curves"]["standard_10"]["10"] == 350
     assert loaded["technology"]["upgrade_cost_curve_by_tech"]["forging_equipment_forge"] == "standard_10"

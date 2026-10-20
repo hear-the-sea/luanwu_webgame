@@ -3,8 +3,12 @@
 
 {% block title %}冶炼坊{% endblock %}
 
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/production-cards.css' %}">
+{% endblock %}
+
 {% block content %}
-<section class="dashboard production-page">
+<section class="dashboard production-page production-compact-page">
     <header class="production-page-header">
         <div>
             <div class="production-page-title-row">
@@ -30,9 +34,16 @@
         <div class="production-panel-body">
             <div class="production-queue-list">
                 {% for production in active_productions %}
-                <article class="production-queue-card">
+                <article class="production-queue-card production-compact-queue">
                     <div class="production-queue-main">
-                        <h3>{{ production.metal_name }} <span>×{{ production.quantity }}</span></h3>
+                        {% if production.image_url %}
+                        <span class="production-queue-art">
+                            <img src="{{ production.image_url }}" alt="" width="40" height="40" loading="lazy" decoding="async">
+                        </span>
+                        {% endif %}
+                        <div>
+                            <h3>{{ production.metal_name }} <span>×{{ production.quantity }}</span></h3>
+                        </div>
                     </div>
                     <div class="production-queue-actions">
                         <span class="production-status production-status--active">
@@ -71,20 +82,29 @@
                 {% endfor %}
             </nav>
 
-            <div class="production-option-grid">
+            <div class="production-option-grid production-compact-grid{% if current_smithy_category == 'medicine' %} production-option-grid--medicine{% endif %}">
                 {% for metal in smithy_page_obj %}
-                <article class="production-option-card {% if not metal.is_unlocked %}is-locked{% elif production_queue_full %}is-disabled{% endif %}">
-                    <header class="production-option-card__header">
-                        <div>
-                            <h3>{{ metal.name }}</h3>
-                            {% if not metal.is_unlocked %}
-                            <p class="production-card-lock">{{ metal.required_type_label }} 等级{{ metal.required_level }}</p>
-                            {% endif %}
+                <article class="production-option-card production-compact-card {% if not metal.is_unlocked %}is-locked{% elif production_queue_full %}is-disabled{% endif %}">
+                    <header class="production-option-card__header production-compact-card__header">
+                        <div class="production-compact-identity">
+                            <div class="production-compact-art">
+                                {% if metal.image_url %}
+                                <img src="{{ metal.image_url }}" alt="{{ metal.name }}" width="64" height="64" loading="lazy" decoding="async">
+                                {% else %}
+                                <span aria-hidden="true">{{ metal.name|slice:":1" }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="production-compact-copy">
+                                <h3>{{ metal.name }}</h3>
+                                {% if not metal.is_unlocked %}
+                                <p class="production-card-lock">{{ metal.required_type_label }} 等级{{ metal.required_level }}</p>
+                                {% endif %}
+                            </div>
                         </div>
-                        <span class="production-option-tag">{{ metal.category_label }}</span>
+                        <span class="production-option-tag production-compact-tag">{{ metal.category_label }}</span>
                     </header>
 
-                    <dl class="production-stats production-stats--three">
+                    <dl class="production-stats production-stats--three production-compact-stats">
                         <div>
                             <dt>消耗{% if metal.cost_discount_percent > 0 %}（折后）{% endif %}</dt>
                             <dd class="production-value production-value--cost">
@@ -102,7 +122,7 @@
                         </div>
                     </dl>
 
-                    <form method="post" action="{% url 'gameplay:start_smelting_production' %}" class="tw-card-actions production-option-card__actions">
+                    <form method="post" action="{% url 'gameplay:start_smelting_production' %}" class="tw-card-actions production-option-card__actions production-compact-actions{% if not metal.is_unlocked or production_queue_full %} production-compact-actions--button-only{% endif %}">
                         {% csrf_token %}
                         <input type="hidden" name="metal_key" value="{{ metal.key }}">
                         {% if not metal.is_unlocked %}
@@ -121,7 +141,7 @@
                                    data-total-target="total-{{ metal.key }}"
                                    data-unit-duration="{{ metal.actual_duration }}"
                                    data-duration-target="duration-{{ metal.key }}">
-                            <span id="total-{{ metal.key }}">{{ metal.effective_cost_amount }} {{ metal.cost_type_name }}</span>
+                            <span class="production-cost-preview" id="total-{{ metal.key }}">{{ metal.effective_cost_amount }} {{ metal.cost_type_name }}</span>
                         </div>
                         {% if metal.can_afford %}
                         <button type="submit" class="tw-btn-primary w-full">制作</button>

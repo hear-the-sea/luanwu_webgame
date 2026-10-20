@@ -50,13 +50,15 @@ def inspection_payload(result, token=None):
     }
 
 
-def test_ring_public_pages_hide_unpurchased_lineup(ring_view_world):
+def test_ring_public_pages_hide_uninspected_lineup(ring_view_world):
     owner, _, guest, _, result, _, client = ring_view_world
     response = client.get(reverse("gameplay:arena_rings"))
     assert response.status_code == 200
     body = response.content.decode()
     assert "青龙擂" in body and "白虎擂" in body
-    assert "查看阵容 · 20万" in body
+    assert "查看阵容" in body
+    assert "查看阵容 · 20万" not in body
+    assert "纯玩家对战测试" in body
     assert "演武台" in body and "龙虎擂台" not in body
     assert 'class="ring-loadout-overlay ring-loadout-overlay--qinglong tw-modal-overlay"' in body
     assert 'role="dialog" aria-modal="false"' in body
@@ -68,10 +70,7 @@ def test_ring_public_pages_hide_unpurchased_lineup(ring_view_world):
     assert "按报名阵容出战，不占用门客。" in body
     assert '<details class="ring-entry">' not in body
     assert static("css/arena-rings.css") in body
-    assert response.context["ring_daily_max_coins"] == 700
-    assert response.context["ring_rules"]["time_interval_coins"] == 4
-    assert response.context["ring_rules"]["defense_coins"] == 20
-    assert response.context["ring_rules"]["participation_coins"] == 10
+    assert "ring_daily_max_coins" not in response.context
     assert guest.display_name not in body
     assert static("images/buildings/青龙擂.webp") in body
     detail_url = reverse("gameplay:arena_ring_event_detail", args=[result["tenure_id"]])
@@ -83,7 +82,7 @@ def test_ring_public_pages_hide_unpurchased_lineup(ring_view_world):
     assert detail_url in events.content.decode()
 
 
-def test_paid_inspection_post_transfers_once_and_receipt_is_private(ring_view_world):
+def test_free_inspection_post_is_idempotent_and_receipt_is_private(ring_view_world):
     owner, viewer, guest, _, result, owner_client, client = ring_view_world
     url = reverse("gameplay:arena_ring_action", args=["qinglong"])
     payload = inspection_payload(result)
@@ -100,8 +99,7 @@ def test_paid_inspection_post_transfers_once_and_receipt_is_private(ring_view_wo
     assert ArenaRingInspection.objects.filter(buyer=viewer).count() == 1
     owner.refresh_from_db()
     viewer.refresh_from_db()
-    assert owner.silver == 1180000
-    assert viewer.silver == 800000
+    assert owner.silver == viewer.silver == 1000000
 
 
 def test_stale_inspection_post_does_not_charge(ring_view_world):
@@ -118,7 +116,7 @@ def test_stale_inspection_post_does_not_charge(ring_view_world):
 
 
 @pytest.mark.parametrize("hours_ago,visible", [(23.9, True), (24.1, False)])
-def test_ring_event_and_paid_receipt_retained_24_hours(ring_view_world, hours_ago, visible):
+def test_ring_event_and_inspection_receipt_retained_24_hours(ring_view_world, hours_ago, visible):
     _, _, _, _, result, _, client = ring_view_world
     url = reverse("gameplay:arena_ring_action", args=["qinglong"])
     receipt_response = client.post(url, inspection_payload(result))

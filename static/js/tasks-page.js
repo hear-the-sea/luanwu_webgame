@@ -12,6 +12,43 @@
         trackPointer: false,
         enableTouch: true,
       });
+      window.initItemTooltip({
+        key: "tasks_mission_enemies",
+        cellSelector: ".tw-enemy-avatar-trigger",
+        tooltipSelector: ".tw-item-tooltip",
+        trackPointer: false,
+        enableTouch: true,
+      });
+    }
+
+    const taskDetailOverlay = document.querySelector("[data-task-detail-overlay]");
+    if (taskDetailOverlay && taskDetailOverlay.dataset.closeBound !== "1") {
+      taskDetailOverlay.dataset.closeBound = "1";
+      taskDetailOverlay.querySelectorAll("[data-task-modal-close]").forEach((link) => {
+        link.addEventListener("click", (event) => {
+          if (
+            event.defaultPrevented
+            || event.button !== 0
+            || event.metaKey
+            || event.ctrlKey
+            || event.shiftKey
+            || event.altKey
+            || !window.history?.pushState
+          ) return;
+
+          const closeUrl = new URL(link.href, window.location.href);
+          if (closeUrl.origin !== window.location.origin) return;
+
+          event.preventDefault();
+          try {
+            window.history.pushState({ taskDetailClosed: true }, "", closeUrl.href);
+          } catch (error) {
+            window.location.href = closeUrl.href;
+            return;
+          }
+          taskDetailOverlay.remove();
+        });
+      });
     }
 
     const tabs = document.querySelectorAll(".tw-trade-tab");

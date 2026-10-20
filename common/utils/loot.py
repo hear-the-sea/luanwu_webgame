@@ -24,7 +24,30 @@ def _parse_numeric_drop_value(value: float | int) -> tuple[float | None, int]:
     return float(value), 1
 
 
-def _parse_dict_drop_value(value: dict) -> tuple[float | None, int]:
+def _parse_integer_drop_count(value: object) -> int | None:
+    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+        return None
+    try:
+        return int(value)
+    except (OverflowError, TypeError, ValueError):
+        return None
+
+
+def _parse_drop_count(value: object) -> int | tuple[int, int] | None:
+    if isinstance(value, dict):
+        raw_minimum = value.get("min", value.get("minimum"))
+        raw_maximum = value.get("max", value.get("maximum"))
+        minimum = _parse_integer_drop_count(raw_minimum)
+        maximum = _parse_integer_drop_count(raw_maximum)
+        if minimum is None or maximum is None:
+            return None
+        if minimum < 0 or maximum < minimum:
+            return None
+        return minimum if minimum == maximum else (minimum, maximum)
+    return _parse_integer_drop_count(value)
+
+
+def _parse_dict_drop_value(value: dict) -> tuple[float | None, int | tuple[int, int]]:
     chance_raw = value.get("chance", value.get("probability"))
     count_raw = value.get("count", value.get("quantity", value.get("amount")))
 
@@ -33,11 +56,7 @@ def _parse_dict_drop_value(value: dict) -> tuple[float | None, int]:
     except (TypeError, ValueError):
         chance = None
 
-    try:
-        count = int(count_raw) if count_raw is not None else None
-    except (TypeError, ValueError):
-        count = None
-
+    count = _parse_drop_count(count_raw)
     if count is None:
         count = 1
     return chance, count
@@ -53,7 +72,7 @@ def _should_drop(chance: float | None, rng: random.Random) -> bool:
     return rng.random() < chance
 
 
-def _resolve_drop_entry(value: float | int | dict) -> tuple[float | None, int] | None:
+def _resolve_drop_entry(value: float | int | dict) -> tuple[float | None, int | tuple[int, int]] | None:
     if isinstance(value, dict):
         chance, count = _parse_dict_drop_value(value)
         return chance, count
@@ -150,6 +169,7 @@ def resolve_drop_rewards(drop_table: Dict[str, float | int | dict], rng: random.
                     if not chosen_key:
                         continue
                     drop_key = chosen_key
-            _add_drop(drops, drop_key, count)
+            amount = rng.randint(*count) if isinstance(count, tuple) else count
+            _add_drop(drops, drop_key, amount)
 
     return drops

@@ -10,15 +10,9 @@
 <div class="arena-rings">
     <div class="ring-toolbar">
         <div class="ring-tags"><span>门客最多 {{ ring_rules.max_guests }} 名</span><span>虚拟配兵</span><span>科技满级</span><span>赛后换阵</span></div>
-        <span class="ring-daily-maximum">每日最高 <b>{{ ring_daily_max_coins }}</b> 角斗币 + <b>{{ ring_rules.daily_streak_chunqiu_coins }}</b> 春秋币</span>
     </div>
 
-    <section class="ring-rewards" aria-label="演武台奖励">
-        <div><span>守擂 {{ ring_reward_interval_minutes }} 分钟</span><strong>+{{ ring_rules.time_interval_coins }}<small>角斗币</small></strong></div>
-        <div><span>守擂获胜</span><strong>+{{ ring_rules.defense_coins }}<small>角斗币</small></strong></div>
-        <div><span>参与挑战</span><strong>+{{ ring_rules.participation_coins }}<small>角斗币</small></strong></div>
-    </section>
-    <div class="ring-daybar"><span>今日挑战 <b>{{ ring_daily.challenges|default:0 }} / {{ ring_rules.daily_challenges }}</b></span><span>计时收益 <b>{{ ring_daily.time_coins|default:0 }} / {{ ring_rules.daily_time_coins }} 币</b></span><span>奖励自动到账</span></div>
+    <div class="ring-daybar"><span>今日发起挑战 <b>{{ ring_daily.challenges|default:0 }} / {{ ring_rules.daily_challenges }}</b></span><span>纯玩家对战测试 · 不发放奖励、不损耗实际门客</span></div>
 
     <div class="ring-stage-grid">
     {% for row in ring_rows %}
@@ -32,10 +26,9 @@
             {% if row.tenure %}
             <div class="ring-holder"><span>当前擂主</span><strong>{{ row.tenure.manor.display_name }}</strong></div>
             <div class="ring-stage-stats"><div><b>{{ row.held_minutes }}<small>分钟</small></b><span>已守擂</span></div><div><b>{{ row.tenure.defenses }}<small>次</small></b><span>守擂获胜</span></div></div>
-            <p class="ring-streak">奖励连胜 <b>{{ row.reward_streak }}</b> 次</p>
             <p class="ring-end">本任结束 <span class="countdown" data-countdown="{{ row.tenure.ends_at|date:'c' }}" data-format="zh-no-sec" data-refresh="1" data-refresh-url="{% url 'gameplay:refresh_arena_activity_api' %}" data-refresh-method="post">{{ row.tenure.ends_at|date:'H:i' }}</span></p>
             {% else %}
-            <div class="ring-vacant"><strong>擂主之位，等你来坐。</strong><p>登台即开始计时领币。</p></div>
+            <div class="ring-vacant"><strong>擂主之位，等你来坐。</strong><p>登台后即可接受其他玩家挑战。</p></div>
             {% endif %}
 
             {% if row.can_enter %}
@@ -73,35 +66,25 @@
                     <input type="hidden" name="action_token" value="{{ row.inspect_token }}">
                     <input type="hidden" name="expected_version" value="{{ row.ring.version }}">
                     <input type="hidden" name="expected_tenure_id" value="{{ row.tenure.id }}">
-                    <button type="submit" {% if manor.silver < ring_rules.inspection_cost %}disabled{% endif %}>查看阵容 · 20万</button>
+                    <button type="submit">查看阵容</button>
                 </form>
                 {% endif %}
             </div>
             {% if row.is_mine %}
             <details class="ring-own-lineup"><summary>我的守擂阵容</summary><div>{% include "gameplay/arena/partials/ring_lineup.html" with lineup=row.own_lineup %}</div></details>
-            {% else %}<p class="ring-fee">{% if manor.silver < ring_rules.inspection_cost %}银两不足 · {% endif %}查看费扣除 10% 手续费，擂主实收 18万。</p>{% endif %}
+            {% else %}<p class="ring-form-note">查看对手阵容免费。</p>{% endif %}
             {% endif %}
         </div>
     </article>
     {% empty %}<p class="tw-empty-hint">演武台筹备中，稍后再来。</p>{% endfor %}
     </div>
 
-    <div class="ring-streak-rewards" aria-label="连胜奖励">
-        <span>连胜 / 终结连胜</span>
-        {% for count, coins in ring_rules.streak_tiers %}<span><b>{{ count }}</b> 胜 <strong>+{{ coins }}</strong> 币</span>{% endfor %}
-    </div>
-    <div class="ring-streak-rewards" aria-label="连胜春秋币奖励">
-        <span>连胜追加</span>
-        {% for count, coins in ring_rules.chunqiu_streak_tiers %}<span><b>{{ count }}</b> 胜 <strong>+{{ coins }}</strong> 春秋币</span>{% endfor %}
-    </div>
     <details class="ring-quick-rules">
-        <summary>玩法与奖励规则<span>点击展开</span></summary>
+        <summary>玩法说明<span>点击展开</span></summary>
         <div>
             <p>每任 {{ ring_tenure_hours }} 小时，每人占一台。赢了接任，平局留任；下台 {{ ring_return_minutes }} 分钟后可再争原台。</p>
-            <p>每日计时最多 {{ ring_rules.daily_time_coins }} 币，守擂奖励前 {{ ring_rules.daily_defense_rewards }} 次，挑战奖励前 {{ ring_rules.daily_participation_rewards }} 次。同一对手每天仅首场发放胜场和参与奖励。</p>
-            <p>连胜各档每任领一次，终结连胜按最高档领奖；每日连胜最多 {{ ring_rules.daily_streak_coins }} 币，终结最多 {{ ring_rules.daily_break_streak_coins }} 币。平局保留连胜，重复对手不计奖励连胜。</p>
-            <p>守擂连胜额外奖励春秋币，每日最多 {{ ring_rules.daily_streak_chunqiu_coins }} 枚，自动入仓库。</p>
-            <p>对同一任擂主，每人最多挑战 {{ ring_rules.max_tenure_challenges }} 次，两次挑战间隔 10 分钟；更换擂主后重新计算。擂主赛后可换阵。最多上阵 {{ ring_rules.max_guests }} 名门客，护院无需持有，总数受门客带兵上限限制。挑战免费，参战无损；战斗科技满级，器械加成生效。赛事保留 24 小时。</p>
+            <p>演武台仅用于玩家间阵容对战测试，不发放角斗币、春秋币或其他奖励；查看对手阵容免费。</p>
+            <p>对同一任擂主，每人最多挑战 {{ ring_rules.max_tenure_challenges }} 次，两次挑战间隔 10 分钟；更换擂主后重新计算。每日最多发起 {{ ring_rules.daily_challenges }} 次挑战。擂主赛后可换阵。最多上阵 {{ ring_rules.max_guests }} 名门客，护院无需持有，总数受门客带兵上限限制。挑战免费，参战无损；战斗科技满级，器械加成生效。赛事保留 24 小时。</p>
         </div>
     </details>
 </div>

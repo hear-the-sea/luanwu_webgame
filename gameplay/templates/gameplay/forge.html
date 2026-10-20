@@ -3,8 +3,12 @@
 
 {% block title %}铁匠铺{% endblock %}
 
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/production-cards.css' %}">
+{% endblock %}
+
 {% block content %}
-<section class="dashboard production-page">
+<section class="dashboard production-page production-compact-page forge-page">
     <header class="production-page-header">
         <div>
             <div class="production-page-title-row">
@@ -48,10 +52,17 @@
             <div class="production-panel-body">
                 <div class="production-queue-list">
                     {% for production in active_forgings %}
-                    <article class="production-queue-card">
+                    <article class="production-queue-card production-compact-queue">
                         <div class="production-queue-main">
-                            <h3>{{ production.equipment_name }} <span>×{{ production.quantity }}</span></h3>
-                            <p class="production-option-detail">其中绑定 {{ production.output_bound_quantity }} 件</p>
+                            {% if production.image_url %}
+                            <span class="production-queue-art">
+                                <img src="{{ production.image_url }}" alt="" width="40" height="40" loading="lazy" decoding="async">
+                            </span>
+                            {% endif %}
+                            <div>
+                                <h3>{{ production.equipment_name }} <span>×{{ production.quantity }}</span></h3>
+                                <p class="production-option-detail">其中绑定 {{ production.output_bound_quantity }} 件</p>
+                            </div>
                         </div>
                         <div class="production-queue-actions">
                             <span class="production-status production-status--active">
@@ -84,34 +95,44 @@
                 <h2>图纸合成</h2>
             </div>
             <div class="production-panel-body">
-                <div class="production-option-grid production-option-grid--recipe">
+                <div class="production-option-grid production-option-grid--recipe production-compact-grid">
                     {% for recipe in blueprint_page_obj %}
-                    <article class="production-option-card {% if not recipe.can_synthesize %}is-disabled{% endif %}">
-                        <header class="production-option-card__header">
-                            <div>
-                                <h3>{{ recipe.result_name }}</h3>
-                                <p class="production-option-detail">图纸 {{ recipe.blueprint_name }} · 持有 {{ recipe.blueprint_count }}</p>
-                                <p class="production-option-detail">绑定 {{ recipe.blueprint_bound_count }} · 非绑定 {{ recipe.blueprint_unbound_count }}</p>
-                                {% if recipe.result_effect_summary %}
-                                <p class="production-option-detail">装备属性：{{ recipe.result_effect_summary }}</p>
-                                {% endif %}
-                                <p class="production-option-detail">锻造技 等级{{ recipe.required_forging }}</p>
+                    <article class="production-option-card production-compact-card forge-recipe-card {% if not recipe.can_synthesize %}is-disabled{% endif %}">
+                        <header class="production-option-card__header production-compact-card__header">
+                            <div class="production-compact-identity">
+                                <div class="forge-product-cell tw-item-cell">
+                                    <button type="button" class="production-compact-art forge-product-image" aria-label="查看{{ recipe.result_name }}装备属性和合成消耗" aria-haspopup="true" aria-controls="forge-tooltip-recipe-{{ recipe.blueprint_key }}">
+                                        {% if recipe.result_image_url %}
+                                        <img src="{{ recipe.result_image_url }}" alt="" width="64" height="64" loading="lazy" decoding="async">
+                                        {% else %}
+                                        <span aria-hidden="true">{{ recipe.result_name|slice:":1" }}</span>
+                                        {% endif %}
+                                    </button>
+                                    <span class="tw-item-tooltip forge-item-tooltip" id="forge-tooltip-recipe-{{ recipe.blueprint_key }}" role="tooltip">
+                                        <span class="tw-tooltip-header">{{ recipe.result_name }}</span>
+                                        <span class="tw-tooltip-category">装备属性</span>
+                                        <span class="tw-tooltip-desc">{{ recipe.result_effect_summary|default:"暂无属性说明" }}</span>
+                                        <span class="tw-tooltip-category">合成消耗</span>
+                                        <span class="forge-tooltip-costs">
+                                            {% for cost in recipe.costs %}
+                                            <span class="tw-attr-row {% if cost.current < cost.required %}is-insufficient{% endif %}"><span class="tw-attr-label">{{ cost.name }}</span><span class="tw-attr-value">{{ cost.current }}/{{ cost.required }}</span></span>
+                                            {% endfor %}
+                                        </span>
+                                    </span>
+                                </div>
+                                <div class="production-compact-copy">
+                                    <h3>{{ recipe.result_name }}</h3>
+                                    <p class="production-option-detail">图纸 {{ recipe.blueprint_name }} ×{{ recipe.blueprint_count }}</p>
+                                    <p class="production-option-detail">绑定 {{ recipe.blueprint_bound_count }} · 非绑定 {{ recipe.blueprint_unbound_count }}</p>
+                                    <p class="production-option-detail">锻造技 等级{{ recipe.required_forging }}</p>
+                                </div>
                             </div>
                             {% if current_category == 'all' and recipe.result_category_name %}
-                            <span class="production-option-tag">{{ recipe.result_category_name }}</span>
+                            <span class="production-option-tag production-compact-tag">{{ recipe.result_category_name }}</span>
                             {% endif %}
                         </header>
 
-                        <div class="production-requirements">
-                            <span class="production-requirements__label">合成消耗</span>
-                            <div class="production-requirements__items">
-                                {% for cost in recipe.costs %}
-                                <span class="{% if cost.current < cost.required %}is-insufficient{% endif %}">{{ cost.name }} {{ cost.current }}/{{ cost.required }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-
-                        <form method="post" action="{% url 'gameplay:synthesize_blueprint_equipment' %}" class="tw-card-actions production-option-card__actions">
+                        <form method="post" action="{% url 'gameplay:synthesize_blueprint_equipment' %}" class="tw-card-actions production-option-card__actions production-compact-actions{% if not recipe.can_synthesize %} production-compact-actions--button-only{% endif %}">
                             {% csrf_token %}
                             {% include "gameplay/partials/_forge_return_state.html" %}
                             <input type="hidden" name="blueprint_key" value="{{ recipe.blueprint_key }}">
@@ -158,34 +179,44 @@
                 <h2>可锻造装备</h2>
             </div>
             <div class="production-panel-body">
-                <div class="production-option-grid">
+                <div class="production-option-grid production-compact-grid">
                     {% for item in equipment_list %}
-                    <article class="production-option-card {% if not item.is_unlocked %}is-locked{% elif production_queue_full %}is-disabled{% endif %}">
-                        <header class="production-option-card__header">
-                            <div>
-                                <h3>{{ item.name }}</h3>
-                                {% if item.effect_summary %}
-                                <p class="production-option-detail">装备属性：{{ item.effect_summary }}</p>
-                                {% endif %}
-                                {% if not item.is_unlocked %}
-                                <p class="production-card-lock">锻造技 等级{{ item.required_forging }}</p>
-                                {% endif %}
+                    <article class="production-option-card production-compact-card forge-equipment-card {% if not item.is_unlocked %}is-locked{% elif production_queue_full %}is-disabled{% endif %}">
+                        <header class="production-option-card__header production-compact-card__header">
+                            <div class="production-compact-identity">
+                                <div class="forge-product-cell tw-item-cell">
+                                    <button type="button" class="production-compact-art forge-product-image" aria-label="查看{{ item.name }}装备属性和锻造材料" aria-haspopup="true" aria-controls="forge-tooltip-equipment-{{ item.key }}">
+                                        {% if item.image_url %}
+                                        <img src="{{ item.image_url }}" alt="" width="64" height="64" loading="lazy" decoding="async">
+                                        {% else %}
+                                        <span aria-hidden="true">{{ item.name|slice:":1" }}</span>
+                                        {% endif %}
+                                    </button>
+                                    <span class="tw-item-tooltip forge-item-tooltip" id="forge-tooltip-equipment-{{ item.key }}" role="tooltip">
+                                        <span class="tw-tooltip-header">{{ item.name }}</span>
+                                        <span class="tw-tooltip-category">装备属性</span>
+                                        <span class="tw-tooltip-desc">{{ item.effect_summary|default:"暂无属性说明" }}</span>
+                                        <span class="tw-tooltip-category">锻造材料</span>
+                                        <span class="forge-tooltip-costs">
+                                            {% for mat in item.materials %}
+                                            <span class="tw-attr-row {% if mat.current < mat.required %}is-insufficient{% endif %}"><span class="tw-attr-label">{{ mat.name }}</span><span class="tw-attr-value">{{ mat.current }}/{{ mat.required }}</span></span>
+                                            {% endfor %}
+                                        </span>
+                                    </span>
+                                </div>
+                                <div class="production-compact-copy">
+                                    <h3>{{ item.name }}</h3>
+                                    {% if not item.is_unlocked %}
+                                    <p class="production-card-lock">锻造技 等级{{ item.required_forging }}</p>
+                                    {% endif %}
+                                </div>
                             </div>
                             {% if current_category == 'all' %}
-                            <span class="production-option-tag">{{ item.category_name }}</span>
+                            <span class="production-option-tag production-compact-tag">{{ item.category_name }}</span>
                             {% endif %}
                         </header>
 
-                        <div class="production-requirements">
-                            <span class="production-requirements__label">所需材料</span>
-                            <div class="production-requirements__items">
-                                {% for mat in item.materials %}
-                                <span class="{% if mat.current < mat.required %}is-insufficient{% endif %}">{{ mat.name }} {{ mat.current }}/{{ mat.required }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-
-                        <dl class="production-stats production-stats--two">
+                        <dl class="production-stats production-stats--two production-compact-stats">
                             <div>
                                 <dt>基础时间</dt>
                                 <dd>{{ item.base_duration }} 秒</dd>
@@ -196,7 +227,7 @@
                             </div>
                         </dl>
 
-                        <form method="post" action="{% url 'gameplay:start_equipment_forging' %}" class="tw-card-actions production-option-card__actions">
+                        <form method="post" action="{% url 'gameplay:start_equipment_forging' %}" class="tw-card-actions production-option-card__actions production-compact-actions{% if not item.is_unlocked or production_queue_full %} production-compact-actions--button-only{% endif %}">
                             {% csrf_token %}
                             {% include "gameplay/partials/_forge_return_state.html" %}
                             <input type="hidden" name="equipment_key" value="{{ item.key }}">
@@ -250,23 +281,36 @@
                 <h2>可分解装备</h2>
             </div>
             <div class="production-panel-body">
-                <div class="production-option-grid">
+                <div class="production-option-grid production-compact-grid">
                     {% for equip in decomposable_equipment %}
-                    <article class="production-option-card">
-                        <header class="production-option-card__header">
-                            <div>
-                                <h3>{{ equip.name }}</h3>
-                                <p class="production-option-detail">{{ equip.rarity_label }} · 持有 {{ equip.quantity }}</p>
-                                {% if equip.effect_summary %}
-                                <p class="production-option-detail">装备属性：{{ equip.effect_summary }}</p>
-                                {% endif %}
+                    <article class="production-option-card production-compact-card forge-decompose-card">
+                        <header class="production-option-card__header production-compact-card__header">
+                            <div class="production-compact-identity">
+                                <div class="forge-product-cell tw-item-cell">
+                                    <button type="button" class="production-compact-art forge-product-image" aria-label="查看{{ equip.name }}装备属性" aria-haspopup="true" aria-controls="forge-tooltip-decompose-{{ equip.key }}">
+                                        {% if equip.image_url %}
+                                        <img src="{{ equip.image_url }}" alt="" width="64" height="64" loading="lazy" decoding="async">
+                                        {% else %}
+                                        <span aria-hidden="true">{{ equip.name|slice:":1" }}</span>
+                                        {% endif %}
+                                    </button>
+                                    <span class="tw-item-tooltip forge-item-tooltip" id="forge-tooltip-decompose-{{ equip.key }}" role="tooltip">
+                                        <span class="tw-tooltip-header">{{ equip.name }}</span>
+                                        <span class="tw-tooltip-category">{{ equip.rarity_label }}装备属性</span>
+                                        <span class="tw-tooltip-desc">{{ equip.effect_summary|default:"暂无属性说明" }}</span>
+                                    </span>
+                                </div>
+                                <div class="production-compact-copy">
+                                    <h3>{{ equip.name }}</h3>
+                                    <p class="production-option-detail">{{ equip.rarity_label }} · 持有 {{ equip.quantity }}</p>
+                                </div>
                             </div>
                             {% if current_category == 'all' and equip.category_name %}
-                            <span class="production-option-tag">{{ equip.category_name }}</span>
+                            <span class="production-option-tag production-compact-tag">{{ equip.category_name }}</span>
                             {% endif %}
                         </header>
 
-                        <form method="post" action="{% url 'gameplay:decompose_equipment' %}" class="tw-card-actions production-option-card__actions js-decompose-form">
+                        <form method="post" action="{% url 'gameplay:decompose_equipment' %}" class="tw-card-actions production-option-card__actions production-compact-actions js-decompose-form">
                             {% csrf_token %}
                             {% include "gameplay/partials/_forge_return_state.html" %}
                             <input type="hidden" name="equipment_key" value="{{ equip.key }}">
@@ -308,6 +352,7 @@
 
 {% block extra_scripts %}
 <script src="{% static 'js/dashboard.js' %}"></script>
+<script src="{% static 'js/tooltip.js' %}"></script>
 <script src="{% static 'js/forge-page.js' %}"></script>
 <script src="{% static 'js/production-cancel.js' %}"></script>
 {% endblock %}

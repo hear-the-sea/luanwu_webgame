@@ -6,6 +6,7 @@ from typing import Any
 from core.exceptions import InvalidBattleSnapshotError
 from guests.avatar import has_guest_avatar_override, resolve_guest_avatar_url
 from guests.guest_combat_stats import resolve_guest_combat_stats
+from guests.guest_rules import compute_guest_attack_attribute_component
 
 
 class _EmptySkillSet:
@@ -82,6 +83,7 @@ def normalize_entry_guest_snapshot(snapshot: Any) -> dict[str, Any]:
     normalized["display_name"] = _snapshot_text(snapshot, "display_name")
     normalized["rarity"] = _snapshot_text(snapshot, "rarity", default="gray")
     normalized["template_key"] = _snapshot_text(snapshot, "template_key")
+    normalized["archetype"] = _snapshot_text(snapshot, "archetype", default="military")
     normalized["level"] = _snapshot_int(snapshot, "level", minimum=1, default=1)
     normalized["force"] = _snapshot_int(snapshot, "force", minimum=0, default=0)
     normalized["intellect"] = _snapshot_int(snapshot, "intellect", minimum=0, default=0)
@@ -95,6 +97,12 @@ def normalize_entry_guest_snapshot(snapshot: Any) -> dict[str, Any]:
     normalized["max_hp"] = _snapshot_int(snapshot, "max_hp", minimum=1)
     normalized["current_hp"] = _snapshot_int(snapshot, "current_hp", minimum=1, default=1)
     normalized["skill_keys"] = _snapshot_skill_keys(snapshot)
+    attack_attribute_component = snapshot.get("attack_attribute_component")
+    normalized["attack_attribute_component"] = (
+        _snapshot_int(snapshot, "attack_attribute_component", minimum=0)
+        if attack_attribute_component is not None
+        else None
+    )
     if "avatar_url" in snapshot:
         raw_avatar_url = snapshot["avatar_url"]
         if not isinstance(raw_avatar_url, str) or not raw_avatar_url.strip():
@@ -110,10 +118,13 @@ class ArenaGuestSnapshotProxy:
         snapshot = normalize_entry_guest_snapshot(snapshot)
         self.pk = None
         self.id = None
+        self._owner_entry_id: int | None = None
+        self._combatant_slot: int | None = None
         self.template = SimpleNamespace(
             key=snapshot["template_key"],
             initial_skills=_EmptySkillSet(),
         )
+        self.archetype = snapshot["archetype"]
         self._display_name = snapshot["display_name"]
         self._rarity = snapshot["rarity"]
         self.level = snapshot["level"]
@@ -124,6 +135,9 @@ class ArenaGuestSnapshotProxy:
         self.luck = snapshot["luck"]
         self.current_hp = snapshot["current_hp"]
         self.attack = snapshot["attack"]
+        self.attack_attribute_component = snapshot["attack_attribute_component"]
+        if self.attack_attribute_component is None:
+            self.attack_attribute_component = compute_guest_attack_attribute_component(self)
         self.defense = snapshot["defense"]
         self.max_hp = snapshot["max_hp"]
         self._override_skills = snapshot["skill_keys"]
@@ -160,6 +174,7 @@ def build_entry_guest_snapshot(guest) -> dict[str, Any]:
         "display_name": guest.display_name,
         "rarity": guest.rarity,
         "template_key": guest.template.key,
+        "archetype": guest.archetype,
         "level": int(guest.level),
         "force": int(guest.force),
         "intellect": int(guest.intellect),
@@ -167,6 +182,7 @@ def build_entry_guest_snapshot(guest) -> dict[str, Any]:
         "agility": int(guest.agility),
         "luck": int(guest.luck),
         "attack": stats.attack,
+        "attack_attribute_component": compute_guest_attack_attribute_component(guest),
         "defense": stats.defense,
         "max_hp": stats.max_hp,
         "current_hp": current_hp,

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import threading
 from time import monotonic
+from uuid import uuid4
 
 import pytest
 from celery.contrib.testing.worker import start_worker
@@ -146,36 +147,48 @@ def test_real_timer_maintenance_queue_preserves_fair_batches(
         lambda **_kwargs: 0,
     )
 
-    queue_name = settings.CELERY_TIMER_MAINTENANCE_QUEUE
+    configured_queue_name = settings.CELERY_TIMER_MAINTENANCE_QUEUE
     assert scan_virtual_player_maintenance_task.name == "gameplay.scan_virtual_player_maintenance"
-    assert celery_app.conf.task_routes[scan_virtual_player_maintenance_task.name]["queue"] == queue_name
+    assert celery_app.conf.task_routes[scan_virtual_player_maintenance_task.name]["queue"] == configured_queue_name
+    # A developer or deployment worker may already consume the configured
+    # queue on this Redis broker. Isolate this probe so only its instrumented
+    # worker can execute tasks against the transactional test database.
+    queue_name = f"{configured_queue_name}.test.{uuid4().hex}"
 
     dispatched_at: list[float] = []
     heartbeat_thread = threading.Thread(target=_heartbeat_worker, name="virtual-player-safety-heartbeat", daemon=True)
-    with start_worker(
-        celery_app,
-        pool="solo",
-        concurrency=1,
-        loglevel="WARNING",
-        perform_ping_check=False,
-        shutdown_timeout=_WORKER_SHUTDOWN_TIMEOUT_SECONDS,
-        queues=[queue_name],
-    ):
-        heartbeat_thread.start()
-        try:
-            results = []
-            for _index in range(task_count):
-                dispatched_at.append(monotonic())
-                results.append(
-                    scan_virtual_player_maintenance_task.apply_async(
-                        kwargs={"limit": _TASK_BATCH_LIMIT},
-                        queue=queue_name,
+    try:
+        with start_worker(
+            celery_app,
+            pool="solo",
+            concurrency=1,
+            loglevel="WARNING",
+            perform_ping_check=False,
+            shutdown_timeout=_WORKER_SHUTDOWN_TIMEOUT_SECONDS,
+            queues=[queue_name],
+        ):
+            heartbeat_thread.start()
+            try:
+                results = []
+                for _index in range(task_count):
+                    dispatched_at.append(monotonic())
+                    results.append(
+                        scan_virtual_player_maintenance_task.apply_async(
+                            kwargs={"limit": _TASK_BATCH_LIMIT},
+                            queue=queue_name,
+                        )
                     )
-                )
-            result_values = [result.get(timeout=600) for result in results]
-        finally:
-            heartbeat_stop.set()
-            heartbeat_thread.join(timeout=_HEARTBEAT_JOIN_TIMEOUT_SECONDS)
+                result_values = [result.get(timeout=600) for result in results]
+            finally:
+                heartbeat_stop.set()
+                heartbeat_thread.join(timeout=_HEARTBEAT_JOIN_TIMEOUT_SECONDS)
+    finally:
+        with celery_app.connection_for_write() as connection:
+            channel = connection.channel()
+            try:
+                channel.queue_delete(queue_name)
+            finally:
+                channel.close()
 
     assert not heartbeat_thread.is_alive()
     assert heartbeat_errors == []

@@ -2,7 +2,7 @@ import pytest
 
 from core.exceptions import GuestItemConfigurationError
 from gameplay.models import InventoryItem, ItemTemplate
-from gameplay.services.inventory.guest_items import use_guest_rarity_upgrade_item
+from gameplay.services.inventory.guest_items import use_guest_rarity_upgrade_item, use_guest_rebirth_card
 from gameplay.services.manor.core import ensure_manor
 from guests.models import GearItem, GearSlot, GearTemplate, Guest, GuestSkill, GuestStatus, GuestTemplate, Skill
 from guests.utils.attribute_growth import allocate_level_up_attributes
@@ -165,6 +165,7 @@ def test_green_to_blue_pill_creates_reusable_blue_template_and_uses_blue_standar
     guest.refresh_from_db()
     converted_template = guest.template
     assert converted_template.rarity == "blue"
+    assert guest.rarity_pill_used is True
     assert converted_template.name == green_template.name
     assert converted_template.growth_range == []
     assert converted_template.attribute_weights == green_template.attribute_weights
@@ -205,7 +206,10 @@ def test_blue_to_purple_pill_resets_initial_attributes_and_uses_purple_standard_
     blue_template.base_defense = 70
     blue_template.base_agility = 65
     blue_template.base_luck = 50
-    blue_template.save(update_fields=["base_attack", "base_intellect", "base_defense", "base_agility", "base_luck"])
+    blue_template.recruitable = True
+    blue_template.save(
+        update_fields=["base_attack", "base_intellect", "base_defense", "base_agility", "base_luck", "recruitable"]
+    )
     item.template.effect_payload = {
         "action": "upgrade_guest_rarity",
         "source_rarity": "blue",
@@ -218,6 +222,7 @@ def test_blue_to_purple_pill_resets_initial_attributes_and_uses_purple_standard_
     guest.refresh_from_db()
     converted_template = guest.template
     assert converted_template.rarity == "purple"
+    assert guest.rarity_pill_used is True
     assert converted_template.name == blue_template.name
     assert converted_template.growth_range == []
     assert converted_template.base_attack == blue_template.base_attack
@@ -241,3 +246,94 @@ def test_blue_to_purple_pill_resets_initial_attributes_and_uses_purple_standard_
     spy_rng = _RangeSpyRng()
     allocate_level_up_attributes(guest, levels=1, rng=spy_rng)
     assert spy_rng.last_range == (6, 11)
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(("source_rarity", "target_rarity"), [("green", "blue"), ("blue", "purple")])
+def test_rarity_pills_reject_non_recruitable_guests_without_consuming_or_resetting(
+    django_user_model, source_rarity, target_rarity
+):
+    manor, guest, item, source, _target = _prepare_rarity_upgrade_case(django_user_model, source_rarity)
+    source.rarity = source_rarity
+    source.recruitable = False
+    source.save(update_fields=["rarity", "recruitable"])
+    item.template.effect_payload = {
+        "action": "upgrade_guest_rarity",
+        "source_rarity": source_rarity,
+        "target_rarity": target_rarity,
+    }
+    item.template.save(update_fields=["effect_payload"])
+    original_level = guest.level
+    skill = Skill.objects.create(key="blocked_pill_skill", name="保留技能")
+    GuestSkill.objects.create(guest=guest, skill=skill)
+
+    with pytest.raises(GuestItemConfigurationError, match="非招募门客，无法使用"):
+        use_guest_rarity_upgrade_item(manor, item, guest.id)
+
+    item.refresh_from_db()
+    guest.refresh_from_db()
+    assert item.quantity == 1
+    assert guest.template_id == source.pk
+    assert guest.level == original_level
+    assert guest.rarity_pill_used is False
+    assert guest.guest_skills.filter(skill=skill).exists()
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("rebirth_after_conversion", [False, True])
+def test_green_to_blue_pill_cannot_be_followed_by_blue_to_purple_even_after_rebirth(
+    django_user_model, rebirth_after_conversion
+):
+    manor, guest, item, _source, _target = _prepare_rarity_upgrade_case(django_user_model, "once")
+    item.template.effect_payload = {"action": "upgrade_guest_rarity", "source_rarity": "green", "target_rarity": "blue"}
+    item.template.save(update_fields=["effect_payload"])
+    use_guest_rarity_upgrade_item(manor, item, guest.id)
+
+    if rebirth_after_conversion:
+        rebirth = ItemTemplate.objects.create(
+            key="pill_rebirth", name="重生卡", effect_payload={"action": "rebirth_guest"}
+        )
+        use_guest_rebirth_card(manor, InventoryItem.objects.create(manor=manor, template=rebirth, quantity=1), guest.id)
+
+    blue_to_purple = ItemTemplate.objects.create(
+        key="once_blue_to_purple_pill",
+        name="蓝转紫丸子",
+        effect_payload={"action": "upgrade_guest_rarity", "source_rarity": "blue", "target_rarity": "purple"},
+    )
+    second_item = InventoryItem.objects.create(manor=manor, template=blue_to_purple, quantity=2, bound_quantity=1)
+    guest.refresh_from_db()
+    converted_template_id = guest.template_id
+    with pytest.raises(GuestItemConfigurationError, match="每名门客只能使用一次"):
+        use_guest_rarity_upgrade_item(manor, second_item, guest.id, binding_mode="bound")
+
+    second_item.refresh_from_db()
+    guest.refresh_from_db()
+    assert (second_item.quantity, second_item.bound_quantity) == (2, 1)
+    assert guest.template_id == converted_template_id
+    assert guest.rarity == "blue"
+    assert guest.rarity_pill_used is True
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("legacy_conversion", [False, True])
+def test_rarity_pills_reject_previously_used_guests_with_recruitable_templates(django_user_model, legacy_conversion):
+    manor, guest, item, source, _target = _prepare_rarity_upgrade_case(django_user_model, "used")
+    if legacy_conversion:
+        source.key = f"guest_rarity_conversion_blue_{source.pk}"
+        source.rarity = "blue"
+        source.save(update_fields=["key", "rarity"])
+    else:
+        guest.rarity_pill_used = True
+        guest.save(update_fields=["rarity_pill_used"])
+    item.template.effect_payload = {
+        "action": "upgrade_guest_rarity",
+        "source_rarity": source.rarity,
+        "target_rarity": "purple",
+    }
+    item.template.save(update_fields=["effect_payload"])
+
+    with pytest.raises(GuestItemConfigurationError, match="已使用过升阶丸子"):
+        use_guest_rarity_upgrade_item(manor, item, guest.id)
+
+    item.refresh_from_db()
+    assert item.quantity == 1

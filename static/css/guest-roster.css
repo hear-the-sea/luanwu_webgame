@@ -1,13 +1,11 @@
 .guest-roster-card {
-    display: flex;
-    max-height: calc(100vh - 300px);
+    display: block;
+    max-height: none;
 }
 
 .guest-table-wrapper {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: auto;
-    min-height: 300px;
+    overflow: visible;
+    min-height: 0;
     margin-top: 0.5rem;
 }
 
@@ -56,25 +54,6 @@
 
 .guest-mobile-inline-label {
     display: none;
-}
-
-.guest-table-wrapper::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-
-.guest-table-wrapper::-webkit-scrollbar-track {
-    background: var(--bg-secondary);
-    border-radius: 4px;
-}
-
-.guest-table-wrapper::-webkit-scrollbar-thumb {
-    background: var(--border-primary);
-    border-radius: 4px;
-}
-
-.guest-table-wrapper::-webkit-scrollbar-thumb:hover {
-    background: var(--text-muted);
 }
 
 .guest-roster-modal {

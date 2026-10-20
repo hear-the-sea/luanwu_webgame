@@ -16,6 +16,7 @@ from core.game_data.cavalry import (
     CAVALRY_STAT_TECHS,
 )
 from core.utils.rate_limit import rate_limit_redirect
+from gameplay.models import ItemTemplate
 
 from .. import constants as guild_constants
 from ..decorators import require_guild_member
@@ -150,6 +151,14 @@ def technology_list(request: Any) -> HttpResponse:
         TECHNOLOGY_ROUTES[0]["key"] if TECHNOLOGY_ROUTES else "",
     )
 
+    xisuidan_template = ItemTemplate.objects.filter(key="xisuidan").only("image").first()
+    xisuidan_image_url = ""
+    if xisuidan_template and xisuidan_template.image:
+        try:
+            xisuidan_image_url = xisuidan_template.image.url
+        except ValueError:
+            pass
+
     technology_routes = []
     for route in TECHNOLOGY_ROUTES:
         is_completed = route["key"] in completed_routes
@@ -199,6 +208,7 @@ def technology_list(request: Any) -> HttpResponse:
         completed_technology_routes=completed_routes,
         active_technology_route=active_route,
         cavalry=get_guild_cavalry_recruitment_state(guild, member),
+        xisuidan_image_url=xisuidan_image_url,
     )
     return render(request, "guilds/technology.html", context)
 

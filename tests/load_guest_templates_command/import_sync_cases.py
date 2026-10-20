@@ -310,6 +310,8 @@ def test_load_guest_templates_removes_records_not_in_latest_payload(tmp_path: Pa
 
     assert set(GuestTemplate.objects.values_list("key", flat=True)) == {
         "tpl_loader_keep",
+        "hero_di_qinglin",
+        "hero_yang_zheng_purple",
     }
     assert set(Skill.objects.values_list("key", flat=True)) == {"skill_loader_keep"}
     assert set(SkillBook.objects.values_list("key", flat=True)) == {"book_loader_keep"}
@@ -432,7 +434,7 @@ def test_load_guest_templates_skips_removed_templates_with_protected_prisoners(
     assert GuestTemplate.objects.filter(pk=protected_template.pk).exists()
     assert not GuestTemplate.objects.filter(pk=removable_template.pk).exists()
     assert GuestTemplate.objects.filter(key="tpl_loader_keep_after_protected").exists()
-    assert "Skipped 1 removed templates still referenced by protected records" in out.getvalue()
+    assert "Skipped 3 removed templates still referenced by protected records" in out.getvalue()
     assert "tpl_loader_protected_prisoner" in out.getvalue()
 
 

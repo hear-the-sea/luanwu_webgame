@@ -83,7 +83,7 @@ def load_active_member_summary(guild: Guild) -> GuildMemberSummary:
 def load_pending_applications(guild: Guild) -> list[GuildApplication]:
     return list(
         GuildApplication.objects.filter(guild=guild, status="pending")
-        .select_related("applicant")
+        .select_related("applicant__manor")
         .order_by("-created_at")
     )
 
@@ -111,7 +111,7 @@ def load_resource_logs(guild: Guild, *, limit: int = 50) -> list[Any]:
 
 def get_reviewable_application(guild: Guild, app_id: int) -> GuildApplication:
     return get_object_or_404(
-        GuildApplication.objects.select_related("applicant"),
+        GuildApplication.objects.select_related("applicant__manor"),
         id=app_id,
         guild=guild,
     )

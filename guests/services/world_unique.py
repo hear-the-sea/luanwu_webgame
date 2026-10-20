@@ -7,7 +7,7 @@ from typing import Any
 from django.db import transaction
 
 from core.exceptions import GuestAlreadyOwnedError, GuestCapacityFullError, WorldUniqueGuestError
-from gameplay.models import Manor, OathBond, RaidRun
+from gameplay.models import ItemTemplate, Manor, OathBond, RaidRun
 
 from ..models import Guest, GuestTemplate, WorldUniqueGuest
 from . import equipment as equipment_service
@@ -15,6 +15,15 @@ from . import equipment as equipment_service
 WORLD_UNIQUE_LUBU_TEMPLATE_KEY = "hist_sljnbc_0013"
 WORLD_UNIQUE_LUBU_SCROLL_ITEM_KEY = "lvbu_guest_scroll"
 WORLD_UNIQUE_LUBU_NAME = "吕布"
+WORLD_UNIQUE_SUMMON_SOURCES = {
+    WORLD_UNIQUE_LUBU_SCROLL_ITEM_KEY: frozenset({WORLD_UNIQUE_LUBU_TEMPLATE_KEY}),
+    "chiyou_card": frozenset({"hero_yang_zheng_purple", "hero_di_qinglin"}),
+}
+
+
+def is_world_unique_summon_source(item_template_key: str, template_key: str) -> bool:
+    """唯一门客只接受显式授权的道具与角色配对。"""
+    return template_key in WORLD_UNIQUE_SUMMON_SOURCES.get(item_template_key, frozenset())
 
 
 def is_world_unique_template(template: Any) -> bool:
@@ -110,7 +119,12 @@ def get_world_unique_guest_status(
         .first()
     )
     if state is None:
-        return _build_wild_status(template_key=template_key)
+        guest_name = GuestTemplate.objects.filter(key=template_key).values_list("name", flat=True).first()
+        return _build_wild_status(
+            template_key=template_key,
+            guest_name=guest_name
+            or (WORLD_UNIQUE_LUBU_NAME if template_key == WORLD_UNIQUE_LUBU_TEMPLATE_KEY else template_key),
+        )
     return _status_payload_from_state(state)
 
 
@@ -141,11 +155,16 @@ def claim_world_unique_guest_from_scroll(
     custom_name: str = "",
     rng: Any = None,
 ) -> Guest:
-    """用专属卷轴领取唯一门客，并原子写入全局归属。"""
-    if item_template_key != WORLD_UNIQUE_LUBU_SCROLL_ITEM_KEY or template.key != WORLD_UNIQUE_LUBU_TEMPLATE_KEY:
-        raise WorldUniqueGuestError(message="该门客只能通过专属召唤卷轴获得")
+    """用已授权的专属道具兑换唯一门客，并原子写入全局归属。"""
+    source_name = ItemTemplate.objects.filter(key=item_template_key).values_list("name", flat=True).first()
+    source_name = source_name or {
+        WORLD_UNIQUE_LUBU_SCROLL_ITEM_KEY: "吕布召唤卷轴",
+        "chiyou_card": "蚩尤卡",
+    }.get(item_template_key, item_template_key)
+    if not is_world_unique_summon_source(item_template_key, template.key):
+        raise WorldUniqueGuestError(message=f"{source_name}无法兑换全服唯一门客{template.name}")
     if not is_world_unique_template(template):
-        raise WorldUniqueGuestError(message="吕布模板未配置为全服唯一门客")
+        raise WorldUniqueGuestError(message=f"{template.name}模板未配置为全服唯一门客")
 
     locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
     state = _get_locked_state(template)
@@ -154,7 +173,7 @@ def claim_world_unique_guest_from_scroll(
         owner_summary = _status_payload_from_state(state)["summary"]
         raise GuestAlreadyOwnedError(
             template,
-            message=f"{owner_summary}，当前无法使用吕布召唤卷轴",
+            message=f"{template.name}{owner_summary}，当前无法使用{source_name}兑换",
         )
 
     if locked_manor.active_guest_count >= locked_manor.guest_capacity:

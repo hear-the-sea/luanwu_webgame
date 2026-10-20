@@ -21,12 +21,18 @@ from django.core.management.base import BaseCommand, CommandError, CommandParser
 from django.db.models import Max, Min
 from django.utils import timezone
 
+from gameplay.record_retention import MAX_RECORD_RETENTION_DAYS, eligible_record_queryset
 from gameplay.services.arena.fill_service_retention import (
     eligible_fill_service_episodes,
     fill_service_outcomes_for_retention,
 )
 
-from .cleanup_old_data import ARENA_FILL_SERVICE_RETENTION_DAYS, CLEANUP_CONFIG, FILL_SERVICE_MODEL_PATHS
+from .cleanup_old_data import (
+    ARENA_FILL_SERVICE_RETENTION_DAYS,
+    CLEANUP_CONFIG,
+    FILL_SERVICE_MODEL_PATHS,
+    TERMINAL_CLEANUP_CONFIG,
+)
 
 
 class Command(BaseCommand):
@@ -37,7 +43,7 @@ class Command(BaseCommand):
             "--days",
             type=int,
             default=None,
-            help="覆盖所有模型的保留天数，须非负（默认使用各模型配置）",
+            help="覆盖保留天数，须非负；大于15天的值会限制为15天（默认使用各模型配置）",
         )
         parser.add_argument(
             "--model",
@@ -55,6 +61,8 @@ class Command(BaseCommand):
         override_days = options["days"]
         if override_days is not None and override_days < 0:
             raise CommandError("days must be non-negative")
+        if override_days is not None:
+            override_days = min(MAX_RECORD_RETENTION_DAYS, int(override_days))
         target_model = options["model"]
         json_mode = bool(options["json"])
 
@@ -84,6 +92,24 @@ class Command(BaseCommand):
 
             days = override_days if override_days is not None else default_days
             row = self._build_model_row(model_path=model_path, days=days, time_field=time_field, now=now)
+            rows.append(row)
+            if row.get("status") == "ok":
+                totals["models"] += 1
+                totals["total_records"] += int(row["total_records"])
+                totals["stale_records"] += int(row["stale_records"])
+
+        for model_path, (default_days, time_field) in TERMINAL_CLEANUP_CONFIG.items():
+            if target_model and model_path != target_model:
+                continue
+
+            days = override_days if override_days is not None else default_days
+            row = self._build_model_row(
+                model_path=model_path,
+                days=days,
+                time_field=time_field,
+                now=now,
+                terminal_only=True,
+            )
             rows.append(row)
             if row.get("status") == "ok":
                 totals["models"] += 1
@@ -159,7 +185,15 @@ class Command(BaseCommand):
             "newest": newest.isoformat() if newest else None,
         }
 
-    def _build_model_row(self, *, model_path: str, days: int, time_field: str, now: datetime) -> dict[str, Any]:
+    def _build_model_row(
+        self,
+        *,
+        model_path: str,
+        days: int,
+        time_field: str,
+        now: datetime,
+        terminal_only: bool = False,
+    ) -> dict[str, Any]:
         try:
             model = self._get_model(model_path)
         except (LookupError, ModuleNotFoundError) as exc:
@@ -172,11 +206,15 @@ class Command(BaseCommand):
             }
 
         cutoff = now - timedelta(days=days)
-        queryset = model.objects.all()
+        queryset = (
+            eligible_record_queryset(model_path, cutoff=cutoff)
+            if terminal_only
+            else model.objects.all().filter(**{f"{time_field}__lt": cutoff})
+        )
 
-        total_records = int(queryset.count())
-        stale_records = int(queryset.filter(**{f"{time_field}__lt": cutoff}).count())
-        window = queryset.aggregate(oldest=Min(time_field), newest=Max(time_field))
+        total_records = int(model.objects.count())
+        stale_records = int(queryset.count())
+        window = model.objects.aggregate(oldest=Min(time_field), newest=Max(time_field))
         oldest = window.get("oldest")
         newest = window.get("newest")
 

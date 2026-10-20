@@ -129,7 +129,7 @@ rewards:
 
   - key: panfeng_guest_exchange
     name: 潘凤门客兑换
-    description: 兑换后获得「潘凤门客卡」，可直接招募绿色门客潘凤。
+    description: 兑换后获得「潘凤门客卡」，可直接招募绿色门客潘凤。注:潘凤为无双上将，拥有强大的潜力！
     cost_coins: 1000
     rewards:
       items:
@@ -137,7 +137,7 @@ rewards:
 
   - key: xingdaorong_guest_exchange
     name: 邢道荣门客兑换
-    description: 兑换后获得「邢道荣门客卡」，可直接招募绿色门客邢道荣。
+    description: 兑换后获得「邢道荣门客卡」，可直接招募绿色门客邢道荣。注:邢道荣为万人敌，拥有强大的潜力！
     cost_coins: 1000
     rewards:
       items:

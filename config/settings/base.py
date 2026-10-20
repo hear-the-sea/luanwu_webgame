@@ -12,6 +12,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from common.constants.retention import MAX_RECORD_RETENTION_DAYS
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -326,10 +328,13 @@ ARENA_SHORTAGE_BASELINE_BOOTSTRAP_TTL_HOURS = max(
 # Fill-service evidence is operational history, not a forever-growing event
 # log. Keep enough history for rollout comparison while allowing the scheduled
 # maintenance task to bound database growth.
-ARENA_FILL_SERVICE_RETENTION_DAYS = max(30, int(env("ARENA_FILL_SERVICE_RETENTION_DAYS", "90")))
-VIRTUAL_PLAYER_SAFETY_AUDIT_RETENTION_DAYS = max(
-    30,
-    int(env("VIRTUAL_PLAYER_SAFETY_AUDIT_RETENTION_DAYS", "180")),
+ARENA_FILL_SERVICE_RETENTION_DAYS = min(
+    MAX_RECORD_RETENTION_DAYS,
+    max(1, int(env("ARENA_FILL_SERVICE_RETENTION_DAYS", str(MAX_RECORD_RETENTION_DAYS)))),
+)
+VIRTUAL_PLAYER_SAFETY_AUDIT_RETENTION_DAYS = min(
+    MAX_RECORD_RETENTION_DAYS,
+    max(1, int(env("VIRTUAL_PLAYER_SAFETY_AUDIT_RETENTION_DAYS", str(MAX_RECORD_RETENTION_DAYS)))),
 )
 VIRTUAL_PLAYER_SAFETY_AUTO_RESUME_CLEAN_WINDOWS = max(
     1,

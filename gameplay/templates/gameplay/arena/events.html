@@ -39,7 +39,7 @@
     </details>
     {% endfor %}
 </section>
-{% if running_tournament_card_rows or running_coop_card_rows %}
+{% if running_tournament_card_rows or running_coop_card_rows or running_wheel_card_rows %}
 <section class="tw-panel">
     <div class="tw-panel-header">进行中的赛事</div>
     <div class="tw-panel-content text-sm">
@@ -48,6 +48,9 @@
             {% include "gameplay/arena/partials/event_list_card.html" with row=row %}
             {% endfor %}
             {% for row in running_coop_card_rows %}
+            {% include "gameplay/arena/partials/event_list_card.html" with row=row %}
+            {% endfor %}
+            {% for row in running_wheel_card_rows %}
             {% include "gameplay/arena/partials/event_list_card.html" with row=row %}
             {% endfor %}
         </div>

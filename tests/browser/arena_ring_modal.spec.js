@@ -96,7 +96,7 @@ for (const mode of ["cooldown", "exhausted", "ready"]) {
     }
     const trigger = page.getByRole("button", { name: "挑战擂主", exact: true });
     const remaining = mode === "exhausted" ? 0 : mode === "cooldown" ? 2 : 1;
-    await expect(page.locator(".ring-stage-body > .ring-form-note")).toContainText(`对本任擂主剩余 ${remaining} 次挑战`);
+    await expect(page.locator(".ring-stage-body > .ring-form-note").first()).toContainText(`对本任擂主剩余 ${remaining} 次挑战`);
     if (mode === "ready") {
       await expect(trigger).toBeEnabled();
       await trigger.click();

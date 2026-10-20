@@ -110,10 +110,10 @@ def arena_ring_action_view(request: HttpRequest, ring_key: str) -> HttpResponse:
                 return redirect("gameplay:arena_ring_inspection", inspection_id=result["inspection_id"])
             return redirect("gameplay:arena_rings")
         labels = {
-            "occupy": "已登台守擂。",
-            "challenge": "挑战已结束，可在赛事查看中查看结果与战报。",
+            "occupy": "已登台，等待其他玩家挑战。",
+            "challenge": "对战已结束，战报已记录，可在赛事查看中回看。",
             "update": "守擂阵容已更新，下场对战使用新阵容。",
-            "leave": "已下台，累计奖励已保留。",
+            "leave": "已下台。",
         }
         messages.success(request, labels[kind])
     except GameError as exc:

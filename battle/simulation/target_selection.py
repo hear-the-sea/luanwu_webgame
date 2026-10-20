@@ -143,6 +143,8 @@ def select_attack_targets(
     # 关键：保持 RNG 消耗顺序——先选主目标，再触发技能（历史实现依赖此顺序保证可复现）
     primary_target = select_target_with_priority(actor, opponents, rng)
     skills = _active_attack_skills(trigger_attack_skills_fn(actor, rng))
+    if any(skill.get("target_priority") == "lowest_hp_ratio" for skill in skills):
+        primary_target = min(opponents, key=lambda unit: unit.hp / max(1, unit.max_hp))
     if len(opponents) == 1:
         # 按本次选目标时的存活敌人数判定，不修改原始技能或在命中途中切换倍率。
         skills = [

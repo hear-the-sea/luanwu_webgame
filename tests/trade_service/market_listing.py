@@ -127,6 +127,33 @@ class TestMarketListing:
                 duration=7200,
             )
 
+    def test_create_listing_rejects_chiyou_card(self, seller_manor):
+        card, _ = ItemTemplate.objects.update_or_create(
+            key="chiyou_card",
+            defaults={
+                "name": "蚩尤卡",
+                "effect_type": ItemTemplate.EffectType.TOOL,
+                "tradeable": False,
+                "is_usable": True,
+            },
+        )
+        InventoryItem.objects.create(
+            manor=seller_manor,
+            template=card,
+            quantity=100,
+            storage_location=InventoryItem.StorageLocation.WAREHOUSE,
+        )
+
+        assert not market_service.get_tradeable_inventory(seller_manor).filter(template=card).exists()
+        with pytest.raises(TradeValidationError, match="不可交易"):
+            market_service.create_listing(
+                manor=seller_manor,
+                item_key="chiyou_card",
+                quantity=1,
+                unit_price=1,
+                duration=7200,
+            )
+
     def test_create_listing_insufficient_quantity(self, seller_manor):
         with pytest.raises(TradeValidationError, match="数量不足"):
             market_service.create_listing(

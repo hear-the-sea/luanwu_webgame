@@ -167,6 +167,26 @@ def release_mission_action_lock(lock_key: str, lock_token: str | None) -> None:
     release_scoped_action_lock(MISSION_ACTION_LOCK_SPEC, lock_key, lock_token)
 
 
+def build_enemy_troop_display_rows(mission: MissionTemplate | None) -> list[dict[str, Any]]:
+    """只为战前情报生成展示行，不改写参与战斗的真实兵力。"""
+    if mission is None:
+        return []
+    display = getattr(mission, "enemy_troops_display", None)
+    if display is None:
+        display = {}
+    if not isinstance(display, dict):
+        raise AssertionError(f"invalid mission enemy_troops_display: {display!r}")
+    for key, count in display.items():
+        if not isinstance(key, str) or not key.strip():
+            raise AssertionError(f"invalid mission enemy_troops_display key: {key!r}")
+        if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+            raise AssertionError(f"invalid mission enemy_troops_display count: {count!r}")
+    rows = []
+    for key, count in (display or mission.enemy_troops or {}).items():
+        rows.append({"key": key, "count_label": count, "label": ""})
+    return rows
+
+
 def collect_mission_asset_keys(missions: list[MissionTemplate]) -> tuple[set[str], set[str], set[str]]:
     enemy_keys: set[str] = set()
     troop_keys: set[str] = set()
@@ -231,6 +251,8 @@ def collect_mission_asset_keys(missions: list[MissionTemplate]) -> tuple[set[str
             if not isinstance(key, str) or not key.strip():
                 raise AssertionError(f"invalid mission enemy_troops key: {key!r}")
             troop_keys.add(key.strip())
+        for row in build_enemy_troop_display_rows(mission):
+            troop_keys.add(row["key"].strip())
         for key in normalized_drop_table.keys():
             if not isinstance(key, str) or not key.strip():
                 raise AssertionError(f"invalid mission drop_table key: {key!r}")
@@ -255,6 +277,21 @@ def collect_mission_asset_keys(missions: list[MissionTemplate]) -> tuple[set[str
     return enemy_keys, troop_keys, drop_keys
 
 
+def _parse_drop_count_range(raw_count: dict) -> tuple[int, int] | None:
+    raw_minimum = raw_count.get("min", raw_count.get("minimum"))
+    raw_maximum = raw_count.get("max", raw_count.get("maximum"))
+    if raw_minimum is None or raw_maximum is None or isinstance(raw_minimum, bool) or isinstance(raw_maximum, bool):
+        return None
+    try:
+        minimum = int(raw_minimum)
+        maximum = int(raw_maximum)
+    except (OverflowError, TypeError, ValueError):
+        return None
+    if minimum < 0 or maximum < minimum:
+        return None
+    return minimum, maximum
+
+
 def parse_drop_value(value: Any) -> tuple[float | None, int | None]:
     chance = None
     count = None
@@ -271,10 +308,16 @@ def parse_drop_value(value: Any) -> tuple[float | None, int | None]:
         if raw_count is not None:
             if isinstance(raw_count, bool):
                 raise AssertionError(f"invalid mission drop count: {raw_count!r}")
-            try:
-                count = int(raw_count)
-            except (TypeError, ValueError) as exc:
-                raise AssertionError(f"invalid mission drop count: {raw_count!r}") from exc
+            if isinstance(raw_count, dict):
+                parsed_range = _parse_drop_count_range(raw_count)
+                if parsed_range is not None:
+                    minimum, maximum = parsed_range
+                    count = minimum if minimum == maximum else None
+            else:
+                try:
+                    count = int(raw_count)
+                except (OverflowError, TypeError, ValueError) as exc:
+                    raise AssertionError(f"invalid mission drop count: {raw_count!r}") from exc
     else:
         if isinstance(value, bool):
             raise AssertionError(f"invalid mission drop value: {value!r}")
@@ -291,6 +334,35 @@ def parse_drop_value(value: Any) -> tuple[float | None, int | None]:
     if chance is not None and count is None:
         count = 1
     return chance, count
+
+
+def _drop_quantity_label(value: Any, count: int | None) -> str | None:
+    raw_count = None
+    if isinstance(value, dict):
+        raw_count = value.get("count", value.get("quantity", value.get("amount")))
+    if isinstance(raw_count, dict):
+        parsed_range = _parse_drop_count_range(raw_count)
+        if parsed_range is None:
+            return None
+        minimum, maximum = parsed_range
+        if minimum == maximum:
+            return f"×{minimum}" if minimum >= 1 else None
+        return f"×{minimum}—{maximum}"
+    return f"×{count}" if count is not None and count >= 1 else None
+
+
+def _drop_count_badge(value: Any) -> str | None:
+    if not isinstance(value, dict):
+        return None
+    raw_count = value.get("count", value.get("quantity", value.get("amount")))
+    if not isinstance(raw_count, dict):
+        return None
+    quantity_label = _drop_quantity_label(value, None)
+    parsed_range = _parse_drop_count_range(raw_count)
+    if parsed_range is None:
+        return None
+    minimum, maximum = parsed_range
+    return quantity_label if maximum > minimum else None
 
 
 def resolve_drop_label(
@@ -380,6 +452,8 @@ def build_drop_display_item(
     name: str,
     label: str,
     count: int | None,
+    count_badge: str | None = None,
+    chance_label: str | None = None,
     rarity: str,
     item_templates: dict[str, Any],
 ) -> dict[str, Any]:
@@ -393,6 +467,8 @@ def build_drop_display_item(
         "count": count,
         "rarity": rarity,
         "image_url": image.url if image else "",
+        **({"count_badge": count_badge} if count_badge else {}),
+        **({"chance_label": chance_label} if chance_label else {}),
         **({"description": description} if description else {}),
     }
 
@@ -415,10 +491,17 @@ def build_chest_reward_preview(box: Any, reward_templates: dict[str, Any]) -> di
     for group in payload.get("random_item_groups", []):
         total_weight = sum(Decimal(str(choice["weight"])) for choice in group["choices"])
         for choice in group["choices"]:
+            probability = Decimal(str(group["chance"])) * Decimal(str(choice["weight"])) / total_weight
+            minimum = choice.get("quantity", group["min_quantity"])
+            maximum = choice.get("quantity", group["max_quantity"])
+            label = reward_label(choice["item_key"], minimum, maximum)
+            if payload.get("show_reward_probabilities"):
+                percentage = format((probability * 100).normalize(), "f")
+                label = f"{label}（{percentage}%）"
             possible_rewards.append(
                 (
-                    Decimal(str(group["chance"])) * Decimal(str(choice["weight"])) / total_weight,
-                    reward_label(choice["item_key"], group["min_quantity"], group["max_quantity"]),
+                    probability,
+                    label,
                 )
             )
     possible_rewards.sort(key=lambda reward: reward[0], reverse=True)
@@ -466,15 +549,23 @@ def build_drop_lists(
                     continue
                 handled_probability_keys.add(choice_key)
                 label = resolve_drop_label(choice_key, drop_labels, item_templates, book_labels)
-                _, count = parse_drop_value(probability_drop_table.get(choice_key))
+                chance, count = parse_drop_value(probability_drop_table.get(choice_key))
+                if chance is None:
+                    chance, _parent_count = parse_drop_value(val)
                 rarity = loot_rarities.get(choice_key) or "default"
-                display_label = f"{label} ×{count}" if (count is not None and count >= 1) else label
+                drop_value = probability_drop_table.get(choice_key)
+                quantity_label = _drop_quantity_label(drop_value, count)
+                count_badge = _drop_count_badge(drop_value)
+                chance_label = f"{chance * 100:.0f}" if count_badge and chance is not None and 0 < chance < 1 else None
+                display_label = f"{label} {quantity_label}" if quantity_label else label
                 probability_drops.append(
                     build_drop_display_item(
                         key=choice_key,
                         name=label,
                         label=display_label,
                         count=count,
+                        count_badge=count_badge,
+                        chance_label=chance_label,
                         rarity=rarity,
                         item_templates=item_templates,
                     )
@@ -483,16 +574,21 @@ def build_drop_lists(
         choice_keys = iter_choice_pool_keys(val)
         if choice_keys:
             chance, count = parse_drop_value(val)
+            quantity_label = _drop_quantity_label(val, count)
+            count_badge = _drop_count_badge(val)
+            chance_label = f"{chance * 100:.0f}" if count_badge and chance is not None and 0 < chance < 1 else None
             target_drops = probability_drops if chance is not None and 0 < chance < 1 else guaranteed_drops
             for choice_key in choice_keys:
                 label = resolve_drop_label(choice_key, drop_labels, item_templates, book_labels)
-                display_label = f"{label} ×{count}" if (count is not None and count >= 1) else label
+                display_label = f"{label} {quantity_label}" if quantity_label else label
                 target_drops.append(
                     build_drop_display_item(
                         key=choice_key,
                         name=label,
                         label=display_label,
                         count=count,
+                        count_badge=count_badge,
+                        chance_label=chance_label,
                         rarity=loot_rarities.get(choice_key) or "default",
                         item_templates=item_templates,
                     )
@@ -501,12 +597,17 @@ def build_drop_lists(
 
         label = resolve_drop_label(key, drop_labels, item_templates, book_labels)
         chance, count = parse_drop_value(val)
-        display_label = f"{label} ×{count}" if (count is not None and count >= 1) else label
+        quantity_label = _drop_quantity_label(val, count)
+        count_badge = _drop_count_badge(val)
+        chance_label = f"{chance * 100:.0f}" if count_badge and chance is not None and 0 < chance < 1 else None
+        display_label = f"{label} {quantity_label}" if quantity_label else label
         drop_item = build_drop_display_item(
             key=key,
             name=label,
             label=display_label,
             count=count,
+            count_badge=count_badge,
+            chance_label=chance_label,
             rarity=loot_rarities.get(key) or "default",
             item_templates=item_templates,
         )
@@ -519,8 +620,11 @@ def build_drop_lists(
         if key in handled_probability_keys:
             continue
         label = resolve_drop_label(key, drop_labels, item_templates, book_labels)
-        _, count = parse_drop_value(val)
-        display_label = f"{label} ×{count}" if (count is not None and count >= 1) else label
+        chance, count = parse_drop_value(val)
+        quantity_label = _drop_quantity_label(val, count)
+        count_badge = _drop_count_badge(val)
+        chance_label = f"{chance * 100:.0f}" if count_badge and chance is not None and 0 < chance < 1 else None
+        display_label = f"{label} {quantity_label}" if quantity_label else label
         rarity = loot_rarities.get(key) or "default"
         probability_drops.append(
             build_drop_display_item(
@@ -528,6 +632,8 @@ def build_drop_lists(
                 name=label,
                 label=display_label,
                 count=count,
+                count_badge=count_badge,
+                chance_label=chance_label,
                 rarity=rarity,
                 item_templates=item_templates,
             )

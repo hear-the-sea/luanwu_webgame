@@ -1,6 +1,7 @@
 # 商铺商品配置
 # item_key: 对应 ItemTemplate.key
-# price: 售价（可选，不填则使用 ItemTemplate.price）
+# price: 玩家出售给商店的回收价（可选，不填则使用 ItemTemplate.price）
+# buy_price: 玩家在商店的购买价（可选，不填则按回收价乘默认倍率）
 # stock: 库存数量，-1 表示无限
 # daily_refresh: 是否每日刷新库存（可选，默认 false）
 #
@@ -49,137 +50,179 @@ items:
     stock: -1
     daily_refresh: false
 
-  # 护院招募装备
+  # 护院招募装备：同招募档位装备同价，回收价为购买价的一半（向下取整）。
   - item_key: equip_baihongkui
-    buy_price: 22500
+    buy_price: 482
+    price: 241
     stock: -1
     daily_refresh: false
   - item_key: equip_baoweiqiang
-    buy_price: 1875
+    buy_price: 150
+    price: 75
+    stock: -1
+    daily_refresh: false
+  - item_key: equip_bumao
+    buy_price: 102
+    price: 51
     stock: -1
     daily_refresh: false
   - item_key: equip_bupao
-    buy_price: 375
+    buy_price: 102
+    price: 51
     stock: -1
     daily_refresh: false
   - item_key: equip_buxie
-    buy_price: 375
+    buy_price: 102
+    price: 51
     stock: -1
     daily_refresh: false
   - item_key: equip_changgong
-    buy_price: 375
+    buy_price: 102
+    price: 51
     stock: -1
     daily_refresh: false
   - item_key: equip_changjian
-    buy_price: 1875
+    buy_price: 150
+    price: 75
     stock: -1
     daily_refresh: false
   - item_key: equip_changqiang
-    buy_price: 375
+    buy_price: 102
+    price: 51
     stock: -1
     daily_refresh: false
   - item_key: equip_dakandao
-    buy_price: 1875
+    buy_price: 150
+    price: 75
     stock: -1
     daily_refresh: false
   - item_key: equip_dawanma
+    buy_price: 3000
+    price: 1500
     stock: -1
     daily_refresh: false
   - item_key: equip_duandao
-    buy_price: 375
+    buy_price: 102
+    price: 51
     stock: -1
     daily_refresh: false
   - item_key: equip_duanjian
-    buy_price: 375
+    buy_price: 102
+    price: 51
     stock: -1
     daily_refresh: false
   - item_key: equip_duanmajian
-    buy_price: 15000
+    buy_price: 482
+    price: 241
     stock: -1
     daily_refresh: false
   - item_key: equip_fanqugong
-    buy_price: 1875
+    buy_price: 150
+    price: 75
     stock: -1
     daily_refresh: false
   - item_key: equip_gangpianxue
-    buy_price: 7500
+    buy_price: 258
+    price: 129
     stock: -1
     daily_refresh: false
   - item_key: equip_housipao
-    buy_price: 7500
+    buy_price: 258
+    price: 129
     stock: -1
     daily_refresh: false
   - item_key: equip_huangbiaoma
+    buy_price: 1952
+    price: 976
     stock: -1
     daily_refresh: false
   - item_key: equip_hutoumao
-    buy_price: 7500
+    buy_price: 258
+    price: 129
     stock: -1
     daily_refresh: false
   - item_key: equip_jicibian
-    buy_price: 7500
+    buy_price: 150
+    price: 75
     stock: -1
     daily_refresh: false
   - item_key: equip_jingtiedao
-    buy_price: 15000
+    buy_price: 482
+    price: 241
     stock: -1
     daily_refresh: false
   - item_key: equip_jiulonggangbian
-    buy_price: 15000
+    buy_price: 258
+    price: 129
     stock: -1
     daily_refresh: false
   - item_key: equip_mingshejiebian
-    buy_price: 22500
+    buy_price: 482
+    price: 241
     stock: -1
     daily_refresh: false
   - item_key: equip_niupibian
-    buy_price: 1875
+    buy_price: 102
+    price: 51
     stock: -1
     daily_refresh: false
   - item_key: equip_pansheqiang
-    buy_price: 15000
+    buy_price: 482
+    price: 241
     stock: -1
     daily_refresh: false
   - item_key: equip_qingmangjian
-    buy_price: 7500
+    buy_price: 258
+    price: 129
     stock: -1
     daily_refresh: false
   - item_key: equip_shapijia
-    buy_price: 15000
+    buy_price: 482
+    price: 241
     stock: -1
     daily_refresh: false
   - item_key: equip_shenbigong
-    buy_price: 15000
+    buy_price: 482
+    price: 241
     stock: -1
     daily_refresh: false
   - item_key: equip_shengpijia
-    buy_price: 1875
+    buy_price: 150
+    price: 75
     stock: -1
     daily_refresh: false
   - item_key: equip_tietaigong
-    buy_price: 7500
+    buy_price: 258
+    price: 129
     stock: -1
     daily_refresh: false
   - item_key: equip_tieyekui
-    buy_price: 7500
+    buy_price: 150
+    price: 75
     stock: -1
     daily_refresh: false
   - item_key: equip_tongchangdao
-    buy_price: 7500
+    buy_price: 258
+    price: 129
     stock: -1
     daily_refresh: false
   - item_key: equip_yangpixue
-    buy_price: 1875
+    buy_price: 150
+    price: 75
     stock: -1
     daily_refresh: false
   - item_key: equip_yanyuxue
-    buy_price: 15000
+    buy_price: 482
+    price: 241
     stock: -1
     daily_refresh: false
   - item_key: equip_yulindin
-    buy_price: 15000
+    buy_price: 258
+    price: 129
     stock: -1
     daily_refresh: false
   - item_key: equip_zaohongma
+    buy_price: 1240
+    price: 620
     stock: -1
     daily_refresh: false

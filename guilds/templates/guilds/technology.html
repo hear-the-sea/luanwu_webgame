@@ -157,6 +157,8 @@
                                 <img class="tw-tech-node-art" src="{% static 'images/guild_technology/shixuetieqi.png' %}" alt="" width="512" height="512" loading="lazy" decoding="async">
                                 {% elif node.key == 'sheep_wrath' %}
                                 <img class="tw-tech-node-art tw-tech-node-art--illustration" src="{% static 'images/guild_item_icons/guild_sheep_wrath.webp' %}" alt="" width="256" height="256" loading="lazy" decoding="async">
+                                {% elif node.key == 'hero_marrow_pill' and xisuidan_image_url %}
+                                <img class="tw-tech-node-art tw-tech-node-art--illustration" src="{{ xisuidan_image_url }}" alt="" width="256" height="256" loading="lazy" decoding="async">
                                 {% else %}
                                 <span class="tw-tech-node-icon tw-tech-node-icon--{{ node.icon_index }}" style="background-image: url('{% static 'images/guild_technology/talent_icon_atlas.png' %}')" aria-hidden="true"></span>
                                 {% endif %}

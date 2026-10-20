@@ -4,16 +4,7 @@
 {% block title %}竞技场{% endblock %}
 
 {% block content %}
-<section class="dashboard">
-    <div class="tw-section-header">
-        <div>
-            <h1>竞技场</h1>
-            <p class="caption">
-                当前角斗币：<strong>{{ manor.arena_coins }}</strong>
-            </p>
-        </div>
-    </div>
-
+<section class="dashboard tw-arena-page" aria-label="竞技场内容，可滚动浏览" tabindex="0">
     <nav class="tw-troop-subtabs mb-6">
         {% for tab in arena_tabs %}
         <a href="{{ tab.url }}" class="tw-troop-subtab {% if tab.active %}active{% endif %}">
@@ -23,7 +14,7 @@
     </nav>
 
     {% if show_arena_hero_card %}
-    <article class="tw-building-card tw-building-card--manor tw-arena-hero-card mb-6">
+    <article class="tw-building-card tw-building-card--manor tw-arena-hero-card{% if arena_registration_layout %} tw-arena-hero-card--registration{% endif %} mb-6">
         <div class="tw-building-media">
             <div class="tw-building-corner-frame">
                 <span class="tw-corner-piece tw-corner-tl" aria-hidden="true"></span>
@@ -39,9 +30,12 @@
                     height="512"
                 >
             </div>
+            {% if arena_registration_layout %}
+            {% include "gameplay/arena/partials/sidebar_rules.html" with summary=arena_event heading_id="arena-rules-title" %}
+            {% endif %}
         </div>
         <div class="tw-building-main">
-            {% include "gameplay/arena/partials/summary_intro.html" with summary=arena_event compact=False %}
+            {% include "gameplay/arena/partials/summary_intro.html" with summary=arena_event compact=False hide_metrics=arena_registration_layout %}
             {% block arena_event_action %}{% endblock %}
         </div>
     </article>

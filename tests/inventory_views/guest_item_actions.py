@@ -5,6 +5,7 @@ from django.urls import reverse
 
 from core.exceptions import GuestAllocationResetError, ItemNotUsableError
 from gameplay.models import InventoryItem, ItemTemplate
+from guests.models import Guest, GuestTemplate
 
 
 @pytest.mark.django_db
@@ -210,6 +211,39 @@ class TestInventoryGuestItemActions:
         assert payload["success"] is False
         assert "请选择要升阶的门客" in payload["error"]
         assert called["count"] == 0
+
+    @pytest.mark.parametrize(
+        ("recruitable", "pill_used", "error_text"),
+        [(False, False, "非招募门客，无法使用"), (True, True, "每名门客只能使用一次")],
+    )
+    def test_use_guest_rarity_pill_returns_specific_unavailability_reason(
+        self, manor_with_user, recruitable, pill_used, error_text
+    ):
+        manor, client = manor_with_user
+        guest_template = GuestTemplate.objects.create(
+            key="view_pill_guest", name="目标门客", rarity="green", recruitable=recruitable
+        )
+        guest = Guest.objects.create(manor=manor, template=guest_template, rarity_pill_used=pill_used)
+        pill = ItemTemplate.objects.create(
+            key="view_green_to_blue_pill",
+            name="绿转蓝丸子",
+            effect_type=ItemTemplate.EffectType.TOOL,
+            is_usable=True,
+            effect_payload={"action": "upgrade_guest_rarity", "source_rarity": "green", "target_rarity": "blue"},
+        )
+        item = InventoryItem.objects.create(manor=manor, template=pill, quantity=1)
+
+        response = client.post(
+            reverse("gameplay:use_guest_rarity_upgrade", kwargs={"pk": item.pk}),
+            {"guest_id": guest.pk},
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        assert response.status_code == 400
+        assert response.json()["success"] is False
+        assert error_text in response.json()["error"]
+        item.refresh_from_db()
+        assert item.quantity == 1
 
     def test_use_soul_container_rejects_non_positive_guest_id(self, manor_with_user, monkeypatch):
         manor, client = manor_with_user

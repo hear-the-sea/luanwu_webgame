@@ -54,6 +54,8 @@ def test_guild_detail_page_shows_red_ruby_and_troop_overview(guild_member_client
 
     content = response.content.decode("utf-8")
     assert "帮会资源" in content
+    assert "每 1 点兑换贡献度消耗 60 银两、90 粮食" in content
+    assert "银两或粮食不足以生产下一件时，本轮后续道具将不再产出" in content
     assert "护院" in content
     assert "资源捐赠" in content
 
@@ -178,16 +180,16 @@ def test_guild_detail_page_shows_troop_contribution_allowance_and_tier_rate(guil
 
     assert response.status_code == 200
     troop_entry = response.context["troop_donation_entry"]
-    assert troop_entry == {"donated_today": 24, "daily_limit": 300, "remaining_today": 276}
+    assert troop_entry == {"donated_today": 12, "daily_limit": 300, "remaining_today": 288}
     troop = next(entry for entry in response.context["player_troops"] if entry.troop_template.key == "dao_sheng")
-    assert troop.donation_rate == 12
-    assert troop.max_donation_quantity == 23
+    assert troop.donation_rate == 6
+    assert troop.max_donation_quantity == 30
 
     body = response.content.decode("utf-8")
     assert "今日护院贡献" in body
-    assert "24 / 300" in body
-    assert 'data-contribution-rate="12"' in body
-    assert 'data-max-quantity="23"' in body
+    assert "12 / 300" in body
+    assert 'data-contribution-rate="6"' in body
+    assert 'data-max-quantity="30"' in body
 
 
 @pytest.mark.django_db
@@ -240,7 +242,7 @@ def test_guild_warehouse_page_projects_guild_resources_without_writing_guild_war
     assert "每份 2000 粮食" in body
     assert "每份 1 金条" in body
     assert '<span class="tw-guild-exchange-cost">1 贡献</span>' in body
-    assert '<span class="tw-guild-exchange-cost">1200 贡献</span>' in body
+    assert '<span class="tw-guild-exchange-cost">800 贡献</span>' in body
 
 
 @pytest.mark.django_db

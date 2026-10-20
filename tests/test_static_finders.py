@@ -19,6 +19,7 @@ def test_catalog_image_finder_exposes_only_explicit_template_assets():
     assert listed_paths == {
         "buildings/guild-residence.webp",
         "items/chunqiu_coin.png",
+        "items/guild_silver_boost_card.png",
         "items/large.png",
     }
 

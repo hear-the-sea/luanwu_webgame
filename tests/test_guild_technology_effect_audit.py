@@ -41,12 +41,27 @@ def guild_world(django_user_model):
     return guild, member
 
 
+def _fund_guild_technology_production(guild):
+    starting_resources = 100_000_000
+    Guild.objects.filter(pk=guild.pk).update(silver=starting_resources)
+    GuildWarehouse.objects.create(guild=guild, item_key="grain", quantity=starting_resources)
+    return starting_resources
+
+
+def _produced_warehouse_quantities(guild):
+    return dict(
+        GuildWarehouse.objects.filter(guild=guild).exclude(item_key="grain").values_list("item_key", "quantity")
+    )
+
+
 @pytest.mark.parametrize("level", [1, 2, 3, 5, 10])
 def test_all_production_nodes_reach_warehouse_once_per_date(guild_world, monkeypatch, level):
     guild, _member = guild_world
+    starting_resources = _fund_guild_technology_production(guild)
     expected = Counter()
     daily_expected = Counter()
     interval_expected = Counter()
+    contribution_cost = 0
     for key in PRODUCTION_TECH_KEYS:
         effective = min(level, TECHNOLOGY_NODE_BY_KEY[key]["max_level"])
         GuildTechnology.objects.create(guild=guild, tech_key=key, level=effective)
@@ -54,6 +69,7 @@ def test_all_production_nodes_reach_warehouse_once_per_date(guild_world, monkeyp
         assert outputs, f"{key} {effective}级缺少产出配置"
         output = {item.item_key: item.quantity for item in outputs}
         expected.update(output)
+        contribution_cost += sum(item.quantity * item.contribution_cost for item in outputs)
         if TECHNOLOGY_NODE_BY_KEY[key]["production_interval_days"] == 1:
             daily_expected.update(output)
         else:
@@ -61,19 +77,61 @@ def test_all_production_nodes_reach_warehouse_once_per_date(guild_world, monkeyp
     now = timezone.now()
     monkeypatch.setattr("guilds.tasks.timezone.now", lambda: now)
     process_single_guild_production.run(guild.pk)
-    assert dict(GuildWarehouse.objects.filter(guild=guild).values_list("item_key", "quantity")) == dict(expected)
+    assert _produced_warehouse_quantities(guild) == dict(expected)
+    guild.refresh_from_db()
+    assert guild.silver == starting_resources - contribution_cost * 60
+    assert (
+        GuildWarehouse.objects.get(guild=guild, item_key="grain").quantity
+        == starting_resources - contribution_cost * 90
+    )
     assert GuildTechnology.objects.filter(guild=guild, last_production_at__isnull=True).count() == 0
     process_single_guild_production.run(guild.pk)
-    assert dict(GuildWarehouse.objects.filter(guild=guild).values_list("item_key", "quantity")) == dict(expected)
+    assert _produced_warehouse_quantities(guild) == dict(expected)
     monkeypatch.setattr("guilds.tasks.timezone.now", lambda: now + timedelta(days=1))
     process_single_guild_production.run(guild.pk)
     expected.update(daily_expected)
-    assert dict(GuildWarehouse.objects.filter(guild=guild).values_list("item_key", "quantity")) == dict(expected)
+    assert _produced_warehouse_quantities(guild) == dict(expected)
     monkeypatch.setattr("guilds.tasks.timezone.now", lambda: now + timedelta(days=3))
     process_single_guild_production.run(guild.pk)
     expected.update(daily_expected)
+    assert _produced_warehouse_quantities(guild) == dict(expected)
+    monkeypatch.setattr("guilds.tasks.timezone.now", lambda: now + timedelta(days=5))
+    process_single_guild_production.run(guild.pk)
+    expected.update(daily_expected)
     expected.update(interval_expected)
-    assert dict(GuildWarehouse.objects.filter(guild=guild).values_list("item_key", "quantity")) == dict(expected)
+    assert _produced_warehouse_quantities(guild) == dict(expected)
+
+
+def test_mechanism_blueprint_production_keeps_current_cumulative_box_config():
+    expected = {
+        1: {"guild_mechanism_blueprint_box_1": (2, 100, 5)},
+        2: {
+            "guild_mechanism_blueprint_box_1": (1, 100, 5),
+            "guild_mechanism_blueprint_box_2": (2, 200, 5),
+        },
+        3: {
+            "guild_mechanism_blueprint_box_1": (1, 100, 5),
+            "guild_mechanism_blueprint_box_2": (1, 200, 5),
+            "guild_mechanism_blueprint_box_3": (2, 500, 4),
+        },
+        4: {
+            "guild_mechanism_blueprint_box_2": (1, 200, 5),
+            "guild_mechanism_blueprint_box_3": (1, 500, 4),
+            "guild_mechanism_blueprint_box_4": (2, 1000, 4),
+        },
+        5: {
+            "guild_mechanism_blueprint_box_3": (1, 500, 4),
+            "guild_mechanism_blueprint_box_4": (1, 1000, 4),
+            "guild_mechanism_blueprint_box_5": (2, 2000, 3),
+        },
+    }
+
+    for level, expected_items in expected.items():
+        actual_items = {
+            item.item_key: (item.quantity, item.contribution_cost, item.weekly_personal_limit)
+            for item in get_technology_production_items("forging_mechanism_blueprint", level)
+        }
+        assert actual_items == expected_items
 
 
 def test_inactive_guild_and_unresearched_production_do_not_create_items(guild_world):
@@ -93,6 +151,7 @@ def test_forging_equipment_uses_legacy_boxes_once_per_day(guild_world, level):
     from guilds.services.warehouse_config import get_production_items
 
     guild, _member = guild_world
+    _fund_guild_technology_production(guild)
     GuildTechnology.objects.create(guild=guild, tech_key="forging_equipment_forge", level=level, max_level=10)
     GuildTechnology.objects.create(guild=guild, tech_key="equipment_forge", level=level, max_level=10)
     expected = {
@@ -101,7 +160,8 @@ def test_forging_equipment_uses_legacy_boxes_once_per_day(guild_world, level):
     process_single_guild_production.run(guild.pk)
     process_single_guild_production.run(guild.pk)
     actual = {
-        item.item_key: (item.quantity, item.contribution_cost) for item in GuildWarehouse.objects.filter(guild=guild)
+        item.item_key: (item.quantity, item.contribution_cost)
+        for item in GuildWarehouse.objects.filter(guild=guild).exclude(item_key="grain")
     }
     assert actual == expected
     display = get_technology_daily_output_display("forging_equipment_forge", level)
@@ -129,9 +189,10 @@ def test_hero_fruit_daily_output_matches_each_requested_tier(guild_world, level,
     from guilds.services.warehouse import get_technology_daily_output_display
 
     guild, _member = guild_world
+    _fund_guild_technology_production(guild)
     GuildTechnology.objects.create(guild=guild, tech_key="hero_fruit_blueprint", level=level, max_level=3)
     process_single_guild_production.run(guild.pk)
-    assert dict(GuildWarehouse.objects.filter(guild=guild).values_list("item_key", "quantity")) == expected
+    assert _produced_warehouse_quantities(guild) == expected
     fruit = GuildWarehouse.objects.get(guild=guild, item_key="experience_fruit")
     assert fruit.contribution_cost == 1
     display = get_technology_daily_output_display("hero_fruit_blueprint", level)

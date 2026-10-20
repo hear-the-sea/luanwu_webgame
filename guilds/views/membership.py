@@ -85,7 +85,7 @@ def approve_application(request, app_id):
     execute_guild_action(
         request,
         action=lambda: member_service.approve_application(application, request.user),
-        success_message=lambda _result: f"已通过{application.applicant.username}的申请",
+        success_message=lambda _result: f"已通过{application.applicant.manor.display_name}的申请",
     )
 
     return redirect("guilds:applications")
@@ -105,7 +105,7 @@ def reject_application(request, app_id):
     execute_guild_action(
         request,
         action=lambda: member_service.reject_application(application, request.user, note),
-        success_message=lambda _result: f"已拒绝{application.applicant.username}的申请",
+        success_message=lambda _result: f"已拒绝{application.applicant.manor.display_name}的申请",
     )
 
     return redirect("guilds:applications")

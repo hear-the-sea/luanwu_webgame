@@ -27,6 +27,7 @@ class MissionTemplate(models.Model):
     guest_only = models.BooleanField(default=False, help_text="仅允许门客出征，不可带护院")
     enemy_guests = models.JSONField(default=list, blank=True)
     enemy_troops = models.JSONField(default=dict, blank=True)
+    enemy_troops_display = models.JSONField(default=dict, blank=True, verbose_name="敌军数量显示")
     enemy_technology = models.JSONField(default=dict, blank=True, help_text="敌方护院科技配置")
     entry_cost = models.JSONField(default=dict, blank=True, help_text="任务入场消耗")
     drop_table = models.JSONField(default=dict, blank=True)

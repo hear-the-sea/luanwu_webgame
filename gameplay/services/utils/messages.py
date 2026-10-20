@@ -28,6 +28,7 @@ from core.exceptions import (
     MessageNotFoundError,
     NoAttachmentError,
 )
+from gameplay.record_retention import MAX_RECORD_RETENTION_DAYS
 from gameplay.services.utils.cache_exceptions import CACHE_INFRASTRUCTURE_EXCEPTIONS
 
 from ...models import ItemTemplate, Manor, Message, ResourceEvent
@@ -43,7 +44,7 @@ from ..resources import grant_resources_locked
 from .cache import CACHE_TIMEOUT_SHORT, CacheKeys
 
 # 从 core.config 导入配置
-MESSAGE_RETENTION_DAYS = MESSAGE.RETENTION_DAYS
+MESSAGE_RETENTION_DAYS = min(MAX_RECORD_RETENTION_DAYS, int(MESSAGE.RETENTION_DAYS))
 logger = logging.getLogger(__name__)
 
 _LOCAL_CLEANUP_FALLBACK: dict[int, float] = {}
@@ -221,6 +222,7 @@ def delete_message_queryset(
     queryset: QuerySet[Message],
     *,
     batch_size: int | None = None,
+    max_batches: int | None = None,
     dry_run: bool = False,
     before_delete_batch: Callable[[QuerySet[Message]], object] | None = None,
 ) -> MessageDeleteResult:
@@ -228,17 +230,23 @@ def delete_message_queryset(
     effective_batch_size = batch_size if batch_size is not None else _MESSAGE_DELETE_BATCH_SIZE
     if effective_batch_size <= 0:
         raise ValueError("batch_size must be positive")
+    if max_batches is not None and max_batches <= 0:
+        raise ValueError("max_batches must be positive")
 
     database_alias = queryset.db
     deleted_count = 0
     protected_count = 0
     last_message_id = 0
+    processed_batches = 0
     while True:
+        if max_batches is not None and processed_batches >= max_batches:
+            break
         candidate_ids = list(
             queryset.filter(id__gt=last_message_id).order_by("id").values_list("id", flat=True)[:effective_batch_size]
         )
         if not candidate_ids:
             break
+        processed_batches += 1
         last_message_id = candidate_ids[-1]
 
         if dry_run:
@@ -311,17 +319,20 @@ def delete_expired_messages(
     cutoff,
     *,
     batch_size: int | None = None,
+    max_batches: int | None = None,
     dry_run: bool = False,
 ) -> MessageDeleteResult:
     """删除过期消息，同时保留未领取附件消息。"""
     protected_marker_result = delete_message_queryset(
         Message.objects.filter(created_at__lt=cutoff, is_deletion_protected=True),
         batch_size=batch_size,
+        max_batches=max_batches,
         dry_run=dry_run,
     )
     unprotected_marker_result = delete_message_queryset(
         Message.objects.filter(created_at__lt=cutoff, is_deletion_protected=False),
         batch_size=batch_size,
+        max_batches=max_batches,
         dry_run=dry_run,
     )
     return MessageDeleteResult(

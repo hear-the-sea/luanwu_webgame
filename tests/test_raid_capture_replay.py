@@ -93,7 +93,8 @@ def test_capture_target_replays_identically_from_capture_substream(monkeypatch):
 
 
 @pytest.mark.django_db
-def test_capture_converted_blue_guest_restores_original_green_template(monkeypatch):
+@pytest.mark.parametrize("rarity_pill_used", [False, True])
+def test_capture_converted_blue_guest_restores_original_green_template(monkeypatch, rarity_pill_used):
     User = get_user_model()
     attacker = ensure_manor(User.objects.create_user(username="capture_converted_attacker", password="pass123"))
     defender = ensure_manor(User.objects.create_user(username="capture_converted_defender", password="pass123"))
@@ -116,6 +117,7 @@ def test_capture_converted_blue_guest_restores_original_green_template(monkeypat
         custom_name="已转蓝门客",
         level=10,
         loyalty=25,
+        rarity_pill_used=rarity_pill_used,
     )
     run = RaidRun.objects.create(attacker=attacker, defender=defender)
     report = SimpleNamespace(defender_team=[{"guest_id": guest.pk}])
@@ -131,6 +133,7 @@ def test_capture_converted_blue_guest_restores_original_green_template(monkeypat
     prisoner = JailPrisoner.objects.get(captor=attacker, original_manor=defender)
     assert prisoner.guest_template_id == source_template.id
     assert prisoner.guest_template.rarity == "green"
+    assert prisoner.rarity_pill_used is True
     assert payload == {
         "guest_name": "已转蓝门客",
         "rarity": "green",
@@ -138,6 +141,36 @@ def test_capture_converted_blue_guest_restores_original_green_template(monkeypat
         "from": "defender",
         "into": "jail",
     }
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("rarity_pill_used", [False, True])
+def test_capture_preserves_rarity_pill_record_after_template_was_restored(monkeypatch, rarity_pill_used):
+    User = get_user_model()
+    attacker = ensure_manor(User.objects.create_user(username="capture_record_attacker", password="pass123"))
+    defender = ensure_manor(User.objects.create_user(username="capture_record_defender", password="pass123"))
+    source_template = _create_template(100)
+    guest = Guest.objects.create(
+        manor=defender,
+        template=source_template,
+        loyalty=25,
+        rarity_pill_used=rarity_pill_used,
+    )
+    run = RaidRun.objects.create(attacker=attacker, defender=defender)
+    report = SimpleNamespace(defender_team=[{"guest_id": guest.pk}])
+    monkeypatch.setattr(raid_capture, "_can_attempt_capture", lambda *_args, **_kwargs: True)
+
+    payload = raid_capture._try_capture_guest(
+        run,
+        report,
+        True,
+        rng=BattleRandomContext.create(1234).rng(RNG_STREAM_CAPTURE),
+    )
+
+    prisoner = JailPrisoner.objects.get(captor=attacker, original_manor=defender)
+    assert payload is not None
+    assert prisoner.guest_template_id == source_template.pk
+    assert prisoner.rarity_pill_used is rarity_pill_used
 
 
 @pytest.mark.django_db

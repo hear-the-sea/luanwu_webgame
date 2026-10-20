@@ -3,10 +3,10 @@ from __future__ import annotations
 
 import logging
 from datetime import timedelta
+from typing import Any
 
 from celery import shared_task
 from django.core.cache import cache
-from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 
@@ -20,6 +20,7 @@ from core.utils.infrastructure import (
     combine_infrastructure_exceptions,
 )
 from core.utils.task_monitoring import increment_degraded_counter
+from gameplay.record_retention import MAX_RECORD_RETENTION_DAYS
 from gameplay.tasks._scheduled import DEFAULT_TASK_DEDUP_TIMEOUT, maybe_reschedule_for_future
 
 from .models import (
@@ -30,17 +31,16 @@ from .models import (
     GuildMissionRun,
     GuildRaidRun,
     GuildResourceLog,
-    GuildTechnology,
 )
 from .services.contribution import reset_weekly_contributions
 from .services.guild_missions import finalize_guild_mission_run
 from .services.guild_raids import finalize_guild_raid, process_due_guild_raid, process_guild_raid_battle
 from .services.hero_pool import cleanup_invalid_hero_pool_entries
-from .services.warehouse import produce_technology_items
-from .technology_tree import PRODUCTION_TECH_KEYS, TECHNOLOGY_NODE_BY_KEY
+from .services.technology_production import process_guild_technology_production
 
 logger = logging.getLogger(__name__)
 GUILD_PRODUCTION_PARTIAL_RETRY_LIMIT = 1
+GUILD_LOG_CLEANUP_BATCH_SIZE = 1_000
 FAILED_GUILD_PRODUCTION_IDS_CACHE_KEY = "guilds:daily_production:failed_guild_ids"
 GUILD_TASK_RETRY_EXCEPTIONS: InfrastructureExceptions = combine_infrastructure_exceptions(
     *celery_utils.CELERY_DISPATCH_INFRA_EXCEPTIONS,
@@ -98,35 +98,6 @@ GUILD_RAID_TASK_RETRY_EXCEPTIONS: InfrastructureExceptions = combine_infrastruct
 )
 
 
-def _process_daily_technology_production(
-    guild: Guild,
-    *,
-    tech_key: str,
-    producer,
-    now,
-) -> bool:
-    with transaction.atomic():
-        tech = GuildTechnology.objects.select_for_update().filter(guild=guild, tech_key=tech_key).first()
-        if not tech or tech.level <= 0:
-            return False
-
-        if tech.last_production_at:
-            interval_days = max(
-                1,
-                int(TECHNOLOGY_NODE_BY_KEY.get(tech_key, {}).get("production_interval_days", 1) or 1),
-            )
-            if interval_days == 1:
-                if timezone.localdate(tech.last_production_at) >= timezone.localdate(now):
-                    return False
-            elif tech.last_production_at + timedelta(days=interval_days) > now:
-                return False
-
-        producer(guild, tech.level)
-        tech.last_production_at = now
-        tech.save(update_fields=["last_production_at"])
-        return True
-
-
 def _normalize_failed_guild_ids(failed_ids) -> list[int]:
     normalized_ids: list[int] = []
     for guild_id in failed_ids or []:
@@ -164,30 +135,6 @@ def get_failed_guild_ids() -> list[int]:
     except CACHE_INFRASTRUCTURE_EXCEPTIONS:
         logger.warning("Failed to read failed guild production IDs", exc_info=True)
         return []
-
-
-def _run_guild_production_step(
-    guild: Guild,
-    *,
-    tech_key: str,
-    producer,
-    produced_items: list[str],
-    item_label: str,
-    now,
-) -> bool:
-    try:
-        if _process_daily_technology_production(
-            guild,
-            tech_key=tech_key,
-            producer=producer,
-            now=now,
-        ):
-            produced_items.append(item_label)
-            return False
-    except DATABASE_INFRASTRUCTURE_EXCEPTIONS as exc:
-        logger.error("Failed to produce %s for guild %s: %s", item_label, guild.id, exc)
-        return True
-    return False
 
 
 def _load_guild_mission_run_for_completion(run_id: int) -> GuildMissionRun | None:
@@ -371,31 +318,8 @@ def scan_due_guild_raids(limit: int = 200) -> int:
 
 
 def _process_guild_production_once(guild_id: int) -> tuple[str, bool]:
-    guild = Guild.objects.get(pk=guild_id)
-    if not guild.is_active:
-        return f"guild {guild_id} is inactive", False
-
-    produced_items: list[str] = []
-    now = timezone.now()
-    partial_failure = False
-
-    for tech_key in PRODUCTION_TECH_KEYS:
-        partial_failure = (
-            _run_guild_production_step(
-                guild,
-                tech_key=tech_key,
-                producer=lambda target_guild, level, key=tech_key: produce_technology_items(target_guild, key, level),
-                produced_items=produced_items,
-                item_label=tech_key,
-                now=now,
-            )
-            or partial_failure
-        )
-
-    summary = f"processed guild {guild_id}: {', '.join(produced_items)}"
-    if partial_failure:
-        summary = f"{summary}; failed_guild_ids={[guild_id]}"
-    return summary, partial_failure
+    result = process_guild_technology_production(guild_id, now=timezone.now())
+    return f"processed guild {guild_id}: {', '.join(result.due_tech_keys)}", False
 
 
 def _handle_guild_production_partial_failure(failed_guild_ids: list[int], retry_attempt: int) -> None:
@@ -522,15 +446,17 @@ def reset_guild_weekly_stats(self):
 def cleanup_old_guild_logs(self):
     """
     清理旧的帮会日志
-    执行时间：每天凌晨03:00（UTC+8）
-    保留最近30天的日志
+    执行时间：每小时
+    最多保留最近15天的日志
+
+    每张表单单次最多删除 GUILD_LOG_CLEANUP_BATCH_SIZE 条；积压记录由后续小时任务继续清理。
     """
     try:
-        cutoff_date = timezone.now() - timedelta(days=30)
+        cutoff_date = timezone.now() - timedelta(days=MAX_RECORD_RETENTION_DAYS)
 
-        donation_deleted, _ = GuildDonationLog.objects.filter(donated_at__lt=cutoff_date).delete()
-        exchange_deleted, _ = GuildExchangeLog.objects.filter(exchanged_at__lt=cutoff_date).delete()
-        resource_deleted, _ = GuildResourceLog.objects.filter(created_at__lt=cutoff_date).delete()
+        donation_deleted = _delete_expired_guild_log_batch(GuildDonationLog, "donated_at", cutoff_date)
+        exchange_deleted = _delete_expired_guild_log_batch(GuildExchangeLog, "exchanged_at", cutoff_date)
+        resource_deleted = _delete_expired_guild_log_batch(GuildResourceLog, "created_at", cutoff_date)
 
         total = donation_deleted + exchange_deleted + resource_deleted
         logger.info(
@@ -544,6 +470,19 @@ def cleanup_old_guild_logs(self):
     except DATABASE_INFRASTRUCTURE_EXCEPTIONS as exc:
         logger.exception("Failed to cleanup old guild logs: %s", exc)
         raise self.retry(exc=exc)
+
+
+def _delete_expired_guild_log_batch(model: type[Any], time_field: str, cutoff) -> int:
+    filter_kwargs = {f"{time_field}__lt": cutoff}
+    ids = list(
+        model.objects.filter(**filter_kwargs)
+        .order_by(time_field, "pk")
+        .values_list("pk", flat=True)[:GUILD_LOG_CLEANUP_BATCH_SIZE]
+    )
+    if not ids:
+        return 0
+    _deleted_total, details = model.objects.filter(pk__in=ids).delete()
+    return int(details.get(model._meta.label, 0))
 
 
 @shared_task(name="guilds.cleanup_invalid_hero_pool", bind=True, max_retries=2, default_retry_delay=60)

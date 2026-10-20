@@ -50,11 +50,16 @@ def bootstrap_manor(user, region: str = "overseas", initial_name: str | None = N
                 Manor.objects.filter(pk=manor.pk, user=user, coordinate_x=0, coordinate_y=0).delete()
             raise RuntimeError("Failed to allocate a unique manor coordinate after multiple attempts")
         manor.refresh_from_db(fields=["region", "coordinate_x", "coordinate_y", "name"])
+    provision_rewards = not bool(getattr(user, "_virtual_player_internal", False))
     _ensure_manor_provisioning(
         manor,
         created=created,
-        provision_rewards=not bool(getattr(user, "_virtual_player_internal", False)),
+        provision_rewards=provision_rewards,
     )
+    if created and provision_rewards:
+        from accounts.custom_guest_grant import grant_custom_guest_card_on_entry
+
+        grant_custom_guest_card_on_entry(user, manor=manor)
     # 历史庄园由迁移/显式修复命令统一补账；热路径只为新建庄园初始化一次，
     # 避免每次 ensure_manor 都额外查询粮食模板和库存行。
     if created and int(getattr(manor, "grain", 0) or 0) > 0:

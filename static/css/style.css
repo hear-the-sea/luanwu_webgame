@@ -269,6 +269,31 @@ a[x-apple-data-detectors]:active {
   z-index: 10;
 }
 
+/* 中间宽度下压缩标签间距，空间不足时保持单行横向滚动 */
+@media (min-width: 769px) and (max-width: 1200px) {
+  .game-nav {
+    height: 40px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-inline: 8px;
+    scrollbar-color: var(--border-primary) rgba(139, 69, 19, 0.1);
+    scrollbar-width: thin;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .game-nav > .nav-tab {
+    flex: 0 0 auto;
+    margin-right: 2px;
+    padding-inline: clamp(8px, 1.5vw, 18px);
+    white-space: nowrap;
+  }
+
+  .game-nav::-webkit-scrollbar {
+    height: 4px;
+  }
+}
+
 /* 信息条 (时间/在线人数) */
 .info-bar {
   background-color: #D4A574;
@@ -4092,12 +4117,24 @@ a.rarity-text:hover {
 
 .production-option-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.875rem;
 }
 
 .production-option-grid--recipe {
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.production-option-grid--medicine {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1024px) {
+  .production-option-grid,
+  .production-option-grid--recipe,
+  .production-option-grid--medicine {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .production-page .production-option-card {
@@ -4417,7 +4454,8 @@ a.rarity-text:hover {
   }
 
   .production-option-grid,
-  .production-option-grid--recipe {
+  .production-option-grid--recipe,
+  .production-option-grid--medicine {
     grid-template-columns: 1fr;
   }
 
@@ -4593,3 +4631,285 @@ a.rarity-text:hover {
 .tw-tech-node-icon--30 { background-position: 2.604167% 95.724826%; }
 .tw-tech-node-icon--31 { background-position: 21.365017% 96.104601%; }
 .tw-tech-node-icon--32 { background-position: 40.277778% 96.028646%; }
+
+/* 宽屏桌面布局：让 1080p 及更高分辨率充分利用可视区域 */
+@media (min-width: 1280px) {
+  .game-container {
+    width: 1200px;
+    max-width: 98vw;
+    min-height: calc(100vh - 16px);
+    min-height: calc(100dvh - 16px);
+    margin-bottom: 16px;
+  }
+
+  .game-header {
+    height: 120px;
+  }
+
+  .main-layout {
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .full-layout {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .info-bar {
+    padding-inline: 16px;
+  }
+}
+
+/* 主页面固定在视口内，由各界面的内部容器承接纵向滚动。 */
+body:has(.landing-dashboard),
+body:has([data-messages-page]),
+body:has([data-manor-page]),
+body:has([data-warehouse-page]),
+body:has([data-research-page]),
+body:has([data-trade-page]),
+body:has(.tw-guild-frame),
+body:has([data-map-page]),
+body:has([data-work-page]),
+body:has([data-player-tasks-page]),
+body:has([data-jail-root]) {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.game-container:has(.landing-dashboard),
+.game-container:has([data-messages-page]),
+.game-container:has([data-manor-page]),
+.game-container:has([data-warehouse-page]),
+.game-container:has([data-research-page]),
+.game-container:has([data-trade-page]),
+.game-container:has(.tw-guild-frame),
+.game-container:has([data-map-page]),
+.game-container:has([data-work-page]),
+.game-container:has([data-player-tasks-page]),
+.game-container:has([data-jail-root]) {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.full-layout:has([data-manor-page]),
+.full-layout:has([data-messages-page]),
+.full-layout:has([data-warehouse-page]),
+.full-layout:has([data-research-page]),
+.full-layout:has([data-trade-page]),
+.full-layout:has(.tw-guild-frame),
+.full-layout:has([data-map-page]),
+.full-layout:has([data-work-page]),
+.full-layout:has([data-player-tasks-page]),
+.full-layout:has([data-jail-root]) {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.main-layout:has(.landing-dashboard) > .content-area {
+  overflow: visible;
+}
+
+:is(
+  .main-layout:has(.landing-dashboard),
+  .full-layout:has([data-messages-page]) > .content-area,
+  .full-layout:has([data-manor-page]) > .content-area,
+  .full-layout:has([data-warehouse-page]) > .content-area,
+  .full-layout:has([data-research-page]) > .content-area,
+  .full-layout:has([data-trade-page]) > .content-area,
+  .full-layout:has(.tw-guild-frame) > .content-area,
+  .full-layout:has([data-map-page]) > .content-area,
+  .full-layout:has([data-work-page]) > .content-area,
+  .full-layout:has([data-player-tasks-page]) > .content-area,
+  .full-layout:has([data-jail-root]) > .content-area
+) {
+  --page-scrollbar-thumb: var(--border-primary);
+  --page-scrollbar-track: rgba(139, 69, 19, 0.1);
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-color: var(--page-scrollbar-thumb) var(--page-scrollbar-track);
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+:is(
+  .main-layout:has(.landing-dashboard),
+  .full-layout:has([data-messages-page]) > .content-area,
+  .full-layout:has([data-manor-page]) > .content-area,
+  .full-layout:has([data-warehouse-page]) > .content-area,
+  .full-layout:has([data-research-page]) > .content-area,
+  .full-layout:has([data-trade-page]) > .content-area,
+  .full-layout:has(.tw-guild-frame) > .content-area,
+  .full-layout:has([data-map-page]) > .content-area,
+  .full-layout:has([data-work-page]) > .content-area,
+  .full-layout:has([data-player-tasks-page]) > .content-area,
+  .full-layout:has([data-jail-root]) > .content-area
+)::-webkit-scrollbar {
+  width: 9px;
+}
+
+:is(
+  .main-layout:has(.landing-dashboard),
+  .full-layout:has([data-messages-page]) > .content-area,
+  .full-layout:has([data-manor-page]) > .content-area,
+  .full-layout:has([data-warehouse-page]) > .content-area,
+  .full-layout:has([data-research-page]) > .content-area,
+  .full-layout:has([data-trade-page]) > .content-area,
+  .full-layout:has(.tw-guild-frame) > .content-area,
+  .full-layout:has([data-map-page]) > .content-area,
+  .full-layout:has([data-work-page]) > .content-area,
+  .full-layout:has([data-player-tasks-page]) > .content-area,
+  .full-layout:has([data-jail-root]) > .content-area
+)::-webkit-scrollbar-track {
+  background: var(--page-scrollbar-track);
+}
+
+:is(
+  .main-layout:has(.landing-dashboard),
+  .full-layout:has([data-messages-page]) > .content-area,
+  .full-layout:has([data-manor-page]) > .content-area,
+  .full-layout:has([data-warehouse-page]) > .content-area,
+  .full-layout:has([data-research-page]) > .content-area,
+  .full-layout:has([data-trade-page]) > .content-area,
+  .full-layout:has(.tw-guild-frame) > .content-area,
+  .full-layout:has([data-map-page]) > .content-area,
+  .full-layout:has([data-work-page]) > .content-area,
+  .full-layout:has([data-player-tasks-page]) > .content-area,
+  .full-layout:has([data-jail-root]) > .content-area
+)::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--page-scrollbar-thumb);
+  background-clip: content-box;
+}
+
+@media (min-width: 1280px) {
+  .game-container:has(.landing-dashboard),
+  .game-container:has([data-messages-page]),
+  .game-container:has([data-manor-page]),
+  .game-container:has([data-warehouse-page]),
+  .game-container:has([data-research-page]),
+  .game-container:has([data-trade-page]),
+  .game-container:has(.tw-guild-frame),
+  .game-container:has([data-map-page]),
+  .game-container:has([data-work-page]),
+  .game-container:has([data-player-tasks-page]),
+  .game-container:has([data-jail-root]) {
+    height: calc(100vh - 16px);
+    height: calc(100dvh - 16px);
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .game-container:has(.landing-dashboard),
+  .game-container:has([data-messages-page]),
+  .game-container:has([data-manor-page]),
+  .game-container:has([data-warehouse-page]),
+  .game-container:has([data-research-page]),
+  .game-container:has([data-trade-page]),
+  .game-container:has(.tw-guild-frame),
+  .game-container:has([data-map-page]),
+  .game-container:has([data-work-page]),
+  .game-container:has([data-player-tasks-page]),
+  .game-container:has([data-jail-root]) {
+    height: 100vh;
+    height: 100dvh;
+    margin: 0;
+  }
+}
+
+/* 界面滚动归内容区所有，表格/任务列表只保留横向滚动能力。 */
+.full-layout:has([data-warehouse-page]) .tw-warehouse-card,
+.full-layout:has([data-trade-page]) .tw-trade-card {
+  max-height: none;
+}
+
+.full-layout:has([data-warehouse-page]) .tw-table-wrapper,
+.full-layout:has([data-trade-page]) .tw-shop-table-wrapper {
+  flex: 0 0 auto;
+  min-height: 0;
+  max-height: none;
+  overflow-y: hidden;
+}
+
+.full-layout:has([data-trade-page]) .troop-bank-list {
+  max-height: none;
+  overflow-y: visible;
+}
+
+.full-layout:has([data-player-tasks-page]) .tw-mission-content,
+.full-layout:has(.tw-guild-frame) .tw-mission-content {
+  max-height: none;
+  overflow-y: visible;
+}
+
+/* 任务详情使用较紧凑的高度，内容内部滚动，并确保关闭入口始终可触达。 */
+.tw-modal-overlay.task-detail-overlay {
+  padding: max(0.5rem, env(safe-area-inset-top, 0px))
+    max(0.5rem, env(safe-area-inset-right, 0px))
+    max(0.5rem, env(safe-area-inset-bottom, 0px))
+    max(0.5rem, env(safe-area-inset-left, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tw-modal-overlay.task-detail-overlay .tw-modal-content.task-detail-dialog {
+  min-height: 0;
+  max-height: min(80vh, 720px);
+  max-height: min(
+    80dvh,
+    720px,
+    calc(
+      100dvh - max(0.5rem, env(safe-area-inset-top, 0px))
+      - max(0.5rem, env(safe-area-inset-bottom, 0px))
+    )
+  );
+}
+
+.task-detail-dialog > .tw-modal-header {
+  flex: 0 0 auto;
+  gap: 0.75rem;
+}
+
+.task-detail-dialog > .tw-modal-header > div {
+  min-width: 0;
+}
+
+.task-detail-dialog > .tw-modal-header > [data-task-modal-close] {
+  display: inline-flex;
+  min-height: 44px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  touch-action: manipulation;
+}
+
+.task-detail-dialog > .tw-modal-body {
+  min-height: 0;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 640px) {
+  .tw-modal-overlay.task-detail-overlay .tw-modal-content.task-detail-dialog {
+    width: 100%;
+  }
+
+  .task-detail-dialog > .tw-modal-header,
+  .task-detail-dialog > .tw-modal-body {
+    padding: 0.75rem;
+  }
+}

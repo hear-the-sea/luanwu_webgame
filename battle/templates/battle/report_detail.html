@@ -12,6 +12,9 @@
     <div class="tw-section-header battle-report-title">
         <div>
             <h1>= {{ report_title }} =</h1>
+            {% for team in arena_wheel_teams %}
+                <p><strong>{{ team.label }}</strong>：{{ team.members }}（本轮出战：{{ team.active_player }}）</p>
+            {% endfor %}
             {% if report_matchup %}
                 <div class="battle-report-matchup" aria-label="{% if report.battle_type == 'raid' %}踢馆{% else %}竞技场{% endif %}对战双方">
                     <div class="battle-report-side-name attacker">

@@ -5,7 +5,13 @@ from .cavalry import GuildCavalryTraining
 from .hero_pool import GuildBattleLineupEntry, GuildHeroPoolEntry
 from .logs import GuildDonationLog, GuildExchangeLog, GuildResourceLog
 from .member import GuildMember
-from .missions import GuildMissionRun, GuildMissionTemplate, GuildTroopDonationLog, GuildTroopStorage
+from .missions import (
+    GuildMissionRun,
+    GuildMissionTemplate,
+    GuildPersonalMissionParticipation,
+    GuildTroopDonationLog,
+    GuildTroopStorage,
+)
 from .pvp import GuildRaidRun
 
 __all__ = [
@@ -26,6 +32,7 @@ __all__ = [
     "GuildBattleLineupEntry",
     "GuildMissionTemplate",
     "GuildMissionRun",
+    "GuildPersonalMissionParticipation",
     "GuildTroopStorage",
     "GuildTroopDonationLog",
     "GuildRaidRun",

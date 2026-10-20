@@ -356,7 +356,8 @@ def use_guest_rarity_upgrade_item(
         raise GuestItemConfigurationError("专属门客请在详情页升阶")
     ensure_guest_not_world_unique(guest, action="升阶")
 
-    target_template = resolve_rarity_upgrade_target(guest, payload=locked_item.template.effect_payload or {})
+    payload = locked_item.template.effect_payload or {}
+    target_template = resolve_rarity_upgrade_target(guest, payload=payload)
     reset_prep = prepare_guest_for_reset(guest, action_label="升阶", manor=manor)
     varied_attrs = roll_guest_template_attributes(target_template, rng=inventory_random.Random())
     apply_guest_template_reset(
@@ -365,6 +366,9 @@ def use_guest_rarity_upgrade_item(
         varied_attrs=varied_attrs,
         include_template=True,
     )
+    if payload.get("target_template_map") is None:
+        guest.rarity_pill_used = True
+        guest.save(update_fields=["rarity_pill_used"])
 
     from guests.services.training import ensure_auto_training
 

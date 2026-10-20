@@ -94,6 +94,7 @@ def get_decomposable_equipment_options(
             category_filter=category,
         )
         if option is not None:
+            option["image_url"] = item.template.image.url if item.template.image else ""
             options.append(option)
 
     options.sort(key=lambda row: (-rarity_order.get(row["rarity"], 0), row["name"]))

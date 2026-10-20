@@ -1,12 +1,14 @@
 import logging
 
 import pytest
-from django.db import DatabaseError, IntegrityError
+from django.db import DatabaseError, IntegrityError, transaction
 from django.db.utils import ProgrammingError
 
+from core.exceptions import GameError
 from gameplay.models import InventoryItem, ItemTemplate, Manor
 from gameplay.services.manor import core as manor_service
 from gameplay.services.manor.core import ensure_manor
+from guests.models import CustomGuestProgress
 from tests.gameplay_services.support import User
 
 SQLITE_OCCUPIED_MANOR_LOCATION_CONFLICT = (
@@ -25,6 +27,120 @@ def test_ensure_manor_creates_new():
     assert manor.grain >= 0
     assert manor.silver == 5000
     assert manor.newbie_protection_until is None
+
+
+@pytest.mark.django_db
+def test_ensure_manor_grants_one_bound_custom_guest_card_to_new_player():
+    user = User.objects.create_user(username="initial_custom_card", password="test123")
+
+    manor = ensure_manor(user)
+
+    card = InventoryItem.objects.get(manor=manor, template__key="custom_guest_card")
+    assert card.storage_location == InventoryItem.StorageLocation.WAREHOUSE
+    assert card.quantity == 1
+    assert card.bound_quantity == 1
+    assert CustomGuestProgress.objects.get(manor=manor).card_issued is True
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("error_cls", [DatabaseError, GameError])
+def test_initial_custom_guest_card_failure_preserves_registration_and_can_retry(monkeypatch, error_cls):
+    from accounts.custom_guest_grant import grant_custom_guest_card_on_entry
+    from guests.services import custom_guest
+
+    original_add_item = custom_guest.add_item_to_inventory_locked
+
+    def fail_after_inventory_write(*args, **kwargs):
+        original_add_item(*args, **kwargs)
+        raise error_cls("temporary card inventory failure")
+
+    monkeypatch.setattr(custom_guest, "add_item_to_inventory_locked", fail_after_inventory_write)
+    user = User.objects.create_user(username="initial_custom_card_failure", password="test123")
+    manor = Manor.objects.get(user=user)
+
+    assert User.objects.filter(pk=user.pk).exists()
+    assert not InventoryItem.objects.filter(manor=manor, template__key="custom_guest_card").exists()
+    assert not CustomGuestProgress.objects.filter(manor=manor, card_issued=True).exists()
+
+    monkeypatch.setattr(custom_guest, "add_item_to_inventory_locked", original_add_item)
+    grant_custom_guest_card_on_entry(user, manor=manor)
+    grant_custom_guest_card_on_entry(user, manor=manor)
+
+    card = InventoryItem.objects.get(manor=manor, template__key="custom_guest_card")
+    assert (card.quantity, card.bound_quantity) == (1, 1)
+    assert CustomGuestProgress.objects.get(manor=manor).card_issued is True
+
+
+@pytest.mark.django_db
+def test_initial_custom_guest_card_programming_error_is_not_silenced(monkeypatch):
+    from guests.services import custom_guest
+
+    user = User(username="initial_custom_card_programming_error")
+    User.objects.bulk_create([user])
+    user = User.objects.get(username=user.username)
+
+    def fail_with_programming_error(*args, **kwargs):
+        raise RuntimeError("custom guest card programming error")
+
+    monkeypatch.setattr(custom_guest, "add_item_to_inventory_locked", fail_with_programming_error)
+    with pytest.raises(RuntimeError, match="custom guest card programming error"):
+        ensure_manor(user)
+
+
+@pytest.mark.django_db
+def test_initial_custom_guest_card_is_not_reissued_by_bootstrap_or_entry_after_consumption():
+    from accounts.custom_guest_grant import grant_custom_guest_card_on_entry
+    from gameplay.services.inventory.core import consume_inventory_item_locked
+
+    user = User.objects.create_user(username="initial_custom_card_once", password="test123")
+    manor = ensure_manor(user)
+    ensure_manor(user)
+    grant_custom_guest_card_on_entry(user, manor=manor)
+    card = InventoryItem.objects.get(manor=manor, template__key="custom_guest_card")
+    assert (card.quantity, card.bound_quantity) == (1, 1)
+
+    with transaction.atomic():
+        locked_card = InventoryItem.objects.select_for_update().get(pk=card.pk)
+        consume_inventory_item_locked(locked_card, 1, binding_mode="bound")
+
+    ensure_manor(user)
+    grant_custom_guest_card_on_entry(user, manor=manor)
+    assert not InventoryItem.objects.filter(manor=manor, template__key="custom_guest_card").exists()
+    assert CustomGuestProgress.objects.get(manor=manor).card_issued is True
+
+
+@pytest.mark.django_db
+def test_initial_custom_guest_card_is_not_granted_to_internal_virtual_players():
+    user = User(username="virtual_initial_custom_card")
+    user.set_unusable_password()
+    user._virtual_player_internal = True
+    user.save()
+
+    manor = ensure_manor(user)
+
+    assert not InventoryItem.objects.filter(manor=manor, template__key="custom_guest_card").exists()
+    assert not CustomGuestProgress.objects.filter(manor=manor).exists()
+
+
+@pytest.mark.django_db
+def test_missing_initial_custom_guest_card_can_be_granted_on_later_entry():
+    from accounts.custom_guest_grant import grant_custom_guest_card_on_entry
+
+    template = ItemTemplate.objects.get(key="custom_guest_card")
+    template.key = "temporarily_missing_custom_guest_card"
+    template.save(update_fields=["key"])
+    user = User.objects.create_user(username="initial_custom_card_retry", password="test123")
+    manor = ensure_manor(user)
+    assert not CustomGuestProgress.objects.filter(manor=manor, card_issued=True).exists()
+
+    template.key = "custom_guest_card"
+    template.save(update_fields=["key"])
+    grant_custom_guest_card_on_entry(user, manor=manor)
+
+    card = InventoryItem.objects.get(manor=manor, template=template)
+    assert (card.quantity, card.bound_quantity) == (1, 1)
+    assert card.storage_location == InventoryItem.StorageLocation.WAREHOUSE
+    assert CustomGuestProgress.objects.get(manor=manor).card_issued is True
 
 
 @pytest.mark.django_db

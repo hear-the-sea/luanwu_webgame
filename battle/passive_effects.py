@@ -315,6 +315,22 @@ def apply_effect(effect: dict[str, Any], context: dict[str, Any]) -> None:
             )
         return
 
+    if effect_type == "set_counter":
+        for target_unit in targets:
+            modifiers = _modifier_payload(target_unit)
+            sources = _modifier_source_payload(modifiers, "counter_sources")
+            scoped_source_key = resolve_scoped_source_key(
+                target_unit, scope=str(modifier_scope), container_key="counter_sources", source_key=source_key
+            )
+            sources[scoped_source_key] = {
+                "chance": float(effect.get("chance") or 0),
+                "damage_multiplier": float(effect.get("damage_multiplier") or 0),
+            }
+            register_modifier_source(
+                target_unit, scope=str(modifier_scope), container_key="counter_sources", source_key=scoped_source_key
+            )
+        return
+
     if effect_type == "set_reflect":
         for target_unit in targets:
             modifiers = _modifier_payload(target_unit)

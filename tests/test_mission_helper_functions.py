@@ -262,6 +262,26 @@ def test_build_drop_lists_expands_choice_pool_preview_items_without_probability_
     ]
 
 
+def test_build_drop_lists_displays_probability_and_random_count_range():
+    mission = SimpleNamespace(
+        drop_table={"red_ruby": {"chance": 0.28, "count": {"min": 1, "max": 5}}},
+        probability_drop_table={},
+    )
+
+    guaranteed_drops, probability_drops = build_drop_lists(
+        mission,
+        {"red_ruby": "红宝石"},
+        {},
+        {},
+        {},
+    )
+
+    assert guaranteed_drops == []
+    assert probability_drops[0]["label"] == "红宝石 ×1—5"
+    assert probability_drops[0]["count_badge"] == "×1—5"
+    assert probability_drops[0]["chance_label"] == "28"
+
+
 def test_build_drop_lists_deduplicates_single_choice_pool_preview_items():
     mission = SimpleNamespace(
         drop_table={

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
@@ -131,6 +132,53 @@ class GuildMissionRun(models.Model):
 
     def __str__(self) -> str:
         return f"Guild#{self.guild_id}-{self.template.key}-{self.status}"
+
+
+class GuildPersonalMissionParticipation(models.Model):
+    """记录个人任务发起时的帮会归属，并用于每周次数与奖励结算。"""
+
+    mission_run = models.OneToOneField(
+        "gameplay.MissionRun",
+        on_delete=models.CASCADE,
+        related_name="guild_personal_participation",
+        verbose_name="个人任务出征",
+    )
+    guild = models.ForeignKey(
+        Guild,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="personal_mission_participations",
+        verbose_name="发起时帮会",
+    )
+    member = models.ForeignKey(
+        GuildMember,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="personal_mission_participations",
+        verbose_name="发起时成员",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="guild_personal_mission_participations",
+        verbose_name="参与玩家",
+    )
+    contribution_reward = models.PositiveIntegerField(default=0, verbose_name="贡献奖励快照")
+    started_at = models.DateTimeField(default=timezone.now, db_index=True, verbose_name="参与时间")
+
+    class Meta:
+        db_table = "guild_personal_mission_participations"
+        verbose_name = "个人帮会任务参与记录"
+        verbose_name_plural = "个人帮会任务参与记录"
+        ordering = ["-started_at", "-id"]
+        indexes = [
+            models.Index(fields=["user", "started_at"], name="gpm_user_started_idx"),
+        ]
+
+    def __str__(self) -> str:
+        return f"User#{self.user_id}-MissionRun#{self.mission_run_id}"
 
 
 class GuildTroopStorage(models.Model):

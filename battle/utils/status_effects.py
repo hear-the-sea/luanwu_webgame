@@ -14,6 +14,12 @@ if TYPE_CHECKING:
 
 # 状态效果定义
 STATUS_DEFINITIONS: Dict[str, Dict[str, Any]] = {
+    "armor_broken": {
+        "label": "破甲",
+        "message": "护甲受损",
+        "skip_action": False,
+        "defense_multiplier": 0.75,
+    },
     "stunned": {
         "label": "眩晕",
         "message": "眩晕中",
@@ -30,6 +36,15 @@ STATUS_DEFINITIONS: Dict[str, Dict[str, Any]] = {
 
 # 控制类状态列表（对小兵转换为削弱效果）
 CONTROL_STATUS_EFFECTS = {"stunned"}
+
+
+def get_defense_multiplier(unit: "Combatant") -> float:
+    """破甲只调整有效防御，不改写角色的原始属性。"""
+    multiplier = 1.0
+    for status, payload in unit.status_effects.items():
+        if payload.get("active", 0) > 0:
+            multiplier *= float(STATUS_DEFINITIONS.get(status, {}).get("defense_multiplier", 1.0))
+    return multiplier
 
 
 def cleanup_status_effects(combatant: "Combatant") -> None:

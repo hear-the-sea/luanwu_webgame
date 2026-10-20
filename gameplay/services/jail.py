@@ -556,6 +556,7 @@ def _recruit_prisoner(
             template=template,
             level=1,
             experience=0,
+            rarity_pill_used=prisoner.rarity_pill_used,
             custom_name=custom_name,
             force=varied_attrs["force"],
             intellect=varied_attrs["intellect"],

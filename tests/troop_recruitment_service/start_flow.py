@@ -6,11 +6,51 @@ import pytest
 from django.utils import timezone
 
 from core.exceptions import TroopRecruitmentAlreadyInProgressError, TroopRecruitmentError
-from gameplay.models import InventoryItem, TroopRecruitment
+from gameplay.models import InventoryItem, PlayerTechnology, TroopRecruitment
+from gameplay.services.recruitment import recruitment as recruitment_service
 from gameplay.services.recruitment.recruitment import _consume_equipment_for_recruitment, start_troop_recruitment
 from tests.troop_recruitment_service.support import create_tool_template, set_inventory
 
 pytest_plugins = ("tests.troop_recruitment_service.fixtures",)
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("troop_key", ["dao_ke", "qiang_ke", "jian_shi", "quan_shi", "archer"])
+def test_basic_troops_require_one_unbound_cloth_hat_per_recruit(monkeypatch, recruit_manor, troop_key):
+    manor = recruit_manor
+    recruitment_service.clear_troop_cache()
+    config = recruitment_service.get_recruit_config(troop_key)
+    PlayerTechnology.objects.update_or_create(
+        manor=manor, tech_key=config["tech_key"], defaults={"level": config["tech_level"]}
+    )
+    hat_template = create_tool_template("equip_bumao", "布帽")
+    for key in config["equipment"]:
+        if key != "equip_bumao":
+            set_inventory(manor, create_tool_template(key, key), 3)
+    monkeypatch.setattr(recruitment_service, "_schedule_recruitment_completion", lambda *_args: None)
+    before = list(manor.inventory_items.order_by("id").values_list("id", "quantity", "bound_quantity"))
+
+    with pytest.raises(TroopRecruitmentError, match="布帽"):
+        start_troop_recruitment(manor, troop_key, quantity=2)
+    assert list(manor.inventory_items.order_by("id").values_list("id", "quantity", "bound_quantity")) == before
+    assert not TroopRecruitment.objects.filter(manor=manor).exists()
+
+    hat = InventoryItem.objects.create(manor=manor, template=hat_template, quantity=3, bound_quantity=3)
+    with pytest.raises(TroopRecruitmentError, match="布帽"):
+        start_troop_recruitment(manor, troop_key, quantity=2)
+    hat.refresh_from_db()
+    assert (hat.quantity, hat.bound_quantity) == (3, 3)
+    manor.refresh_from_db()
+    assert manor.retainer_count == 20
+
+    hat.bound_quantity = 1
+    hat.save(update_fields=["bound_quantity"])
+    recruitment = start_troop_recruitment(manor, troop_key, quantity=2)
+    assert recruitment.equipment_costs["equip_bumao"] == 2
+    hat.refresh_from_db()
+    assert (hat.quantity, hat.bound_quantity) == (1, 1)
+    manor.refresh_from_db()
+    assert manor.retainer_count == 18
 
 
 @pytest.mark.django_db

@@ -12,6 +12,7 @@ from battle.models import TroopTemplate
 from gameplay.models import BuildingType, MissionTemplate
 from guests.models import GuestTemplate
 from guilds.models import GuildMissionTemplate
+from guilds.services.personal_missions import PERSONAL_GUILD_MISSION_KEYS
 from tests.mission_reward_content_helpers import (
     assert_fixed_reward,
     assert_random_group,
@@ -318,6 +319,7 @@ def test_default_mission_templates_import_configured_display_order():
 
     assert list(
         MissionTemplate.objects.filter(difficulty=MissionTemplate.Difficulty.JUNIOR)
+        .exclude(key__in=PERSONAL_GUILD_MISSION_KEYS)
         .order_by("display_order", "id")
         .values_list("key", flat=True)
     ) == [
@@ -388,7 +390,7 @@ def test_default_mission_templates_cover_configured_equipment_sources():
             "items"
         ]
     }
-    for mission in MissionTemplate.objects.all():
+    for mission in MissionTemplate.objects.exclude(key__in=PERSONAL_GUILD_MISSION_KEYS):
         keys = reward_item_keys(mission_reward_payload(mission, items))
         mission_drop_keys.update(keys)
         if mission.difficulty == "intermediate":
@@ -542,48 +544,24 @@ def test_default_mission_templates_import_zhuolu_zhongyuan():
     assert mission.enemy_technology == {"level": 10, "guest_level": 100, "guest_bonus": 0.62}
     assert mission.drop_table == {"silver": 100000, "mission_chest_v3_zhuolu_zhongyuan": 1}
     payload = mission_reward_payload(mission)
-    assert_random_group(payload, 0.7, 4, {"experience_watermelon": 1})
-    for key, chance in (
-        ("book_bloodthirsty_fury", 0.06),
-        ("book_desperate_beast", 0.06),
-        ("book_prison_break_blade", 0.048),
-        ("book_city_felling_strike", 0.048),
-    ):
-        assert_random_group(payload, chance, 1, {key: 1})
     assert_random_group(
         payload,
-        0.15,
+        1,
         1,
         {
-            "equip_shanheshejitu": 1,
-            "equip_zhoutianxingpan": 1,
-            "equip_xuanyuanjian": 1,
-            "equip_longhuangguan": 1,
-            "equip_chuanguoyuxi": 1,
-            "equip_qilin": 1,
-            "equip_qingluan": 1,
+            "equip_tianshukaijia": 10,
+            "equip_tianxuankaijia": 10,
+            "equip_tianjikaijia": 10,
+            "equip_yaoguangkaijia": 10,
+            "equip_tianquankaijia": 10,
+            "equip_yuhengkaijia": 10,
+            "equip_kaiyangkaijia": 10,
+            "blueprint_chiyoujia": 5,
+            "equip_chiyouzhanxue": 5,
+            "chunqiu_coin": 20,
         },
     )
-    assert_random_group(
-        payload,
-        0.45,
-        1,
-        dict.fromkeys(
-            ["blueprint_qinglongkui", "blueprint_qinglongjia", "blueprint_qinglongxue", "blueprint_qinglongdao"], 1
-        ),
-    )
-    assert_random_group(
-        payload,
-        0.25,
-        1,
-        dict.fromkeys(["blueprint_qilinkui", "blueprint_qilinjia", "blueprint_qilinxue", "blueprint_qilindao"], 1),
-    )
-    assert_random_group(
-        payload,
-        0.06,
-        1,
-        dict.fromkeys(["blueprint_feiyuan", "blueprint_chixiaojifeng", "blueprint_mojiajiguanren"], 1),
-    )
+    assert_fixed_reward(payload, "chiyou_card", 1)
     assert_fixed_reward(payload, "xuanyuan_sword_intent", 1)
 
 

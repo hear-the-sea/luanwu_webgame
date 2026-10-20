@@ -108,7 +108,7 @@ def test_exchange_arena_reward_rejects_random_blueprint_when_rarity_pool_is_empt
 
     manor.refresh_from_db()
     assert manor.arena_coins == 600
-    assert not InventoryItem.objects.filter(manor=manor).exists()
+    assert not InventoryItem.objects.filter(manor=manor, template__key__startswith="blueprint_").exists()
 
 
 @pytest.mark.django_db

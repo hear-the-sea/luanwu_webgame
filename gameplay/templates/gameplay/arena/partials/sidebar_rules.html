@@ -1,0 +1,13 @@
+{% if summary.summary_metrics %}
+<section class="tw-arena-sidebar-rules" aria-labelledby="{{ heading_id }}">
+    <h4 id="{{ heading_id }}">赛事规则</h4>
+    <dl>
+        {% for metric in summary.summary_metrics %}
+        <div{% if metric.label == '比赛方式' %} class="tw-arena-sidebar-rules__description"{% endif %}>
+            <dt>{{ metric.label }}</dt>
+            <dd>{{ metric.value }}</dd>
+        </div>
+        {% endfor %}
+    </dl>
+</section>
+{% endif %}

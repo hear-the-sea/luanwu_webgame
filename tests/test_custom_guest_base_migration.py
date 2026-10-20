@@ -38,12 +38,14 @@ def test_base_update_preserves_growth_equipment_allocation_and_is_idempotent(dja
         current_hp=4500,
         custom_name="保留养成",
     )
-    progress = CustomGuestProgress.objects.create(
+    progress, _created = CustomGuestProgress.objects.update_or_create(
         manor=manor,
-        guest=guest,
-        card_issued=True,
-        weights={"force": 3500, "intellect": 500, "defense": 500, "agility": 500},
-        failed_attempts=2,
+        defaults={
+            "guest": guest,
+            "card_issued": True,
+            "weights": {"force": 3500, "intellect": 500, "defense": 500, "agility": 500},
+            "failed_attempts": 2,
+        },
     )
     for _ in range(2):
         with transaction.atomic():

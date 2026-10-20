@@ -1,0 +1,40 @@
+<div id="guest-card-modal-{{ entry.id }}-{{ entry.binding_mode }}" class="tw-modal-overlay js-player-choice-modal" style="display: none;" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="guest-card-title-{{ entry.id }}-{{ entry.binding_mode }}" tabindex="-1">
+    <div class="tw-modal-content">
+        <div class="tw-modal-header">
+            <h3 id="guest-card-title-{{ entry.id }}-{{ entry.binding_mode }}">{{ entry.template.name }} · 选择门客</h3>
+            <button type="button" class="tw-modal-close js-close-player-choice-modal" aria-label="关闭">&times;</button>
+        </div>
+        <form method="post" action="{% url 'gameplay:use_item' entry.id %}" class="tw-modal-form js-player-choice-use-form" data-has-stock="{{ entry.player_choice_has_stock|yesno:'true,false' }}">
+            {% csrf_token %}
+            <input type="hidden" name="binding_mode" value="{{ entry.binding_mode }}">
+            <div class="tw-modal-body">
+                <p class="tw-modal-hint">每次消耗{{ entry.player_choice_cost }}张{{ entry.template.name }}，仓库共{{ entry.quantity }}张。请查看介绍并选择一位门客。</p>
+                <fieldset class="tw-player-choice-list">
+                    <legend class="tw-muted text-sm">请选择兑换门客</legend>
+                    {% for choice in entry.player_choice_options %}
+                    <label class="tw-player-choice-option{% if not choice.is_available %} is-unavailable{% endif %}">
+                        <input type="radio" name="guest_template_key" value="{{ choice.template_key }}" required {% if not choice.is_available %}disabled{% endif %}>
+                        <span class="tw-player-choice-profile">
+                            <span class="tw-guest-info">
+                                {% if choice.avatar_url %}<img src="{{ choice.avatar_url }}" alt="{{ choice.name }}" class="tw-player-choice-avatar" loading="lazy" decoding="async">{% endif %}
+                                <span>
+                                    <strong class="rarity-text-{{ choice.rarity }}">{{ choice.name }}</strong>
+                                    <span class="tw-player-choice-meta">{{ choice.rarity_label }}色门客{% if choice.is_world_unique %} · 全服唯一{% endif %}</span>
+                                    <span class="tw-player-choice-meta">{{ choice.status_summary }}{% if choice.growth_range %} · 成长{{ choice.growth_range|join:'—' }}{% endif %}</span>
+                                </span>
+                            </span>
+                            {% if choice.flavor %}<span class="tw-player-choice-biography">{{ choice.flavor }}</span>{% endif %}
+                        </span>
+                    </label>
+                    {% endfor %}
+                </fieldset>
+                {% if not entry.player_choice_has_stock %}<p class="tw-muted text-sm">数量不足{{ entry.player_choice_cost }}张</p>{% endif %}
+                {% if not entry.player_choice_has_available_guest %}<p class="tw-muted text-sm">暂无可兑换的门客</p>{% endif %}
+            </div>
+            <div class="tw-modal-footer">
+                <button type="button" class="tw-btn-secondary js-close-player-choice-modal">取消</button>
+                <button type="submit" class="tw-btn-primary" disabled>确认兑换</button>
+            </div>
+        </form>
+    </div>
+</div>

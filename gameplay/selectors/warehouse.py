@@ -6,7 +6,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 
 from guests.avatar import get_guest_disguise_avatar_options
-from guests.models import GuestStatus
+from guests.models import GuestStatus, GuestTemplate
 from guests.services.world_unique import WORLD_UNIQUE_LUBU_SCROLL_ITEM_KEY, get_world_unique_guest_status
 
 from ..models import InventoryItem, ItemTemplate
@@ -109,6 +109,60 @@ def _annotate_world_unique_scroll_use_status(items: list) -> None:
         # 仅供点击“使用”时的确认弹窗读取，仓库物品提示不展示唯一门客状态。
         item.world_unique_use_guest_name = status["guest_name"]
         item.world_unique_use_status_summary = status["summary"]
+
+
+def _annotate_player_choice_guest_cards(items: list) -> None:
+    """读取自选兑换的真实门客模板及唯一状态，不创建全服状态记录。"""
+    cards = []
+    choice_keys = set()
+    for item in items:
+        payload = item.template.effect_payload
+        if (
+            not isinstance(payload, dict)
+            or payload.get("action") != "summon_guest"
+            or payload.get("player_choice") is not True
+        ):
+            continue
+        choices = payload.get("choices", [])
+        entries = choices if isinstance(choices, list) else []
+        raw_keys = [entry.get("template_key") for entry in entries if isinstance(entry, dict)]
+        keys = list(dict.fromkeys(str(key) for key in raw_keys if isinstance(key, str) and key))
+        cards.append((item, payload, keys))
+        choice_keys.update(keys)
+    if not cards:
+        return
+    templates = {template.key: template for template in GuestTemplate.objects.filter(key__in=choice_keys)}
+    statuses = {
+        key: get_world_unique_guest_status(template_key=key)
+        for key, template in templates.items()
+        if template.is_world_unique
+    }
+    for item, payload, keys in cards:
+        options = []
+        for key in keys:
+            template = templates.get(key)
+            status = statuses.get(key)
+            options.append(
+                {
+                    "template_key": key,
+                    "name": template.name if template else "门客暂不可用",
+                    "rarity": template.rarity if template else "",
+                    "rarity_label": template.get_rarity_display() if template else "",
+                    "flavor": template.flavor if template else "",
+                    "avatar_url": template.avatar.url if template and template.avatar else "",
+                    "growth_range": template.growth_range if template else [],
+                    "is_world_unique": bool(template and template.is_world_unique),
+                    "status_summary": status["summary"] if status else "可招募" if template else "配置缺失",
+                    "is_available": bool(template and (status is None or status["is_available"])),
+                }
+            )
+        requirements = payload.get("required_items")
+        own_cost = requirements.get(item.template.key, 0) if isinstance(requirements, dict) else 0
+        own_cost = own_cost if isinstance(own_cost, int) and not isinstance(own_cost, bool) and own_cost >= 0 else 0
+        item.player_choice_options = options
+        item.player_choice_cost = 1 + own_cost
+        item.player_choice_has_stock = item.quantity >= item.player_choice_cost
+        item.player_choice_has_available_guest = any(option["is_available"] for option in options)
 
 
 def _split_inventory_display_rows(items: list, *, frozen_gold: int) -> list:
@@ -236,6 +290,7 @@ def get_warehouse_context(manor, current_tab: str, selected_category: str, page:
     )
     if current_tab == "warehouse":
         _annotate_world_unique_scroll_use_status(warehouse_items)
+        _annotate_player_choice_guest_cards(warehouse_items)
     for item in warehouse_items:
         deposit_block_reason = get_treasury_deposit_block_reason(item.template)
         item.treasury_deposit_blocked = deposit_block_reason is not None

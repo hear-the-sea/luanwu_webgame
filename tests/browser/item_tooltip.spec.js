@@ -35,6 +35,49 @@ for (const viewport of [{ width: 1280, height: 720 }, { width: 375, height: 667 
   });
 }
 
+test("task enemy avatar shows the boss name on desktop hover", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.setContent(`
+    <div class="tw-mission-tabs"></div>
+    <button type="button" class="tw-item-cell tw-enemy-avatar-trigger" aria-label="关卡首领">
+      <span class="tw-enemy-avatar">首</span>
+      <span class="tw-item-tooltip"><span class="tw-tooltip-header">关卡首领</span></span>
+    </button>
+  `);
+  await page.addStyleTag({ path: projectPath("static/css/tailwind.css") });
+  await page.addScriptTag({ path: projectPath("static/js/tooltip.js") });
+  await page.addScriptTag({ path: projectPath("static/js/tasks-page.js") });
+  await page.evaluate(() => document.dispatchEvent(new Event("partial-nav:loaded")));
+
+  const trigger = page.getByRole("button", { name: "关卡首领" });
+  const tooltip = trigger.locator(".tw-item-tooltip");
+  await trigger.hover();
+  await expect(tooltip).toBeVisible();
+  await expect(tooltip).toContainText("关卡首领");
+});
+
+test("task enemy avatar shows the boss name after a mobile tap", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 667 });
+  await page.setContent(`
+    <div class="tw-mission-tabs"></div>
+    <button type="button" class="tw-item-cell tw-enemy-avatar-trigger" aria-label="关卡首领">
+      <span class="tw-enemy-avatar">首</span>
+      <span class="tw-item-tooltip"><span class="tw-tooltip-header">关卡首领</span></span>
+    </button>
+  `);
+  await page.addStyleTag({ path: projectPath("static/css/tailwind.css") });
+  await page.addScriptTag({ path: projectPath("static/js/tooltip.js") });
+  await page.addScriptTag({ path: projectPath("static/js/tasks-page.js") });
+  await page.evaluate(() => document.dispatchEvent(new Event("partial-nav:loaded")));
+
+  const trigger = page.getByRole("button", { name: "关卡首领" });
+  const tooltip = trigger.locator(".tw-item-tooltip");
+  await trigger.click();
+  await expect(trigger).toHaveClass(/is-tooltip-active/);
+  await expect(tooltip).toBeVisible();
+  await expect(tooltip).toContainText("关卡首领");
+});
+
 test("hybrid touch compatibility mouseover does not cancel the first tooltip click", async ({ page }) => {
   await page.setContent(`
     <label class="guest-equip-tooltip-trigger">

@@ -60,6 +60,7 @@ class BattleReportDetailView(LoginRequiredMixin, DetailView):
             return BattleReport.objects.none()
         import gameplay.services.arena.coop_core as arena_coop_core
         import gameplay.services.arena.core as arena_core
+        import gameplay.services.arena.wheel_core as arena_wheel_core
 
         now = timezone.now()
         # 允许查看：
@@ -87,6 +88,12 @@ class BattleReportDetailView(LoginRequiredMixin, DetailView):
                     arena_coop_events__ended_at__gte=now
                     - timedelta(seconds=arena_coop_core.ARENA_COOP_COMPLETED_RETENTION_SECONDS),
                 )
+                | Q(arena_wheel_bouts__event__status__in=["preparing", "running"])
+                | Q(
+                    arena_wheel_bouts__event__status__in=["completed", "cancelled"],
+                    arena_wheel_bouts__event__ended_at__gte=now
+                    - timedelta(seconds=arena_wheel_core.ARENA_WHEEL_COMPLETED_RETENTION_SECONDS),
+                )
             )
             .distinct()
         )
@@ -100,6 +107,7 @@ class BattleReportDetailView(LoginRequiredMixin, DetailView):
 
         report_runtime = resolve_report_runtime_context(report, manor_id=viewer_manor_id)
         player_side = str(report_runtime["player_side"])
+        context["arena_wheel_teams"] = report_runtime.get("arena_wheel_teams", [])
 
         attacker_team = report.attacker_team or []
         defender_team = report.defender_team or []
@@ -150,6 +158,7 @@ class BattleReportDetailView(LoginRequiredMixin, DetailView):
         context["arena_matchup"] = build_arena_matchup_context(
             report,
             arena_match=report_runtime.get("arena_match"),
+            arena_wheel_bout=report_runtime.get("arena_wheel_bout"),
         )
         context["report_matchup"] = context["arena_matchup"] or build_raid_matchup_context(
             report,

@@ -47,11 +47,15 @@ def _calculate_defense_value(
     target: "Combatant",
     effective_defense_value_fn: Callable[["Combatant", "Combatant"], float],
 ) -> float:
+    from ..utils.status_effects import get_defense_multiplier
+
     if target.kind != "troop":
-        return float(target.defense)
-    if actor.kind == "guest":
-        return float(target.unit_defense)
-    return effective_defense_value_fn(target, actor)
+        defense = float(target.defense)
+    elif actor.kind == "guest":
+        defense = float(target.unit_defense)
+    else:
+        defense = effective_defense_value_fn(target, actor)
+    return defense * get_defense_multiplier(target)
 
 
 def _apply_attack_and_defense_tech_effects(
@@ -391,6 +395,8 @@ def calculate_attack_damage(
     for skill in skills:
         if "damage_multiplier" in skill:
             total_damage_value *= max(0.0, float(skill.get("damage_multiplier") or 0.0))
+        if "execute_hp_ratio" in skill and target.hp / max(1, target.max_hp) <= skill["execute_hp_ratio"]:
+            total_damage_value *= float(skill.get("execute_multiplier", 1.0))
 
     is_double_strike = _roll_double_strike(actor, rng)
     base_damage_value = _apply_post_damage_modifiers(

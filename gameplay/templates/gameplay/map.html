@@ -4,8 +4,9 @@
 {% block title %}世界地图{% endblock %}
 
 {% block content %}
-<section class="dashboard"
+<section class="dashboard map-page"
          id="map-page"
+         data-map-page
          data-map-api-base="{% url 'gameplay:map_search_api' %}"
          data-map-backfill-api-url="{% url 'gameplay:map_backfill_request_api' %}"
          data-scout-api-url="{% url 'gameplay:start_scout_api' %}"

@@ -3,6 +3,7 @@ from django.db import DatabaseError
 from django.urls import reverse
 from django.utils import timezone
 
+from gameplay.constants import UIConstants
 from gameplay.models import EquipmentProduction
 
 
@@ -169,7 +170,7 @@ class TestForgePageContext:
         assert response.context["current_category"] == "weapon"
         assert captured["category"] == "weapon"
 
-    def test_forge_decompose_mode_paginates_to_nine_items(self, manor_with_user, monkeypatch):
+    def test_forge_decompose_mode_paginates_to_six_items(self, manor_with_user, monkeypatch):
         _manor, client = manor_with_user
 
         monkeypatch.setattr("gameplay.services.buildings.forge.get_equipment_options", lambda *_a, **_k: [])
@@ -194,11 +195,14 @@ class TestForgePageContext:
         response = client.get(reverse("gameplay:forge") + "?mode=decompose&category=all")
         assert response.status_code == 200
         decompose_page_obj = response.context["decompose_page_obj"]
-        assert len(decompose_page_obj.object_list) == 9
+        assert decompose_page_obj.paginator.per_page == UIConstants.FORGE_DECOMPOSE_ITEMS_PER_PAGE
+        assert len(decompose_page_obj.object_list) == UIConstants.FORGE_DECOMPOSE_ITEMS_PER_PAGE
         assert decompose_page_obj.has_next()
-        assert "装备属性：武力+10" in response.content.decode("utf-8")
+        html = response.content.decode("utf-8")
+        assert "装备属性" in html
+        assert "武力+10" in html
 
-    def test_forge_synthesis_blueprints_paginate_to_three_items(self, manor_with_user, monkeypatch):
+    def test_forge_synthesis_blueprints_paginate_to_six_items(self, manor_with_user, monkeypatch):
         _manor, client = manor_with_user
 
         monkeypatch.setattr("gameplay.services.buildings.forge.get_equipment_options", lambda *_a, **_k: [])
@@ -208,7 +212,9 @@ class TestForgePageContext:
         )
         monkeypatch.setattr(
             "gameplay.selectors.production.annotate_blueprint_synthesis_options",
-            lambda *_a, **_k: [{"blueprint_key": f"bp_{index}"} for index in range(4)],
+            lambda *_a, **_k: [
+                {"blueprint_key": f"bp_{index}"} for index in range(UIConstants.FORGE_BLUEPRINTS_PER_PAGE + 1)
+            ],
         )
         monkeypatch.setattr(
             "gameplay.services.buildings.forge.get_decomposable_equipment_options",
@@ -219,7 +225,7 @@ class TestForgePageContext:
 
         assert response.status_code == 200
         blueprint_page_obj = response.context["blueprint_page_obj"]
-        assert blueprint_page_obj.paginator.per_page == 3
+        assert blueprint_page_obj.paginator.per_page == UIConstants.FORGE_BLUEPRINTS_PER_PAGE
         assert blueprint_page_obj.number == 2
         assert len(blueprint_page_obj.object_list) == 1
 
@@ -262,7 +268,9 @@ class TestForgePageContext:
         assert response.context["current_category"] == "weapon"
         page_obj = response.context["equipment_list"]
         assert {item["key"] for item in page_obj.object_list} == {"equip_a", "equip_b"}
-        assert "装备属性：生命+10" in response.content.decode("utf-8")
+        html = response.content.decode("utf-8")
+        assert "装备属性" in html
+        assert "生命+10" in html
 
     def test_forge_synthesize_mode_supports_device_blueprint_category(self, manor_with_user, monkeypatch):
         _manor, client = manor_with_user
@@ -318,7 +326,9 @@ class TestForgePageContext:
         assert len(options) == 1
         assert options[0]["blueprint_key"] == "bp_device"
         assert options[0]["result_category"] == "device"
-        assert "装备属性：弓系生命+1%" in response.content.decode("utf-8")
+        html = response.content.decode("utf-8")
+        assert "装备属性" in html
+        assert "弓系生命+1%" in html
 
     def test_forge_all_category_prioritizes_forgeable_high_requirement(self, manor_with_user, monkeypatch):
         _manor, client = manor_with_user

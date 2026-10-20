@@ -60,6 +60,7 @@ PY
 
 if [[ "${DJANGO_RUN_MIGRATIONS:-0}" == "1" ]]; then
   python manage.py migrate --noinput
+  python manage.py repair_item_images
 fi
 
 if [[ "${DJANGO_SYNC_GUEST_TEMPLATES:-0}" == "1" && "${1:-}" != "celery" ]]; then

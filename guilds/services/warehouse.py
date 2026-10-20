@@ -100,6 +100,21 @@ def _get_item_display_meta(item_key: str) -> dict[str, Any]:
     return _load_item_display_catalog().get(str(item_key or "").strip(), {})
 
 
+def get_item_rarity_map(item_keys: Iterable[str]) -> dict[str, str]:
+    """批量读取物品稀有度，优先使用模板数据并回退到 YAML 配置。"""
+    normalized_keys = {str(item_key or "").strip() for item_key in item_keys if str(item_key or "").strip()}
+    if not normalized_keys:
+        return {}
+
+    template_rarities = dict(ItemTemplate.objects.filter(key__in=normalized_keys).values_list("key", "rarity"))
+    catalog = _load_item_display_catalog()
+    return {
+        item_key: str(template_rarities.get(item_key) or catalog.get(item_key, {}).get("rarity") or "gray").strip()
+        or "gray"
+        for item_key in normalized_keys
+    }
+
+
 def _get_item_display_image_url(item_key: str, template: ItemTemplate | None, display_meta: Mapping[str, Any]) -> str:
     static_image_path = GUILD_ASSET_STATIC_IMAGE_PATHS.get(item_key)
     if static_image_path:

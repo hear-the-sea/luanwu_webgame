@@ -7,12 +7,12 @@ from core.admin_i18n import apply_common_field_labels
 from core.admin_records import ReadOnlyAdmin
 from gameplay.models import ArenaRing, ArenaRingDaily, ArenaRingInspection, ArenaRingMatch, ArenaRingTenure
 
-# 后台只读查询，不直接改写擂台占领关系、结算和奖励。
+# 后台只读查询，不直接改写擂台占领关系或对战记录。
 for model, name in (
     (ArenaRing, "擂台"),
     (ArenaRingTenure, "擂台占领记录"),
     (ArenaRingMatch, "擂台挑战记录"),
-    (ArenaRingDaily, "擂台每日奖励统计"),
+    (ArenaRingDaily, "擂台每日对战统计"),
     (ArenaRingInspection, "擂台侦察记录"),
 ):
     model._meta.verbose_name = name
@@ -36,12 +36,12 @@ apply_common_field_labels(
         "tenure": "占领记录",
         "pair_low": "对战双方较小编号",
         "pair_high": "对战双方较大编号",
-        "reward_date": "奖励日期",
+        "reward_date": "对战日期",
         "date": "日期",
         "seconds": "占领秒数",
-        "time_coins": "占领奖励角斗币",
-        "defense_rewards": "守擂奖励次数",
-        "participation_rewards": "参与奖励次数",
+        "time_coins": "历史占领奖励角斗币",
+        "defense_rewards": "历史守擂奖励次数",
+        "participation_rewards": "历史参与奖励次数",
         "challenges": "挑战次数",
         "buyer": "侦察玩家",
     },
@@ -160,7 +160,7 @@ class ArenaRingMatchAdmin(ReadOnlyAdmin):
 
 @admin.register(ArenaRingDaily)
 class ArenaRingDailyAdmin(ReadOnlyAdmin):
-    list_display = ("manor", "date", "seconds", "time_coins", "defense_rewards", "participation_rewards", "challenges")
+    list_display = ("manor", "date", "challenges")
     list_filter = ("date",)
     search_fields = ("manor__name", "manor__user__username")
     list_select_related = ("manor__user",)

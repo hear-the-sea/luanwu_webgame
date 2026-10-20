@@ -1,13 +1,11 @@
-<div class="tw-filter-bar">
-    <form method="get" class="tw-filter-form">
-        <input type="hidden" name="tab" value="shop">
-        <input type="hidden" name="view" value="{{ filter_view }}">
-        <input type="hidden" name="{{ other_page_name }}" value="{{ other_page_number }}">
-        <label for="{{ filter_id }}" class="tw-filter-label">筛选</label>
-        <select id="{{ filter_id }}" name="category" class="tw-filter-select" data-trade-auto-submit>
-            {% for opt in categories %}
-            <option value="{{ opt.key }}" {% if selected_category == opt.key %}selected{% endif %}>{{ opt.label }}</option>
-            {% endfor %}
-        </select>
-    </form>
-</div>
+<form method="get" class="tw-filter-form">
+    <input type="hidden" name="tab" value="shop">
+    <input type="hidden" name="view" value="{{ filter_view }}">
+    <input type="hidden" name="{{ other_page_name }}" value="{{ other_page_number }}">
+    <label for="{{ filter_id }}" class="tw-filter-label">筛选</label>
+    <select id="{{ filter_id }}" name="category" class="tw-filter-select" data-trade-auto-submit>
+        {% for opt in categories %}
+        <option value="{{ opt.key }}" {% if selected_category == opt.key %}selected{% endif %}>{{ opt.label }}</option>
+        {% endfor %}
+    </select>
+</form>

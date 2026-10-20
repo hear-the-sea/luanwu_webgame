@@ -13,21 +13,25 @@ def compute_guest_max_hp(guest: Any) -> int:
     return int(max(int(GUEST.MIN_HP_FLOOR), base_hp + defense_hp))
 
 
-def build_guest_stat_block(guest: Any) -> dict[str, int]:
+def compute_guest_attack_attribute_component(guest: Any) -> int:
     force = int(getattr(guest, "force", 0) or 0)
     intellect = int(getattr(guest, "intellect", 0) or 0)
-    defense_stat = int(getattr(guest, "defense_stat", 0) or 0)
-    attack_bonus = int(getattr(guest, "attack_bonus", 0) or 0)
-    defense_bonus = int(getattr(guest, "defense_bonus", 0) or 0)
     archetype = str(getattr(guest, "archetype", "") or "")
-
     if archetype == "civil":
         raw_attack = force * GUEST.CIVIL_FORCE_WEIGHT + intellect * GUEST.CIVIL_INTELLECT_WEIGHT
     else:
         raw_attack = force * GUEST.MILITARY_FORCE_WEIGHT + intellect * GUEST.MILITARY_INTELLECT_WEIGHT
+    return int(raw_attack)
+
+
+def build_guest_stat_block(guest: Any) -> dict[str, int]:
+    intellect = int(getattr(guest, "intellect", 0) or 0)
+    defense_stat = int(getattr(guest, "defense_stat", 0) or 0)
+    attack_bonus = int(getattr(guest, "attack_bonus", 0) or 0)
+    defense_bonus = int(getattr(guest, "defense_bonus", 0) or 0)
 
     return {
-        "attack": int(raw_attack) + attack_bonus,
+        "attack": compute_guest_attack_attribute_component(guest) + attack_bonus,
         "defense": defense_stat + defense_bonus,
         "intellect": intellect,
         "hp": compute_guest_max_hp(guest),

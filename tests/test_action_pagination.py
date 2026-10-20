@@ -9,13 +9,15 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 
 from core.exceptions import ShopValidationError
+from gameplay.constants import UIConstants
 
 
 @pytest.mark.django_db
 def test_decompose_returns_to_current_page_and_clamps_an_empty_last_page(manor_with_user, monkeypatch):
     _manor, client = manor_with_user
     equipment = [
-        {"key": f"equip_{index}", "name": f"装备{index}", "quantity": 1, "category": "weapon"} for index in range(10)
+        {"key": f"equip_{index}", "name": f"装备{index}", "quantity": 1, "category": "weapon"}
+        for index in range(UIConstants.FORGE_DECOMPOSE_ITEMS_PER_PAGE + 1)
     ]
     monkeypatch.setattr("gameplay.services.buildings.forge.get_equipment_options", lambda *_a, **_k: [])
     monkeypatch.setattr(
@@ -23,7 +25,7 @@ def test_decompose_returns_to_current_page_and_clamps_an_empty_last_page(manor_w
     )
 
     def decompose(_manor, key, quantity):
-        equipment.pop()
+        equipment[:] = [item for item in equipment if item["key"] != key]
         return {"equipment_name": key, "quantity": quantity, "rewards": {}}
 
     monkeypatch.setattr("gameplay.services.buildings.forge.decompose_equipment", decompose)

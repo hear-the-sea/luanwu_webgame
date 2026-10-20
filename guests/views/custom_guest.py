@@ -7,7 +7,6 @@ import json
 import logging
 import secrets
 import unicodedata
-from pathlib import Path
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -25,7 +24,15 @@ from core.utils.rate_limit import rate_limit_redirect
 from core.utils.responses import json_error, json_success
 from gameplay.models import InventoryItem, Manor
 from gameplay.services.manor.core import get_manor
-from guests.avatar import get_guest_disguise_avatar_options
+from guests.avatar import (
+    CUSTOM_GUEST_AVATAR_GROUP_LABELS,
+    CUSTOM_GUEST_AVATAR_PAGE_SIZE,
+    get_custom_guest_avatar_catalog,
+    get_custom_guest_avatar_filenames,
+    get_custom_guest_avatar_option,
+    get_custom_guest_avatar_page,
+    get_guest_avatar_asset_name,
+)
 from guests.models import CustomGuestProgress, Guest
 from guests.services.custom_guest_biography import build_custom_guest_biography
 
@@ -147,8 +154,7 @@ def _parameters(request, action):
             unicodedata.category(char).startswith("C") for char in params["name"]
         ):
             raise GameError("姓名须为2～12个字符")
-        options = get_guest_disguise_avatar_options()
-        if params["avatar_key"] not in {option["key"] for option in options}:
+        if params["avatar_key"] not in get_custom_guest_avatar_filenames():
             raise GameError("请选择门客形象")
     elif action == "consume":
         try:
@@ -168,7 +174,9 @@ def _parameters(request, action):
 def _preview(manor, guest, params, card_id):
     action = params["action"]
     if action in {"create", "appearance"}:
-        avatar = next(option for option in get_guest_disguise_avatar_options() if option["key"] == params["avatar_key"])
+        avatar = get_custom_guest_avatar_option(params["avatar_key"])
+        if avatar is None:
+            raise GameError("请选择有效的门客形象")
         return {
             "title": "创建门客" if action == "create" else "更改姓名与形象",
             "summary": params["name"],
@@ -269,12 +277,18 @@ def custom_guest_action_view(request, pk=None, inventory_id=None, action="create
     if request.method == "GET":
         if action not in {"create", "appearance"}:
             return redirect(back[0], **back[1])
-        avatars = get_guest_disguise_avatar_options()
+        group_key = request.GET.get("avatar_group")
+        if group_key is not None:
+            if group_key not in CUSTOM_GUEST_AVATAR_GROUP_LABELS:
+                return json_error("形象分组不存在", status=400)
+            return json_success(**get_custom_guest_avatar_page(group_key, request.GET.get("page")))
+        catalog = get_custom_guest_avatar_catalog()
         selected_avatar = next(
             (
-                avatar["key"]
-                for avatar in avatars
-                if guest and Path(avatar["key"]).stem == Path(guest.avatar_asset_key).stem
+                filename
+                for filenames in catalog.values()
+                for filename in filenames
+                if guest and get_guest_avatar_asset_name(filename) == guest.avatar_asset_key
             ),
             "",
         )
@@ -284,7 +298,20 @@ def custom_guest_action_view(request, pk=None, inventory_id=None, action="create
             {
                 "guest": guest,
                 "creating": action == "create",
-                "avatars": avatars,
+                "avatar_groups": [
+                    {
+                        "key": key,
+                        "label": label,
+                        "count": len(catalog[key]),
+                        "selected": selected_avatar in catalog[key],
+                        "initial_page": (
+                            catalog[key].index(selected_avatar) // CUSTOM_GUEST_AVATAR_PAGE_SIZE + 1
+                            if selected_avatar in catalog[key]
+                            else 1
+                        ),
+                    }
+                    for key, label in CUSTOM_GUEST_AVATAR_GROUP_LABELS.items()
+                ],
                 "selected_avatar": selected_avatar,
             },
         )

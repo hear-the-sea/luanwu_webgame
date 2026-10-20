@@ -1,0 +1,49 @@
+# 蚩尤卡指定兑换的全服唯一紫色门客，独立于既有普通招募版本。
+heroes:
+  purple:
+    - key: hero_yang_zheng_purple
+      name: 杨铮
+      avatar: monkey/其他随机角色/武080_男_青衣捕快.png
+      archetype: military
+      default_gender: male
+      default_morality: 85
+      recruitable: false
+      is_world_unique: true
+      flavor: >-
+        杨铮是江湖大盗的后人、县衙的小捕头，命贱如泥土。他有爱，有决心，面对外来的压力，他不会屈服，也不会崩溃。他拿起了离别钩，只为了要相聚，不愿被人强迫与他所爱的人离别。
+      growth_range: [6, 14]
+      attribute_weights:
+        force: 44
+        intellect: 8
+        defense: 32
+        agility: 16
+      custom_stats:
+        force: 62
+        intellect: 17
+        defense: 55
+        agility: 35
+        luck: 98
+        base_hp: 800
+    - key: hero_di_qinglin
+      name: 狄青麟
+      avatar: monkey/任务/阴九幽.png
+      archetype: military
+      default_gender: male
+      default_morality: 20
+      recruitable: false
+      is_world_unique: true
+      flavor: >-
+        狄青麟是世袭一等侯、天下第一风流侠少。他是大恶中的大恶、大奸中的大奸，坏得让人欣赏，因为那是一种近乎本色的坏——他别无选择，那就是他的命运，他的生活。他杀朋友，杀情人，杀师父，因为他只爱他自己，他心中本来就没有朋友、情人和师父。
+      growth_range: [6, 14]
+      attribute_weights:
+        force: 46
+        intellect: 8
+        defense: 18
+        agility: 28
+      custom_stats:
+        force: 64
+        intellect: 17
+        defense: 40
+        agility: 48
+        luck: 98
+        base_hp: 800

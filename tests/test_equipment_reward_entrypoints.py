@@ -58,7 +58,7 @@ def test_mission_reward_equipment_rolls_only_once(django_user_model, monkeypatch
     base = _equipment()
     _force_roll(monkeypatch, "gameplay.services.missions_impl.drops.roll_equipment_reward_items_locked")
     award_mission_drops(manor, {base.key: 2}, note="前缀掉落")
-    item = InventoryItem.objects.get(manor=manor)
+    item = InventoryItem.objects.get(manor=manor, template__key__startswith="affix_")
     assert item.template.key != base.key
     assert item.quantity == 2
     assert item.template.name != base.name
@@ -87,7 +87,7 @@ def test_loot_box_displays_actual_variant_and_preserves_binding(django_user_mode
     )
     chest = InventoryItem.objects.create(manor=manor, template=chest_template, quantity=1, bound_quantity=1)
     result = use_inventory_item(chest)
-    item = InventoryItem.objects.get(manor=manor)
+    item = InventoryItem.objects.get(manor=manor, template__key__startswith="affix_")
     assert item.template.key != base.key
     assert (item.quantity, item.bound_quantity) == (2, 2)
     assert item.template.name in result["_message"]
@@ -122,7 +122,9 @@ def test_auction_freezes_variant_before_bidding_and_keeps_it_on_delivery(django_
         lambda *args, **kwargs: pytest.fail("auction delivery must not reroll"),
     )
     grant_auction_item_directly_impl(manor, slot.item_template, 1, safe_int_func=lambda value, fallback: int(value))
-    assert InventoryItem.objects.get(manor=manor).template_id == slot.item_template_id
+    assert (
+        InventoryItem.objects.get(manor=manor, template_id=slot.item_template_id).template_id == slot.item_template_id
+    )
 
 
 def test_blueprint_variants_keep_individual_binding_and_report_quantities(django_user_model, monkeypatch):
@@ -148,7 +150,7 @@ def test_blueprint_variants_keep_individual_binding_and_report_quantities(django
         },
     )
     result = forge.synthesize_equipment_with_blueprint(manor, blueprint.key, quantity=2)
-    item = InventoryItem.objects.get(manor=manor)
+    item = InventoryItem.objects.get(manor=manor, template__key__startswith="affix_")
     assert item.template.key != base.key
     assert (item.quantity, item.bound_quantity) == (4, 2)
     assert result["items"] == {item.template.key: 4}
@@ -168,7 +170,7 @@ def test_legacy_gear_only_mission_reward_keeps_stats_and_gains_prefix(django_use
     )
     _force_roll(monkeypatch, "gameplay.services.missions_impl.drops.roll_equipment_reward_items_locked")
     award_mission_drops(manor, {gear_template.key: 1}, note="旧制装备掉落")
-    item = InventoryItem.objects.get(manor=manor)
+    item = InventoryItem.objects.get(manor=manor, template__key__startswith="affix_")
     assert item.template.key != gear_template.key
     assert item.template.effect_payload["required_level"] == 45
     assert item.template.effect_payload["equipment_attack_bonus"] == 7
@@ -242,7 +244,7 @@ def test_campaign_fixes_each_recipient_variant_once_and_claim_keeps_binding(djan
         lambda *args, **kwargs: pytest.fail("claim must preserve generated attachment identity"),
     )
     claim_message_attachments(message)
-    item = InventoryItem.objects.get(manor=manor)
+    item = InventoryItem.objects.get(manor=manor, template__key=variant_key)
     assert item.template.key == variant_key
     assert (item.quantity, item.bound_quantity) == (3, 1)
 

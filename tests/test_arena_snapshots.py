@@ -12,6 +12,7 @@ def _make_mock_guest():
     guest = MagicMock()
     guest.display_name = "竞技门客"
     guest.rarity = "blue"
+    guest.archetype = "military"
     guest.template.key = "arena_guest_tpl"
     guest.level = 12
     guest.force = 88
@@ -36,6 +37,7 @@ def test_build_entry_guest_snapshot_clamps_hp_and_serializes_skill_keys():
         "display_name": "竞技门客",
         "rarity": "blue",
         "template_key": "arena_guest_tpl",
+        "archetype": "military",
         "level": 12,
         "force": 88,
         "intellect": 77,
@@ -43,6 +45,7 @@ def test_build_entry_guest_snapshot_clamps_hp_and_serializes_skill_keys():
         "agility": 55,
         "luck": 44,
         "attack": 123,
+        "attack_attribute_component": 84,
         "defense": 98,
         "max_hp": 900,
         "current_hp": 900,

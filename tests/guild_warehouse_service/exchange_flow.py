@@ -522,13 +522,13 @@ def test_exchange_item_grants_real_warehouse_gold_bar_to_member_inventory(guild_
     assert gold_bar_row.quantity == 2
     assert gold_bar_row.total_exchanged == 2
     assert gold_bar_item.quantity == 7
-    assert member.current_contribution == 2_600
+    assert member.current_contribution == 5_000 - (2 * CONTRIBUTION_RATES["gold_bar"])
     assert member.daily_exchange_count == 1
     assert GuildExchangeLog.objects.filter(
         member=member,
         item_key="gold_bar",
         quantity=2,
-        contribution_cost=2_400,
+        contribution_cost=2 * CONTRIBUTION_RATES["gold_bar"],
     ).exists()
 
 

@@ -21,9 +21,12 @@ from gameplay.views.mission_helpers import build_chest_reward_preview
 DATA = Path(__file__).resolve().parents[1] / "data"
 ITEMS = {entry["key"]: entry for entry in yaml.safe_load((DATA / "item_templates.yaml").read_text())["items"]}
 MISSIONS = yaml.safe_load((DATA / "mission_templates.yaml").read_text())["missions"]
-BOXES = [ITEMS[key] for mission in MISSIONS for key in mission["drop_table"] if key != "silver"]
+MISSION_CHEST_MISSIONS = [mission for mission in MISSIONS if "mission_chest_v3_" + mission["key"] in ITEMS]
+BOXES = [ITEMS["mission_chest_v3_" + mission["key"]] for mission in MISSION_CHEST_MISSIONS]
 HISTORICAL_BOXES = [
-    ITEMS["mission_chest_" + mission["key"]] for mission in MISSIONS if "mission_chest_" + mission["key"] in ITEMS
+    ITEMS["mission_chest_" + mission["key"]]
+    for mission in MISSION_CHEST_MISSIONS
+    if "mission_chest_" + mission["key"] in ITEMS
 ]
 ALL_BOXES = BOXES + HISTORICAL_BOXES
 
@@ -42,11 +45,11 @@ def _reward_keys(box):
 
 
 def test_all_personal_missions_award_one_named_chest_without_scattered_items():
-    assert len(MISSIONS) == len(BOXES) == 35
+    assert len(MISSION_CHEST_MISSIONS) == len(BOXES) == 39
     assert len(HISTORICAL_BOXES) == 32
-    assert len({box["key"] for box in ALL_BOXES}) == 67
-    assert len({box["effect_payload"]["mission_key"] for box in BOXES}) == 35
-    for mission in MISSIONS:
+    assert len({box["key"] for box in ALL_BOXES}) == 71
+    assert len({box["effect_payload"]["mission_key"] for box in BOXES}) == 39
+    for mission in MISSION_CHEST_MISSIONS:
         drops = mission["drop_table"]
         box_keys = set(drops) - {"silver"}
         assert len(box_keys) == 1
@@ -96,6 +99,13 @@ def test_historical_boxes_keep_experience_fruit_and_the_same_remaining_reward_po
         old_payload = historical["effect_payload"]
         assert payload["mission_key"] == old_payload["mission_key"]
         assert "experience_fruit_source" not in old_payload
+        if payload["mission_key"] == "zhuolu_zhongyuan":
+            # 旧逐鹿箱保留原奖励；新箱已改为蚩尤主题，旧池分配到战龙四关。
+            assert box["name"] == "蚩尤宝箱"
+            assert "chiyou_card" in _reward_keys(box)
+            assert "xuanyuan_sword_intent" in _reward_keys(historical)
+            assert "xuanyuan_sword_intent" in _reward_keys(box)
+            continue
         fruit_rewards = [row for row in old_payload["item_rewards"] if row["item_key"] == "experience_fruit"]
         assert len(fruit_rewards) == 1
         assert 1 <= fruit_rewards[0]["min_quantity"] == fruit_rewards[0]["max_quantity"]
@@ -287,7 +297,7 @@ def test_all_current_and_legacy_task_chests_display_task_chest_category():
         "huashan_wulin_chest",
     }
     boxes = [entry for key, entry in ITEMS.items() if key.startswith("mission_chest_") or key in legacy_keys]
-    assert len(boxes) == 73
+    assert len(boxes) == 77
     for entry in boxes:
         template = ItemTemplate(key=entry["key"], effect_type=entry["effect_type"])
         assert InventoryItem(template=template).category_display == "任务宝箱"

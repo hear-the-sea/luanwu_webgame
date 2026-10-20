@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from math import ceil
 
-from django.db.models import Count, Q
+from django.db.models import Count, Prefetch, Q
 from django.utils import timezone
 
 import gameplay.services.arena.coop_core as arena_coop_core
@@ -14,6 +15,10 @@ from gameplay.models import (
     ArenaEntry,
     ArenaMatch,
     ArenaTournament,
+    ArenaWheelBout,
+    ArenaWheelEntry,
+    ArenaWheelEntryGuest,
+    ArenaWheelEvent,
     Manor,
 )
 
@@ -177,6 +182,144 @@ def get_arena_coop_event_detail_context(manor: Manor, event_id: int) -> dict | N
                 }
                 for row in virtual_contributions
             ],
+        }
+    )
+    return context
+
+
+def get_arena_wheel_event_detail_context(manor: Manor, event_id: int) -> dict | None:
+    from gameplay.services.arena import wheel_core
+
+    context = build_common_context(manor)
+    current_time = timezone.now()
+    event = ArenaWheelEvent.objects.filter(pk=event_id).first()
+    if event is None:
+        return None
+
+    is_mine = ArenaWheelEntry.objects.filter(event=event, manor=manor).exists()
+    if event.status == ArenaWheelEvent.Status.RECRUITING and not is_mine:
+        return None
+    if event.status in [ArenaWheelEvent.Status.COMPLETED, ArenaWheelEvent.Status.CANCELLED]:
+        visible_cutoff = current_time - timedelta(seconds=wheel_core.ARENA_WHEEL_COMPLETED_RETENTION_SECONDS)
+        if event.ended_at is None or event.ended_at < visible_cutoff:
+            return None
+
+    entries = list(
+        ArenaWheelEntry.objects.filter(event=event)
+        .select_related("manor")
+        .prefetch_related(
+            Prefetch(
+                "entry_guests",
+                queryset=ArenaWheelEntryGuest.objects.select_related("guest").order_by("slot_index", "id"),
+            )
+        )
+        .order_by("team", "team_order", "joined_at", "id")
+    )
+
+    def build_guest_rows(entry):
+        guest_rows = []
+        for link in entry.entry_guests.all():
+            snapshot = link.snapshot if isinstance(link.snapshot, dict) else {}
+            try:
+                defense_stat = max(0, int(snapshot.get("defense_stat") or 0))
+                original_max_hp = max(1, int(snapshot.get("max_hp") or 1))
+                current_hp = max(1, int(snapshot.get("current_hp") or 1))
+            except (TypeError, ValueError):
+                defense_stat = 0
+                original_max_hp = 1
+                current_hp = 1
+            _debuffed_defense_stat, max_hp = wheel_core.get_arena_wheel_debuffed_defense_and_max_hp(
+                defense_stat=defense_stat,
+                max_hp=original_max_hp,
+                debuff_stacks=entry.debuff_stacks,
+            )
+            guest_rows.append(
+                {
+                    "display_name": snapshot.get("display_name") or "门客",
+                    "wheel_knocked_out": bool(snapshot.get("wheel_knocked_out")),
+                    "current_hp": min(current_hp, max_hp),
+                    "max_hp": max_hp,
+                }
+            )
+        return guest_rows
+
+    team_a_rows = [
+        {
+            "entry": entry,
+            "is_mine": entry.manor_id == manor.id,
+            "is_active": entry.pk == event.team_a_active_entry_id,
+            "is_winner": entry.team == event.winner_team,
+            "guests": build_guest_rows(entry),
+        }
+        for entry in entries
+        if entry.team == ArenaWheelEvent.Team.A
+    ]
+    team_b_rows = [
+        {
+            "entry": entry,
+            "is_mine": entry.manor_id == manor.id,
+            "is_active": entry.pk == event.team_b_active_entry_id,
+            "is_winner": entry.team == event.winner_team,
+            "guests": build_guest_rows(entry),
+        }
+        for entry in entries
+        if entry.team == ArenaWheelEvent.Team.B
+    ]
+    bouts = list(
+        ArenaWheelBout.objects.filter(event=event)
+        .select_related(
+            "team_a_entry__manor",
+            "team_b_entry__manor",
+            "winner_entry__manor",
+            "battle_report",
+        )
+        .order_by("bout_number", "id")
+    )
+    bout_rows = [
+        {
+            "bout": bout,
+            "team_a_name": bout.team_a_entry.manor.display_name,
+            "team_b_name": bout.team_b_entry.manor.display_name,
+            "winner_name": (
+                bout.winner_entry.manor.display_name if bout.winner_entry is not None else "双方门客均倒下"
+            ),
+            "is_mine": manor.id in {bout.team_a_entry.manor_id, bout.team_b_entry.manor_id},
+        }
+        for bout in bouts
+    ]
+    if event.status == ArenaWheelEvent.Status.PREPARING:
+        next_bout_at = event.prepare_ends_at
+    elif event.status == ArenaWheelEvent.Status.RUNNING:
+        latest_bout = bouts[-1] if bouts else None
+        next_bout_at = (
+            latest_bout.created_at + timedelta(seconds=wheel_core.ARENA_WHEEL_BOUT_INTERVAL_SECONDS)
+            if latest_bout
+            else current_time
+        )
+    else:
+        next_bout_at = None
+    refresh_after_seconds = max(10, ceil((next_bout_at - current_time).total_seconds()) + 15) if next_bout_at else None
+    context.update(
+        {
+            "wheel_event": event,
+            "wheel_win_reward": wheel_core.ARENA_WHEEL_WIN_REWARD,
+            "wheel_loss_reward": wheel_core.ARENA_WHEEL_LOSS_REWARD,
+            "wheel_team_a_rows": team_a_rows,
+            "wheel_team_b_rows": team_b_rows,
+            "wheel_bout_rows": bout_rows,
+            "wheel_next_bout_at": next_bout_at,
+            "wheel_refresh_after_seconds": refresh_after_seconds,
+            "wheel_is_mine": is_mine,
+            "wheel_team_a_reward": (
+                wheel_core.ARENA_WHEEL_WIN_REWARD
+                if event.winner_team == ArenaWheelEvent.Team.A
+                else wheel_core.ARENA_WHEEL_LOSS_REWARD
+            ),
+            "wheel_team_b_reward": (
+                wheel_core.ARENA_WHEEL_WIN_REWARD
+                if event.winner_team == ArenaWheelEvent.Team.B
+                else wheel_core.ARENA_WHEEL_LOSS_REWARD
+            ),
         }
     )
     return context

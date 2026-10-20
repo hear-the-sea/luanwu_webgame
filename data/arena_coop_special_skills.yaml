@@ -503,7 +503,7 @@ skills:
   - key: gl_top_five_flags_barrier
     name: 五行旗护阵
     rarity: purple
-    description: 旗阵未破之前，为张无忌稳固阵脚并大幅压低来敌杀伤。
+    description: 两旗互相掩护并为张无忌稳固阵脚；旗阵未破时会压低来敌杀伤。
     base_probability: 0.75
     kind: passive
     damage_formula:
@@ -523,7 +523,7 @@ skills:
               log_name: 五行旗护阵
               message: 旗阵护体
             - type: modify_incoming_damage
-              value: 0.5
+              value: 0.45
         - timing: round_start
           conditions:
             self_template_in:
@@ -537,7 +537,7 @@ skills:
               log_name: 五行旗护阵
               message: 旗阵护体
             - type: modify_incoming_damage
-              value: 0.72
+              value: 0.68
         - timing: round_start
           conditions:
             self_template_in:
@@ -551,4 +551,29 @@ skills:
               log_name: 五行旗护阵
               message: 旗阵护体
             - type: modify_incoming_damage
-              value: 0.72
+              value: 0.68
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_five_flags_elite_front
+            state_present:
+              - arena_coop_boss_alive
+            ally_alive_template_count_gte:
+              arena_gl_top_five_flags_elite_rear: 1
+          effects:
+            - type: modify_incoming_damage
+              value: 0.85
+        - timing: round_start
+          conditions:
+            self_template_in:
+              - arena_gl_top_five_flags_elite_rear
+            state_present:
+              - arena_coop_boss_alive
+            ally_alive_template_count_gte:
+              arena_gl_top_five_flags_elite_front: 1
+          effects:
+            - type: emit_log
+              log_name: 五行旗护阵
+              message: 两旗互护
+            - type: modify_incoming_damage
+              value: 0.85

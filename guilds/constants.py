@@ -39,13 +39,14 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
     },
     "contribution": {
         "units": {"silver": 1000, "grain": 2000, "gold_bar": 1},
-        "rates": {"silver": 1, "grain": 1, "gold_bar": 1200},
-        "daily_limits": {"silver": 500000, "grain": 250000, "gold_bar": 5},
-        "troop_rates": {"0": 1, "1": 1, "3": 3, "5": 6, "7": 12},
+        "rates": {"silver": 1, "grain": 1, "gold_bar": 800},
+        "daily_limits": {"silver": 500000, "grain": 500000, "gold_bar": 5},
+        "troop_rates": {"0": 1, "1": 1, "3": 2, "5": 4, "7": 6},
         "daily_troop_contribution_limit": 300,
         "min_donation_amount": 1,
     },
     "technology": {
+        "production_upkeep": {"silver_per_contribution": 60, "grain_per_contribution": 90},
         "upgrade_costs": TECHNOLOGY_DEFAULT_COSTS,
         "upgrade_cost_curves": {
             "standard_10": {
@@ -110,8 +111,8 @@ DEFAULT_GUILD_RULES: dict[str, Any] = {
         "daily_exchange_limit": 10,
     },
     "cavalry_recruitment": {
-        "silver_per_unit": 1500,
-        "grain_per_unit": 5000,
+        "silver_per_unit": 2000,
+        "grain_per_unit": 8000,
         "contribution_per_unit": 3,
         "max_batch": 2000,
         "seconds_per_unit": 30,
@@ -319,6 +320,11 @@ def normalize_guild_rules(raw: Any) -> dict[str, Any]:
                 config["technology"].get("upgrade_cost_overrides"),
                 DEFAULT_GUILD_RULES["technology"]["upgrade_cost_overrides"],
             ),
+            "production_upkeep": _normalize_int_map(
+                config["technology"].get("production_upkeep"),
+                DEFAULT_GUILD_RULES["technology"]["production_upkeep"],
+                minimum=0,
+            ),
             "names": technology_names,
             "descriptions": technology_descriptions,
         },
@@ -465,7 +471,7 @@ def refresh_guild_constants() -> None:
     global CONTRIBUTION_UNITS, CONTRIBUTION_RATES, DAILY_DONATION_LIMITS, MIN_DONATION_AMOUNT
     global TROOP_CONTRIBUTION_RATES, DAILY_TROOP_CONTRIBUTION_LIMIT
     global TECH_UPGRADE_COSTS, TECH_UPGRADE_COST_CURVES, TECH_UPGRADE_COST_CURVE_BY_TECH
-    global TECH_UPGRADE_COST_OVERRIDES, TECH_NAMES, TECH_DESCRIPTIONS
+    global TECH_UPGRADE_COST_OVERRIDES, TECH_PRODUCTION_UPKEEP, TECH_NAMES, TECH_DESCRIPTIONS
     global EXCHANGE_COSTS, DAILY_EXCHANGE_LIMIT
     global GUILD_HERO_POOL_SLOT_LIMIT, GUILD_BATTLE_LINEUP_LIMIT, GUILD_DISPATCH_GUEST_BASE_LIMIT
     global GUILD_HERO_POOL_REPLACE_COOLDOWN_SECONDS
@@ -496,6 +502,7 @@ def refresh_guild_constants() -> None:
     TECH_UPGRADE_COST_CURVES = _GUILD_RULES["technology"]["upgrade_cost_curves"]
     TECH_UPGRADE_COST_CURVE_BY_TECH = _GUILD_RULES["technology"]["upgrade_cost_curve_by_tech"]
     TECH_UPGRADE_COST_OVERRIDES = _GUILD_RULES["technology"]["upgrade_cost_overrides"]
+    TECH_PRODUCTION_UPKEEP = _GUILD_RULES["technology"]["production_upkeep"]
     TECH_NAMES = _GUILD_RULES["technology"]["names"]
     TECH_DESCRIPTIONS = _GUILD_RULES["technology"]["descriptions"]
 
@@ -548,6 +555,7 @@ TECH_UPGRADE_COSTS = _GUILD_RULES["technology"]["upgrade_costs"]
 TECH_UPGRADE_COST_CURVES = _GUILD_RULES["technology"]["upgrade_cost_curves"]
 TECH_UPGRADE_COST_CURVE_BY_TECH = _GUILD_RULES["technology"]["upgrade_cost_curve_by_tech"]
 TECH_UPGRADE_COST_OVERRIDES = _GUILD_RULES["technology"]["upgrade_cost_overrides"]
+TECH_PRODUCTION_UPKEEP = _GUILD_RULES["technology"]["production_upkeep"]
 TECH_NAMES = _GUILD_RULES["technology"]["names"]
 TECH_DESCRIPTIONS = _GUILD_RULES["technology"]["descriptions"]
 

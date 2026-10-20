@@ -70,7 +70,7 @@ function createWarehouseTestEnv({
       return null;
     },
     querySelectorAll(selector) {
-      if (selector === ".tw-warehouse-actions form, .tw-action-return-form, #target-item-use-form") {
+      if (selector === ".tw-warehouse-actions form, .tw-action-return-form, #target-item-use-form, .js-player-choice-use-form") {
         return [form];
       }
       return [];

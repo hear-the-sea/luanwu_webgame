@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from core.utils.yaml_schema import (
     validate_forge_blueprints,
     validate_forge_equipment,
@@ -61,6 +63,44 @@ class TestMissionTemplatesValidation:
     def test_drop_table_silver_allowed(self):
         data = {"missions": [{"key": "m", "name": "M", "drop_table": {"silver": 1000}}]}
         assert_valid(validate_mission_templates(data, item_keys={"grain"}))
+
+    def test_drop_table_guild_contribution_allowed(self):
+        data = {"missions": [{"key": "m", "name": "M", "drop_table": {"guild_contribution": 100}}]}
+        assert_valid(validate_mission_templates(data, item_keys={"grain", "silver"}))
+
+    def test_drop_table_random_quantity_range_is_validated(self):
+        data = {
+            "missions": [
+                {
+                    "key": "m",
+                    "name": "M",
+                    "drop_table": {"red_ruby": {"chance": 0.2, "count": {"min": 1, "max": 3}}},
+                }
+            ]
+        }
+        assert_valid(validate_mission_templates(data, item_keys={"red_ruby"}))
+
+    @pytest.mark.parametrize(
+        ("count", "message"),
+        [
+            ({"min": 1.5, "max": 3}, "expected a non-negative integer"),
+            ({"min": True, "max": 3}, "expected a non-negative integer"),
+            ({"min": 4, "max": 3}, "minimum must not exceed maximum"),
+            ({"min": 1}, "expected exactly one minimum and one maximum bound"),
+        ],
+    )
+    def test_drop_table_random_quantity_range_rejects_invalid_bounds(self, count, message):
+        data = {
+            "missions": [
+                {
+                    "key": "m",
+                    "name": "M",
+                    "drop_table": {"red_ruby": {"chance": 0.2, "count": count}},
+                }
+            ]
+        }
+        result = validate_mission_templates(data, item_keys={"red_ruby"})
+        assert_has_error(result, substring=message)
 
     def test_entry_cost_referential_integrity(self):
         data = {"missions": [{"key": "m", "name": "M", "entry_cost": {"missing_token": 1}}]}

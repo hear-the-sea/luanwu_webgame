@@ -170,6 +170,37 @@ def test_scan_arena_coop_events_programming_error_bubbles_up(monkeypatch):
     assert calls == ["coop:20"]
 
 
+def test_scan_arena_wheel_events_only_processes_due_bouts(monkeypatch):
+    calls: list[int] = []
+    monkeypatch.setattr(
+        arena_tasks.arena_wheel_core, "run_due_arena_wheel_events", lambda *, limit: calls.append(limit) or 3
+    )
+    monkeypatch.setattr(
+        arena_tasks.arena_wheel_core,
+        "cleanup_expired_arena_wheel_events",
+        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("cleanup belongs to maintenance")),
+    )
+
+    assert arena_tasks.scan_arena_wheel_events.run(limit=17) == {"processed_wheel_events": 3}
+    assert calls == [17]
+
+
+def test_cleanup_arena_wheel_events_uses_retention_and_limit(monkeypatch):
+    now = datetime(2026, 1, 2, tzinfo=dt_timezone.utc)
+    monkeypatch.setattr(arena_tasks.timezone, "now", lambda: now)
+    monkeypatch.setattr(arena_tasks.arena_wheel_core, "ARENA_WHEEL_COMPLETED_RETENTION_SECONDS", 4321)
+    observed: dict[str, object] = {}
+
+    def cleanup(*, now, grace_seconds, limit):
+        observed.update(now=now, grace_seconds=grace_seconds, limit=limit)
+        return 4
+
+    monkeypatch.setattr(arena_tasks.arena_wheel_core, "cleanup_expired_arena_wheel_events", cleanup)
+
+    assert arena_tasks.cleanup_arena_wheel_events.run(limit=13) == {"cleaned_wheel_events": 4}
+    assert observed == {"now": now, "grace_seconds": 4321, "limit": 13}
+
+
 def test_reconcile_arena_virtual_reserve_replenishes_targeted_demand(monkeypatch):
     demand = SimpleNamespace(id=17)
     replenished = SimpleNamespace(ready_count=4, training_count=2)

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import math
+
 from .base import ValidationResult, _check_in, _check_positive, _check_required_fields, _check_type, _check_unique_keys
 
 # ---------------------------------------------------------------------------
@@ -84,6 +86,24 @@ def validate_item_templates(data: dict, *, file: str = "item_templates.yaml") ->
             val = item.get(bool_field)
             if val is not None:
                 _check_type(val, bool, result=result, file=file, path=path, field_name=bool_field)
+
+        payload = item.get("effect_payload")
+        groups = payload.get("random_item_groups") if isinstance(payload, dict) else None
+        if isinstance(groups, list):
+            for group_index, group in enumerate(groups):
+                choices = group.get("choices") if isinstance(group, dict) else None
+                if not isinstance(choices, list):
+                    continue
+                for choice_index, choice in enumerate(choices):
+                    if not isinstance(choice, dict) or "quantity" not in choice:
+                        continue
+                    quantity = choice["quantity"]
+                    if isinstance(quantity, bool) or not isinstance(quantity, int) or quantity <= 0:
+                        result.add(
+                            file,
+                            f"{path}.effect_payload.random_item_groups[{group_index}].choices[{choice_index}].quantity",
+                            "expected a positive integer",
+                        )
 
     return result
 
@@ -398,6 +418,46 @@ def validate_troop_templates(data: dict, *, file: str = "troop_templates.yaml") 
 # ---------------------------------------------------------------------------
 
 
+def _validate_mission_drop_count(value, *, result: ValidationResult, file: str, path: str) -> None:
+    if isinstance(value, bool):
+        result.add(file, path, "expected a non-negative integer or min/max mapping")
+        return
+    if isinstance(value, int):
+        if value < 0:
+            result.add(file, path, "expected a non-negative integer")
+        return
+    if not isinstance(value, dict):
+        result.add(file, path, "expected a non-negative integer or min/max mapping")
+        return
+
+    allowed_keys = {"min", "max", "minimum", "maximum"}
+    for key in value.keys() - allowed_keys:
+        result.add(file, f"{path}.{key}", "unknown quantity bound")
+    minimum_keys = value.keys() & {"min", "minimum"}
+    maximum_keys = value.keys() & {"max", "maximum"}
+    if len(minimum_keys) != 1 or len(maximum_keys) != 1:
+        result.add(file, path, "expected exactly one minimum and one maximum bound")
+        return
+
+    minimum_key = next(iter(minimum_keys))
+    maximum_key = next(iter(maximum_keys))
+    minimum = value[minimum_key]
+    maximum = value[maximum_key]
+    for key, bound in ((minimum_key, minimum), (maximum_key, maximum)):
+        if isinstance(bound, bool) or not isinstance(bound, int) or bound < 0:
+            result.add(file, f"{path}.{key}", "expected a non-negative integer")
+    if (
+        not isinstance(minimum, bool)
+        and isinstance(minimum, int)
+        and minimum >= 0
+        and not isinstance(maximum, bool)
+        and isinstance(maximum, int)
+        and maximum >= 0
+        and minimum > maximum
+    ):
+        result.add(file, path, "minimum must not exceed maximum")
+
+
 def validate_mission_templates(
     data: dict,
     *,
@@ -518,6 +578,21 @@ def validate_mission_templates(
                             f"expected a non-negative number, got {count!r}",
                         )
 
+        # 战前兵力展示覆盖仅用于情报，不参与真实兵力结算。
+        enemy_troops_display = mission.get("enemy_troops_display")
+        if enemy_troops_display is not None:
+            display_path = f"{path}.enemy_troops_display"
+            if not isinstance(enemy_troops_display, dict):
+                result.add(file, display_path, "expected a mapping")
+            else:
+                for troop_key, count in enemy_troops_display.items():
+                    if not isinstance(troop_key, str) or not troop_key.strip():
+                        result.add(file, display_path, "expected a non-empty troop key")
+                    elif troop_keys is not None and troop_key not in troop_keys:
+                        result.add(file, display_path, f"troop key '{troop_key}' not found in troop_templates.yaml")
+                    if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+                        result.add(file, f"{display_path}.{troop_key}", "expected a non-negative integer")
+
         # Validate enemy_technology
         enemy_tech = mission.get("enemy_technology")
         if enemy_tech is not None:
@@ -558,11 +633,12 @@ def validate_mission_templates(
             if not isinstance(drop_table, dict):
                 result.add(file, path, "field 'drop_table' expected a mapping")
             elif item_keys is not None:
-                # 'silver' is a special case (resource), not always in item_templates.
+                # These keys are mission rewards handled outside the item inventory.
+                # 'guild_contribution' is consumed by personal guild mission settlement.
                 # Entries whose value is a dict with 'choices' are virtual random-pick
                 # entries -- the key is a label, not an item key.
                 for drop_key, drop_val in drop_table.items():
-                    if drop_key == "silver":
+                    if drop_key in {"silver", "guild_contribution"}:
                         continue
                     is_random_choice = isinstance(drop_val, dict) and "choices" in drop_val
                     if is_random_choice:
@@ -601,6 +677,35 @@ def validate_mission_templates(
                                 "blueprint pool choices must have one rarity",
                             )
                         continue
+
+                    if isinstance(drop_val, dict):
+                        chance_key = "chance" if "chance" in drop_val else "probability"
+                        if chance_key in drop_val:
+                            chance = drop_val[chance_key]
+                            if (
+                                isinstance(chance, bool)
+                                or not isinstance(chance, (int, float))
+                                or not math.isfinite(chance)
+                                or chance < 0
+                                or chance > 1
+                            ):
+                                result.add(
+                                    file,
+                                    f"{path}.drop_table.{drop_key}.{chance_key}",
+                                    "expected a number between 0 and 1",
+                                )
+                        count_key = next(
+                            (key for key in ("count", "quantity", "amount") if key in drop_val),
+                            None,
+                        )
+                        if count_key is not None:
+                            _validate_mission_drop_count(
+                                drop_val[count_key],
+                                result=result,
+                                file=file,
+                                path=f"{path}.drop_table.{drop_key}.{count_key}",
+                            )
+
                     if drop_key not in item_keys:
                         result.add(
                             file,

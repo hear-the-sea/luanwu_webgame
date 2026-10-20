@@ -9,7 +9,7 @@
     <p class="{% if compact %}text-text-muted mb-3{% else %}tw-building-desc{% endif %}">{{ summary.description }}</p>
     {% endif %}
 </header>
-{% if summary.summary_metrics %}
+{% if summary.summary_metrics and not hide_metrics %}
 <dl class="tw-arena-rule-list{% if compact %} mb-4{% endif %}">
     {% for metric in summary.summary_metrics %}
     <div>

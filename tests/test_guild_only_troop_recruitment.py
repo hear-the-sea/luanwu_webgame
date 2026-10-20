@@ -35,6 +35,20 @@ def test_normalize_recruit_config_keeps_ordinary_troops_personal():
     assert _normalize_recruit_config({"equipment": []}, troop_key="guard")["guild_only"] is False
 
 
+def test_normalize_recruit_config_keeps_guild_cavalry_salvage_duration():
+    config = _normalize_recruit_config(
+        {
+            "guild_only": True,
+            "base_duration": 0,
+            "battle_salvage_base_duration": 30,
+        },
+        troop_key="bloodthirsty_cavalry",
+    )
+
+    assert config["base_duration"] == 0
+    assert config["battle_salvage_base_duration"] == 30
+
+
 @pytest.mark.django_db
 def test_guild_only_troops_hidden_from_personal_options_but_inventory_preserved(manor_with_user, guild_only_templates):
     manor, _client = manor_with_user

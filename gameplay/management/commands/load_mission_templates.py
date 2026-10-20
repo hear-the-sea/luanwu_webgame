@@ -105,6 +105,10 @@ class Command(BaseCommand):
             if not isinstance(enemy_troops, dict):
                 enemy_troops = {}
 
+            enemy_troops_display = entry.get("enemy_troops_display")
+            if not isinstance(enemy_troops_display, dict):
+                enemy_troops_display = {}
+
             enemy_technology = entry.get("enemy_technology")
             if not isinstance(enemy_technology, dict):
                 enemy_technology = {}
@@ -129,6 +133,7 @@ class Command(BaseCommand):
                 "guest_only": _coerce_bool(entry.get("guest_only"), False),
                 "enemy_guests": enemy_guests,
                 "enemy_troops": enemy_troops,
+                "enemy_troops_display": enemy_troops_display,
                 "enemy_technology": enemy_technology,
                 "entry_cost": entry_cost,
                 "drop_table": drop_table,

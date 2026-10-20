@@ -39,7 +39,7 @@ test("work tier tabs use page-specific compact vertical spacing", () => {
   assert.ok(tabClasses.has("mb-3"));
   assert.match(styles, /\.tw-work-section-header\s*\{[^}]*@apply\s+mb-3;/);
   assert.match(styles, /\.tw-work-subtabs\s*\{[^}]*@apply\s+py-1;/);
-  assert.match(styles, /\.tw-work-subtabs\s+\.tw-troop-subtab\s*\{[^}]*@apply\s+py-1;/);
+  assert.match(styles, /\.tw-work-subtabs\s+\.tw-troop-subtab\s*\{[^}]*@apply\s+py-2;/);
 });
 
 test("work cards show the tier action point cost", () => {

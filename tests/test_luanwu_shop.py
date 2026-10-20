@@ -48,8 +48,8 @@ def test_luanwu_shop_page_shows_products_and_warehouse_coin_balance(django_user_
 
     assert response.status_code == second_page.status_code == 200
     assert response.context["chunqiu_coin_quantity"] == 12
-    assert len(response.context["luanwu_shop_page"]) == 8
-    assert len(second_page.context["luanwu_shop_page"]) == 5
+    assert len(response.context["luanwu_shop_products"]) == 13
+    assert len(second_page.context["luanwu_shop_products"]) == 13
     first_body = response.content.decode()
     second_body = second_page.content.decode()
     assert "乱舞商城" in first_body
@@ -57,8 +57,7 @@ def test_luanwu_shop_page_shows_products_and_warehouse_coin_balance(django_user_
     assert "任务卡" in first_body
     assert "招募卡" in first_body
     assert "行动力药水" in first_body
-    assert "门客易容卡" not in first_body
-    assert "门客易容卡" in second_body
+    assert "门客易容卡" in first_body
     assert "×2" in first_body
     assert "×3" in first_body
     assert "用于增加每日招募次数" in first_body
@@ -71,7 +70,7 @@ def test_luanwu_shop_page_shows_products_and_warehouse_coin_balance(django_user_
     assert "秘市货架" not in first_body + second_body
     assert "查看仓库" not in first_body + second_body
     assert "12" in first_body
-    assert "2 / 2" in second_body
+    assert 'aria-label="乱舞商城商品分页"' in first_body
 
 
 @pytest.mark.django_db

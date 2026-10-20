@@ -739,6 +739,22 @@ def validate_guild_rules(data: dict, *, file: str = "guild_rules.yaml") -> Valid
         if not isinstance(technology, dict):
             result.add(file, "technology", "expected a mapping")
         else:
+            production_upkeep = technology.get("production_upkeep")
+            if production_upkeep is not None:
+                if not isinstance(production_upkeep, dict):
+                    result.add(file, "technology.production_upkeep", "expected a mapping")
+                else:
+                    allowed_upkeep_keys = {
+                        "silver_per_contribution",
+                        "grain_per_contribution",
+                    }
+                    for field_name, amount in production_upkeep.items():
+                        path = f"technology.production_upkeep.{field_name}"
+                        if field_name not in allowed_upkeep_keys:
+                            result.add(file, path, "unknown production upkeep rule")
+                        elif not isinstance(amount, int) or isinstance(amount, bool) or amount < 0:
+                            result.add(file, path, "expected a non-negative integer")
+
             for text_map_field in ("names", "descriptions"):
                 text_map = technology.get(text_map_field)
                 if text_map is None:

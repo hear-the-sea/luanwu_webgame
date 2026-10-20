@@ -696,6 +696,15 @@
   gap: 0.9rem;
 }
 
+.tw-guild-page .tw-guild-info-grid > .tw-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.tw-guild-page .tw-guild-info-grid > .tw-card > .tw-guild-card-divider {
+  margin-top: auto;
+}
+
 .tw-guild-page .tw-guild-dl > div {
   gap: 1rem;
   align-items: baseline;

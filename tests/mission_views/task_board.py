@@ -23,6 +23,34 @@ class TestTaskBoardPage:
         assert response.status_code == 200
         assert "missions" in response.context
 
+    def test_personal_guild_mission_uses_separate_tab_and_weekly_gate(self, manor_with_user):
+        manor, client = manor_with_user
+        mission, _ = MissionTemplate.objects.update_or_create(
+            key="guild_personal_zhenlong_qipu",
+            defaults={
+                "name": "白蛇盗仙草",
+                "difficulty": MissionTemplate.Difficulty.JUNIOR,
+                "guest_only": True,
+                "enemy_guests": [{"key": "task_legend_crane_attendant", "label": "鹤童"}],
+                "drop_table": {
+                    "guild_contribution": 100,
+                    "red_ruby": {"chance": 0.1, "count": {"min": 1, "max": 2}},
+                },
+                "daily_limit": 10,
+                "mission_card_daily_limit": 0,
+            },
+        )
+
+        response = client.get(reverse("gameplay:tasks") + f"?mission={mission.key}")
+
+        assert response.status_code == 200
+        assert response.context["active_tab"] == "guild"
+        assert response.context["selected_is_guild_mission"] is True
+        assert response.context["selected_guild_has_membership"] is False
+        assert all(item["mission"].key != mission.key for item in response.context["mission_data"])
+        assert 'data-tab="guild"' in response.content.decode("utf-8")
+        assert "加入帮会后参加" in response.content.decode("utf-8")
+
     def test_task_board_page_loads_external_page_script_without_inline_logic(self, manor_with_user):
         _manor, client = manor_with_user
 
@@ -289,7 +317,7 @@ class TestTaskBoardPage:
         assert "本任务不可使用任务卡" in body
         assert "js-mission-card-form" not in body
 
-    def test_task_board_renders_non_silver_drops_as_drop_icons(self, manor_with_user, settings, tmp_path):
+    def test_task_board_renders_silver_and_non_silver_drops_as_drop_icons(self, manor_with_user, settings, tmp_path):
         _manor, client = manor_with_user
         settings.MEDIA_ROOT = tmp_path
         image_item = ItemTemplate.objects.create(
@@ -319,10 +347,11 @@ class TestTaskBoardPage:
         assert response.status_code == 200
         body = response.content.decode("utf-8")
         assert image_item.image.url in body
+        assert 'src="/static/items/guild_silver_boost_card.png"' in body
         assert 'class="tw-drop-icon rarity-blue"' in body
         assert '<span class="tw-drop-count">×2</span>' in body
         assert '<span class="tw-drop-placeholder" aria-hidden="true">占</span>' in body
-        assert ">银两 ×500<" in body
+        assert 'aria-label="银两 ×500"' in body
 
     def test_task_board_renders_choice_pool_items_as_individual_drop_icons(self, manor_with_user, settings, tmp_path):
         _manor, client = manor_with_user
@@ -381,7 +410,8 @@ class TestTaskBoardPage:
 
         assert response.status_code == 200
         body = response.content.decode("utf-8")
-        assert ">银两 ×500<" in body
+        assert 'src="/static/items/guild_silver_boost_card.png"' in body
+        assert 'aria-label="银两 ×500"' in body
         assert '<button type="button" class="tw-drop-entry tw-item-cell" aria-label="概率预览物品 ×1">' in body
         assert '<span class="tw-tooltip-header rarity-green">概率预览物品 ×1</span>' in body
         assert "概率掉落：" not in body
@@ -444,8 +474,8 @@ class TestTaskBoardPage:
         assert response.status_code == 200
         body = response.content.decode("utf-8")
         expected_url = f'{reverse("gameplay:tasks")}?tab=advanced'
-        assert f'href="{expected_url}" class="tw-btn-secondary tw-btn-sm">关闭</a>' in body
-        assert f'href="{expected_url}" class="tw-btn-secondary">取消</a>' in body
+        assert (f'href="{expected_url}" class="tw-btn-secondary tw-btn-sm" ' "data-task-modal-close>关闭</a>") in body
+        assert f'href="{expected_url}" class="tw-btn-secondary" data-task-modal-close>取消</a>' in body
 
     def test_task_board_mission_names_link_to_details_for_every_difficulty(self, manor_with_user):
         _manor, client = manor_with_user
@@ -600,8 +630,8 @@ class TestTaskBoardPage:
 
         assert response.status_code == 200
         body = response.content.decode("utf-8")
-        assert body.count('class="tw-mission-name-col">任务名称</th>') == 3
-        assert body.count('class="tw-mission-meta-col text-center">类型</th>') == 3
+        assert body.count('class="tw-mission-name-col">任务名称</th>') == 4
+        assert body.count('class="tw-mission-meta-col text-center">类型</th>') == 4
         assert body.count('class="tw-mission-meta-col text-center">今日剩余</th>') == 3
         assert body.count('class="tw-mission-action-col text-center">操作</th>') == 3
         for key, name, _difficulty in missions:
@@ -647,6 +677,30 @@ class TestTaskBoardPage:
         assert "tw-enemy-meta" not in body
         assert '<span class="tw-guest-name-sm rarity-text-gray">灰阶敌将</span>' not in body
         assert '<span class="tw-guest-name-sm rarity-text-black">黑阶敌将</span>' not in body
+
+    def test_task_board_enemy_avatar_shows_name_in_tooltip(self, manor_with_user, settings, tmp_path):
+        _manor, client = manor_with_user
+        settings.MEDIA_ROOT = tmp_path
+        GuestTemplate.objects.create(
+            key="task_board_boss_avatar_tooltip",
+            name="关卡首领",
+            archetype="military",
+            rarity="orange",
+            avatar=SimpleUploadedFile("task-boss.png", b"boss-avatar", content_type="image/png"),
+        )
+        mission = MissionTemplate.objects.create(
+            key="task_board_boss_avatar_tooltip_mission",
+            name="首领提示测试",
+            enemy_guests=[{"key": "task_board_boss_avatar_tooltip", "label": "关卡首领"}],
+        )
+
+        response = client.get(reverse("gameplay:tasks") + f"?mission={mission.key}")
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        assert '<button type="button" class="tw-item-cell tw-enemy-avatar-trigger" aria-label="关卡首领">' in body
+        assert '<img src="/media/guests/task-boss.png" alt="" class="tw-enemy-avatar"' in body
+        assert '<span class="tw-item-tooltip"><span class="tw-tooltip-header">关卡首领</span></span>' in body
 
     def test_task_board_selected_mission_omits_dynamic_travel_time_note(self, manor_with_user):
         _manor, client = manor_with_user

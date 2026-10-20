@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import math
 
+from battle.active_config import ACTIVE_OPTION_KEYS
+
 from .base import ValidationResult, _check_in, _check_positive, _check_required_fields, _check_type, _check_unique_keys
 
 # ---------------------------------------------------------------------------
@@ -130,6 +132,7 @@ VALID_PASSIVE_CONDITION_KEYS = {
     "ally_alive_template_count_lte",
 }
 VALID_PASSIVE_EFFECT_TYPES = {
+    "set_counter",
     "add_true_damage",
     "heal_ratio",
     "lose_hp_ratio",
@@ -145,6 +148,7 @@ VALID_PASSIVE_EFFECT_TYPES = {
 VALID_PASSIVE_TARGET_SCOPES = {"self", "allies"}
 VALID_PASSIVE_MODIFIER_SCOPES = {"battle", "round", "action"}
 PASSIVE_MODIFIER_EFFECT_TYPES = {
+    "set_counter",
     "add_true_damage",
     "modify_outgoing_damage",
     "modify_incoming_damage",
@@ -191,6 +195,17 @@ def _validate_passive_effects(
             )
 
         modifier_scope = effect.get("scope")
+        if effect_type == "set_counter":
+            for key, upper in (("chance", 1.0), ("damage_multiplier", None)):
+                value = effect.get(key)
+                if (
+                    isinstance(value, bool)
+                    or not isinstance(value, (int, float))
+                    or not math.isfinite(value)
+                    or value < 0
+                    or (upper is not None and value > upper)
+                ):
+                    result.add(file, effect_path, f"invalid counter '{key}'")
         if modifier_scope is not None:
             if not isinstance(modifier_scope, str) or not modifier_scope.strip():
                 result.add(file, effect_path, "field 'scope' expected non-empty string")
@@ -243,6 +258,28 @@ def _validate_passive_effects(
 
 
 def _validate_passive_config(passive_config: dict, *, result: ValidationResult, file: str, path: str) -> None:
+    active = passive_config.get("active")
+    if active is not None:
+        if not isinstance(active, dict):
+            result.add(file, f"{path}.active", "expected a mapping")
+        else:
+            for key, value in active.items():
+                option_path = f"{path}.active.{key}"
+                if key not in ACTIVE_OPTION_KEYS:
+                    result.add(file, option_path, "unsupported active option")
+                elif key == "target_priority":
+                    if value != "lowest_hp_ratio":
+                        result.add(file, option_path, "expected 'lowest_hp_ratio'")
+                elif (
+                    isinstance(value, bool)
+                    or not isinstance(value, (int, float))
+                    or not math.isfinite(value)
+                    or value < 0
+                    or (key in {"trigger_chance", "execute_hp_ratio"} and value > 1)
+                ):
+                    result.add(file, option_path, "expected finite non-negative number within the option range")
+            if ("execute_hp_ratio" in active) != ("execute_multiplier" in active):
+                result.add(file, f"{path}.active", "execute_hp_ratio and execute_multiplier must be provided together")
     triggers = passive_config.get("triggers")
     if triggers is None:
         return

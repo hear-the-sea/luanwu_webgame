@@ -219,6 +219,9 @@ def launch_mission(
         mark_guests_deployed_if_needed(mission, guests)
         guest_snapshots = build_guest_battle_snapshots(guests, include_identity=True)
         run = create_mission_run_record(locked_manor, mission, guests, guest_snapshots, loadout, travel_seconds)
+        from guilds.services.personal_missions import register_personal_guild_mission_run
+
+        register_personal_guild_mission_run(mission, locked_manor, run)
 
     generate_report_task, complete_mission_task = import_launch_post_action_tasks()
     try_prepare_launch_report(

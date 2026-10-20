@@ -13,7 +13,15 @@ from gameplay.models import ArenaCoopEntry, ArenaEntry, ArenaTournament, ItemTem
 from gameplay.services.arena.rewards import load_arena_reward_catalog, select_weekly_blueprint_key
 
 ARENA_RANDOM_REWARD_CHEST_KEY = "huashan_wulin_chest"
-ARENA_RANDOM_REWARD_ICON_BY_KEY = {"wulin_chest": ARENA_RANDOM_REWARD_CHEST_KEY}
+ARENA_RANDOM_REWARD_ICON_BY_KEY = {
+    "wulin_chest": ARENA_RANDOM_REWARD_CHEST_KEY,
+    "gladiator_chest": ARENA_RANDOM_REWARD_CHEST_KEY,
+    "blueprint_blue_exchange": ARENA_RANDOM_REWARD_CHEST_KEY,
+}
+ARENA_REWARD_ICON_ITEM_BY_KEY = {
+    "grain_pack_small": "grain",
+    "silver_pack_small": "guild_silver_boost_card",
+}
 
 
 def _template_image_url(template: ItemTemplate | None) -> str:
@@ -49,6 +57,9 @@ def build_reward_rows(manor: Manor) -> list[dict]:
     for reward in catalog.values():
         all_item_keys.update(reward.items.keys())
         all_item_keys.update(option.item_key for option in reward.random_items)
+        reward_icon_item = ARENA_REWARD_ICON_ITEM_BY_KEY.get(reward.key)
+        if reward_icon_item:
+            all_item_keys.add(reward_icon_item)
         random_reward_icon = ARENA_RANDOM_REWARD_ICON_BY_KEY.get(reward.key)
         if random_reward_icon and (reward.random_items or reward.random_blueprint_pool is not None):
             all_item_keys.add(random_reward_icon)
@@ -105,15 +116,18 @@ def build_reward_rows(manor: Manor) -> list[dict]:
             )
         random_reward_image_key = ARENA_RANDOM_REWARD_ICON_BY_KEY.get(reward.key)
         random_reward_image_url = item_image_url(random_reward_image_key) if random_reward_image_key else ""
+        reward_icon_item = ARENA_REWARD_ICON_ITEM_BY_KEY.get(reward.key)
+        reward_icon_image_url = item_image_url(reward_icon_item) if reward_icon_item else ""
         display_image_url = (
-            random_reward_image_url
+            reward_icon_image_url
+            or random_reward_image_url
             or rotating_blueprint_image_url
             or (item_image_url(next(iter(reward.items))) if reward.items else "")
         )
         has_item_reward = bool(
             reward.items or reward.random_items or reward.rotating_blueprint_pool or reward.random_blueprint_pool
         )
-        display_icon = reward.name[:1] if has_item_reward else ""
+        display_icon = reward.name[:1] if has_item_reward or reward_icon_item else ""
         rows.append(
             {
                 "key": reward.key,
@@ -188,6 +202,7 @@ def build_common_context(manor: Manor) -> dict:
                 ("报名人数", f"{arena_core.ARENA_TOURNAMENT_PLAYER_LIMIT} 人满员开赛"),
                 ("回合频率", f"每 {round_interval_label} 1 轮"),
                 ("每日次数", f"{arena_core.ARENA_DAILY_PARTICIPATION_LIMIT} 次"),
+                ("比赛方式", "10人随机进行匹配，逐出最后的胜者。"),
             ),
         },
         "registration_silver_cost": arena_core.ARENA_REGISTRATION_SILVER_COST,

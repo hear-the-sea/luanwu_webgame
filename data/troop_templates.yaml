@@ -33,7 +33,7 @@ troops:
       tech_key: dao_recruit
       tech_level: 1
       retainer_cost: 1
-      equipment: [equip_duandao, equip_buxie, equip_bupao]
+      equipment: [equip_duandao, equip_buxie, equip_bupao, equip_bumao]
       base_duration: 60
 
   - key: dao_jie
@@ -102,7 +102,7 @@ troops:
       tech_key: qiang_recruit
       tech_level: 1
       retainer_cost: 1
-      equipment: [equip_changqiang, equip_buxie, equip_bupao]
+      equipment: [equip_changqiang, equip_buxie, equip_bupao, equip_bumao]
       base_duration: 60
 
   - key: qiang_hao
@@ -171,7 +171,7 @@ troops:
       tech_key: jian_recruit
       tech_level: 1
       retainer_cost: 1
-      equipment: [equip_duanjian, equip_buxie, equip_bupao]
+      equipment: [equip_duanjian, equip_buxie, equip_bupao, equip_bumao]
       base_duration: 60
 
   - key: jian_xia
@@ -240,7 +240,7 @@ troops:
       tech_key: quan_recruit
       tech_level: 1
       retainer_cost: 1
-      equipment: [equip_niupibian, equip_buxie, equip_bupao]
+      equipment: [equip_niupibian, equip_buxie, equip_bupao, equip_bumao]
       base_duration: 60
 
   - key: quan_ba
@@ -309,7 +309,7 @@ troops:
       tech_key: gong_recruit
       tech_level: 1
       retainer_cost: 1
-      equipment: [equip_changgong, equip_buxie, equip_bupao]
+      equipment: [equip_changgong, equip_buxie, equip_bupao, equip_bumao]
       base_duration: 60
 
   - key: fast_archer
@@ -380,3 +380,4 @@ troops:
       retainer_cost: 0
       equipment: []
       base_duration: 0
+      battle_salvage_base_duration: 30

@@ -130,18 +130,29 @@
   };
 
   const saveScrollPosition = () => {
+    const contentArea = document.querySelector(".content-area");
     const scrollTop = window.scrollY || document.documentElement.scrollTop;
     const tableWrapper = document.querySelector(".tw-table-wrapper");
     const tableScrollTop = tableWrapper ? tableWrapper.scrollTop : 0;
+    sessionStorage.setItem("warehouseContentScrollTop", String(contentArea ? contentArea.scrollTop : scrollTop));
     sessionStorage.setItem("warehouseScrollTop", String(scrollTop));
     sessionStorage.setItem("warehouseTableScrollTop", String(tableScrollTop));
   };
 
   const restoreScrollPosition = () => {
+    const savedContentScrollTop = sessionStorage.getItem("warehouseContentScrollTop");
     const savedScrollTop = sessionStorage.getItem("warehouseScrollTop");
     const savedTableScrollTop = sessionStorage.getItem("warehouseTableScrollTop");
-    if (savedScrollTop !== null) {
+    const contentArea = document.querySelector(".content-area");
+    if (savedContentScrollTop !== null && contentArea) {
+      contentArea.scrollTop = Number.parseInt(savedContentScrollTop, 10) || 0;
+    } else if (savedScrollTop !== null) {
       window.scrollTo(0, Number.parseInt(savedScrollTop, 10) || 0);
+    }
+    if (savedContentScrollTop !== null) {
+      sessionStorage.removeItem("warehouseContentScrollTop");
+    }
+    if (savedScrollTop !== null) {
       sessionStorage.removeItem("warehouseScrollTop");
     }
     if (savedTableScrollTop !== null) {
@@ -208,6 +219,35 @@
     }
   };
 
+  const applyRarityUpgradeGuestFilter = (triggerElement = null) => {
+    const list = document.getElementById("guest-list-rarity-upgrade");
+    if (!list) {
+      return;
+    }
+
+    const sourceRarity = triggerElement?.dataset?.rarityUpgradeSourceRarity || "";
+    let availableCount = 0;
+    list.querySelectorAll(".tw-guest-option").forEach((option) => {
+      const isVisible = !sourceRarity || option.dataset.guestRarity === sourceRarity;
+      const blockReason = sourceRarity ? option.dataset.rarityUpgradeBlockReason || "" : "";
+      option.style.display = isVisible ? "" : "none";
+      option.disabled = Boolean(blockReason);
+      option.classList.remove("selected");
+      const reasonText = option.querySelector("[data-rarity-upgrade-block-reason-text]");
+      if (reasonText) {
+        reasonText.style.display = blockReason ? "" : "none";
+      }
+      if (isVisible && !blockReason) {
+        availableCount += 1;
+      }
+    });
+
+    const emptyHint = document.getElementById("guest-list-rarity-upgrade-empty");
+    if (emptyHint) {
+      emptyHint.style.display = availableCount === 0 ? "block" : "none";
+    }
+  };
+
   const closeGuestSelectModal = () => {
     const modal = document.getElementById("guest-select-modal");
     if (modal) {
@@ -252,6 +292,9 @@
     modalTitle.textContent = config.title;
     const requirementHint = actionType === "soul_fusion" ? formatSoulFusionRequirementHint(triggerElement) : "";
     modalHint.textContent = requirementHint ? `${config.hint} ${requirementHint}。` : config.hint;
+    if (actionType === "rarity_upgrade" && triggerElement?.dataset?.rarityUpgradeSourceRarity) {
+      modalHint.textContent += " 仅可招募的门客能够使用丸子，每名门客只能使用一次绿转蓝或蓝转紫丸子。";
+    }
     confirmBtn.textContent = config.confirmText;
     confirmBtn.disabled = true;
 
@@ -270,6 +313,9 @@
     if (actionType === "soul_fusion") {
       applySoulFusionGuestFilter(triggerElement);
     }
+    if (actionType === "rarity_upgrade") {
+      applyRarityUpgradeGuestFilter(triggerElement);
+    }
     document.querySelectorAll(".tw-guest-option").forEach((option) => option.classList.remove("selected"));
     document.querySelectorAll(".tw-avatar-option").forEach((option) => option.classList.remove("selected"));
 
@@ -278,7 +324,7 @@
       modal.style.display = "flex";
       modal.setAttribute("aria-hidden", "false");
       const visibleOption = activeList
-        ? [...activeList.querySelectorAll(".tw-guest-option")].find((option) => option.getClientRects().length > 0)
+        ? [...activeList.querySelectorAll(".tw-guest-option")].find((option) => !option.disabled && option.getClientRects().length > 0)
         : null;
       if (visibleOption) {
         visibleOption.focus();
@@ -365,6 +411,7 @@
       });
       const data = await response.json();
       if (data.success) {
+        saveScrollPosition();
         closeGuestSelectModal();
         await showSuccessDialog(data.message || "操作成功");
         window.location.reload();
@@ -382,7 +429,7 @@
   };
 
   const bindWarehouseActionForms = (root = document) => {
-    root.querySelectorAll(".tw-warehouse-actions form, .tw-action-return-form, #target-item-use-form").forEach((form) => {
+    root.querySelectorAll(".tw-warehouse-actions form, .tw-action-return-form, #target-item-use-form, .js-player-choice-use-form").forEach((form) => {
       if (form.dataset.ajaxBound === "1") {
         return;
       }
@@ -782,7 +829,7 @@
         return;
       }
 
-      if (!guestOption || !activeList.contains(guestOption)) {
+      if (!guestOption || guestOption.disabled || !activeList.contains(guestOption)) {
         return;
       }
 

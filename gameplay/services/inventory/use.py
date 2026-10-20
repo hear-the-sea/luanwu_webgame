@@ -98,7 +98,9 @@ def _normalize_non_empty_string_list(raw: Any, *, field_name: str) -> list[str]:
     return normalized
 
 
-def _normalize_weighted_item_choices(raw: Any, *, field_name: str) -> list[dict[str, int | str]]:
+def _normalize_weighted_item_choices(
+    raw: Any, *, field_name: str, allow_quantity: bool = False
+) -> list[dict[str, int | str]]:
     if not isinstance(raw, list) or not raw:
         raise ItemNotConfiguredError(f"{field_name} 配置异常")
 
@@ -112,6 +114,11 @@ def _normalize_weighted_item_choices(raw: Any, *, field_name: str) -> list[dict[
                 "weight": _normalize_positive_config_int(entry.get("weight"), field_name=field_name),
             }
         )
+        if allow_quantity and "quantity" in entry:
+            quantity = entry["quantity"]
+            if isinstance(quantity, bool) or not isinstance(quantity, int) or quantity <= 0:
+                raise ItemNotConfiguredError(f"{field_name} 配置异常")
+            normalized[-1]["quantity"] = quantity
     return normalized
 
 
@@ -401,7 +408,7 @@ def _normalize_random_item_groups(raw: Any, *, field_name: str) -> list[dict[str
                 entry.get("max_quantity", min_quantity),
                 field_name=field_name,
             )
-            choices = _normalize_weighted_item_choices(entry.get("choices"), field_name=field_name)
+            choices = _normalize_weighted_item_choices(entry.get("choices"), field_name=field_name, allow_quantity=True)
         except ItemNotConfiguredError as exc:
             raise ItemNotConfiguredError(f"{field_name} 配置异常") from exc
         if max_quantity < min_quantity:
@@ -533,7 +540,18 @@ def _apply_guest_summon(item: InventoryItem) -> Dict[str, Any]:
     if not template_keys:
         raise ItemNotConfiguredError("choices 配置异常")
 
-    chosen_key = _weighted_choose_template_key(template_keys, weights)
+    player_choice = payload.get("player_choice", False)
+    if not isinstance(player_choice, bool):
+        raise ItemNotConfiguredError("player_choice 配置异常")
+    selected_key = getattr(item, "_selected_guest_template_key", None)
+    if player_choice:
+        if not isinstance(selected_key, str) or selected_key not in template_keys:
+            raise ItemNotUsableError(item.template.name, message="请选择有效的兑换门客")
+        chosen_key = selected_key
+    else:
+        if selected_key is not None:
+            raise ItemNotUsableError(item.template.name, message="此物品不支持选择兑换门客")
+        chosen_key = _weighted_choose_template_key(template_keys, weights)
 
     manor = item.manor
     _ensure_guest_capacity(manor)
@@ -543,8 +561,8 @@ def _apply_guest_summon(item: InventoryItem) -> Dict[str, Any]:
     from guests.services.template_identity import get_owned_non_repeatable_template_ids
     from guests.services.training import ensure_auto_training
     from guests.services.world_unique import (
-        WORLD_UNIQUE_LUBU_SCROLL_ITEM_KEY,
         claim_world_unique_guest_from_scroll,
+        is_world_unique_summon_source,
         is_world_unique_template,
     )
 
@@ -552,7 +570,7 @@ def _apply_guest_summon(item: InventoryItem) -> Dict[str, Any]:
     if not template:
         raise ItemNotConfiguredError(f"门客模板不存在: {chosen_key}")
 
-    if is_world_unique_template(template) and item.template.key != WORLD_UNIQUE_LUBU_SCROLL_ITEM_KEY:
+    if is_world_unique_template(template) and not is_world_unique_summon_source(item.template.key, template.key):
         raise ItemNotUsableError(
             template.name,
             message="全服唯一门客只能通过专属召唤卷轴获得",
@@ -842,14 +860,20 @@ def _apply_loot_box(item: InventoryItem) -> Dict[str, Any]:
         if inventory_random.random() >= float(group["chance"]):
             continue
         choices = group["choices"]
-        item_key = weighted_random_choice(
-            [str(choice["item_key"]) for choice in choices],
-            [float(choice["weight"]) for choice in choices],
-            inventory_random,
-        )
-        quantity = inventory_random.randint(
-            int(group["min_quantity"]),
-            int(group["max_quantity"]),
+        weights = [float(choice["weight"]) for choice in choices]
+        if any("quantity" in choice for choice in choices):
+            selected_choice = weighted_random_choice(choices, weights, inventory_random)
+            item_key = str(selected_choice["item_key"])
+        else:
+            # 保留历史宝箱传入物品 key 的调用约定及随机序列。
+            item_key = weighted_random_choice(
+                [str(choice["item_key"]) for choice in choices], weights, inventory_random
+            )
+            selected_choice = {}
+        quantity = (
+            int(selected_choice["quantity"])
+            if "quantity" in selected_choice
+            else inventory_random.randint(int(group["min_quantity"]), int(group["max_quantity"]))
         )
         if quantity <= 0:
             continue
@@ -1002,6 +1026,7 @@ def use_inventory_item(
     resource_overflow_confirmation: dict[str, object] | None = None,
     binding_mode: str | None = None,
     target_manor_id: int | None = None,
+    guest_template_key: str | None = None,
 ) -> Dict[str, Any]:
     """
     使用背包物品（仓库可用）。
@@ -1081,6 +1106,7 @@ def use_inventory_item(
 
     validate_inventory_item_group(locked_item, 1, binding_mode)
     setattr(locked_item, "_use_binding_mode", binding_mode)
+    setattr(locked_item, "_selected_guest_template_key", guest_template_key)
     setattr(
         locked_item,
         "_use_source_is_bound",

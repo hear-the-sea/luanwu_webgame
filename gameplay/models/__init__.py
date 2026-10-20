@@ -14,6 +14,7 @@ from .arena_fill_service import ArenaFillServiceEpisode, ArenaFillServiceOutcome
 from .arena_ring import ArenaRing, ArenaRingAction, ArenaRingDaily, ArenaRingInspection, ArenaRingMatch, ArenaRingTenure
 from .arena_runtime_budget import ArenaRuntimeBudget
 from .arena_virtual import ArenaReserveTrainingAssignment, ArenaVirtualDemand, ArenaVirtualReserveMember
+from .arena_wheel import ArenaWheelBout, ArenaWheelEntry, ArenaWheelEntryGuest, ArenaWheelEvent
 from .bots import (
     BotArenaShortageBaseline,
     BotBackfillDemand,
@@ -121,6 +122,10 @@ __all__ = [
     "ArenaCoopEntry",
     "ArenaCoopEntryGuest",
     "ArenaCoopContribution",
+    "ArenaWheelEvent",
+    "ArenaWheelEntry",
+    "ArenaWheelEntryGuest",
+    "ArenaWheelBout",
     "ArenaVirtualDemand",
     "ArenaFillServiceEpisode",
     "ArenaFillServiceOutcome",

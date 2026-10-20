@@ -15,7 +15,7 @@ missions:
     difficulty: junior
     task_type: troop
     base_duration_seconds: 1500
-    ruby_reward: 96
+    ruby_reward: 10
     weekly_limit: 3
     recommended_guest_count: 10
     allow_troops: true
@@ -53,7 +53,7 @@ missions:
     difficulty: intermediate
     task_type: troop
     base_duration_seconds: 2100
-    ruby_reward: 168
+    ruby_reward: 20
     weekly_limit: 3
     recommended_guest_count: 14
     allow_troops: true
@@ -95,7 +95,7 @@ missions:
     difficulty: advanced
     task_type: troop
     base_duration_seconds: 3000
-    ruby_reward: 288
+    ruby_reward: 50
     weekly_limit: 3
     recommended_guest_count: 18
     allow_troops: true

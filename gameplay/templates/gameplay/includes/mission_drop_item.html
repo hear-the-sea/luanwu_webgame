@@ -1,18 +1,20 @@
-{% if drop.key == "silver" %}
-<span class="tw-pill rarity-{{ drop.rarity|default:'default' }}">{{ drop.label }}</span>
-{% else %}
+{% load static %}
 <button type="button" class="tw-drop-entry tw-item-cell" aria-label="{{ drop.label }}">
     <span class="tw-drop-icon rarity-{{ drop.rarity|default:'default' }}">
-        {% if drop.image_url %}
+        {% if drop.key == "silver" %}
+            <img src="{% static 'items/guild_silver_boost_card.png' %}" alt="{{ drop.name }}" loading="lazy" decoding="async">
+        {% elif drop.image_url %}
             <img src="{{ drop.image_url }}" alt="{{ drop.label }}" loading="lazy" decoding="async">
         {% else %}
             <span class="tw-drop-placeholder" aria-hidden="true">{{ drop.name|slice:":1" }}</span>
         {% endif %}
     </span>
-    {% if drop.count > 1 %}<span class="tw-drop-count">×{{ drop.count }}</span>{% endif %}
+    {% if drop.chance_label %}<span class="tw-drop-count">{{ drop.chance_label }}%</span>
+    {% elif drop.count_badge %}<span class="tw-drop-count">{{ drop.count_badge }}</span>
+    {% elif drop.count > 1 %}<span class="tw-drop-count">×{{ drop.count }}</span>{% endif %}
     <span class="tw-item-tooltip">
         <span class="tw-tooltip-header rarity-{{ drop.rarity|default:'default' }}">{{ drop.label }}</span>
+        {% if drop.chance_label and drop.count_badge %}<span class="tw-tooltip-desc">每次胜利后以 {{ drop.chance_label }}% 概率掉落，数量为{{ drop.count_badge }}。</span>{% endif %}
         {% if drop.description %}<span class="tw-tooltip-desc">{{ drop.description }}</span>{% endif %}
     </span>
 </button>
-{% endif %}

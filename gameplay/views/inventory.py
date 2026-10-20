@@ -254,6 +254,7 @@ def use_item_view(request: HttpRequest, pk: int) -> HttpResponse:
             manor=manor,
             binding_mode=binding_mode,
             target_manor_id=target_manor_id,
+            guest_template_key=request.POST.get("guest_template_key"),
             resource_overflow_confirmation=_load_resource_overflow_confirmation(
                 request.POST.get("resource_overflow_confirmation", "")
             ),

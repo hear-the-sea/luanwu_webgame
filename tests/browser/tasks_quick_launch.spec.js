@@ -39,6 +39,28 @@ async function setup(page, scenario, disabledGuest = false) {
   await page.evaluate(() => document.dispatchEvent(new Event("partial-nav:loaded")));
 }
 
+test("closing task details updates the URL without reloading the task board", async ({ page }) => {
+  const origin = "http://task-detail.test";
+  await page.route(`${origin}/**`, route => route.fulfill({
+    contentType: "text/html",
+    body: pages.guests,
+  }));
+  await page.goto(`${origin}/gameplay/tasks/?mission=quick_launch_fixture`);
+  for (const css of ["style", "tailwind"]) {
+    await page.addStyleTag({ path: path.join(root, "static/css", `${css}.css`) });
+  }
+  await page.addScriptTag({ path: path.join(root, "static/js/tasks_page_core.js") });
+  await page.addScriptTag({ path: path.join(root, "static/js/tasks-page.js") });
+  await page.evaluate(() => document.dispatchEvent(new Event("partial-nav:loaded")));
+
+  const originalTimeOrigin = await page.evaluate(() => performance.timeOrigin);
+  await page.locator("[data-task-detail-overlay] [data-task-modal-close]").first().click();
+
+  await expect(page.locator("[data-task-detail-overlay]")).toHaveCount(0);
+  await expect(page).toHaveURL(`${origin}/gameplay/tasks/`);
+  expect(await page.evaluate(() => performance.timeOrigin)).toBe(originalTimeOrigin);
+});
+
 for (const width of [390, 1280]) {
   for (const scenario of ["guests", "troops"]) {
     test(`${width}px ${scenario} quick launch submits the first full squad through the normal form`, async ({ page }) => {

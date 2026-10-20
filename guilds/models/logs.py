@@ -67,6 +67,7 @@ class GuildResourceLog(models.Model):
         ("guild_upgrade", "帮会升级"),
         ("production", "科技产出"),
         ("troop_recruit", "铁骑训练"),
+        ("mission_reward", "个人帮会任务"),
     ]
 
     guild = models.ForeignKey(Guild, on_delete=models.CASCADE, related_name="resource_logs", verbose_name="所属帮会")

@@ -62,8 +62,8 @@ heroes:
     recruitable: true
     is_hermit: true
     growth_range:
-    - 6
-    - 10
+    - 7
+    - 11
     attribute_weights:
       force: 5
       intellect: 55
@@ -96,8 +96,8 @@ heroes:
     recruitable: true
     is_hermit: true
     growth_range:
-    - 6
-    - 9
+    - 7
+    - 10
     attribute_weights:
       force: 10
       intellect: 45
@@ -148,7 +148,7 @@ heroes:
     is_hermit: true
     growth_range:
     - 7
-    - 9
+    - 12
     attribute_weights:
       force: 10
       intellect: 45

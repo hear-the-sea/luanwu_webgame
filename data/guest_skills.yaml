@@ -2,6 +2,134 @@
 # skills/skill_books 由 load_guest_templates 导入。
 
 skills:
+  # ---------- 战龙在野任务专属技能 ----------
+  - key: zhanlong_iron_hammer
+    name: 铁锤压顶
+    rarity: purple
+    kind: active
+    description: 狼牙重锤砸向单个目标，并有35%概率使其下次行动伤害降低30%。
+    targets: 1
+    damage_formula:
+      base: 700
+      ally: {force: 5.0, defense: 1.0}
+      enemy: {defense: 0.35}
+    status_effect: weakened
+    status_probability: 0.35
+    status_duration: 1
+
+  - key: zhanlong_cavalry_assault
+    name: 虎豹奔袭
+    rarity: purple
+    kind: active
+    description: 率精骑疾冲，对两名目标造成武力与敏捷伤害。
+    targets: 2
+    damage_formula:
+      base: 700
+      ally: {force: 3.8, agility: 3.0}
+      enemy: {defense: 0.3}
+
+  - key: zhanlong_cavalry_command
+    name: 精骑督战
+    rarity: purple
+    kind: passive
+    description: 每轮令己方护院伤害提高12%；统领阵亡后，下一轮不再获得督战增益。
+    passive_config:
+      triggers:
+        - timing: round_start
+          effects:
+            - type: modify_outgoing_damage
+              value: 1.12
+              target_scope: allies
+              target_kind_is: troop
+
+  - key: zhanlong_tiger_dragon_roar
+    name: 虎啸龙吟
+    rarity: orange
+    kind: active
+    description: 25%固定概率怒喝出矛，将全部劲力集中在一次单体重击，造成极高伤害。
+    targets: 1
+    damage_formula:
+      ally: {force: 4.0}
+      enemy: {defense: 0.4}
+    passive_config:
+      active:
+        trigger_chance: 0.25
+        damage_multiplier: 2.3
+
+  - key: zhanlong_dust_ruse
+    name: 疑兵扬尘
+    rarity: purple
+    kind: passive
+    description: 开场揭示桥后扬尘疑兵，百万声势不计入实际参战兵力。
+    passive_config:
+      triggers:
+        - timing: round_start
+          conditions:
+            state_absent: zhanlong_dust_revealed
+          effects:
+            - type: emit_log
+              log_name: 疑兵扬尘
+              message: 桥后烟尘渐散，所谓百万大军竟是少数骑兵往来扬尘！百万声势原为疑兵，桥前张飞的丈八蛇矛却是真威胁。
+            - type: set_state
+              key: zhanlong_dust_revealed
+              value: true
+
+  - key: zhanlong_azure_dragon_slash
+    name: 青龙偃月
+    rarity: orange
+    kind: active
+    description: 偃月刀劈向单个目标，使其有效防御降低25%，持续两次行动机会。
+    targets: 1
+    damage_formula:
+      base: 700
+      ally: {force: 6.0}
+      enemy: {defense: 0.2}
+    status_effect: armor_broken
+    status_probability: 1.0
+    status_duration: 2
+
+  - key: zhanlong_dragon_guard
+    name: 龙胆护身
+    rarity: orange
+    kind: passive
+    description: 全场受到伤害降低20%，存活受击时有30%概率以自身攻击力的80%反击。
+    passive_config:
+      triggers:
+        - timing: battle_start
+          effects:
+            - type: modify_incoming_damage
+              value: 0.8
+            - type: set_counter
+              chance: 0.3
+              damage_multiplier: 0.8
+
+  - key: zhanlong_xiliang_charge
+    name: 西凉驰突
+    rarity: orange
+    kind: active
+    description: 纵马横贯敌阵，对三名目标造成武力与敏捷伤害。
+    targets: 3
+    damage_formula:
+      base: 600
+      ally: {force: 2.5, agility: 4.0}
+      enemy: {defense: 0.25}
+
+  - key: zhanlong_hundred_pace_shot
+    name: 百步穿杨
+    rarity: orange
+    kind: active
+    description: 优先瞄准生命比例最低的敌人；目标生命不高于35%时，本次伤害提高50%。
+    targets: 1
+    damage_formula:
+      base: 600
+      ally: {force: 4.2, agility: 1.8}
+      enemy: {defense: 0.25}
+    passive_config:
+      active:
+        target_priority: lowest_hp_ratio
+        execute_hp_ratio: 0.35
+        execute_multiplier: 1.5
+
   # ══════════════════════════════════════════════════════════════════════════════
   #                              武系伤害技能
   # ══════════════════════════════════════════════════════════════════════════════
@@ -63,14 +191,12 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 1500
       ally:
-        force: 0.15
-        intellect: 1.5
+        force: 1.5
+        intellect: 0.15
         agility: 0.3
       enemy:
         defense: 0.25
-        intellect: 0.1
     required_level: 15
     required_intellect: 110
     required_agility: 65

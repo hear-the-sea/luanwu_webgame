@@ -3,17 +3,20 @@
 <div class="shop-section">
     <!-- 购买区域 -->
     <div id="shop-buy-section" class="tw-trade-card {% if shop_view == 'sell' %}tw-shop-section-hidden{% endif %}">
-        {% include "trade/partials/_shop_category_filter.html" with filter_view="buy" filter_id="shop-category" other_page_name="sell_page" other_page_number=shop_sell_page_obj.number %}
-        {% if shop_items %}
         <div class="tw-shop-table-wrapper">
-        <table class="tw-shop-table">
+        <table class="tw-shop-table tw-table-with-header-filter">
             <thead>
                 <tr>
                     <th>物品</th>
                     <th>类别</th>
                     <th>价格</th>
                     <th>库存</th>
-                    <th>操作</th>
+                    <th class="tw-filter-th">
+                        <div class="tw-table-filter-heading">
+                            <span>操作</span>
+                            {% include "trade/partials/_shop_category_filter.html" with filter_view="buy" filter_id="shop-category" other_page_name="sell_page" other_page_number=shop_sell_page_obj.number %}
+                        </div>
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -92,6 +95,10 @@
                         {% endif %}
                     </td>
                 </tr>
+                {% empty %}
+                <tr class="tw-empty-row">
+                    <td colspan="5" class="tw-empty-hint">暂无可购商品</td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -109,25 +116,23 @@
             {% endif %}
         </nav>
         {% endif %}
-        {% else %}
-        <div class="tw-empty-hint">
-            <p>暂无可购商品</p>
-        </div>
-        {% endif %}
     </div>
 
     <!-- 出售区域 -->
     <div id="shop-sell-section" class="tw-trade-card {% if shop_view != 'sell' %}tw-shop-section-hidden{% endif %}">
-        {% include "trade/partials/_shop_category_filter.html" with filter_view="sell" filter_id="shop-sell-category" other_page_name="buy_page" other_page_number=shop_buy_page_obj.number %}
-        {% if inventory %}
         <div class="tw-shop-table-wrapper">
-        <table class="tw-shop-table">
+        <table class="tw-shop-table tw-table-with-header-filter">
             <thead>
                 <tr>
                     <th>物品</th>
                     <th>拥有数量</th>
                     <th>回收价格</th>
-                    <th>操作</th>
+                    <th class="tw-filter-th">
+                        <div class="tw-table-filter-heading">
+                            <span>操作</span>
+                            {% include "trade/partials/_shop_category_filter.html" with filter_view="sell" filter_id="shop-sell-category" other_page_name="buy_page" other_page_number=shop_buy_page_obj.number %}
+                        </div>
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -210,6 +215,10 @@
                         </form>
                     </td>
                 </tr>
+                {% empty %}
+                <tr class="tw-empty-row">
+                    <td colspan="4" class="tw-empty-hint">暂无可出售的物品</td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -226,11 +235,6 @@
             <a href="?tab=shop&view=sell&category={{ selected_category }}&buy_page={{ shop_buy_page_obj.number }}&sell_page={{ shop_sell_page_obj.paginator.num_pages }}" class="tw-btn-secondary tw-btn-sm">末页</a>
             {% endif %}
         </nav>
-        {% endif %}
-        {% else %}
-        <div class="tw-empty-hint">
-            <p>暂无可出售的物品</p>
-        </div>
         {% endif %}
     </div>
 </div>

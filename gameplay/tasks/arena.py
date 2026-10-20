@@ -9,6 +9,7 @@ from django.conf import settings
 from django.utils import timezone
 
 import gameplay.services.arena.coop_core as arena_coop_core
+import gameplay.services.arena.wheel_core as arena_wheel_core
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
 from gameplay.services.arena.core import cleanup_expired_tournaments, run_due_arena_rounds, start_ready_tournaments
 from gameplay.services.arena.virtual_fill_service import collect_fill_service_outcomes, observe_fill_service
@@ -99,6 +100,32 @@ def scan_arena_coop_events(limit: int = 20) -> dict[str, int]:
         "processed_coop_events": int(processed_coop),
         "cleaned_coop_events": int(cleaned_coop),
     }
+
+
+@shared_task(name="gameplay.scan_arena_wheel_events")
+def scan_arena_wheel_events(limit: int = 20) -> dict[str, int]:
+    processed = 0
+    try:
+        processed = arena_wheel_core.run_due_arena_wheel_events(limit=limit)
+    except DATABASE_INFRASTRUCTURE_EXCEPTIONS:
+        logger.exception("arena wheel scan failed")
+        raise RuntimeError("arena wheel scan failed")
+    return {"processed_wheel_events": int(processed)}
+
+
+@shared_task(name="gameplay.cleanup_arena_wheel_events")
+def cleanup_arena_wheel_events(limit: int = 50) -> dict[str, int]:
+    try:
+        cleaned = arena_wheel_core.cleanup_expired_arena_wheel_events(
+            now=timezone.now(),
+            grace_seconds=arena_wheel_core.ARENA_WHEEL_COMPLETED_RETENTION_SECONDS,
+            limit=max(1, int(limit)),
+        )
+    except DATABASE_INFRASTRUCTURE_EXCEPTIONS:
+        logger.exception("arena wheel cleanup failed")
+        raise RuntimeError("arena wheel cleanup failed")
+
+    return {"cleaned_wheel_events": int(cleaned)}
 
 
 @shared_task(name="gameplay.reconcile_arena_virtual_reserve")

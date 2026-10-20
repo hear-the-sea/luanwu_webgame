@@ -33,28 +33,27 @@ contribution:
     silver: 1
     # 每 2000 粮食奖励 1 点贡献度。
     grain: 1
-    # 每 1 根金条奖励 1200 点贡献度。
-    gold_bar: 1200
+    # 每 1 根金条奖励 800 点贡献度。
+    gold_bar: 800
   # 单个成员每天可捐赠的资源数量上限，按资源原始数量计。
   daily_limits:
     # 每日最多捐赠 500000 银两。
     silver: 500000
-    # 每日最多捐赠 250000 粮食。
-    grain: 250000
+    # 每日最多捐赠 500000 粮食。
+    grain: 500000
     # 每日最多捐赠 5 根金条。
     gold_bar: 5
   # 护院招募所需科技等级 -> 每捐赠 1 名该类护院获得的贡献度。
   troop_rates:
-    # 无科技要求的护院。
+    # 无科技要求和需要 1 级招募科技的护院。
     0: 1
-    # 需要 1 级招募科技的护院。
     1: 1
     # 需要 3 级招募科技的护院。
-    3: 3
+    3: 2
     # 需要 5 级招募科技的护院。
-    5: 6
+    5: 4
     # 需要 7 级招募科技的护院。
-    7: 12
+    7: 6
   # 单个成员每天通过捐赠护院可获得的贡献度上限。
   daily_troop_contribution_limit: 300
   # 银两、粮食的单次最小捐赠数量；完整单位规则仍由 units 约束。
@@ -62,12 +61,16 @@ contribution:
 
 # 帮会科技树配置由 guilds/technology_tree.py 提供默认节点、费用和升级曲线；
 # 路线升级的额外成本按已完成路线数复利增长，每完成一条路线乘以1.2。
-technology: {}
+technology:
+  # 科技物品产出时，按每件物品的兑换贡献价 C 扣除帮会资源。
+  production_upkeep:
+    silver_per_contribution: 60
+    grain_per_contribution: 90
 
 # 狼系解锁后由帮主或管理员统一训练，整批训练完成后存入帮会仓库。
 cavalry_recruitment:
-  silver_per_unit: 1500
-  grain_per_unit: 5000
+  silver_per_unit: 2000
+  grain_per_unit: 8000
   contribution_per_unit: 3
   max_batch: 2000
   seconds_per_unit: 30

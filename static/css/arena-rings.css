@@ -6,21 +6,11 @@
   --ring-paper: #fff9ec;
   color: var(--ring-ink);
 }
-
 .dashboard:has(.arena-rings) .tw-troop-subtab { white-space: nowrap; }
 
 .ring-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
 .ring-tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .ring-tags span { padding: 3px 7px; font-size: 11px; border: 1px solid var(--ring-line); border-radius: 3px; }
-.ring-daily-maximum { font-size: 12px; color: var(--ring-muted); }
-.ring-daily-maximum b { color: #906020; font-size: 18px; }
-
-.ring-rewards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: var(--ring-paper); border: 1px solid var(--ring-line); border-radius: 6px; }
-.ring-rewards > div { padding: 12px 16px; }
-.ring-rewards > div + div { border-left: 1px solid var(--ring-line); }
-.ring-rewards span { display: block; font-size: 13px; color: var(--ring-muted); }
-.ring-rewards strong { display: block; margin-top: 5px; font-size: 30px; line-height: 1.2; font-weight: 600; }
-.ring-rewards small { margin-left: 8px; font-size: 12px; font-weight: 400; color: var(--ring-muted); }
 .ring-daybar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding: 12px 0 20px; font-size: 12px; color: var(--ring-muted); }
 .ring-daybar b { color: var(--ring-ink); font-weight: 500; }
 .ring-daybar > span:last-child { margin-left: auto; }
@@ -100,7 +90,7 @@
   .ring-history-count small { font-size: 10px; }
   .ring-history-content { padding: 0 12px; }
 }
-.ring-fee, .ring-form-note { margin: 10px 0 0; font-size: 11px; color: var(--ring-muted); line-height: 1.6; }
+.ring-form-note { margin: 10px 0 0; font-size: 11px; color: var(--ring-muted); line-height: 1.6; }
 .ring-own-lineup { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--ring-line); font-size: 12px; }
 .ring-own-lineup > summary { cursor: pointer; }
 .ring-own-lineup > div { margin-top: 12px; }
@@ -165,12 +155,7 @@ dialog.ring-loadout-modal:not([open]) { display: none; }
   .ring-stage-grid { grid-template-columns: 1fr; gap: 16px; }
   .ring-stage-art { height: 160px; }
   .ring-tags span { font-size: 10px; padding: 3px 6px; }
-  .ring-rewards > div { padding: 12px 10px; }
-  .ring-rewards span { font-size: 11px; }
-  .ring-rewards strong { font-size: 26px; }
-  .ring-rewards small { display: block; margin: 4px 0 0; font-size: 10px; }
   .ring-daybar { gap: 6px 12px; font-size: 11px; padding-bottom: 16px; }
-  .ring-daybar > span:last-child { display: none; }
   .ring-stage-body { padding: 16px; }
   .ring-stage-title { left: 16px; bottom: 16px; }
   .ring-vacant { min-height: 120px; }
@@ -188,8 +173,3 @@ dialog.ring-loadout-modal:not([open]) { display: none; }
   .ring-loadout-modal .tw-raid-troop-input { width: 64px; min-width: 0; }
   .ring-loadout-modal .tw-raid-step-btn { padding: 5px; min-width: 32px; }
 }
-
-.ring-streak { margin: -4px 0 10px; font-size: 12px; color: var(--ring-accent); }
-.ring-streak-rewards { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 14px; padding: 10px 12px; border: 1px solid var(--ring-line); border-radius: 4px; font-size: 12px; }
-.ring-streak-rewards > span:first-child { color: var(--ring-muted); }
-.ring-streak-rewards strong { color: #906020; }

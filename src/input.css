@@ -687,7 +687,7 @@
   }
 
   .tw-storage-tab {
-    @apply px-5 py-2.5 no-underline font-semibold
+    @apply px-4 py-2 text-sm leading-5 no-underline font-semibold
            border-2 rounded-md transition-all
            bg-bg-card text-text-secondary;
     border-color: var(--border-light);
@@ -979,6 +979,10 @@
   /* ========== 筛选表头 ========== */
   .tw-filter-th {
     @apply text-right whitespace-nowrap min-w-[200px] pr-4;
+  }
+
+  .tw-table-filter-heading {
+    @apply flex items-center justify-between gap-4;
   }
 
   .tw-filter-form {
@@ -1577,6 +1581,21 @@
 
   .tw-enemy-entry {
     @apply relative inline-flex items-center justify-center;
+  }
+
+  .tw-enemy-avatar-trigger {
+    @apply cursor-pointer;
+    appearance: none;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+  }
+
+  .tw-enemy-avatar-trigger:focus-visible {
+    outline: 2px solid var(--border-light);
+    outline-offset: 2px;
   }
 
   .tw-enemy-count {
@@ -2213,10 +2232,80 @@
   }
 
   .tw-work-subtabs .tw-troop-subtab {
-    @apply py-1;
+    @apply py-2;
   }
 
   /* ========== 竞技场 ========== */
+  /* 门客和竞技场使用内容区内滚动；外框保留与全局桌面布局相同的底部留白。 */
+  body:has(.tw-arena-page),
+  body:has(.guest-interface-page) {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .game-container:has(.tw-arena-page),
+  .game-container:has(.guest-interface-page) {
+    height: calc(100vh - 16px);
+    height: calc(100dvh - 16px);
+    min-height: 0;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+
+  .full-layout:has(.tw-arena-page),
+  .full-layout:has(.guest-interface-page) {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .full-layout:has(.tw-arena-page) > .content-area,
+  .full-layout:has(.guest-interface-page) > .content-area {
+    flex: 1 1 0%;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    scrollbar-color: var(--border-primary) rgba(139, 69, 19, 0.1);
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .full-layout:has(.tw-arena-page) > .content-area::-webkit-scrollbar,
+  .full-layout:has(.guest-interface-page) > .content-area::-webkit-scrollbar {
+    width: 9px;
+  }
+
+  .full-layout:has(.tw-arena-page) > .content-area::-webkit-scrollbar-track,
+  .full-layout:has(.guest-interface-page) > .content-area::-webkit-scrollbar-track {
+    background: rgba(139, 69, 19, 0.1);
+  }
+
+  .full-layout:has(.tw-arena-page) > .content-area::-webkit-scrollbar-thumb,
+  .full-layout:has(.guest-interface-page) > .content-area::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: var(--border-primary);
+    background-clip: content-box;
+  }
+
+  .tw-arena-page:focus-visible,
+  .guest-interface-page:focus-visible {
+    outline: 2px solid var(--border-primary);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 768px) {
+    .game-container:has(.tw-arena-page),
+    .game-container:has(.guest-interface-page) {
+      height: 100vh;
+      height: 100dvh;
+      margin-bottom: 0;
+    }
+  }
+
   .tw-arena-hero-card {
     min-height: 236px;
   }
@@ -2232,6 +2321,76 @@
 
   .tw-arena-hero-card .tw-building-corner-frame img {
     object-fit: cover;
+  }
+
+  .tw-arena-hero-card--registration .tw-building-media {
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  .tw-arena-hero-card--registration .tw-building-corner-frame {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    flex: 0 0 auto;
+    margin-inline: auto;
+  }
+
+  .tw-arena-sidebar-rules {
+    width: 100%;
+    margin: 0;
+    padding: 0.65rem 0.1rem 0;
+    border-top: 1px solid var(--border-light);
+  }
+
+  .tw-arena-sidebar-rules h4 {
+    margin: 0 0 0.4rem;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  .tw-arena-sidebar-rules dl {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+    margin: 0;
+  }
+
+  .tw-arena-sidebar-rules dl > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.6rem;
+  }
+
+  .tw-arena-sidebar-rules dl > .tw-arena-sidebar-rules__description {
+    display: block;
+  }
+
+  .tw-arena-sidebar-rules dt,
+  .tw-arena-sidebar-rules dd {
+    font-size: 0.85rem;
+    line-height: 1.3;
+  }
+
+  .tw-arena-sidebar-rules dt {
+    color: var(--text-secondary);
+  }
+
+  .tw-arena-sidebar-rules dd {
+    margin: 0;
+    color: var(--text-primary);
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .tw-arena-sidebar-rules__description dd {
+    margin-top: 0.2rem;
+    text-align: left;
   }
 
   .tw-arena-rule-list {
@@ -2273,6 +2432,22 @@
     display: grid;
     gap: 0.75rem;
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .tw-arena-exchange-balance {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: 0.35rem;
+    margin: 0 0 0.75rem;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+  }
+
+  .tw-arena-exchange-balance strong {
+    color: #7a3d17;
+    font-size: 1rem;
+    font-variant-numeric: tabular-nums;
   }
 
   .tw-arena-reward-card {
@@ -2466,6 +2641,53 @@
     }
   }
 
+  @media (max-width: 900px) {
+    .tw-arena-hero-card--registration {
+      flex-direction: column;
+    }
+
+    .tw-arena-hero-card.tw-arena-hero-card--registration .tw-building-media {
+      flex: 0 0 auto;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      padding: 1rem;
+      border-right: 0;
+      border-bottom: 2px solid var(--border-light);
+    }
+
+    .tw-arena-hero-card.tw-arena-hero-card--registration .tw-building-corner-frame {
+      width: min(100%, 220px);
+      max-width: 220px;
+      height: auto;
+      margin-inline: 0;
+    }
+
+    .tw-arena-hero-card--registration .tw-arena-sidebar-rules {
+      width: 100%;
+      align-self: auto;
+      margin: 0;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .tw-arena-hero-card.tw-arena-hero-card--registration .tw-building-media {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .tw-arena-hero-card.tw-arena-hero-card--registration .tw-building-corner-frame {
+      width: min(100%, 180px);
+    }
+
+    .tw-arena-hero-card--registration .tw-arena-sidebar-rules {
+      width: 100%;
+      align-self: auto;
+      margin: 0;
+    }
+  }
+
   /* ========== 技术卡片状态 ========== */
   .tw-tech-maxed {
     @apply opacity-85;
@@ -2632,6 +2854,16 @@
     box-shadow: 0 1px 3px rgba(74, 38, 18, 0.1);
   }
 
+  .player-tasks-page .tw-mission-tabs .tw-trade-tab {
+    @apply px-4 py-2 text-sm leading-5;
+    min-height: 0;
+  }
+
+  .tw-trade-tabs .tw-trade-tab {
+    @apply px-4 py-2 text-sm leading-5;
+    min-height: 0;
+  }
+
   .tw-trade-tab:hover {
     @apply text-text-primary bg-bg-hover;
     border-color: var(--border-primary);
@@ -2669,6 +2901,10 @@
     @apply px-5 py-2 font-semibold text-sm cursor-pointer transition-all
            border-2 border-border-primary rounded-md
            bg-bg-secondary text-text-secondary;
+  }
+
+  .tw-trade-header .tw-mode-switch .tw-mode-btn {
+    @apply px-4;
   }
 
   .tw-mode-btn:hover {
@@ -3600,6 +3836,21 @@
   }
 }
 
+@media (max-width: 780px) {
+  .warehouse-page .tw-storage-tabs .tw-storage-tab,
+  .work-page .tw-work-subtabs .tw-troop-subtab,
+  .player-tasks-page .tw-mission-tabs .tw-trade-tab,
+  .tw-trade-tabs .tw-trade-tab,
+  .tw-trade-header .tw-mode-switch .tw-mode-btn {
+    flex: 1 1 0%;
+    min-width: 0;
+    padding: 9px 6px;
+    font-size: 12px;
+    line-height: 1.25rem;
+    text-align: center;
+  }
+}
+
 @layer utilities {
   /* ========== 古风特殊工具类 ========== */
   .text-shadow-light {
@@ -3736,11 +3987,6 @@
     flex: 2;
   }
 
-  /* 筛选下拉框隐藏，改用第5列作为筛选区 */
-  .tw-warehouse-table tbody tr td:nth-child(5) {
-    display: none;
-  }
-
   /* 交易界面移动端适配 */
   .tw-trade-header {
     flex-direction: column;
@@ -3823,6 +4069,37 @@
   .tw-shop-table tbody tr td:nth-child(4)::before {
     content: "库存: ";
     color: var(--text-muted);
+  }
+
+  /* 卡片布局保留表头筛选入口 */
+  .tw-table-with-header-filter thead,
+  .tw-table-with-header-filter thead tr {
+    display: block;
+  }
+
+  .tw-table-with-header-filter thead {
+    margin-bottom: 0.75rem;
+  }
+
+  .tw-table-with-header-filter thead th {
+    display: none;
+  }
+
+  .tw-table-with-header-filter thead th.tw-filter-th {
+    display: block;
+    position: static;
+    min-width: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+  }
+
+  .tw-table-with-header-filter .tw-table-filter-heading > span {
+    display: none;
+  }
+
+  .tw-table-with-header-filter .tw-filter-form {
+    margin-left: auto;
   }
 
   /* 拍卖表格移动端 */

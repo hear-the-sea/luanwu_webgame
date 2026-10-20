@@ -103,38 +103,41 @@ def test_tracked_skill_books_are_not_sold_in_shop():
 
 
 @pytest.mark.django_db
-def test_recruit_equipment_shop_buy_prices_are_150_percent_of_forge_cost():
-    item_data = yaml.safe_load(Path("data/item_templates.yaml").read_text(encoding="utf-8"))
-    forge_data = yaml.safe_load(Path("data/forge_equipment.yaml").read_text(encoding="utf-8"))
+def test_recruit_equipment_shop_prices_match_recruitment_tiers():
     troop_data = yaml.safe_load(Path("data/troop_templates.yaml").read_text(encoding="utf-8"))
-
-    item_prices = {item["key"]: item["price"] for item in item_data["items"] if isinstance(item, dict)}
-    forge_equipment = forge_data["equipment"]
-    recruit_equipment_keys = {
-        equipment_key
-        for troop in troop_data["troops"]
-        for equipment_key in (troop.get("recruit") or {}).get("equipment") or []
+    tier_prices = {1: 102, 3: 150, 5: 258, 7: 482}
+    tier_costs = {1: 408, 3: 1840, 5: 2984, 7: 4928}
+    mount_prices = {
+        "equip_zaohongma": 1240,
+        "equip_huangbiaoma": 1952,
+        "equip_dawanma": 3000,
     }
     shop_config_by_key = {config.item_key: config for config in shop_config.load_shop_config()}
-
-    for equipment_key in recruit_equipment_keys:
-        config = shop_config_by_key[equipment_key]
-        assert config.stock == -1
-
-        materials = forge_equipment.get(equipment_key, {}).get("materials")
-        if not materials:
+    for troop in troop_data["troops"]:
+        recruit = troop.get("recruit") or {}
+        equipment = recruit.get("equipment") or []
+        if not equipment:
             continue
-
-        forge_cost = sum(item_prices[material_key] * amount for material_key, amount in materials.items())
-        assert config.buy_price == int(forge_cost * 1.5)
+        total_cost = 0
+        for equipment_key in equipment:
+            config = shop_config_by_key[equipment_key]
+            expected_price = mount_prices.get(equipment_key)
+            if expected_price is None:
+                expected_price = tier_prices[recruit["tech_level"]]
+            assert config.stock == -1
+            assert config.buy_price == expected_price, equipment_key
+            assert config.price == expected_price // 2, equipment_key
+            total_cost += config.buy_price
+        if len(equipment) > 1:
+            assert total_cost == tier_costs[recruit["tech_level"]], troop["key"]
 
 
 @pytest.mark.django_db
-def test_recruit_mounts_use_default_shop_markup():
+def test_recruit_mounts_use_explicit_shop_prices():
     for item_key, sell_price, expected_buy_price in [
-        ("equip_zaohongma", 620, 930),
-        ("equip_huangbiaoma", 975, 1463),
-        ("equip_dawanma", 1500, 2250),
+        ("equip_zaohongma", 620, 1240),
+        ("equip_huangbiaoma", 975, 1952),
+        ("equip_dawanma", 1500, 3000),
     ]:
         ItemTemplate.objects.create(
             key=item_key,
@@ -144,6 +147,6 @@ def test_recruit_mounts_use_default_shop_markup():
         )
         config = shop_config.get_shop_item_config(item_key)
         assert config is not None
-        assert config.buy_price is None
-        assert shop_config.get_sell_price(item_key) == sell_price
+        assert config.buy_price == expected_buy_price
+        assert shop_config.get_sell_price(item_key) == expected_buy_price // 2
         assert shop_config.get_buy_price(item_key) == expected_buy_price

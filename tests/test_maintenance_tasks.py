@@ -246,6 +246,35 @@ def test_cleanup_old_data_task_deletes_only_published_terminal_fill_evidence_and
 
 
 @pytest.mark.django_db
+def test_cleanup_old_data_task_deletes_at_most_one_batch_per_table(monkeypatch, django_user_model):
+    from gameplay.tasks import maintenance
+
+    user = django_user_model.objects.create_user(username="cleanup_batch_limit_user", password="pass123")
+    manor = ensure_manor(user)
+    stale = [
+        ResourceEvent.objects.create(
+            manor=manor,
+            resource_type=ResourceType.SILVER,
+            delta=1,
+            reason=ResourceEvent.Reason.ADMIN_ADJUST,
+            note=f"stale-{index}",
+        )
+        for index in range(2)
+    ]
+    cutoff = timezone.now() - timedelta(days=RESOURCE_EVENT_RETENTION_DAYS + 1)
+    ResourceEvent.objects.filter(pk__in=[row.pk for row in stale]).update(created_at=cutoff)
+    monkeypatch.setattr(maintenance, "CLEANUP_TASK_BATCH_SIZE", 1)
+
+    cleanup_old_data_task.run()
+
+    assert ResourceEvent.objects.filter(pk__in=[row.pk for row in stale]).count() == 1
+
+    cleanup_old_data_task.run()
+
+    assert ResourceEvent.objects.filter(pk__in=[row.pk for row in stale]).exists() is False
+
+
+@pytest.mark.django_db
 def test_cleanup_old_data_task_invalidates_unread_cache_for_each_deleted_message_manor(
     django_user_model,
 ):

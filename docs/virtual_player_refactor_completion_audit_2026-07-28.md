@@ -129,7 +129,7 @@
 | 强制结算日预算 | `DONE` | planner 复用 `resources.py` 的只读离线生产投影冻结请求量、UTC 日预算和工资 quote；executor 在 Profile/Manor 锁内钳制正向银两/粮食、保留负向耗粮、推进生产时间并优先支付工资。预算、`ResourceEvent`、`SalaryPayment`、训练和周期元数据同事务提交，跨 UTC 日、Arena 调度保留及失败回滚已有回归 |
 | 外部强度/声望结果异步对账 | `DONE` | Raid 双方在原事务内以提交前强度锚点创建幂等 intent；profile/population 两阶段拥有 5 分钟 lease、token fencing、各 12 次上限、退避/quarantine、同档案严格顺序和原子人口 handoff；Celery 单 intent worker、分钟扫描与 timer queue 已接线，Arena 排除未解决及隔离档案。SQLite 定向回归和真实 MySQL 四项锁语义证据均通过 |
 | 已完成外部对账后的 Arena 真人 cap 动态保护 | `DONE` | `virtual_protection` 对 unresolved/quarantined 和 `APPLIED` 后实时超 cap 都 fail closed；scan、lease 前锁内复验与 member reevaluation 覆盖漂移且保持只读保护边界 |
-| safety monitor、闭合窗口指标和 routing CAS | `DONE` | `BotSafetyMetricEvent/Window`、幂等事件、5 分钟宽限、UTC 窗口、heartbeat、35/90 天保留、preflight、monitor 与 routing revision CAS 已接线；SQLite 套件及真实 MySQL finalizer/event writer 串行化通过 |
+| safety monitor、闭合窗口指标和 routing CAS | `DONE` | `BotSafetyMetricEvent/Window`、幂等事件、5 分钟宽限、UTC 窗口、heartbeat、15 天保留、preflight、monitor 与 routing revision CAS 已接线；SQLite 套件及真实 MySQL finalizer/event writer 串行化通过 |
 | 虚拟监牢日清与竞技场满血 snapshot | `DONE` | 日任务按 cutoff 有界批量释放虚拟 captor 的 `HELD` 记录且 routing 独立；普通赛/共斗只复制满血虚拟 snapshot，不修改真实 Guest，锁内写前再校验 |
 | `v2_cutover -> V1 清零 -> v2_active` workflow | `REQUIRES_CONFIRMATION` | workflow、精确 V1 count 与 CAS 前置条件已实现；实际数据处理、cutover、清零与启用未授权、未执行，这正是 Gate exit 与 readiness 的边界 |
 | disposable database benchmark、锁等待和失败注入 | `DONE` | 六档 `batch_size=1/10/100 x concurrency=1/2` 全部通过；百档 queries 为 `2422/2418`，writes 为 `712/709`，deadlock/lock timeout 为 0；其余真实竞态与故障注入 `43 passed` |
@@ -161,7 +161,7 @@
 | 19 | 外部对账只有 `PENDING/CLAIMED/APPLIED` 却声称有界 retry，坏 payload 会无限重试，过期旧 worker 也可能在新 claim 后重复提交 | profile/population 分阶段 claim、5 分钟 lease、随机 token fencing、各 12 次上限、60 秒起始且最多 6 小时退避、永久错误/耗尽 quarantine 已实现；真实 MySQL 证明过期新 token 可 reclaim，旧 token finalize 返回 `claim_lost` 且不能覆盖新 claim | `DONE` |
 | 20 | 同档案 intent 可乱序，且 profile 已对账后到人口重算之间没有可恢复、独立 fencing 的中间态 | worker 按 `origin_committed_at -> id` 拒绝越序；跨段 profile 完成进入独立 `PENDING_POPULATION`，人口 demand 与 `APPLIED` 同事务提交。真实 MySQL 证明扫描器跳过被锁 intent 时不会选择同档案后项，只会领取独立档案工作 | `DONE` |
 | 21 | policy 退役只有“观察与重放窗口已结束”布尔条件，没有时长或事实来源，命令无法可靠判断 | 发布、profile/routing/rollout 最后引用移除和数据库 UTC 退役门禁均已实现，deadline 只允许单调延长 | `DONE` |
-| 22 | safety 需要 UTC 闭合窗口、迟到宽限、event 去重和 heartbeat，但现有 Redis/cache counter 是累计值且会进程内降级 | `BotSafetyMetricEvent/BotSafetyMetricWindow` 持久 provider、5 分钟宽限、60s heartbeat、35/90 天保留、清理水位与 fail-closed preflight 已完整实现 | `DONE` |
+| 22 | safety 需要 UTC 闭合窗口、迟到宽限、event 去重和 heartbeat，但现有 Redis/cache counter 是累计值且会进程内降级 | `BotSafetyMetricEvent/BotSafetyMetricWindow` 持久 provider、5 分钟宽限、60s heartbeat、15 天保留、清理水位与 fail-closed preflight 已完整实现 | `DONE` |
 | 23 | YAML mode 可热刷新，却又要求 safety monitor 对 routing 做 CAS；没有持久 revision owner 会形成双重真相和重启漂移 | `BotRuntimeRoutingState` 是 routing 唯一事实；monitor 消费闭合窗口并用 revision/cursor CAS 幂等暂停，冲突有界重读 | `DONE` |
 | 24 | 五状态 `MaintenanceResult` 与 safety rate 引用第六个 `FAILED` 互相矛盾 | 领域仍为五状态；`FAILED` 只存在于 operation/attempt 观测事件，提交不确定另记 hard violation，指标故障不反写业务结果 | `DONE` |
 | 25 | 设计要求 population handoff 持久合并，但并发 merge 可能被旧 claim finalize 吞掉 | `BotPopulationRecomputeDemand` 已以 request/completion revision、claim revision + token fencing、完成行保留和周期扫描实现；真实 MySQL 同键并发 merge 得到 revision `1/2`，最终 requested revision 为 2 且未被旧完成吞掉 | `DONE` |

@@ -7,9 +7,11 @@ import random
 from collections.abc import Sequence
 from functools import lru_cache
 from pathlib import Path
+from typing import cast
 
 from django.conf import settings
 from django.core.files.storage import default_storage
+from django.core.paginator import Paginator
 
 from core.utils.image_utils import compress_and_resize_image
 
@@ -19,6 +21,14 @@ logger = logging.getLogger(__name__)
 
 GUEST_AVATAR_EXTENSIONS = frozenset({".png", ".jpg", ".jpeg", ".webp"})
 GUEST_AVATAR_STORAGE_PREFIX = "guests/"
+CUSTOM_GUEST_AVATAR_DIRECTORY = Path("monkey") / "其他随机角色"
+CUSTOM_GUEST_PIG_AVATAR_DIRECTORY = Path("pig")
+CUSTOM_GUEST_AVATAR_PAGE_SIZE = 16
+CUSTOM_GUEST_AVATAR_GROUP_LABELS = {
+    "original": "乱舞原版形象",
+    "monkey": "拓展悠嘻猴形象",
+    "pig": "拓展Mr.Pig形象",
+}
 INSTANCE_AVATAR_TEMPLATE_KEYS = frozenset({"base_gray_civil", "base_gray_military"})
 GUEST_DISGUISE_AVATAR_LABELS = {
     "monkey": "猴",
@@ -118,14 +128,23 @@ def pick_guest_avatar_filename(
     return chooser.choice(list(candidates))
 
 
+def get_guest_avatar_asset_name(source_filename: str) -> str:
+    """保持嵌套素材名称独立，并使用现有头像解析支持的单层存储路径。"""
+    asset_stem = "__".join(Path(source_filename).with_suffix("").parts)
+    return f"{GUEST_AVATAR_STORAGE_PREFIX}{asset_stem}.webp"
+
+
 def ensure_guest_avatar_asset(source_filename: str) -> str:
     """将头像源图压缩到媒体目录并返回受控的存储路径。"""
     source_dir = Path(settings.BASE_DIR) / "data" / "images" / "guests"
     source_path = source_dir / source_filename
-    if source_path.name != source_filename or not source_path.is_file():
+    relative_path = Path(source_filename)
+    if relative_path.parent not in {Path("."), CUSTOM_GUEST_AVATAR_DIRECTORY, CUSTOM_GUEST_PIG_AVATAR_DIRECTORY}:
+        return ""
+    if not source_path.is_file() or not source_path.resolve().is_relative_to(source_dir.resolve()):
         return ""
 
-    target_name = f"{GUEST_AVATAR_STORAGE_PREFIX}{source_path.stem}.webp"
+    target_name = get_guest_avatar_asset_name(source_filename)
     try:
         if default_storage.exists(target_name):
             return target_name
@@ -197,8 +216,69 @@ def _guest_disguise_avatar_label(filename: str) -> str:
 
 def get_guest_disguise_avatar_options() -> list[dict[str, str]]:
     """准备门客易容卡弹窗展示的头像选项及名称。"""
+    return _build_guest_avatar_options(get_guest_disguise_avatar_filenames())
+
+
+def _custom_guest_directory_filenames(directory: Path) -> tuple[str, ...]:
+    source_dir = Path(settings.BASE_DIR) / "data" / "images" / "guests" / directory
+    if not source_dir.is_dir():
+        return ()
+    return tuple(
+        sorted(
+            (directory / path.name).as_posix()
+            for path in source_dir.iterdir()
+            if path.is_file() and path.suffix.lower() in GUEST_AVATAR_EXTENSIONS
+        )
+    )
+
+
+def get_custom_guest_avatar_catalog() -> dict[str, tuple[str, ...]]:
+    """仅列出各栏源文件，展开前不压缩图片或访问媒体存储。"""
+    return {
+        "original": get_guest_disguise_avatar_filenames(),
+        "monkey": _custom_guest_directory_filenames(CUSTOM_GUEST_AVATAR_DIRECTORY),
+        "pig": _custom_guest_directory_filenames(CUSTOM_GUEST_PIG_AVATAR_DIRECTORY),
+    }
+
+
+def get_custom_guest_avatar_filenames() -> tuple[str, ...]:
+    """自定义门客可使用的全部受控素材。"""
+    return tuple(filename for filenames in get_custom_guest_avatar_catalog().values() for filename in filenames)
+
+
+def get_custom_guest_avatar_options(group_key: str | None = None) -> list[dict[str, str]]:
+    """准备指定栏目的形象，未指定时保留完整列表调用方式。"""
+    filenames = (
+        get_custom_guest_avatar_catalog().get(group_key, ())
+        if group_key is not None
+        else get_custom_guest_avatar_filenames()
+    )
+    return _build_guest_avatar_options(filenames)
+
+
+def get_custom_guest_avatar_page(group_key: str, page_number: str | None) -> dict:
+    """先对素材分页，再处理当前页头像，避免翻页时加载整栏图片。"""
+    filenames = get_custom_guest_avatar_catalog().get(group_key, ())
+    page = Paginator(filenames, CUSTOM_GUEST_AVATAR_PAGE_SIZE).get_page(page_number)
+    return {
+        "avatars": _build_guest_avatar_options(cast(Sequence[str], page.object_list)),
+        "page": page.number,
+        "pages": page.paginator.num_pages,
+        "total": page.paginator.count,
+    }
+
+
+def get_custom_guest_avatar_option(source_filename: str) -> dict[str, str] | None:
+    """确认预览只处理玩家已选中的一张图片。"""
+    if source_filename not in get_custom_guest_avatar_filenames():
+        return None
+    options = _build_guest_avatar_options((source_filename,))
+    return options[0] if options else None
+
+
+def _build_guest_avatar_options(filenames: Sequence[str]) -> list[dict[str, str]]:
     options: list[dict[str, str]] = []
-    for filename in get_guest_disguise_avatar_filenames():
+    for filename in filenames:
         asset_path = ensure_guest_avatar_asset(filename)
         if not asset_path:
             continue
@@ -224,6 +304,16 @@ def resolve_guest_disguise_avatar_asset(source_filename: object) -> str:
         return ""
     normalized_filename = source_filename.strip()
     if normalized_filename not in get_guest_disguise_avatar_filenames():
+        return ""
+    return ensure_guest_avatar_asset(normalized_filename)
+
+
+def resolve_custom_guest_avatar_asset(source_filename: object) -> str:
+    """仅接受自定义门客形象列表中的素材。"""
+    if not isinstance(source_filename, str):
+        return ""
+    normalized_filename = source_filename.strip()
+    if normalized_filename not in get_custom_guest_avatar_filenames():
         return ""
     return ensure_guest_avatar_asset(normalized_filename)
 

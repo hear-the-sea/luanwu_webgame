@@ -75,6 +75,23 @@ def test_resolve_drop_rewards_rules_are_stable():
     ) == {"y": 2}
 
 
+def test_resolve_drop_rewards_supports_random_count_ranges():
+    from common.utils.loot import resolve_drop_rewards
+
+    class RangeRng:
+        def random(self) -> float:
+            return 0.0
+
+        def randint(self, minimum: int, maximum: int) -> int:
+            assert (minimum, maximum) == (1, 5)
+            return maximum
+
+    assert resolve_drop_rewards(
+        {"red_ruby": {"chance": 0.28, "count": {"min": 1, "max": 5}}},
+        RangeRng(),
+    ) == {"red_ruby": 5}
+
+
 def test_safe_apply_async_swallows_dispatch_errors():
     from kombu.exceptions import OperationalError
 

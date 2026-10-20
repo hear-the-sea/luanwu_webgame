@@ -47,6 +47,7 @@ def _normalize_recruit_config(raw: Any, *, troop_key: str) -> dict[str, Any] | N
             if guild_only
             else safe_positive_int(recruit.get("base_duration"), DEFAULT_TROOP_RECRUITMENT_BASE_DURATION)
         ),
+        "battle_salvage_base_duration": safe_positive_int(recruit.get("battle_salvage_base_duration")),
     }
 
 

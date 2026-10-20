@@ -65,8 +65,7 @@
     .msg-table th:last-child { width: 100px; text-align: right; }
 
     .msg-table-wrapper {
-        max-height: 520px;
-        overflow: auto;
+        overflow: visible;
     }
     .msg-table tbody tr {
         border-bottom: 1px solid var(--border-light);
@@ -252,7 +251,7 @@
 {% endblock %}
 
 {% block content %}
-<section class="dashboard">
+<section class="dashboard messages-page" data-messages-page>
     <div class="msg-header">
         <div>
             <h1>消息中心</h1>

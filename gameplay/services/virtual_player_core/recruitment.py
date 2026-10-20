@@ -16,6 +16,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from enum import StrEnum
+from time import monotonic
 from types import SimpleNamespace
 from typing import Any, Mapping, Sequence, cast
 
@@ -95,6 +96,7 @@ VIRTUAL_RECRUITMENT_RARITY_ADJUSTMENTS: tuple[tuple[str, int, int], ...] = (
 VIRTUAL_RECRUITMENT_SCHEDULE_POLICY_VERSION = 2
 VIRTUAL_RECRUITMENT_PRESTIGE_THRESHOLD = 10_000
 VIRTUAL_RECRUITMENT_SCAN_BATCH_SIZE = 200
+VIRTUAL_RECRUITMENT_SCAN_BUDGET_SECONDS = 15.0
 VIRTUAL_RECRUITMENT_POOL_PLAN: tuple[str, ...] = (
     "dianshi",
     "xiangshi",
@@ -1695,6 +1697,7 @@ def start_next_due_virtual_recruitment(
 def schedule_due_virtual_recruitments(
     *, now: datetime | None = None, limit: int = VIRTUAL_RECRUITMENT_SCAN_BATCH_SIZE
 ) -> int:
+    scan_started_at = monotonic()
     current_time = _normalize_now(now)
     normalized_limit = max(0, min(int(limit), VIRTUAL_RECRUITMENT_SCAN_BATCH_SIZE))
     if normalized_limit <= 0:
@@ -1713,6 +1716,8 @@ def schedule_due_virtual_recruitments(
     started = 0
     config = load_virtual_player_config()
     for profile in profiles:
+        if monotonic() - scan_started_at >= VIRTUAL_RECRUITMENT_SCAN_BUDGET_SECONDS:
+            break
         pacing = resolve_archetype_pacing(config, str(profile["archetype"]))
         result = start_next_due_virtual_recruitment(int(profile["id"]), now=current_time, pacing=pacing)
         if result.status is VirtualRecruitmentStatus.SAFETY_BLOCKED:
@@ -1844,6 +1849,7 @@ __all__ = [
     "VIRTUAL_RECRUITMENT_FIRST_SLOT",
     "VIRTUAL_RECRUITMENT_POOL_PLAN",
     "VIRTUAL_RECRUITMENT_POOL_QUOTAS",
+    "VIRTUAL_RECRUITMENT_SCAN_BUDGET_SECONDS",
     "VIRTUAL_RECRUITMENT_SCAN_BATCH_SIZE",
     "VirtualRecruitmentError",
     "VirtualRecruitmentResult",

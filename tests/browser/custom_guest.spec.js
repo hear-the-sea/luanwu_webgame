@@ -30,8 +30,39 @@ for (const width of [390, 1280]) {
         await page.getByText("重置成长方向", { exact: true }).click();
         await expect(page.getByRole("button", { name: "使用千年朱果×1" })).toBeVisible();
       } else if (name === "appearance") {
-        await page.locator('input[name="avatar_key"]').first().check();
-        await expect(page.locator('input[name="avatar_key"]').first()).toBeChecked();
+        await page.route("http://custom-guest.test/**", route => {
+          if (route.request().isNavigationRequest()) {
+            return route.fulfill({ contentType: "text/html", body: pages.appearance });
+          }
+          if (route.request().url().includes("avatar_group=")) {
+            return route.fulfill({
+              contentType: "application/json",
+              json: {
+                success: true,
+                page: 1,
+                pages: 1,
+                total: 1,
+                avatars: [{
+                  key: "preview/guest.webp",
+                  label: "预览门客",
+                  url: "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=",
+                }],
+              },
+            });
+          }
+          return route.abort();
+        });
+        await page.goto("http://custom-guest.test/appearance/");
+        for (const css of ["style", "tailwind", "chat_widget", "guest-detail", "custom-guest"]) {
+          await page.addStyleTag({ path: path.join(root, "static/css", `${css}.css`) });
+        }
+        await page.addScriptTag({ path: path.join(root, "static/js/custom-guest.js") });
+        const avatarGroup = page.locator("[data-avatar-group]").first();
+        await avatarGroup.locator("summary").click();
+        const avatarChoice = page.locator('input[name="avatar_choice"]');
+        await expect(avatarChoice).toBeVisible();
+        await avatarChoice.check();
+        await expect(page.locator('input[name="avatar_key"]')).toHaveValue("preview/guest.webp");
         expect(await page.locator(".custom-avatar-option img").first().evaluate(image => image.naturalWidth)).toBeGreaterThan(0);
         if (width === 1280) {
           expect((await page.locator(".custom-appearance").boundingBox()).width).toBeGreaterThan(700);

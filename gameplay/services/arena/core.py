@@ -28,6 +28,7 @@ from guests.services.status import persist_guest_status_transitions
 
 from . import helpers as _arena_helpers
 from . import virtual_reserve_fill
+from .currency_exchange import ArenaCurrencyExchangeResult, exchange_arena_coins_for_chunqiu_coins  # noqa: F401
 from .exchange_helpers import ArenaExchangeResult, exchange_arena_reward  # noqa: F401
 from .lifecycle_helpers import finalize_tournament_locked, schedule_tournament_round_locked, start_tournament_locked
 from .low_population_policy import new_event_wait_seconds

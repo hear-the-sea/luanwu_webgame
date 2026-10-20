@@ -114,20 +114,11 @@ def lineup_display(lineup: dict[str, Any]) -> dict[str, Any]:
 
 def get_arena_rings_context(manor: Manor) -> dict[str, Any]:
     from gameplay.services.arena.ring import load_ring_rules
-    from gameplay.services.arena.ring_rewards import effective_streak
 
     now = timezone.now()
     context = build_common_context(manor)
     rules = load_ring_rules()
     context["ring_rules"] = rules
-    context["ring_daily_max_coins"] = (
-        rules["daily_time_coins"]
-        + rules["defense_coins"] * rules["daily_defense_rewards"]
-        + rules["participation_coins"] * rules["daily_participation_rewards"]
-        + rules["daily_streak_coins"]
-        + rules["daily_break_streak_coins"]
-    )
-    context["ring_reward_interval_minutes"] = rules["time_interval_seconds"] // 60
     context["ring_tenure_hours"] = rules["tenure_seconds"] // 3600
     context["ring_return_minutes"] = rules["cooldown_seconds"] // 60
     my_tenure = ArenaRingTenure.objects.filter(manor=manor, ended_at__isnull=True).first()
@@ -198,7 +189,6 @@ def get_arena_rings_context(manor: Manor) -> dict[str, Any]:
                 "held_minutes": (
                     int((min(now, tenure.ends_at) - tenure.started_at).total_seconds() // 60) if tenure else 0
                 ),
-                "reward_streak": effective_streak(tenure) if tenure else 0,
                 "own_lineup": lineup_display(tenure.lineup) if mine and tenure is not None else None,
             }
         )

@@ -4,17 +4,12 @@
 {% block title %}任务{% endblock %}
 
 {% block content %}
-<section class="dashboard">
-    <div class="tw-section-header">
-        <div>
-            <h1>任务列表</h1>
-        </div>
-    </div>
-
+<section class="dashboard player-tasks-page" data-player-tasks-page>
     <nav class="tw-mission-tabs">
         <button class="tw-trade-tab{% if active_tab == 'junior' %} active{% endif %}" data-tab="junior">初级任务</button>
         <button class="tw-trade-tab{% if active_tab == 'intermediate' %} active{% endif %}" data-tab="intermediate">中级任务</button>
         <button class="tw-trade-tab{% if active_tab == 'advanced' %} active{% endif %}" data-tab="advanced">高级任务</button>
+        <button class="tw-trade-tab{% if active_tab == 'guild' %} active{% endif %}" data-tab="guild">帮会任务</button>
     </nav>
 
     <section class="tw-card" style="padding: 0; overflow: hidden; border-top-left-radius: 0;">
@@ -144,26 +139,81 @@
                     </tbody>
                 </table>
             </div>
+
+            <div id="tab-guild" class="mission-tab-content{% if active_tab == 'guild' %} active{% endif %}"{% if active_tab != 'guild' %} style="display: none;"{% endif %}>
+                <div class="p-4">
+                    <p class="tw-muted mb-3">
+                        加入帮会后可参与，每周最多 10 次，初、中、高级共享次数。
+                        {% if guild_personal_mission_status.has_guild %}
+                            当前帮会：{{ guild_personal_mission_status.guild_name }}；本周已参与 {{ guild_personal_mission_status.used }} / {{ guild_personal_mission_status.limit }} 次。
+                        {% else %}
+                            需要先加入帮会；本周已参与 {{ guild_personal_mission_status.used }} / {{ guild_personal_mission_status.limit }} 次。
+                        {% endif %}
+                    </p>
+                    <table class="tw-mission-table">
+                        <thead>
+                            <tr>
+                                <th class="tw-mission-name-col">任务名称</th>
+                                <th class="tw-mission-meta-col text-center">类型</th>
+                                <th class="tw-mission-meta-col text-center">本周剩余</th>
+                                <th class="tw-mission-action-col text-center">详情</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for item in guild_personal_mission_data %}
+                            {% with mission=item.mission %}
+                            <tr>
+                                <td class="tw-mission-name-col">
+                                    <a class="tw-mission-name-link font-bold text-text-primary no-underline hover:no-underline" href="?mission={{ mission.key }}">{{ mission.name }}</a>
+                                </td>
+                                <td class="tw-mission-meta-col text-center">
+                                    <span class="tw-chip">
+                                        {% if mission.is_defense %}防守{% elif mission.guest_only %}门客{% else %}护院{% endif %}
+                                    </span>
+                                </td>
+                                <td class="tw-mission-meta-col text-center">
+                                    <span class="tw-chip">{{ item.remaining }} / {{ item.weekly_limit }}</span>
+                                </td>
+                                <td class="tw-mission-action-col text-center">
+                                    <a class="{% if item.has_guild and item.remaining > 0 %}tw-btn-primary{% else %}tw-btn-secondary{% endif %} tw-btn-sm" href="?mission={{ mission.key }}">详情</a>
+                                </td>
+                            </tr>
+                            {% endwith %}
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="tw-muted text-center py-8">暂无开放的帮会任务。</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </section>
 </section>
 
 {% if selected_mission %}
-<div class="tw-modal-overlay" aria-hidden="false">
-    <div class="tw-modal-content" style="max-width: 900px;">
+<div class="tw-modal-overlay task-detail-overlay" data-task-detail-overlay aria-hidden="false">
+    <div class="tw-modal-content task-detail-dialog" style="max-width: 900px;">
         <div class="tw-modal-header">
             <div>
                 <p class="tw-muted text-sm mb-2">任务情报</p>
                 <h3>{{ selected_mission.name }}</h3>
             </div>
-            <a href="{{ task_board_close_url }}" class="tw-btn-secondary tw-btn-sm">关闭</a>
+            <a href="{{ task_board_close_url }}" class="tw-btn-secondary tw-btn-sm" data-task-modal-close>关闭</a>
         </div>
         <div class="tw-modal-body">
             <div class="flex items-center gap-2 flex-wrap mb-6">
+                {% if selected_is_guild_mission %}
+                <span class="tw-chip">本周已参与 {{ guild_personal_mission_status.used }} / {{ guild_personal_mission_status.limit }}</span>
+                <span class="tw-chip">本周剩余 {{ selected_guild_weekly_remaining }} 次</span>
+                {% else %}
                 <span class="tw-chip">今日剩余 {{ selected_remaining }} / {{ selected_daily_limit }}</span>
+                {% endif %}
                 <span class="tw-chip">
-                    {% if selected_mission.is_defense %}防守任务{% elif selected_mission.guest_only %}门客任务{% else %}护院任务{% endif %}
+                    {% if selected_is_guild_mission %}个人帮会任务{% elif selected_mission.is_defense %}防守任务{% elif selected_mission.guest_only %}门客任务{% else %}护院任务{% endif %}
                 </span>
+                {% if not selected_is_guild_mission %}
                 {% if mission_card_daily_limit > 0 %}
                 <span class="tw-chip">任务卡 {{ selected_mission_card_uses }} / {{ mission_card_daily_limit }}</span>
                 {% else %}
@@ -186,6 +236,7 @@
                             {% if selected_mission_card_uses >= mission_card_daily_limit %}disabled{% endif %}>+</button>
                 </form>
                 {% endif %}
+                {% endif %}
                 {% if selected_mission.is_defense %}
                     <span class="tw-chip">自动使用空闲门客</span>
                 {% else %}
@@ -198,6 +249,12 @@
                         <h5 class="text-text-primary text-lg font-bold mb-3">任务简介</h5>
                         <p class="tw-muted mb-0">{{ selected_mission.description }}</p>
                     </section>
+                    {% if selected_is_guild_mission %}
+                    <section class="tw-task-detail-section">
+                        <h5 class="text-text-primary text-lg font-bold mb-2">帮会结算</h5>
+                        <p class="tw-muted mb-0">胜利后银两、粮食与概率获得的红宝石直接进入发起时的帮会仓库；你获得对应帮会贡献。失败或撤退也会消耗本周参与次数。</p>
+                    </section>
+                    {% endif %}
                     <section class="tw-task-detail-section">
                         <h5 class="text-text-primary text-lg font-bold mb-2">敌人情报</h5>
                         <div class="tw-enemy-grid">
@@ -207,7 +264,10 @@
                                 {% with label=entry|guest_label:guest_labels %}
                                 <div class="tw-enemy-entry">
                                     {% if template and template.avatar %}
-                                        <img src="{{ template.avatar.url }}" alt="{{ label }}" title="{{ label }}" class="tw-enemy-avatar" loading="lazy" decoding="async">
+                                        <button type="button" class="tw-item-cell tw-enemy-avatar-trigger" aria-label="{{ label }}">
+                                            <img src="{{ template.avatar.url }}" alt="" class="tw-enemy-avatar" loading="lazy" decoding="async">
+                                            <span class="tw-item-tooltip"><span class="tw-tooltip-header">{{ label }}</span></span>
+                                        </button>
                                     {% else %}
                                         <span class="tw-badge">{{ label|slice:":1" }}</span>
                                     {% endif %}
@@ -218,16 +278,20 @@
                             {% empty %}
                                 <span class="tw-badge">随机乱军</span>
                             {% endfor %}
-                            {% for troop_key,count in selected_mission.enemy_troops.items %}
-                                {% with troop=troop_templates_objs|get_item:troop_key %}
-                                <div class="tw-enemy-entry" title="{{ troop_labels|get_label:troop_key }}">
+                            {% for row in selected_enemy_troop_rows %}
+                                {% with troop=troop_templates_objs|get_item:row.key %}
+                                {% with original_label=troop_labels|get_label:row.key %}
+                                {% with troop_label=row.label|default:original_label %}
+                                <div class="tw-enemy-entry" title="{{ troop_label }}">
                                     {% if troop and troop.avatar %}
-                                        <img src="{{ troop.avatar.url }}" alt="{{ troop_labels|get_label:troop_key }}" class="tw-enemy-avatar" loading="lazy" decoding="async">
-                                        <span class="tw-enemy-count">×{{ count }}</span>
+                                        <img src="{{ troop.avatar.url }}" alt="{{ troop_label }}" class="tw-enemy-avatar" loading="lazy" decoding="async">
+                                        <span class="tw-enemy-count">×{{ row.count_label }}</span>
                                     {% else %}
-                                        <span class="tw-badge">{{ troop_labels|get_label:troop_key }} ×{{ count }}</span>
+                                        <span class="tw-badge">{{ troop_label }} ×{{ row.count_label }}</span>
                                     {% endif %}
                                 </div>
+                                {% endwith %}
+                                {% endwith %}
                                 {% endwith %}
                             {% endfor %}
                         </div>
@@ -278,11 +342,11 @@
                               {% if not selected_mission.is_defense %}data-task-loadout data-max-squad-size="{{ max_squad }}" data-task-guest-only="{{ selected_mission.guest_only|yesno:'1,0' }}"{% endif %}>
                             <div class="tw-task-launch-heading">
                                 <h4 class="font-bold">
-                                    {% if selected_mission.is_defense %}防守配置{% elif selected_mission.guest_only %}门客出征{% else %}出征配置{% endif %}
+                                    {% if selected_is_guild_mission %}帮会任务出征{% elif selected_mission.is_defense %}防守配置{% elif selected_mission.guest_only %}门客出征{% else %}出征配置{% endif %}
                                 </h4>
                                 {% if not selected_mission.is_defense %}
                                 <button type="button" class="tw-btn-primary shrink-0" data-task-quick-launch
-                                        {% if selected_attempts >= selected_daily_limit or not can_afford_entry_cost or not available_guests %}disabled{% endif %}>快速出征</button>
+                                        {% if selected_is_guild_mission and not selected_guild_has_membership or selected_is_guild_mission and selected_guild_weekly_remaining <= 0 or not selected_is_guild_mission and selected_attempts >= selected_daily_limit or not can_afford_entry_cost or not available_guests %}disabled{% endif %}>快速出征</button>
                                 {% endif %}
                             </div>
                             {% if selected_mission.is_defense %}
@@ -407,7 +471,11 @@
                                 {% endif %}
                             {% endif %}
                             <div class="flex gap-4 mt-8">
-                                {% if selected_attempts >= selected_daily_limit %}
+                                {% if selected_is_guild_mission and not selected_guild_has_membership %}
+                                    <button type="submit" class="tw-btn-secondary" disabled>加入帮会后参加</button>
+                                {% elif selected_is_guild_mission and selected_guild_weekly_remaining <= 0 %}
+                                    <button type="submit" class="tw-btn-secondary" disabled>本周次数已用完</button>
+                                {% elif not selected_is_guild_mission and selected_attempts >= selected_daily_limit %}
                                     <button type="submit" class="tw-btn-secondary" disabled>
                                         {% if selected_mission.is_defense %}无法接受{% else %}无法出征{% endif %}
                                     </button>
@@ -424,7 +492,7 @@
                                         {% if selected_mission.is_defense %}接受任务{% else %}派遣出征{% endif %}
                                     </button>
                                 {% endif %}
-                                <a href="{{ task_board_close_url }}" class="tw-btn-secondary">取消</a>
+                                <a href="{{ task_board_close_url }}" class="tw-btn-secondary" data-task-modal-close>取消</a>
                             </div>
                         </form>
                     </section>

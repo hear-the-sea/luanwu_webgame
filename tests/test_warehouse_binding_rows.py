@@ -12,7 +12,9 @@ pytestmark = pytest.mark.django_db
 @pytest.fixture
 def split_world(django_user_model):
     user = django_user_model.objects.create_user(username="split_warehouse", password="pass")
-    return user, ensure_manor(user)
+    manor = ensure_manor(user)
+    InventoryItem.objects.filter(manor=manor, template__key="custom_guest_card").delete()
+    return user, manor
 
 
 @pytest.mark.parametrize(

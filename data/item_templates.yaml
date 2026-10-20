@@ -1544,6 +1544,32 @@ items:
         - template_key: hist_sljnbc_0013
           weight: 100
 
+  - key: chiyou_card
+    name: 蚩尤卡
+    description: 逐鹿中原蚩尤宝箱中取得的招贤信物。集齐100张后，可指定选择召来紫色门客「杨铮」或「狄青麟」一位。两位门客各自全服唯一，若所选门客已被其他庄园招募，则无法兑换且不消耗蚩尤卡。
+    effect_type: tool
+    rarity: purple
+    tradeable: false
+    price: 0
+    storage_space: 25
+    is_usable: true
+    image: chiyou_card.png
+    effect_payload:
+      action: summon_guest
+      player_choice: true
+      required_items:
+        chiyou_card: 99
+      confirm_title: 选择兑换门客
+      confirm_text: 确认消耗100张「蚩尤卡」兑换所选紫色门客？
+      confirm_ok_text: 兑换所选门客
+      choices:
+        - template_key: hero_yang_zheng_purple
+          label: 杨铮
+          weight: 1
+        - template_key: hero_di_qinglin
+          label: 狄青麟
+          weight: 1
+
   - key: zhaoyun_guest_scroll
     name: 赵云招募卷轴
     description: 使用后可直接招募橙色门客「赵云」；若庄园已拥有该门客，则无法再次招募。
@@ -1620,7 +1646,7 @@ items:
 
   - key: green_to_blue_pill
     name: 绿转蓝丸子
-    description: 吃颗丸子，潜力更上一层。可将绿色门客升为蓝色品质。升阶后回到1级，属性重新生成，技能清空，装备退回仓库。
+    description: 吃颗丸子，潜力更上一层。仅可将可招募的绿色门客升为蓝色品质。每名门客只能使用一次绿转蓝或蓝转紫丸子，不能连续升阶。升阶后回到1级，属性重新生成，技能清空，装备退回仓库。
     effect_type: tool
     rarity: blue
     tradeable: true
@@ -1635,7 +1661,7 @@ items:
 
   - key: blue_to_purple_pill
     name: 蓝转紫丸子
-    description: 吃颗丸子，向高手再迈一步。可将蓝色门客升为紫色品质。升阶后回到1级，属性重新生成，技能清空，装备退回仓库。
+    description: 吃颗丸子，向高手再迈一步。仅可将可招募的蓝色门客升为紫色品质。每名门客只能使用一次绿转蓝或蓝转紫丸子，不能连续升阶。升阶后回到1级，属性重新生成，技能清空，装备退回仓库。
     effect_type: tool
     rarity: purple
     tradeable: true
@@ -3375,6 +3401,39 @@ items:
         - template_key: orig_crayon_shinchan_purple
           weight: 100
 
+  - key: zhanlong_white_horse_token
+    name: 白马银枪令
+    description: 燕山相识的白袍小将所赠信物，凭此可赴长坂接应赵云，进入战龙在野第二关时消耗一枚。
+    effect_type: resource
+    rarity: blue
+    tradeable: false
+    price: 0
+    storage_space: 10
+    is_usable: false
+    image: zhanlong_white_horse_token.png
+
+  - key: zhanlong_changban_guard_token
+    name: 长坂护主令
+    description: 长坂接应队伍传递的护主军令，凭此可前往长坂桥，进入战龙在野第三关时消耗一枚。
+    effect_type: resource
+    rarity: purple
+    tradeable: false
+    price: 0
+    storage_space: 10
+    is_usable: false
+    image: zhanlong_changban_guard_token.png
+
+  - key: zhanlong_dangyang_valor_letter
+    name: 当阳义勇书
+    description: 记录当阳义勇事迹的荐书，凭此可赴蜀营演武之约，进入战龙在野第四关时消耗一封。
+    effect_type: resource
+    rarity: purple
+    tradeable: false
+    price: 0
+    storage_space: 10
+    is_usable: false
+    image: zhanlong_dangyang_valor_letter.png
+
   - key: sishui_battle_report
     name: 汜水关战报
     description: 击败华雄后从汜水关军帐中取得的战报，记录着通往虎牢关的军情与暗号，是继续追击董卓军的凭证。
@@ -4578,6 +4637,189 @@ items:
       required_level: 45
 
   # ---------- 护甲 - 橙色品质（巅峰期）----------
+  - key: equip_tianshukaijia
+    name: 天枢铠甲
+    description: 逐鹿战场流传的北斗七星铠甲之一。厚实甲叶护住要害，偏重生命与正面承伤。
+    effect_type: equip_armor
+    rarity: purple
+    tradeable: true
+    price: 19000
+    storage_space: 150
+    image: equip_tianshukaijia.png
+    effect_payload:
+      hp: 560
+      defense: 32
+      force: 12
+      required_level: 55
+
+  - key: equip_tianxuankaijia
+    name: 天璇铠甲
+    description: 逐鹿战场流传的北斗七星铠甲之一。甲肩便于挥刃发力，偏重武力进攻。
+    effect_type: equip_armor
+    rarity: purple
+    tradeable: true
+    price: 19000
+    storage_space: 150
+    image: equip_tianxuankaijia.png
+    effect_payload:
+      hp: 450
+      defense: 24
+      force: 30
+      required_level: 55
+
+  - key: equip_tianjikaijia
+    name: 天玑铠甲
+    description: 逐鹿战场流传的北斗七星铠甲之一。甲内刻有观星纹路，偏重智力与术法发挥。
+    effect_type: equip_armor
+    rarity: purple
+    tradeable: true
+    price: 19000
+    storage_space: 150
+    image: equip_tianjikaijia.png
+    effect_payload:
+      hp: 450
+      defense: 24
+      intellect: 30
+      required_level: 55
+
+  - key: equip_yaoguangkaijia
+    name: 摇光铠甲
+    description: 逐鹿战场流传的北斗七星铠甲之一。轻巧甲片随身舒展，偏重敏捷与抢先行动。
+    effect_type: equip_armor
+    rarity: purple
+    tradeable: true
+    price: 19000
+    storage_space: 150
+    image: equip_yaoguangkaijia.png
+    effect_payload:
+      hp: 420
+      defense: 24
+      agility: 34
+      required_level: 55
+
+  - key: equip_tianquankaijia
+    name: 天权铠甲
+    description: 逐鹿战场流传的北斗七星铠甲之一。层叠护甲环抱周身，偏重防御与稳守阵线。
+    effect_type: equip_armor
+    rarity: purple
+    tradeable: true
+    price: 19000
+    storage_space: 150
+    image: equip_tianquankaijia.png
+    effect_payload:
+      hp: 500
+      defense: 40
+      force: 10
+      required_level: 55
+
+  - key: equip_yuhengkaijia
+    name: 玉衡铠甲
+    description: 逐鹿战场流传的北斗七星铠甲之一。甲重分布均匀，武力、智力与防护兼顾。
+    effect_type: equip_armor
+    rarity: purple
+    tradeable: true
+    price: 19000
+    storage_space: 150
+    image: equip_yuhengkaijia.png
+    effect_payload:
+      hp: 500
+      defense: 28
+      force: 11
+      intellect: 11
+      required_level: 55
+
+  - key: equip_kaiyangkaijia
+    name: 开阳铠甲
+    description: 逐鹿战场流传的北斗七星铠甲之一。甲上星纹明亮，偏重运势并兼顾基本防护。
+    effect_type: equip_armor
+    rarity: purple
+    tradeable: true
+    price: 19000
+    storage_space: 150
+    image: equip_kaiyangkaijia.png
+    effect_payload:
+      hp: 450
+      defense: 25
+      force: 10
+      luck: 20
+      required_level: 55
+
+  - key: equip_chiyoujia
+    name: 蚩尤甲
+    description: 熔铸七曜星甲与九黎战意的兵主重甲，厚甲承锋而不损攻势，兼具顶尖的护身与破阵之力。
+    effect_type: equip_armor
+    rarity: orange
+    tradeable: true
+    price: 68000
+    storage_space: 200
+    image: equip_chiyoujia.png
+    effect_payload:
+      hp: 600
+      defense: 48
+      force: 40
+      intellect: 0
+      required_level: 80
+
+  - key: equip_chiyouzhanxue
+    name: 蚩尤战靴
+    description: 逐鹿沙场遗留的兵主战靴，步履稳健，兼顾行军速度与近身搏战。
+    effect_type: equip_shoes
+    rarity: orange
+    tradeable: true
+    price: 50000
+    storage_space: 200
+    image: equip_chiyouzhanxue.png
+    effect_payload:
+      hp: 220
+      defense: 8
+      force: 20
+      intellect: 0
+      agility: 35
+      required_level: 75
+
+  - key: blueprint_chiyoujia
+    name: 蚩尤甲图纸
+    description: 蚩尤甲锻造图，锻造技达到10级后，可在铁匠铺消耗七种北斗铠甲各一件与本图纸，合成一件蚩尤甲。
+    effect_type: tool
+    rarity: orange
+    tradeable: true
+    price: 6000
+    storage_space: 200
+    is_usable: false
+    image: blueprint_chiyoujia.png
+
+  - key: equip_shuduanbaijinpao
+    name: 蜀缎白锦袍
+    description: 以蜀中白锦裁成的轻战袍，银线暗绣云龙，护身而不碍腾挪，尽显白袍银枪的英姿。
+    effect_type: equip_armor
+    rarity: orange
+    tradeable: true
+    price: 60000
+    storage_space: 200
+    image: equip_shuduanbaijinpao.png
+    effect_payload:
+      hp: 550
+      defense: 26
+      force: 10
+      agility: 30
+      required_level: 75
+
+  - key: equip_longdanqiang
+    name: 龙胆枪
+    description: 亮银枪锋如龙牙，青杆白缨映寒光，出枪凌厉而回转轻捷，是子龙破阵护身的名器。
+    effect_type: equip_weapon
+    rarity: orange
+    tradeable: true
+    price: 65000
+    storage_space: 200
+    image: equip_longdanqiang.png
+    effect_payload:
+      hp: 220
+      defense: 6
+      force: 74
+      agility: 18
+      required_level: 75
+
   - key: equip_longlinzhanjia
     name: 龙鳞战甲
     description: 以真龙脱落之鳞锻造，极为稀有，世间仅存数件。
@@ -13572,8 +13814,8 @@ items:
       experience_fruit_source: battle_salvage
 
   - key: mission_chest_v3_zhuolu_zhongyuan
-    name: 逐鹿中原宝箱
-    description: 逐鹿归来，开箱看看上古英雄的收藏。
+    name: 蚩尤宝箱
+    description: 逐鹿之战的兵主宝箱，必得一张蚩尤卡与一缕轩辕剑意，再从七星铠甲、蚩尤甲图纸、蚩尤战靴与春秋币中额外抽取一项奖励。
     effect_type: loot_box
     rarity: purple
     tradeable: false
@@ -13584,253 +13826,54 @@ items:
     effect_payload:
       mission_reward_version: 1
       mission_key: zhuolu_zhongyuan
-      reward_theme: 上古帝王终局：轩辕、龙冠、玉玺与麒麟青鸾
+      reward_theme: 兵主逐鹿：必得蚩尤卡，再额外抽取一项奖励
+      show_reward_probabilities: true
       item_rewards:
-      - item_key: buxuedan
-        min_quantity: 4
-        max_quantity: 4
-      - item_key: tong
-        min_quantity: 12
-        max_quantity: 12
-      - item_key: xi
-        min_quantity: 8
-        max_quantity: 8
-      - item_key: tie
-        min_quantity: 5
-        max_quantity: 5
+      - item_key: chiyou_card
+        min_quantity: 1
+        max_quantity: 1
       - item_key: xuanyuan_sword_intent
         min_quantity: 1
         max_quantity: 1
       random_item_groups:
-      - label: experience_watermelon
-        chance: 0.7
-        min_quantity: 4
-        max_quantity: 4
-        choices:
-        - item_key: experience_watermelon
-          weight: 1
-      - label: book_bloodthirsty_fury
-        chance: 0.06
+      - label: 蚩尤战利品
+        chance: 1
         min_quantity: 1
         max_quantity: 1
         choices:
-        - item_key: book_bloodthirsty_fury
-          weight: 1
-      - label: book_desperate_beast
-        chance: 0.06
-        min_quantity: 1
-        max_quantity: 1
-        choices:
-        - item_key: book_desperate_beast
-          weight: 1
-      - label: book_prison_break_blade
-        chance: 0.048
-        min_quantity: 1
-        max_quantity: 1
-        choices:
-        - item_key: book_prison_break_blade
-          weight: 1
-      - label: book_city_felling_strike
-        chance: 0.048
-        min_quantity: 1
-        max_quantity: 1
-        choices:
-        - item_key: book_city_felling_strike
-          weight: 1
-      - label: blueprint_top_blue
-        chance: 0.45
-        min_quantity: 1
-        max_quantity: 1
-        choices:
-        - item_key: blueprint_qinglongkui
-          weight: 1
-        - item_key: blueprint_qinglongjia
-          weight: 1
-        - item_key: blueprint_qinglongxue
-          weight: 1
-        - item_key: blueprint_qinglongdao
-          weight: 1
-      - label: blueprint_top_purple
-        chance: 0.25
-        min_quantity: 1
-        max_quantity: 1
-        choices:
-        - item_key: blueprint_qilinkui
-          weight: 1
-        - item_key: blueprint_qilinjia
-          weight: 1
-        - item_key: blueprint_qilinxue
-          weight: 1
-        - item_key: blueprint_qilindao
-          weight: 1
-      - label: blueprint_top_orange
-        chance: 0.06
-        min_quantity: 1
-        max_quantity: 1
-        choices:
-        - item_key: blueprint_feiyuan
-          weight: 1
-        - item_key: blueprint_chixiaojifeng
-          weight: 1
-        - item_key: blueprint_mojiajiguanren
-          weight: 1
-      - label: 上古王权
-        chance: 0.15
-        min_quantity: 1
-        max_quantity: 1
-        choices:
-        - item_key: equip_shanheshejitu
-          weight: 1
-        - item_key: equip_zhoutianxingpan
-          weight: 1
-        - item_key: equip_xuanyuanjian
-          weight: 1
-        - item_key: equip_longhuangguan
-          weight: 1
-        - item_key: equip_chuanguoyuxi
-          weight: 1
-        - item_key: equip_qilin
-          weight: 1
-        - item_key: equip_qingluan
-          weight: 1
+        - item_key: equip_tianshukaijia
+          weight: 10
+          quantity: 1
+        - item_key: equip_tianxuankaijia
+          weight: 10
+          quantity: 1
+        - item_key: equip_tianjikaijia
+          weight: 10
+          quantity: 1
+        - item_key: equip_yaoguangkaijia
+          weight: 10
+          quantity: 1
+        - item_key: equip_tianquankaijia
+          weight: 10
+          quantity: 1
+        - item_key: equip_yuhengkaijia
+          weight: 10
+          quantity: 1
+        - item_key: equip_kaiyangkaijia
+          weight: 10
+          quantity: 1
+        - item_key: blueprint_chiyoujia
+          weight: 5
+          quantity: 1
+        - item_key: equip_chiyouzhanxue
+          weight: 5
+          quantity: 1
+        - item_key: chunqiu_coin
+          weight: 20
+          quantity: 2
       reward_balance_version: 3
-      blueprint_material_support:
-        blueprint_chixiaojifeng:
-        - item_key: tong
-          min_quantity: 53
-          max_quantity: 53
-        - item_key: xi
-          min_quantity: 35
-          max_quantity: 35
-        - item_key: tie
-          min_quantity: 28
-          max_quantity: 28
-        - item_key: xuan_tie_essence
-          min_quantity: 2
-          max_quantity: 2
-        - item_key: zitanmu
-          min_quantity: 7
-          max_quantity: 7
-        - item_key: shuiqumu
-          min_quantity: 5
-          max_quantity: 5
-        - item_key: tiemu
-          min_quantity: 10
-          max_quantity: 10
-        - item_key: heiyuanshi
-          min_quantity: 11
-          max_quantity: 11
-        - item_key: jingangmei
-          min_quantity: 11
-          max_quantity: 11
-        - item_key: paozi
-          min_quantity: 4
-          max_quantity: 4
-        - item_key: zaozi
-          min_quantity: 7
-          max_quantity: 7
-        - item_key: gaolu
-          min_quantity: 4
-          max_quantity: 4
-        - item_key: fire_stone
-          min_quantity: 2
-          max_quantity: 2
-        - item_key: air_stone
-          min_quantity: 1
-          max_quantity: 1
-        blueprint_feiyuan:
-        - item_key: tong
-          min_quantity: 50
-          max_quantity: 50
-        - item_key: xi
-          min_quantity: 34
-          max_quantity: 34
-        - item_key: tie
-          min_quantity: 26
-          max_quantity: 26
-        - item_key: xuan_tie_essence
-          min_quantity: 2
-          max_quantity: 2
-        - item_key: zitanmu
-          min_quantity: 8
-          max_quantity: 8
-        - item_key: shuiqumu
-          min_quantity: 11
-          max_quantity: 11
-        - item_key: tiemu
-          min_quantity: 7
-          max_quantity: 7
-        - item_key: heiyuanshi
-          min_quantity: 6
-          max_quantity: 6
-        - item_key: jingangmei
-          min_quantity: 6
-          max_quantity: 6
-        - item_key: paozi
-          min_quantity: 7
-          max_quantity: 7
-        - item_key: zaozi
-          min_quantity: 4
-          max_quantity: 4
-        - item_key: gaolu
-          min_quantity: 3
-          max_quantity: 3
-        - item_key: air_stone
-          min_quantity: 2
-          max_quantity: 2
-        - item_key: fire_stone
-          min_quantity: 1
-          max_quantity: 1
-        blueprint_mojiajiguanren:
-        - item_key: tong
-          min_quantity: 58
-          max_quantity: 58
-        - item_key: xi
-          min_quantity: 38
-          max_quantity: 38
-        - item_key: tie
-          min_quantity: 31
-          max_quantity: 31
-        - item_key: xuan_tie_essence
-          min_quantity: 2
-          max_quantity: 2
-        - item_key: zitanmu
-          min_quantity: 7
-          max_quantity: 7
-        - item_key: shuiqumu
-          min_quantity: 5
-          max_quantity: 5
-        - item_key: tiemu
-          min_quantity: 13
-          max_quantity: 13
-        - item_key: heiyuanshi
-          min_quantity: 14
-          max_quantity: 14
-        - item_key: jingangmei
-          min_quantity: 13
-          max_quantity: 13
-        - item_key: paozi
-          min_quantity: 6
-          max_quantity: 6
-        - item_key: zaozi
-          min_quantity: 10
-          max_quantity: 10
-        - item_key: gaolu
-          min_quantity: 5
-          max_quantity: 5
-        - item_key: earth_stone
-          min_quantity: 1
-          max_quantity: 1
-        - item_key: fire_stone
-          min_quantity: 1
-          max_quantity: 1
-        - item_key: water_stone
-          min_quantity: 1
-          max_quantity: 1
-      blueprint_forging_requirements:
-        blueprint_chixiaojifeng: 10
-        blueprint_feiyuan: 10
-        blueprint_mojiajiguanren: 10
+      blueprint_material_support: {}
+      blueprint_forging_requirements: {}
       experience_fruit_source: battle_salvage
 
   - key: mission_chest_v3_guandu_zhizhan
@@ -14044,6 +14087,417 @@ items:
           max_quantity: 1
       blueprint_forging_requirements:
         blueprint_taotieding: 10
+      experience_fruit_source: battle_salvage
+
+  - key: mission_chest_v3_zhanlong_yanshan_shizi
+    name: 燕山识龙宝箱
+    description: 燕山护民之行的任务宝箱，内有继续前往长坂的信物与补给。
+    effect_type: loot_box
+    rarity: purple
+    tradeable: false
+    price: 0
+    storage_space: 5
+    is_usable: true
+    image: mission_chest_v1.png
+    effect_payload:
+      mission_reward_version: 1
+      mission_key: zhanlong_yanshan_shizi
+      reward_theme: 燕山识英雄：必得白马银枪令与行军补给
+      item_rewards:
+      - item_key: zhanlong_white_horse_token
+        min_quantity: 1
+        max_quantity: 1
+      - item_key: buxuedan
+        min_quantity: 4
+        max_quantity: 4
+      - item_key: tong
+        min_quantity: 12
+        max_quantity: 12
+      - item_key: xi
+        min_quantity: 8
+        max_quantity: 8
+      - item_key: tie
+        min_quantity: 5
+        max_quantity: 5
+      random_item_groups:
+      - label: experience_watermelon
+        chance: 0.7
+        min_quantity: 4
+        max_quantity: 4
+        choices:
+        - item_key: experience_watermelon
+          weight: 1
+      - label: blueprint_top_blue
+        chance: 0.45
+        min_quantity: 1
+        max_quantity: 1
+        choices:
+        - item_key: blueprint_qinglongkui
+          weight: 1
+        - item_key: blueprint_qinglongjia
+          weight: 1
+        - item_key: blueprint_qinglongxue
+          weight: 1
+        - item_key: blueprint_qinglongdao
+          weight: 1
+      reward_balance_version: 3
+      blueprint_material_support: {}
+      blueprint_forging_requirements: {}
+      experience_fruit_source: battle_salvage
+
+  - key: mission_chest_v3_zhanlong_changban_tuwei
+    name: 长坂突围宝箱
+    description: 长坂接应之行的任务宝箱，内有护主军令，并有机会获得照夜玉狮子。
+    effect_type: loot_box
+    rarity: purple
+    tradeable: false
+    price: 0
+    storage_space: 5
+    is_usable: true
+    image: mission_chest_v1.png
+    effect_payload:
+      mission_reward_version: 1
+      mission_key: zhanlong_changban_tuwei
+      reward_theme: 长坂见忠勇：必得长坂护主令，有机会获得照夜玉狮子
+      item_rewards:
+      - item_key: zhanlong_changban_guard_token
+        min_quantity: 1
+        max_quantity: 1
+      - item_key: buxuedan
+        min_quantity: 4
+        max_quantity: 4
+      - item_key: tong
+        min_quantity: 12
+        max_quantity: 12
+      - item_key: xi
+        min_quantity: 8
+        max_quantity: 8
+      - item_key: tie
+        min_quantity: 5
+        max_quantity: 5
+      random_item_groups:
+      - label: experience_watermelon
+        chance: 0.85
+        min_quantity: 5
+        max_quantity: 5
+        choices:
+        - item_key: experience_watermelon
+          weight: 1
+      - label: equip_zhaoyeyushizi
+        chance: 0.1
+        min_quantity: 1
+        max_quantity: 1
+        choices:
+        - item_key: equip_zhaoyeyushizi
+          weight: 1
+      - label: book_bloodthirsty_fury
+        chance: 0.06
+        min_quantity: 1
+        max_quantity: 1
+        choices:
+        - item_key: book_bloodthirsty_fury
+          weight: 1
+      - label: book_desperate_beast
+        chance: 0.06
+        min_quantity: 1
+        max_quantity: 1
+        choices:
+        - item_key: book_desperate_beast
+          weight: 1
+      - label: blueprint_top_purple
+        chance: 0.25
+        min_quantity: 1
+        max_quantity: 1
+        choices:
+        - item_key: blueprint_qilinkui
+          weight: 1
+        - item_key: blueprint_qilinjia
+          weight: 1
+        - item_key: blueprint_qilinxue
+          weight: 1
+        - item_key: blueprint_qilindao
+          weight: 1
+      reward_balance_version: 3
+      blueprint_material_support: {}
+      blueprint_forging_requirements: {}
+      experience_fruit_source: battle_salvage
+
+  - key: mission_chest_v3_zhanlong_changban_duanqiao
+    name: 当阳试胆宝箱
+    description: 长坂桥头较量的任务宝箱，内有前往蜀营演武的当阳义勇书。
+    effect_type: loot_box
+    rarity: purple
+    tradeable: false
+    price: 0
+    storage_space: 5
+    is_usable: true
+    image: mission_chest_v1.png
+    effect_payload:
+      mission_reward_version: 1
+      mission_key: zhanlong_changban_duanqiao
+      reward_theme: 桥头试胆：必得当阳义勇书与行军补给
+      item_rewards:
+      - item_key: zhanlong_dangyang_valor_letter
+        min_quantity: 1
+        max_quantity: 1
+      - item_key: buxuedan
+        min_quantity: 5
+        max_quantity: 5
+      - item_key: tong
+        min_quantity: 16
+        max_quantity: 16
+      - item_key: xi
+        min_quantity: 10
+        max_quantity: 10
+      - item_key: tie
+        min_quantity: 6
+        max_quantity: 6
+      random_item_groups:
+      - label: experience_watermelon
+        chance: 0.9
+        min_quantity: 6
+        max_quantity: 6
+        choices:
+        - item_key: experience_watermelon
+          weight: 1
+      - label: book_prison_break_blade
+        chance: 0.048
+        min_quantity: 1
+        max_quantity: 1
+        choices:
+        - item_key: book_prison_break_blade
+          weight: 1
+      - label: book_city_felling_strike
+        chance: 0.048
+        min_quantity: 1
+        max_quantity: 1
+        choices:
+        - item_key: book_city_felling_strike
+          weight: 1
+      reward_balance_version: 3
+      blueprint_material_support: {}
+      blueprint_forging_requirements: {}
+      experience_fruit_source: battle_salvage
+
+  - key: mission_chest_v3_zhanlong_wuhu_shizhen
+    name: 五虎演武宝箱
+    description: 五虎会武的任务宝箱，内有演武补给；独立1%机会获得赵云招募卷轴，另有10%机会获得蜀缎白锦袍或龙胆枪，两件等权抽取。
+    effect_type: loot_box
+    rarity: purple
+    tradeable: false
+    price: 0
+    storage_space: 5
+    is_usable: true
+    image: mission_chest_v1.png
+    effect_payload:
+      mission_reward_version: 1
+      mission_key: zhanlong_wuhu_shizhen
+      reward_theme: 仁德得人心：赵云招募卷轴、白锦袍与龙胆枪
+      item_rewards:
+      - item_key: buxuedan
+        min_quantity: 6
+        max_quantity: 6
+      - item_key: tong
+        min_quantity: 20
+        max_quantity: 20
+      - item_key: xi
+        min_quantity: 12
+        max_quantity: 12
+      - item_key: tie
+        min_quantity: 8
+        max_quantity: 8
+      random_item_groups:
+      - label: experience_watermelon
+        chance: 0.9
+        min_quantity: 8
+        max_quantity: 8
+        choices:
+        - item_key: experience_watermelon
+          weight: 1
+      - label: zhaoyun_guest_scroll
+        chance: 0.01
+        min_quantity: 1
+        max_quantity: 1
+        choices:
+        - item_key: zhaoyun_guest_scroll
+          weight: 1
+      - label: blueprint_top_orange
+        chance: 0.06
+        min_quantity: 1
+        max_quantity: 1
+        choices:
+        - item_key: blueprint_feiyuan
+          weight: 1
+        - item_key: blueprint_chixiaojifeng
+          weight: 1
+        - item_key: blueprint_mojiajiguanren
+          weight: 1
+      - label: 上古王权
+        chance: 0.15
+        min_quantity: 1
+        max_quantity: 1
+        choices:
+        - item_key: equip_shanheshejitu
+          weight: 1
+        - item_key: equip_zhoutianxingpan
+          weight: 1
+        - item_key: equip_xuanyuanjian
+          weight: 1
+        - item_key: equip_longhuangguan
+          weight: 1
+        - item_key: equip_chuanguoyuxi
+          weight: 1
+        - item_key: equip_qilin
+          weight: 1
+        - item_key: equip_qingluan
+          weight: 1
+      - label: 赵云名器
+        chance: 0.1
+        min_quantity: 1
+        max_quantity: 1
+        choices:
+        - item_key: equip_shuduanbaijinpao
+          weight: 1
+        - item_key: equip_longdanqiang
+          weight: 1
+      reward_balance_version: 3
+      blueprint_material_support:
+        blueprint_chixiaojifeng:
+        - item_key: tong
+          min_quantity: 53
+          max_quantity: 53
+        - item_key: xi
+          min_quantity: 35
+          max_quantity: 35
+        - item_key: tie
+          min_quantity: 28
+          max_quantity: 28
+        - item_key: xuan_tie_essence
+          min_quantity: 2
+          max_quantity: 2
+        - item_key: zitanmu
+          min_quantity: 7
+          max_quantity: 7
+        - item_key: shuiqumu
+          min_quantity: 5
+          max_quantity: 5
+        - item_key: tiemu
+          min_quantity: 10
+          max_quantity: 10
+        - item_key: heiyuanshi
+          min_quantity: 11
+          max_quantity: 11
+        - item_key: jingangmei
+          min_quantity: 11
+          max_quantity: 11
+        - item_key: paozi
+          min_quantity: 4
+          max_quantity: 4
+        - item_key: zaozi
+          min_quantity: 7
+          max_quantity: 7
+        - item_key: gaolu
+          min_quantity: 4
+          max_quantity: 4
+        - item_key: fire_stone
+          min_quantity: 2
+          max_quantity: 2
+        - item_key: air_stone
+          min_quantity: 1
+          max_quantity: 1
+        blueprint_feiyuan:
+        - item_key: tong
+          min_quantity: 50
+          max_quantity: 50
+        - item_key: xi
+          min_quantity: 34
+          max_quantity: 34
+        - item_key: tie
+          min_quantity: 26
+          max_quantity: 26
+        - item_key: xuan_tie_essence
+          min_quantity: 2
+          max_quantity: 2
+        - item_key: zitanmu
+          min_quantity: 8
+          max_quantity: 8
+        - item_key: shuiqumu
+          min_quantity: 11
+          max_quantity: 11
+        - item_key: tiemu
+          min_quantity: 7
+          max_quantity: 7
+        - item_key: heiyuanshi
+          min_quantity: 6
+          max_quantity: 6
+        - item_key: jingangmei
+          min_quantity: 6
+          max_quantity: 6
+        - item_key: paozi
+          min_quantity: 7
+          max_quantity: 7
+        - item_key: zaozi
+          min_quantity: 4
+          max_quantity: 4
+        - item_key: gaolu
+          min_quantity: 3
+          max_quantity: 3
+        - item_key: air_stone
+          min_quantity: 2
+          max_quantity: 2
+        - item_key: fire_stone
+          min_quantity: 1
+          max_quantity: 1
+        blueprint_mojiajiguanren:
+        - item_key: tong
+          min_quantity: 58
+          max_quantity: 58
+        - item_key: xi
+          min_quantity: 38
+          max_quantity: 38
+        - item_key: tie
+          min_quantity: 31
+          max_quantity: 31
+        - item_key: xuan_tie_essence
+          min_quantity: 2
+          max_quantity: 2
+        - item_key: zitanmu
+          min_quantity: 7
+          max_quantity: 7
+        - item_key: shuiqumu
+          min_quantity: 5
+          max_quantity: 5
+        - item_key: tiemu
+          min_quantity: 13
+          max_quantity: 13
+        - item_key: heiyuanshi
+          min_quantity: 14
+          max_quantity: 14
+        - item_key: jingangmei
+          min_quantity: 13
+          max_quantity: 13
+        - item_key: paozi
+          min_quantity: 6
+          max_quantity: 6
+        - item_key: zaozi
+          min_quantity: 10
+          max_quantity: 10
+        - item_key: gaolu
+          min_quantity: 5
+          max_quantity: 5
+        - item_key: earth_stone
+          min_quantity: 1
+          max_quantity: 1
+        - item_key: fire_stone
+          min_quantity: 1
+          max_quantity: 1
+        - item_key: water_stone
+          min_quantity: 1
+          max_quantity: 1
+      blueprint_forging_requirements:
+        blueprint_chixiaojifeng: 10
+        blueprint_feiyuan: 10
+        blueprint_mojiajiguanren: 10
       experience_fruit_source: battle_salvage
 
   - key: mission_chest_v3_sishui_huaxiong_chengwei

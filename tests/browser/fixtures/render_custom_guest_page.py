@@ -1,6 +1,5 @@
 """离线渲染真实专属门客模板，不访问数据库或启动服务。"""
 
-import base64
 import os
 import sys
 from types import SimpleNamespace as Obj
@@ -31,15 +30,24 @@ if page == "confirm":
     )
     print(render_to_string("guests/custom_guest_confirm.html", context))
 elif page == "appearance":
-    from django.core.files.storage import default_storage
+    from guests.avatar import CUSTOM_GUEST_AVATAR_GROUP_LABELS, get_custom_guest_avatar_catalog
 
-    from guests.avatar import get_guest_disguise_avatar_options, resolve_guest_disguise_avatar_asset
-
-    avatars = get_guest_disguise_avatar_options()
-    for avatar in avatars:
-        with default_storage.open(resolve_guest_disguise_avatar_asset(avatar["key"]), "rb") as image:
-            avatar["url"] = "data:image/webp;base64," + base64.b64encode(image.read()).decode()
-    context.update(creating=True, avatars=avatars, guest=None)
+    catalog = get_custom_guest_avatar_catalog()
+    context.update(
+        creating=True,
+        avatar_groups=[
+            {
+                "key": key,
+                "label": label,
+                "count": len(catalog[key]),
+                "selected": False,
+                "initial_page": 1,
+            }
+            for key, label in CUSTOM_GUEST_AVATAR_GROUP_LABELS.items()
+        ],
+        selected_avatar="",
+        guest=None,
+    )
     print(render_to_string("guests/custom_guest_appearance.html", context))
 else:
     from guests.services.custom_guest import DAILY_FEED_LIMIT

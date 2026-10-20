@@ -961,8 +961,8 @@ environment_activation:
         - safety_monitor
       heartbeat_interval_seconds: 60
       heartbeat_max_gap_seconds: 120
-      raw_event_retention_days: 35
-      closed_window_retention_days: 90
+      raw_event_retention_days: 15
+      closed_window_retention_days: 15
       core_task_monitoring_may_supply_safety_truth: false
       in_process_fallback_allowed: false
       activation_without_healthy_provider_allowed: false
@@ -982,9 +982,9 @@ environment_activation:
       cleanup:
         raw_event_requires_hourly_and_daily_windows_finalized: true
         raw_event_requires_hourly_and_daily_decision_cursors_past_window: true
-        raw_event_retention_days: 35
+        raw_event_retention_days: 15
         closed_window_requires_decision_cursor_past_window: true
-        closed_window_retention_days: 90
+        closed_window_retention_days: 15
         last_pause_window_id_referenced_window_may_be_deleted: false
       current_implementation_status: implemented_readiness_verified_not_activated
     maintenance_failure_rate:

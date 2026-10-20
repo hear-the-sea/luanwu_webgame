@@ -2,15 +2,16 @@ import random
 from datetime import timedelta
 
 import pytest
+from django.urls import reverse
 from django.utils import timezone
 
-from core.exceptions import GameError
+from core.exceptions import GameError, GuestItemConfigurationError
 from gameplay.models import InventoryItem, ItemTemplate
-from gameplay.services.inventory.guest_items import use_guest_rebirth_card, use_xisuidan
+from gameplay.services.inventory.guest_items import use_guest_rebirth_card, use_soul_container, use_xisuidan
 from gameplay.services.manor.core import ensure_manor
 from guests.avatar import get_guest_disguise_avatar_filenames
 from guests.growth_engine import allocate_level_up_attributes
-from guests.models import GuestTemplate
+from guests.models import CustomGuestProgress, GearItem, Guest, GuestStatus, GuestTemplate
 from guests.services.custom_guest import (
     advance_custom_guest,
     consume_custom_guest_equipment,
@@ -51,6 +52,49 @@ def weight(custom, **weights):
     return progress
 
 
+@pytest.fixture
+def custom_fusion_case(manor, custom):
+    from tests.inventory_guest_items.support_upgrade import _attach_soul_fusion_gear_state
+
+    custom.level = 100
+    custom.save(update_fields=["level"])
+    progress = weight(custom, force=850)
+    progress.failed_attempts = 3
+    progress.feeding_count = 7
+    progress.feeding_date = timezone.localdate()
+    progress.save(update_fields=["failed_attempts", "feeding_count", "feeding_date"])
+    _attach_soul_fusion_gear_state(
+        custom,
+        manor=manor,
+        key="custom_fusion_protected_weapon",
+        name="自定义门客佩剑",
+        extra_stats={"force": 15},
+    )
+    template = ItemTemplate.objects.create(
+        key="custom_fusion_test_container",
+        name="测试灵魂容器",
+        effect_type=ItemTemplate.EffectType.TOOL,
+        is_usable=True,
+        effect_payload={
+            "action": "soul_fusion",
+            "min_level": 30,
+            "allowed_rarities": ["green", "blue", "purple", "orange"],
+        },
+    )
+    item = InventoryItem.objects.create(manor=manor, template=template, quantity=2, bound_quantity=1)
+    return custom, item
+
+
+def custom_fusion_snapshot(manor, custom):
+    return {
+        "guest": Guest.objects.values().get(pk=custom.pk),
+        "progress": CustomGuestProgress.objects.values().get(manor=manor),
+        "equipment": list(GearItem.objects.filter(manor=manor).order_by("pk").values()),
+        "inventory": list(InventoryItem.objects.filter(manor=manor).order_by("pk").values()),
+        "generated_templates": ItemTemplate.objects.filter(key__startswith="soulorn_").count(),
+    }
+
+
 def test_card_once_and_create(manor, custom):
     assert not ensure_custom_guest_card(manor)
     assert (custom.force, custom.intellect, custom.defense_stat, custom.agility, custom.luck) == (45, 50, 24, 52, 165)
@@ -61,8 +105,9 @@ def test_card_once_and_create(manor, custom):
     assert InventoryItem.objects.get(pk=card.pk).quantity == 1
 
 
-def test_missing_template_does_not_mark_issued(manor):
+def test_missing_template_does_not_mark_issued(django_user_model):
     ItemTemplate.objects.filter(key="custom_guest_card").delete()
+    manor = ensure_manor(django_user_model.objects.create_user(username="custom_missing_card_template"))
     assert not ensure_custom_guest_card(manor)
     assert not hasattr(manor, "custom_guest_progress")
 
@@ -442,6 +487,84 @@ def test_warehouse_hides_custom_from_normal_upgrade_and_fusion(manor, custom):
     assert context.guests_for_rarity_upgrade == []
     assert context.guests_for_soul_fusion == []
     assert context.guests_for_xisuidan == [custom]
+
+
+@pytest.mark.parametrize("rarity", ["green", "blue", "purple", "orange"])
+@pytest.mark.parametrize("status", [GuestStatus.IDLE, GuestStatus.VACATION])
+def test_soul_container_rejects_custom_guest_before_any_consumption(manor, custom_fusion_case, rarity, status):
+    from gameplay.services.inventory.soul_fusion_helpers import (
+        get_soul_fusion_requirements,
+        guest_is_eligible_for_soul_fusion,
+    )
+
+    custom, item = custom_fusion_case
+    custom.template = GuestTemplate.objects.get(key=f"custom_guest_{rarity}")
+    custom.status = status
+    custom.save(update_fields=["template", "status"])
+    min_level, allowed_rarities = get_soul_fusion_requirements(item.template.effect_payload)
+    assert guest_is_eligible_for_soul_fusion(custom, min_level=min_level, allowed_rarities=allowed_rarities)
+    before = custom_fusion_snapshot(manor, custom)
+
+    with pytest.raises(GuestItemConfigurationError, match="专属门客无法进行灵魂融合"):
+        use_soul_container(
+            manor,
+            item,
+            custom.pk,
+            binding_mode="bound" if status == GuestStatus.IDLE else "unbound",
+        )
+
+    assert custom_fusion_snapshot(manor, custom) == before
+
+
+@pytest.mark.parametrize("rarity", ["green", "blue", "purple", "orange"])
+@pytest.mark.parametrize("explicit_fusion_candidates", [False, True])
+def test_warehouse_excludes_custom_fusion_candidates_in_every_quality(
+    manor, custom_fusion_case, rarity, explicit_fusion_candidates
+):
+    from gameplay.services.inventory.guest_item_selector import build_guest_item_selection_context
+
+    custom, _item = custom_fusion_case
+    custom.template = GuestTemplate.objects.get(key=f"custom_guest_{rarity}")
+    custom.status = GuestStatus.VACATION if explicit_fusion_candidates else GuestStatus.IDLE
+    custom.save(update_fields=["template", "status"])
+    normal_template = GuestTemplate.objects.create(
+        key="custom_fusion_normal_candidate", name="普通融合候选", rarity=rarity, archetype="military"
+    )
+    normal = Guest.objects.create(manor=manor, template=normal_template, level=100, status=custom.status)
+    kwargs = (
+        {"eligible_guests": [], "soul_fusion_guests": [custom, normal]}
+        if explicit_fusion_candidates
+        else {"eligible_guests": [custom, normal]}
+    )
+
+    context = build_guest_item_selection_context(manor, **kwargs)
+
+    assert context.guests_for_soul_fusion == [normal]
+
+
+@pytest.mark.parametrize(
+    ("endpoint", "error"),
+    [
+        ("use_soul_container", "专属门客无法进行灵魂融合"),
+        ("use_item", "请选择要融合的门客"),
+    ],
+)
+def test_fusion_http_entrypoints_preserve_custom_guest_and_inventory(
+    client, manor, custom_fusion_case, endpoint, error
+):
+    custom, item = custom_fusion_case
+    client.force_login(manor.user)
+    before = custom_fusion_snapshot(manor, custom)
+
+    response = client.post(
+        reverse(f"gameplay:{endpoint}", args=[item.pk]),
+        {"guest_id": custom.pk, "binding_mode": "bound"},
+        HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+    )
+
+    assert response.status_code == 400
+    assert response.json()["error"] == error
+    assert custom_fusion_snapshot(manor, custom) == before
 
 
 def test_debugger_choices_exclude_custom_guests(manor, custom, settings, monkeypatch):

@@ -146,8 +146,6 @@
 .landing-dashboard .events-table tbody {
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  max-height: 220px;
 }
 
 .landing-dashboard .events-table tbody tr {
@@ -221,22 +219,6 @@
   font-size: 0.85rem;
   padding: 0;
   white-space: nowrap;
-}
-
-.landing-dashboard .events-table tbody::-webkit-scrollbar {
-  width: 10px;
-}
-
-.landing-dashboard .events-table tbody::-webkit-scrollbar-track {
-  background: var(--bg-hover);
-  border-radius: 8px;
-  border: 1px solid var(--border-light);
-}
-
-.landing-dashboard .events-table tbody::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, var(--accent-gold) 0%, #b8860b 100%);
-  border-radius: 8px;
-  border: 1px solid var(--border-primary);
 }
 
 @media (max-width: 768px) {
@@ -377,8 +359,6 @@
   .landing-dashboard .events-table tbody {
     display: flex;
     flex-direction: column;
-    max-height: none;
-    overflow-y: visible;
   }
 
   .landing-dashboard .events-table tbody tr {

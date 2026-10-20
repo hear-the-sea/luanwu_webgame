@@ -38,7 +38,15 @@ def _use_blueprint_config(monkeypatch, config: dict[str, object]) -> None:
 def test_load_blueprint_catalog_returns_immutable_blueprint_entries(monkeypatch):
     blueprint = _create_item_template("blueprint_catalog_valid", effect_type="tool", rarity="blue")
     result = _create_item_template("equip_catalog_valid", effect_type="equip_weapon", rarity="blue")
-    _use_blueprint_config(monkeypatch, {"recipes": [_recipe(blueprint.key, result.key)]})
+    _use_blueprint_config(
+        monkeypatch,
+        {
+            "recipes": [
+                _recipe(blueprint.key, result.key),
+                _recipe("blueprint_chiyoujia", "equip_chiyoujia"),
+            ]
+        },
+    )
 
     try:
         forge_service.clear_forge_blueprint_cache()

@@ -121,13 +121,12 @@ def build_equipment_affix_payload(base: ItemTemplate, affix: str) -> dict[str, A
 def equipment_can_gain_affix(template: ItemTemplate) -> bool:
     if template.rarity not in AFFIX_RARITIES:
         return False
+    # 坐骑与饰品保留原名，不参与随机词缀生成。
     if template.effect_type not in {
         "equip_helmet",
         "equip_armor",
         "equip_shoes",
         "equip_weapon",
-        "equip_mount",
-        "equip_ornament",
     }:
         return False
     payload = template.effect_payload

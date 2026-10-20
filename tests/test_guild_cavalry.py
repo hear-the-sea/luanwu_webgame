@@ -56,12 +56,12 @@ def test_manager_recruits_with_only_guild_silver_and_warehouse_grain(cavalry_wor
     manor.refresh_from_db()
     assert {key: result[key] for key in ("quantity", "silver_cost", "grain_cost", "duration")} == {
         "quantity": 10,
-        "silver_cost": 15000,
-        "grain_cost": 50000,
+        "silver_cost": 20000,
+        "grain_cost": 80000,
         "duration": 300,
     }
-    assert guild.silver == 485000
-    assert GuildWarehouse.objects.get(guild=guild, item_key="grain").quantity == 950000
+    assert guild.silver == 480000
+    assert GuildWarehouse.objects.get(guild=guild, item_key="grain").quantity == 920000
     assert not GuildWarehouse.objects.filter(guild=guild, item_key=CAVALRY_ITEM_KEY).exists()
     training = GuildCavalryTraining.objects.get(guild=guild)
     assert training.quantity == 10 and training.completed_at is None
@@ -71,7 +71,7 @@ def test_manager_recruits_with_only_guild_silver_and_warehouse_grain(cavalry_wor
     assert not TroopRecruitment.objects.filter(manor=manor).exists()
     assert (manor.silver, manor.grain, manor.retainer_count) == personal
     log = GuildResourceLog.objects.get(guild=guild, action="troop_recruit")
-    assert (log.silver_change, log.grain_change, log.related_user_id) == (-15000, -50000, member.user_id)
+    assert (log.silver_change, log.grain_change, log.related_user_id) == (-20000, -80000, member.user_id)
 
 
 @pytest.mark.parametrize("position", ["leader", "admin"])
@@ -202,7 +202,7 @@ def test_full_manor_disables_exchange_on_warehouse_page(cavalry_world):
 def test_recruitment_state_matches_resources_and_permissions(cavalry_world):
     guild, member, _manor, _template = cavalry_world
     state = get_guild_cavalry_recruitment_state(guild, member)
-    assert state["can_recruit"] and state["max_recruitable_quantity"] == 200
+    assert state["can_recruit"] and state["max_recruitable_quantity"] == 125
     member.position = "member"
     assert not get_guild_cavalry_recruitment_state(guild, member)["can_recruit"]
 
@@ -215,6 +215,7 @@ def test_technology_popup_training_and_warehouse_exchange_flow(cavalry_world, cl
     response = client.get(reverse("guilds:technology"))
     assert response.status_code == 200 and "训练人数" in response.content.decode()
     assert "data-cavalry-training-form" in response.content.decode()
+    assert "每名消耗帮会 2000 银两、8000 粮草" in response.content.decode()
     response = client.post(reverse("guilds:recruit_cavalry"), {"quantity": "2"})
     assert response.status_code == 302
     assert response.url == reverse("guilds:technology") + "?node=wolf_bloodthirsty_cavalry"
@@ -285,16 +286,16 @@ def test_duplicate_batch_does_not_charge_twice(cavalry_world):
     with pytest.raises(GuildWarehouseError, match="已有一批"):
         recruit_guild_cavalry(guild, member.user, 2)
     guild.refresh_from_db()
-    assert guild.silver == 497000
-    assert GuildWarehouse.objects.get(guild=guild, item_key="grain").quantity == 990000
+    assert guild.silver == 496000
+    assert GuildWarehouse.objects.get(guild=guild, item_key="grain").quantity == 984000
     assert GuildCavalryTraining.objects.filter(guild=guild).count() == 1
     assert not get_guild_cavalry_recruitment_state(guild, member)["can_recruit"]
 
 
 def test_maximum_training_batch_is_2000_with_60000_second_duration(cavalry_world):
     guild, member, _manor, _template = cavalry_world
-    Guild.objects.filter(pk=guild.pk).update(silver=3000000)
-    GuildWarehouse.objects.filter(guild=guild, item_key="grain").update(quantity=10000000)
+    Guild.objects.filter(pk=guild.pk).update(silver=4000000)
+    GuildWarehouse.objects.filter(guild=guild, item_key="grain").update(quantity=16000000)
     result = recruit_guild_cavalry(guild, member.user, 2000)
     assert result["duration"] == 60000
     guild.refresh_from_db()

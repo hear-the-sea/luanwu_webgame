@@ -11,6 +11,12 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
 from core.config import MESSAGE
+from gameplay.record_retention import (
+    MAX_RECORD_RETENTION_DAYS,
+    bounded_retention_days,
+    delete_eligible_record_batch,
+    eligible_record_queryset,
+)
 from gameplay.services.jail import (
     JAIL_CLEANUP_DEFAULT_BATCH_SIZE,
     JAIL_CLEANUP_DEFAULT_MAX_BATCHES,
@@ -19,15 +25,16 @@ from gameplay.services.jail import (
 
 logger = logging.getLogger(__name__)
 
-RESOURCE_EVENT_RETENTION_DAYS = 30
-ARENA_EXCHANGE_RETENTION_DAYS = 30
-BATTLE_REPORT_RETENTION_DAYS = 30
-ARENA_FILL_SERVICE_RETENTION_DAYS = max(30, int(getattr(settings, "ARENA_FILL_SERVICE_RETENTION_DAYS", 90)))
-VIRTUAL_PLAYER_SAFETY_AUDIT_RETENTION_DAYS = max(
-    30,
-    int(getattr(settings, "VIRTUAL_PLAYER_SAFETY_AUDIT_RETENTION_DAYS", 180)),
+RESOURCE_EVENT_RETENTION_DAYS = MAX_RECORD_RETENTION_DAYS
+ARENA_EXCHANGE_RETENTION_DAYS = MAX_RECORD_RETENTION_DAYS
+BATTLE_REPORT_RETENTION_DAYS = MAX_RECORD_RETENTION_DAYS
+ARENA_FILL_SERVICE_RETENTION_DAYS = bounded_retention_days(
+    getattr(settings, "ARENA_FILL_SERVICE_RETENTION_DAYS", MAX_RECORD_RETENTION_DAYS)
 )
-DELETE_BATCH_SIZE = 10000
+VIRTUAL_PLAYER_SAFETY_AUDIT_RETENTION_DAYS = bounded_retention_days(
+    getattr(settings, "VIRTUAL_PLAYER_SAFETY_AUDIT_RETENTION_DAYS", MAX_RECORD_RETENTION_DAYS)
+)
+CLEANUP_TASK_BATCH_SIZE = 500
 
 
 def _jail_cleanup_as_of(value: str | datetime | None) -> datetime:
@@ -46,24 +53,20 @@ def _batched_delete_before(
     *,
     time_field: str,
     cutoff,
-    batch_size: int = DELETE_BATCH_SIZE,
+    batch_size: int | None = None,
 ) -> int:
-    """Delete rows older than cutoff in small batches to reduce lock pressure."""
+    """Delete at most one scheduled batch of rows older than cutoff."""
+    effective_batch_size = CLEANUP_TASK_BATCH_SIZE if batch_size is None else batch_size
     filter_kwargs = {f"{time_field}__lt": cutoff}
-    deleted_total = 0
-
-    while True:
-        ids_to_delete = list(model.objects.filter(**filter_kwargs).values_list("id", flat=True)[:batch_size])
-        if not ids_to_delete:
-            break
-
-        deleted, _ = model.objects.filter(id__in=ids_to_delete).delete()
-        deleted_total += int(deleted)
-
-        if len(ids_to_delete) < batch_size:
-            break
-
-    return deleted_total
+    ids_to_delete = list(
+        model.objects.filter(**filter_kwargs)
+        .order_by(time_field, "pk")
+        .values_list("pk", flat=True)[:effective_batch_size]
+    )
+    if not ids_to_delete:
+        return 0
+    deleted, _ = model.objects.filter(pk__in=ids_to_delete, **filter_kwargs).delete()
+    return int(deleted)
 
 
 @shared_task(name="gameplay.cleanup_old_data")
@@ -71,13 +74,11 @@ def cleanup_old_data_task():
     """
     Clean up expired transaction records to save database space.
 
-    Runs daily and cleans up:
-    - ResourceEvent: keep 30 days
-    - ArenaExchangeRecord: keep 30 days
-    - BattleReport: keep 30 days
+    Runs hourly and deletes one bounded batch per model:
+    - Historical transaction records: keep no more than 15 days
     - Message: keep MESSAGE.RETENTION_DAYS days, except unclaimed attachments
-    - ArenaFillServiceEpisode/Outcome: keep terminal, published evidence for 90 days
-    - BotSafetyDecisionAudit: keep safety decision history for 180 days
+    - Terminal guest, mission, and virtual-player records: keep no more than 15 days
+    - Open work, unpublished evidence, and uncertain commits remain protected
     """
     from battle.models import BattleReport
     from gameplay.models import ArenaExchangeRecord, BotSafetyDecisionAudit, ResourceEvent
@@ -91,33 +92,52 @@ def cleanup_old_data_task():
     battle_report_cutoff = now - timedelta(days=BATTLE_REPORT_RETENTION_DAYS)
     fill_service_cutoff = now - timedelta(days=ARENA_FILL_SERVICE_RETENTION_DAYS)
     safety_audit_cutoff = now - timedelta(days=VIRTUAL_PLAYER_SAFETY_AUDIT_RETENTION_DAYS)
-    message_cutoff = now - timedelta(days=MESSAGE.RETENTION_DAYS)
+    message_retention_days = min(MAX_RECORD_RETENTION_DAYS, int(MESSAGE.RETENTION_DAYS))
+    message_cutoff = now - timedelta(days=message_retention_days)
 
     resource_deleted = _batched_delete_before(ResourceEvent, time_field="created_at", cutoff=resource_cutoff)
     arena_exchange_deleted = _batched_delete_before(
         ArenaExchangeRecord, time_field="created_at", cutoff=arena_exchange_cutoff
     )
     battle_report_deleted = _batched_delete_before(BattleReport, time_field="created_at", cutoff=battle_report_cutoff)
-    message_result = delete_expired_messages(message_cutoff, batch_size=DELETE_BATCH_SIZE)
+    message_result = delete_expired_messages(
+        message_cutoff,
+        batch_size=CLEANUP_TASK_BATCH_SIZE,
+        max_batches=1,
+    )
     message_deleted = message_result.deleted_count
     fill_service_deleted = 0
     fill_service_episodes_deleted = 0
     fill_service_outcomes_deleted = 0
-    while True:
-        fill_batch = cleanup_fill_service_rows(
-            cutoff=fill_service_cutoff,
-            batch_size=DELETE_BATCH_SIZE,
-        )
-        fill_service_deleted += fill_batch.deleted
-        fill_service_episodes_deleted += fill_batch.episodes
-        fill_service_outcomes_deleted += fill_batch.outcomes
-        if fill_batch.episodes < DELETE_BATCH_SIZE:
-            break
+    fill_batch = cleanup_fill_service_rows(
+        cutoff=fill_service_cutoff,
+        batch_size=CLEANUP_TASK_BATCH_SIZE,
+    )
+    fill_service_deleted += fill_batch.deleted
+    fill_service_episodes_deleted += fill_batch.episodes
+    fill_service_outcomes_deleted += fill_batch.outcomes
     safety_audit_deleted = _batched_delete_before(
         BotSafetyDecisionAudit,
         time_field="created_at",
         cutoff=safety_audit_cutoff,
     )
+
+    terminal_deleted: dict[str, int] = {}
+    for model_path, time_field in (
+        ("guests.GuestRecruitment", "finished_at"),
+        ("gameplay.MissionRun", "completed_at"),
+        ("gameplay.BotMaintenanceCompletionEvent", "processed_at"),
+        ("gameplay.BotMaintenanceCycle", "completed_at"),
+        ("gameplay.BotMaintenanceAttempt", "completed_at"),
+    ):
+        terminal_cutoff = now - timedelta(days=MAX_RECORD_RETENTION_DAYS)
+        queryset = eligible_record_queryset(model_path, cutoff=terminal_cutoff)
+        ids = list(queryset.order_by(time_field, "pk").values_list("pk", flat=True)[:CLEANUP_TASK_BATCH_SIZE])
+        terminal_deleted[model_path] = delete_eligible_record_batch(
+            model_path,
+            cutoff=terminal_cutoff,
+            record_ids=ids,
+        )
 
     total_deleted = (
         resource_deleted
@@ -126,11 +146,12 @@ def cleanup_old_data_task():
         + message_deleted
         + fill_service_deleted
         + safety_audit_deleted
+        + sum(terminal_deleted.values())
     )
     logger.info(
         "Cleaned old data: total=%d (resource_events=%d, arena_exchange_records=%d, battle_reports=%d, "
         "messages=%d, protected_messages=%d, fill_service_episodes=%d, fill_service_outcomes=%d, "
-        "safety_audits=%d)",
+        "safety_audits=%d, terminal_records=%s, scheduled_batch_size=%d)",
         total_deleted,
         resource_deleted,
         arena_exchange_deleted,
@@ -140,6 +161,8 @@ def cleanup_old_data_task():
         fill_service_episodes_deleted,
         fill_service_outcomes_deleted,
         safety_audit_deleted,
+        terminal_deleted,
+        CLEANUP_TASK_BATCH_SIZE,
     )
     return total_deleted
 

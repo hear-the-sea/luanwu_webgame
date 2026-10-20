@@ -288,8 +288,17 @@ def apply_mission_rewards_if_won(
     if not drops:
         return
 
+    guild_reward_drops = None
+    from guilds.services.personal_missions import is_personal_guild_mission, settle_personal_guild_mission_drops
+
+    if is_personal_guild_mission(locked_run.mission):
+        guild_reward_drops = settle_personal_guild_mission_drops(locked_run, drops)
+
     actual_drops = award_mission_drops_locked(locked_run.manor, drops, locked_run.mission.name)
-    report.drops = actual_drops if actual_drops is not None else drops
+    report.drops = {
+        **(guild_reward_drops or {}),
+        **(actual_drops if actual_drops is not None else drops),
+    }
     report.save(update_fields=["drops"])
 
 

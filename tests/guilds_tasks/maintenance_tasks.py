@@ -73,6 +73,7 @@ def test_cleanup_old_guild_logs_deletes_only_old_rows(monkeypatch, django_user_m
         "retry",
         lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("retry should not be called")),
     )
+    monkeypatch.setattr("guilds.tasks.GUILD_LOG_CLEANUP_BATCH_SIZE", 1)
 
     founder = django_user_model.objects.create_user(username="g_founder3", password="pass")
     member_user = django_user_model.objects.create_user(username="g_member", password="pass")
@@ -86,6 +87,13 @@ def test_cleanup_old_guild_logs_deletes_only_old_rows(monkeypatch, django_user_m
         amount=1,
         contribution_gained=1,
     )
+    second_old_donation = GuildDonationLog.objects.create(
+        guild=guild,
+        member=member,
+        resource_type="silver",
+        amount=3,
+        contribution_gained=3,
+    )
     exchange = GuildExchangeLog.objects.create(
         guild=guild,
         member=member,
@@ -97,6 +105,7 @@ def test_cleanup_old_guild_logs_deletes_only_old_rows(monkeypatch, django_user_m
 
     old_ts = timezone.now() - timedelta(days=31)
     GuildDonationLog.objects.filter(pk=donation.pk).update(donated_at=old_ts)
+    GuildDonationLog.objects.filter(pk=second_old_donation.pk).update(donated_at=old_ts)
     GuildExchangeLog.objects.filter(pk=exchange.pk).update(exchanged_at=old_ts)
     GuildResourceLog.objects.filter(pk=resource.pk).update(created_at=old_ts)
 
@@ -110,7 +119,9 @@ def test_cleanup_old_guild_logs_deletes_only_old_rows(monkeypatch, django_user_m
 
     result = cleanup_old_guild_logs.run()
     assert "cleaned up" in result
-    assert GuildDonationLog.objects.count() == 1
+    cutoff = timezone.now() - timedelta(days=15)
+    assert GuildDonationLog.objects.filter(donated_at__lt=cutoff).count() == 1
+    assert GuildDonationLog.objects.count() == 2
     assert GuildExchangeLog.objects.count() == 0
     assert GuildResourceLog.objects.count() == 0
 

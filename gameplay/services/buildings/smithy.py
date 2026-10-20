@@ -28,7 +28,7 @@ from core.utils.time_scale import scale_duration
 from core.utils.yaml_loader import load_yaml_data
 
 from ...constants import BuildingKeys
-from ...models import Manor, SmeltingProduction
+from ...models import ItemTemplate, Manor, SmeltingProduction
 from ..utils.notifications import notify_user
 from .production_cancel import cancel_active_production
 from .production_queue import get_production_queue_capacity
@@ -334,7 +334,11 @@ def get_metal_options(manor: Manor, *, guild_tech_level: int | None = None) -> L
     }
     cost_types = {cfg["cost_type"] for cfg in normalized_configs.values()}
     name_keys = set(METAL_CONFIG.keys()) | {key for key in cost_types if key and key != "silver"}
-    item_name_map = _get_item_name_map(name_keys)
+    item_templates = {
+        template.key: template
+        for template in ItemTemplate.objects.filter(key__in=name_keys).only("key", "name", "image")
+    }
+    item_name_map = {key: template.name for key, template in item_templates.items()}
 
     options = []
     for metal_key, config in normalized_configs.items():
@@ -345,6 +349,8 @@ def get_metal_options(manor: Manor, *, guild_tech_level: int | None = None) -> L
         cost_amount = config["cost_amount"]
         category = config["category"]
         metal_name = item_name_map.get(metal_key, "未知物品")
+        item_template = item_templates.get(metal_key)
+        image_url = item_template.image.url if item_template and item_template.image else ""
         cost_type_name = "银两" if cost_type == "silver" else item_name_map.get(cost_type, "未知材料")
 
         # 检查是否有足够的材料
@@ -358,6 +364,7 @@ def get_metal_options(manor: Manor, *, guild_tech_level: int | None = None) -> L
             {
                 "key": metal_key,
                 "name": metal_name,
+                "image_url": image_url,
                 "cost_type": cost_type,
                 "cost_type_name": cost_type_name,
                 "cost_amount": cost_amount,

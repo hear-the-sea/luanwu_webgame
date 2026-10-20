@@ -6,6 +6,67 @@
   --luanwu-gold-soft: #f8e9b9;
   --luanwu-shadow: rgba(74, 38, 18, 0.12);
   color: var(--text-primary);
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+body:has(.luanwu-shop) {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.game-container:has(.luanwu-shop) {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.full-layout:has(.luanwu-shop),
+.content-area:has(.luanwu-shop) {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.full-layout:has(.luanwu-shop) {
+  flex: 1 1 0%;
+}
+
+.content-area:has(.luanwu-shop) {
+  flex: 1 1 0%;
+}
+
+.luanwu-products {
+  display: flex;
+  flex: 1 1 0%;
+  min-height: 0;
+}
+
+.luanwu-products > .tw-panel-content {
+  display: flex;
+  flex: 1 1 0%;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (min-width: 1280px) {
+  .game-container:has(.luanwu-shop) {
+    height: calc(100vh - 16px);
+    height: calc(100dvh - 16px);
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .game-container:has(.luanwu-shop) {
+    margin: 0;
+    height: 100vh;
+    height: 100dvh;
+  }
 }
 
 .luanwu-shop__header {
@@ -121,8 +182,52 @@
 
 .luanwu-product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(14.5rem, 1fr));
+  flex: 1 1 0%;
+  grid-template-columns: repeat(auto-fill, minmax(14.5rem, 1fr));
   gap: 0.75rem;
+  align-content: start;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: var(--border-primary) rgba(139, 69, 19, 0.1);
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.luanwu-product-grid::-webkit-scrollbar {
+  width: 9px;
+}
+
+.luanwu-product-grid::-webkit-scrollbar-track {
+  background: rgba(139, 69, 19, 0.1);
+}
+
+.luanwu-product-grid::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--border-primary);
+  background-clip: content-box;
+}
+
+.luanwu-product-card[hidden] {
+  display: none;
+}
+
+.luanwu-shop__pagination {
+  flex: 0 0 auto;
+  min-height: 2.5rem;
+  align-items: center;
+}
+
+.luanwu-shop__pagination[hidden] {
+  display: none;
+}
+
+.luanwu-shop__pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .luanwu-product-card {
@@ -365,5 +470,109 @@
   .luanwu-product-card:hover {
     transform: none;
     transition: none;
+  }
+}
+
+.luanwu-shop__layout {
+  display: flex;
+  flex: 1 1 0%;
+  min-height: 0;
+}
+
+@media (max-height: 800px) {
+  .luanwu-shop__header {
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .luanwu-shop__eyebrow {
+    font-size: 0.7rem;
+  }
+
+  .luanwu-shop__heading h1 {
+    margin-top: 0.15rem;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+  }
+
+  .luanwu-shop__heading p {
+    margin-top: 0.25rem;
+    font-size: 0.82rem;
+    line-height: 1.45;
+  }
+
+  .luanwu-wallet {
+    min-width: 0;
+    gap: 0.55rem;
+    padding: 0.5rem 0.6rem;
+  }
+
+  .luanwu-wallet__icon {
+    width: 2rem;
+    height: 2rem;
+    flex-basis: 2rem;
+  }
+
+  .luanwu-wallet__text strong {
+    font-size: 1.2rem;
+  }
+
+  .luanwu-products > .tw-panel-content {
+    padding: 0.65rem;
+  }
+
+  .luanwu-shop__layout {
+    margin-top: 0.5rem;
+  }
+
+  .luanwu-product-grid {
+    gap: 0.5rem;
+  }
+
+  .luanwu-product-card__topline {
+    min-height: 1.7rem;
+    padding: 0.3rem 0.55rem 0.1rem;
+  }
+
+  .luanwu-product-card__body {
+    gap: 0.5rem;
+    padding: 0.45rem 0.55rem;
+  }
+
+  .luanwu-product-art {
+    width: 3.25rem;
+    height: 3.25rem;
+    flex-basis: 3.25rem;
+  }
+
+  .luanwu-product-copy h3 {
+    font-size: 0.95rem;
+  }
+
+  .luanwu-product-copy p {
+    margin-top: 0.25rem;
+    font-size: 0.72rem;
+    line-height: 1.4;
+  }
+
+  .luanwu-product-card__footer {
+    gap: 0.4rem;
+    padding: 0.45rem 0.55rem 0.5rem;
+  }
+
+  .luanwu-price-line strong {
+    font-size: 1.15rem;
+  }
+
+  .luanwu-purchase-form label {
+    margin-bottom: 0.2rem;
+  }
+
+  .luanwu-purchase-form input {
+    padding-block: 0.3rem;
+  }
+
+  .luanwu-shop__pagination {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
   }
 }

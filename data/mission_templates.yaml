@@ -1544,3 +1544,250 @@ missions:
     base_travel_time: 1800
     daily_limit: 1
     mission_card_daily_limit: 0
+
+  - key: guild_personal_zhenlong_qipu
+    name: 白蛇盗仙草
+    display_order: 1301
+    difficulty: junior
+    description: |
+      端午一杯雄黄酒，白素贞现出原形，许仙惊惧倒地，命悬一线。为救丈夫，白素贞远赴昆仑仙山，求取能起死回生的灵芝仙草。帮会收到小青的求援，请你带门客入山相助。
+
+      仙草近在眼前，鹤童与鹿童却拦住去路：鹤童身法轻灵，以奇策突袭扰乱来人；鹿童守住药圃，以铁壁心法抵挡攻势。击退二童，助白素贞带草归杭，让断魂之人重回人间。
+    battle_type: task1
+    guest_only: true
+    enemy_guests:
+      - key: task_legend_crane_attendant
+        label: 鹤童
+        skills: [stratagem_burst]
+      - key: task_legend_deer_attendant
+        label: 鹿童
+        skills: [iron_wall_heart]
+    enemy_technology:
+      level: 7
+      guest_level: 80
+      guest_bonus: 0.28
+    drop_table:
+      silver: 40000
+      grain: 50000
+      guild_contribution: 100
+      red_ruby:
+        chance: 0.1
+        count:
+          min: 1
+          max: 2
+    available_weekdays: []
+    base_travel_time: 1200
+    daily_limit: 10
+    mission_card_daily_limit: 0
+
+  - key: guild_personal_shaolin_night_shadow
+    name: 八仙渡东海
+    display_order: 1302
+    difficulty: intermediate
+    description: |
+      八仙行至东海，不乘云驾雾，各执法宝渡海：铁拐李抛下葫芦，汉钟离展开芭蕉扇，吕洞宾踏剑逐浪，何仙姑立于荷花之上。正当众仙各显神通，海面忽然翻涌，龙宫水族拦住去路。
+
+      蟹将横甲在前，引敌护阵；虾兵持刃突进，专打立足未稳之人；东海龙王居中发出龙吟，震得浪头齐起。帮会应邀助阵，请你带门客破开水族封锁，助八仙平安渡海。
+    battle_type: task1
+    guest_only: true
+    enemy_guests:
+      - key: task_legend_crab_general
+        label: 蟹将
+        skills: [iron_wall_heart, draw_enemy_blades]
+      - key: task_legend_shrimp_vanguard
+        label: 虾兵先锋
+        skills: [meteor_pierce_moon]
+      - key: task_legend_east_sea_dragon
+        label: 东海龙王
+        skills: [dragon_roar]
+    enemy_technology:
+      level: 9
+      guest_level: 94
+      guest_bonus: 0.46
+    drop_table:
+      silver: 120000
+      grain: 150000
+      guild_contribution: 300
+      red_ruby:
+        chance: 0.2
+        count:
+          min: 1
+          max: 3
+    available_weekdays: []
+    base_travel_time: 1500
+    daily_limit: 10
+    mission_card_daily_limit: 0
+
+  - key: zhanlong_yanshan_shizi
+    name: 战龙在野第一关：北地燕山初识子龙
+    display_order: 1004
+    difficulty: advanced
+    description: |
+      北地入秋，燕山古道霜寒马瘦。连年兵乱让沿途村庄十室九空，逃难百姓带着仅剩的粮食与家当，沿山道向南求生。溃兵出身的寨主铁背熊却盘踞险隘，劫粮掠财，将不肯交出财物的百姓扣在山口。商路由此断绝，附近村民也无人敢再上山。
+
+      庄园主押运物资途经山下，忽有伤者拦路求援：一名白袍小将为救被困百姓，独骑闯入匪阵，已在山口苦战多时。此人自称常山赵云，枪法凌厉，却因顾念身后老幼，始终无法放手突围。铁背熊披甲持锤堵住正道，故意招锋引敌，坡上弓手正趁他吸引火力之际张弓搭箭。
+
+      山道狭窄，伏兵将成。还请庄园主率门客抢攻坡口，击溃拦路匪众，助这位素未谋面的白袍小将解开眼前危局。
+    battle_type: task1
+    enemy_guests:
+      - key: task_zhanlong_tiebeixiong
+        label: 燕山寨主·铁背熊
+    enemy_troops:
+      dao_sheng: 500
+      qiang_wang: 500
+      arrow_god: 5000
+    enemy_technology:
+      level: 10
+      guest_level: 92
+      guest_bonus: 0.58
+    drop_table:
+      silver: 90000
+      mission_chest_v3_zhanlong_yanshan_shizi: 1
+    available_weekdays: []
+    base_travel_time: 2400
+    daily_limit: 1
+    mission_card_daily_limit: 0
+
+  - key: zhanlong_changban_tuwei
+    name: 战龙在野第二关：龙战长坂七进七出
+    display_order: 1005
+    difficulty: advanced
+    description: |
+      荆襄骤变，曹军铁骑昼夜南下。刘备携百姓撤往江陵，军民相杂，车仗连绵，行至当阳长坂时，被曹军前锋追及。仓促之间，队伍四散，粮车倾覆，家眷失落；漫山遍野尽是奔逃的人影，呼救声淹没在马蹄与战鼓之中。
+
+      混乱之际，有人看见一员白袍将军逆着人潮杀回阵中，正是昔日燕山相识的赵子龙。刘备的家眷仍陷在重围深处，他不肯独自撤离，正在曹军阵间往返寻人。虎豹骑统领曹纯却已收拢精骑，以迅疾突击截杀外围接应之人，几条通往长坂桥的道路正被逐一封锁。
+
+      旧日所赠的白马银枪令尚在手中，故人却已身陷生死之地。此行需消耗一枚「白马银枪令」，请庄园主率门客突入长坂乱军，击破曹纯与虎豹骑的拦截，替赵云打开接应之路。
+    battle_type: task1
+    entry_cost:
+      zhanlong_white_horse_token: 1
+    enemy_guests:
+      - key: task_zhanlong_caochun
+        label: 曹纯
+    enemy_troops:
+      dao_sheng: 1200
+      qiang_wang: 1200
+      arrow_god: 1300
+    enemy_technology:
+      level: 10
+      guest_level: 96
+      guest_bonus: 0.66
+    drop_table:
+      silver: 110000
+      mission_chest_v3_zhanlong_changban_tuwei: 1
+    available_weekdays: []
+    base_travel_time: 2400
+    daily_limit: 1
+    mission_card_daily_limit: 0
+
+  - key: zhanlong_changban_duanqiao
+    name: 战龙在野第三关：长坂桥张飞断水流
+    display_order: 1006
+    difficulty: advanced
+    description: |
+      长坂桥前，张飞横矛立马，怒目巡视来路。桥后树林烟尘滚滚，旌旗时隐时现，战马奔踏之声连绵不绝。逃来的散卒惊呼林中伏有百万大军，连追至岸边的曹军也勒马驻足，不敢贸然向前。
+
+      庄园主率门客赶到桥头，尚未来得及通报身份，便被张飞一声断喝拦住。如今败军之中真假难辨，曹军又有乔装混入之嫌，他奉命守桥，绝不肯放来历未明的武装队伍靠近。桥后尚有百姓等待撤离，要取得信任，还须当面试过本领与胆色。
+
+      桥后尘土愈起愈高，林中究竟藏着多少兵马，无人看得分明。眼前那杆丈八蛇矛却已缓缓抬起。此行需消耗一枚「长坂护主令」，请庄园主整顿队伍，迎接张翼德的桥头考验。
+    battle_type: task1
+    entry_cost:
+      zhanlong_changban_guard_token: 1
+    enemy_guests:
+      - key: task_zhanlong_zhangfei_bridge
+        label: 张飞
+    enemy_troops:
+      qiang_wang: 500
+    enemy_troops_display:
+      qiang_wang: 1000000
+    enemy_technology:
+      level: 10
+      guest_level: 100
+      guest_bonus: 0.74
+    drop_table:
+      silver: 130000
+      mission_chest_v3_zhanlong_changban_duanqiao: 1
+    available_weekdays: []
+    base_travel_time: 2400
+    daily_limit: 1
+    mission_card_daily_limit: 0
+
+  - key: zhanlong_wuhu_shizhen
+    name: 战龙在野第四关：谁人德行服赵云
+    display_order: 1007
+    difficulty: advanced
+    description: |
+      自长坂一别，岁月流转，蜀中五虎如今已齐聚军前。庄园主昔日在燕山护民、长坂接应的经历，经赵云举荐传入刘备耳中。一封演武邀书送到庄园，邀众门客入营会武，也请庄园主当面谈一谈乱世之中如何待人、如何用人。
+
+      演武场上，关羽按刀镇住阵脚，张飞持矛蓄势，赵云银枪护身，马超策马游走，黄忠在后方搭箭观阵。五人各有所长，彼此照应：重刀可破甲，蛇矛能聚力，银枪善守反击，快马压迫全阵，强弓专寻伤处。赵云虽是旧识，今日仍将亲自入阵，检验庄园门客的武艺与主人的临阵取舍。
+
+      仁义之名须见诸行事，举荐之情也须以本领相承。此行需消耗一封「当阳义勇书」，请庄园主率众赴约，在五虎合阵之前展现庄园的担当。
+    battle_type: task1
+    entry_cost:
+      zhanlong_dangyang_valor_letter: 1
+    enemy_guests:
+      - key: task_zhanlong_guanyu
+        label: 关羽
+      - key: task_zhanlong_zhangfei
+        label: 张飞
+      - key: task_zhanlong_zhaoyun
+        label: 赵云
+      - key: task_zhanlong_machao
+        label: 马超
+      - key: task_zhanlong_huangzhong
+        label: 黄忠
+    enemy_troops:
+      dao_sheng: 900
+      qiang_wang: 900
+      jian_sheng: 900
+      quan_sheng: 700
+      arrow_god: 900
+    enemy_technology:
+      level: 10
+      guest_level: 100
+      guest_bonus: 0.78
+    drop_table:
+      silver: 180000
+      mission_chest_v3_zhanlong_wuhu_shizhen: 1
+    available_weekdays: []
+    base_travel_time: 2700
+    daily_limit: 1
+    mission_card_daily_limit: 0
+
+  - key: guild_personal_yanziwu_secret_letter
+    name: 沉香劈山救母
+    display_order: 1303
+    difficulty: advanced
+    description: |
+      三圣母因与凡人相爱，被二郎神压在华山之下。沉香长大后得知身世，历经艰险，终于持斧来到山前。山腹深处，母亲的声音依稀可闻；山门之外，守山之阵尚未松动。
+
+      梅山守将披甲当关，哮天犬踏石扑来，二郎神持三尖两刃刀立于高处。帮会愿为这场救母之行出一份力，请你带门客迎战守军，为沉香争得劈山的一刻，让母子终能相见。
+    battle_type: task1
+    guest_only: true
+    enemy_guests:
+      - key: task_legend_meishan_guard
+        label: 梅山守将
+        skills: [iron_wall_heart, draw_enemy_blades]
+      - key: task_legend_celestial_hound
+        label: 哮天犬
+        skills: [meteor_pierce_moon, desperate_beast]
+      - key: task_legend_erlang_shen
+        label: 二郎神
+        skills: [shenyi_poxu, steadfast_planning]
+    enemy_technology:
+      level: 10
+      guest_level: 100
+      guest_bonus: 0.68
+    drop_table:
+      silver: 280000
+      grain: 350000
+      guild_contribution: 600
+      red_ruby:
+        chance: 0.28
+        count:
+          min: 1
+          max: 5
+    available_weekdays: []
+    base_travel_time: 1800
+    daily_limit: 10
+    mission_card_daily_limit: 0

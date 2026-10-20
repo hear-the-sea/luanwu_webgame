@@ -1,0 +1,276 @@
+.production-compact-page .production-compact-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.production-compact-page .production-compact-card {
+  border-color: rgba(139, 69, 19, 0.28);
+  background: linear-gradient(155deg, rgba(255, 250, 236, 0.98), rgba(238, 223, 199, 0.96));
+}
+
+.production-compact-page .production-compact-card__header {
+  min-height: 0;
+  align-items: center;
+  gap: 0.45rem;
+  border-bottom-color: rgba(139, 69, 19, 0.18);
+  background: linear-gradient(100deg, rgba(102, 67, 39, 0.08), rgba(218, 165, 32, 0.08));
+  padding: 0.55rem 0.6rem;
+}
+
+.production-compact-identity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.production-compact-art,
+.production-queue-art {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(139, 69, 19, 0.42);
+  border-radius: 0.5rem;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(255, 246, 207, 0.95), rgba(211, 177, 120, 0.45) 68%),
+    #e5d2ae;
+  box-shadow: inset 0 0 0 2px rgba(255, 248, 231, 0.7), 0 2px 5px rgba(74, 38, 18, 0.12);
+}
+
+.production-compact-art {
+  width: 3.35rem;
+  height: 3.35rem;
+}
+
+.production-compact-art img,
+.production-queue-art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 0.2rem;
+}
+
+.production-compact-art > span {
+  color: #7b4a24;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.production-compact-copy {
+  min-width: 0;
+}
+
+.production-compact-page .production-compact-copy h3 {
+  overflow: hidden;
+  font-size: 0.92rem;
+  line-height: 1.2rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.production-compact-page .production-compact-copy .production-card-lock {
+  margin-top: 0.15rem;
+  font-size: 0.68rem;
+  line-height: 0.95rem;
+}
+
+.production-compact-tag {
+  padding: 0.1rem 0.38rem;
+  font-size: 0.63rem;
+}
+
+.production-compact-page .production-compact-stats {
+  padding: 0.45rem 0.3rem;
+}
+
+.production-compact-page .production-compact-stats > div {
+  padding-inline: 0.25rem;
+}
+
+.production-compact-page .production-compact-stats dt {
+  font-size: 0.63rem;
+  line-height: 0.9rem;
+}
+
+.production-compact-page .production-compact-stats dd {
+  margin-top: 0.1rem;
+  font-size: 0.72rem;
+  line-height: 1rem;
+}
+
+.production-compact-page .production-compact-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 4.7rem;
+  align-items: center;
+  gap: 0.45rem;
+  border-top-color: rgba(139, 69, 19, 0.16);
+  padding: 0.5rem 0.6rem 0.6rem;
+}
+
+.production-compact-page .production-compact-actions .production-quantity-row {
+  min-width: 0;
+  gap: 0.3rem;
+}
+
+.production-compact-page .production-compact-actions .production-quantity-row label {
+  font-size: 0.72rem;
+}
+
+.production-compact-page .production-compact-actions .production-quantity-row .tw-quantity-input {
+  flex-basis: 3.25rem;
+  width: 3.25rem;
+  min-width: 0;
+  padding-inline: 0.25rem;
+}
+
+.production-compact-page .production-compact-actions .production-cost-preview {
+  min-width: 0;
+  margin-left: auto;
+  color: var(--accent-red);
+  font-size: 0.68rem;
+  text-align: right;
+}
+
+.production-compact-page .production-compact-actions > .tw-btn-primary,
+.production-compact-page .production-compact-actions > .tw-btn-secondary {
+  grid-column: 2;
+  grid-row: 1;
+  min-height: 2rem;
+  padding: 0.35rem 0.4rem;
+  font-size: 0.75rem;
+}
+
+.production-compact-page .production-compact-actions--button-only > .tw-btn-primary,
+.production-compact-page .production-compact-actions--button-only > .tw-btn-secondary {
+  grid-column: 1 / -1;
+}
+
+.production-compact-page .production-compact-queue {
+  padding: 0.55rem 0.7rem;
+}
+
+.production-compact-page .production-compact-queue .production-queue-main {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.production-queue-art {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.4rem;
+}
+
+.forge-product-cell {
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
+  width: 3.35rem;
+  height: 3.35rem;
+}
+
+.forge-product-image {
+  appearance: none;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: center;
+}
+
+.forge-product-image::after {
+  position: absolute;
+  right: 0.12rem;
+  bottom: 0.12rem;
+  display: grid;
+  width: 1rem;
+  height: 1rem;
+  place-items: center;
+  border: 1px solid rgba(255, 248, 231, 0.7);
+  border-radius: 50%;
+  background: rgba(73, 47, 27, 0.88);
+  color: #fff2c4;
+  content: "i";
+  font-family: sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.forge-product-image:focus-visible {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 2px;
+}
+
+.forge-item-tooltip .tw-tooltip-header,
+.forge-item-tooltip .tw-tooltip-category,
+.forge-item-tooltip .tw-tooltip-desc,
+.forge-tooltip-costs {
+  display: block;
+}
+
+.forge-item-tooltip .tw-tooltip-category {
+  margin-top: 0.55rem;
+}
+
+.forge-tooltip-costs {
+  margin-top: 0.25rem;
+}
+
+.forge-tooltip-costs .tw-attr-row {
+  gap: 0.75rem;
+  border-top: 1px solid rgba(212, 165, 116, 0.18);
+}
+
+.forge-tooltip-costs .tw-attr-value {
+  white-space: nowrap;
+}
+
+.forge-tooltip-costs .tw-attr-row.is-insufficient .tw-attr-value {
+  color: #f87171;
+}
+
+.forge-page .production-compact-card:has(.forge-product-cell.is-tooltip-active) {
+  position: relative;
+  z-index: 20;
+  overflow: visible;
+  transform: none;
+}
+
+@media (max-width: 1120px) {
+  .production-compact-page .production-compact-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .production-compact-page .production-compact-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .production-compact-page .production-compact-card__header {
+    align-items: flex-start;
+  }
+
+  .production-compact-page .production-compact-tag {
+    display: none;
+  }
+
+  .production-compact-page .production-compact-actions {
+    grid-template-columns: minmax(0, 1fr) 4.3rem;
+  }
+}
+
+@media (max-width: 440px) {
+  .production-compact-page .production-compact-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -232,7 +232,7 @@ Residual risk：服务器实际规则值、20 人的活跃与地域/战力分布
 - 独立虚拟招募、招募后自动训练、通用训练自动续开及孤立训练补扫补齐全局权限检查。既有计时结算继续，真人门客不受机器人暂停影响。门客锁内使用只读路由 revision 条件，不反向获取路由写锁。
 - 低人口模式显式启用后，新普通活动等待 900 秒、新共斗活动等待 1800 秒；保留现有创建/重开等待起点，不改旧活动截止时间。截止前 15 分钟进入约 5 分钟成长轮次，任务每分钟有界补扫，事件提交后以 30 秒去重窗口唤醒。
 - 数据库预算表统一约束竞技场导致的创建/重激活：滚动 5 分钟全服 4 次、单需求 2 次；TRAINING 实际占用最多 16；滚动每分钟成长调度最多 8 个成员、单需求 2 个。结构性人口缺口仍受原人口控制器管理，不冒充竞技场扩容。停滞探针同一需求/探针序号在 30 分钟内至多物化一次，避免交接尚未完成时反复创建。上述调度预算继续叠加全局人口、单槽重试、替换高水位和单任务执行边界；24 小时尝试历史只做观测，不再限制单成员培养。
-- `ArenaFillServiceEpisode`、`ArenaFillServiceOutcome` 保存新的独立服务期次和不可变结果；补位前后均采样，重复协调不扩大样本，取消后重新报名可建立新期次。检查点为原截止时间 +15 分钟；逾期后补齐不会抹掉失败。长采集空档标记未知，不伪造截止时刻库存。待发布结果与业务事务一起保存，再由周期任务幂等发布到结果表；默认仅清理已关闭、SLO 结果已发布且超过 90 天的证据，先删结果再删期次，未关闭/未发布/缺结果证据均保留。
+- `ArenaFillServiceEpisode`、`ArenaFillServiceOutcome` 保存新的独立服务期次和不可变结果；补位前后均采样，重复协调不扩大样本，取消后重新报名可建立新期次。检查点为原截止时间 +15 分钟；逾期后补齐不会抹掉失败。长采集空档标记未知，不伪造截止时刻库存。待发布结果与业务事务一起保存，再由周期任务幂等发布到结果表；默认仅清理已关闭、SLO 结果已发布且超过 15 天的证据，先删结果再删期次，未关闭/未发布/缺结果证据均保留。
 - 新增只读决策/期次/结果/预算 Admin，以及 `arena_fill_service_report` 报表和默认只读的 `recover_arena_safety_pause` 恢复检查命令。恢复检查会输出预检、小时/日窗口完整性、租约和预算诊断；monitor 日志明确区分本次 `paused` 动作与持久化 `routing_mode`、`routing_pause_reason`。
 
 交付边界与尚未验收项：
@@ -261,8 +261,8 @@ VIRTUAL_PLAYER_ARENA_SAFETY_POLICY=scoped
 ARENA_LOW_POPULATION_MODE=1
 ARENA_LOW_POPULATION_WAIT_SECONDS=900
 ARENA_LOW_POPULATION_COOP_WAIT_SECONDS=1800
-ARENA_FILL_SERVICE_RETENTION_DAYS=90
-VIRTUAL_PLAYER_SAFETY_AUDIT_RETENTION_DAYS=180
+ARENA_FILL_SERVICE_RETENTION_DAYS=15
+VIRTUAL_PLAYER_SAFETY_AUDIT_RETENTION_DAYS=15
 ```
 
 安全策略代码默认 `scoped`，低人口加速默认关闭。不存在根据“注册人数 20”自动切换的逻辑。所有实例应加载相同值；现有活动截止时间不随配置追溯修改。

@@ -139,7 +139,7 @@ def test_full_arena_coop_simulation_runs_phase_mechanics_end_to_end():
                                 "arena_gl_top_five_flags_elite_rear": 1,
                             },
                         },
-                        "effects": [{"type": "modify_incoming_damage", "value": 0.5}],
+                        "effects": [{"type": "modify_incoming_damage", "value": 0.45}],
                     },
                     {
                         "timing": "round_start",
@@ -148,7 +148,7 @@ def test_full_arena_coop_simulation_runs_phase_mechanics_end_to_end():
                             "ally_alive_template_count_gte": {"arena_gl_top_five_flags_elite_front": 1},
                             "ally_alive_template_count_lte": {"arena_gl_top_five_flags_elite_rear": 0},
                         },
-                        "effects": [{"type": "modify_incoming_damage", "value": 0.72}],
+                        "effects": [{"type": "modify_incoming_damage", "value": 0.68}],
                     },
                     {
                         "timing": "round_start",
@@ -157,7 +157,7 @@ def test_full_arena_coop_simulation_runs_phase_mechanics_end_to_end():
                             "ally_alive_template_count_gte": {"arena_gl_top_five_flags_elite_rear": 1},
                             "ally_alive_template_count_lte": {"arena_gl_top_five_flags_elite_front": 0},
                         },
-                        "effects": [{"type": "modify_incoming_damage", "value": 0.72}],
+                        "effects": [{"type": "modify_incoming_damage", "value": 0.68}],
                     },
                 ]
             },

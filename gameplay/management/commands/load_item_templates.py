@@ -70,8 +70,7 @@ def _load_item_image(command: BaseCommand, obj: ItemTemplate, entry: dict, image
             quality=85,
             convert_to_webp=True,
         )
-        if obj.image:
-            obj.image.delete(save=False)
+        # 保存成功后才更新路径；旧图可能被其他模板共用，不在导入时删除。
         obj.image.save(new_filename, compressed_file, save=True)
         command.stdout.write(
             command.style.SUCCESS(f"  [OK] Compressed and loaded image: {image_filename} -> {new_filename}")

@@ -34,7 +34,7 @@ def test_arena_reserve_tasks_have_stable_exports_and_routes():
         "gameplay.retry_arena_shortage_metric",
     ]:
         expected_queue = (
-            settings.CELERY_TIMER_MAINTENANCE_QUEUE
+            settings.CELERY_TIMER_SCAN_QUEUE
             if task_name in {"gameplay.scan_arena_virtual_reserves", "gameplay.grow_arena_virtual_reserves"}
             else settings.CELERY_TIMER_QUEUE
         )

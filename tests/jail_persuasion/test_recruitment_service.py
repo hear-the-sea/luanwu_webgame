@@ -121,6 +121,19 @@ def test_successful_recruitment_returns_public_result_and_audit_log(
     }
 
 
+@pytest.mark.parametrize("rarity_pill_used", [False, True])
+def test_recruitment_preserves_rarity_pill_use_record(persuasion_world, rarity_pill_used):
+    prisoner = _set_prisoner(persuasion_world, loyalty=30, affinity=0, stage=0)
+    prisoner.rarity_pill_used = rarity_pill_used
+    prisoner.save(update_fields=["rarity_pill_used"])
+
+    result = recruit_prisoner(persuasion_world.captor, prisoner.id, rng=FixedRng(1))
+
+    assert result.recruited is True
+    result.guest.refresh_from_db()
+    assert result.guest.rarity_pill_used is rarity_pill_used
+
+
 def test_failed_recruitment_consumes_gold_but_keeps_prisoner_state(persuasion_world):
     prisoner = _set_prisoner(persuasion_world, loyalty=30, affinity=7, stage=0)
     state_before = (prisoner.status, prisoner.loyalty, prisoner.affinity)

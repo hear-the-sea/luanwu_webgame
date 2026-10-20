@@ -14,15 +14,18 @@ from tests.mission_reward_content_helpers import assert_fixed_reward
 DATA = Path(__file__).resolve().parents[1] / "data"
 ITEMS = {x["key"]: x for x in yaml.safe_load((DATA / "item_templates.yaml").read_text())["items"]}
 MISSIONS = yaml.safe_load((DATA / "mission_templates.yaml").read_text())["missions"]
-BOXES = [ITEMS[key] for mission in MISSIONS for key in mission["drop_table"] if key != "silver"]
+MISSION_CHEST_MISSIONS = [mission for mission in MISSIONS if "mission_chest_v3_" + mission["key"] in ITEMS]
+BOXES = [ITEMS["mission_chest_v3_" + mission["key"]] for mission in MISSION_CHEST_MISSIONS]
 HISTORICAL_BOXES = [
-    ITEMS["mission_chest_" + mission["key"]] for mission in MISSIONS if "mission_chest_" + mission["key"] in ITEMS
+    ITEMS["mission_chest_" + mission["key"]]
+    for mission in MISSION_CHEST_MISSIONS
+    if "mission_chest_" + mission["key"] in ITEMS
 ]
 TOKENS = [x for x in ITEMS.values() if x.get("effect_payload", {}).get("collection_cost")]
 
 
 def test_v2_has_daily_fengshen_progression_and_bounded_collection_goals():
-    assert len(BOXES) == 35 and len(TOKENS) == 6
+    assert len(BOXES) == 39 and len(TOKENS) == 6
     assert len(HISTORICAL_BOXES) == 32
     assert all(x["effect_payload"]["reward_balance_version"] == 3 for x in BOXES)
     assert all(x["effect_payload"]["reward_balance_version"] == 2 for x in HISTORICAL_BOXES)

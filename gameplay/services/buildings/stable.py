@@ -28,7 +28,7 @@ from core.utils.time_scale import scale_duration
 from core.utils.yaml_loader import load_yaml_data
 
 from ...constants import BuildingKeys
-from ...models import HorseProduction, Manor
+from ...models import HorseProduction, ItemTemplate, Manor
 from .production_cancel import cancel_active_production
 from .production_queue import get_production_queue_capacity
 
@@ -238,7 +238,11 @@ def get_horse_options(manor: Manor, *, guild_tech_level: int | None = None) -> L
     is_producing = bool(active_productions)
     queue_full = len(active_productions) >= get_horse_queue_capacity(manor)
     warehouse_grain_quantity = get_warehouse_grain_quantity(manor)
-    horse_name_map = _get_item_name_map(set(HORSE_CONFIG.keys()))
+    horse_templates = {
+        template.key: template
+        for template in ItemTemplate.objects.filter(key__in=HORSE_CONFIG.keys()).only("key", "name", "image")
+    }
+    horse_name_map = {key: template.name for key, template in horse_templates.items()}
 
     options = []
     for horse_key, raw_config in HORSE_CONFIG.items():
@@ -252,11 +256,14 @@ def get_horse_options(manor: Manor, *, guild_tech_level: int | None = None) -> L
         required_level = config["required_horsemanship"]
         is_unlocked = horsemanship_level >= required_level
         horse_name = horse_name_map.get(horse_key, "未知马匹")
+        horse_template = horse_templates.get(horse_key)
+        image_url = horse_template.image.url if horse_template and horse_template.image else ""
         discounted_grain_cost = apply_guild_production_cost_discount(config["grain_cost"], guild_tech_level)
         options.append(
             {
                 "key": horse_key,
                 "name": horse_name,
+                "image_url": image_url,
                 "grain_cost": config["grain_cost"],
                 "base_duration": config["base_duration"],
                 "actual_duration": actual_duration,

@@ -3,8 +3,12 @@
 
 {% block title %}马房{% endblock %}
 
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/production-cards.css' %}">
+{% endblock %}
+
 {% block content %}
-<section class="dashboard production-page">
+<section class="dashboard production-page production-compact-page">
     <header class="production-page-header">
         <div>
             <div class="production-page-title-row">
@@ -30,10 +34,17 @@
         <div class="production-panel-body">
             <div class="production-queue-list">
                 {% for production in active_productions %}
-                <article class="production-queue-card">
+                <article class="production-queue-card production-compact-queue">
                     <div class="production-queue-main">
-                        <h3>{{ production.horse_name }} <span>×{{ production.quantity }}</span></h3>
-                        <span class="production-queue-detail">粮食 {{ production.grain_cost }}</span>
+                        {% if production.image_url %}
+                        <span class="production-queue-art">
+                            <img src="{{ production.image_url }}" alt="" width="40" height="40" loading="lazy" decoding="async">
+                        </span>
+                        {% endif %}
+                        <div>
+                            <h3>{{ production.horse_name }} <span>×{{ production.quantity }}</span></h3>
+                            <span class="production-queue-detail">粮食 {{ production.grain_cost }}</span>
+                        </div>
                     </div>
                     <div class="production-queue-actions">
                         <span class="production-status production-status--active">
@@ -63,19 +74,28 @@
             <h2>可生产</h2>
         </div>
         <div class="production-panel-body">
-            <div class="production-option-grid">
+            <div class="production-option-grid production-compact-grid">
                 {% for horse in horse_page_obj %}
-                <article class="production-option-card {% if not horse.is_unlocked %}is-locked{% elif production_queue_full %}is-disabled{% endif %}">
-                    <header class="production-option-card__header">
-                        <div>
-                            <h3>{{ horse.name }}</h3>
-                            {% if not horse.is_unlocked %}
-                            <p class="production-card-lock">驯马术 等级{{ horse.required_horsemanship }}</p>
-                            {% endif %}
+                <article class="production-option-card production-compact-card {% if not horse.is_unlocked %}is-locked{% elif production_queue_full %}is-disabled{% endif %}">
+                    <header class="production-option-card__header production-compact-card__header">
+                        <div class="production-compact-identity">
+                            <div class="production-compact-art">
+                                {% if horse.image_url %}
+                                <img src="{{ horse.image_url }}" alt="{{ horse.name }}" width="64" height="64" loading="lazy" decoding="async">
+                                {% else %}
+                                <span aria-hidden="true">{{ horse.name|slice:":1" }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="production-compact-copy">
+                                <h3>{{ horse.name }}</h3>
+                                {% if not horse.is_unlocked %}
+                                <p class="production-card-lock">驯马术 等级{{ horse.required_horsemanship }}</p>
+                                {% endif %}
+                            </div>
                         </div>
                     </header>
 
-                    <dl class="production-stats production-stats--three">
+                    <dl class="production-stats production-stats--three production-compact-stats">
                         <div>
                             <dt>单价粮食{% if horse.cost_discount_percent > 0 %}（折后）{% endif %}</dt>
                             <dd class="production-value production-value--cost">
@@ -93,7 +113,7 @@
                         </div>
                     </dl>
 
-                    <form method="post" action="{% url 'gameplay:start_horse_production' %}" class="tw-card-actions production-option-card__actions">
+                    <form method="post" action="{% url 'gameplay:start_horse_production' %}" class="tw-card-actions production-option-card__actions production-compact-actions{% if not horse.is_unlocked or production_queue_full %} production-compact-actions--button-only{% endif %}">
                         {% csrf_token %}
                         <input type="hidden" name="horse_key" value="{{ horse.key }}">
                         {% if not horse.is_unlocked %}
@@ -111,7 +131,7 @@
                                    data-total-target="total-{{ horse.key }}"
                                    data-unit-duration="{{ horse.actual_duration }}"
                                    data-duration-target="duration-{{ horse.key }}">
-                            <span id="total-{{ horse.key }}">{{ horse.effective_grain_cost }} 粮食</span>
+                            <span class="production-cost-preview" id="total-{{ horse.key }}">{{ horse.effective_grain_cost }} 粮食</span>
                         </div>
                         {% if horse.can_afford %}
                         <button type="submit" class="tw-btn-primary w-full">生产</button>

@@ -16,11 +16,16 @@ from django.views.generic import TemplateView
 
 import gameplay.services.arena.coop_core as arena_coop_core
 import gameplay.services.arena.core as arena_core
+import gameplay.services.arena.wheel_core as arena_wheel_core
 from core.decorators import flash_unexpected_view_error
 from core.exceptions import ArenaGuestSelectionError, GameError
 from core.utils import safe_positive_int, sanitize_error_message
 from core.utils.rate_limit import rate_limit_json, rate_limit_redirect
-from gameplay.selectors.arena.details import get_arena_coop_event_detail_context, get_arena_event_detail_context
+from gameplay.selectors.arena.details import (
+    get_arena_coop_event_detail_context,
+    get_arena_event_detail_context,
+    get_arena_wheel_event_detail_context,
+)
 from gameplay.selectors.arena.events import get_arena_events_context
 from gameplay.selectors.arena.registration import get_arena_exchange_context, get_arena_registration_context
 from gameplay.services.manor.core import get_manor, project_manor_activity_for_read
@@ -35,6 +40,7 @@ ARENA_TAB_REGISTRATION = "registration"
 ARENA_TAB_EVENTS = "events"
 ARENA_TAB_EXCHANGE = "exchange"
 ARENA_TAB_RING = "ring"
+ARENA_EXCHANGE_REWARD_PAGE_SIZE = 11  # 固定春秋币兑换卡占一格，凑满每页 12 个展示位。
 
 
 def _get_registration_silver_cost() -> int:
@@ -170,7 +176,9 @@ class ArenaExchangePageView(BaseArenaView):
 
     def _build_page_context(self, manor):
         context = get_arena_exchange_context(manor)
-        reward_page = Paginator(context["reward_rows"], 8).get_page(self.request.GET.get("page", 1))
+        reward_page = Paginator(context["reward_rows"], ARENA_EXCHANGE_REWARD_PAGE_SIZE).get_page(
+            self.request.GET.get("page", 1)
+        )
         context["reward_rows"] = reward_page
         context["reward_page"] = reward_page
         return context
@@ -204,6 +212,21 @@ class ArenaCoopEventDetailView(BaseArenaView):
         context = get_arena_coop_event_detail_context(manor, event_id=event_id)
         if context is None:
             raise Http404("共斗场次不存在或已不可查看")
+        return context
+
+
+class ArenaWheelEventDetailView(BaseArenaView):
+    active_tab = ARENA_TAB_EVENTS
+    template_name = "gameplay/arena/wheel_detail.html"
+    show_arena_hero_card = False
+
+    def _build_page_context(self, manor):
+        event_id = safe_positive_int(self.kwargs.get("event_id"), default=None)
+        if event_id is None:
+            raise Http404("车轮战场次不存在")
+        context = get_arena_wheel_event_detail_context(manor, event_id=event_id)
+        if context is None:
+            raise Http404("车轮战场次不存在或已不可查看")
         return context
 
 
@@ -318,6 +341,52 @@ def arena_coop_cancel_view(request: HttpRequest) -> HttpResponse:
 
 @login_required
 @require_POST
+@rate_limit_redirect("arena_wheel_register", limit=20, window_seconds=60)
+def arena_wheel_register_view(request: HttpRequest) -> HttpResponse:
+    manor = get_manor(request.user)
+    redirect_target = _resolve_safe_next_url(request, default_view_name="gameplay:arena")
+    try:
+        guest_ids = _parse_guest_ids(request.POST.getlist("guest_ids"))
+        result = arena_wheel_core.register_arena_wheel_entry(manor, guest_ids)
+        if result.moved_to_preparing:
+            messages.success(request, "报名成功！车轮战已满 6 人，进入 2 分钟准备期。")
+        else:
+            messages.success(request, f"报名成功！当前车轮战人数 {result.entry_count}/{result.event.player_limit}。")
+    except GameError as exc:
+        _handle_known_arena_error(request, exc)
+    except DatabaseError as exc:
+        _handle_unexpected_arena_error(
+            request,
+            exc,
+            log_message="arena wheel register failed: user_id=%s manor_id=%s",
+            log_args=(getattr(request.user, "id", None), getattr(manor, "id", None)),
+        )
+    return redirect(redirect_target)
+
+
+@login_required
+@require_POST
+@rate_limit_redirect("arena_wheel_cancel", limit=20, window_seconds=60)
+def arena_wheel_cancel_view(request: HttpRequest) -> HttpResponse:
+    manor = get_manor(request.user)
+    redirect_target = _resolve_safe_next_url(request, default_view_name="gameplay:arena")
+    try:
+        arena_wheel_core.cancel_arena_wheel_entry(manor)
+        messages.success(request, "已撤销车轮战报名，报名费不返还。")
+    except GameError as exc:
+        _handle_known_arena_error(request, exc)
+    except DatabaseError as exc:
+        _handle_unexpected_arena_error(
+            request,
+            exc,
+            log_message="arena wheel cancel failed: user_id=%s manor_id=%s",
+            log_args=(getattr(request.user, "id", None), getattr(manor, "id", None)),
+        )
+    return redirect(redirect_target)
+
+
+@login_required
+@require_POST
 @rate_limit_redirect("arena_exchange", limit=30, window_seconds=60)
 def arena_exchange_view(request: HttpRequest) -> HttpResponse:
     manor = get_manor(request.user)
@@ -355,6 +424,40 @@ def arena_exchange_view(request: HttpRequest) -> HttpResponse:
                 getattr(request.user, "id", None),
                 getattr(manor, "id", None),
                 reward_key,
+                quantity,
+            ),
+        )
+
+    return redirect(redirect_target)
+
+
+@login_required
+@require_POST
+@rate_limit_redirect("arena_currency_exchange", limit=30, window_seconds=60)
+def arena_currency_exchange_view(request: HttpRequest) -> HttpResponse:
+    manor = get_manor(request.user)
+    redirect_target = _resolve_safe_next_url(request, default_view_name="gameplay:arena_exchange_page")
+    quantity = safe_positive_int(request.POST.get("quantity"), default=None)
+    if quantity is None:
+        messages.error(request, "兑换数量无效")
+        return redirect(redirect_target)
+
+    try:
+        result = arena_core.exchange_arena_coins_for_chunqiu_coins(manor, quantity=quantity)
+        messages.success(
+            request,
+            f"兑换成功：消耗角斗币 {result.arena_coins_spent} 枚，获得春秋币 {result.quantity} 枚。",
+        )
+    except GameError as exc:
+        _handle_known_arena_error(request, exc)
+    except DatabaseError as exc:
+        _handle_unexpected_arena_error(
+            request,
+            exc,
+            log_message="arena currency exchange failed: user_id=%s manor_id=%s quantity=%s",
+            log_args=(
+                getattr(request.user, "id", None),
+                getattr(manor, "id", None),
                 quantity,
             ),
         )

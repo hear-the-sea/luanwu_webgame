@@ -482,22 +482,6 @@ heroes:
       intellect: 20
       defense: 20
       agility: 25
-  - key: hero_yang_zheng
-    name: 杨铮
-    avatar: pig/武014.png
-    archetype: military
-    flavor: 一个出身卑微却心怀大义的捕头。他使用的武器是极其冷门的"离别钩"，正如其名，这把钩注定了他的一生充满了离别与牺牲。他虽然身处黑暗的官场，却始终坚守着内心的正义与良知。为了铲除江湖恶势力，他不惜牺牲自己的幸福，甚至不惜与心爱的人分离。他用手中的离别钩勾住了敌人的咽喉，也勾住了江湖的良心。他的故事悲壮而感人，深刻地诠释了"离别是为了更好地相聚"这一充满哲理的主题。出自古龙小说《七种武器》
-    default_gender: male
-    default_morality: 85
-    recruitable: true
-    growth_range:
-    - 5
-    - 7
-    attribute_weights:
-      force: 35
-      intellect: 20
-      defense: 25
-      agility: 20
   - key: hero_jin_wuwang
     name: 金无望
     avatar: pig/武054.png

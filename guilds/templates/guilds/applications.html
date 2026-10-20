@@ -23,7 +23,7 @@
                 <div class="tw-guild-application-card">
                     <div class="tw-guild-application-header">
                         <div>
-                            <h3 class="m-0 mb-2 text-lg">{{ app.applicant.username }}</h3>
+                            <h3 class="m-0 mb-2 text-lg">{{ app.applicant.manor.display_name }}</h3>
                             <p class="tw-muted m-0">申请时间：{{ app.created_at|date:"Y-m-d H:i" }}</p>
                         </div>
                         <div class="tw-guild-application-actions">
@@ -37,7 +37,7 @@
                                 type="button"
                                 class="tw-btn-secondary js-reject-application"
                                 data-reject-url="{% url 'guilds:reject_application' app.id %}"
-                                data-username="{{ app.applicant.username }}"
+                                data-applicant-name="{{ app.applicant.manor.display_name }}"
                             >
                                 拒绝
                             </button>

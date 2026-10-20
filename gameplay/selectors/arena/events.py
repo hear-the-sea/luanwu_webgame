@@ -9,7 +9,16 @@ from django.utils import timezone
 
 import gameplay.services.arena.coop_core as arena_coop_core
 import gameplay.services.arena.core as arena_core
-from gameplay.models import ArenaCoopEntry, ArenaCoopEvent, ArenaEntry, ArenaTournament, Manor
+import gameplay.services.arena.wheel_core as arena_wheel_core
+from gameplay.models import (
+    ArenaCoopEntry,
+    ArenaCoopEvent,
+    ArenaEntry,
+    ArenaTournament,
+    ArenaWheelEntry,
+    ArenaWheelEvent,
+    Manor,
+)
 
 from .common import build_common_context, running_row_sort_key
 
@@ -69,21 +78,79 @@ def get_arena_events_context(manor: Manor) -> dict:
     )
     running_coop_cards = []
     completed_cards = []
-    for event in coop_events:
-        is_running = event.status in [ArenaCoopEvent.Status.PREPARING, ArenaCoopEvent.Status.RUNNING]
+    for coop_event in coop_events:
+        is_running = coop_event.status in [ArenaCoopEvent.Status.PREPARING, ArenaCoopEvent.Status.RUNNING]
         card = {
-            "title": f"围攻光明顶 #{event.id}",
-            "summary": f"{event.get_status_display()} | 首领：{event.boss_name}",
-            "badge_text": "我已参赛" if event.id in my_coop_ids else "",
-            "countdown_at": event.prepare_ends_at if event.status == ArenaCoopEvent.Status.PREPARING else None,
+            "title": f"围攻光明顶 #{coop_event.id}",
+            "summary": f"{coop_event.get_status_display()} | 首领：{coop_event.boss_name}",
+            "badge_text": "我已参赛" if coop_event.id in my_coop_ids else "",
+            "countdown_at": (
+                coop_event.prepare_ends_at if coop_event.status == ArenaCoopEvent.Status.PREPARING else None
+            ),
             "countdown_label": "开战：",
-            "meta_datetime": event.ended_at,
+            "meta_datetime": coop_event.ended_at,
             "meta_label": "结束",
-            "action_url": reverse("gameplay:arena_coop_detail", args=[event.id]),
+            "action_url": reverse("gameplay:arena_coop_detail", args=[coop_event.id]),
             "action_label": "查看共斗详情",
         }
         if is_running:
             running_coop_cards.append(card)
+        else:
+            completed_cards.append(card)
+
+    wheel_events = list(
+        ArenaWheelEvent.objects.filter(
+            Q(status__in=[ArenaWheelEvent.Status.PREPARING, ArenaWheelEvent.Status.RUNNING])
+            | Q(
+                status__in=[ArenaWheelEvent.Status.COMPLETED, ArenaWheelEvent.Status.CANCELLED],
+                ended_at__gte=current_time
+                - timedelta(seconds=arena_wheel_core.ARENA_WHEEL_COMPLETED_RETENTION_SECONDS),
+            )
+        )
+        .annotate(
+            entry_count=Count(
+                "entries",
+                filter=Q(
+                    entries__status__in=[
+                        ArenaWheelEntry.Status.REGISTERED,
+                        ArenaWheelEntry.Status.ACTIVE,
+                        ArenaWheelEntry.Status.ELIMINATED,
+                        ArenaWheelEntry.Status.COMPLETED,
+                    ]
+                ),
+            )
+        )
+        .order_by("-created_at", "-id")
+    )
+    my_wheel_event_ids = set(
+        ArenaWheelEntry.objects.filter(manor=manor, event_id__in=[event.id for event in wheel_events])
+        .exclude(status=ArenaWheelEntry.Status.CANCELLED)
+        .values_list("event_id", flat=True)
+    )
+    running_wheel_cards = []
+    for wheel_event in wheel_events:
+        is_running = wheel_event.status in [ArenaWheelEvent.Status.PREPARING, ArenaWheelEvent.Status.RUNNING]
+        winner_text = f" | 获胜队伍：{wheel_event.get_winner_team_display()}" if wheel_event.winner_team else ""
+        card = {
+            "title": f"金羽擂台 #{wheel_event.id}",
+            "summary": (
+                f"{wheel_event.get_status_display()} | 参赛 "
+                f"{wheel_event.entry_count}/{wheel_event.player_limit}{winner_text}"
+            ),
+            "badge_text": "我已参赛" if wheel_event.id in my_wheel_event_ids else "",
+            "countdown_at": (
+                wheel_event.prepare_ends_at if wheel_event.status == ArenaWheelEvent.Status.PREPARING else None
+            ),
+            "countdown_label": "开战：",
+            "meta_datetime": wheel_event.ended_at,
+            "meta_label": "结束",
+            "action_url": reverse("gameplay:arena_wheel_detail", args=[wheel_event.id]),
+            "action_label": (
+                "进入逐场观战" if wheel_event.status == ArenaWheelEvent.Status.RUNNING else "查看车轮战详情"
+            ),
+        }
+        if is_running:
+            running_wheel_cards.append(card)
         else:
             completed_cards.append(card)
 
@@ -112,5 +179,6 @@ def get_arena_events_context(manor: Manor) -> dict:
     )
     completed_cards.sort(key=lambda card: cast(datetime, card["meta_datetime"]), reverse=True)
     context["running_coop_card_rows"] = running_coop_cards
+    context["running_wheel_card_rows"] = running_wheel_cards
     context["completed_event_card_rows"] = completed_cards
     return context

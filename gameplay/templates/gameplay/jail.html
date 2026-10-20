@@ -8,26 +8,34 @@
 {% endblock %}
 
 {% block content %}
-<section class="dashboard jail-workspace" data-jail-root="1">
+<section class="dashboard production-page jail-workspace" data-jail-root="1">
   <form class="jail-csrf" aria-hidden="true">{% csrf_token %}</form>
 
-  <div class="tw-section-header jail-page-header">
+  <header class="production-page-header jail-page-header">
     <div>
-      <h1>监牢</h1>
-      <p class="caption">在押 <strong>{{ prisoner_states|length }}</strong> / <strong>{{ jail_capacity }}</strong></p>
+      <div class="production-page-title-row">
+        <h1>监牢</h1>
+      </div>
+      <div class="production-page-meta">
+        <span class="production-meta-item">在押名额 <strong>{{ prisoner_states|length }} / {{ jail_capacity }}</strong></span>
+      </div>
     </div>
-  </div>
+  </header>
 
   {% if prisoner_states %}
   <div class="jail-prisoner-list">
     {% for p in prisoner_states %}
-    <article class="jail-cell tw-panel jail-prisoner-panel" data-prisoner-id="{{ p.id }}">
-      <header class="jail-cell-header tw-panel-header jail-prisoner-header">
+    <article class="production-panel jail-cell jail-prisoner-panel" data-prisoner-id="{{ p.id }}">
+      <header class="production-panel-heading jail-cell-header jail-prisoner-header">
         <div class="jail-prisoner-identity">
-          <span class="jail-slot-label">牢位 {{ forloop.counter }}</span>
-          <h2>{{ p.name }}</h2>
-          <p>原属：{{ p.original_manor }}</p>
-          <p>最迟释放：{{ p.expires_at_display }}（剩余 {{ p.remaining_days }} 天）</p>
+          <div class="jail-prisoner-title-row">
+            <span class="production-page-level jail-slot-label">牢位 {{ forloop.counter }}</span>
+            <h2>{{ p.name }}</h2>
+          </div>
+          <div class="jail-prisoner-meta">
+            <span>原属 {{ p.original_manor }}</span>
+            <span>最迟释放 {{ p.expires_at_display }} · 剩余 {{ p.remaining_days }} 天</span>
+          </div>
         </div>
         <div class="jail-prisoner-actions">
           <button
@@ -49,7 +57,7 @@
         </div>
       </header>
 
-      <div class="jail-cell-content tw-panel-content jail-prisoner-content">
+      <div class="production-panel-body jail-cell-content jail-prisoner-content">
         <div class="jail-status-grid">
           <div class="jail-status-item">
             <div class="jail-status-label"><span>心防</span><strong>{{ p.heart }}</strong></div>
@@ -255,9 +263,13 @@
     {% endfor %}
   </div>
   {% else %}
-  <section class="tw-panel">
-    <div class="tw-panel-content tw-empty-state">
-      当前没有在押门客，踢馆获胜后可能俘获对方出战门客。
+  <section class="production-panel jail-empty-panel">
+    <div class="production-panel-heading">
+      <h2>牢房空置</h2>
+    </div>
+    <div class="production-panel-body jail-empty-state">
+      <span class="jail-empty-mark" aria-hidden="true">牢</span>
+      <p>当前没有在押门客，踢馆获胜后可能俘获对方出战门客。</p>
     </div>
   </section>
   {% endif %}

@@ -9,7 +9,6 @@ from typing import Any, cast
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.paginator import Paginator
 from django.db import DatabaseError
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
@@ -41,9 +40,6 @@ class LuanwuShopView(LoginRequiredMixin, TemplateView):
         )
         context["manor"] = manor
         context.update(build_luanwu_shop_context(manor))
-        product_page = Paginator(context["luanwu_shop_products"], 8).get_page(self.request.GET.get("page", 1))
-        context["luanwu_shop_products"] = product_page
-        context["luanwu_shop_page"] = product_page
         return context
 
 

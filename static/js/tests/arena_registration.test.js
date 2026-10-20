@@ -31,7 +31,11 @@ function createPanel(maxSelected, checkboxCount) {
 function createHarness(panels) {
   const source = fs.readFileSync(path.resolve(__dirname, "..", "arena-registration.js"), "utf8");
   const calls = [];
+  const listeners = new Map();
   const document = {
+    addEventListener(type, callback) {
+      listeners.set(type, callback);
+    },
     querySelectorAll(selector) {
       assert.equal(selector, ".tw-arena-signup-panel[data-max-selected]");
       return panels;
@@ -48,7 +52,7 @@ function createHarness(panels) {
 
   vm.runInNewContext(source, { window: windowObject, document });
 
-  return { calls };
+  return { calls, reload: () => listeners.get("partial-nav:loaded")() };
 }
 
 test("coop registration enforces its own three-guest limit", async () => {
@@ -69,4 +73,15 @@ test("coop registration enforces its own three-guest limit", async () => {
 
   assert.deepEqual(harness.calls, ["最多只能选择 3 名门客"]);
   assert.equal(coopPanel.checkboxes[3].checked, false);
+});
+
+test("partial navigation initializes replacement registration panels once", async () => {
+  const panels = [createPanel(3, 4)];
+  const harness = createHarness(panels);
+  panels.splice(0, 1, createPanel(3, 4));
+  harness.reload();
+  harness.reload();
+  panels[0].checkboxes.forEach((checkbox) => { checkbox.checked = true; });
+  await panels[0].checkboxes[3].change();
+  assert.deepEqual(harness.calls, ["最多只能选择 3 名门客"]);
 });

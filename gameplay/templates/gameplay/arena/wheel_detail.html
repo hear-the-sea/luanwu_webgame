@@ -1,0 +1,94 @@
+{% extends "gameplay/arena/base.html" %}
+
+{% block extra_head %}
+{{ block.super }}
+{% if wheel_refresh_after_seconds %}<meta http-equiv="refresh" content="{{ wheel_refresh_after_seconds }}">{% endif %}
+{% endblock %}
+
+{% block arena_body %}
+<section class="tw-panel">
+    <div class="tw-panel-header">金羽擂台 #{{ wheel_event.id }}</div>
+    <div class="tw-panel-content">
+        <div class="mb-4 text-sm">
+            <p>状态：{{ wheel_event.get_status_display }}</p>
+            {% if wheel_event.status == 'preparing' and wheel_event.prepare_ends_at %}
+            <p class="mt-1">开战倒计时：
+                <span class="countdown" data-countdown="{{ wheel_event.prepare_ends_at|date:'c' }}" data-format="zh-no-sec">{{ wheel_event.prepare_ends_at|date:"m-d H:i:s" }}</span>
+            </p>
+            {% elif wheel_event.status == 'running' and wheel_next_bout_at %}
+            <p class="mt-1">每 5 分钟进行一场对决 · 下一场预计：{{ wheel_next_bout_at|date:"m-d H:i:s" }} · 页面将自动更新</p>
+            {% endif %}
+            {% if wheel_event.status == 'completed' %}
+            <p class="mt-1">获胜队伍：{{ wheel_event.get_winner_team_display }} · 胜方每位队员获得 {{ wheel_win_reward }} 角斗币，败方每位队员获得 {{ wheel_loss_reward }} 角斗币。</p>
+            {% else %}
+            <p class="mt-1">随机分队与出战顺序，胜者保留剩余血量；每次连胜后敏捷、智力、武力、防御各降低 5%，最多叠加 2 层，直至一队无人可战。防御降低会同步减少最大血量。</p>
+            {% endif %}
+            {% if wheel_event.current_bout_number %}<p class="mt-1">已完成对决：{{ wheel_event.current_bout_number }} 场</p>{% endif %}
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            <section class="p-3 rounded-md border border-border-light bg-bg-hover">
+                <h2 class="font-semibold mb-3">甲队{% if wheel_event.winner_team == 'A' %} · 获胜{% endif %}</h2>
+                <div class="space-y-3">
+                    {% for row in wheel_team_a_rows %}
+                    <article class="p-3 rounded border border-border-light bg-bg-secondary">
+                        <div class="flex justify-between gap-2 items-center">
+                            <strong>{{ row.entry.team_order }}. {{ row.entry.manor.display_name }}{% if row.is_mine %}（我）{% endif %}</strong>
+                            <span class="text-xs text-text-muted">{{ row.entry.get_status_display }}</span>
+                        </div>
+                        <p class="text-xs text-text-muted mt-1">久战疲敝：{{ row.entry.debuff_stacks }} 层{% if row.is_active %} · 当前出战{% endif %}</p>
+                        <div class="mt-2 flex flex-wrap gap-1">
+                            {% for guest in row.guests %}
+                            <span class="px-2 py-1 rounded text-xs border border-border-light{% if guest.wheel_knocked_out %} text-text-muted opacity-60{% endif %}">
+                                {{ guest.display_name }}
+                                {% if guest.wheel_knocked_out %}· 已倒下{% else %}· 生命 {{ guest.current_hp }}/{{ guest.max_hp }}{% endif %}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </article>
+                    {% empty %}<p class="text-sm text-text-muted">队伍将在满员后随机产生。</p>{% endfor %}
+                </div>
+            </section>
+
+            <section class="p-3 rounded-md border border-border-light bg-bg-hover">
+                <h2 class="font-semibold mb-3">乙队{% if wheel_event.winner_team == 'B' %} · 获胜{% endif %}</h2>
+                <div class="space-y-3">
+                    {% for row in wheel_team_b_rows %}
+                    <article class="p-3 rounded border border-border-light bg-bg-secondary">
+                        <div class="flex justify-between gap-2 items-center">
+                            <strong>{{ row.entry.team_order }}. {{ row.entry.manor.display_name }}{% if row.is_mine %}（我）{% endif %}</strong>
+                            <span class="text-xs text-text-muted">{{ row.entry.get_status_display }}</span>
+                        </div>
+                        <p class="text-xs text-text-muted mt-1">久战疲敝：{{ row.entry.debuff_stacks }} 层{% if row.is_active %} · 当前出战{% endif %}</p>
+                        <div class="mt-2 flex flex-wrap gap-1">
+                            {% for guest in row.guests %}
+                            <span class="px-2 py-1 rounded text-xs border border-border-light{% if guest.wheel_knocked_out %} text-text-muted opacity-60{% endif %}">
+                                {{ guest.display_name }}
+                                {% if guest.wheel_knocked_out %}· 已倒下{% else %}· 生命 {{ guest.current_hp }}/{{ guest.max_hp }}{% endif %}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </article>
+                    {% empty %}<p class="text-sm text-text-muted">队伍将在满员后随机产生。</p>{% endfor %}
+                </div>
+            </section>
+        </div>
+
+        <section class="mt-5">
+            <h2 class="font-semibold mb-2">车轮战对决记录</h2>
+            <div class="space-y-2 text-sm">
+                {% for row in wheel_bout_rows %}
+                <article class="p-3 rounded-md border border-border-light bg-bg-hover">
+                    <p class="font-semibold">第 {{ row.bout.bout_number }} 场：{{ row.team_a_name }}（甲队） 对阵 {{ row.team_b_name }}（乙队）</p>
+                    <p class="mt-1 text-text-muted">胜者：{{ row.winner_name }}。甲队疲敝 {{ row.bout.team_a_debuff_stacks }} 层，乙队疲敝 {{ row.bout.team_b_debuff_stacks }} 层。</p>
+                    {% if row.bout.winner_note %}<p class="mt-1 text-xs text-text-muted">{{ row.bout.winner_note }}</p>{% endif %}
+                    {% if row.bout.battle_report_id %}
+                    <a href="{% url 'battle:report_detail' row.bout.battle_report_id %}" class="tw-btn-secondary tw-btn-sm mt-2 inline-flex">查看本场战报</a>
+                    {% endif %}
+                </article>
+                {% empty %}<p class="text-text-muted">准备期结束后将依次生成每场战报。</p>{% endfor %}
+            </div>
+        </section>
+    </div>
+</section>
+{% endblock %}

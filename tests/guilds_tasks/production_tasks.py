@@ -12,12 +12,6 @@ def test_guild_tech_daily_production_runs_and_updates_last_production_at(monkeyp
     from guilds.models import Guild, GuildTechnology
     from guilds.tasks import guild_tech_daily_production
 
-    calls: list[tuple[str, int]] = []
-
-    monkeypatch.setattr(
-        "guilds.tasks.produce_technology_items",
-        lambda guild, tech_key, level: calls.append((tech_key, int(level))),
-    )
     monkeypatch.setattr(
         guild_tech_daily_production,
         "retry",
@@ -33,45 +27,9 @@ def test_guild_tech_daily_production_runs_and_updates_last_production_at(monkeyp
 
     result = guild_tech_daily_production.run()
     assert result == "dispatched 1 guild tasks"
-    assert sorted(calls) == [
-        ("forging_equipment_forge", 2),
-        ("hero_skill_books", 2),
-        ("sheep_grain_card", 2),
-    ]
 
     updated = {t.tech_key: t.last_production_at for t in GuildTechnology.objects.filter(guild=guild)}
     assert all(updated.values())
-
-
-@pytest.mark.django_db
-def test_guild_tech_daily_production_handles_inner_errors(monkeypatch, django_user_model):
-    from guilds.models import Guild, GuildTechnology
-    from guilds.tasks import guild_tech_daily_production
-
-    calls: list[str] = []
-
-    def produce(_guild, tech_key, _level):
-        if tech_key == "forging_equipment_forge":
-            raise DatabaseError("boom")
-        calls.append(tech_key)
-
-    monkeypatch.setattr("guilds.tasks.produce_technology_items", produce)
-    monkeypatch.setattr(
-        guild_tech_daily_production,
-        "retry",
-        lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("retry should not be called")),
-    )
-    monkeypatch.setattr("common.utils.celery.safe_apply_async", dispatch_immediately)
-
-    founder = django_user_model.objects.create_user(username="g_founder2", password="pass")
-    guild = Guild.objects.create(name="G2", founder=founder, is_active=True)
-    GuildTechnology.objects.create(guild=guild, tech_key="forging_equipment_forge", level=2)
-    GuildTechnology.objects.create(guild=guild, tech_key="hero_skill_books", level=2)
-    GuildTechnology.objects.create(guild=guild, tech_key="sheep_grain_card", level=2)
-
-    result = guild_tech_daily_production.run()
-    assert result == "dispatched 1 guild tasks"
-    assert sorted(calls) == ["hero_skill_books", "sheep_grain_card"]
 
 
 @pytest.mark.django_db
@@ -79,11 +37,9 @@ def test_process_single_guild_production_is_idempotent_per_day(monkeypatch, djan
     from guilds.models import Guild, GuildTechnology
     from guilds.tasks import process_single_guild_production
 
-    calls: list[tuple[str, int]] = []
-
     monkeypatch.setattr(
-        "guilds.tasks.produce_technology_items",
-        lambda _guild, tech_key, level: calls.append((tech_key, int(level))),
+        "guilds.services.technology_production.get_technology_production_items",
+        lambda *_args, **_kwargs: [],
     )
 
     founder = django_user_model.objects.create_user(username="g_founder_daily_once", password="pass")
@@ -96,7 +52,6 @@ def test_process_single_guild_production_is_idempotent_per_day(monkeypatch, djan
     tech.refresh_from_db()
     assert first == f"processed guild {guild.id}: forging_equipment_forge"
     assert second == f"processed guild {guild.id}: "
-    assert calls == [("forging_equipment_forge", 2)]
     assert tech.last_production_at is not None
 
 
@@ -105,59 +60,29 @@ def test_process_single_guild_production_does_not_mark_timestamp_on_failure(monk
     from guilds.models import Guild, GuildTechnology
     from guilds.tasks import process_single_guild_production
 
-    captured: dict[str, object] = {}
-
     monkeypatch.setattr(
-        "guilds.tasks.produce_technology_items",
+        "guilds.tasks.process_guild_technology_production",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(DatabaseError("boom")),
     )
+
+    class RetryRequested(Exception):
+        pass
+
     monkeypatch.setattr(
-        "common.utils.celery.safe_apply_async",
-        lambda *_args, **kwargs: captured.setdefault("kwargs", kwargs) or True,
+        process_single_guild_production,
+        "retry",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(RetryRequested()),
     )
 
     founder = django_user_model.objects.create_user(username="g_founder_daily_fail", password="pass")
     guild = Guild.objects.create(name="G-fail", founder=founder, is_active=True)
     tech = GuildTechnology.objects.create(guild=guild, tech_key="forging_equipment_forge", level=2)
 
-    result = process_single_guild_production.run(guild.id)
+    with pytest.raises(RetryRequested):
+        process_single_guild_production.run(guild.id)
 
     tech.refresh_from_db()
-    assert result == f"processed guild {guild.id}: ; failed_guild_ids={[guild.id]}"
     assert tech.last_production_at is None
-    assert captured["kwargs"]["args"] == [None, [guild.id], 1]
-
-
-@pytest.mark.django_db
-def test_process_single_guild_production_persists_failed_ids_when_retry_dispatch_fails(monkeypatch, django_user_model):
-    from django.core.cache import cache
-
-    from guilds.models import Guild, GuildTechnology
-    from guilds.tasks import (
-        FAILED_GUILD_PRODUCTION_IDS_CACHE_KEY,
-        get_failed_guild_ids,
-        process_single_guild_production,
-    )
-
-    cache.delete(FAILED_GUILD_PRODUCTION_IDS_CACHE_KEY)
-
-    monkeypatch.setattr(
-        "guilds.tasks.produce_technology_items",
-        lambda *_args, **_kwargs: (_ for _ in ()).throw(DatabaseError("boom")),
-    )
-    monkeypatch.setattr("common.utils.celery.safe_apply_async", lambda *_args, **_kwargs: False)
-
-    founder = django_user_model.objects.create_user(username="g_founder_dispatch_persist", password="pass")
-    guild = Guild.objects.create(name="G-dispatch-persist", founder=founder, is_active=True)
-    GuildTechnology.objects.create(guild=guild, tech_key="forging_equipment_forge", level=2)
-
-    result = process_single_guild_production.run(guild.id)
-
-    assert result == f"processed guild {guild.id}: ; failed_guild_ids={[guild.id]}"
-    assert cache.get(FAILED_GUILD_PRODUCTION_IDS_CACHE_KEY) == [guild.id]
-    assert get_failed_guild_ids() == [guild.id]
-
-    cache.delete(FAILED_GUILD_PRODUCTION_IDS_CACHE_KEY)
 
 
 @pytest.mark.django_db
@@ -170,7 +95,7 @@ def test_process_single_guild_production_programming_error_bubbles_up(monkeypatc
     tech = GuildTechnology.objects.create(guild=guild, tech_key="forging_equipment_forge", level=2)
 
     monkeypatch.setattr(
-        "guilds.tasks.produce_technology_items",
+        "guilds.tasks.process_guild_technology_production",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("broken guild production contract")),
     )
 
@@ -186,10 +111,9 @@ def test_process_single_guild_production_runs_soul_container_once_per_day(monkey
     from guilds.models import Guild, GuildTechnology
     from guilds.tasks import process_single_guild_production
 
-    calls: list[tuple[str, int]] = []
     monkeypatch.setattr(
-        "guilds.tasks.produce_technology_items",
-        lambda guild, tech_key, level: calls.append((tech_key, int(level))),
+        "guilds.services.technology_production.get_technology_production_items",
+        lambda *_args, **_kwargs: [],
     )
 
     founder = django_user_model.objects.create_user(username="g_soul_container_founder", password="pass")
@@ -207,7 +131,6 @@ def test_process_single_guild_production_runs_soul_container_once_per_day(monkey
 
     assert first_result == f"processed guild {guild.id}: wolf_soul_container"
     assert second_result == f"processed guild {guild.id}: "
-    assert calls == [("wolf_soul_container", 3)]
     tech.refresh_from_db()
     assert tech.last_production_at is not None
 

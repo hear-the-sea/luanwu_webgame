@@ -147,6 +147,42 @@ def test_guild_rules_rejects_negative_target_level_upgrade_cost():
     assert result.errors[0].path == "technology.upgrade_cost_overrides.wolf_soul_container.2.gold_bar"
 
 
+def test_guild_rules_accepts_technology_production_upkeep():
+    data = {
+        "pagination": {"guild_list_page_size": 20, "guild_hall_display_limit": 20},
+        "creation": {},
+        "contribution": {},
+        "technology": {
+            "production_upkeep": {
+                "silver_per_contribution": 60,
+                "grain_per_contribution": 90,
+            },
+        },
+    }
+
+    result = validate_guild_rules(data)
+
+    assert result.is_valid, result.errors
+
+
+def test_guild_rules_rejects_invalid_technology_production_upkeep():
+    data = {
+        "pagination": {"guild_list_page_size": 20, "guild_hall_display_limit": 20},
+        "creation": {},
+        "contribution": {},
+        "technology": {
+            "production_upkeep": {
+                "silver_per_contribution": -1,
+            },
+        },
+    }
+
+    result = validate_guild_rules(data)
+
+    assert_invalid(result, substring="non-negative integer")
+    assert result.errors[0].path == "technology.production_upkeep.silver_per_contribution"
+
+
 def test_guest_growth_rules_rejects_non_dict_root():
     result = validate_guest_growth_rules([])
     assert_invalid(result)

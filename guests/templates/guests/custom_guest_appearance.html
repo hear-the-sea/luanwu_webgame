@@ -3,16 +3,29 @@
 {% block title %}{% if creating %}输入门客信息{% else %}姓名与形象{% endif %}{% endblock %}
 {% block extra_head %}<link rel="stylesheet" href="{% static 'css/guest-detail.css' %}"><link rel="stylesheet" href="{% static 'css/custom-guest.css' %}">{% endblock %}
 {% block content %}
-<section class="dashboard guest-detail custom-appearance">
+<section class="dashboard guest-detail custom-appearance guest-interface-page" aria-label="门客形象设置，可滚动浏览" tabindex="0">
     <div class="custom-cultivation-heading"><h1>{% if creating %}输入门客信息{% else %}姓名与形象{% endif %}</h1><a class="tw-btn-secondary" href="{% if guest %}{% url 'guests:detail' guest.id %}{% else %}{% url 'gameplay:warehouse' %}{% endif %}">返回</a></div>
     <form method="post" class="board-card" data-custom-guest-action>
         {% csrf_token %}
         <label for="custom-guest-name">姓名</label><input id="custom-guest-name" name="name" minlength="2" maxlength="12" value="{{ guest.display_name|default:'' }}" required autocomplete="off">
-        <fieldset class="custom-avatar-fieldset"><legend>选择形象</legend><div class="custom-avatar-grid">
-            {% for avatar in avatars %}
-            <label class="custom-avatar-option"><input type="radio" name="avatar_key" value="{{ avatar.key }}" {% if selected_avatar == avatar.key %}checked{% endif %} required><img src="{{ avatar.url }}" alt="{{ avatar.label }}" width="72" height="72" loading="lazy"></label>
+        <input type="hidden" name="avatar_key" value="{{ selected_avatar }}">
+        <fieldset class="custom-avatar-fieldset"><legend>选择形象</legend>
+            {% for group in avatar_groups %}
+            <details class="custom-avatar-group" data-avatar-group="{{ group.key }}" data-avatar-initial-page="{{ group.initial_page }}" data-avatar-url="?avatar_group={{ group.key|urlencode }}">
+                <summary><span>{{ group.label }}</span><span class="custom-avatar-count">{{ group.count }} 款</span><span class="custom-avatar-selected" data-avatar-selected {% if not group.selected %}hidden{% endif %}>已选择</span></summary>
+                <div class="custom-avatar-group-content">
+                    <p class="custom-avatar-status" data-avatar-status role="status">展开选择形象</p>
+                    <div class="custom-avatar-grid" data-avatar-grid></div>
+                    <nav class="custom-avatar-pagination" data-avatar-pagination aria-label="{{ group.label }}分页" hidden>
+                        <button type="button" class="tw-btn-secondary" data-avatar-direction="-1" disabled>上一页</button>
+                        <span data-avatar-page-label aria-live="polite"></span>
+                        <button type="button" class="tw-btn-secondary" data-avatar-direction="1" disabled>下一页</button>
+                    </nav>
+                </div>
+            </details>
             {% endfor %}
-        </div></fieldset>
+            <p class="custom-avatar-error" data-avatar-error role="alert" hidden>请展开一个栏目，选择门客形象。</p>
+        </fieldset>
         <button type="submit" class="tw-btn-primary">确认</button>
     </form>
 </section>

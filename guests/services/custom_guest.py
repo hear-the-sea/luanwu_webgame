@@ -16,7 +16,7 @@ from gameplay.services.inventory.core import (
     consume_inventory_item_locked,
     validate_inventory_item_group,
 )
-from guests.avatar import resolve_guest_disguise_avatar_asset
+from guests.avatar import resolve_custom_guest_avatar_asset
 from guests.models import CustomGuestProgress, Guest, GuestStatus, GuestTemplate, default_custom_guest_weights
 
 CUSTOM_GUEST_TEMPLATE_KEYS = frozenset(f"custom_guest_{rarity}" for rarity in ("green", "blue", "purple", "orange"))
@@ -105,7 +105,7 @@ def _appearance(name: object, avatar_key: object) -> tuple[str, str]:
     name = name.strip()
     if not 2 <= len(name) <= 12 or any(unicodedata.category(char).startswith("C") for char in name):
         raise GameError("姓名须为2～12个字符，不能包含控制字符")
-    avatar = resolve_guest_disguise_avatar_asset(avatar_key)
+    avatar = resolve_custom_guest_avatar_asset(avatar_key)
     if not avatar:
         raise GameError("请选择有效的门客头像")
     return name, avatar

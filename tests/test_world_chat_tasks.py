@@ -52,8 +52,8 @@ def test_world_chat_tasks_have_stable_names_exports_routes_and_beat_schedule():
     from config.settings.celery_conf import (
         CELERY_BEAT_SCHEDULE,
         CELERY_TASK_ROUTES,
-        CELERY_TIMER_MAINTENANCE_QUEUE,
         CELERY_TIMER_QUEUE,
+        CELERY_TIMER_SCAN_QUEUE,
     )
     from gameplay import tasks
 
@@ -62,7 +62,7 @@ def test_world_chat_tasks_have_stable_names_exports_routes_and_beat_schedule():
     assert tasks.scan_world_chat_attempts_task.name == "gameplay.scan_world_chat_attempts"
     assert CELERY_TASK_ROUTES["gameplay.publish_world_chat_attempt"] == {"queue": CELERY_TIMER_QUEUE}
     assert CELERY_TASK_ROUTES["gameplay.refund_world_chat_attempt"] == {"queue": CELERY_TIMER_QUEUE}
-    assert CELERY_TASK_ROUTES["gameplay.scan_world_chat_attempts"] == {"queue": CELERY_TIMER_MAINTENANCE_QUEUE}
+    assert CELERY_TASK_ROUTES["gameplay.scan_world_chat_attempts"] == {"queue": CELERY_TIMER_SCAN_QUEUE}
     assert CELERY_BEAT_SCHEDULE["scan-world-chat-attempts"]["task"] == "gameplay.scan_world_chat_attempts"
     assert str(CELERY_BEAT_SCHEDULE["scan-world-chat-attempts"]["schedule"]) == "<crontab: * * * * * (m/h/dM/MY/d)>"
 

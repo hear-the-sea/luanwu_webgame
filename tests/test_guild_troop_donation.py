@@ -64,9 +64,9 @@ def test_troop_donation_rates_follow_recruitment_technology_tiers():
     assert guild_constants.DAILY_TROOP_CONTRIBUTION_LIMIT == 300
     assert guild_troop_service.get_troop_donation_rate("scout") == 1
     assert guild_troop_service.get_troop_donation_rate("dao_ke") == 1
-    assert guild_troop_service.get_troop_donation_rate("dao_jie") == 3
-    assert guild_troop_service.get_troop_donation_rate("dao_ba") == 6
-    assert guild_troop_service.get_troop_donation_rate("dao_sheng") == 12
+    assert guild_troop_service.get_troop_donation_rate("dao_jie") == 2
+    assert guild_troop_service.get_troop_donation_rate("dao_ba") == 4
+    assert guild_troop_service.get_troop_donation_rate("dao_sheng") == 6
     assert guild_troop_service.get_troop_donation_rate("custom_unknown_guard") == 1
 
 

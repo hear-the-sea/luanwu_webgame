@@ -384,6 +384,9 @@ def test_equip_guest_preserves_numeric_string_free_gear_path(django_user_model):
         extra_stats={"force": 6},
     )
     gear = GearItem.objects.create(manor=manor, template=template)
+    inventory_before = list(
+        InventoryItem.objects.filter(manor=manor).order_by("pk").values_list("pk", "quantity", "bound_quantity")
+    )
 
     equipped = equip_guest(str(gear.pk), guest, slot=GearSlot.WEAPON)
 
@@ -392,4 +395,7 @@ def test_equip_guest_preserves_numeric_string_free_gear_path(django_user_model):
     assert equipped.pk == gear.pk
     assert equipped.guest_id == guest.pk
     assert guest.force == 106
-    assert not InventoryItem.objects.filter(manor=manor).exists()
+    inventory_after = list(
+        InventoryItem.objects.filter(manor=manor).order_by("pk").values_list("pk", "quantity", "bound_quantity")
+    )
+    assert inventory_after == inventory_before

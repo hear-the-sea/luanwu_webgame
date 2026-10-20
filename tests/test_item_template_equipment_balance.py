@@ -41,9 +41,10 @@ SLOT_CAPACITY = {
     "device": 3,
 }
 MAX_DIRECT_TROOP_CAPACITY = 500
-MAX_DIRECT_LUCK = 190
-# 先手装以防御换敏捷；11 槽直接敏捷实际最大279，对100级紫武将约增加5%。
-MAX_DIRECT_AGILITY = 280
+# 开阳铠甲将直接属性上限提升 1 点，其余装备总预算保持原值。
+MAX_DIRECT_LUCK = 191
+# 摇光铠甲强化先手属性；当前装备组合最高直接敏捷为285。
+MAX_DIRECT_AGILITY = 285
 # 无前缀、无套装的生命+50×防御最高15922；带防御前缀的极端值反而下降。
 MAX_DIRECT_EFFECTIVE_HP = 16000
 MAX_ORANGE_NON_HP_ATTRIBUTE_SUM = 130
@@ -125,6 +126,7 @@ RESOURCE_PACK_STORAGE = {
 }
 STRATEGIC_ITEM_STORAGE = {
     "custom_guest_card": 1,
+    "chiyou_card": 25,
     "yijinjing": 1,
     "millennium_zhuguo": 1,
     "zhuxian_sword_intent": 1,
@@ -138,6 +140,9 @@ STRATEGIC_ITEM_STORAGE = {
     "peace_shield_large": 100,
     "xisuidan": 150,
     "soul_container": 200,
+    "zhanlong_white_horse_token": 10,
+    "zhanlong_changban_guard_token": 10,
+    "zhanlong_dangyang_valor_letter": 10,
 }
 
 
@@ -404,7 +409,7 @@ def test_work_chests_include_starter_equipment_rewards():
 def test_blueprint_material_costs_enforce_collection_gates():
     items = _load_item_templates()
     recipes = _load_forge_blueprints()
-    assert len(recipes) == 36
+    assert len(recipes) == 37
 
     orange_gaolu_costs = {
         "blueprint_feiyuan": 7,
@@ -417,6 +422,18 @@ def test_blueprint_material_costs_enforce_collection_gates():
         rarity = str(result_item["rarity"])
         kind = "device" if result_item["effect_type"] == "equip_device" else "set"
         costs = recipe["costs"]
+        if blueprint_key == "blueprint_chiyoujia":
+            assert result_item["rarity"] == "orange"
+            assert costs == {
+                "equip_tianshukaijia": 1,
+                "equip_tianxuankaijia": 1,
+                "equip_tianjikaijia": 1,
+                "equip_yaoguangkaijia": 1,
+                "equip_tianquankaijia": 1,
+                "equip_yuhengkaijia": 1,
+                "equip_kaiyangkaijia": 1,
+            }
+            continue
         material_costs = {key: int(costs[key]) for key in FORGE_MATERIAL_KEYS if key in costs}
         stone_costs = {key: int(costs[key]) for key in ELEMENT_STONE_KEYS if key in costs}
 

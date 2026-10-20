@@ -61,9 +61,10 @@ def _add_production_page(
     options_key: str,
     page_key: str,
     page: str | int,
+    items_per_page: int = UIConstants.PRODUCTION_ITEMS_PER_PAGE,
 ) -> None:
     options = list(context.get(options_key) or [])
-    context[page_key] = Paginator(options, UIConstants.PRODUCTION_ITEMS_PER_PAGE).get_page(page)
+    context[page_key] = Paginator(options, items_per_page).get_page(page)
 
 
 def _normalize_production_result_non_empty_string(raw_value: object, *, contract_name: str) -> str:
@@ -362,6 +363,11 @@ class SmithyView(LoginRequiredMixin, TemplateView):
             options_key="selected_metal_options",
             page_key="smithy_page_obj",
             page=self.request.GET.get("page", 1),
+            items_per_page=(
+                UIConstants.SMITHY_MEDICINE_ITEMS_PER_PAGE
+                if context["current_smithy_category"] == "medicine"
+                else UIConstants.PRODUCTION_ITEMS_PER_PAGE
+            ),
         )
         return context
 
@@ -409,7 +415,7 @@ class ForgeView(LoginRequiredMixin, TemplateView):
 
     template_name = "gameplay/forge.html"
     ITEMS_PER_PAGE = UIConstants.FORGE_ITEMS_PER_PAGE
-    DECOMPOSE_ITEMS_PER_PAGE = 9
+    DECOMPOSE_ITEMS_PER_PAGE = UIConstants.FORGE_DECOMPOSE_ITEMS_PER_PAGE
     BLUEPRINT_ITEMS_PER_PAGE = UIConstants.FORGE_BLUEPRINTS_PER_PAGE
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:

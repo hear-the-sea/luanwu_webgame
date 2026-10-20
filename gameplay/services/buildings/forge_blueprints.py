@@ -9,7 +9,13 @@ from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.models import Manor as ManorModel
 
 from .. import technology as technology_service
-from ..equipment_affixes import roll_equipment_reward_items_locked
+from ..equipment_affixes import (
+    AFFIX_FIELD,
+    AFFIX_LABELS,
+    BASE_KEY_FIELD,
+    equipment_affix_key,
+    roll_equipment_reward_items_locked,
+)
 from ..inventory.core import add_items_to_inventory_locked, consume_inventory_item_locked
 from .forge_helpers import build_blueprint_synthesis_option, build_inventory_quantity_map, collect_recipe_related_keys
 
@@ -91,6 +97,52 @@ def build_blueprint_recipe_index(config: dict[str, Any]) -> dict[str, dict[str, 
     return result
 
 
+def _equipment_material_aliases(
+    template_map: dict[str, ItemTemplate], material_keys: set[str]
+) -> dict[str, tuple[str, str]]:
+    """只将配方引用的装备基模板扩展为固定词缀身份。"""
+    aliases = {}
+    for key in sorted(material_keys):
+        template = template_map.get(key)
+        if not template or not str(template.effect_type or "").startswith("equip_"):
+            continue
+        payload = template.effect_payload or {}
+        if not isinstance(payload, dict) or payload.get(BASE_KEY_FIELD) or payload.get(AFFIX_FIELD):
+            continue
+        for affix in AFFIX_LABELS:
+            aliases[equipment_affix_key(key, affix)] = (key, affix)
+    return aliases
+
+
+def _group_blueprint_material_inventory(
+    inventory_items: list[InventoryItem],
+    template_map: dict[str, ItemTemplate],
+    aliases: dict[str, tuple[str, str]],
+) -> dict[str, list[InventoryItem]]:
+    grouped: dict[str, list[InventoryItem]] = {}
+    for item in inventory_items:
+        template = item.template
+        grouped.setdefault(template.key, []).append(item)
+        identity = aliases.get(template.key)
+        if identity is None:
+            continue
+        base_key, affix = identity
+        base = template_map[base_key]
+        payload = template.effect_payload or {}
+        if (
+            isinstance(payload, dict)
+            and payload.get(BASE_KEY_FIELD) == base_key
+            and payload.get(AFFIX_FIELD) == affix
+            and template.effect_type == base.effect_type
+            and template.rarity == base.rarity
+        ):
+            grouped.setdefault(base_key, []).append(item)
+    for key, items in grouped.items():
+        # 先用原版装备，再按库存主键消耗变体，保证扣除顺序可复现。
+        items.sort(key=lambda item: (item.template.key != key, item.pk))
+    return grouped
+
+
 def get_blueprint_synthesis_options(
     manor: Any,
     *,
@@ -107,16 +159,21 @@ def get_blueprint_synthesis_options(
 
     all_keys = collect_recipe_related_keys(recipes)
     template_map = {tpl.key: tpl for tpl in ItemTemplate.objects.filter(key__in=all_keys)}
-    inventory_items = (
+    material_keys = {key for recipe in recipes for key in recipe["costs"]}
+    aliases = _equipment_material_aliases(template_map, material_keys)
+    inventory_items = list(
         InventoryItem.objects.filter(
             manor=manor,
-            template__key__in=all_keys,
+            template__key__in=all_keys | aliases.keys(),
             storage_location=InventoryItem.StorageLocation.WAREHOUSE,
         )
         .select_related("template")
         .order_by("id")
     )
     quantities = build_inventory_quantity_map(inventory_items)
+    material_inventory = _group_blueprint_material_inventory(inventory_items, template_map, aliases)
+    for key in material_keys:
+        quantities[key] = sum(item.quantity for item in material_inventory.get(key, []))
     bound_quantities = {item.template.key: item.bound_quantity for item in inventory_items}
     forging_level = technology_service.get_player_technology_level(manor, "forging")
 
@@ -129,6 +186,8 @@ def get_blueprint_synthesis_options(
             forging_level=forging_level,
         )
         if option is not None:
+            result_template = template_map.get(recipe["result_item_key"])
+            option["result_image_url"] = result_template.image.url if result_template and result_template.image else ""
             option["blueprint_bound_count"] = bound_quantities.get(recipe["blueprint_key"], 0)
             option["blueprint_unbound_count"] = option["blueprint_count"] - option["blueprint_bound_count"]
             options.append(option)
@@ -169,36 +228,51 @@ def synthesize_equipment_with_blueprint(
         total = cost_amount * quantity
         consume_requirements[cost_key] = consume_requirements.get(cost_key, 0) + total
 
-    template_names = {
-        tpl.key: tpl.name
-        for tpl in ItemTemplate.objects.filter(key__in=consume_requirements.keys()).only("key", "name")
-    }
+    template_map = {tpl.key: tpl for tpl in ItemTemplate.objects.filter(key__in=consume_requirements)}
+    aliases = _equipment_material_aliases(template_map, set(recipe["costs"]))
 
     with transaction.atomic():
         locked_manor = ManorModel.objects.select_for_update().get(pk=manor.pk)
-        locked_items = {
-            item.template.key: item
-            for item in InventoryItem.objects.select_for_update()
+        locked_items = list(
+            InventoryItem.objects.select_for_update()
             .select_related("template")
             .filter(
                 manor=locked_manor,
-                template__key__in=consume_requirements.keys(),
+                template__key__in=consume_requirements.keys() | aliases.keys(),
                 storage_location=InventoryItem.StorageLocation.WAREHOUSE,
             )
-        }
+            .order_by("id")
+        )
+        material_inventory = _group_blueprint_material_inventory(locked_items, template_map, aliases)
+        remaining = {item.pk: item.quantity for item in locked_items}
+        consumption_plan: dict[str, list[tuple[InventoryItem, int]]] = {}
 
-        for need_key, need_amount in consume_requirements.items():
-            item = locked_items.get(need_key)
-            if not item or item.quantity < need_amount:
-                need_name = template_names.get(need_key, "所需材料")
+        # 精确指定的材料先预留，避免同一词缀库存被两个材料要求重复计算。
+        base_material_keys = {base for base, _ in aliases.values()}
+        for need_key in sorted(consume_requirements, key=lambda key: key in base_material_keys):
+            needed = consume_requirements[need_key]
+            plan = []
+            for item in material_inventory.get(need_key, []):
+                used = min(needed, remaining[item.pk])
+                if used:
+                    plan.append((item, used))
+                    remaining[item.pk] -= used
+                    needed -= used
+                if not needed:
+                    break
+            if needed:
+                need_name = getattr(template_map.get(need_key), "name", "所需材料")
                 raise ForgeOperationError(f"{need_name}不足")
+            consumption_plan[need_key] = plan
 
         # 同一图纸可能同时出现在主图纸和 costs 中，先汇总后各扣一次，
         # 再按每次合成的图纸用量分配绑定产物，避免绑定图纸被重复分配。
         bound_craft_count = 0
         for need_key, need_amount in consume_requirements.items():
-            bound_used = consume_inventory_item_locked(locked_items[need_key], need_amount)
-            if (need_key == blueprint_key) or (need_key.startswith("blueprint_")):
+            bound_used = sum(consume_inventory_item_locked(item, amount) for item, amount in consumption_plan[need_key])
+            need_template = template_map.get(need_key)
+            is_equipment = need_template and str(need_template.effect_type or "").startswith("equip_")
+            if (need_key == blueprint_key) or (need_key.startswith("blueprint_")) or is_equipment:
                 per_craft = need_amount // quantity
                 bound_craft_count = max(bound_craft_count, (bound_used + per_craft - 1) // per_craft)
 

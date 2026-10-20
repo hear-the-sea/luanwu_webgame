@@ -299,6 +299,9 @@ def _try_capture_guest(
         guest_template=captured_template,
         original_guest_name=captured_name,
         original_level=target.level,
+        rarity_pill_used=(
+            target.rarity_pill_used or target.template.key.startswith(RARITY_CONVERSION_TEMPLATE_KEY_PREFIX)
+        ),
         loyalty=target.loyalty,
         captured_loyalty=target.loyalty,
         status=JailPrisoner.Status.HELD,

@@ -92,7 +92,9 @@ def _get_item_template_map(keys: set[str]) -> Dict[str, ItemTemplate]:
         return {}
     return {
         tpl.key: tpl
-        for tpl in ItemTemplate.objects.filter(key__in=keys).only("key", "name", "effect_type", "effect_payload")
+        for tpl in ItemTemplate.objects.filter(key__in=keys).only(
+            "key", "name", "effect_type", "effect_payload", "image"
+        )
     }
 
 
@@ -324,7 +326,7 @@ def get_equipment_options(manor: Manor, category: str = None) -> List[Dict[str, 
         build_inventory_quantity_map=build_inventory_quantity_map,
     )
 
-    return build_equipment_options(
+    options = build_equipment_options(
         manor=manor,
         filtered_configs=filtered_configs,
         item_name_map=item_name_map,
@@ -338,6 +340,10 @@ def get_equipment_options(manor: Manor, category: str = None) -> List[Dict[str, 
         max_quantity=max_quantity,
         is_forging=is_forging,
     )
+    for option in options:
+        template = item_template_map.get(option["key"])
+        option["image_url"] = template.image.url if template and template.image else ""
+    return options
 
 
 def get_equipment_by_category(manor: Manor) -> Dict[str, Dict[str, Any]]:
@@ -440,4 +446,9 @@ def get_active_forgings(manor: Manor) -> List[EquipmentProduction]:
     Returns:
         锻造列表
     """
-    return _forge_runtime.get_active_forgings(manor, equipment_production_model=EquipmentProduction)
+    productions = _forge_runtime.get_active_forgings(manor, equipment_production_model=EquipmentProduction)
+    templates = _get_item_template_map({production.equipment_key for production in productions})
+    for production in productions:
+        template = templates.get(production.equipment_key)
+        production.image_url = template.image.url if template and template.image else ""
+    return productions

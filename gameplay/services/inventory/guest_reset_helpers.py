@@ -266,6 +266,14 @@ def _get_or_create_rarity_conversion_template(guest: Guest, *, target_rarity: st
         return existing
 
 
+def get_rarity_conversion_block_reason(guest: Guest) -> str | None:
+    if guest.rarity_pill_used or guest.template.key.startswith(RARITY_CONVERSION_TEMPLATE_KEY_PREFIX):
+        return "该门客已使用过升阶丸子，每名门客只能使用一次绿转蓝或蓝转紫丸子"
+    if not guest.template.recruitable or guest.template.is_world_unique:
+        return "该门客为非招募门客，无法使用绿转蓝或蓝转紫丸子"
+    return None
+
+
 def resolve_rarity_upgrade_target(guest: Guest, *, payload: object) -> GuestTemplate:
     if not isinstance(payload, dict):
         raise GuestItemConfigurationError("升阶道具配置错误")
@@ -290,6 +298,10 @@ def resolve_rarity_upgrade_target(guest: Guest, *, payload: object) -> GuestTemp
         target_rarity = _normalize_guest_rarity(target_template.rarity, field_name="目标稀有度")
         _require_higher_rarity(source_rarity, target_rarity)
         return target_template
+
+    block_reason = get_rarity_conversion_block_reason(guest)
+    if block_reason:
+        raise GuestItemConfigurationError(block_reason)
 
     source_rarity = _normalize_guest_rarity(payload.get("source_rarity"), field_name="来源稀有度")
     target_rarity = _normalize_guest_rarity(payload.get("target_rarity"), field_name="目标稀有度")

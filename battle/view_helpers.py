@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from .models import BattleReport
 
 _RESOURCE_LABELS = {key: label for key, label in ResourceType.choices}
+_RESOURCE_LABELS["guild_contribution"] = "帮会贡献"
 _REWARD_RARITIES = frozenset({"default", "black", "gray", "green", "blue", "red", "purple", "orange"})
 
 
@@ -46,6 +47,22 @@ def _load_arena_match_for_report(report: "BattleReport"):
 def _load_arena_coop_event_for_report(report: "BattleReport"):
     ArenaCoopEvent = apps.get_model("gameplay", "ArenaCoopEvent")
     return ArenaCoopEvent.objects.filter(battle_report=report).first()
+
+
+def _load_arena_wheel_bout_for_report(report: "BattleReport"):
+    report_id = getattr(report, "pk", None)
+    if not report_id:
+        return None
+    ArenaWheelBout = apps.get_model("gameplay", "ArenaWheelBout")
+    return (
+        ArenaWheelBout.objects.select_related(
+            "event",
+            "team_a_entry__manor",
+            "team_b_entry__manor",
+        )
+        .filter(battle_report_id=report_id)
+        .first()
+    )
 
 
 def _load_arena_ring_match_for_report(report: "BattleReport"):
@@ -142,6 +159,56 @@ def resolve_report_runtime_context(report: "BattleReport", *, manor_id: int) -> 
             return {"player_side": "attacker", "raid_run": None, "arena_match": arena_match}
         return {"player_side": "spectator", "raid_run": None, "arena_match": arena_match}
 
+    arena_wheel_bout = _load_arena_wheel_bout_for_report(report)
+    if arena_wheel_bout:
+        team_a_entry = arena_wheel_bout.team_a_entry
+        team_b_entry = arena_wheel_bout.team_b_entry
+        attacker_entry = team_a_entry if arena_wheel_bout.team_a_is_attacker else team_b_entry
+        defender_entry = team_b_entry if arena_wheel_bout.team_a_is_attacker else team_a_entry
+        entries = list(
+            arena_wheel_bout.event.entries.select_related("manor")
+            .filter(team__in=["A", "B"])
+            .exclude(status="cancelled")
+            .order_by("team", "team_order", "id")
+        )
+        viewer_team = next((entry.team for entry in entries if entry.manor_id == manor_id), None)
+        if viewer_team == attacker_entry.team:
+            player_side = "attacker"
+        elif viewer_team == defender_entry.team:
+            player_side = "defender"
+        else:
+            player_side = "spectator"
+        teams = []
+        for team, active_entry, name in (("A", team_a_entry, "甲队"), ("B", team_b_entry, "乙队")):
+            label = ("我方队伍" if team == viewer_team else "敌方队伍") if viewer_team else name
+            teams.append(
+                {
+                    "label": f"{label}（{name}）" if viewer_team else label,
+                    "members": "、".join(entry.manor.display_name for entry in entries if entry.team == team),
+                    "active_player": active_entry.manor.display_name,
+                }
+            )
+        if viewer_team == "B":
+            teams.reverse()
+        return {
+            "player_side": player_side,
+            "raid_run": None,
+            "arena_wheel_bout": arena_wheel_bout,
+            "arena_wheel_teams": teams,
+        }
+
+    # Preserve the recipient's team perspective after expired wheel events are cleaned up.
+    if getattr(report, "battle_type", "") == "arena":
+        report_message = _load_report_message_for_manor(report, manor_id=manor_id)
+        attachments = getattr(report_message, "attachments", None)
+        wheel_snapshot = attachments.get("arena_wheel") if isinstance(attachments, dict) else None
+        if isinstance(wheel_snapshot, dict) and wheel_snapshot.get("player_side") in {"attacker", "defender"}:
+            return {
+                "player_side": wheel_snapshot["player_side"],
+                "raid_run": None,
+                "arena_wheel_teams": wheel_snapshot.get("teams", []),
+            }
+
     ring_match = _load_arena_ring_match_for_report(report)
     if ring_match:
         side = (
@@ -162,17 +229,17 @@ def resolve_report_runtime_context(report: "BattleReport", *, manor_id: int) -> 
 
     guild_raid_run = _load_guild_raid_run_for_report(report)
     if guild_raid_run:
-        player_side = _resolve_guild_raid_player_side(guild_raid_run, report=report, manor_id=manor_id)
-        if player_side is None:
-            player_side = infer_side_from_guest_ownership(report, manor_id)
-        if player_side is None:
+        guild_raid_player_side = _resolve_guild_raid_player_side(guild_raid_run, report=report, manor_id=manor_id)
+        if guild_raid_player_side is None:
+            guild_raid_player_side = infer_side_from_guest_ownership(report, manor_id)
+        if guild_raid_player_side is None:
             if report.manor_id == manor_id:
-                player_side = "attacker"
+                guild_raid_player_side = "attacker"
             elif report.messages.filter(manor_id=manor_id).exists():
-                player_side = "defender"
+                guild_raid_player_side = "defender"
             else:
-                player_side = "attacker"
-        return {"player_side": player_side, "raid_run": guild_raid_run}
+                guild_raid_player_side = "attacker"
+        return {"player_side": guild_raid_player_side, "raid_run": guild_raid_run}
 
     # Raid and arena reports belong to the attacker; historical guest ownership
     # may have changed through capture since the battle took place.
@@ -612,7 +679,12 @@ def build_report_title(report: "BattleReport", *, player_side: str, viewer_manor
     return f"{report.opponent_name} 战报"
 
 
-def build_arena_matchup_context(report: "BattleReport", *, arena_match: Any = None) -> dict[str, str] | None:
+def build_arena_matchup_context(
+    report: "BattleReport",
+    *,
+    arena_match: Any = None,
+    arena_wheel_bout: Any = None,
+) -> dict[str, str] | None:
     """Build the attacker/defender manor names shown on arena reports."""
     if arena_match is None and str(getattr(report, "battle_type", "") or "") != "arena":
         return None
@@ -620,6 +692,15 @@ def build_arena_matchup_context(report: "BattleReport", *, arena_match: Any = No
     if arena_match is not None:
         attacker_entry = getattr(arena_match, "attacker_entry", None)
         defender_entry = getattr(arena_match, "defender_entry", None)
+        attacker_manor = getattr(attacker_entry, "manor", None)
+        defender_manor = getattr(defender_entry, "manor", None)
+        attacker_name = str(getattr(attacker_manor, "display_name", "") or "").strip()
+        defender_name = str(getattr(defender_manor, "display_name", "") or "").strip()
+    elif arena_wheel_bout is not None:
+        team_a_entry = getattr(arena_wheel_bout, "team_a_entry", None)
+        team_b_entry = getattr(arena_wheel_bout, "team_b_entry", None)
+        attacker_entry = team_a_entry if arena_wheel_bout.team_a_is_attacker else team_b_entry
+        defender_entry = team_b_entry if arena_wheel_bout.team_a_is_attacker else team_a_entry
         attacker_manor = getattr(attacker_entry, "manor", None)
         defender_manor = getattr(defender_entry, "manor", None)
         attacker_name = str(getattr(attacker_manor, "display_name", "") or "").strip()

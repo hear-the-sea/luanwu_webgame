@@ -76,7 +76,9 @@ def test_custom_card_cannot_be_sold_or_listed_even_if_configuration_or_binding_i
         key="custom_guest_card",
         defaults={"name": "自定义门客卡", "price": 100, "tradeable": True, "effect_type": "tool"},
     )
-    InventoryItem.objects.create(manor=manor, template=template, quantity=1, bound_quantity=0)
+    card = InventoryItem.objects.get(manor=manor, template=template)
+    card.bound_quantity = 0
+    card.save(update_fields=["bound_quantity"])
     with pytest.raises(ItemNotConfiguredError, match="不可出售"):
         sell_item(manor, template.key, 1)
     with pytest.raises(TradeValidationError, match="不可交易"):
@@ -101,14 +103,17 @@ def test_entry_grants_exactly_one_bound_card_and_never_replenishes_consumed_card
 
 
 def test_missing_card_template_does_not_mark_account_issued(manor_factory):
-    manor, user = manor_factory()
     ItemTemplate.objects.filter(key="custom_guest_card").delete()
+    manor, user = manor_factory()
     grant_custom_guest_card_on_entry(user, manor=manor)
     assert not CustomGuestProgress.objects.filter(manor=manor, card_issued=True).exists()
 
 
 def test_failed_card_grant_rolls_back_issue_marker_and_can_retry(manor_factory):
     manor, _ = manor_factory()
+    # 构造功能上线前尚未领卡的历史庄园。
+    InventoryItem.objects.filter(manor=manor, template__key="custom_guest_card").delete()
+    CustomGuestProgress.objects.filter(manor=manor).delete()
     ItemTemplate.objects.update_or_create(
         key="custom_guest_card", defaults={"name": "自定义门客卡", "effect_type": "tool"}
     )

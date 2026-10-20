@@ -73,7 +73,7 @@ def ready_challenge_ring(**kwargs):
     return challenge_ring(**kwargs)
 
 
-def test_paid_inspection_exact_transfer_idempotent_and_stale(ring_players):
+def test_inspection_is_free_idempotent_and_stale(ring_players):
     a, b, ga, _ = ring_players
     occupied = occupy(a, ga)
     kwargs = target(b, occupied)
@@ -81,18 +81,17 @@ def test_paid_inspection_exact_transfer_idempotent_and_stale(ring_players):
     assert inspect_ring(**kwargs) == result
     a.refresh_from_db()
     b.refresh_from_db()
-    assert a.silver == 1180000
-    assert b.silver == 800000
+    assert a.silver == b.silver == 1000000
     receipt = ArenaRingInspection.objects.get(pk=result["inspection_id"])
     assert receipt.buyer_id == b.pk and receipt.lineup["guests"][0]["guest_id"] == ga.pk
-    assert ResourceEvent.objects.filter(manor=b, delta=-200000).count() == 1
+    assert not ResourceEvent.objects.filter(manor=b, delta__lt=0).exists()
     inspect_ring(**target(b, occupied))
     assert ArenaRingInspection.objects.count() == 2
     update_ring_lineup(**target(a, occupied), guest_ids=[ga.pk], troop_loadout={})
     with pytest.raises(ArenaRingError, match="已变化"):
         inspect_ring(**target(b, occupied))
     b.refresh_from_db()
-    assert b.silver == 600000
+    assert b.silver == 1000000
 
 
 def test_own_inspection_free_and_single_occupation(ring_players):
@@ -112,7 +111,7 @@ def test_own_inspection_free_and_single_occupation(ring_players):
         )
 
 
-def test_paid_inspection_settles_accrued_silver_before_spending(ring_players, monkeypatch):
+def test_free_inspection_does_not_settle_or_transfer_silver(ring_players, monkeypatch):
     a, b, ga, _ = ring_players
     occupied = occupy(a, ga)
     b.silver = 190000
@@ -130,10 +129,10 @@ def test_paid_inspection_settles_accrued_silver_before_spending(ring_players, mo
     assert inspect_ring(**kwargs) == result
     a.refresh_from_db()
     b.refresh_from_db()
-    assert settlements == [b.pk]
-    assert b.silver == 10000
-    assert a.silver == 1180000
-    assert ResourceEvent.objects.filter(manor=b, delta=-200000).count() == 1
+    assert settlements == []
+    assert b.silver == 190000
+    assert a.silver == 1000000
+    assert not ResourceEvent.objects.filter(manor=b, delta__lt=0).exists()
 
 
 def test_inspection_rechecks_expiry_after_waiting_for_locks(ring_players, monkeypatch):
@@ -158,7 +157,7 @@ def test_inspection_rechecks_expiry_after_waiting_for_locks(ring_players, monkey
     assert not ArenaRingInspection.objects.exists()
 
 
-def test_time_rewards_expire_and_reoccupation_cooldown(ring_players):
+def test_ring_expiry_does_not_award_coins_and_keeps_reoccupation_cooldown(ring_players):
     a, _, ga, _ = ring_players
     occupied = occupy(a, ga)
     tenure = ArenaRingTenure.objects.get(pk=occupied["tenure_id"])
@@ -168,18 +167,17 @@ def test_time_rewards_expire_and_reoccupation_cooldown(ring_players):
     tenure.save(update_fields=["started_at", "settled_at", "ends_at"])
     refresh_due_rings(now=now + timedelta(minutes=20))
     refresh_due_rings(now=now + timedelta(minutes=20))
-    daily = ArenaRingDaily.objects.get(manor=a)
-    assert daily.seconds == 1200 and daily.time_coins == 8
+    assert not ArenaRingDaily.objects.filter(manor=a).exists()
     refresh_due_rings(now=now + timedelta(hours=3))
     tenure.refresh_from_db()
     a.refresh_from_db()
     assert tenure.ended_at == tenure.ends_at
-    assert a.arena_coins == 48
+    assert a.arena_coins == 0
     ring = ArenaRing.objects.get(key="qinglong")
     assert ring.current_tenure_id is None
 
 
-def test_time_reward_crossing_daily_cap_awards_only_remaining_coins(ring_players):
+def test_ring_refresh_does_not_update_historic_reward_counters(ring_players):
     a, _, ga, _ = ring_players
     occupied = occupy(a, ga)
     tenure = ArenaRingTenure.objects.get(pk=occupied["tenure_id"])
@@ -193,9 +191,9 @@ def test_time_reward_crossing_daily_cap_awards_only_remaining_coins(ring_players
     refresh_due_rings(now=start + timedelta(minutes=40))
     daily.refresh_from_db()
     a.refresh_from_db()
-    assert daily.seconds == 19800
-    assert daily.time_coins == 120
-    assert a.arena_coins == 4
+    assert daily.seconds == 17400
+    assert daily.time_coins == 116
+    assert a.arena_coins == 0
 
 
 def test_update_snapshot_and_bank_available_stock_no_depletion(ring_players):
@@ -223,7 +221,7 @@ def test_update_snapshot_and_bank_available_stock_no_depletion(ring_players):
     assert TroopBankStorage.objects.get(manor=a).count == 20
 
 
-def test_challenge_first_pair_rewards_and_no_real_damage(ring_players, monkeypatch):
+def test_challenge_records_battle_without_rewards_or_real_damage(ring_players, monkeypatch):
     a, b, ga, gb = ring_players
     occupied = occupy(a, ga)
 
@@ -246,14 +244,14 @@ def test_challenge_first_pair_rewards_and_no_real_damage(ring_players, monkeypat
     ready_challenge_ring(**target(b, occupied), guest_ids=[gb.pk], troop_loadout={})
     a.refresh_from_db()
     b.refresh_from_db()
-    assert a.arena_coins == 20 and b.arena_coins == 10
+    assert a.arena_coins == b.arena_coins == 0
     assert ArenaRingMatch.objects.count() == 2
     assert ArenaRingDaily.objects.get(manor=b).challenges == 2
     assert ArenaRingTenure.objects.get(pk=occupied["tenure_id"]).defenses == 2
     update_ring_lineup(**target(a, occupied), guest_ids=[ga.pk], troop_loadout={})
 
 
-def test_leave_keeps_rewards_and_cooldown(ring_players):
+def test_leave_does_not_award_coins_and_keeps_cooldown(ring_players):
     a, _, ga, _ = ring_players
     occupied = occupy(a, ga)
     leave_ring(**target(a, occupied))
@@ -362,7 +360,7 @@ def test_virtual_troops_ignore_stock_but_obey_dispatch_cap(ring_players):
     assert not TroopBankStorage.objects.filter(manor=a).exists()
 
 
-def test_battle_failure_rolls_back_challenge_and_rewards(ring_players, monkeypatch):
+def test_battle_failure_rolls_back_challenge_and_daily_counter(ring_players, monkeypatch):
     from core.exceptions import BattlePreparationError
 
     a, b, ga, gb = ring_players
@@ -379,7 +377,7 @@ def test_battle_failure_rolls_back_challenge_and_rewards(ring_players, monkeypat
     assert ArenaRing.objects.get(key="qinglong").current_tenure_id == occupied["tenure_id"]
 
 
-def test_cross_day_time_rewards_are_split(ring_players):
+def test_cross_day_ring_refresh_does_not_award_time_rewards(ring_players):
     from datetime import datetime
 
     a, _, ga, _ = ring_players
@@ -390,8 +388,9 @@ def test_cross_day_time_rewards_are_split(ring_players):
     tenure.ends_at = start + timedelta(hours=2)
     tenure.save(update_fields=["started_at", "settled_at", "ends_at"])
     refresh_due_rings(now=start + timedelta(minutes=20))
-    rows = list(ArenaRingDaily.objects.filter(manor=a).order_by("date"))
-    assert [(r.seconds, r.time_coins) for r in rows] == [(600, 4), (600, 4)]
+    assert not ArenaRingDaily.objects.filter(manor=a).exists()
+    a.refresh_from_db()
+    assert a.arena_coins == 0
 
 
 def test_only_two_named_rings_are_accessible(ring_players):
@@ -408,12 +407,12 @@ def test_only_two_named_rings_are_accessible(ring_players):
         )
 
 
-def test_challenge_quota_and_reward_caps(ring_players, monkeypatch):
+def test_daily_challenge_quota_without_rewards(ring_players, monkeypatch):
     a, b, ga, gb = ring_players
     occupied = occupy(a, ga)
     day = timezone.localdate()
-    ArenaRingDaily.objects.create(manor=a, date=day, seconds=18000, time_coins=120, defense_rewards=10)
-    ArenaRingDaily.objects.create(manor=b, date=day, participation_rewards=5, challenges=9)
+    ArenaRingDaily.objects.create(manor=a, date=day, challenges=0)
+    ArenaRingDaily.objects.create(manor=b, date=day, challenges=9)
 
     def simulate(**kwargs):
         return BattleReport.objects.create(
@@ -435,7 +434,7 @@ def test_challenge_quota_and_reward_caps(ring_players, monkeypatch):
     assert ArenaRingMatch.objects.count() == 1
 
 
-def test_pair_rewards_do_not_reset_between_rings_or_role_swap(ring_players, monkeypatch):
+def test_pair_battles_on_two_rings_do_not_grant_rewards(ring_players, monkeypatch):
     a, b, ga, gb = ring_players
     occupied = occupy(a, ga)
 
@@ -472,7 +471,7 @@ def test_pair_rewards_do_not_reset_between_rings_or_role_swap(ring_players, monk
     )
     a.refresh_from_db()
     b.refresh_from_db()
-    assert a.arena_coins == 20 and b.arena_coins == 10
+    assert a.arena_coins == b.arena_coins == 0
     assert ArenaRingMatch.objects.count() == 2
 
 
@@ -513,10 +512,8 @@ def test_registration_preserves_busy_status_and_battle_uses_saved_guest_snapshot
     assert gb.status == GuestStatus.VACATION
 
 
-@pytest.mark.parametrize("threshold,bonus", [(3, 30), (5, 60), (10, 120)])
-def test_streak_milestones_repeat_opponent_and_break_reward(ring_players, manor_factory, monkeypatch, threshold, bonus):
+def test_streak_wins_and_breaks_do_not_award_currency(ring_players, manor_factory, monkeypatch):
     from gameplay.models import InventoryItem, ItemTemplate
-    from gameplay.services.arena.ring_rewards import effective_streak
 
     ItemTemplate.objects.get_or_create(key="chunqiu_coin", defaults={"name": "春秋币"})
 
@@ -524,7 +521,7 @@ def test_streak_milestones_repeat_opponent_and_break_reward(ring_players, manor_
     occupied = occupy(a, ga)
     tenure = ArenaRingTenure.objects.get(pk=occupied["tenure_id"])
     today = timezone.localdate()
-    for index in range(threshold - 1):
+    for index in range(2):
         challenger, _ = manor_factory(username=f"streak_challenger_{index}")
         low, high = sorted((a.pk, challenger.pk))
         ArenaRingMatch.objects.create(
@@ -537,7 +534,7 @@ def test_streak_milestones_repeat_opponent_and_break_reward(ring_players, manor_
             reward_date=today,
             created_at=timezone.now(),
         )
-    tenure.defenses = threshold - 1
+    tenure.defenses = 2
     tenure.save(update_fields=["defenses"])
     winner = "defender"
 
@@ -554,27 +551,25 @@ def test_streak_milestones_repeat_opponent_and_break_reward(ring_players, manor_
     monkeypatch.setattr("gameplay.services.arena.ring.simulate_report", simulate)
     kwargs = dict(**target(b, occupied), guest_ids=[gb.pk], troop_loadout={})
     result = ready_challenge_ring(**kwargs)
-    assert result["streak_coins"] == bonus
-    assert result["streak_chunqiu_coins"] == bonus // 10
+    assert "streak_coins" not in result
+    assert "streak_chunqiu_coins" not in result
     assert ready_challenge_ring(**kwargs) == result
     ready_challenge_ring(**target(b, occupied), guest_ids=[gb.pk], troop_loadout={})
-    assert effective_streak(tenure) == threshold
     winner = "draw"
     drawing_player, _ = manor_factory(username="ring_draw_player")
     drawing_guest = create_guest(drawing_player, ga.template, "平局挑战者")
     drawn = ready_challenge_ring(**target(drawing_player, occupied), guest_ids=[drawing_guest.pk], troop_loadout={})
     assert not drawn["won"]
-    assert effective_streak(tenure) == threshold
     a.refresh_from_db()
-    assert a.arena_coins == 20 + bonus
-    assert InventoryItem.objects.get(manor=a, template__key="chunqiu_coin").quantity == bonus // 10
+    assert a.arena_coins == 0
+    assert not InventoryItem.objects.filter(manor=a, template__key="chunqiu_coin").exists()
     breaker, _ = manor_factory(username="streak_breaker")
     guest = create_guest(breaker, ga.template, "终结者")
     winner = "attacker"
     broken = ready_challenge_ring(**target(breaker, occupied), guest_ids=[guest.pk], troop_loadout={})
-    assert broken["break_streak_coins"] == bonus
+    assert "break_streak_coins" not in broken
     breaker.refresh_from_db()
-    assert breaker.arena_coins == 10 + bonus
+    assert breaker.arena_coins == 0
     assert not InventoryItem.objects.filter(manor=breaker, template__key="chunqiu_coin").exists()
     assert ArenaRingTenure.objects.get(pk=broken["tenure_id"]).defenses == 0
 
@@ -639,7 +634,7 @@ def test_admin_reset_clears_return_cooldowns_without_deleting_history(ring_playe
     second = occupy(b, gb)
     ring = ArenaRing.objects.get(key="qinglong")
     current = ArenaRingTenure.objects.get(pk=second["tenure_id"])
-    _end(ring, current, b, timezone.now(), "admin_reset")
+    _end(ring, current, timezone.now(), "admin_reset")
     old.end_reason = "admin_reset"
     old.save(update_fields=["end_reason"])
     third = occupy(a, ga)

@@ -234,9 +234,11 @@ class UIConstants:
 
     # 分页设置
     MESSAGES_PER_PAGE = 5  # 消息列表每页显示数量
-    FORGE_ITEMS_PER_PAGE = 6  # 锻造页面每页显示数量
-    FORGE_BLUEPRINTS_PER_PAGE = 3  # 铁匠铺图纸合成每页显示数量
-    PRODUCTION_ITEMS_PER_PAGE = 6  # 生产页面每页显示数量
+    FORGE_ITEMS_PER_PAGE = 6  # 锻造页面每页显示数量，适配3列网格
+    FORGE_BLUEPRINTS_PER_PAGE = 6  # 图纸合成每页显示数量，适配3列网格
+    FORGE_DECOMPOSE_ITEMS_PER_PAGE = 6  # 装备分解每页显示数量，适配3列网格
+    PRODUCTION_ITEMS_PER_PAGE = 6  # 生产页面每页显示数量，适配3列网格
+    SMITHY_MEDICINE_ITEMS_PER_PAGE = 8  # 冶炼坊药品每页显示数量
     RECRUITMENT_ITEMS_PER_PAGE = 6  # 护院招募页面每页显示数量
     MAP_SEARCH_PAGE_SIZE = 5  # 地图搜索每页数量
     MAP_SEARCH_NAME_LIMIT = 50  # 按名称搜索最大结果数

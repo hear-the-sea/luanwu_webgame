@@ -165,11 +165,13 @@ def guild_detail(request: Any, guild_id: int) -> HttpResponse:
         "leader": leader,
         "member_count": guild.current_member_count,
         "announcements": announcements,
+        "guild_upgrade_cost": guild_service.calculate_guild_upgrade_cost(guild.level),
     }
     if is_member and member is not None:
         manor = get_object_or_404(Manor, user=request.user)
         context.update(build_guild_resource_context(member, manor=manor))
         context["guild_material_balances"] = get_guild_material_balances(member.guild)
+        context["tech_production_upkeep"] = guild_constants.TECH_PRODUCTION_UPKEEP
 
     return render(request, "guilds/detail.html", context)
 

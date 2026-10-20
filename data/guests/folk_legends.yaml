@@ -1,0 +1,124 @@
+# 个人帮会任务的民间传说敌阵，独立于招募池及其他任务。
+heroes:
+  purple:
+    - key: task_legend_crane_attendant
+      name: 鹤童
+      archetype: civil
+      recruitable: false
+      default_gender: male
+      avatar: monkey/任务/白鹤符使.png
+      flavor: 白蛇传盗仙草一折中的仙山守童，以轻灵身法阻拦求药之人。
+      growth_range: [6, 11]
+      custom_stats:
+        force: 75
+        intellect: 175
+        defense: 95
+        agility: 150
+        luck: 85
+        base_hp: 80000
+    - key: task_legend_deer_attendant
+      name: 鹿童
+      archetype: military
+      recruitable: false
+      default_gender: male
+      avatar: monkey/任务/慈航.png
+      flavor: 白蛇传盗仙草一折中的仙山守童，守住灵芝药圃，不让来人轻易取草。
+      growth_range: [6, 11]
+      custom_stats:
+        force: 155
+        intellect: 90
+        defense: 175
+        agility: 95
+        luck: 70
+        base_hp: 62000
+    - key: task_legend_crab_general
+      name: 蟹将
+      archetype: military
+      recruitable: false
+      default_gender: male
+      avatar: monkey/任务/金甲神兵.png
+      flavor: 八仙过海故事中的龙宫水族，披甲横行，以坚壳为同伴挡下攻势。
+      growth_range: [6, 11]
+      custom_stats:
+        force: 180
+        intellect: 80
+        defense: 220
+        agility: 100
+        luck: 70
+        base_hp: 128000
+    - key: task_legend_shrimp_vanguard
+      name: 虾兵先锋
+      archetype: military
+      recruitable: false
+      default_gender: male
+      avatar: monkey/任务/守卫.png
+      flavor: 八仙过海故事中的龙宫水族，持刃逐浪，以迅疾攻势封锁海路。
+      growth_range: [6, 11]
+      custom_stats:
+        force: 210
+        intellect: 90
+        defense: 140
+        agility: 230
+        luck: 85
+        base_hp: 122000
+  orange:
+    - key: task_legend_east_sea_dragon
+      name: 东海龙王
+      archetype: military
+      recruitable: false
+      default_gender: male
+      avatar: monkey/任务/雨师.png
+      flavor: 八仙过海故事中的东海龙王，统领水族，龙吟声中海浪翻涌。
+      growth_range: [8, 13]
+      custom_stats:
+        force: 250
+        intellect: 200
+        defense: 190
+        agility: 160
+        luck: 100
+        base_hp: 300000
+    - key: task_legend_meishan_guard
+      name: 梅山守将
+      archetype: military
+      recruitable: false
+      default_gender: male
+      avatar: monkey/任务/高顺.png
+      flavor: 宝莲灯劈山救母关卡中的梅山守军，奉二郎神之命守住华山要道。
+      growth_range: [8, 13]
+      custom_stats:
+        force: 220
+        intellect: 130
+        defense: 260
+        agility: 140
+        luck: 85
+        base_hp: 360000
+    - key: task_legend_celestial_hound
+      name: 哮天犬
+      archetype: military
+      recruitable: false
+      default_gender: male
+      avatar: monkey/任务/猛虎.png
+      flavor: 二郎神身边的神犬，迅疾凶猛，在华山守阵中追击来人。
+      growth_range: [8, 13]
+      custom_stats:
+        force: 265
+        intellect: 100
+        defense: 170
+        agility: 280
+        luck: 100
+        base_hp: 280000
+    - key: task_legend_erlang_shen
+      name: 二郎神
+      archetype: civil
+      recruitable: false
+      default_gender: male
+      avatar: monkey/任务/杨戬.png
+      flavor: 宝莲灯传说中的二郎神，三圣母之兄，持三尖两刃刀镇守华山，与前来救母的沉香相争。
+      growth_range: [8, 13]
+      custom_stats:
+        force: 260
+        intellect: 280
+        defense: 230
+        agility: 230
+        luck: 115
+        base_hp: 400000

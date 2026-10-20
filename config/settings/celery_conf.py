@@ -5,6 +5,7 @@ Celery configuration - queues, routes, and beat schedule.
 from __future__ import annotations
 
 import os
+from datetime import timedelta
 
 from celery.schedules import crontab
 from kombu import Queue
@@ -126,6 +127,12 @@ CELERY_WORKER_STALL_WATCHDOG_SHUTDOWN_GRACE = max(30, int(env("CELERY_WORKER_STA
 CELERY_TIMER_SCAN_TASKS = frozenset(
     {
         "accounts.scan_email_verification_deliveries",
+        "gameplay.scan_arena_virtual_reserves",
+        "gameplay.grow_arena_virtual_reserves",
+        "gameplay.collect_arena_fill_service_outcomes",
+        "gameplay.scan_world_chat_attempts",
+        "trade.process_expired_listings",
+        "trade.process_pending_auction_deliveries",
         "gameplay.scan_due_missions",
         "gameplay.scan_building_upgrades",
         "gameplay.scan_technology_upgrades",
@@ -144,6 +151,7 @@ CELERY_TIMER_SCAN_TASKS = frozenset(
         "gameplay.scan_scout_records",
         "gameplay.scan_arena_tournaments",
         "gameplay.scan_arena_coop_events",
+        "gameplay.scan_arena_wheel_events",
         "gameplay.scan_arena_rings",
         "gameplay.scan_raid_runs",
         "guilds.scan_due_raids",
@@ -159,9 +167,6 @@ CELERY_TIMER_SCAN_TASKS = frozenset(
 CELERY_TIMER_MAINTENANCE_TASKS = frozenset(
     {
         "accounts.send_email_verification_delivery",
-        "gameplay.scan_arena_virtual_reserves",
-        "gameplay.grow_arena_virtual_reserves",
-        "gameplay.collect_arena_fill_service_outcomes",
         "gameplay.plan_virtual_players",
         "gameplay.roll_virtual_players",
         "gameplay.scan_virtual_player_maintenance",
@@ -174,15 +179,13 @@ CELERY_TIMER_MAINTENANCE_TASKS = frozenset(
         "gameplay.backfill_global_mail_campaign",
         "gameplay.cleanup_old_data",
         "gameplay.decay_prisoner_loyalty",
-        "gameplay.scan_world_chat_attempts",
         "guilds.cleanup_invalid_hero_pool",
         "guilds.reset_weekly_stats",
         "guilds.cleanup_old_logs",
         "trade.refresh_shop_stock",
-        "trade.process_expired_listings",
-        "trade.process_pending_auction_deliveries",
         "trade.settle_auction_round",
         "trade.create_auction_round",
+        "gameplay.cleanup_arena_wheel_events",
     }
 )
 
@@ -332,7 +335,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     "cleanup-old-guild-logs": {
         "task": "guilds.cleanup_old_logs",
-        "schedule": crontab(hour=3, minute=0),
+        "schedule": crontab(minute=20),
     },
     "cleanup-invalid-guild-hero-pool": {
         "task": "guilds.cleanup_invalid_hero_pool",
@@ -362,6 +365,14 @@ CELERY_BEAT_SCHEDULE = {
         "task": "gameplay.scan_arena_coop_events",
         "schedule": crontab(minute="*/1"),
     },
+    "scan-arena-wheel-events": {
+        "task": "gameplay.scan_arena_wheel_events",
+        "schedule": timedelta(seconds=10),
+    },
+    "cleanup-arena-wheel-events": {
+        "task": "gameplay.cleanup_arena_wheel_events",
+        "schedule": crontab(minute="*/1"),
+    },
     "scan-arena-rings": {
         "task": "gameplay.scan_arena_rings",
         "schedule": crontab(minute="*/1"),
@@ -377,7 +388,6 @@ CELERY_BEAT_SCHEDULE = {
     "collect-arena-fill-service-outcomes": {
         "task": "gameplay.collect_arena_fill_service_outcomes",
         "schedule": crontab(minute="*"),
-        "options": {"queue": CELERY_TIMER_MAINTENANCE_QUEUE},
     },
     "process-expired-market-listings": {
         "task": "trade.process_expired_listings",
@@ -389,7 +399,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     "cleanup-old-resource-events": {
         "task": "gameplay.cleanup_old_data",
-        "schedule": crontab(hour=4, minute=0),
+        "schedule": crontab(minute=0),
     },
     "decay-prisoner-loyalty": {
         "task": "gameplay.decay_prisoner_loyalty",
@@ -463,7 +473,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     "cleanup-virtual-player-safety-metrics": {
         "task": "gameplay.cleanup_virtual_player_safety_metrics",
-        "schedule": crontab(hour=5, minute=43),
+        "schedule": crontab(minute=40),
     },
     "cleanup-virtual-player-jail": {
         "task": "gameplay.cleanup_virtual_player_jail",

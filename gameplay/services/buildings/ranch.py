@@ -28,7 +28,7 @@ from core.utils.time_scale import scale_duration
 from core.utils.yaml_loader import load_yaml_data
 
 from ...constants import BuildingKeys
-from ...models import LivestockProduction, Manor
+from ...models import ItemTemplate, LivestockProduction, Manor
 from ..utils.notifications import notify_user
 from .production_cancel import cancel_active_production
 from .production_queue import get_production_queue_capacity
@@ -239,7 +239,11 @@ def get_livestock_options(manor: Manor, *, guild_tech_level: int | None = None) 
     is_producing = bool(active_productions)
     queue_full = len(active_productions) >= get_livestock_queue_capacity(manor)
     warehouse_grain_quantity = get_warehouse_grain_quantity(manor)
-    livestock_name_map = _get_item_name_map(set(LIVESTOCK_CONFIG.keys()))
+    livestock_templates = {
+        template.key: template
+        for template in ItemTemplate.objects.filter(key__in=LIVESTOCK_CONFIG.keys()).only("key", "name", "image")
+    }
+    livestock_name_map = {key: template.name for key, template in livestock_templates.items()}
 
     options = []
     for livestock_key, raw_config in LIVESTOCK_CONFIG.items():
@@ -253,11 +257,14 @@ def get_livestock_options(manor: Manor, *, guild_tech_level: int | None = None) 
         required_level = config["required_animal_husbandry"]
         is_unlocked = animal_husbandry_level >= required_level
         livestock_name = livestock_name_map.get(livestock_key, "未知家畜")
+        livestock_template = livestock_templates.get(livestock_key)
+        image_url = livestock_template.image.url if livestock_template and livestock_template.image else ""
         discounted_grain_cost = apply_guild_production_cost_discount(config["grain_cost"], guild_tech_level)
         options.append(
             {
                 "key": livestock_key,
                 "name": livestock_name,
+                "image_url": image_url,
                 "grain_cost": config["grain_cost"],
                 "base_duration": config["base_duration"],
                 "actual_duration": actual_duration,

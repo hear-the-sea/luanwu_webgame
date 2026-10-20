@@ -1,6 +1,7 @@
 .jail-workspace {
-  max-width: 1180px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: none;
+  margin: 0;
   color: var(--text-primary);
 }
 
@@ -10,78 +11,89 @@
 }
 
 .game-dialog-message {
-  white-space: pre-line;
-  text-align: left;
-  line-height: 1.7;
   max-height: 55vh;
   overflow-y: auto;
   overflow-wrap: anywhere;
+  white-space: pre-line;
+  text-align: left;
+  line-height: 1.7;
 }
 
-.jail-page-header,
-.jail-prisoner-header,
-.jail-prisoner-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.jail-page-header .caption {
-  margin-bottom: 0;
+.jail-page-header {
+  align-items: flex-start;
 }
 
 .jail-prisoner-list {
   display: grid;
-  gap: 24px;
+  gap: 1rem;
 }
 
 .jail-cell {
-  border: 2px solid var(--border-primary);
-  box-shadow: 0 2px 0 rgb(74 38 18 / 12%);
+  border-color: rgba(139, 69, 19, 0.36);
 }
 
 .jail-prisoner-panel {
   overflow: hidden;
-  background: var(--bg-panel);
-}
-
-.jail-cell-header {
-  border-bottom: 1px solid var(--border-light);
-  box-shadow: inset 4px 0 0 var(--accent-red);
+  margin-bottom: 0;
 }
 
 .jail-prisoner-header {
-  min-height: 48px;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: inset 4px 0 0 var(--accent-red);
 }
 
 .jail-prisoner-identity {
+  display: grid;
   min-width: 0;
+  gap: 0.45rem;
+}
+
+.jail-prisoner-title-row {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
 }
 
 .jail-slot-label {
-  display: block;
-  margin-bottom: 3px;
-  color: var(--text-muted);
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1.2;
+  flex: 0 0 auto;
+  margin: 0;
 }
 
-.jail-prisoner-identity h2 {
+.jail-prisoner-title-row h2 {
+  min-width: 0;
   margin: 0;
   color: var(--text-primary);
-  font-size: 17px;
-  line-height: 1.35;
+  font-size: 1.1rem;
+  line-height: 1.45rem;
   letter-spacing: 0;
+  overflow-wrap: anywhere;
 }
 
-.jail-prisoner-identity p {
-  margin: 2px 0 0;
+.jail-prisoner-rarity {
+  flex: 0 0 auto;
+  border-color: rgba(139, 69, 19, 0.24);
+  background: rgba(255, 248, 231, 0.78);
+  color: var(--text-secondary);
+}
+
+.jail-prisoner-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.9rem;
   color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 400;
-  overflow-wrap: anywhere;
+  font-size: 0.75rem;
+  line-height: 1.15rem;
+}
+
+.jail-prisoner-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
 }
 
 .jail-prisoner-actions form,
@@ -91,21 +103,23 @@
 
 .jail-prisoner-content {
   display: grid;
-  gap: 14px;
+  gap: 1rem;
 }
 
 .jail-status-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(130px, 0.55fr);
-  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(150px, 0.72fr);
+  gap: 0.65rem;
 }
 
 .jail-status-item {
+  display: grid;
   min-width: 0;
-  padding: 10px 12px;
-  border: 1px solid var(--border-light);
-  border-radius: 4px;
-  background: var(--bg-secondary);
+  align-content: center;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid rgba(139, 69, 19, 0.18);
+  border-radius: 0.5rem;
+  background: linear-gradient(145deg, rgba(255, 250, 238, 0.96), rgba(238, 223, 199, 0.6));
 }
 
 .jail-status-label,
@@ -113,101 +127,118 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 0.75rem;
 }
 
 .jail-status-label {
-  margin-bottom: 6px;
+  margin-bottom: 0.45rem;
 }
 
 .jail-status-label span,
 .jail-status-item--actions span {
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .jail-status-label strong,
 .jail-status-item--actions strong {
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: 0.9rem;
+  line-height: 1.2rem;
 }
 
 .jail-meter-track {
-  height: 7px;
+  height: 0.55rem;
   overflow: hidden;
-  border-radius: 2px;
-  background: var(--border-light);
+  border: 1px solid rgba(92, 58, 33, 0.1);
+  border-radius: 999px;
+  background: rgba(92, 58, 33, 0.14);
 }
 
 .jail-meter-fill {
   display: block;
   height: 100%;
+  border-radius: inherit;
   transition: width 240ms ease;
 }
 
 .jail-meter-fill--heart {
-  background: var(--accent-red);
+  background: linear-gradient(90deg, #bd2945, var(--accent-red));
 }
 
 .jail-meter-fill--affinity {
-  background: var(--accent-green);
+  background: linear-gradient(90deg, #16805f, var(--accent-green));
 }
 
 .jail-operation-grid {
   display: grid;
   grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.45fr);
-  gap: 14px;
+  gap: 0.85rem;
   align-items: start;
 }
 
 .jail-subsection,
 .jail-milestone {
   min-width: 0;
-  padding: 14px;
-  border: 1px solid var(--border-light);
-  border-radius: 4px;
-  background: var(--bg-card);
+  padding: 0.9rem;
+  border: 1px solid rgba(139, 69, 19, 0.2);
+  border-radius: 0.5rem;
+  background: linear-gradient(150deg, rgba(255, 250, 238, 0.92), rgba(242, 230, 214, 0.8));
 }
 
 .jail-section-title {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
 }
 
 .jail-section-title h3 {
   margin: 0;
   color: var(--text-primary);
-  font-size: 14px;
-  line-height: 1.35;
+  font-size: 0.9rem;
+  line-height: 1.3rem;
   letter-spacing: 0;
 }
 
-.jail-section-title span,
-.jail-muted {
+.jail-section-title > span {
+  flex: 0 0 auto;
+  border: 1px solid rgba(139, 69, 19, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 248, 231, 0.75);
+  padding: 0.1rem 0.45rem;
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 0.68rem;
+  line-height: 1rem;
 }
 
 .jail-muted {
-  margin: 0 0 12px;
-  line-height: 1.6;
+  margin: 0 0 0.75rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
 }
 
 .jail-clue-list {
   display: grid;
-  gap: 8px;
+  gap: 0.55rem;
   margin: 0;
-  padding-left: 20px;
+  padding-left: 1.25rem;
   color: var(--text-secondary);
-  font-size: 13px;
-  line-height: 1.65;
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+.jail-clue-list li::marker {
+  color: var(--accent-gold);
+  font-weight: 700;
 }
 
 .jail-milestone {
-  border-left: 3px solid var(--accent-red);
+  border-color: rgba(178, 34, 34, 0.24);
+  border-left: 4px solid var(--accent-red);
+  background: linear-gradient(115deg, rgba(255, 247, 226, 0.98), rgba(255, 238, 224, 0.86));
 }
 
 .jail-section-title--event h3 {
@@ -215,115 +246,131 @@
 }
 
 .jail-milestone p {
-  margin: 0 0 12px;
+  margin: 0 0 0.8rem;
   color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1.7;
+  font-size: 0.85rem;
+  line-height: 1.65;
 }
 
 .jail-choice-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .jail-method-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  border-top: 1px solid var(--border-light);
-  border-left: 1px solid var(--border-light);
+  gap: 0.5rem;
 }
 
 .jail-method {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 10px;
+  gap: 0.65rem;
   align-items: center;
-  min-height: 66px;
-  padding: 10px;
-  border-right: 1px solid var(--border-light);
-  border-bottom: 1px solid var(--border-light);
-  background: var(--bg-panel);
+  min-width: 0;
+  min-height: 4rem;
+  padding: 0.6rem;
+  border: 1px solid rgba(139, 69, 19, 0.16);
+  border-radius: 0.4rem;
+  background: rgba(255, 248, 231, 0.78);
 }
 
 .jail-method > div {
   display: grid;
-  gap: 3px;
+  gap: 0.2rem;
   min-width: 0;
 }
 
 .jail-method strong {
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 0.8rem;
 }
 
-.jail-method span {
+.jail-method span,
+.jail-speaker-select > span {
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 0.68rem;
+  line-height: 1.35;
   overflow-wrap: anywhere;
 }
 
 .jail-method--speaker {
-  grid-template-columns: minmax(80px, 0.55fr) minmax(150px, 1fr) auto;
+  grid-template-columns: minmax(90px, 0.55fr) minmax(120px, 1fr) auto;
 }
 
 .jail-speaker-select {
   display: grid;
-  gap: 3px;
+  gap: 0.2rem;
   min-width: 0;
 }
 
 .jail-speaker-select select {
   width: 100%;
   min-width: 0;
-  height: 32px;
+  height: 2rem;
   border: 1px solid var(--border-light);
-  border-radius: 4px;
+  border-radius: 0.35rem;
   background: var(--bg-panel);
   color: var(--text-primary);
-  font-size: 12px;
+  font-size: 0.72rem;
 }
 
 .jail-offer-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  gap: 0.6rem;
 }
 
 .jail-offer {
   display: grid;
-  gap: 4px;
-  min-height: 62px;
-  padding: 10px 12px;
-  border: 1px solid var(--border-light);
-  border-radius: 4px;
-  background: var(--bg-panel);
+  align-content: start;
+  gap: 0.35rem;
+  min-width: 0;
+  min-height: 4.2rem;
+  padding: 0.7rem 0.75rem;
+  border: 1px solid rgba(139, 69, 19, 0.2);
+  border-radius: 0.45rem;
+  background: linear-gradient(145deg, rgba(255, 250, 238, 0.98), rgba(238, 223, 199, 0.68));
   color: var(--text-primary);
   text-align: left;
   cursor: pointer;
+  transition: border-color 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
 }
 
 .jail-offer:hover:not(:disabled),
 .jail-offer:focus-visible:not(:disabled) {
   border-color: var(--border-primary);
   background: var(--bg-hover);
+  box-shadow: 0 2px 8px rgba(74, 38, 18, 0.1);
+}
+
+.jail-offer:focus-visible,
+.jail-method button:focus-visible,
+.jail-choice-row button:focus-visible,
+.jail-prisoner-actions button:focus-visible {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 2px;
 }
 
 .jail-offer strong {
-  font-size: 13px;
+  font-size: 0.82rem;
+  line-height: 1.2rem;
 }
 
 .jail-offer span {
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 0.7rem;
   line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .jail-offer:disabled,
 .jail-method button:disabled,
 .jail-speaker-select select:disabled {
   cursor: not-allowed;
-  opacity: 0.48;
+  opacity: 0.5;
 }
 
 .jail-action-pending {
@@ -331,26 +378,71 @@
   opacity: 0.62;
 }
 
-@media (max-width: 900px) {
-  .jail-operation-grid,
+.jail-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.65rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  text-align: left;
+}
+
+.jail-empty-state p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.jail-empty-mark {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border: 1px solid rgba(139, 69, 19, 0.24);
+  border-radius: 50%;
+  background: linear-gradient(145deg, #fff8e7, #e6d2a5);
+  color: var(--text-secondary);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+@media (max-width: 1024px) {
+  .jail-operation-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .jail-status-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .jail-status-item--actions {
-    min-height: 42px;
+    grid-column: 1 / -1;
+    min-height: 3.1rem;
+  }
+
+  .jail-offer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .jail-offer:last-child {
+    grid-column: 1 / -1;
   }
 }
 
-@media (max-width: 640px) {
-  .jail-page-header,
+@media (max-width: 760px) {
   .jail-prisoner-header {
     align-items: flex-start;
+    flex-direction: column;
   }
 
-  .jail-method-grid,
-  .jail-offer-grid {
-    grid-template-columns: 1fr;
+  .jail-prisoner-actions {
+    justify-content: flex-start;
+  }
+
+  .jail-method-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -358,7 +450,7 @@
   .jail-page-header,
   .jail-prisoner-header {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .jail-prisoner-actions {
@@ -369,9 +461,20 @@
     padding-right: 74px;
   }
 
+  .jail-status-grid,
+  .jail-method-grid,
+  .jail-offer-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .jail-status-item--actions,
+  .jail-offer:last-child {
+    grid-column: auto;
+  }
+
   .jail-method,
   .jail-method--speaker {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .jail-method button,
@@ -383,7 +486,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .jail-meter-fill {
+  .jail-meter-fill,
+  .jail-offer {
     transition: none;
   }
 }

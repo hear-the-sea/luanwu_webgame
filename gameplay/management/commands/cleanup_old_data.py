@@ -2,7 +2,7 @@
 清理过期数据的管理命令
 
 用于定期清理旧的流水记录，节省数据库空间。
-建议通过 cron 每天执行一次。
+建议通过 Celery Beat 每小时执行一次。
 
 使用方式：
     python manage.py cleanup_old_data                    # 使用默认配置清理
@@ -22,6 +22,12 @@ from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
 from core.config import MESSAGE
+from gameplay.record_retention import (
+    MAX_RECORD_RETENTION_DAYS,
+    TERMINAL_RECORD_TIME_FIELDS,
+    delete_eligible_record_batch,
+    eligible_record_queryset,
+)
 from gameplay.services.arena.fill_service_retention import (
     FillServiceCleanupResult,
     cleanup_fill_service_rows,
@@ -32,14 +38,19 @@ from gameplay.tasks.maintenance import ARENA_FILL_SERVICE_RETENTION_DAYS, VIRTUA
 
 # 清理配置：模型 -> (默认保留天数, 时间字段名)
 CLEANUP_CONFIG = {
-    "gameplay.ResourceEvent": (30, "created_at"),  # 资源流水保留30天
-    "gameplay.ArenaExchangeRecord": (30, "created_at"),  # 竞技场兑换记录保留30天
-    "battle.BattleReport": (30, "created_at"),  # 战报保留30天
-    "gameplay.Message": (MESSAGE.RETENTION_DAYS, "created_at"),  # 消息保留配置天数
-    "guilds.GuildResourceLog": (30, "created_at"),  # 帮会资源流水保留30天
-    "guilds.GuildDonationLog": (60, "donated_at"),  # 帮会捐献记录保留60天
-    "guilds.GuildExchangeLog": (60, "exchanged_at"),  # 帮会兑换记录保留60天
+    "gameplay.ResourceEvent": (MAX_RECORD_RETENTION_DAYS, "created_at"),
+    "gameplay.ArenaExchangeRecord": (MAX_RECORD_RETENTION_DAYS, "created_at"),
+    "battle.BattleReport": (MAX_RECORD_RETENTION_DAYS, "created_at"),
+    "gameplay.Message": (min(MAX_RECORD_RETENTION_DAYS, MESSAGE.RETENTION_DAYS), "created_at"),
+    "guilds.GuildResourceLog": (MAX_RECORD_RETENTION_DAYS, "created_at"),
+    "guilds.GuildDonationLog": (MAX_RECORD_RETENTION_DAYS, "donated_at"),
+    "guilds.GuildExchangeLog": (MAX_RECORD_RETENTION_DAYS, "exchanged_at"),
     "gameplay.BotSafetyDecisionAudit": (VIRTUAL_PLAYER_SAFETY_AUDIT_RETENTION_DAYS, "created_at"),
+}
+
+TERMINAL_CLEANUP_CONFIG = {
+    model_path: (MAX_RECORD_RETENTION_DAYS, time_field)
+    for model_path, time_field in TERMINAL_RECORD_TIME_FIELDS.items()
 }
 
 FILL_SERVICE_MODEL_PATHS = frozenset(
@@ -58,7 +69,7 @@ class Command(BaseCommand):
             "--days",
             type=int,
             default=None,
-            help="覆盖所有模型的保留天数，须非负（0 表示立即清理符合条件的历史记录；默认使用各模型配置）",
+            help=("设置保留天数；会限制在15天以内，须非负（0 表示立即清理符合条件的历史记录；" "默认使用各模型配置）"),
         )
         parser.add_argument(
             "--dry-run",
@@ -84,6 +95,8 @@ class Command(BaseCommand):
         if batch_size < 1:
             raise CommandError("batch-size must be at least 1")
         override_days = options["days"]
+        if override_days is not None:
+            override_days = min(MAX_RECORD_RETENTION_DAYS, int(override_days))
         if override_days is not None and override_days < 0:
             raise CommandError("days must be non-negative")
         target_model = options["model"]
@@ -104,6 +117,21 @@ class Command(BaseCommand):
 
             days = override_days if override_days is not None else default_days
             deleted = self._cleanup_model(model_path, days, time_field, dry_run, batch_size)
+            total_deleted += deleted
+
+        for model_path, (default_days, time_field) in TERMINAL_CLEANUP_CONFIG.items():
+            if target_model and model_path != target_model:
+                continue
+
+            days = override_days if override_days is not None else default_days
+            deleted = self._cleanup_model(
+                model_path,
+                days,
+                time_field,
+                dry_run,
+                batch_size,
+                terminal_only=True,
+            )
             total_deleted += deleted
 
         self.stdout.write("")
@@ -146,7 +174,16 @@ class Command(BaseCommand):
         )
         return result.deleted
 
-    def _cleanup_model(self, model_path: str, days: int, time_field: str, dry_run: bool, batch_size: int) -> int:
+    def _cleanup_model(
+        self,
+        model_path: str,
+        days: int,
+        time_field: str,
+        dry_run: bool,
+        batch_size: int,
+        *,
+        terminal_only: bool = False,
+    ) -> int:
         """清理单个模型的过期数据"""
         try:
             model = self._get_model(model_path)
@@ -180,11 +217,11 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.SUCCESS(message))
             return deleted_count
 
-        # 构建过滤条件：{time_field}__lt=cutoff
-        filter_kwargs = {f"{time_field}__lt": cutoff}
-
-        # 查找过期记录
-        queryset = model.objects.filter(**filter_kwargs)
+        queryset = (
+            eligible_record_queryset(model_path, cutoff=cutoff)
+            if terminal_only
+            else model.objects.filter(**{f"{time_field}__lt": cutoff})
+        )
         count = queryset.count()
 
         if count == 0:
@@ -199,11 +236,18 @@ class Command(BaseCommand):
         deleted_total = 0
         while True:
             # 获取一批要删除的 ID
-            ids_to_delete = list(model.objects.filter(**filter_kwargs).values_list("id", flat=True)[:batch_size])
+            if terminal_only:
+                eligible = eligible_record_queryset(model_path, cutoff=cutoff)
+            else:
+                eligible = model.objects.filter(**{f"{time_field}__lt": cutoff})
+            ids_to_delete = list(eligible.order_by(time_field, "pk").values_list("pk", flat=True)[:batch_size])
             if not ids_to_delete:
                 break
 
-            deleted, _ = model.objects.filter(id__in=ids_to_delete).delete()
+            if terminal_only:
+                deleted = delete_eligible_record_batch(model_path, cutoff=cutoff, record_ids=ids_to_delete)
+            else:
+                deleted, _ = eligible.filter(pk__in=ids_to_delete).delete()
             deleted_total += deleted
 
             if deleted < batch_size:

@@ -74,7 +74,7 @@
 {% endblock %}
 
 {% block arena_body %}
-<article class="tw-building-card tw-building-card--manor tw-arena-hero-card mb-6">
+<article class="tw-building-card tw-building-card--manor tw-arena-hero-card tw-arena-hero-card--registration mb-6">
     <div class="tw-building-media">
         <div class="tw-building-corner-frame">
             <span class="tw-corner-piece tw-corner-tl" aria-hidden="true"></span>
@@ -86,13 +86,14 @@
                 alt="围攻光明顶"
                 loading="lazy"
                 decoding="async"
-                width="512"
-                height="512"
+                width="1024"
+                height="559"
             >
         </div>
+        {% include "gameplay/arena/partials/sidebar_rules.html" with summary=arena_coop_event heading_id="arena-coop-rules-title" %}
     </div>
     <div class="tw-building-main">
-        {% include "gameplay/arena/partials/summary_intro.html" with summary=arena_coop_event compact=False %}
+        {% include "gameplay/arena/partials/summary_intro.html" with summary=arena_coop_event compact=False hide_metrics=True %}
         <section class="tw-arena-signup-panel" id="arena-coop-registration-panel" data-max-selected="{{ arena_coop_event.guest_limit_per_entry }}">
             {% if arena_coop_recruiting_event %}
             <p class="text-sm text-text-muted mb-3">
@@ -146,6 +147,96 @@
                 <div class="flex items-center gap-3 flex-wrap">
                     <button type="submit" class="tw-btn-primary">提交报名</button>
                     <span class="text-xs text-text-muted">{{ arena_coop_event.registration_hint }}</span>
+                </div>
+            </form>
+            {% endif %}
+        </section>
+    </div>
+</article>
+<article class="tw-building-card tw-building-card--manor tw-arena-hero-card tw-arena-hero-card--registration mb-6">
+    <div class="tw-building-media">
+        <div class="tw-building-corner-frame">
+            <span class="tw-corner-piece tw-corner-tl" aria-hidden="true"></span>
+            <span class="tw-corner-piece tw-corner-tr" aria-hidden="true"></span>
+            <span class="tw-corner-piece tw-corner-bl" aria-hidden="true"></span>
+            <span class="tw-corner-piece tw-corner-br" aria-hidden="true"></span>
+            <img
+                src="{% static 'images/buildings/3v3车轮战.png' %}"
+                alt="持剑与长枪交战的卡通护院小鸡"
+                loading="lazy"
+                decoding="async"
+                width="1672"
+                height="941"
+            >
+        </div>
+        {% include "gameplay/arena/partials/sidebar_rules.html" with summary=arena_wheel_event heading_id="arena-wheel-rules-title" %}
+    </div>
+    <div class="tw-building-main">
+        {% include "gameplay/arena/partials/summary_intro.html" with summary=arena_wheel_event compact=False hide_metrics=True %}
+        <section class="tw-arena-signup-panel" id="arena-wheel-registration-panel" data-max-selected="{{ arena_wheel_event.guest_limit_per_entry }}" data-required-selected="{{ arena_wheel_event.guest_limit_per_entry }}">
+            {% if arena_wheel_recruiting_event %}
+            <p class="text-sm text-text-muted mb-3">
+                当前车轮战报名池：场次 #{{ arena_wheel_recruiting_event.id }}
+                （{{ arena_wheel_recruiting_event.registered_entry_count|default:0 }}/{{ arena_wheel_recruiting_event.player_limit }}）
+            </p>
+            {% endif %}
+
+            {% if arena_wheel_active_entry %}
+            <div class="p-3 rounded-md border border-border-light bg-bg-hover">
+                <p class="font-semibold">您已报名车轮战 #{{ arena_wheel_active_entry.event_id }}（{{ arena_wheel_active_entry.event.get_status_display }}）</p>
+                {% if arena_wheel_active_entry.team %}
+                <p class="text-sm text-text-muted mt-1">{{ arena_wheel_active_entry.get_team_display }} · 第 {{ arena_wheel_active_entry.team_order }} 位出战 · 久战疲敝 {{ arena_wheel_active_entry.debuff_stacks }} 层</p>
+                {% endif %}
+                {% if arena_wheel_active_entry.event.status == 'preparing' and arena_wheel_active_entry.event.prepare_ends_at %}
+                <p class="text-sm text-text-muted mt-1">开战倒计时：
+                    <span class="countdown" data-countdown="{{ arena_wheel_active_entry.event.prepare_ends_at|date:'c' }}" data-format="zh-no-sec" data-refresh="1" data-refresh-url="{% url 'gameplay:refresh_arena_activity_api' %}" data-refresh-method="post">{{ arena_wheel_active_entry.event.prepare_ends_at|date:"m-d H:i:s" }}</span>
+                </p>
+                {% endif %}
+                <div class="mt-2 flex flex-wrap gap-2">
+                    {% for link in arena_wheel_active_entry.entry_guests.all %}
+                    <span class="px-2 py-1 rounded text-xs border border-border-light bg-bg-secondary">
+                        {{ link.snapshot.display_name }} 等级 {{ link.snapshot.level }}
+                    </span>
+                    {% empty %}
+                    <span class="text-text-muted">无报名门客</span>
+                    {% endfor %}
+                </div>
+                <div class="mt-3">
+                    {% if arena_wheel_active_entry.event.status == 'recruiting' %}
+                    <form method="post" action="{% url 'gameplay:arena_wheel_cancel' %}" class="inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <button type="submit" class="tw-btn-secondary tw-btn-sm">撤销车轮战报名</button>
+                    </form>
+                    <p class="text-xs text-text-muted mt-1">撤销后可重新报名，报名费不返还。</p>
+                    {% else %}
+                    <p class="text-xs text-text-muted">已进入准备期或赛事中，当前不可撤销报名。</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% elif arena_wheel_remaining_daily <= 0 %}
+            <p class="text-sm text-rose-700">今日车轮战参与次数已用完，请明日再来。</p>
+            {% elif not arena_wheel_can_afford_registration %}
+            <p class="text-sm text-rose-700">银两不足，报名需要 {{ arena_wheel_registration_silver_cost }} 银两（当前 {{ manor.silver }}）。</p>
+            {% else %}
+            <form method="post" action="{% url 'gameplay:arena_wheel_register' %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <p class="text-sm text-text-muted mb-2">请选择恰好 10 名参赛门客（报名费 {{ arena_wheel_registration_silver_cost }} 银两）</p>
+                <div class="tw-arena-guest-grid mb-3">
+                    {% for guest in arena_wheel_available_guests %}
+                    <label class="tw-arena-guest-option">
+                        <span class="text-sm truncate">{{ guest.display_name }} 等级 {{ guest.level }}</span>
+                        <input type="checkbox" name="guest_ids" value="{{ guest.id }}" class="arena-guest-checkbox"
+                               {% if guest.id in arena_wheel_selected_guest_ids %}checked{% endif %}>
+                    </label>
+                    {% empty %}
+                    <p class="text-sm text-text-muted">暂无空闲门客可报名车轮战。</p>
+                    {% endfor %}
+                </div>
+                <div class="flex items-center gap-3 flex-wrap">
+                    <button type="submit" class="tw-btn-primary">提交报名</button>
+                    <span class="text-xs text-text-muted">{{ arena_wheel_event.registration_hint }}</span>
                 </div>
             </form>
             {% endif %}

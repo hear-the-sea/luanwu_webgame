@@ -145,9 +145,10 @@ def _calculate_troop_exp_fruit(
             raise AssertionError(f"invalid battle salvage troop template: {key!r}")
 
         recruit = _require_mapping(troop_config.get("recruit", {}), field_name=f"troop template recruit[{key}]")
-        base_duration = _require_int(
-            recruit.get("base_duration"), field_name=f"troop template base_duration[{key}]", minimum=1
-        )
+        raw_base_duration = recruit.get("battle_salvage_base_duration")
+        if raw_base_duration is None:
+            raw_base_duration = recruit.get("base_duration")
+        base_duration = _require_int(raw_base_duration, field_name=f"troop template base_duration[{key}]", minimum=1)
         troop_exp_fruit += lost * (base_duration / 3600) * 0.1
     return troop_exp_fruit
 

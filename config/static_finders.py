@@ -23,6 +23,7 @@ class CatalogImageFinder(BaseFinder):
     ASSETS: ClassVar[dict[str, str]] = {
         "buildings/guild-residence.webp": "buildings/guild-residence.webp",
         "items/chunqiu_coin.png": "items/chunqiu_coin.png",
+        "items/guild_silver_boost_card.png": "items/guild_silver_boost_card.png",
         "items/large.png": "items/large.png",
     }
 

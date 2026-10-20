@@ -8,6 +8,7 @@ from guests.models import Guest, GuestStatus
 
 from ...models import InventoryItem, ItemTemplate
 from .guest_items import guest_is_eligible_for_soul_fusion
+from .guest_reset_helpers import get_rarity_conversion_block_reason
 from .soul_fusion_helpers import (
     SOUL_FUSION_DEFAULT_ALLOWED_RARITIES,
     SOUL_FUSION_DEFAULT_MIN_LEVEL,
@@ -140,6 +141,9 @@ def build_guest_item_selection_context(
             guest.template.key in rarity_upgrade_source_keys or guest.template.rarity in rarity_upgrade_source_rarities
         )
     ]
+    for guest in guests_for_rarity_upgrade:
+        setattr(guest, "rarity_upgrade_block_reason", get_rarity_conversion_block_reason(guest))
+
     disguise_candidates = disguise_guests if disguise_guests is not None else eligible_guests
     guests_for_disguise = [
         guest for guest in disguise_candidates if not guest.super_disguise_applied and not guest.avatar_override_key

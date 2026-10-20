@@ -13,6 +13,8 @@ from gameplay.services.manor.core import ensure_manor
 from guests.models import GuestStatus
 from tests.battle.support import recruit_frontline
 
+VICTORY_TEST_DEFENDER_SETUP = {"guest_keys": [], "troop_loadout": {"scout": 1}}
+
 
 @pytest.mark.django_db
 def test_simulate_report_creates_battle(game_data, django_user_model):
@@ -89,7 +91,11 @@ def test_simulate_report_attacker_victory_increases_guest_loyalty(game_data, dja
 
     troop_loadout = {"dao_jie": 150, "qiang_ling": 150, "archer": 150, "fist_master": 150, "jian_shi": 150}
     report = simulate_report(
-        manor, seed=1, max_squad=getattr(manor, "max_squad_size", None), troop_loadout=troop_loadout
+        manor,
+        seed=1,
+        max_squad=getattr(manor, "max_squad_size", None),
+        troop_loadout=troop_loadout,
+        defender_setup=VICTORY_TEST_DEFENDER_SETUP,
     )
 
     assert report.winner == "attacker"
@@ -244,7 +250,11 @@ def test_simulate_report_rewards_on_victory(game_data, django_user_model):
     before = manor.resource_dict()
     troop_loadout = {"dao_jie": 150, "qiang_ling": 150, "archer": 150, "fist_master": 150, "jian_shi": 150}
     report = simulate_report(
-        manor, seed=1, max_squad=getattr(manor, "max_squad_size", None), troop_loadout=troop_loadout
+        manor,
+        seed=1,
+        max_squad=getattr(manor, "max_squad_size", None),
+        troop_loadout=troop_loadout,
+        defender_setup=VICTORY_TEST_DEFENDER_SETUP,
     )
     assert report.winner == "attacker"
     assert report.drops

@@ -570,9 +570,9 @@ def test_retention_cleanup_requires_finalized_windows_and_both_decision_cursors(
     cleaned = cleanup_safety_metric_retention()
 
     assert cleaned.events_deleted == 1
-    assert cleaned.windows_deleted == 0
+    assert cleaned.windows_deleted == 2
     assert not BotSafetyMetricEvent.objects.exists()
-    assert BotSafetyMetricWindow.objects.count() == 2
+    assert not BotSafetyMetricWindow.objects.exists()
 
 
 @pytest.mark.django_db

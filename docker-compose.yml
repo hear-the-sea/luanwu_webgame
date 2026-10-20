@@ -62,6 +62,7 @@ services:
     env_file: .env.docker
     environment:
       DJANGO_RUN_MIGRATIONS: "1"
+      DJANGO_COLLECTSTATIC: "1"
     command: ["bash", "/app/docker/entrypoint.sh", "python", "manage.py", "runserver", "0.0.0.0:8000"]
     volumes:
       - .:/app

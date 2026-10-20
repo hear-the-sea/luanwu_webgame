@@ -137,10 +137,14 @@ def _apply_counter(
         return _snapshot_zero_damage(actor, troop_unit_hp_fn)
 
     counter_chance = target.tech_effects.get("counter_attack_chance", 0)
+    counter_mult = target.tech_effects.get("counter_attack_damage", 0.30)
+    for source in getattr(target, "battle_modifiers", {}).get("counter_sources", {}).values():
+        if float(source["chance"]) > counter_chance:
+            counter_chance = float(source["chance"])
+            counter_mult = float(source["damage_multiplier"])
     if counter_chance <= 0 or target.hp <= 0 or rng.random() >= counter_chance:
         return _snapshot_zero_damage(actor, troop_unit_hp_fn)
 
-    counter_mult = target.tech_effects.get("counter_attack_damage", 0.30)
     if target.kind == "troop" and target.troop_class == "qiang":
         counter_strength = min(target.troop_strength, _SPEAR_COUNTER_MAX_STRENGTH)
         counter_attack_value = effective_attack_value_fn(target, actor, troop_attack_strength=counter_strength)

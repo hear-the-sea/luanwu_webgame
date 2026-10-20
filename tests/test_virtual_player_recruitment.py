@@ -9,6 +9,7 @@ from django.utils import timezone
 from gameplay.constants import BuildingKeys
 from gameplay.models import BotProfile, BotRuntimeRoutingState, BotSafetyMetricEvent, Building, Manor
 from gameplay.services.manor.core import ensure_manor
+from gameplay.services.virtual_player_core import recruitment as virtual_recruitment
 from gameplay.services.virtual_player_core.archetype_pacing import resolve_archetype_pacing
 from gameplay.services.virtual_player_core.config import load_virtual_player_config
 from gameplay.services.virtual_player_core.recruitment import (
@@ -667,6 +668,33 @@ def test_virtual_recruitment_scanner_is_bounded_and_does_not_duplicate_pending_q
     assert recruitments.count() == 9
     assert not recruitments.filter(status=GuestRecruitment.Status.PENDING).exists()
     assert all(recruitment.duration_seconds == 0 for recruitment in recruitments)
+
+
+@pytest.mark.django_db
+def test_virtual_recruitment_scan_yields_at_its_time_budget(
+    django_user_model,
+    monkeypatch,
+):
+    first = _create_v2_profile(django_user_model, username="virtual_recruit_budget_first")
+    second = _create_v2_profile(django_user_model, username="virtual_recruit_budget_second")
+    scan_now = timezone.now()
+    BotProfile.objects.filter(pk__in=(first.pk, second.pk)).update(next_recruitment_at=scan_now - timedelta(minutes=1))
+    _seed_healthy_recruitment_runtime(scan_now)
+
+    monotonic_values = iter((0.0, 0.0, virtual_recruitment.VIRTUAL_RECRUITMENT_SCAN_BUDGET_SECONDS + 1))
+    monkeypatch.setattr(virtual_recruitment, "monotonic", lambda: next(monotonic_values))
+    processed_profile_ids: list[int] = []
+
+    def _start_next_due(profile_id, *, now, pacing):
+        processed_profile_ids.append(profile_id)
+        return virtual_recruitment.VirtualRecruitmentResult(VirtualRecruitmentStatus.STARTED, "started")
+
+    monkeypatch.setattr(virtual_recruitment, "start_next_due_virtual_recruitment", _start_next_due)
+    monkeypatch.setattr(virtual_recruitment, "_refresh_recruitment_due_hint", lambda *_args, **_kwargs: None)
+
+    assert virtual_recruitment.schedule_due_virtual_recruitments(now=scan_now, limit=2) == 1
+    assert processed_profile_ids == [first.pk]
+    assert BotProfile.objects.filter(pk=second.pk, next_recruitment_at__lte=scan_now).exists()
 
 
 @pytest.mark.django_db

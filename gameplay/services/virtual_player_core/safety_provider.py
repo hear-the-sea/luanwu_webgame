@@ -15,13 +15,14 @@ from django.db import IntegrityError, connection, transaction
 from django.utils import timezone
 
 from gameplay.models import BotRuntimeRoutingState, BotSafetyMetricEvent, BotSafetyMetricWindow
+from gameplay.record_retention import MAX_RECORD_RETENTION_DAYS
 
 from .database_clock import database_utc_now as _database_utc_now
 
 SAFETY_EVENT_SCHEMA_VERSION = 1
 SAFETY_WINDOW_GRACE = timedelta(minutes=5)
-SAFETY_RAW_EVENT_RETENTION = timedelta(days=35)
-SAFETY_CLOSED_WINDOW_RETENTION = timedelta(days=90)
+SAFETY_RAW_EVENT_RETENTION = timedelta(days=MAX_RECORD_RETENTION_DAYS)
+SAFETY_CLOSED_WINDOW_RETENTION = timedelta(days=MAX_RECORD_RETENTION_DAYS)
 SAFETY_CLEANUP_MAX_BATCH_SIZE = 10_000
 SAFETY_METRIC_VALUE_QUANTUM = Decimal("0.000000000001")
 SAFETY_METRIC_VALUE_ABS_LIMIT = Decimal("100000000000000000000")

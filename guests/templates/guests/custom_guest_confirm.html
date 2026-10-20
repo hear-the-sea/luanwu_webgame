@@ -3,7 +3,7 @@
 {% block title %}确认{{ preview.title }}{% endblock %}
 {% block extra_head %}<link rel="stylesheet" href="{% static 'css/guest-detail.css' %}"><link rel="stylesheet" href="{% static 'css/custom-guest.css' %}">{% endblock %}
 {% block content %}
-<section class="dashboard guest-detail custom-confirm">
+<section class="dashboard guest-detail custom-confirm guest-interface-page" aria-label="门客操作确认，可滚动浏览" tabindex="0">
     <div class="board-card">
         <h1>确认{{ preview.title }}</h1>
         {% if preview.avatar %}<img class="custom-confirm-avatar" src="{{ preview.avatar.url }}" alt="{{ preview.avatar.label }}" width="96" height="96">{% endif %}

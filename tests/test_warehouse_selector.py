@@ -365,6 +365,39 @@ def test_get_warehouse_context_blue_to_purple_pill_selects_idle_blue_guests():
 
 
 @pytest.mark.django_db
+def test_get_warehouse_context_rarity_pills_explain_non_recruitable_and_previously_used_guests():
+    user = User.objects.create_user(username="warehouse_pill_restrictions", password="pass123")
+    manor = ensure_manor(user)
+    recruitable = GuestTemplate.objects.create(key="pill_recruitable", name="可招募门客", rarity="blue")
+    special = GuestTemplate.objects.create(
+        key="pill_non_recruitable", name="非招募门客", rarity="blue", recruitable=False
+    )
+    converted = GuestTemplate.objects.create(
+        key=f"guest_rarity_conversion_blue_{recruitable.pk}", name="已升阶门客", rarity="blue", recruitable=False
+    )
+    available_guest = Guest.objects.create(manor=manor, template=recruitable, status=GuestStatus.IDLE)
+    special_guest = Guest.objects.create(manor=manor, template=special, status=GuestStatus.IDLE)
+    used_guest = Guest.objects.create(manor=manor, template=recruitable, status=GuestStatus.IDLE, rarity_pill_used=True)
+    legacy_guest = Guest.objects.create(manor=manor, template=converted, status=GuestStatus.IDLE)
+    pill = ItemTemplate.objects.create(
+        key="pill_restrictions",
+        name="蓝转紫丸子",
+        effect_type=ItemTemplate.EffectType.TOOL,
+        is_usable=True,
+        effect_payload={"action": "upgrade_guest_rarity", "source_rarity": "blue", "target_rarity": "purple"},
+    )
+    InventoryItem.objects.create(manor=manor, template=pill, quantity=1)
+
+    context = get_warehouse_context(manor, current_tab="warehouse", selected_category="all")
+    reasons = {guest.pk: guest.rarity_upgrade_block_reason for guest in context["guests_for_rarity_upgrade"]}
+
+    assert reasons[available_guest.pk] is None
+    assert "非招募门客，无法使用" in reasons[special_guest.pk]
+    assert "已使用过升阶丸子" in reasons[used_guest.pk]
+    assert "已使用过升阶丸子" in reasons[legacy_guest.pk]
+
+
+@pytest.mark.django_db
 def test_get_warehouse_context_soul_fusion_list_contains_idle_and_vacation_high_level_guests():
     user = User.objects.create_user(username="warehouse_soul_fusion_user", password="pass123")
     manor = ensure_manor(user)
@@ -507,11 +540,12 @@ def test_get_warehouse_context_paginates_items_to_twenty(current_tab, storage_lo
     first_page = get_warehouse_context(manor, current_tab=current_tab, selected_category="all", page=1)
     second_page = get_warehouse_context(manor, current_tab=current_tab, selected_category="all", page=2)
 
+    expected_total = 22 if storage_location == InventoryItem.StorageLocation.WAREHOUSE else 21
     assert len(first_page["inventory_items"]) == 20
-    assert first_page["pagination"]["total_count"] == 21
+    assert first_page["pagination"]["total_count"] == expected_total
     assert first_page["pagination"]["total_pages"] == 2
     assert first_page["pagination"]["has_next"] is True
-    assert len(second_page["inventory_items"]) == 1
+    assert len(second_page["inventory_items"]) == expected_total - 20
 
 
 @pytest.mark.django_db
@@ -543,6 +577,7 @@ def test_get_warehouse_context_groups_loot_box_and_resource_pack_under_tool_cate
 
     assert [item.template.key for item in context["inventory_items"]] == [
         "warehouse_work_chest",
+        "custom_guest_card",
         "warehouse_resource_pack",
     ]
     assert all(item.category_display == "道具" for item in context["inventory_items"])
@@ -604,9 +639,10 @@ def test_task_chest_category_separates_versions_and_preserves_pagination(storage
     assert first["pagination"]["total_count"] == 27
     assert len(first["inventory_items"]) == 20 and len(second["inventory_items"]) == 7
     assert {"key": "mission_chest", "label": "任务宝箱"} in first["categories"]
+    expected_tool_keys = tool_keys | ({"custom_guest_card"} if storage_location == "warehouse" else set())
     for category in ["tool", "tools", "loot_box", "resource_pack"]:
         tools = get_warehouse_context(manor, storage_location, category)
-        assert {item.template.key for item in tools["inventory_items"]} == tool_keys
+        assert {item.template.key for item in tools["inventory_items"]} == expected_tool_keys
         assert all(item.category_display == "道具" for item in tools["inventory_items"])
 
 

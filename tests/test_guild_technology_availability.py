@@ -273,7 +273,7 @@ def test_sheep_wrath_node_hides_redeemable_item_details(technology_world, client
     content = response.content.decode("utf-8")
     assert response.status_code == 200
     assert "帮会资产道具 · 羊的愤怒" not in content
-    assert "每 3 天产出 1 个" not in content
+    assert "每 5 天产出 1 个" not in content
     assert content.count("guild_sheep_wrath.webp") == 1
     assert "5000 贡献兑换" not in content
     assert "10 根金条" not in content

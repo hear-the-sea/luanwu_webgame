@@ -12,6 +12,7 @@ from battle.arena_coop import (
 )
 from battle.constants import get_battle_config
 from battle.simulation.battle_flow import simulate_battle
+from guests.management.commands.load_guest_templates import Command
 
 from .support import apply_round_start_passives, make_guest, make_unit
 
@@ -132,7 +133,7 @@ def test_boss_round_start_passives_apply_phase_modifiers():
                                 "arena_gl_top_five_flags_elite_rear": 1,
                             },
                         },
-                        "effects": [{"type": "modify_incoming_damage", "value": 0.5}],
+                        "effects": [{"type": "modify_incoming_damage", "value": 0.45}],
                     }
                 ]
             },
@@ -146,7 +147,7 @@ def test_boss_round_start_passives_apply_phase_modifiers():
 
     sync_arena_coop_combat_state([], defenders, round_no=1)
     apply_round_start_passives(defenders)
-    assert boss.battle_modifiers["incoming_damage_multiplier"] == pytest.approx(0.5)
+    assert boss.battle_modifiers["incoming_damage_multiplier"] == pytest.approx(0.45)
     assert boss.battle_modifiers["outgoing_damage_multiplier"] == pytest.approx(1.32)
     _assert_softcap_source(boss, "gl_top_mingjiao_command", threshold=12000, overflow_ratio=0.35)
     assert "reflect_ratio" not in boss.battle_modifiers
@@ -166,6 +167,35 @@ def test_boss_round_start_passives_apply_phase_modifiers():
     _assert_softcap_source(boss, "gl_top_holy_flame_rage", threshold=16000, overflow_ratio=0.35)
     assert boss.battle_modifiers["reflect_ratio"] == pytest.approx(0.1)
     assert boss.battle_modifiers["reflect_cap"] == pytest.approx(8000)
+
+
+def test_five_flags_mutually_protect_until_one_flag_falls():
+    skill_payload = next(
+        skill
+        for skill in Command()._load_skills_payload("").get("skills", [])
+        if skill.get("key") == "gl_top_five_flags_barrier"
+    )
+    boss = make_unit("arena_gl_top_zhang_wuji_boss", hp=200000, max_hp=200000, name="张无忌", is_boss=True)
+    front = make_unit("arena_gl_top_five_flags_elite_front", hp=120000, max_hp=120000, name="五行旗前阵")
+    rear = make_unit("arena_gl_top_five_flags_elite_rear", hp=120000, max_hp=120000, name="五行旗后阵")
+    boss.skills = [skill_payload]
+    front.skills = [skill_payload]
+    rear.skills = [skill_payload]
+    defenders = [boss, front, rear]
+
+    sync_arena_coop_combat_state([], defenders, round_no=1)
+    apply_round_start_passives(defenders)
+
+    assert boss.battle_modifiers["incoming_damage_multiplier"] == pytest.approx(0.45)
+    assert front.battle_modifiers["incoming_damage_multiplier"] == pytest.approx(0.85)
+    assert rear.battle_modifiers["incoming_damage_multiplier"] == pytest.approx(0.85)
+
+    rear.hp = 0
+    sync_arena_coop_combat_state([], defenders, round_no=2)
+    apply_round_start_passives(defenders)
+
+    assert boss.battle_modifiers["incoming_damage_multiplier"] == pytest.approx(0.68)
+    assert front.battle_modifiers.get("incoming_damage_multiplier", 1.0) == pytest.approx(1.0)
 
 
 def test_try_trigger_arena_coop_pre_action_heal_restores_boss_hp():
@@ -248,7 +278,7 @@ def test_adjust_arena_coop_damage_applies_barrier_and_burst_softcap():
                                 "arena_gl_top_five_flags_elite_rear": 1,
                             },
                         },
-                        "effects": [{"type": "modify_incoming_damage", "value": 0.5}],
+                        "effects": [{"type": "modify_incoming_damage", "value": 0.45}],
                     }
                 ]
             },

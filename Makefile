@@ -218,7 +218,7 @@ test:
 	@echo "  Real external-service gate lives behind 'make test-real-services' (DJANGO_TEST_USE_ENV_SERVICES=1)"
 	@echo "  Run 'make test-integration' if you only need the integration marker suite."
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-	@$(MAKE) test-unit
+	@DJANGO_TEST_USE_ENV_SERVICES=0 $(MAKE) test-unit
 
 test-unit:
 	$(PYTHON) -m pytest -m "not integration and not evidence"
@@ -318,7 +318,7 @@ test-gates:
 	@echo "  1. Hermetic rapid gate"
 	@echo "  2. Real external-service gate"
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-	@$(MAKE) test-unit
+	@DJANGO_TEST_USE_ENV_SERVICES=0 $(MAKE) test-unit
 	@if [ "$$DJANGO_TEST_USE_ENV_SERVICES" != "1" ]; then \
 		echo "Refusing to skip the real external-service gate."; \
 		echo "Re-run with DJANGO_TEST_USE_ENV_SERVICES=1 make test-gates"; \

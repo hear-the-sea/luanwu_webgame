@@ -52,7 +52,7 @@ def test_arena_registration_page_lists_guangming_top_card(arena_client):
     assert "围攻光明顶" in body
     assert "5 人共斗" not in body
     assert response.context["arena_coop_daily_limit"] == 3
-    assert "武林高手齐聚光明顶，请派遣3名主力门客参战" in body
+    assert "携带多目标招式可更快破阵" in body
     assert 'id="arena-coop-registration-panel" data-max-selected="3"' in body
     assert "查看共斗详情" not in body
     assert body.count("tw-building-card tw-building-card--manor tw-arena-hero-card") >= 2
@@ -248,8 +248,8 @@ def test_arena_exchange_page_view_renders(arena_client):
     second_body = second_page.content.decode("utf-8")
     assert "奖励兑换" in first_body
     assert "随机蓝色装备图纸" in first_body
-    assert "随机紫色装备图纸" not in first_body
-    assert "随机紫色装备图纸" in second_body
+    assert "随机紫色装备图纸" in first_body
+    assert "随机紫色装备图纸" not in second_body
     assert "武林宝箱" in first_body
     assert "周限 2" in first_body
     assert "查看随机奖励概率" not in first_body + second_body
@@ -281,8 +281,6 @@ def test_arena_exchange_page_shows_header_icons_without_reward_details(arena_cli
     assert response.status_code == second_page.status_code == 200
     body = response.content.decode("utf-8")
     second_body = second_page.content.decode("utf-8")
-    assert 'src="/media/items/grain-preview.webp"' not in body
-    assert 'src="/media/items/silver-preview.webp"' not in body
     assert "粮食" in body
     assert "银两" in body
     wulin_name_index = body.index('<p class="tw-arena-reward-name">武林宝箱</p>')
@@ -296,9 +294,13 @@ def test_arena_exchange_page_shows_header_icons_without_reward_details(arena_cli
     gladiator_name_index = body.index('<p class="tw-arena-reward-name">角斗士宝箱</p>')
     gladiator_card_start = body.rfind("<article", 0, gladiator_name_index)
     gladiator_card = body[gladiator_card_start : body.index("</article>", gladiator_name_index)]
-    assert 'src="/media/items/chest-preview.webp"' not in gladiator_card
-    assert 'class="tw-arena-reward-icon tw-arena-reward-icon--fallback"' in gladiator_card
-    assert "角</span>" in gladiator_card
+    assert 'src="/media/items/chest-preview.webp"' in gladiator_card
+    assert 'class="tw-arena-reward-icon tw-arena-reward-icon--fallback"' not in gladiator_card
+
+    blueprint_name_index = body.index('<p class="tw-arena-reward-name">随机蓝色装备图纸</p>')
+    blueprint_card_start = body.rfind("<article", 0, blueprint_name_index)
+    blueprint_card = body[blueprint_card_start : body.index("</article>", blueprint_name_index)]
+    assert 'src="/media/items/chest-preview.webp"' in blueprint_card
     assert 'src="/media/items/gladiator-preview.webp"' not in body
     assert 'src="/media/items/blueprint-preview.webp"' not in body
     assert 'src="/media/items/purple-blueprint-preview.webp"' not in second_body
@@ -311,7 +313,7 @@ def test_arena_exchange_page_shows_header_icons_without_reward_details(arena_cli
 
 
 @pytest.mark.django_db
-def test_arena_exchange_page_paginates_at_eight_reward_types(arena_client, monkeypatch):
+def test_arena_exchange_page_paginates_at_eleven_reward_types(arena_client, monkeypatch):
     client, _manor = arena_client
     reward_rows = [
         {
@@ -336,14 +338,14 @@ def test_arena_exchange_page_paginates_at_eight_reward_types(arena_client, monke
     third_page = client.get(reverse("gameplay:arena_exchange_page"), {"page": 3})
 
     assert first_page.status_code == second_page.status_code == third_page.status_code == 200
-    assert len(first_page.context["reward_rows"]) == 8
-    assert len(second_page.context["reward_rows"]) == 8
-    assert len(third_page.context["reward_rows"]) == 1
+    assert len(first_page.context["reward_rows"]) == 11
+    assert len(second_page.context["reward_rows"]) == 6
+    assert len(third_page.context["reward_rows"]) == 6
     assert "测试奖励0" in first_page.content.decode("utf-8")
-    assert "测试奖励8" not in first_page.content.decode("utf-8")
-    assert "测试奖励8" in second_page.content.decode("utf-8")
-    assert "测试奖励16" in third_page.content.decode("utf-8")
-    assert "3 / 3" in third_page.content.decode("utf-8")
+    assert "测试奖励11" not in first_page.content.decode("utf-8")
+    assert "测试奖励11" in second_page.content.decode("utf-8")
+    assert "测试奖励16" in second_page.content.decode("utf-8")
+    assert "2 / 2" in third_page.content.decode("utf-8")
 
 
 @pytest.mark.django_db

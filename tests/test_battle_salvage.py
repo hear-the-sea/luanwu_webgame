@@ -67,6 +67,28 @@ def test_calculate_battle_salvage_counts_troop_losses_on_both_sides():
     assert exp == 1
 
 
+def test_calculate_battle_salvage_counts_guild_cavalry_losses():
+    report = SimpleNamespace(
+        seed=42,
+        losses={
+            "attacker": {
+                "casualties": [
+                    {"key": "scout", "lost": 1199},
+                    {"key": "bloodthirsty_cavalry", "lost": 1},
+                ]
+            },
+            "defender": {"casualties": []},
+        },
+        attacker_team=[],
+        defender_team=[],
+    )
+
+    exp, _equip = calculate_battle_salvage(report)
+
+    # 骑兵每名训练 30 秒，按其战损折算的经验果计入总量。
+    assert exp == 1
+
+
 def test_calculate_battle_salvage_ignores_guest_casualty_entries_in_troop_salvage():
     report = SimpleNamespace(
         seed=42,

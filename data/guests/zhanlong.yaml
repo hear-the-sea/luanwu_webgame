@@ -1,0 +1,124 @@
+# 战龙在野任务专用敌将，独立配置战斗属性，不加入招募池。
+heroes:
+  purple:
+    - key: task_zhanlong_tiebeixiong
+      name: 燕山寨主·铁背熊
+      archetype: military
+      recruitable: false
+      default_gender: male
+      avatar: monkey/任务/华雄.png
+      flavor: 溃兵出身的燕山寨主，披重甲、持铁锤堵住山口，以自身吸引火力，掩护坡上弓手围攻过往行人。
+      skills: [draw_enemy_blades, zhanlong_iron_hammer]
+      custom_stats:
+        force: 360
+        intellect: 90
+        defense: 470
+        agility: 160
+        luck: 135
+        base_hp: 650000
+    - key: task_zhanlong_caochun
+      name: 曹纯
+      archetype: military
+      recruitable: false
+      default_gender: male
+      avatar: pig/武046.png
+      flavor: 虎豹骑统领曹纯在长坂外围收拢精骑，以迅疾突击截杀接应队伍，试图封死赵云通往长坂桥的归路。
+      skills: [zhanlong_cavalry_assault, zhanlong_cavalry_command]
+      custom_stats:
+        force: 430
+        intellect: 140
+        defense: 300
+        agility: 360
+        luck: 120
+        base_hp: 800000
+  orange:
+    - key: task_zhanlong_zhangfei_bridge
+      name: 张飞
+      archetype: military
+      recruitable: false
+      default_gender: male
+      avatar: monkey/任务/武047_男_张飞.png
+      flavor: 张飞横矛守住长坂桥，令少数骑兵于林中扬尘造势。来人身份未明，他已提起丈八蛇矛，准备试其本领与胆色。
+      skills: [zhanlong_tiger_dragon_roar, zhanlong_dust_ruse]
+      custom_stats:
+        force: 600
+        intellect: 150
+        defense: 440
+        agility: 220
+        luck: 160
+        base_hp: 850000
+    - key: task_zhanlong_guanyu
+      name: 关羽
+      archetype: military
+      recruitable: false
+      default_gender: male
+      avatar: monkey/orange/关羽.png
+      flavor: 演武场上，关羽持青龙偃月刀压住阵脚，刀势专攻甲胄薄弱之处，为同阵诸将打开防线。
+      skills: [zhanlong_azure_dragon_slash]
+      custom_stats:
+        force: 450
+        intellect: 170
+        defense: 380
+        agility: 290
+        luck: 130
+        base_hp: 330000
+    - key: task_zhanlong_zhangfei
+      name: 张飞
+      archetype: military
+      recruitable: false
+      default_gender: male
+      avatar: monkey/任务/武047_男_张飞.png
+      flavor: 五虎演武，张飞仍以丈八蛇矛相试，平日蓄势不发，一声虎啸龙吟便将全身劲力凝于一击。
+      skills: [zhanlong_tiger_dragon_roar]
+      custom_stats:
+        force: 440
+        intellect: 110
+        defense: 355
+        agility: 220
+        luck: 120
+        base_hp: 280000
+    - key: task_zhanlong_zhaoyun
+      name: 赵云
+      archetype: military
+      recruitable: false
+      default_gender: male
+      avatar: zhaoyun.png
+      flavor: 昔日燕山与长坂并肩的故人，如今执枪列于演武阵中。赵云守势沉稳、遇攻能还，要亲自检验庄园门客的持久战力。
+      skills: [zhanlong_dragon_guard]
+      custom_stats:
+        force: 410
+        intellect: 220
+        defense: 400
+        agility: 350
+        luck: 150
+        base_hp: 350000
+    - key: task_zhanlong_machao
+      name: 马超
+      archetype: military
+      recruitable: false
+      default_gender: male
+      avatar: monkey/三国两晋与南北朝/马超.png
+      flavor: 马超在演武阵侧策马待发，枪快马疾，擅以连续突击压低多人血线，不让对手从容整顿。
+      skills: [zhanlong_xiliang_charge]
+      custom_stats:
+        force: 415
+        intellect: 120
+        defense: 310
+        agility: 440
+        luck: 125
+        base_hp: 220000
+    - key: task_zhanlong_huangzhong
+      name: 黄忠
+      archetype: military
+      recruitable: false
+      default_gender: male
+      avatar: monkey/三国两晋与南北朝/黄忠.png
+      flavor: 黄忠立于演武阵后，弓弦半引，目光紧盯对手伤势，随时准备以百步穿杨补上决定胜负的一箭。
+      skills: [zhanlong_hundred_pace_shot]
+      custom_stats:
+        force: 410
+        intellect: 160
+        defense: 300
+        agility: 315
+        luck: 140
+        base_hp: 190000

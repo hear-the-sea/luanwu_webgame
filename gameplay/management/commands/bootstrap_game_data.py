@@ -69,6 +69,7 @@ class Command(BaseCommand):
             ("加载建筑模板", _call("load_building_templates")),
             ("加载科技模板", _call("load_technology_templates")),
             ("加载物品模板", _call("load_item_templates", repair_grain_ledger=True)),
+            ("修复物品图片断链", _call("repair_item_images")),
             ("加载兵种模板", _call("load_troop_templates", skip_images=skip_images)),
             (
                 "加载门客模板",

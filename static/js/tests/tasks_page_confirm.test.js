@@ -102,6 +102,17 @@ test("task page initializes touch tooltips for mission drop items", () => {
   assert.equal(tooltipOptions.enableTouch, true);
 });
 
+test("task page initializes touch tooltips for enemy avatars", () => {
+  const harness = createTasksPageHarness(true);
+  const tooltipOptions = harness.calls.tooltip.find((options) => options.key === "tasks_mission_enemies");
+
+  assert.ok(tooltipOptions);
+  assert.equal(tooltipOptions.cellSelector, ".tw-enemy-avatar-trigger");
+  assert.equal(tooltipOptions.tooltipSelector, ".tw-item-tooltip");
+  assert.equal(tooltipOptions.trackPointer, false);
+  assert.equal(tooltipOptions.enableTouch, true);
+});
+
 test("mission card form remains idle when confirmation is cancelled", async () => {
   const harness = createTasksPageHarness(false);
 

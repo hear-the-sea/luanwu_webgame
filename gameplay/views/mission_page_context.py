@@ -19,6 +19,7 @@ from gameplay.utils.template_loader import get_item_templates_by_keys, get_troop
 from gameplay.views.read_helpers import get_prepared_manor_for_read
 from guests.models import GuestStatus, GuestTemplate, SkillBook
 from guests.services.world_unique import get_world_unique_guest_status
+from guilds.services.personal_missions import get_personal_guild_mission_status, is_personal_guild_mission
 
 from . import mission_helpers
 
@@ -28,6 +29,7 @@ VALID_MISSION_TABS = {
     MissionTemplate.Difficulty.JUNIOR,
     MissionTemplate.Difficulty.INTERMEDIATE,
     MissionTemplate.Difficulty.ADVANCED,
+    "guild",
 }
 BAIMENLOU_MISSION_KEY = "baimenlou_mingyun_jueze"
 
@@ -47,6 +49,8 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
         mission_helpers.filter_available_missions(list(MissionTemplate.objects.all().order_by("display_order", "id")))
     )
     missions_by_key = {mission.key: mission for mission in missions}
+    guild_personal_missions = [mission for mission in missions if is_personal_guild_mission(mission)]
+    regular_missions = [mission for mission in missions if not is_personal_guild_mission(mission)]
     attempts = bulk_mission_attempts_today(manor, missions)
     extra_attempts = bulk_get_mission_extra_attempts(manor, missions)
     enemy_keys, troop_keys, drop_keys = mission_helpers.collect_mission_asset_keys(missions)
@@ -62,13 +66,29 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
     book_labels = {book.key: book.name for book in SkillBook.objects.filter(key__in=drop_keys)}
     loot_labels.update(book_labels)
 
-    mission_data = mission_helpers.build_mission_data(missions, attempts, extra_attempts)
+    mission_data = mission_helpers.build_mission_data(regular_missions, attempts, extra_attempts)
+    guild_personal_status = get_personal_guild_mission_status(request.user)
+    guild_personal_mission_data = [
+        {
+            "mission": mission,
+            "used": guild_personal_status["used"],
+            "remaining": guild_personal_status["remaining"],
+            "weekly_limit": guild_personal_status["limit"],
+            "has_guild": guild_personal_status["has_guild"],
+        }
+        for mission in guild_personal_missions
+    ]
     selected_key = request.GET.get("mission")
     selected_mission, selected_attempts, selected_daily_limit, selected_remaining = (
         mission_helpers.build_selection_summary(selected_key, missions_by_key, attempts, extra_attempts)
     )
     requested_tab = (request.GET.get("tab") or "").strip()
-    active_tab = selected_mission.difficulty if selected_mission else MissionTemplate.Difficulty.JUNIOR
+    selected_is_guild_mission = bool(selected_mission and is_personal_guild_mission(selected_mission))
+    active_tab = (
+        "guild"
+        if selected_is_guild_mission
+        else selected_mission.difficulty if selected_mission else MissionTemplate.Difficulty.JUNIOR
+    )
     if not selected_mission and requested_tab in VALID_MISSION_TABS:
         active_tab = requested_tab
     available_guests = (
@@ -109,7 +129,13 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
         "missions": missions,
         "attempts_today": attempts,
         "mission_data": mission_data,
+        "guild_personal_mission_data": guild_personal_mission_data,
+        "guild_personal_mission_status": guild_personal_status,
         "selected_mission": selected_mission,
+        "selected_enemy_troop_rows": mission_helpers.build_enemy_troop_display_rows(selected_mission),
+        "selected_is_guild_mission": selected_is_guild_mission,
+        "selected_guild_weekly_remaining": guild_personal_status["remaining"],
+        "selected_guild_has_membership": guild_personal_status["has_guild"],
         "selected_attempts": selected_attempts,
         "selected_remaining": selected_remaining,
         "selected_daily_limit": selected_daily_limit,
@@ -135,6 +161,7 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
     }
 
     drop_labels = dict(ResourceType.choices)
+    drop_labels["guild_contribution"] = "帮会贡献"
     drop_labels.update(loot_labels)
     context["resource_labels"] = drop_labels
 

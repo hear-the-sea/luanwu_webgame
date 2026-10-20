@@ -2567,7 +2567,7 @@ safety truth。当前非生产环境明确选择数据库型共享 provider，�
   先按 `event_id` 去重；finalize 后到达的旧窗口事件不改写快照，而是记录 hard violation 并触发暂停。
 - `maintenance_attempt_emitter / h01_callback_attempt_emitter / arena_shortage_emitter / safety_aggregator` 每 60 秒写 heartbeat，任意相邻
   heartbeat 间隔超过 120 秒即为不完整。只有相关 heartbeat 完整时，零分母才表示无 rate breach。
-- 原始事件在窗口完成后保留 35 天，闭合窗口保留 90 天；清理由独立命令/任务按最终窗口水位删除，未 finalize 或仍被 decision cursor
+- 原始事件和闭合窗口最多保留 15 天；清理由独立命令/任务按最终窗口水位删除，未 finalize 或仍被 decision cursor
   引用的数据不得清理。事件写失败不回滚已经成功的业务事务，但 provider 缺失、写入/heartbeat 断档或读取失败都使门禁 fail closed。
 
 结构化日志继续用于诊断，但不能回填或覆盖已 finalize 的 safety window。上述模型、provider 健康检查、迟到/去重故障注入和清理门禁

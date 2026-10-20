@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import random
 from fractions import Fraction
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, TypeVar, cast
 
 from django.db import transaction
 
@@ -34,6 +34,8 @@ ARENA_BATTLE_MESSAGE_EXCEPTIONS: InfrastructureExceptions = combine_infrastructu
     MessageError,
     infrastructure_exceptions=DATABASE_INFRASTRUCTURE_EXCEPTIONS,
 )
+
+EntryT = TypeVar("EntryT")
 
 
 def send_arena_battle_messages(
@@ -269,10 +271,10 @@ def _remaining_unit_count(team: object) -> int:
 def resolve_report_winner(
     report,
     *,
-    attacker_entry: ArenaEntry,
-    defender_entry: ArenaEntry,
+    attacker_entry: EntryT,
+    defender_entry: EntryT,
     rng: random.Random,
-) -> tuple[ArenaEntry, str]:
+) -> tuple[EntryT, str]:
     if report.winner == "attacker":
         return attacker_entry, "战报裁决：攻击方胜利"
     if report.winner == "defender":

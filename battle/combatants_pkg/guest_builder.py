@@ -12,6 +12,7 @@ from django.db import DatabaseError
 from guests.guest_combat_stats import resolve_guest_combat_stats
 from guests.models import Guest, Skill, SkillKind
 
+from ..active_config import ACTIVE_OPTION_KEYS
 from .core import Combatant
 
 logger = logging.getLogger(__name__)
@@ -46,7 +47,7 @@ def _get_max_squad() -> int:
 
 
 def _serialize_skill(skill: Skill) -> dict:
-    return {
+    payload: dict[str, Any] = {
         "key": skill.key,
         "name": skill.name,
         "power": skill.base_power,
@@ -58,6 +59,11 @@ def _serialize_skill(skill: Skill) -> dict:
         "targets": getattr(skill, "targets", 1),
         "passive_config": getattr(skill, "passive_config", {}) or {},
     }
+    # 主动扩展参数借助现有 JSON 字段持久化，保持既有技能序列化行为。
+    if payload["kind"] == SkillKind.ACTIVE:
+        options = payload["passive_config"].get("active") or {}
+        payload.update({key: value for key, value in options.items() if key in ACTIVE_OPTION_KEYS})
+    return payload
 
 
 def _normalize_override_keys(guest: Guest, override_keys: Any) -> list[str]:

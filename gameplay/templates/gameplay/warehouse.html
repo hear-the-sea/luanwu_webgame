@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 {% load static gameplay_extras %}
 
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/warehouse-choice.css' %}">{% endblock %}
+
 {% block title %}{% if current_tab == 'treasury' %}藏宝阁{% else %}仓库{% endif %}{% endblock %}
 
 {% block content %}
-<section class="dashboard">
+<section class="dashboard warehouse-page" data-warehouse-page>
     <!-- Tab 导航 -->
     <nav class="tw-storage-tabs">
         <a href="?tab=warehouse" class="tw-storage-tab {% if current_tab == 'warehouse' %}active{% endif %}">
@@ -47,27 +49,28 @@
         </div>
         {% endif %}
 
-        <div class="tw-filter-bar">
-            <form method="get" class="tw-filter-form">
-                <input type="hidden" name="tab" value="{{ current_tab }}">
-                <label for="category" class="tw-filter-label">筛选</label>
-                <select id="category" name="category" class="tw-filter-select">
-                    <option value="all" {% if selected_category == 'all' %}selected{% endif %}>全部</option>
-                    {% for cat in categories %}
-                    <option value="{{ cat.key }}" {% if selected_category == cat.key %}selected{% endif %}>{{ cat.label }}</option>
-                    {% endfor %}
-                </select>
-            </form>
-        </div>
-
         <div class="tw-table-wrapper">
-        <table class="tw-warehouse-table">
+        <table class="tw-warehouse-table tw-table-with-header-filter">
             <thead>
                 <tr>
                     <th>物品</th>
                     <th>种类</th>
                     <th>数量</th>
-                    <th>操作</th>
+                    <th class="tw-filter-th">
+                        <div class="tw-table-filter-heading">
+                            <span>操作</span>
+                            <form method="get" class="tw-filter-form">
+                                <input type="hidden" name="tab" value="{{ current_tab }}">
+                                <label for="category" class="tw-filter-label">筛选</label>
+                                <select id="category" name="category" class="tw-filter-select">
+                                    <option value="all" {% if selected_category == 'all' %}selected{% endif %}>全部</option>
+                                    {% for cat in categories %}
+                                    <option value="{{ cat.key }}" {% if selected_category == cat.key %}selected{% endif %}>{{ cat.label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </form>
+                        </div>
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -174,7 +177,7 @@
                                     {% elif payload.action == 'reset_allocation' %}
                                     <button type="button" class="tw-btn-primary tw-btn-sm js-open-guest-select-modal" data-item-id="{{ entry.id }}" data-binding-mode="{{ entry.binding_mode }}" data-action-type="xidianka" data-action-url="{% url 'gameplay:use_xidianka' entry.id %}" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
                                     {% elif payload.action == 'upgrade_guest_rarity' %}
-                                    <button type="button" class="tw-btn-primary tw-btn-sm js-open-guest-select-modal" data-item-id="{{ entry.id }}" data-binding-mode="{{ entry.binding_mode }}" data-action-type="rarity_upgrade" data-action-url="{% url 'gameplay:use_guest_rarity_upgrade' entry.id %}" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
+                                    <button type="button" class="tw-btn-primary tw-btn-sm js-open-guest-select-modal" data-item-id="{{ entry.id }}" data-binding-mode="{{ entry.binding_mode }}" data-action-type="rarity_upgrade" data-rarity-upgrade-source-rarity="{{ payload.source_rarity|default:'' }}" data-action-url="{% url 'gameplay:use_guest_rarity_upgrade' entry.id %}" {% if entry.quantity <= 0 %}disabled{% endif %}>使用</button>
                                     {% elif payload.action == 'occupy_target_guest' or payload.action == 'steal_target_item' or payload.action == 'injure_target_guest' or payload.action == 'transfer_target_grain' or payload.action == 'transfer_target_silver' or payload.action == 'sheep_wrath_target' %}
                                     <button
                                         type="button"
@@ -184,6 +187,8 @@
                                         data-item-name="{{ entry.template.name }}"
                                         {% if entry.quantity <= 0 %}disabled{% endif %}
                                     >使用</button>
+                                    {% elif payload.player_choice %}
+                                    <button type="button" class="tw-btn-primary tw-btn-sm js-open-player-choice-modal" data-player-choice-modal="guest-card-modal-{{ entry.id }}-{{ entry.binding_mode }}">使用</button>
                                     {% else %}
                                     <form
                                         method="post"
@@ -208,7 +213,7 @@
                                     <span class="tw-muted text-sm">{{ entry.warehouse_use_hint }}</span>
                                 {% endif %}
                             </div>
-                            <div class="tw-action-treasury">
+                            {% if not entry.template.effect_payload.player_choice %}<div class="tw-action-treasury">
                                 {% if entry.display_is_bound %}<span class="tw-muted text-sm">绑定物品不可转移</span>{% else %}
                                 <form method="post" action="{% url 'gameplay:move_to_treasury' entry.id %}">
                                     {% csrf_token %}
@@ -217,7 +222,7 @@
                                     <button type="submit" class="tw-btn-secondary tw-btn-sm" {% if entry.transferable_quantity <= 0 %}disabled{% endif %}>放入藏宝阁</button>
                                 </form>
                                 {% endif %}
-                            </div>
+                            </div>{% endif %}
                         </div>
                         {% endif %}
                         {% else %}
@@ -263,6 +268,12 @@
         {% endif %}
     </section>
 </section>
+
+{% if current_tab == 'warehouse' %}
+{% for entry in inventory_items %}
+{% if entry.player_choice_options %}{% include "gameplay/includes/player_choice_guest_modal.html" with entry=entry csrf_token=csrf_token only %}{% endif %}
+{% endfor %}
+{% endif %}
 
 <!-- 门客选择弹窗（通用：重生卡/易容卡/升阶道具/洗髓丹/洗点卡/灵魂容器） -->
 <div id="guest-select-modal" class="tw-modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="modal-title" aria-describedby="modal-hint" tabindex="-1">
@@ -411,18 +422,18 @@
             <!-- 升稀有度门客列表 -->
             <div id="guest-list-rarity-upgrade" class="tw-guest-list" style="display: none;">
                 {% for guest in guests_for_rarity_upgrade %}
-                <button type="button" class="tw-guest-option" data-guest-id="{{ guest.id }}">
+                <button type="button" class="tw-guest-option flex-col items-start gap-2 text-left" data-guest-id="{{ guest.id }}" data-guest-rarity="{{ guest.template.rarity }}" data-rarity-upgrade-block-reason="{{ guest.rarity_upgrade_block_reason|default:'' }}">
                     <span class="tw-guest-info">
                         <span class="tw-guest-name rarity-text-{{ guest.template.rarity }}">{{ guest.display_name }}</span>
                         <span class="tw-guest-level">等级 {{ guest.level }}</span>
                     </span>
-                    <span class="tw-guest-stats">
+                    <span class="tw-guest-stats flex-col gap-1">
                         <span>当前稀有度：{{ guest.template.get_rarity_display }}</span>
+                        <span class="text-accent-red" data-rarity-upgrade-block-reason-text style="display: none;">{{ guest.rarity_upgrade_block_reason|default:'' }}</span>
                     </span>
                 </button>
-                {% empty %}
-                <p class="tw-no-guests">没有可升阶的门客（需为空闲状态且符合当前升阶道具条件）</p>
                 {% endfor %}
+                <p id="guest-list-rarity-upgrade-empty" class="tw-no-guests" {% if guests_for_rarity_upgrade %}style="display: none;"{% endif %}>没有可升阶的门客（需为空闲状态且符合当前升阶道具条件）</p>
             </div>
         </div>
         <div class="tw-modal-footer">
@@ -482,4 +493,5 @@
 <script src="{% static 'js/tooltip.js' %}"></script>
 <script src="{% static 'js/warehouse_page_core.js' %}"></script>
 <script src="{% static 'js/warehouse-page.js' %}"></script>
+<script src="{% static 'js/warehouse-player-choice.js' %}"></script>
 {% endblock %}

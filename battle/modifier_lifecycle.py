@@ -19,6 +19,7 @@ MODIFIER_EFFECT_TYPES = {
     "modify_target_weight",
     "set_softcap",
     "set_reflect",
+    "set_counter",
 }
 
 DEFAULT_SCOPE_BY_TIMING = {
@@ -128,7 +129,7 @@ def refresh_modifier_projections(modifiers: dict[str, Any]) -> None:
         modifiers["reflect_cap"] = float(payload.get("cap", 0.0) or 0.0)
         modifiers["reflect_name"] = str(payload.get("name") or "反震")
 
-    for sources_key in ("burst_softcap_sources", "true_damage_ratio_sources"):
+    for sources_key in ("burst_softcap_sources", "true_damage_ratio_sources", "counter_sources"):
         sources = modifiers.get(sources_key)
         if isinstance(sources, dict) and not sources:
             modifiers.pop(sources_key, None)
