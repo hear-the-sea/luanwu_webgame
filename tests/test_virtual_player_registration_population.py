@@ -65,6 +65,7 @@ def test_public_registration_merges_and_queues_population_after_commit(
                 "password2": "StrongPass123!",
             },
             REMOTE_ADDR="203.0.113.171",
+            secure=True,
         )
 
     assert response.status_code == 200
@@ -165,6 +166,7 @@ def test_periodic_roll_recovers_registration_when_post_commit_merge_fails(
                 "password2": "StrongPass123!",
             },
             REMOTE_ADDR="203.0.113.172",
+            secure=True,
         )
 
     assert response.status_code == 200
