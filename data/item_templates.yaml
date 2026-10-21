@@ -4758,6 +4758,7 @@ items:
       defense: 48
       force: 40
       intellect: 0
+      luck: 15
       required_level: 80
 
   - key: equip_chiyouzhanxue

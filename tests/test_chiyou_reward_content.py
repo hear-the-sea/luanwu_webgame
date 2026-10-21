@@ -174,6 +174,7 @@ def test_chiyou_armor_is_top_tier_and_boots_match_normal_orange_budget():
     assert armor["rarity"] == "orange" and armor["effect_type"] == "equip_armor"
     payload = armor["effect_payload"]
     assert payload["required_level"] == 80
+    assert payload["luck"] == 15
     assert payload["hp"] > items["equip_longlinzhanjia"]["effect_payload"]["hp"]
     assert payload["defense"] >= items["equip_ruanweijia"]["effect_payload"]["defense"]
     assert payload["force"] >= items["equip_longlinzhanjia"]["effect_payload"]["force"]

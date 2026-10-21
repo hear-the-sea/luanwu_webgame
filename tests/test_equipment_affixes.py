@@ -187,6 +187,49 @@ def test_empty_and_single_attribute_items_only_generate_meaningful_prefixes(base
     assert sum(quantities.values()) == 100
 
 
+@pytest.mark.parametrize("stat", AFFIX_LABELS)
+def test_single_convertible_stat_with_luck_never_generates_unchanged_prefix(base_equipment, stat):
+    original = {"hp": 600, stat: 40, "luck": 15, "required_level": 80}
+    base_equipment.effect_payload = copy.deepcopy(original)
+    assert build_equipment_affix_payload(base_equipment, stat) is None
+    with transaction.atomic():
+        with pytest.raises(AssertionError, match="cannot create an empty equipment affix"):
+            get_or_create_equipment_affix_template(base_equipment, stat)
+        quantities, templates = roll_equipment_reward_items_locked(
+            {base_equipment.key: 100},
+            templates={base_equipment.key: base_equipment},
+            rng=AlwaysAffixed(),
+        )
+    invalid_key = equipment_affix_key(base_equipment.key, stat)
+    assert invalid_key not in quantities
+    assert not ItemTemplate.objects.filter(key=invalid_key).exists()
+    assert sum(quantities.values()) == 100
+    for template in templates.values():
+        payload = template.effect_payload
+        assert payload["equipment_affix"] != stat
+        assert payload[stat] == 32
+        assert payload[payload["equipment_affix"]] == 8
+        assert (payload["hp"], payload["luck"], payload["required_level"]) == (600, 15, 80)
+    assert base_equipment.effect_payload == original
+
+
+@pytest.mark.parametrize("value", [0, 1, 4])
+def test_rounding_to_zero_preserves_plain_item_even_with_high_luck(base_equipment, value):
+    base_equipment.effect_payload = {stat: value for stat in AFFIX_LABELS}
+    base_equipment.effect_payload.update(hp=600, luck=300)
+    with transaction.atomic():
+        quantities, templates = roll_equipment_reward_items_locked(
+            {base_equipment.key: 100},
+            templates={base_equipment.key: base_equipment},
+            rng=NeverRandom(),
+        )
+    assert quantities == {base_equipment.key: 100}
+    assert templates == {base_equipment.key: base_equipment}
+    assert not ItemTemplate.objects.filter(
+        key__in=[equipment_affix_key(base_equipment.key, affix) for affix in AFFIX_LABELS]
+    ).exists()
+
+
 def test_grants_preserve_exact_bound_counts_and_transfers_do_not_reroll(base_equipment, django_user_model):
     manor = ensure_manor(django_user_model.objects.create_user(username="affix_binding"))
     target = ensure_manor(django_user_model.objects.create_user(username="affix_transfer"))

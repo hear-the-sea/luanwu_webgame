@@ -1,29 +1,23 @@
 (() => {
+  let taskDetailState = null;
+
   const initTasksPage = () => {
-    if (!document.querySelector(".tw-mission-tabs")) {
-      return;
+    if (taskDetailState && !taskDetailState.owner.isConnected) {
+      taskDetailState.overlay.remove();
+      taskDetailState = null;
     }
 
-    if (typeof window.initItemTooltip === "function") {
-      window.initItemTooltip({
-        key: "tasks_mission_drops",
-        cellSelector: ".tw-drop-entry",
-        tooltipSelector: ".tw-item-tooltip",
-        trackPointer: false,
-        enableTouch: true,
-      });
-      window.initItemTooltip({
-        key: "tasks_mission_enemies",
-        cellSelector: ".tw-enemy-avatar-trigger",
-        tooltipSelector: ".tw-item-tooltip",
-        trackPointer: false,
-        enableTouch: true,
-      });
+    if (!document.querySelector(".tw-mission-tabs")) {
+      return;
     }
 
     const taskDetailOverlay = document.querySelector("[data-task-detail-overlay]");
     if (taskDetailOverlay && taskDetailOverlay.dataset.closeBound !== "1") {
       taskDetailOverlay.dataset.closeBound = "1";
+      // 弹窗脱离页面滚动容器，避免移动端多层滚动影响触摸交互。
+      taskDetailState = { overlay: taskDetailOverlay, owner: taskDetailOverlay.parentElement };
+      document.body.appendChild(taskDetailOverlay);
+
       taskDetailOverlay.querySelectorAll("[data-task-modal-close]").forEach((link) => {
         link.addEventListener("click", (event) => {
           if (
@@ -47,7 +41,39 @@
             return;
           }
           taskDetailOverlay.remove();
+          taskDetailState = null;
         });
+      });
+
+      let backdropPressed = false;
+      taskDetailOverlay.addEventListener("pointerdown", (event) => {
+        backdropPressed = event.target === taskDetailOverlay;
+      });
+      taskDetailOverlay.addEventListener("pointercancel", () => {
+        backdropPressed = false;
+      });
+      taskDetailOverlay.addEventListener("click", (event) => {
+        if (event.target === taskDetailOverlay && backdropPressed) {
+          taskDetailOverlay.querySelector("[data-task-modal-close]")?.click();
+        }
+        backdropPressed = false;
+      });
+    }
+
+    if (typeof window.initItemTooltip === "function") {
+      window.initItemTooltip({
+        key: "tasks_mission_drops",
+        cellSelector: ".tw-drop-entry",
+        tooltipSelector: ".tw-item-tooltip",
+        trackPointer: false,
+        enableTouch: true,
+      });
+      window.initItemTooltip({
+        key: "tasks_mission_enemies",
+        cellSelector: ".tw-enemy-avatar-trigger",
+        tooltipSelector: ".tw-item-tooltip",
+        trackPointer: false,
+        enableTouch: true,
       });
     }
 
@@ -289,6 +315,9 @@
 
   document.addEventListener("DOMContentLoaded", initTasksPage);
   document.addEventListener("partial-nav:loaded", initTasksPage);
+  if (document.readyState === "interactive" || document.readyState === "complete") {
+    initTasksPage();
+  }
   window.addEventListener("pageshow", (event) => {
     if (!event.persisted) return;
     const form = document.querySelector("[data-task-loadout]");

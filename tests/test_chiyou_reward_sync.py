@@ -18,6 +18,7 @@ rules = import_module("gameplay.migrations.0221_chiyou_rewards_and_unique_guests
 equipment_rules = import_module("gameplay.migrations.0222_zhaoyun_equipment_rewards")
 growth_rules = import_module("gameplay.migrations.0223_chiyou_guest_growth")
 alignment_rules = import_module("gameplay.migrations.0229_personal_guild_guest_profile_alignment")
+armor_luck_rules = import_module("gameplay.migrations.0230_chiyou_armor_luck")
 DATA = Path(__file__).resolve().parents[1] / "data"
 
 
@@ -40,6 +41,11 @@ def test_reward_migration_freezes_current_equipment_and_recipe():
         assert sources[defaults["image"]] == "items/" + expected["image"]
         expected["image"] = defaults["image"]
         final_defaults = {**defaults, **alignment_rules.ITEM_STORAGE_OVERRIDES.get(key, {})}
+        if key in armor_luck_rules.EQUIPMENT_PAYLOAD_OVERRIDES:
+            final_defaults["effect_payload"] = {
+                **final_defaults["effect_payload"],
+                **armor_luck_rules.EQUIPMENT_PAYLOAD_OVERRIDES[key],
+            }
         assert final_defaults == expected
     recipes = yaml.safe_load((DATA / "forge_blueprints.yaml").read_text())["recipes"]
     assert rules.ARMOR_RECIPE == next(row for row in recipes if row["blueprint_key"] == "blueprint_chiyoujia")

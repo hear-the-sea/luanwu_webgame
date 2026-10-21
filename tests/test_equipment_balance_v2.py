@@ -19,12 +19,15 @@ def test_static_config_matches_immutable_approved_snapshot():
     guild_mounts = importlib.import_module("gameplay.migrations.0214_guild_orange_mounts")
     chiyou = importlib.import_module("gameplay.migrations.0221_chiyou_rewards_and_unique_guests")
     zhaoyun = importlib.import_module("gameplay.migrations.0222_zhaoyun_equipment_rewards")
+    armor_luck = importlib.import_module("gameplay.migrations.0230_chiyou_armor_luck")
     feature_equipment = {
         key: item["effect_payload"]
         for migration in (chiyou, zhaoyun)
         for key, item in migration.ITEM_DEFAULTS.items()
         if str(item.get("effect_type", "")).startswith("equip_")
     }
+    for key, overrides in armor_luck.EQUIPMENT_PAYLOAD_OVERRIDES.items():
+        feature_equipment[key] = {**feature_equipment[key], **overrides}
     assert len(equipment) == 278
     assert equipment == {
         **migration.EQUIPMENT_PAYLOADS,
