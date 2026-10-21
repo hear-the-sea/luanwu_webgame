@@ -26,7 +26,7 @@ def _guests():
     return {entry["key"]: entry for entries in payload["heroes"].values() for entry in entries}
 
 
-def test_zhanlong_chain_guarantees_each_next_entry_without_mission_cards():
+def test_zhanlong_chain_guarantees_each_next_entry_and_allows_five_cards_per_mission():
     missions = _catalog("mission_templates.yaml", "missions")
     items = _catalog("item_templates.yaml", "items")
     chain = [missions[key] for key in MISSION_KEYS]
@@ -35,7 +35,7 @@ def test_zhanlong_chain_guarantees_each_next_entry_without_mission_cards():
     for index, mission in enumerate(chain):
         assert mission["name"].startswith(f"战龙在野第{'一二三四'[index]}关")
         assert mission["daily_limit"] == 1
-        assert mission["mission_card_daily_limit"] == 0
+        assert mission["mission_card_daily_limit"] == 5
         assert mission["battle_type"] == "task1"
         chest_key = "mission_chest_v3_" + mission["key"]
         assert mission["drop_table"] == {"silver": [90000, 110000, 130000, 180000][index], chest_key: 1}

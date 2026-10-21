@@ -1646,7 +1646,7 @@ missions:
     available_weekdays: []
     base_travel_time: 2400
     daily_limit: 1
-    mission_card_daily_limit: 0
+    mission_card_daily_limit: 5
 
   - key: zhanlong_changban_tuwei
     name: 战龙在野第二关：龙战长坂七进七出
@@ -1678,7 +1678,7 @@ missions:
     available_weekdays: []
     base_travel_time: 2400
     daily_limit: 1
-    mission_card_daily_limit: 0
+    mission_card_daily_limit: 5
 
   - key: zhanlong_changban_duanqiao
     name: 战龙在野第三关：长坂桥张飞断水流
@@ -1710,7 +1710,7 @@ missions:
     available_weekdays: []
     base_travel_time: 2400
     daily_limit: 1
-    mission_card_daily_limit: 0
+    mission_card_daily_limit: 5
 
   - key: zhanlong_wuhu_shizhen
     name: 战龙在野第四关：谁人德行服赵云
@@ -1752,7 +1752,7 @@ missions:
     available_weekdays: []
     base_travel_time: 2700
     daily_limit: 1
-    mission_card_daily_limit: 0
+    mission_card_daily_limit: 5
 
   - key: guild_personal_yanziwu_secret_letter
     name: 沉香劈山救母

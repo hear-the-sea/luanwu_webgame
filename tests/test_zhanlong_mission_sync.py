@@ -17,6 +17,7 @@ equipment_rules = import_module("gameplay.migrations.0222_zhaoyun_equipment_rewa
 profile_rules = import_module("gameplay.migrations.0227_zhanlong_current_combat_profiles")
 alignment_rules = import_module("gameplay.migrations.0229_personal_guild_guest_profile_alignment")
 armor_luck_rules = import_module("gameplay.migrations.0230_chiyou_armor_luck")
+card_rules = import_module("gameplay.migrations.0231_zhanlong_mission_cards")
 DATA = Path(__file__).resolve().parents[1] / "data"
 
 
@@ -32,6 +33,8 @@ def test_frozen_migration_matches_current_chain_and_skill_configuration():
         entries = _catalog(filename, section)
         for key, defaults in snapshots.items():
             final_defaults = {**defaults, **profile_rules.MISSION_UPDATES.get(key, {})}
+            if filename == "mission_templates.yaml":
+                final_defaults.update(card_rules.MISSION_UPDATES.get(key, {}))
             assert {field: value for field, value in entries[key].items() if field != "key"} == final_defaults
     items = _catalog("item_templates.yaml", "items")
     for key, defaults in {**rules.ITEM_DEFAULTS, **reward_rules.ITEM_DEFAULTS, **equipment_rules.ITEM_DEFAULTS}.items():
@@ -60,6 +63,7 @@ def synced_chain(db, settings, tmp_path):
     rules.sync_zhanlong_missions(apps, SimpleNamespace(connection=connection))
     reward_rules.sync_chiyou_rewards(apps, SimpleNamespace(connection=connection))
     equipment_rules.sync_zhaoyun_equipment_rewards(apps, SimpleNamespace(connection=connection))
+    card_rules.enable_zhanlong_mission_cards(apps, SimpleNamespace(connection=connection))
 
 
 @pytest.mark.django_db
@@ -136,7 +140,7 @@ def test_real_mission_chests_supply_each_next_entry_and_independent_scroll(
     ordered_keys = list(rules.MISSION_DEFAULTS)
     for index, key in enumerate(ordered_keys):
         mission = MissionTemplate.objects.get(key=key)
-        assert not mission.mission_card_daily_limit
+        assert mission.mission_card_daily_limit == 5
         award_mission_drops(manor, mission.drop_table, "战龙演武胜利")
         chest = InventoryItem.objects.get(manor=manor, template__key="mission_chest_v3_" + key)
         inventory_use.use_inventory_item(chest, manor)

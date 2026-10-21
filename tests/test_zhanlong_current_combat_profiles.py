@@ -15,6 +15,7 @@ from guests.models import Guest, GuestTemplate, WorldUniqueGuest
 rules = import_module("gameplay.migrations.0227_zhanlong_current_combat_profiles")
 base = import_module("gameplay.migrations.0220_zhanlong_quest_chain")
 exchange = import_module("gameplay.migrations.0221_chiyou_rewards_and_unique_guests")
+card_rules = import_module("gameplay.migrations.0231_zhanlong_mission_cards")
 DATA = Path(__file__).resolve().parents[1] / "data"
 STAT_FIELDS = {
     "force": "base_attack",
@@ -29,7 +30,7 @@ STAT_FIELDS = {
 def test_final_migration_profiles_match_all_four_missions_and_ten_guest_templates():
     missions = {row["key"]: row for row in yaml.safe_load((DATA / "mission_templates.yaml").read_text())["missions"]}
     for key, defaults in base.MISSION_DEFAULTS.items():
-        final = {**defaults, **rules.MISSION_UPDATES.get(key, {})}
+        final = {**defaults, **rules.MISSION_UPDATES.get(key, {}), **card_rules.MISSION_UPDATES.get(key, {})}
         assert {field: missions[key].get(field) for field in final} == final
     all_defaults = {**base.ENEMY_DEFAULTS, **exchange.GUEST_DEFAULTS}
     changed = {}
