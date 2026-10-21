@@ -19,6 +19,7 @@ equipment_rules = import_module("gameplay.migrations.0222_zhaoyun_equipment_rewa
 growth_rules = import_module("gameplay.migrations.0223_chiyou_guest_growth")
 alignment_rules = import_module("gameplay.migrations.0229_personal_guild_guest_profile_alignment")
 armor_luck_rules = import_module("gameplay.migrations.0230_chiyou_armor_luck")
+copy_rules = import_module("gameplay.migrations.0242_player_facing_mission_item_copy")
 DATA = Path(__file__).resolve().parents[1] / "data"
 
 
@@ -40,7 +41,11 @@ def test_reward_migration_freezes_current_equipment_and_recipe():
         sources = equipment_rules.IMAGE_SOURCES if key in equipment_rules.ITEM_DEFAULTS else rules.IMAGE_SOURCES
         assert sources[defaults["image"]] == "items/" + expected["image"]
         expected["image"] = defaults["image"]
-        final_defaults = {**defaults, **alignment_rules.ITEM_STORAGE_OVERRIDES.get(key, {})}
+        final_defaults = {
+            **defaults,
+            **alignment_rules.ITEM_STORAGE_OVERRIDES.get(key, {}),
+            **copy_rules.ITEM_UPDATES.get(key, {}),
+        }
         if key in armor_luck_rules.EQUIPMENT_PAYLOAD_OVERRIDES:
             final_defaults["effect_payload"] = {
                 **final_defaults["effect_payload"],

@@ -483,7 +483,7 @@ def build_chest_reward_preview(box: Any, reward_templates: dict[str, Any]) -> di
 
     def reward_label(key: str, minimum: int, maximum: int) -> str:
         template = reward_templates.get(key)
-        name = template.name if template else "奖励待同步"
+        name = template.name if template else "未知奖励"
         quantity = str(minimum) if minimum == maximum else f"{minimum}—{maximum}"
         return f"{name} ×{quantity}"
 

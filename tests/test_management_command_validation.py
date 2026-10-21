@@ -274,7 +274,7 @@ def test_default_mission_templates_define_junior_mission_tiering():
         },
         "tianpeng_dijiao_2": {
             "difficulty": "advanced",
-            "enemy_technology": {"level": 9, "guest_level": 80, "guest_bonus": 0.2},
+            "enemy_technology": {"level": 9, "guest_level": 100, "guest_bonus": 0.2},
         },
         "dongtian_fudi": {
             "difficulty": "advanced",

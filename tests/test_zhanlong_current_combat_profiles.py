@@ -20,6 +20,7 @@ enrage_rules = import_module("gameplay.migrations.0232_caochun_enrage_and_cavalr
 bridge_rules = import_module("gameplay.migrations.0233_bridge_zhangfei_fury")
 assault_rules = import_module("gameplay.migrations.0234_zhaoyun_dragon_assault")
 progression_rules = import_module("gameplay.migrations.0240_zhanlong_progressive_difficulty")
+copy_rules = import_module("gameplay.migrations.0242_player_facing_mission_item_copy")
 DATA = Path(__file__).resolve().parents[1] / "data"
 STAT_FIELDS = {
     "force": "base_attack",
@@ -39,6 +40,7 @@ def test_final_migration_profiles_match_all_four_missions_and_ten_guest_template
         final.update(bridge_rules.MISSION_UPDATES.get(key, {}))
         final.update(assault_rules.MISSION_UPDATES.get(key, {}))
         final.update(progression_rules.MISSION_UPDATES.get(key, {}))
+        final.update(copy_rules.MISSION_UPDATES.get(key, {}))
         assert {field: missions[key].get(field) for field in final} == final
     all_defaults = {**base.ENEMY_DEFAULTS, **exchange.GUEST_DEFAULTS}
     changed = {}

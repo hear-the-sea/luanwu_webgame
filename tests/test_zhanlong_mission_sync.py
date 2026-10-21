@@ -23,6 +23,7 @@ bridge_rules = import_module("gameplay.migrations.0233_bridge_zhangfei_fury")
 assault_rules = import_module("gameplay.migrations.0234_zhaoyun_dragon_assault")
 merged_rules = import_module("gameplay.migrations.0235_bridge_roar_without_dust_passive")
 progression_rules = import_module("gameplay.migrations.0240_zhanlong_progressive_difficulty")
+copy_rules = import_module("gameplay.migrations.0242_player_facing_mission_item_copy")
 DATA = Path(__file__).resolve().parents[1] / "data"
 
 
@@ -44,6 +45,7 @@ def test_frozen_migration_matches_current_chain_and_skill_configuration():
                 final_defaults.update(bridge_rules.MISSION_UPDATES.get(key, {}))
                 final_defaults.update(assault_rules.MISSION_UPDATES.get(key, {}))
                 final_defaults.update(progression_rules.MISSION_UPDATES.get(key, {}))
+                final_defaults.update(copy_rules.MISSION_UPDATES.get(key, {}))
             elif filename == "guest_skills.yaml":
                 final_defaults.update(enrage_rules.SKILL_UPDATES.get(key, {}))
                 final_defaults.update(bridge_rules.SKILL_UPDATES.get(key, {}))
@@ -64,6 +66,7 @@ def test_frozen_migration_matches_current_chain_and_skill_configuration():
                 **final_defaults["effect_payload"],
                 **armor_luck_rules.EQUIPMENT_PAYLOAD_OVERRIDES[key],
             }
+        final_defaults.update(copy_rules.ITEM_UPDATES.get(key, {}))
         assert expected == final_defaults
     for source in rules.IMAGE_SOURCES.values():
         assert (DATA / "images" / source).is_file()

@@ -117,7 +117,7 @@ items:
 
   - key: grain
     name: 粮食
-    description: 粮食是庄园发展的基本物资，充足的粮食能保证庄园的正常运作，出售粮食能得发展资金。如果粮食不足护客会相继逃离。
+    description: 粮食是庄园发展的基本物资，可用于日常供给与庄园生产，也可出售换取银两。
     effect_type: resource
     rarity: black
     tradeable: true
@@ -128,7 +128,7 @@ items:
 
   - key: tong
     name: 铜
-    description: 铜是所有装备需求最基础资源。
+    description: 常见的金属原料，可用于装备锻造与冶炼。
     effect_type: resource
     rarity: black
     tradeable: true
@@ -453,7 +453,7 @@ items:
 
   - key: ya
     name: 鸭
-    description: 番门肉鸭，生长迅速、饲养简单，肉质味美。
+    description: 家养肉鸭，生长迅速、饲养简单，肉质鲜美。
     effect_type: resource
     rarity: black
     tradeable: true
@@ -464,7 +464,7 @@ items:
 
   - key: e
     name: 鹅
-    description: 江山白鹅，羽毛洁白，肉质细嫩，还能做为护院宠物。
+    description: 江山白鹅，羽毛洁白，肉质细嫩，也常被农家用来看家护院。
     effect_type: resource
     rarity: black
     tradeable: true
@@ -475,7 +475,7 @@ items:
 
   - key: zhu
     name: 猪
-    description: 高佬庄大肥猪，要至富，先养猪。
+    description: 高老庄大肥猪，要致富，先养猪。
     effect_type: resource
     rarity: black
     tradeable: true
@@ -537,7 +537,7 @@ items:
 
   - key: baicaodan
     name: 白草丹
-    description: 百草炼冶而成，非常珍贵。
+    description: 百草炼制而成，非常珍贵。
     effect_type: medicine
     rarity: black
     tradeable: true
@@ -573,7 +573,7 @@ items:
 
   - key: tianxiangyuluwan
     name: 天香玉露丸
-    description: 药入手清凉，泌人心肺，如霜似王，功效非凡。
+    description: 入手清凉，沁人心脾，如霜似玉，功效非凡。
     effect_type: medicine
     rarity: green
     tradeable: true
@@ -704,7 +704,7 @@ items:
 
   - key: junior_guest_card
     name: 初级门客卡
-    description: 一张看起来很有排面的卡片，使用后随机招募一名门客，若听着耳熟，纯属江湖重名。
+    description: 初入江湖的招贤信物，使用后随机招募一名普通文门客或武门客。
     effect_type: tool
     rarity: black
     tradeable: true
@@ -1637,7 +1637,7 @@ items:
 
   - key: chiyou_card
     name: 蚩尤卡
-    description: 逐鹿中原蚩尤宝箱中取得的招贤信物。集齐100张后，可指定选择召来紫色门客「杨铮」或「狄青麟」一位。两位门客各自全服唯一，若所选门客已被其他庄园招募，则无法兑换且不消耗蚩尤卡。
+    description: 逐鹿中原蚩尤宝箱中取得的招贤信物。集齐100张后，可选择招募紫色门客「杨铮」或「狄青麟」中的一位。两位门客各自全服唯一，若所选门客已被其他庄园招募，则无法兑换且不消耗蚩尤卡。
     effect_type: tool
     rarity: purple
     tradeable: false
@@ -1847,7 +1847,7 @@ items:
 
   - key: custom_guest_card
     name: 自定义门客卡
-    description: 意识穿越到春秋乱世有一段时间了，使用自定义门客卡即可获得专属肉身，还自带吞噬强化系统，出任CEO，赢娶白富美，走上人生巅峰就在眼前。
+    description: 使用后可创建一名绿色专属门客，自定姓名与形象，并通过吞噬装备培养成长。每个庄园限拥有一名专属门客。
     rarity: green
     tradeable: false
     default_bound: true
@@ -1873,7 +1873,7 @@ items:
     is_usable: false
   - key: millennium_zhuguo
     name: 千年朱果
-    description: 千年方熟的灵果，可将专属门客的武力、智力、防御与敏捷成长权重重置为各500，保留现有品质与强化成果。
+    description: 千年方熟的灵果，可重置专属门客的成长方向，使武力、智力、防御与敏捷的成长倾向恢复均衡；保留现有品质与强化成果。
     rarity: orange
     tradeable: true
     default_bound: false
@@ -1987,7 +1987,7 @@ items:
 
   - key: soul_container
     name: 灵魂容器
-    description: 在仓库中使用后，可融合一名30级以上的绿色、蓝色或紫色空闲门客。门客灵魂会凝成强力饰品，属性受到原门客属性偏向影响。
+    description: 可将一名30级及以上、处于空闲或休假状态的绿色、蓝色或紫色门客融合为不可交易的饰品，饰品属性随原门客而定。融合后该门客消失，原装备卸下保留；专属门客与全服唯一门客不可融合。
     effect_type: tool
     rarity: orange
     tradeable: true
@@ -2183,7 +2183,7 @@ items:
 
   - key: work_chest_small
     name: 打工宝箱（小）
-    description: 打工获得的小型宝箱，打开后可获得随机白银和锻造材料，有小概率获得基础或绿色装备、技能书。
+    description: 打工获得的小型宝箱，打开后获得5000～10000银两，并有机会获得锻造材料、装备、技能书等物品。
     effect_type: loot_box
     image: small.png
     rarity: green
@@ -2262,7 +2262,7 @@ items:
 
   - key: work_chest_medium
     name: 打工宝箱（中）
-    description: 打工获得的中型宝箱，打开后可获得随机黄金和锻造材料，有小概率获得蓝色装备或技能书。
+    description: 打工获得的中型宝箱，打开后获得10000～20000银两及锻造材料，并有机会获得装备、技能书等物品。
     effect_type: loot_box
     rarity: blue
     image: middle.png
@@ -2362,7 +2362,7 @@ items:
 
   - key: work_chest_large
     name: 打工宝箱（大）
-    description: 打工获得的大型宝箱，打开后可获得随机铂金和锻造材料，有机会获得春秋币，以及小概率获得紫色装备、绿色或蓝色技能书，或紫色技能书《五雷降世》。
+    description: 打工获得的大型宝箱，打开后获得20000～40000银两及锻造材料，并有机会获得春秋币、装备、技能书等物品。
     effect_type: loot_box
     rarity: purple
     image: large.png
@@ -3340,7 +3340,7 @@ items:
 
   - key: book_draw_enemy_blades
     name: 《招锋引敌》秘术
-    description: 让对手更愿意把火力压向自己的诱敌法门。
+    description: 吸引对手出手攻击自己的诱敌法门。
     effect_type: skill_book
     image: skill2.png
     rarity: blue
@@ -6281,7 +6281,7 @@ items:
 
   - key: equip_pojunji
     name: 破军戟
-    description: 以破军星位锻造的神戟，据传戴者必成一方悍将。
+    description: 以破军星位锻造的神戟，据传持有者必成一方悍将。
     effect_type: equip_weapon
     rarity: purple
     tradeable: true
@@ -7268,7 +7268,7 @@ items:
   # ══════════════════════════════════════════════════════════════════════════════
   - key: equip_taotieding
     name: 饕餮鼎
-    description: 鼎身上的饕餮图案而得名，象征着权力和财富，常用于祭祀或重要场合。
+    description: 因鼎身上的饕餮纹饰而得名，象征着权力和财富，常用于祭祀或重要场合。
     effect_type: equip_device
     rarity: purple
     effect_payload:
@@ -7991,7 +7991,7 @@ items:
   # ══════════════════════════════════════════════════════════════════════════════
   - key: equip_zaohongma
     name: 枣红马
-    description: 原马系统，体形高大,背脊宽厚,紫红鬃毛,四蹄粗壮，速度快且极能负重。
+    description: 体形高大的良马，背脊宽厚，鬃毛紫红，四蹄粗壮，奔行迅捷且善于负重。
     effect_type: equip_mount
     rarity: black
     tradeable: true
@@ -14373,7 +14373,7 @@ items:
 
   - key: mission_chest_v3_zhanlong_wuhu_shizhen
     name: 五虎演武宝箱
-    description: 五虎会武的任务宝箱，内有演武补给；独立1%机会获得赵云招募卷轴，另有10%机会获得蜀缎白锦袍或龙胆枪，两件等权抽取。
+    description: 五虎会武的任务宝箱，内有演武补给；有1%的机会获得赵云招募卷轴，另有10%的机会获得蜀缎白锦袍或龙胆枪。两件装备出现的机会相同，且与卷轴互不影响。
     effect_type: loot_box
     rarity: purple
     tradeable: false

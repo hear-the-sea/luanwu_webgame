@@ -7,6 +7,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[1]
 rules = import_module("gameplay.migrations.0202_custom_guest_items_and_templates")
 base_rules = import_module("gameplay.migrations.0203_custom_guest_orange_civil_base")
+copy_rules = import_module("gameplay.migrations.0242_player_facing_mission_item_copy")
 
 
 def test_custom_guest_catalog_matches_migration_and_generated_images():
@@ -20,6 +21,7 @@ def test_custom_guest_catalog_matches_migration_and_generated_images():
             "price": 0,
             "storage_space": 1,
             "is_usable": key == "custom_guest_card",
+            **copy_rules.ITEM_UPDATES.get(key, {}),
         }
         assert items[key] == expected
         with Image.open(ROOT / "data/images/items" / expected["image"]) as image:
