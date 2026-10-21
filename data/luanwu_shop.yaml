@@ -19,20 +19,20 @@ items:
     price: 1
     item_key: mission_card
     reward_type: item
-    reward_quantity: 2
+    reward_quantity: 1
 
   - key: recruitment_card
     shop_description: 用于增加每日招募次数
     price: 1
     item_key: recruitment_card
     reward_type: item
-    reward_quantity: 3
+    reward_quantity: 2
 
   - key: action_point_potion
-    price: 1
+    price: 2
     item_key: action_point_potion
     reward_type: item
-    reward_quantity: 2
+    reward_quantity: 1
 
   - key: manor_rename_card
     price: 1
@@ -41,19 +41,19 @@ items:
     reward_quantity: 1
 
   - key: peace_shield_small
-    price: 1
+    price: 2
     item_key: peace_shield_small
     reward_type: item
     reward_quantity: 1
 
   - key: peace_shield_medium
-    price: 2
+    price: 8
     item_key: peace_shield_medium
     reward_type: item
     reward_quantity: 1
 
   - key: peace_shield_large
-    price: 3
+    price: 30
     item_key: peace_shield_large
     reward_type: item
     reward_quantity: 1

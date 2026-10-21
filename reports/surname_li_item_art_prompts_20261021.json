@@ -1,0 +1,159 @@
+{
+  "mode": "built-in image_gen tool; four separate generation calls with style references",
+  "style_references": [
+    "data/images/items/haorenka.png",
+    "data/images/items/experience_fruit.png"
+  ],
+  "backup_directory": "/tmp/surname_li_items_before_redesign",
+  "postprocessing": "Pillow proportional downscale to 400x400 and WebP encoding only; no drawing, compositing, cropping or recoloring",
+  "assets": [
+    {
+      "id": "plum",
+      "subject": "Subject: one small bunch of exactly three ripe purple plums attached to a short twig with two green leaves. Purple fruit with simple watercolor washes and fine brown outlines, modest hand-painted highlight strokes only, simple natural recognizable plums. Composition and drawing simplicity like the fruit reference.",
+      "prompt": "Use case: stylized-concept. Create a BRAND NEW square 2D hand-drawn Chinese game inventory item illustration. The two supplied images are STYLE REFERENCES ONLY (not edit targets): match their simple thin brown ink outlines, gently irregular hand-drawn lines, flat muted watercolor fills and small amount of softly mottled watercolor detail. This must read as a simple painted drawing like a traditional children's illustrated herb book or the provided game items, rather than realistic rendered merchandise. Single complete object centered with spacious margins. Background opaque, uniformly very very pale light yellow near #fffbea / #fff9e3, including all four corners; no vignette, no brown/beige gradient. Simplified shapes, flat graphic shading, delicate brown contour line. No photography, no photorealism, no 3D, no PBR, no volumetric light, no specular reflections, no magical glow or sparkles, no gem mounts, no ornate embossed metalwork, no complex carving, no European tarot, no letters or numbers, no text, no watermark, no UI frame. Subject: one small bunch of exactly three ripe purple plums attached to a short twig with two green leaves. Purple fruit with simple watercolor washes and fine brown outlines, modest hand-painted highlight strokes only, simple natural recognizable plums. Composition and drawing simplicity like the fruit reference.",
+      "source": "/home/daniel/.codex/generated_images/01a15e68-84ac-7421-b68a-23531ca804a4/exec-f6d7b321-cf12-406d-9d63-9944d75aa1c5.png",
+      "destination": "data/images/items/surname_li/plum.webp",
+      "validation": {
+        "size": [
+          400,
+          400
+        ],
+        "mode": "RGB",
+        "corners_rgb": [
+          [
+            252,
+            251,
+            229
+          ],
+          [
+            254,
+            251,
+            229
+          ],
+          [
+            254,
+            251,
+            229
+          ],
+          [
+            254,
+            251,
+            229
+          ]
+        ],
+        "bytes": 14492
+      }
+    },
+    {
+      "id": "li_clan_card",
+      "subject": "Subject: one simple ancient Chinese pale-yellow paper token card, slightly tilted, with a simple green cord tied in a bow at the top left and a small tassel. A simple two-dimensional plum branch with purple plums is painted in the middle, and a tiny red cinnabar pictorial round stamp without characters near the bottom. Paper edges simply outlined with thin brown lines, modest aged paper texture on the card only. Match the plain paper-and-cord construction of the provided good-person card reference. The card itself is paper, no metal frame, no gems, no floral border.",
+      "prompt": "Use case: stylized-concept. Create a BRAND NEW square 2D hand-drawn Chinese game inventory item illustration. The two supplied images are STYLE REFERENCES ONLY (not edit targets): match their simple thin brown ink outlines, gently irregular hand-drawn lines, flat muted watercolor fills and small amount of softly mottled watercolor detail. This must read as a simple painted drawing like a traditional children's illustrated herb book or the provided game items, rather than realistic rendered merchandise. Single complete object centered with spacious margins. Background opaque, uniformly very very pale light yellow near #fffbea / #fff9e3, including all four corners; no vignette, no brown/beige gradient. Simplified shapes, flat graphic shading, delicate brown contour line. No photography, no photorealism, no 3D, no PBR, no volumetric light, no specular reflections, no magical glow or sparkles, no gem mounts, no ornate embossed metalwork, no complex carving, no European tarot, no letters or numbers, no text, no watermark, no UI frame. Subject: one simple ancient Chinese pale-yellow paper token card, slightly tilted, with a simple green cord tied in a bow at the top left and a small tassel. A simple two-dimensional plum branch with purple plums is painted in the middle, and a tiny red cinnabar pictorial round stamp without characters near the bottom. Paper edges simply outlined with thin brown lines, modest aged paper texture on the card only. Match the plain paper-and-cord construction of the provided good-person card reference. The card itself is paper, no metal frame, no gems, no floral border.",
+      "source": "/home/daniel/.codex/generated_images/01a15e68-84ac-7421-b68a-23531ca804a4/exec-c0b17349-7fa3-4a64-92d7-f2610e7ab22b.png",
+      "destination": "data/images/items/surname_li/li_clan_card.webp",
+      "validation": {
+        "size": [
+          400,
+          400
+        ],
+        "mode": "RGB",
+        "corners_rgb": [
+          [
+            252,
+            252,
+            227
+          ],
+          [
+            252,
+            252,
+            227
+          ],
+          [
+            252,
+            252,
+            227
+          ],
+          [
+            252,
+            252,
+            227
+          ]
+        ],
+        "bytes": 15804
+      }
+    },
+    {
+      "id": "villain_card",
+      "subject": "Subject: one simple ancient Chinese pale-yellow paper token card, slightly tilted, with a simple muted dark-purple cord tied in a bow at the top left and a small tassel. Central design is a small flat Chinese demon-mask stamp motif, simplified black and brick red ink shapes; stylized folk-art ghost face, not frightening realistic monster. A tiny red cinnabar pictorial round stamp without characters near bottom. Thin brown outlined paper edge and lightly aged paper texture on card only. Same plain paper-and-cord series as the good-person card reference, no metal frame, no gems, no tarot frame.",
+      "prompt": "Use case: stylized-concept. Create a BRAND NEW square 2D hand-drawn Chinese game inventory item illustration. The two supplied images are STYLE REFERENCES ONLY (not edit targets): match their simple thin brown ink outlines, gently irregular hand-drawn lines, flat muted watercolor fills and small amount of softly mottled watercolor detail. This must read as a simple painted drawing like a traditional children's illustrated herb book or the provided game items, rather than realistic rendered merchandise. Single complete object centered with spacious margins. Background opaque, uniformly very very pale light yellow near #fffbea / #fff9e3, including all four corners; no vignette, no brown/beige gradient. Simplified shapes, flat graphic shading, delicate brown contour line. No photography, no photorealism, no 3D, no PBR, no volumetric light, no specular reflections, no magical glow or sparkles, no gem mounts, no ornate embossed metalwork, no complex carving, no European tarot, no letters or numbers, no text, no watermark, no UI frame. Subject: one simple ancient Chinese pale-yellow paper token card, slightly tilted, with a simple muted dark-purple cord tied in a bow at the top left and a small tassel. Central design is a small flat Chinese demon-mask stamp motif, simplified black and brick red ink shapes; stylized folk-art ghost face, not frightening realistic monster. A tiny red cinnabar pictorial round stamp without characters near bottom. Thin brown outlined paper edge and lightly aged paper texture on card only. Same plain paper-and-cord series as the good-person card reference, no metal frame, no gems, no tarot frame.",
+      "source": "/home/daniel/.codex/generated_images/01a15e68-84ac-7421-b68a-23531ca804a4/exec-88ea34d4-4502-4b58-a7ff-9891a73f2753.png",
+      "destination": "data/images/items/surname_li/villain_card.webp",
+      "validation": {
+        "size": [
+          400,
+          400
+        ],
+        "mode": "RGB",
+        "corners_rgb": [
+          [
+            252,
+            252,
+            227
+          ],
+          [
+            252,
+            252,
+            227
+          ],
+          [
+            252,
+            252,
+            227
+          ],
+          [
+            252,
+            252,
+            227
+          ]
+        ],
+        "bytes": 14638
+      }
+    },
+    {
+      "id": "li_chest",
+      "subject": "Subject: a simple small wooden Chinese treasure chest, lid half open, honey-brown wood planks drawn with just a few grain lines, plain dull brass corner brackets and a simple latch. Inside are three small purple plums and one plain small rolled scroll. Restrained details, charming traditional Chinese hand-painted 2D game prop, clear thin brown ink contour and flat watercolor shading. Keep the chest design simple like an old handmade wooden box; no jewels, no magical lights, no shiny surfaces, no ornate carvings.",
+      "prompt": "Use case: stylized-concept. Create a BRAND NEW square 2D hand-drawn Chinese game inventory item illustration. The two supplied images are STYLE REFERENCES ONLY (not edit targets): match their simple thin brown ink outlines, gently irregular hand-drawn lines, flat muted watercolor fills and small amount of softly mottled watercolor detail. This must read as a simple painted drawing like a traditional children's illustrated herb book or the provided game items, rather than realistic rendered merchandise. Single complete object centered with spacious margins. Background opaque, uniformly very very pale light yellow near #fffbea / #fff9e3, including all four corners; no vignette, no brown/beige gradient. Simplified shapes, flat graphic shading, delicate brown contour line. No photography, no photorealism, no 3D, no PBR, no volumetric light, no specular reflections, no magical glow or sparkles, no gem mounts, no ornate embossed metalwork, no complex carving, no European tarot, no letters or numbers, no text, no watermark, no UI frame. Subject: a simple small wooden Chinese treasure chest, lid half open, honey-brown wood planks drawn with just a few grain lines, plain dull brass corner brackets and a simple latch. Inside are three small purple plums and one plain small rolled scroll. Restrained details, charming traditional Chinese hand-painted 2D game prop, clear thin brown ink contour and flat watercolor shading. Keep the chest design simple like an old handmade wooden box; no jewels, no magical lights, no shiny surfaces, no ornate carvings.",
+      "source": "/home/daniel/.codex/generated_images/01a15e68-84ac-7421-b68a-23531ca804a4/exec-907bf9eb-8e50-4e83-a998-762a04112e8a.png",
+      "destination": "data/images/items/surname_li/li_chest.webp",
+      "validation": {
+        "size": [
+          400,
+          400
+        ],
+        "mode": "RGB",
+        "corners_rgb": [
+          [
+            252,
+            252,
+            227
+          ],
+          [
+            255,
+            252,
+            228
+          ],
+          [
+            254,
+            253,
+            228
+          ],
+          [
+            254,
+            253,
+            228
+          ]
+        ],
+        "bytes": 17414
+      }
+    }
+  ]
+}

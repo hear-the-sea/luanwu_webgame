@@ -1,0 +1,29 @@
+{
+  "local_only": true,
+  "style": "中国风手绘2D，细棕色描线、水彩平涂，极浅黄色背景",
+  "backup": "/tmp/local-surname-li-items-before-20261021T225457",
+  "images": [
+    {
+      "path": "items/surname_li/li_chest.webp",
+      "http_status": 200,
+      "bytes": 17414
+    },
+    {
+      "path": "items/surname_li/li_clan_card.webp",
+      "http_status": 200,
+      "bytes": 15804
+    },
+    {
+      "path": "items/surname_li/plum.webp",
+      "http_status": 200,
+      "bytes": 14492
+    },
+    {
+      "path": "items/surname_li/villain_card.webp",
+      "http_status": 200,
+      "bytes": 14638
+    }
+  ],
+  "in_game_chest_icon": "items/mission_chest_v1.webp",
+  "item_configuration_preserved": true
+}

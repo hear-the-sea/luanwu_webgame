@@ -45,7 +45,8 @@ def run_passives_for_timing(
     }
 
     for skill in getattr(actor, "skills", []) or []:
-        if str(skill.get("kind") or "") != "passive":
+        # 主动技能也可附带自身的条件转换规则，无需额外占用一个被动技能。
+        if str(skill.get("kind") or "") not in {"passive", "active"}:
             continue
         config = skill.get("passive_config") or {}
         context["skill_key"] = str(skill.get("key") or "").strip() or "__direct__"

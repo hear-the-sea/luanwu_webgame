@@ -1,0 +1,38 @@
+{
+  "status": "deployed_and_verified",
+  "deployment_completed_at_utc": "2026-10-21T04:38:12.929619+00:00",
+  "image": "webgame:cavalry-preemptive-20261021",
+  "previous_image": "webgame:zhanlong-combat-20261021t032452z",
+  "release": "/root/code/releases/cavalry-preemptive-20261021",
+  "source_backup": "/root/code/releases/cavalry-preemptive-20261021/source-before",
+  "server_verification": "/root/code/releases/cavalry-preemptive-20261021/verification.json",
+  "archive_sha256": "5635aa18ef3bc43acd0b26dd190d295be3b2ebc13e29ccddb2904fe3a510c146",
+  "runtime_files_verified_on_all_services": [
+    "battle/report_events.py",
+    "battle/simulation/attack_execution.py",
+    "battle/simulation/types.py"
+  ],
+  "offline_tests_passed": 245,
+  "type_and_format_checks": "passed",
+  "production_image_combat_smoke": {
+    "preemptive_normal_attack": true,
+    "preemptive_no_charge": true,
+    "ordinary_charge": true,
+    "charge_hits_two_targets": true,
+    "rendered_report_correct": true,
+    "grouped_attack_covered": true
+  },
+  "database_migrations_executed_this_release": false,
+  "pending_migrations": 0,
+  "existing_combat_templates_verified": true,
+  "application_services_running_on_new_image": 8,
+  "web_health": "healthy",
+  "readiness": "passed",
+  "workers_responding": 6,
+  "application_log_tracebacks_since_restart": 0,
+  "public_http_status": {
+    "/health/live": 200,
+    "/accounts/login/": 200
+  },
+  "prior_health_observation": "Before deployment, readiness returned 503 with only celery_workers failing. All six queues subsequently had recent probes and all six workers responded. After deployment, readiness passed and Web became healthy."
+}

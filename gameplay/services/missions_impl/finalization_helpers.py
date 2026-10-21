@@ -231,8 +231,8 @@ def build_mission_drops_with_salvage(
             _require_mapping_payload(getattr(locked_run.mission, "drop_table", None), field_name="drop table"),
         )
 
-    # v3 经验果按实际战损直接发放，装备奖励仍在宝箱；已经保存的经验不再重算。
-    # 按实际掉落识别版本，保留旧库存箱内经验与旧战报回收规则。
+    # PVE 战损经验果减半并向下取整；v3 装备奖励仍在宝箱，已保存的经验不再重算。
+    # 按实际掉落识别版本，保留旧库存箱内经验与其他回收奖励。
     # 空掉落防守战报仍按当前模板补齐。
     if any(key.startswith("mission_chest_v3_") for key in drops):
         if "experience_fruit" not in drops:
@@ -243,6 +243,7 @@ def build_mission_drops_with_salvage(
                 equipment_casualty_side=player_side,
                 include_equipment_recovery=False,
             )
+            exp_fruit_count //= 2
             if exp_fruit_count > 0:
                 drops["experience_fruit"] = exp_fruit_count
         return drops
@@ -256,6 +257,7 @@ def build_mission_drops_with_salvage(
         report,
         equipment_casualty_side=player_side,
     )
+    exp_fruit_count //= 2
     if exp_fruit_count > 0:
         drops["experience_fruit"] = drops.get("experience_fruit", 0) + exp_fruit_count
     for equip_key, count in equipment_recovery.items():

@@ -18,6 +18,11 @@ profile_rules = import_module("gameplay.migrations.0227_zhanlong_current_combat_
 alignment_rules = import_module("gameplay.migrations.0229_personal_guild_guest_profile_alignment")
 armor_luck_rules = import_module("gameplay.migrations.0230_chiyou_armor_luck")
 card_rules = import_module("gameplay.migrations.0231_zhanlong_mission_cards")
+enrage_rules = import_module("gameplay.migrations.0232_caochun_enrage_and_cavalry")
+bridge_rules = import_module("gameplay.migrations.0233_bridge_zhangfei_fury")
+assault_rules = import_module("gameplay.migrations.0234_zhaoyun_dragon_assault")
+merged_rules = import_module("gameplay.migrations.0235_bridge_roar_without_dust_passive")
+progression_rules = import_module("gameplay.migrations.0240_zhanlong_progressive_difficulty")
 DATA = Path(__file__).resolve().parents[1] / "data"
 
 
@@ -35,6 +40,13 @@ def test_frozen_migration_matches_current_chain_and_skill_configuration():
             final_defaults = {**defaults, **profile_rules.MISSION_UPDATES.get(key, {})}
             if filename == "mission_templates.yaml":
                 final_defaults.update(card_rules.MISSION_UPDATES.get(key, {}))
+                final_defaults.update(enrage_rules.MISSION_UPDATES.get(key, {}))
+                final_defaults.update(bridge_rules.MISSION_UPDATES.get(key, {}))
+                final_defaults.update(assault_rules.MISSION_UPDATES.get(key, {}))
+                final_defaults.update(progression_rules.MISSION_UPDATES.get(key, {}))
+            elif filename == "guest_skills.yaml":
+                final_defaults.update(enrage_rules.SKILL_UPDATES.get(key, {}))
+                final_defaults.update(bridge_rules.SKILL_UPDATES.get(key, {}))
             assert {field: value for field, value in entries[key].items() if field != "key"} == final_defaults
     items = _catalog("item_templates.yaml", "items")
     for key, defaults in {**rules.ITEM_DEFAULTS, **reward_rules.ITEM_DEFAULTS, **equipment_rules.ITEM_DEFAULTS}.items():
@@ -63,7 +75,13 @@ def synced_chain(db, settings, tmp_path):
     rules.sync_zhanlong_missions(apps, SimpleNamespace(connection=connection))
     reward_rules.sync_chiyou_rewards(apps, SimpleNamespace(connection=connection))
     equipment_rules.sync_zhaoyun_equipment_rewards(apps, SimpleNamespace(connection=connection))
+    profile_rules.sync_current_combat_profiles(apps, SimpleNamespace(connection=connection))
     card_rules.enable_zhanlong_mission_cards(apps, SimpleNamespace(connection=connection))
+    enrage_rules.sync_caochun_enrage_and_cavalry(apps, SimpleNamespace(connection=connection))
+    bridge_rules.sync_bridge_zhangfei_fury(apps, SimpleNamespace(connection=connection))
+    assault_rules.sync_zhaoyun_dragon_assault(apps, SimpleNamespace(connection=connection))
+    merged_rules.merge_bridge_roar(apps, SimpleNamespace(connection=connection))
+    progression_rules.sync_zhanlong_progression(apps, SimpleNamespace(connection=connection))
 
 
 @pytest.mark.django_db
@@ -169,12 +187,15 @@ def test_synced_bosses_execute_in_formal_engine_with_only_real_troops(synced_cha
     from core.game_data.technology import get_guest_stat_bonuses, resolve_enemy_tech_levels
 
     clear_guest_template_cache()
-    mission = rules.MISSION_DEFAULTS[mission_key]
+    mission = _catalog("mission_templates.yaml", "missions")[mission_key]
     tech = mission["enemy_technology"]
     enemy_guests = build_named_ai_guests(mission["enemy_guests"], level=tech["guest_level"], rng=Random(13))
     defenders = build_guest_combatants(enemy_guests, "defender", stat_bonuses=get_guest_stat_bonuses(tech))
     for enemy in defenders:
-        assert {skill["key"] for skill in enemy.skills} == set(rules.ENEMY_SKILLS[enemy.template_key])
+        expected_skills = bridge_rules.GUEST_SKILLS.get(enemy.template_key, rules.ENEMY_SKILLS[enemy.template_key])
+        expected_skills = assault_rules.GUEST_SKILLS.get(enemy.template_key, expected_skills)
+        expected_skills = merged_rules.GUEST_SKILLS.get(enemy.template_key, expected_skills)
+        assert {skill["key"] for skill in enemy.skills} == set(expected_skills)
     defenders += build_troop_combatants(
         mission["enemy_troops"], "defender", tech_levels=resolve_enemy_tech_levels(tech)
     )
@@ -189,4 +210,4 @@ def test_synced_bosses_execute_in_formal_engine_with_only_real_troops(synced_cha
     assert all(unit.hp >= 0 for unit in attackers + defenders)
     if mission_key == "zhanlong_changban_duanqiao":
         dust = [event for row in result.rounds for event in row.get("events", []) if event.get("effect") == "疑兵扬尘"]
-        assert len(dust) == 1
+        assert dust == []

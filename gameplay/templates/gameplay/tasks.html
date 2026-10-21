@@ -3,12 +3,17 @@
 
 {% block title %}任务{% endblock %}
 
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/tasks-difficulty.css' %}">
+{% endblock %}
+
 {% block content %}
 <section class="dashboard player-tasks-page" data-player-tasks-page>
     <nav class="tw-mission-tabs">
         <button class="tw-trade-tab{% if active_tab == 'junior' %} active{% endif %}" data-tab="junior">初级任务</button>
         <button class="tw-trade-tab{% if active_tab == 'intermediate' %} active{% endif %}" data-tab="intermediate">中级任务</button>
         <button class="tw-trade-tab{% if active_tab == 'advanced' %} active{% endif %}" data-tab="advanced">高级任务</button>
+        <button class="tw-trade-tab{% if active_tab == 'series' %} active{% endif %}" data-tab="series">系列任务</button>
         <button class="tw-trade-tab{% if active_tab == 'guild' %} active{% endif %}" data-tab="guild">帮会任务</button>
     </nav>
 
@@ -20,6 +25,7 @@
                     <thead>
                         <tr>
                             <th class="tw-mission-name-col">任务名称</th>
+                            <th class="tw-mission-difficulty-col text-center">任务难度</th>
                             <th class="tw-mission-meta-col text-center">类型</th>
                             <th class="tw-mission-meta-col text-center">今日剩余</th>
                             <th class="tw-mission-action-col text-center">操作</th>
@@ -31,8 +37,9 @@
                         {% with mission=item.mission %}
                         <tr>
                             <td class="tw-mission-name-col">
-                                <a class="tw-mission-name-link font-bold text-text-primary no-underline hover:no-underline" href="?mission={{ mission.key }}">{{ mission.name }}</a>
+                                {% include "gameplay/includes/task_board_mission_name.html" %}
                             </td>
+                            <td class="tw-mission-difficulty-col text-center">{% include "gameplay/includes/task_difficulty_rating.html" %}</td>
                             <td class="tw-mission-meta-col text-center">
                                 <span class="tw-chip">
                                     {% if mission.is_defense %}防守{% elif mission.guest_only %}门客{% else %}护院{% endif %}
@@ -49,7 +56,7 @@
                         {% endif %}
                     {% empty %}
                         <tr>
-                            <td colspan="4" class="tw-muted text-center py-8">暂无可领取的任务。</td>
+                            <td colspan="5" class="tw-muted text-center py-8">暂无可领取的任务。</td>
                         </tr>
                     {% endfor %}
                     </tbody>
@@ -62,6 +69,7 @@
                     <thead>
                         <tr>
                             <th class="tw-mission-name-col">任务名称</th>
+                            <th class="tw-mission-difficulty-col text-center">任务难度</th>
                             <th class="tw-mission-meta-col text-center">类型</th>
                             <th class="tw-mission-meta-col text-center">今日剩余</th>
                             <th class="tw-mission-action-col text-center">操作</th>
@@ -73,8 +81,9 @@
                         {% with mission=item.mission %}
                         <tr>
                             <td class="tw-mission-name-col">
-                                <a class="tw-mission-name-link font-bold text-text-primary no-underline hover:no-underline" href="?mission={{ mission.key }}">{{ mission.name }}</a>
+                                {% include "gameplay/includes/task_board_mission_name.html" %}
                             </td>
+                            <td class="tw-mission-difficulty-col text-center">{% include "gameplay/includes/task_difficulty_rating.html" %}</td>
                             <td class="tw-mission-meta-col text-center">
                                 <span class="tw-chip">
                                     {% if mission.is_defense %}防守{% elif mission.guest_only %}门客{% else %}护院{% endif %}
@@ -91,7 +100,7 @@
                         {% endif %}
                     {% empty %}
                         <tr>
-                            <td colspan="4" class="tw-muted text-center py-8">暂无可领取的任务。</td>
+                            <td colspan="5" class="tw-muted text-center py-8">暂无可领取的任务。</td>
                         </tr>
                     {% endfor %}
                     </tbody>
@@ -100,44 +109,11 @@
 
             <!-- Advanced Tab -->
             <div id="tab-advanced" class="mission-tab-content{% if active_tab == 'advanced' %} active{% endif %}"{% if active_tab != 'advanced' %} style="display: none;"{% endif %}>
-                <table class="tw-mission-table">
-                    <thead>
-                        <tr>
-                            <th class="tw-mission-name-col">任务名称</th>
-                            <th class="tw-mission-meta-col text-center">类型</th>
-                            <th class="tw-mission-meta-col text-center">今日剩余</th>
-                            <th class="tw-mission-action-col text-center">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {% for item in mission_data %}
-                        {% if item.mission.difficulty == 'advanced' %}
-                        {% with mission=item.mission %}
-                        <tr>
-                            <td class="tw-mission-name-col">
-                                <a class="tw-mission-name-link font-bold text-text-primary no-underline hover:no-underline" href="?mission={{ mission.key }}">{{ mission.name }}</a>
-                            </td>
-                            <td class="tw-mission-meta-col text-center">
-                                <span class="tw-chip">
-                                    {% if mission.is_defense %}防守{% elif mission.guest_only %}门客{% else %}护院{% endif %}
-                                </span>
-                            </td>
-                            <td class="tw-mission-meta-col text-center">
-                                <span class="tw-chip">{{ item.remaining }} / {{ item.daily_limit }}</span>
-                            </td>
-                            <td class="tw-mission-action-col text-center">
-                                <a class="{% if item.remaining > 0 %}tw-btn-primary{% else %}tw-btn-secondary{% endif %} tw-btn-sm" href="?mission={{ mission.key }}">详情</a>
-                            </td>
-                        </tr>
-                        {% endwith %}
-                        {% endif %}
-                    {% empty %}
-                        <tr>
-                            <td colspan="4" class="tw-muted text-center py-8">暂无可领取的任务。</td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+                {% include "gameplay/includes/task_board_mission_table.html" with items=advanced_mission_data %}
+            </div>
+
+            <div id="tab-series" class="mission-tab-content{% if active_tab == 'series' %} active{% endif %}"{% if active_tab != 'series' %} style="display: none;"{% endif %}>
+                {% include "gameplay/includes/task_board_mission_table.html" with items=series_mission_data %}
             </div>
 
             <div id="tab-guild" class="mission-tab-content{% if active_tab == 'guild' %} active{% endif %}"{% if active_tab != 'guild' %} style="display: none;"{% endif %}>
@@ -154,6 +130,7 @@
                         <thead>
                             <tr>
                                 <th class="tw-mission-name-col">任务名称</th>
+                                <th class="tw-mission-difficulty-col text-center">任务难度</th>
                                 <th class="tw-mission-meta-col text-center">类型</th>
                                 <th class="tw-mission-meta-col text-center">本周剩余</th>
                                 <th class="tw-mission-action-col text-center">详情</th>
@@ -164,8 +141,9 @@
                             {% with mission=item.mission %}
                             <tr>
                                 <td class="tw-mission-name-col">
-                                    <a class="tw-mission-name-link font-bold text-text-primary no-underline hover:no-underline" href="?mission={{ mission.key }}">{{ mission.name }}</a>
+                                    {% include "gameplay/includes/task_board_mission_name.html" %}
                                 </td>
+                                <td class="tw-mission-difficulty-col text-center">{% include "gameplay/includes/task_difficulty_rating.html" %}</td>
                                 <td class="tw-mission-meta-col text-center">
                                     <span class="tw-chip">
                                         {% if mission.is_defense %}防守{% elif mission.guest_only %}门客{% else %}护院{% endif %}
@@ -181,7 +159,7 @@
                             {% endwith %}
                         {% empty %}
                             <tr>
-                                <td colspan="4" class="tw-muted text-center py-8">暂无开放的帮会任务。</td>
+                                <td colspan="5" class="tw-muted text-center py-8">暂无开放的帮会任务。</td>
                             </tr>
                         {% endfor %}
                         </tbody>

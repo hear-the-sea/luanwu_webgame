@@ -1,0 +1,6 @@
+{% load guest_extras %}
+{% if item.difficulty_rating %}
+<span class="task-difficulty-rating" role="img" aria-label="任务难度 {{ item.difficulty_rating.value }}" title="{{ item.difficulty_rating.value }}">{{ item.difficulty_rating.value|attribute_icons }}</span>
+{% else %}
+<span class="task-difficulty-pending">待评估</span>
+{% endif %}

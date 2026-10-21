@@ -1,0 +1,135 @@
+{
+  "generator": "built-in image_gen",
+  "style": "手绘2D古风，极浅奶黄纸底",
+  "task_chests": "reuse existing mission_chest_v1.png",
+  "assets": [
+    {
+      "key": "equip_tianshukaijia",
+      "file": "data/images/items/equip_tianshukaijia.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "sha256": "cb7ae66d63c8ad55ade486223622f4eaee868f11b229120ab89d5814a18590db"
+    },
+    {
+      "key": "equip_tianxuankaijia",
+      "file": "data/images/items/equip_tianxuankaijia.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "sha256": "e9d850ad8763f971b44e6e4fb135f11483f757887e0fcb23625b74378d9ba64e"
+    },
+    {
+      "key": "equip_tianjikaijia",
+      "file": "data/images/items/equip_tianjikaijia.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "sha256": "adcee730fb74e0b3b71a3e5100a99487cc1319832295da2c5a7ea4e3c4b908d1"
+    },
+    {
+      "key": "equip_yaoguangkaijia",
+      "file": "data/images/items/equip_yaoguangkaijia.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "sha256": "3eeca0eb7e99fed673f9dbb3ba9396aafa5fe63146d93638ae233ba7f08c55e2"
+    },
+    {
+      "key": "equip_tianquankaijia",
+      "file": "data/images/items/equip_tianquankaijia.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "sha256": "227a189ebdf16dc0ad09b804adf96534189a0b4cfe330c689231fb290c776de1"
+    },
+    {
+      "key": "equip_yuhengkaijia",
+      "file": "data/images/items/equip_yuhengkaijia.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "sha256": "3ec5a123704b59f3c54bded50ffa14ab3103e92e55b2293a41e27802439f872e"
+    },
+    {
+      "key": "equip_kaiyangkaijia",
+      "file": "data/images/items/equip_kaiyangkaijia.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "sha256": "32b522262c1cf799b6ae8fbd365e171c7e562a9e9f9065b9d03390bb52906a0f"
+    },
+    {
+      "key": "equip_chiyoujia",
+      "file": "data/images/items/equip_chiyoujia.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "sha256": "454d20f8299ba46b888157fb1223e90c65b33428bc3af4900a374eac4e1ae1b7"
+    },
+    {
+      "key": "equip_chiyouzhanxue",
+      "file": "data/images/items/equip_chiyouzhanxue.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "sha256": "dc85cf4a556a6e121f7a0c5ecdf565840c1cd00a037f37bfd20d541e2b55c109"
+    },
+    {
+      "key": "blueprint_chiyoujia",
+      "file": "data/images/items/blueprint_chiyoujia.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "sha256": "075d22080d5b08b1d7fec61cf016d1326e318906ac14e5a8769bf5813a550997"
+    },
+    {
+      "key": "chiyou_card",
+      "file": "data/images/items/chiyou_card.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "sha256": "2d57added349ae3dcc1cb7e92980d50e57a6a7ad6ff9dd694c85db749f2f137c"
+    },
+    {
+      "key": "zhanlong_white_horse_token",
+      "file": "data/images/items/zhanlong_white_horse_token.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "sha256": "806f4c68df01cbf9bb5cbb6526e686af1f49d19a136ccb740c68abc724079f3e"
+    },
+    {
+      "key": "zhanlong_changban_guard_token",
+      "file": "data/images/items/zhanlong_changban_guard_token.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "sha256": "abc551028d25d8defc793bcec4c1ef9f0fbff5adee544a10e5c6562519c12e50"
+    },
+    {
+      "key": "zhanlong_dangyang_valor_letter",
+      "file": "data/images/items/zhanlong_dangyang_valor_letter.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "sha256": "1387810e021d81eaebf6385a95fea0e9ade464db5e702d7b08305036d4baa8db"
+    },
+    {
+      "key": "equip_shuduanbaijinpao",
+      "file": "data/images/items/equip_shuduanbaijinpao.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "sha256": "0e885d262544c3b8034f94a8086a86253ad167cea224f29cf4f271726ee4017d"
+    },
+    {
+      "key": "equip_longdanqiang",
+      "file": "data/images/items/equip_longdanqiang.png",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "sha256": "436b558e1971583924792126c38b3e2d5bcbf271e38afe16c49f6896cf64c563"
+    }
+  ]
+}

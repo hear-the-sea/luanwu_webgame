@@ -26,6 +26,8 @@ def test_cultivation_rewards_and_frozen_migration_match(key, limit, books, wash,
     expected_mission = deepcopy(rules.MISSION_DEFAULTS[key])
     expected_mission.update(enemy_rules.MISSION_UPDATES[key])
     expected_mission.update(alignment_rules.MISSION_COMBAT_UPDATES[key])
+    if key in ("xisui_yougu", "yijin_mijing"):
+        expected_mission["display_order"] = 1000
     assert {k: v for k, v in mission.items() if k != "key"} == expected_mission
     assert mission["daily_limit"] == limit
     assert mission["mission_card_daily_limit"] == 0

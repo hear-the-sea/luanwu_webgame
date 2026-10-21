@@ -5,5 +5,6 @@ ACTIVE_OPTION_KEYS = {
     "damage_multiplier",
     "target_priority",
     "execute_hp_ratio",
+    "execute_hp_ratio_lt",
     "execute_multiplier",
 }

@@ -108,14 +108,18 @@ def filter_available_missions(
     return [mission for mission in missions if is_mission_available_on(mission, today)]
 
 
-def order_missions_for_task_board(missions: list[MissionTemplate]) -> list[MissionTemplate]:
-    return sorted(
-        missions,
-        key=lambda mission: (
-            getattr(mission, "display_order", DEFAULT_MISSION_DISPLAY_ORDER),
-            mission.id,
-        ),
-    )
+def order_missions_for_task_board(
+    missions: list[MissionTemplate], *, difficulty_scores: dict[str, int] | None = None
+) -> list[MissionTemplate]:
+    scores = difficulty_scores or {}
+
+    def sort_key(mission: MissionTemplate) -> tuple[int, int, int]:
+        display_order = getattr(mission, "display_order", DEFAULT_MISSION_DISPLAY_ORDER)
+        # 仅默认顺序的任务按模拟难度排序，待评估任务排在已评级任务之后。
+        difficulty_score = scores.get(mission.key, 129) if display_order == DEFAULT_MISSION_DISPLAY_ORDER else 0
+        return display_order, difficulty_score, mission.id
+
+    return sorted(missions, key=sort_key)
 
 
 def resolve_mission_or_redirect(

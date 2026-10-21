@@ -84,6 +84,7 @@ fi
 
 if [[ "${DJANGO_COLLECTSTATIC:-0}" == "1" ]]; then
   python manage.py collectstatic --noinput
+  python scripts/prepare_webp_images.py --root staticfiles --root media --apply
 fi
 
 exec "$@"

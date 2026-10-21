@@ -1,8 +1,10 @@
+from importlib import import_module
 from pathlib import Path
 
 import yaml
 
 DATA = Path(__file__).resolve().parents[1] / "data"
+progression_rules = import_module("gameplay.migrations.0240_zhanlong_progressive_difficulty")
 MISSION_KEYS = (
     "zhanlong_yanshan_shizi",
     "zhanlong_changban_tuwei",
@@ -53,8 +55,8 @@ def test_zhanlong_dust_army_is_display_only_with_real_bridge_guards():
     missions = _catalog("mission_templates.yaml", "missions")
     bridge = missions[MISSION_KEYS[2]]
     assert bridge["enemy_guests"] == [{"key": "task_zhanlong_zhangfei_bridge", "label": "张飞"}]
-    assert bridge["enemy_troops_display"] == {"qiang_wang": 1000000}
-    assert bridge["enemy_troops"] == {"qiang_wang": 500}
+    assert bridge["enemy_troops_display"] == {"bloodthirsty_cavalry": 1000000}
+    assert bridge["enemy_troops"] == progression_rules.MISSION_UPDATES[bridge["key"]]["enemy_troops"]
     assert all("enemy_troops_display" not in missions[key] for key in MISSION_KEYS if key != bridge["key"])
     assert "烟尘" in bridge["description"] and "考验" in bridge["description"]
     assert "五虎如今已齐聚" in missions[MISSION_KEYS[3]]["description"]
@@ -67,10 +69,10 @@ def test_zhanlong_bosses_have_independent_stats_skills_and_existing_portraits():
     expected_skills = {
         "task_zhanlong_tiebeixiong": {"draw_enemy_blades", "zhanlong_iron_hammer"},
         "task_zhanlong_caochun": {"zhanlong_cavalry_assault", "zhanlong_cavalry_command"},
-        "task_zhanlong_zhangfei_bridge": {"zhanlong_tiger_dragon_roar", "zhanlong_dust_ruse"},
+        "task_zhanlong_zhangfei_bridge": {"zhanlong_bridge_tiger_dragon_roar"},
         "task_zhanlong_guanyu": {"zhanlong_azure_dragon_slash"},
         "task_zhanlong_zhangfei": {"zhanlong_tiger_dragon_roar"},
-        "task_zhanlong_zhaoyun": {"zhanlong_dragon_guard"},
+        "task_zhanlong_zhaoyun": {"zhanlong_dragon_assault"},
         "task_zhanlong_machao": {"zhanlong_xiliang_charge"},
         "task_zhanlong_huangzhong": {"zhanlong_hundred_pace_shot"},
     }

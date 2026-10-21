@@ -1,0 +1,57 @@
+{
+  "database_host": "192.168.1.30",
+  "mission": [
+    {
+      "key": "surname_legend_li",
+      "name": "姓氏傳說之“李”",
+      "difficulty": "advanced",
+      "daily_limit": 3
+    }
+  ],
+  "items": 4,
+  "guests": 3,
+  "skills": 2,
+  "images_verified": 7,
+  "backup": "/tmp/local-surname-li-20261021T213450",
+  "server_restarted": false,
+  "migration_history_unchanged": true,
+  "page_render_verified": true,
+  "local_url": "http://127.0.0.1:8000/manor/tasks/?mission=surname_legend_li",
+  "image_http_checks": [
+    {
+      "path": "/media/items/surname_li/plum.webp",
+      "status": 200,
+      "bytes": 11832
+    },
+    {
+      "path": "/media/items/surname_li/li_chest.webp",
+      "status": 200,
+      "bytes": 21402
+    },
+    {
+      "path": "/media/items/surname_li/li_clan_card.webp",
+      "status": 200,
+      "bytes": 16452
+    },
+    {
+      "path": "/media/items/surname_li/villain_card.webp",
+      "status": 200,
+      "bytes": 15968
+    },
+    {
+      "path": "/media/guests/surname_li/elai.webp",
+      "status": 200,
+      "bytes": 60886
+    },
+    {
+      "path": "/media/guests/surname_li/li_lizhen.webp",
+      "status": 200,
+      "bytes": 53168
+    },
+    {
+      "path": "/media/guests/surname_li/heishan_laoyao.webp",
+      "status": 200,
+      "bytes": 45092
+    }
+  ]
+}

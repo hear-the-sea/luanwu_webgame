@@ -35,6 +35,11 @@ def troop_phase_skill(attack: object, action: object = None, round_priority: obj
     action = action if isinstance(action, Mapping) else attack
     if attack.get("kind", action.get("kind")) != "troop":
         return ""
+    actor_key = attack.get("actor_template_key", action.get("actor_template_key"))
+    actor_name = attack.get("actor", action.get("actor"))
+    # 铁骑自带先攻，不属于剑系科技；名称兼容未记录模板键的旧战报。
+    if actor_key == "bloodthirsty_cavalry" or actor_name == "嗜血铁骑":
+        return ""
     phase = attack.get("priority_phase", action.get("priority_phase", round_priority))
     priority = attack.get("priority", action.get("priority"))
     # Bow technology grants priority -2, while sword technology grants -1.

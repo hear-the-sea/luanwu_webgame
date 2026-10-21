@@ -13,7 +13,7 @@
         <div>
             <p>当前门客数量：{{ guests|length }}</p>
         </div>
-        <div class="flex flex-wrap gap-2">
+        <div class="guest-roster-actions">
             {% if unpaid_count > 0 %}
             <form method="post" action="{% url 'guests:pay_all_salaries' %}" style="display: inline;" id="pay-all-salary-form"
                 data-amount="{{ total_unpaid_salary }}">

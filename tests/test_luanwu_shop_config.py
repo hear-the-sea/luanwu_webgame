@@ -53,10 +53,12 @@ def test_default_luanwu_shop_includes_requested_coin_products():
 
     products = {product.key: product for product in config.products}
     expected_prices = {
+        "mission_card": 1,
+        "action_point_potion": 2,
         "manor_rename_card": 1,
-        "peace_shield_small": 1,
-        "peace_shield_medium": 2,
-        "peace_shield_large": 3,
+        "peace_shield_small": 2,
+        "peace_shield_medium": 8,
+        "peace_shield_large": 30,
         "xisuidan": 15,
         "edward_blue_guest_scroll": 15,
         "edward_purple_guest_scroll": 30,
@@ -67,9 +69,9 @@ def test_default_luanwu_shop_includes_requested_coin_products():
     assert {key: products[key].price for key in expected_prices} == expected_prices
     assert {key: products[key].item_key for key in expected_prices} == {key: key for key in expected_prices}
     assert all(products[key].reward_quantity == 1 for key in expected_prices)
-    assert products["action_point_potion"].price == 1
-    assert products["action_point_potion"].item_key == "action_point_potion"
-    assert products["action_point_potion"].reward_quantity == 2
+    assert products["recruitment_card"].price == 1
+    assert products["recruitment_card"].item_key == "recruitment_card"
+    assert products["recruitment_card"].reward_quantity == 2
     assert products["guest_disguise_card"].item_key == "guest_disguise_card"
     assert products["guest_disguise_card"].reward_quantity == 1
 

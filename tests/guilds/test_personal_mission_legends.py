@@ -111,7 +111,7 @@ def test_legend_board_keeps_original_table_and_detail_layout(manor_with_user):
     body = response.content.decode()
     for text in ("白蛇盗仙草", "本周剩余", "任务情报", "任务简介", "加入帮会后参加"):
         assert text in body
-    assert body.count('class="tw-mission-name-col">任务名称</th>') == 4
+    assert body.count('class="tw-mission-name-col">任务名称</th>') == 5
     assert "personal-guild-legends.css" not in body
     assert "legend-book" not in body
     assert "此行所为" not in body

@@ -73,6 +73,28 @@ def test_order_missions_for_task_board_uses_display_order_then_id():
     ]
 
 
+def test_default_task_order_uses_difficulty_and_preserves_explicit_order_and_ties():
+    missions = [
+        SimpleNamespace(key="hard", id=1, display_order=1000),
+        SimpleNamespace(key="easy", id=2, display_order=1000),
+        SimpleNamespace(key="easy_tie", id=3, display_order=1000),
+        SimpleNamespace(key="unrated", id=4, display_order=1000),
+        SimpleNamespace(key="fixed_first", id=5, display_order=1),
+        SimpleNamespace(key="fixed_last", id=6, display_order=1100),
+    ]
+    ordered = order_missions_for_task_board(
+        missions, difficulty_scores={"hard": 128, "easy": 1, "easy_tie": 1, "fixed_first": 128, "fixed_last": 1}
+    )
+    assert [mission.key for mission in ordered] == [
+        "fixed_first",
+        "easy",
+        "easy_tie",
+        "hard",
+        "unrated",
+        "fixed_last",
+    ]
+
+
 def test_collect_mission_asset_keys_includes_choice_pool_entries():
     missions = [
         SimpleNamespace(

@@ -1,0 +1,26 @@
+[
+  {
+    "filename": "zhanlong_white_horse_token.png",
+    "label": "白马银枪令",
+    "prompt": "Use case: stylized-concept. Asset type: 三国武侠游戏仓库单物品图标。Style: 精致手绘2D古风，细墨线、水彩与不透明颜料上色，清晰轮廓与丰富材质，匹配传统RPG装备道具插画。Backdrop: 极浅奶黄色 #fff9df 纸底，四边一条极细浅金线边框。Composition: 1:1方图，一个完整物品，3/4视角居中，占画面约78%，充分留白，不切边。无人物、无手、无场景、无可读文字、无水印、无logo、无拼图，无3D渲染或摄影。Subject: 一枚古代白玉与银包边军令牌，雕刻白马和斜向银枪的简洁浮雕，浅青短流苏，令牌完整居中。",
+    "mode": "built-in image_gen",
+    "source_path": "/home/daniel/.codex/generated_images/01a15997-5407-73c3-9830-683e4b32ff6d/exec-213af902-d6dd-4a0b-92f0-06ab8835edd0.png",
+    "workspace_path": "data/images/items/zhanlong_white_horse_token.png"
+  },
+  {
+    "filename": "zhanlong_changban_guard_token.png",
+    "label": "长坂护主令",
+    "prompt": "Use case: stylized-concept. Asset type: 三国武侠游戏仓库单物品图标。Style: 精致手绘2D古风，细墨线、水彩与不透明颜料上色，清晰轮廓与丰富材质，匹配传统RPG装备道具插画。Backdrop: 极浅奶黄色 #fff9df 纸底，四边一条极细浅金线边框。Composition: 1:1方图，一个完整物品，3/4视角居中，占画面约78%，充分留白，不切边。无人物、无手、无场景、无可读文字、无水印、无logo、无拼图，无3D渲染或摄影。Subject: 一枚暗铜军令牌，中心简洁银枪与护盾浮雕，深红细绳，略有征战磨痕，古朴有力量。",
+    "mode": "built-in image_gen",
+    "source_path": "/home/daniel/.codex/generated_images/01a15997-5407-73c3-9830-683e4b32ff6d/exec-dffe679a-f562-4901-afbf-d5bf1003e42c.png",
+    "workspace_path": "data/images/items/zhanlong_changban_guard_token.png"
+  },
+  {
+    "filename": "zhanlong_dangyang_valor_letter.png",
+    "label": "当阳义勇书",
+    "prompt": "Use case: stylized-concept. Asset type: 三国武侠游戏仓库单物品图标。Style: 精致手绘2D古风，细墨线、水彩与不透明颜料上色，清晰轮廓与丰富材质，匹配传统RPG装备道具插画。Backdrop: 极浅奶黄色 #fff9df 纸底，四边一条极细浅金线边框。Composition: 1:1方图，一个完整物品，3/4视角居中，占画面约78%，充分留白，不切边。无人物、无手、无场景、无可读文字、无水印、无logo、无拼图，无3D渲染或摄影。Subject: 一封折叠的古代荐书，米白宣纸配朱红封泥，淡青缎带，纸上只有抽象墨迹不可读，没有文字标题。",
+    "mode": "built-in image_gen",
+    "source_path": "/home/daniel/.codex/generated_images/01a15997-5407-73c3-9830-683e4b32ff6d/exec-e3f141cd-4ca7-4911-b93a-8ca7a895a84a.png",
+    "workspace_path": "data/images/items/zhanlong_dangyang_valor_letter.png"
+  }
+]

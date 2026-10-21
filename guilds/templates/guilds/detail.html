@@ -93,12 +93,16 @@
                     <dd class="tw-guild-resource-value resource-gold">{{ guild_material_balances.gold_bar }}</dd>
                 </div>
                 <div>
+                    <dt>红宝石</dt>
+                    <dd class="tw-guild-resource-value">{{ red_ruby_count }}</dd>
+                </div>
+                <div>
                     <dt>护院</dt>
                     <dd class="tw-guild-resource-value resource-blue">{{ troop_overview.total_count }}</dd>
                 </div>
             </dl>
             <p class="tw-muted mt-2 m-0">
-                科技产出会消耗帮会银两和粮食（每 1 点兑换贡献度消耗 {{ tech_production_upkeep.silver_per_contribution }} 银两、{{ tech_production_upkeep.grain_per_contribution }} 粮食）。道具按稀有度从高到低产出；稀有度相同时，兑换贡献度高的优先，条件相同则随机。银两或粮食不足以生产下一件时，本轮后续道具将不再产出。
+                科技产出会消耗帮会银两和粮食（当前每天消耗银两 {{ tech_production_daily_upkeep.silver|floatformat:0 }}，粮食 {{ tech_production_daily_upkeep.grain|floatformat:0 }}）。道具按稀有度从高到低产出；稀有度相同时，兑换贡献度高的优先，条件相同则随机。银两或粮食不足以生产下一件时，本轮后续道具将不再产出。
             </p>
             <div class="tw-guild-card-divider">
                 <button type="button" class="tw-btn-primary w-full" data-guild-modal-open="guild-donation-modal">捐赠资源</button>

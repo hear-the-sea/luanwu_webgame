@@ -450,15 +450,67 @@ class TestTaskBoardPage:
         assert '<button class="tw-trade-tab active" data-tab="intermediate">中级任务</button>' in body
         assert '<div id="tab-intermediate" class="mission-tab-content active">' in body
 
-    def test_task_board_preserves_requested_tab_without_selected_mission(self, manor_with_user):
+    @pytest.mark.parametrize("tab,label", [("advanced", "高级任务"), ("series", "系列任务")])
+    def test_task_board_preserves_requested_tab_without_selected_mission(self, manor_with_user, tab, label):
         _manor, client = manor_with_user
 
-        response = client.get(reverse("gameplay:tasks") + "?tab=advanced")
+        response = client.get(reverse("gameplay:tasks") + f"?tab={tab}")
 
         assert response.status_code == 200
         body = response.content.decode("utf-8")
-        assert '<button class="tw-trade-tab active" data-tab="advanced">高级任务</button>' in body
-        assert '<div id="tab-advanced" class="mission-tab-content active">' in body
+        assert f'<button class="tw-trade-tab active" data-tab="{tab}">{label}</button>' in body
+        assert f'<div id="tab-{tab}" class="mission-tab-content active">' in body
+
+    def test_task_board_separates_all_three_series_from_advanced_missions(self, manor_with_user):
+        _manor, client = manor_with_user
+        series_keys = (
+            "sishui_huaxiong_chengwei",
+            "hulao_qunying_zhan_lvbu",
+            "baimenlou_mingyun_jueze",
+            "biyou_candeng",
+            "shier_xianyin",
+            "fengbang_tianmen",
+            "zhanlong_yanshan_shizi",
+            "zhanlong_changban_tuwei",
+            "zhanlong_changban_duanqiao",
+            "zhanlong_wuhu_shizhen",
+        )
+        for key in (*series_keys, "task_board_regular_advanced"):
+            MissionTemplate.objects.update_or_create(
+                key=key,
+                defaults={"name": key, "difficulty": "advanced", "daily_limit": 3, "available_weekdays": []},
+            )
+
+        response = client.get(reverse("gameplay:tasks") + "?tab=series")
+
+        assert response.status_code == 200
+        body = response.content.decode("utf-8")
+        advanced = body.split('id="tab-advanced"', 1)[1].split('id="tab-series"', 1)[0]
+        series = body.split('id="tab-series"', 1)[1].split('id="tab-guild"', 1)[0]
+        assert body.index('data-tab="advanced"') < body.index('data-tab="series"') < body.index('data-tab="guild"')
+        for key in series_keys:
+            assert f'href="?mission={key}"' in series
+            assert f'href="?mission={key}"' not in advanced
+        assert 'href="?mission=task_board_regular_advanced"' in advanced
+        assert 'href="?mission=task_board_regular_advanced"' not in series
+
+    @pytest.mark.parametrize("key", ["baimenlou_mingyun_jueze", "biyou_candeng", "zhanlong_wuhu_shizhen"])
+    def test_series_details_and_close_stay_on_series_tab(self, manor_with_user, key):
+        _manor, client = manor_with_user
+        MissionTemplate.objects.update_or_create(
+            key=key,
+            defaults={"name": key, "difficulty": "advanced", "daily_limit": 3, "available_weekdays": []},
+        )
+
+        response = client.get(reverse("gameplay:tasks") + f"?mission={key}&tab=advanced")
+
+        assert response.status_code == 200
+        assert response.context["active_tab"] == "series"
+        expected_url = f'{reverse("gameplay:tasks")}?tab=series'
+        body = response.content.decode("utf-8")
+        assert '<div id="tab-series" class="mission-tab-content active">' in body
+        assert f'href="{expected_url}" class="tw-btn-secondary tw-btn-sm" data-task-modal-close>关闭</a>' in body
+        assert f'href="{expected_url}" class="tw-btn-secondary" data-task-modal-close>取消</a>' in body
 
     def test_task_board_detail_close_returns_to_selected_mission_tab(self, manor_with_user):
         _manor, client = manor_with_user
@@ -630,13 +682,14 @@ class TestTaskBoardPage:
 
         assert response.status_code == 200
         body = response.content.decode("utf-8")
-        assert body.count('class="tw-mission-name-col">任务名称</th>') == 4
-        assert body.count('class="tw-mission-meta-col text-center">类型</th>') == 4
-        assert body.count('class="tw-mission-meta-col text-center">今日剩余</th>') == 3
-        assert body.count('class="tw-mission-action-col text-center">操作</th>') == 3
+        assert body.count('class="tw-mission-name-col">任务名称</th>') == 5
+        assert body.count('class="tw-mission-meta-col text-center">类型</th>') == 5
+        assert body.count('class="tw-mission-meta-col text-center">今日剩余</th>') == 4
+        assert body.count('class="tw-mission-action-col text-center">操作</th>') == 4
         for key, name, _difficulty in missions:
             pattern = (
                 rf'<td class="tw-mission-name-col">\s*'
+                rf'<div class="task-mission-name">\s*'
                 rf'<a class="tw-mission-name-link font-bold text-text-primary no-underline hover:no-underline" '
                 rf'href="\?mission={key}">{name}</a>'
             )

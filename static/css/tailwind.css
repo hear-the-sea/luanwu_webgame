@@ -5071,11 +5071,13 @@ body:has(.tw-arena-page),
 /* ========== 技术卡片状态 ========== */
 
 .tw-tech-maxed {
-  opacity: 0.85;
+  opacity: 1;
+  border-color: #b89b6b;
+  box-shadow: 0 2px 8px rgba(74, 38, 18, 0.12), inset 0 1px 0 rgba(255, 250, 230, 0.8);
 }
 
 .tw-tech-maxed header h3 {
-  color: var(--text-muted);
+  color: var(--text-primary);
 }
 
 .tw-tech-upgrading {
@@ -5084,7 +5086,11 @@ body:has(.tw-arena-page),
 }
 
 .tw-badge-maxed {
-  background: linear-gradient(135deg, var(--accent-green), #1E3A1F) !important;
+  background: linear-gradient(180deg, #faf1d8 0%, #ecdbb4 100%) !important;
+  color: #65451f !important;
+  border: 1px solid #b89b6b;
+  box-shadow: inset 0 1px 0 #fffaf0;
+  text-shadow: none;
 }
 
 .tw-badge-upgrading {

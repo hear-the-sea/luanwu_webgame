@@ -473,6 +473,25 @@ def _normalize_round_lineup_side(raw_side: Any, avatar_map: dict[str, str]) -> d
     return {"guests": guests, "city_defenses": city_defenses, "troops": troops}
 
 
+def _is_dust_ruse_event(event: dict[str, Any]) -> bool:
+    return event.get("type") == "passive" and event.get("effect") == "疑兵扬尘"
+
+
+def build_battle_prelude(rounds: Iterable[dict[str, Any]], template_keys: set[str]) -> str:
+    """疑兵是战前说明；兼容已有战报中按回合记录的旧提示。"""
+    has_bridge = "task_zhanlong_zhangfei_bridge" in template_keys
+    has_old_notice = any(
+        _is_dust_ruse_event(event)
+        for row in rounds
+        if isinstance(row, dict)
+        for event in row.get("events", []) or []
+        if isinstance(event, dict)
+    )
+    if has_bridge or has_old_notice:
+        return "桥后烟尘散去，所谓百万大军只是骑兵往来扬尘的疑兵。"
+    return ""
+
+
 def build_rounds_display(rounds: Iterable[dict[str, Any]], avatar_map: dict[str, str]) -> list[dict[str, Any]]:
     display_rounds: list[dict[str, Any]] = []
     for raw_round in rounds:
@@ -482,7 +501,9 @@ def build_rounds_display(rounds: Iterable[dict[str, Any]], avatar_map: dict[str,
         has_lineup_snapshot = isinstance(raw_lineups, dict) and "attacker" in raw_lineups and "defender" in raw_lineups
         lineups = raw_lineups if isinstance(raw_lineups, dict) else {}
         events = group_action_recovery_events(
-            event for event in (raw_round.get("events") or []) if isinstance(event, dict)
+            event
+            for event in (raw_round.get("events") or [])
+            if isinstance(event, dict) and not _is_dust_ruse_event(event)
         )
         display_rounds.append(
             {

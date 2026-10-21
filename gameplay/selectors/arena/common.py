@@ -17,6 +17,7 @@ ARENA_RANDOM_REWARD_ICON_BY_KEY = {
     "wulin_chest": ARENA_RANDOM_REWARD_CHEST_KEY,
     "gladiator_chest": ARENA_RANDOM_REWARD_CHEST_KEY,
     "blueprint_blue_exchange": ARENA_RANDOM_REWARD_CHEST_KEY,
+    "blueprint_purple_exchange": ARENA_RANDOM_REWARD_CHEST_KEY,
 }
 ARENA_REWARD_ICON_ITEM_BY_KEY = {
     "grain_pack_small": "grain",

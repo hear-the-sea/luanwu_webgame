@@ -59,7 +59,7 @@ def test_luanwu_shop_page_shows_products_and_warehouse_coin_balance(django_user_
     assert "行动力药水" in first_body
     assert "门客易容卡" in first_body
     assert "×2" in first_body
-    assert "×3" in first_body
+    assert "×1" in first_body
     assert "用于增加每日招募次数" in first_body
     assert "机关图纸宝箱" in second_body
     assert "随机池内共" not in first_body + second_body
@@ -91,7 +91,7 @@ def test_luanwu_shop_fixed_purchase_consumes_warehouse_coins_and_grants_pack(dja
 
 
 @pytest.mark.django_db
-def test_luanwu_shop_recruitment_card_purchase_grants_three_cards_per_coin(django_user_model):
+def test_luanwu_shop_recruitment_card_purchase_grants_two_cards_per_coin(django_user_model):
     user = django_user_model.objects.create_user(username="luanwu_shop_recruitment_card", password="pass123")
     manor = ensure_manor(user)
     coin = _create_item_template("chunqiu_coin", "春秋币", effect_type=ItemTemplate.EffectType.RESOURCE)
@@ -101,25 +101,25 @@ def test_luanwu_shop_recruitment_card_purchase_grants_three_cards_per_coin(djang
     result = luanwu_shop.purchase_luanwu_shop_item(manor, "recruitment_card")
 
     assert result["total_cost"] == 1
-    assert result["granted_items"] == {"recruitment_card": 3}
+    assert result["granted_items"] == {"recruitment_card": 2}
     assert InventoryItem.objects.get(manor=manor, template=coin).quantity == 1
-    assert InventoryItem.objects.get(manor=manor, template=recruitment_card).quantity == 3
+    assert InventoryItem.objects.get(manor=manor, template=recruitment_card).quantity == 2
 
 
 @pytest.mark.django_db
-def test_luanwu_shop_action_point_potion_purchase_grants_two_per_coin(django_user_model):
+def test_luanwu_shop_action_point_potion_purchase_grants_one_per_two_coins(django_user_model):
     user = django_user_model.objects.create_user(username="luanwu_shop_action_potion", password="pass123")
     manor = ensure_manor(user)
     coin = _create_item_template("chunqiu_coin", "春秋币", effect_type=ItemTemplate.EffectType.RESOURCE)
     potion = _create_item_template("action_point_potion", "行动力药水", is_usable=True)
-    InventoryItem.objects.create(manor=manor, template=coin, quantity=1)
+    InventoryItem.objects.create(manor=manor, template=coin, quantity=2)
 
     result = luanwu_shop.purchase_luanwu_shop_item(manor, "action_point_potion")
 
-    assert result["total_cost"] == 1
-    assert result["granted_items"] == {"action_point_potion": 2}
+    assert result["total_cost"] == 2
+    assert result["granted_items"] == {"action_point_potion": 1}
     assert not InventoryItem.objects.filter(manor=manor, template=coin).exists()
-    assert InventoryItem.objects.get(manor=manor, template=potion).quantity == 2
+    assert InventoryItem.objects.get(manor=manor, template=potion).quantity == 1
 
 
 @pytest.mark.django_db

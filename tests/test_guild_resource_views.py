@@ -12,7 +12,15 @@ from core.exceptions import GuildWarehouseError
 from gameplay.models import InventoryItem, ItemTemplate, PlayerTroop
 from gameplay.services.manor.core import ensure_manor
 from guilds.constants import DAILY_DONATION_LIMITS
-from guilds.models import Guild, GuildApplication, GuildMember, GuildTroopDonationLog, GuildTroopStorage, GuildWarehouse
+from guilds.models import (
+    Guild,
+    GuildApplication,
+    GuildMember,
+    GuildTechnology,
+    GuildTroopDonationLog,
+    GuildTroopStorage,
+    GuildWarehouse,
+)
 from guilds.services.warehouse import exchange_item
 
 
@@ -36,10 +44,20 @@ def guild_member_client(django_user_model):
 
 
 @pytest.mark.django_db
-def test_guild_detail_page_shows_red_ruby_and_troop_overview(guild_member_client):
+@pytest.mark.parametrize(
+    "technologies,silver,grain",
+    [
+        ([], 0, 0),
+        ([("hero_rebirth_card", 2)], 36_000, 54_000),
+        ([("hero_rebirth_card", 2), ("sheep_wrath", 1), ("hero_fruit_blueprint", 0)], 96_000, 144_000),
+    ],
+)
+def test_guild_detail_page_shows_red_ruby_and_troop_overview(guild_member_client, technologies, silver, grain):
     client, guild, _member, _manor = guild_member_client
 
     GuildWarehouse.objects.create(guild=guild, item_key="red_ruby", quantity=12, contribution_cost=0)
+    for tech_key, level in technologies:
+        GuildTechnology.objects.create(guild=guild, tech_key=tech_key, level=level)
 
     spear = TroopTemplate.objects.create(key="rv_spear", name="长枪护院")
     archer = TroopTemplate.objects.create(key="rv_archer", name="弓弩护院")
@@ -54,7 +72,7 @@ def test_guild_detail_page_shows_red_ruby_and_troop_overview(guild_member_client
 
     content = response.content.decode("utf-8")
     assert "帮会资源" in content
-    assert "每 1 点兑换贡献度消耗 60 银两、90 粮食" in content
+    assert f"当前每天消耗银两 {silver}，粮食 {grain}" in content
     assert "银两或粮食不足以生产下一件时，本轮后续道具将不再产出" in content
     assert "护院" in content
     assert "资源捐赠" in content

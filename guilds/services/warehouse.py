@@ -746,7 +746,9 @@ def get_warehouse_items(
     from gameplay.utils.template_loader import get_item_templates_by_keys
 
     warehouse_items: list[Any] = list(
-        GuildWarehouse.objects.filter(guild=guild, quantity__gt=0).order_by("-contribution_cost", "item_key")
+        GuildWarehouse.objects.filter(guild=guild, quantity__gt=0)
+        .exclude(item_key="red_ruby")
+        .order_by("-contribution_cost", "item_key")
     )
 
     existing_keys = {item.item_key for item in warehouse_items}

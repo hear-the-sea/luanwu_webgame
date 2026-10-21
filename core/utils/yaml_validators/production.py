@@ -132,6 +132,7 @@ VALID_PASSIVE_CONDITION_KEYS = {
     "ally_alive_template_count_lte",
 }
 VALID_PASSIVE_EFFECT_TYPES = {
+    "enrage",
     "set_counter",
     "add_true_damage",
     "heal_ratio",
@@ -195,6 +196,13 @@ def _validate_passive_effects(
             )
 
         modifier_scope = effect.get("scope")
+        if effect_type == "enrage":
+            from battle.passive_transformations import validate_enrage_effect
+
+            try:
+                validate_enrage_effect(effect)
+            except AssertionError as exc:
+                result.add(file, effect_path, str(exc))
         if effect_type == "set_counter":
             for key, upper in (("chance", 1.0), ("damage_multiplier", None)):
                 value = effect.get(key)
@@ -275,11 +283,16 @@ def _validate_passive_config(passive_config: dict, *, result: ValidationResult, 
                     or not isinstance(value, (int, float))
                     or not math.isfinite(value)
                     or value < 0
-                    or (key in {"trigger_chance", "execute_hp_ratio"} and value > 1)
+                    or (key in {"trigger_chance", "execute_hp_ratio", "execute_hp_ratio_lt"} and value > 1)
                 ):
                     result.add(file, option_path, "expected finite non-negative number within the option range")
-            if ("execute_hp_ratio" in active) != ("execute_multiplier" in active):
-                result.add(file, f"{path}.active", "execute_hp_ratio and execute_multiplier must be provided together")
+            execute_thresholds = {"execute_hp_ratio", "execute_hp_ratio_lt"}.intersection(active)
+            if len(execute_thresholds) > 1:
+                result.add(file, f"{path}.active", "only one execute HP threshold is allowed")
+            if bool(execute_thresholds) != ("execute_multiplier" in active):
+                result.add(
+                    file, f"{path}.active", "execute HP threshold and execute_multiplier must be provided together"
+                )
     triggers = passive_config.get("triggers")
     if triggers is None:
         return

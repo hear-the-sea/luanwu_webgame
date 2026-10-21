@@ -74,6 +74,7 @@
     <section class="tw-card battle-rounds-card">
         <h2>战斗回合</h2>
         <div class="battle-rounds">
+            {% if battle_prelude %}<p class="battle-prelude">{{ battle_prelude }}</p>{% endif %}
             {% for round in battle_rounds %}
                 <article class="battle-round" data-battle-round="{{ round.round }}">
                     <header class="round-title-row">

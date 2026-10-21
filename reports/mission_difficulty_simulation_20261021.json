@@ -1,0 +1,6118 @@
+{
+  "schema_version": 1,
+  "engine": "4",
+  "rng_version": 1,
+  "seed_start": 430000,
+  "seeds": 40,
+  "profiles": [
+    [
+      3,
+      10,
+      "blue",
+      0,
+      0,
+      0
+    ],
+    [
+      3,
+      20,
+      "blue",
+      5,
+      2,
+      300
+    ],
+    [
+      5,
+      30,
+      "blue",
+      15,
+      3,
+      600
+    ],
+    [
+      5,
+      40,
+      "blue",
+      25,
+      4,
+      800
+    ],
+    [
+      5,
+      50,
+      "purple",
+      35,
+      5,
+      1000
+    ],
+    [
+      8,
+      60,
+      "purple",
+      45,
+      6,
+      1600
+    ],
+    [
+      10,
+      70,
+      "purple",
+      55,
+      7,
+      2500
+    ],
+    [
+      12,
+      80,
+      "orange",
+      65,
+      8,
+      3000
+    ],
+    [
+      15,
+      90,
+      "orange",
+      75,
+      9,
+      3750
+    ],
+    [
+      18,
+      100,
+      "orange",
+      85,
+      10,
+      4500
+    ],
+    [
+      20,
+      100,
+      "orange",
+      100,
+      10,
+      5000
+    ]
+  ],
+  "rows": [
+    {
+      "key": "surname_legend_li",
+      "name": "姓氏传说之“李”",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.95,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.4,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.47,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.62,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 8.72,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 15,
+          "win_rate": 0.375,
+          "mean_rounds": 14.07,
+          "mean_survivors": 1.68
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 5.88,
+          "mean_survivors": 10.95
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.88,
+          "mean_survivors": 14.22
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.03,
+          "mean_survivors": 17.85
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4,
+          "mean_survivors": 19.88
+        }
+      ]
+    },
+    {
+      "key": "mid_autumn_moon_palace_trial",
+      "name": "广寒宫试炼",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.6,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.08,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.67,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 5.53,
+          "mean_survivors": 4.8
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.9,
+          "mean_survivors": 8
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 10
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 12
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.83,
+          "mean_survivors": 15
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.62,
+          "mean_survivors": 18
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.08,
+          "mean_survivors": 20
+        }
+      ]
+    },
+    {
+      "key": "kasukabe_daisakusen",
+      "name": "春日部大作战",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.52,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.85,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.28,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 39,
+          "win_rate": 0.975,
+          "mean_rounds": 6,
+          "mean_survivors": 5.3
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.08,
+          "mean_survivors": 9.7
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 12
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 15
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 18
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.95,
+          "mean_survivors": 20
+        }
+      ]
+    },
+    {
+      "key": "huashan_lunjian",
+      "name": "华山论贱",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.65,
+          "mean_survivors": 2.75
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.75,
+          "mean_survivors": 3
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.1,
+          "mean_survivors": 5
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2,
+          "mean_survivors": 5
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2,
+          "mean_survivors": 5
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2,
+          "mean_survivors": 8
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2,
+          "mean_survivors": 10
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 1,
+          "mean_survivors": 12
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 1,
+          "mean_survivors": 15
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 1,
+          "mean_survivors": 18
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 1,
+          "mean_survivors": 20
+        }
+      ]
+    },
+    {
+      "key": "wagangzhai_nixi",
+      "name": "瓦岗寨的逆袭",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.12,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.05,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 7.65,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.62,
+          "mean_survivors": 11.45
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.98,
+          "mean_survivors": 14.78
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.2,
+          "mean_survivors": 17.93
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.05,
+          "mean_survivors": 19.98
+        }
+      ]
+    },
+    {
+      "key": "jingyanggang",
+      "name": "景阳冈",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 2.95
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2,
+          "mean_survivors": 3
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2,
+          "mean_survivors": 5
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2,
+          "mean_survivors": 5
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 1.77,
+          "mean_survivors": 5
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 1,
+          "mean_survivors": 8
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 1,
+          "mean_survivors": 10
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 1,
+          "mean_survivors": 12
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 1,
+          "mean_survivors": 15
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 1,
+          "mean_survivors": 18
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 1,
+          "mean_survivors": 20
+        }
+      ]
+    },
+    {
+      "key": "wulongshan",
+      "name": "乌龙山",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 6.28,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.9,
+          "mean_survivors": 4.72
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4,
+          "mean_survivors": 5
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 5
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 8
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.65,
+          "mean_survivors": 10
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.02,
+          "mean_survivors": 12
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2,
+          "mean_survivors": 15
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2,
+          "mean_survivors": 18
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2,
+          "mean_survivors": 20
+        }
+      ]
+    },
+    {
+      "key": "wagangzhai",
+      "name": "瓦岗寨",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.23,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.62,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 5.03,
+          "mean_survivors": 4.47
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.08,
+          "mean_survivors": 4.92
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 5
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 8
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.73,
+          "mean_survivors": 10
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.02,
+          "mean_survivors": 12
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2,
+          "mean_survivors": 15
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2,
+          "mean_survivors": 18
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2,
+          "mean_survivors": 20
+        }
+      ]
+    },
+    {
+      "key": "fugui_shanzhuang",
+      "name": "富贵山庄",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.35,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 35,
+          "win_rate": 0.875,
+          "mean_rounds": 4.7,
+          "mean_survivors": 1.98
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.85,
+          "mean_survivors": 4.95
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.52,
+          "mean_survivors": 5
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2,
+          "mean_survivors": 5
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 1.6,
+          "mean_survivors": 8
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 1.55,
+          "mean_survivors": 10
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 1.07,
+          "mean_survivors": 12
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 1,
+          "mean_survivors": 15
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 1,
+          "mean_survivors": 18
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 1,
+          "mean_survivors": 20
+        }
+      ]
+    },
+    {
+      "key": "shizipo_heidian",
+      "name": "十字坡黑店",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.7,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.38,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.9,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.55,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 5.58,
+          "mean_survivors": 4.55
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.8,
+          "mean_survivors": 8
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 10
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.98,
+          "mean_survivors": 12
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.85,
+          "mean_survivors": 15
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.5,
+          "mean_survivors": 18
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.27,
+          "mean_survivors": 20
+        }
+      ]
+    },
+    {
+      "key": "shanhaiguan",
+      "name": "山海关",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.9,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.35,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.78,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 3,
+          "win_rate": 0.075,
+          "mean_rounds": 7.8,
+          "mean_survivors": 0.2
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 5.05,
+          "mean_survivors": 7.7
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.92,
+          "mean_survivors": 9.97
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 12
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 15
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.98,
+          "mean_survivors": 18
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.95,
+          "mean_survivors": 20
+        }
+      ]
+    },
+    {
+      "key": "shiren_daochang",
+      "name": "十人道场",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.02,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.95,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.88,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 5.22,
+          "mean_survivors": 4.92
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.95,
+          "mean_survivors": 8
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.02,
+          "mean_survivors": 10
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.88,
+          "mean_survivors": 12
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.75,
+          "mean_survivors": 15
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.6,
+          "mean_survivors": 18
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.17,
+          "mean_survivors": 20
+        }
+      ]
+    },
+    {
+      "key": "jiguanshou_chuxian",
+      "name": "机关兽初现",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.85,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.08,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 3,
+          "win_rate": 0.075,
+          "mean_rounds": 6.9,
+          "mean_survivors": 0.2
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.72,
+          "mean_survivors": 5
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.73,
+          "mean_survivors": 8
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 10
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.88,
+          "mean_survivors": 12
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.67,
+          "mean_survivors": 15
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.58,
+          "mean_survivors": 18
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.02,
+          "mean_survivors": 20
+        }
+      ]
+    },
+    {
+      "key": "biwu_zhaoqin",
+      "name": "比武招亲",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.85,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.75,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 7.08,
+          "mean_survivors": 3.62
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 5.17,
+          "mean_survivors": 4.85
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.05,
+          "mean_survivors": 5
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.1,
+          "mean_survivors": 8
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2,
+          "mean_survivors": 10
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2,
+          "mean_survivors": 12
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 1.85,
+          "mean_survivors": 15
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 1.75,
+          "mean_survivors": 18
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 1.57,
+          "mean_survivors": 20
+        }
+      ]
+    },
+    {
+      "key": "tianpeng_dijiao_1",
+      "name": "天蓬元帅的地窖（第一层）",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.03,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.83,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 5.2,
+          "mean_survivors": 7.17
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.15,
+          "mean_survivors": 9.95
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.05,
+          "mean_survivors": 12
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 15
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 18
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.98,
+          "mean_survivors": 20
+        }
+      ]
+    },
+    {
+      "key": "tianpeng_dijiao_2",
+      "name": "天蓬元帅的地窖（第二层）",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.65,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.45,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.9,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 12,
+          "win_rate": 0.3,
+          "mean_rounds": 9.03,
+          "mean_survivors": 0.68
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.98,
+          "mean_survivors": 11.78
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.65,
+          "mean_survivors": 15
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.08,
+          "mean_survivors": 18
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 20
+        }
+      ]
+    },
+    {
+      "key": "jiguan_chuniao",
+      "name": "机关雏鸟",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.33,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.03,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.7,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 6.8,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.72,
+          "mean_survivors": 7.83
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.95,
+          "mean_survivors": 10
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 12
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 15
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.95,
+          "mean_survivors": 18
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.7,
+          "mean_survivors": 20
+        }
+      ]
+    },
+    {
+      "key": "dongtian_fudi",
+      "name": "洞天福地",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.6,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.92,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.15,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 7.22,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 4,
+          "win_rate": 0.1,
+          "mean_rounds": 11.1,
+          "mean_survivors": 0.4
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 5.12,
+          "mean_survivors": 11.57
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.22,
+          "mean_survivors": 14.97
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4,
+          "mean_survivors": 17.95
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.73,
+          "mean_survivors": 19.98
+        }
+      ]
+    },
+    {
+      "key": "jiufeng_feihuan",
+      "name": "九峰匪患",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.85,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.92,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.58,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 32,
+          "win_rate": 0.8,
+          "mean_rounds": 8.75,
+          "mean_survivors": 3.05
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.2,
+          "mean_survivors": 8
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.45,
+          "mean_survivors": 10
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 12
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 15
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.8,
+          "mean_survivors": 18
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.58,
+          "mean_survivors": 20
+        }
+      ]
+    },
+    {
+      "key": "taozi_fenban",
+      "name": "我的桃子分你一半",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.48,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.97,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.65,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 5.05,
+          "mean_survivors": 4.92
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.98,
+          "mean_survivors": 8
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 10
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.92,
+          "mean_survivors": 12
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.7,
+          "mean_survivors": 15
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.62,
+          "mean_survivors": 18
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.08,
+          "mean_survivors": 20
+        }
+      ]
+    },
+    {
+      "key": "simian_chuge",
+      "name": "四面楚歌",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.58,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.1,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.95,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 6.65,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 2,
+          "win_rate": 0.05,
+          "mean_rounds": 9.9,
+          "mean_survivors": 0.15
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.88,
+          "mean_survivors": 10.78
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.05,
+          "mean_survivors": 14.47
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.92,
+          "mean_survivors": 17.82
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.3,
+          "mean_survivors": 19.93
+        }
+      ]
+    },
+    {
+      "key": "manzu_ruqin",
+      "name": "蛮族入侵",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 1.23,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.27,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.67,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.77,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.12,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.25,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 6.65,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.72,
+          "mean_survivors": 9
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.95,
+          "mean_survivors": 13.93
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.48,
+          "mean_survivors": 17.6
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.05,
+          "mean_survivors": 19.88
+        }
+      ]
+    },
+    {
+      "key": "zhuiji_manzu",
+      "name": "追击蛮族",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 1.23,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.35,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.98,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.05,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.65,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 6.53,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 20,
+          "win_rate": 0.5,
+          "mean_rounds": 8.28,
+          "mean_survivors": 1.8
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.03,
+          "mean_survivors": 10.95
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.4,
+          "mean_survivors": 14.53
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 17.95
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 19.95
+        }
+      ]
+    },
+    {
+      "key": "liangshanbo_zhuyingtai",
+      "name": "梁山伯与祝英台",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.95,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.88,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.42,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 6,
+          "win_rate": 0.15,
+          "mean_rounds": 8,
+          "mean_survivors": 0.4
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.62,
+          "mean_survivors": 4.97
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.2,
+          "mean_survivors": 8
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3,
+          "mean_survivors": 10
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.8,
+          "mean_survivors": 12
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.5,
+          "mean_survivors": 15
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.27,
+          "mean_survivors": 18
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2,
+          "mean_survivors": 20
+        }
+      ]
+    },
+    {
+      "key": "biyou_candeng",
+      "name": "封神之战：碧游残灯",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.98,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.38,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.08,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.9,
+          "mean_survivors": 9.2
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.98,
+          "mean_survivors": 14.4
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.6,
+          "mean_survivors": 17.85
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.15,
+          "mean_survivors": 19.88
+        }
+      ]
+    },
+    {
+      "key": "shier_xianyin",
+      "name": "封神之战：十二仙印",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.45,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.85,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.88,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.12,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.83,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.33,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 23,
+          "win_rate": 0.575,
+          "mean_rounds": 7.22,
+          "mean_survivors": 3.45
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.58,
+          "mean_survivors": 14.2
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.15,
+          "mean_survivors": 17.77
+        }
+      ]
+    },
+    {
+      "key": "fengbang_tianmen",
+      "name": "封神之战：封榜天门",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.15,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.4,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.4,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.9,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.08,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.85,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.6,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 14,
+          "win_rate": 0.35,
+          "mean_rounds": 6.55,
+          "mean_survivors": 2.25
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 35,
+          "win_rate": 0.875,
+          "mean_rounds": 5.9,
+          "mean_survivors": 7.8
+        }
+      ]
+    },
+    {
+      "key": "zhuolu_zhongyuan",
+      "name": "逐鹿中原",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.45,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.83,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.97,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 2,
+          "win_rate": 0.05,
+          "mean_rounds": 7.3,
+          "mean_survivors": 0.15
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 5.83,
+          "mean_survivors": 11.68
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 5.08,
+          "mean_survivors": 16.12
+        }
+      ]
+    },
+    {
+      "key": "guandu_zhizhan",
+      "name": "官渡之战",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 6.4,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 39,
+          "win_rate": 0.975,
+          "mean_rounds": 6.42,
+          "mean_survivors": 9.1
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.7,
+          "mean_survivors": 15.8
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.05,
+          "mean_survivors": 18.9
+        }
+      ]
+    },
+    {
+      "key": "huashan_lunjian_advanced",
+      "name": "华山论剑",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 1,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 1,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 1.2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 1.57,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 1.75,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.58,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 2,
+          "win_rate": 0.05,
+          "mean_rounds": 3.6,
+          "mean_survivors": 0.2
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 35,
+          "win_rate": 0.875,
+          "mean_rounds": 3.95,
+          "mean_survivors": 8.97
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.23,
+          "mean_survivors": 15.07
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.85,
+          "mean_survivors": 18.5
+        }
+      ]
+    },
+    {
+      "key": "sishui_huaxiong_chengwei",
+      "name": "飞将浮沉录：汜水关华雄逞威",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.02,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.8,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.53,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 6.2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.88,
+          "mean_survivors": 9.78
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.98,
+          "mean_survivors": 13.75
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.52,
+          "mean_survivors": 17.55
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.05,
+          "mean_survivors": 19.73
+        }
+      ]
+    },
+    {
+      "key": "hulao_qunying_zhan_lvbu",
+      "name": "飞将浮沉录：虎牢关群英战吕布",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.75,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.65,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.83,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.08,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 21,
+          "win_rate": 0.525,
+          "mean_rounds": 7.67,
+          "mean_survivors": 3.7
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 5.17,
+          "mean_survivors": 13.4
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.5,
+          "mean_survivors": 17.1
+        }
+      ]
+    },
+    {
+      "key": "baimenlou_mingyun_jueze",
+      "name": "飞将浮沉录：白门楼命运抉择",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.23,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.7,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.45,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.53,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 2,
+          "win_rate": 0.05,
+          "mean_rounds": 6.75,
+          "mean_survivors": 0.45
+        }
+      ]
+    },
+    {
+      "key": "yaolu_hujing",
+      "name": "药庐护经",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.55,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 2,
+          "win_rate": 0.05,
+          "mean_rounds": 7.28,
+          "mean_survivors": 0.05
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 5.03,
+          "mean_survivors": 4.92
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.9,
+          "mean_survivors": 8
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.02,
+          "mean_survivors": 10
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.98,
+          "mean_survivors": 12
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.67,
+          "mean_survivors": 15
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.42,
+          "mean_survivors": 18
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.08,
+          "mean_survivors": 20
+        }
+      ]
+    },
+    {
+      "key": "xisui_yougu",
+      "name": "洗髓幽谷",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.02,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.97,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 6.92,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.72,
+          "mean_survivors": 11.3
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.95,
+          "mean_survivors": 14.8
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.3,
+          "mean_survivors": 17.9
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.08,
+          "mean_survivors": 20
+        }
+      ]
+    },
+    {
+      "key": "yijin_mijing",
+      "name": "易筋秘境",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.7,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.88,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.97,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 7.1,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 2,
+          "win_rate": 0.05,
+          "mean_rounds": 11.53,
+          "mean_survivors": 0.07
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 5.25,
+          "mean_survivors": 11.35
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4.35,
+          "mean_survivors": 14.82
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 4,
+          "mean_survivors": 17.98
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.85,
+          "mean_survivors": 19.95
+        }
+      ]
+    },
+    {
+      "key": "guild_personal_zhenlong_qipu",
+      "name": "白蛇盗仙草",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.23,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.22,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 6.78,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 33,
+          "win_rate": 0.825,
+          "mean_rounds": 8.75,
+          "mean_survivors": 4.22
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 5.5,
+          "mean_survivors": 9.22
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 3.02,
+          "mean_survivors": 12
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.73,
+          "mean_survivors": 15
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.25,
+          "mean_survivors": 18
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 2.02,
+          "mean_survivors": 20
+        }
+      ]
+    },
+    {
+      "key": "guild_personal_shaolin_night_shadow",
+      "name": "八仙渡东海",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 1.95,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.65,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.65,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 3,
+          "win_rate": 0.075,
+          "mean_rounds": 9.12,
+          "mean_survivors": 0.47
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 29,
+          "win_rate": 0.725,
+          "mean_rounds": 9.2,
+          "mean_survivors": 6.42
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 5.97,
+          "mean_survivors": 15.65
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 5.38,
+          "mean_survivors": 18.52
+        }
+      ]
+    },
+    {
+      "key": "zhanlong_yanshan_shizi",
+      "name": "战龙在野第一关：北地燕山初识子龙",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 1,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.25,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.1,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 6.38,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 10.38,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 36,
+          "win_rate": 0.9,
+          "mean_rounds": 12,
+          "mean_survivors": 5.78
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 40,
+          "win_rate": 1,
+          "mean_rounds": 8,
+          "mean_survivors": 12.7
+        }
+      ]
+    },
+    {
+      "key": "zhanlong_changban_tuwei",
+      "name": "战龙在野第二关：龙战长坂七进七出",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 1,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.48,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.35,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.12,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 7.03,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 11.32,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 22,
+          "win_rate": 0.55,
+          "mean_rounds": 14.75,
+          "mean_survivors": 1.52
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 39,
+          "win_rate": 0.975,
+          "mean_rounds": 9.75,
+          "mean_survivors": 7.75
+        }
+      ]
+    },
+    {
+      "key": "zhanlong_changban_duanqiao",
+      "name": "战龙在野第三关：长坂桥张飞断水流",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 1,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.02,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.05,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 6.62,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 9.15,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 5,
+          "win_rate": 0.125,
+          "mean_rounds": 16.6,
+          "mean_survivors": 0.12
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 39,
+          "win_rate": 0.975,
+          "mean_rounds": 12.28,
+          "mean_survivors": 4.33
+        }
+      ]
+    },
+    {
+      "key": "zhanlong_wuhu_shizhen",
+      "name": "战龙在野第四关：谁人德行服赵云",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.33,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.73,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.83,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.08,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.62,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.83,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.92,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 8.88,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 10.62,
+          "mean_survivors": 0
+        }
+      ]
+    },
+    {
+      "key": "guild_personal_yanziwu_secret_letter",
+      "name": "沉香劈山救母",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.05,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.65,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.28,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 5.47,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 8,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 7.42,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 9,
+          "trials": 40,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 10.05,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 10,
+          "trials": 40,
+          "wins": 8,
+          "win_rate": 0.2,
+          "mean_rounds": 13.95,
+          "mean_survivors": 1.85
+        },
+        {
+          "profile": 11,
+          "trials": 40,
+          "wins": 36,
+          "win_rate": 0.9,
+          "mean_rounds": 13.18,
+          "mean_survivors": 8.9
+        }
+      ]
+    }
+  ],
+  "mission_inputs": {
+    "surname_legend_li": {
+      "key": "surname_legend_li",
+      "name": "姓氏传说之“李”",
+      "display_order": 1000,
+      "difficulty": "advanced",
+      "description": "话说商纣王当政时，理氏一族因直言进谏获罪，利贞随母亲四处逃难。母子断粮多日，幸得荒野中一株李树结满甘果，这才保住性命。为报救命之恩，利贞决定改“理”为“李”，谁知新姓氏刚取好，老仇家却追上了门。\n\n助纣为虐的恶来奉命赶尽杀绝，率领精兵封住去路，连那株救命的李树也不肯放过。附近百姓有心相助，却敌不过他的凶猛重戟，只得向各庄园求援。还请庄园主率领门客击退恶来，护住母子二人，让这段“木子成李”的传说得以流传。\n",
+      "battle_type": "task1",
+      "is_defense": false,
+      "guest_only": false,
+      "enemy_guests": [
+        {
+          "key": "task_surname_li_elai",
+          "label": "恶来"
+        }
+      ],
+      "enemy_troops": {
+        "dao_sheng": 800,
+        "qiang_wang": 400
+      },
+      "enemy_technology": {
+        "level": 10,
+        "guest_level": 100,
+        "guest_bonus": 0.25
+      },
+      "entry_cost": {},
+      "drop_table": {
+        "mission_chest_v3_surname_legend_li": 1
+      },
+      "probability_drop_table": {},
+      "available_weekdays": [],
+      "base_travel_time": 1800,
+      "daily_limit": 3,
+      "mission_card_daily_limit": 5
+    },
+    "mid_autumn_moon_palace_trial": {
+      "key": "mid_autumn_moon_palace_trial",
+      "name": "广寒宫试炼",
+      "difficulty": "intermediate",
+      "available_weekdays": [
+        2,
+        4,
+        6,
+        7
+      ],
+      "description": "中秋将近，广寒宫外的月桂忽然枝叶疯长，遮蔽月华，连玉兔捣药的石臼也被散落的桂枝掩埋。吴刚日夜挥斧仍无法遏止异变，嫦娥只得向人间庄园主发出月宫请帖。\n\n受邀者需穿过桂影迷阵，协助玉兔收集药材，并通过吴刚与嫦娥设下的月宫试炼。完成试炼者可带回月饼，也有机会获得三位月宫门客留下的召唤卷轴。\n",
+      "battle_type": "task1",
+      "base_travel_time": 1800,
+      "enemy_guests": [
+        {
+          "key": "myth_moon_jade_rabbit",
+          "label": "玉兔"
+        },
+        {
+          "key": "myth_moon_wu_gang",
+          "label": "吴刚"
+        },
+        {
+          "key": "hist_xianqin_0413",
+          "label": "嫦娥"
+        }
+      ],
+      "enemy_troops": {
+        "quan_wang": 300,
+        "jian_hao": 300,
+        "divine_archer": 200
+      },
+      "enemy_technology": {
+        "level": 7,
+        "guest_level": 60,
+        "guest_bonus": 0.12
+      },
+      "drop_table": {
+        "silver": 40000,
+        "mission_chest_v3_mid_autumn_moon_palace_trial": 1
+      },
+      "daily_limit": 3
+    },
+    "kasukabe_daisakusen": {
+      "key": "kasukabe_daisakusen",
+      "name": "春日部大作战",
+      "difficulty": "intermediate",
+      "available_weekdays": [
+        2,
+        4,
+        6,
+        7
+      ],
+      "description": "庄园附近突然出现一支自称“春日部防卫队”的神秘队伍。他们本是追查被妖怪夺走的神奇蜡笔，却不慎把庄园周边画成了临时游乐战场：粮仓墙上长出大象鼻子，演武场地面变成蹦床，护院巡逻路线也被涂鸦迷宫搅得七零八落。\n\n为了平息这场哭笑不得的混乱，庄主需要进入春日部游乐战场，突破玩具机关、恶作剧陷阱和防卫队试炼，击败被蜡笔力量影响的涂鸦大魔王，回收“小新的蜡笔”。集齐150个蜡笔后，可在仓库中招募紫色武门客「蜡笔小新」。\n",
+      "battle_type": "task1",
+      "enemy_guests": [
+        {
+          "key": "task_kasukabe_patrol_captain",
+          "label": "春日部巡逻队长"
+        },
+        {
+          "key": "task_kasukabe_toy_crocodile",
+          "label": "玩具机关鳄鱼"
+        },
+        {
+          "key": "task_kasukabe_defense_member",
+          "label": "迷路的防卫队员"
+        },
+        {
+          "key": "task_kasukabe_crayon_clone",
+          "label": "蜡笔恶作剧分身"
+        },
+        {
+          "key": "task_kasukabe_doodle_boss",
+          "label": "涂鸦大魔王"
+        }
+      ],
+      "enemy_troops": {
+        "quan_wang": 300,
+        "archer": 300,
+        "dao_ba": 200
+      },
+      "enemy_technology": {
+        "level": 7,
+        "guest_level": 60,
+        "guest_bonus": 0.12
+      },
+      "drop_table": {
+        "silver": 40000,
+        "mission_chest_v3_kasukabe_daisakusen": 1
+      },
+      "daily_limit": 3
+    },
+    "huashan_lunjian": {
+      "key": "huashan_lunjian",
+      "name": "华山论贱",
+      "display_order": 2,
+      "difficulty": "junior",
+      "description": "中原大地，经过无数年的风吹雨打，各大贱派均元气大伤，数百年的休养调整使各大贱客高手知耻后勇，不断创新各种贱术秘籍，停办经年的贱客比武大赛将顺应民意在华山之巅重新开启，各路英雄贱客可在此大展身手，争当新一届人见人爱、花见花开的贱客之王，在此和谐社会留下自己奋斗的印记。\n",
+      "battle_type": "task1",
+      "guest_only": true,
+      "enemy_guests": [
+        {
+          "key": "task_huashan_jianwang",
+          "label": "贱王之王"
+        },
+        {
+          "key": "task_huashan_jianjing",
+          "label": "顶级贱精"
+        },
+        {
+          "key": "task_huashan_jianjing",
+          "label": "顶级贱精"
+        },
+        {
+          "key": "task_huashan_audience_a",
+          "label": "观众甲"
+        }
+      ],
+      "enemy_technology": {
+        "level": 2,
+        "guest_level": 12,
+        "guest_bonus": 0
+      },
+      "drop_table": {
+        "silver": 8000,
+        "mission_chest_v3_huashan_lunjian": 1
+      },
+      "daily_limit": 3
+    },
+    "wagangzhai_nixi": {
+      "key": "wagangzhai_nixi",
+      "name": "瓦岗寨的逆袭",
+      "difficulty": "intermediate",
+      "description": "在上一次广大庄园主联手扫荡瓦岗寨时，正值瓦岗五虎出门执行任务，翟让和程咬金输的并不服气，为了证明瓦岗寨的实力，翟让率领瓦岗五虎\"秦叔宝\"、\"单雄信\"、\"王伯当\"、\"罗成\"、\"程咬金\"携山寨喽啰兵600人亲自上各庄园寻衅……这一次的战场变成了您的庄园，请加强防御设施，让您的门客和护院准备好迎接战斗洗礼。\n",
+      "battle_type": "task1",
+      "is_defense": true,
+      "display_order": 1000,
+      "enemy_guests": [
+        {
+          "key": "hist_suitang_0162_zhairang",
+          "skills": [
+            "tangseng_sermon"
+          ]
+        },
+        {
+          "key": "hero_qin_shubao",
+          "skills": [
+            "brahma_true_fire"
+          ]
+        },
+        "hist_suitang_0164_shanxiongxin",
+        "hist_suitang_0165_wangbodang",
+        "hero_luo_cheng",
+        "hero_cheng_yaojin"
+      ],
+      "enemy_technology": {
+        "level": 10,
+        "guest_level": 100,
+        "guest_bonus": 0.3
+      },
+      "enemy_troops": {
+        "arrow_god": 800,
+        "quan_sheng": 800,
+        "qiang_wang": 800
+      },
+      "drop_table": {
+        "silver": 40000,
+        "mission_chest_v3_wagangzhai_nixi": 1
+      },
+      "base_travel_time": 1800,
+      "daily_limit": 3
+    },
+    "jingyanggang": {
+      "key": "jingyanggang",
+      "name": "景阳冈",
+      "display_order": 1,
+      "difficulty": "junior",
+      "description": "景阳冈上有只吊睛白额大虫伤害人命，官府多次派猎户擒捉未果，往客商人只能在巳午未三个时辰结伴过冈，其馀时分，及单身客人，不能过冈，恐被伤害性命。\n",
+      "battle_type": "task1",
+      "guest_only": true,
+      "enemy_guests": [
+        {
+          "key": "task_jingyang_tiger",
+          "label": "猛虎"
+        }
+      ],
+      "enemy_technology": {
+        "level": 3,
+        "guest_level": 15,
+        "guest_bonus": 0.02
+      },
+      "drop_table": {
+        "silver": 7000,
+        "mission_chest_v3_jingyanggang": 1
+      },
+      "daily_limit": 3
+    },
+    "wulongshan": {
+      "key": "wulongshan",
+      "name": "乌龙山",
+      "difficulty": "junior",
+      "display_order": 4,
+      "description": "湘黔边界的乌龙山鲜少人迹，这里盘聚着一帮强盗将那里作为他们的大本营。他们借这乱世之际四处行凶，烧杀凌掠无恶不作，种种罪行令人发指。由于此帮强盗行迹过于放肆导致朝野上下为之震动，朝廷号召各方能人尽快歼灭这帮流寇。\n",
+      "battle_type": "task1",
+      "enemy_guests": [
+        {
+          "key": "task_wulong_bandit_chief_zuanshanbao",
+          "label": "钻山豹"
+        },
+        {
+          "key": "task_wulong_bandit_chief_zuoshandiao",
+          "label": "座山雕"
+        }
+      ],
+      "enemy_technology": {
+        "level": 4,
+        "guest_level": 20,
+        "guest_bonus": 0.04
+      },
+      "enemy_troops": {
+        "qiang_ke": 200
+      },
+      "drop_table": {
+        "silver": 15000,
+        "mission_chest_v3_wulongshan": 1
+      },
+      "daily_limit": 3
+    },
+    "wagangzhai": {
+      "key": "wagangzhai",
+      "name": "瓦岗寨",
+      "difficulty": "junior",
+      "display_order": 5,
+      "description": "瓦岗寨原来的寨主翟让被程咬金击败后让出寨主之位，程咬金自号\"大魔国混世魔王\"，并带领瓦岗军四处出门踢馆打劫，引得各地庄园主怨声在道，大家决定联手打击瓦岗寨，维护和保障各庄园的和平与稳定。\n",
+      "battle_type": "task1",
+      "enemy_guests": [
+        "hero_cheng_yaojin",
+        "hist_suitang_0162_zhairang"
+      ],
+      "enemy_troops": {
+        "jian_xia": 400
+      },
+      "enemy_technology": {
+        "level": 5,
+        "guest_level": 35,
+        "guest_bonus": 0.1
+      },
+      "drop_table": {
+        "silver": 20000,
+        "mission_chest_v3_wagangzhai": 1
+      },
+      "daily_limit": 3
+    },
+    "fugui_shanzhuang": {
+      "key": "fugui_shanzhuang",
+      "name": "富贵山庄",
+      "difficulty": "junior",
+      "display_order": 3,
+      "description": "富贵山庄，其美甲天下、其富可敌国，庄主张富贵更是好客之人，但凡江湖有难，他都不遗余力伸出援助之手，解人燃眉。故被人予以\"雪中炭\"之美名。江湖多有时运不济、怀才不遇的落魄之士，若想求得张庄主帮助，必先证明自己才识。在接受庄主考验后，若能得到庄主赏识，则日后必荣禄相授。\n",
+      "battle_type": "task1",
+      "guest_only": true,
+      "enemy_guests": [
+        {
+          "key": "task_fugui_instructor",
+          "label": "武师教头"
+        }
+      ],
+      "enemy_technology": {
+        "level": 3,
+        "guest_level": 40,
+        "guest_bonus": 0.05
+      },
+      "drop_table": {
+        "silver": 14000,
+        "mission_chest_v3_fugui_shanzhuang": 1
+      },
+      "daily_limit": 3
+    },
+    "shizipo_heidian": {
+      "key": "shizipo_heidian",
+      "name": "十字坡黑店",
+      "difficulty": "intermediate",
+      "display_order": 1000,
+      "description": "孙二娘和张青在十字坡开酒店，常用蒙汗药蒙翻过往行人。他们将行人杀死后，大块好肉当作黄牛肉卖，零碎小肉，做馅包馒头。江湖有传言说：\"大树十字坡，客人谁敢那里过？肥的切做馒头馅，瘦的却丢去填河。\"\n",
+      "battle_type": "task1",
+      "enemy_guests": [
+        {
+          "key": "task_shizipo_sun_erniang",
+          "label": "孙二娘"
+        },
+        {
+          "key": "task_shizipo_zhang_qing",
+          "label": "张青"
+        }
+      ],
+      "enemy_troops": {
+        "quan_wang": 300,
+        "divine_archer": 300,
+        "dao_ba": 100
+      },
+      "enemy_technology": {
+        "level": 6,
+        "guest_level": 70,
+        "guest_bonus": 0.1
+      },
+      "drop_table": {
+        "silver": 30000,
+        "mission_chest_v3_shizipo_heidian": 1
+      },
+      "daily_limit": 3
+    },
+    "shanhaiguan": {
+      "key": "shanhaiguan",
+      "name": "山海关",
+      "difficulty": "intermediate",
+      "display_order": 1000,
+      "description": "山海关所在的河西走廊是华北通向东北的咽喉地带，是一座及其重要的军事重镇，主要防御外族势力的入侵。吴三桂作为镇守山海关的大将，居然意图勾结外族势力，入侵中原。\n",
+      "battle_type": "task1",
+      "enemy_guests": [
+        "hist_mingqing_0230",
+        "hist_mingqing_0054"
+      ],
+      "enemy_troops": {
+        "jian_sheng": 500,
+        "quan_wang": 500,
+        "qiang_ba": 500
+      },
+      "enemy_technology": {
+        "level": 7,
+        "guest_level": 70,
+        "guest_bonus": 0.18
+      },
+      "drop_table": {
+        "silver": 40000,
+        "mission_chest_v3_shanhaiguan": 1
+      },
+      "daily_limit": 3
+    },
+    "shiren_daochang": {
+      "key": "shiren_daochang",
+      "name": "十人道场",
+      "difficulty": "intermediate",
+      "display_order": 1000,
+      "description": "十人道场是春秋世界初级试炼之地，由恶人谷十大恶人驻守。只要能击败十大恶人，通过试炼，就能极速提升门客的等级和能力。\n",
+      "battle_type": "task1",
+      "enemy_guests": [
+        "hero_du_sha",
+        "hero_li_dazui",
+        "hero_hahaer",
+        "hero_tu_jiaojiao",
+        "hero_yin_jiuyou",
+        {
+          "key": "task_shiren_xiaomimi",
+          "label": "萧咪咪"
+        },
+        {
+          "key": "task_shiren_xuanyuansanguang",
+          "label": "轩辕三光"
+        },
+        {
+          "key": "task_shiren_tiezhan",
+          "label": "铁战"
+        },
+        "hero_bai_kaixin",
+        {
+          "key": "task_shiren_luoshixiongdi",
+          "label": "罗氏兄弟"
+        }
+      ],
+      "enemy_technology": {
+        "level": 6,
+        "guest_level": 55,
+        "guest_bonus": 0.08
+      },
+      "drop_table": {
+        "silver": 20000,
+        "mission_chest_v3_shiren_daochang": 1
+      },
+      "daily_limit": 3
+    },
+    "jiguanshou_chuxian": {
+      "key": "jiguanshou_chuxian",
+      "name": "机关兽初现",
+      "difficulty": "junior",
+      "display_order": 7,
+      "description": "乔家村以制做灵活轻巧、栩栩如生的「机械猫」闻名于天下。「机械猫」又称之为「钟离猫」，相传是墨家子弟孙钟离路过此地时，时逢村中鼠患肆虐，为清除鼠患取当地木材仿猫型制成。经历代乔家村民不断改良，「机械猫」以生具灵性、精巧无比，并作用于生活各用途中。某日乔家村第一铁匠乔大牛家中被盗，八只刚制成的「机械猫」见房门未锁，逃离乔家村。随后，逃离的八只「机械猫」开始在乔家村附近肆虐作恶，搞得乔家村民苦不堪言。\n",
+      "battle_type": "task1",
+      "enemy_guests": [
+        {
+          "key": "task_mechanism_cat",
+          "label": "改装机械猫"
+        },
+        {
+          "key": "task_mechanism_cat",
+          "label": "改装机械猫"
+        },
+        {
+          "key": "task_mechanism_cat",
+          "label": "改装机械猫"
+        },
+        {
+          "key": "task_mechanism_cat",
+          "label": "改装机械猫"
+        },
+        {
+          "key": "task_mechanism_cat",
+          "label": "改装机械猫"
+        },
+        {
+          "key": "task_mechanism_cat",
+          "label": "改装机械猫"
+        },
+        {
+          "key": "task_mechanism_cat",
+          "label": "改装机械猫"
+        },
+        {
+          "key": "task_mechanism_cat",
+          "label": "改装机械猫"
+        }
+      ],
+      "enemy_technology": {
+        "level": 7,
+        "guest_level": 35,
+        "guest_bonus": 0.12
+      },
+      "drop_table": {
+        "silver": 24000,
+        "mission_chest_v3_jiguanshou_chuxian": 1
+      },
+      "daily_limit": 2,
+      "mission_card_daily_limit": 1
+    },
+    "biwu_zhaoqin": {
+      "key": "biwu_zhaoqin",
+      "name": "比武招亲",
+      "difficulty": "junior",
+      "display_order": 6,
+      "description": "苏州首富杜万年之女杜莞尔芳龄二八，登门求亲者络绎不绝，门庭若市。杜老爷既不想得罪朝廷中人，也不愿把女儿嫁给草莽之士，于是想出一招比武招亲。奇就奇在这代杜千金比武的，不是人，而是一只战斗熊。此熊周身每个关节都可活动，内部充满各种机关，战斗力强。比武当天无人能出其右，最终竟由穷小子管无介出马搏得头筹。原来小姐早已芳心暗许，只因那固执的父亲介意门第之见。管无介经众人帮助，得到铸熊大师珍藏图纸，命中熊身要害，一击即中。杜老爷在众人面前也不能食言而肥，只得将女儿许配给比赛冠军。管无介如愿以偿，开心抱得美人归。\n",
+      "battle_type": "task1",
+      "guest_only": true,
+      "enemy_guests": [
+        {
+          "key": "task_matchmaking_bear",
+          "label": "机关熊"
+        }
+      ],
+      "enemy_technology": {
+        "level": 4,
+        "guest_level": 55,
+        "guest_bonus": 0.2
+      },
+      "drop_table": {
+        "silver": 20000,
+        "mission_chest_v3_biwu_zhaoqin": 1
+      },
+      "daily_limit": 3
+    },
+    "tianpeng_dijiao_1": {
+      "key": "tianpeng_dijiao_1",
+      "name": "天蓬元帅的地窖（第一层）",
+      "difficulty": "intermediate",
+      "display_order": 1000,
+      "description": "天蓬元帅何许人也，我想不必多加介绍，他的大名你我也都如雷贯耳了。天蓬元帅耳大招风，腰缠\"万贯\"，气宇方刚，心宽体胖。当然，他最出名的还是吃，不仅会吃，吃遍天下美食，还私藏了许多琼浆玉液、佳肴珍馐。每次天庭大请宾筵，我们的大元帅都是不仅吃得饱饱的，还要兜着走。拿了这么多食物，一时半会儿也消灭不了，那到底放在哪里才算妥当安全呢？天蓬元帅还真是聪明，他想到他在高老庄的老相好，还有他那个老丈人，也是很喜欢这个勤奋的女婿的，他们特地留出一块上好的、超大平方米、黄金地段、冬暖夏凉的地窖给猪女婿保存食物。要说天神也有打瞌睡的时候，天蓬元帅乘天门打开之际，每次都私自下凡，偷渡美食于此地窖中。经年累月，地窖倒也藏了不少宝贝。\n",
+      "battle_type": "task1",
+      "enemy_guests": [
+        {
+          "key": "task_cellar_guard",
+          "label": "守卫"
+        },
+        {
+          "key": "task_cellar_guard",
+          "label": "守卫"
+        },
+        {
+          "key": "task_cellar_guard",
+          "label": "守卫"
+        },
+        {
+          "key": "task_cellar_guard",
+          "label": "守卫"
+        },
+        {
+          "key": "task_cellar_guard",
+          "label": "守卫"
+        },
+        {
+          "key": "task_cellar_guard",
+          "label": "守卫"
+        },
+        {
+          "key": "task_cellar_guard",
+          "label": "守卫"
+        },
+        {
+          "key": "task_cellar_guard",
+          "label": "守卫"
+        }
+      ],
+      "enemy_technology": {
+        "level": 8,
+        "guest_level": 50,
+        "guest_bonus": 0.12
+      },
+      "drop_table": {
+        "silver": 50000,
+        "mission_chest_v3_tianpeng_dijiao_1": 1
+      },
+      "daily_limit": 3
+    },
+    "tianpeng_dijiao_2": {
+      "key": "tianpeng_dijiao_2",
+      "name": "天蓬元帅的地窖（第二层）",
+      "difficulty": "advanced",
+      "description": "天蓬元帅猪八戒在完成了跟随唐僧西天取经的重任后，混得了一个肥的流油的美差——净坛使者。不说人前人后，吃不完的山珍海味，更有深谙拍马溜须功夫的小妖小仙送上各种宝物，让天蓬元帅高兴之余也苦恼不已，净坛使者那小小地界根本无处可以存放东西。这时候天蓬元帅想起了N年前被搁置的他用来存放食物的高老庄地窖。\n\n找到灵感的天蓬元帅喜滋滋的驾着他的装宝大车回到高老庄，却发现地窖内一片狼藉，他最喜欢的菠萝被抢劫了一大半。天蓬元帅怒从心头起，恶向胆边生。呔，哪方小贼，竟然胆敢洗劫本使者的粮仓！\n\n这时，一绝色美貌狐仙扭着腰肢冲着天蓬元帅狂抛媚眼，八戒哥您消消气，气坏了身子可不好涅，对付这等小贼，奴家愿献上妙计。八戒哥一见美人便七荤八素，当下将满车宝物及地窖的后期开发工程交给了小狐仙。\n\n小狐仙的目的其实是那满车宝物，可怜八戒有了美女就没了大脑，至此以后那车宝贝和地窖都归了小狐仙所有。小狐仙一时间没有地方存放宝贝，于是将地窖开发成好几层，并在各处委派了法力高强的妖仙好友把守。\n\n消息不胫而走，各庄园主在尝过了菠萝的甜头后，将眼光伸向了小狐仙的藏宝库，小狐仙等着接招吧……\n",
+      "battle_type": "task1",
+      "enemy_guests": [
+        {
+          "key": "task_fox_spirit_keeper",
+          "label": "小狐仙"
+        },
+        {
+          "key": "task_fox_spirit_keeper",
+          "label": "小狐仙"
+        },
+        {
+          "key": "task_fox_spirit_keeper",
+          "label": "小狐仙"
+        },
+        {
+          "key": "task_fox_spirit_keeper",
+          "label": "小狐仙"
+        },
+        {
+          "key": "task_fox_spirit_keeper",
+          "label": "小狐仙"
+        },
+        {
+          "key": "task_fox_spirit_keeper",
+          "label": "小狐仙"
+        },
+        {
+          "key": "task_fox_spirit_keeper",
+          "label": "小狐仙"
+        },
+        {
+          "key": "task_fox_spirit_keeper",
+          "label": "小狐仙"
+        }
+      ],
+      "enemy_technology": {
+        "level": 9,
+        "guest_level": 100,
+        "guest_bonus": 0.2
+      },
+      "drop_table": {
+        "mission_chest_v3_tianpeng_dijiao_2": 1
+      },
+      "daily_limit": 3
+    },
+    "jiguan_chuniao": {
+      "key": "jiguan_chuniao",
+      "name": "机关雏鸟",
+      "difficulty": "intermediate",
+      "display_order": 1000,
+      "description": "话说江家堡被仇家围攻，四面受敌，堡内粮草只能维持3天生计，突围的任务迫在眉睫。堡主曾派壮丁驾快马送信求救，可惜都遭遇埋伏。管家之子江犁墨献上自制的木结构机关雏鸟。其鸟可避弓矢，自动飞达目的地。江家堡靠此木鸟最终送出求救信号，得盟友支援解困。后来此鸟被奉为堡内\"幸运鸟\"，经改造后功能更强大，已成为江家堡著名的机关武器之一。\n",
+      "battle_type": "task1",
+      "enemy_guests": [
+        {
+          "key": "task_mechanism_bird",
+          "label": "黑衣人"
+        },
+        {
+          "key": "task_mechanism_bird",
+          "label": "黑衣人"
+        },
+        {
+          "key": "task_mechanism_bird",
+          "label": "黑衣人"
+        },
+        {
+          "key": "task_mechanism_bird",
+          "label": "黑衣人"
+        }
+      ],
+      "enemy_troops": {
+        "qiang_wang": 300,
+        "jian_sheng": 300
+      },
+      "enemy_technology": {
+        "level": 7,
+        "guest_level": 60,
+        "guest_bonus": 0.1
+      },
+      "drop_table": {
+        "silver": 30000,
+        "mission_chest_v3_jiguan_chuniao": 1
+      },
+      "daily_limit": 3
+    },
+    "dongtian_fudi": {
+      "key": "dongtian_fudi",
+      "name": "洞天福地",
+      "difficulty": "advanced",
+      "description": "传说\"洞天福地\"位于西部大雪山之巅，当年丘真人携唯一弟子在此闭关修炼，洞内集日月精华，物华天宝俊彩星驰。百年后一场雪崩覆盖了洞口，珍贵的道家秘籍、炼丹点金之术也遭雪掩埋，就此不流于世。多年后各大门派竞相寻找此地，企图寻找求仙捷径。然而\"洞天福地\"内机关重重、关卡奥妙也是众所皆知，至今闯入禁区者无人生还。要想寻找财富，除了勇气，还需傲人的智慧和体魄才行。\n",
+      "battle_type": "task1",
+      "enemy_guests": [
+        {
+          "key": "task_heaven_cave_sentinel",
+          "label": "金甲神兵"
+        },
+        {
+          "key": "task_heaven_cave_sentinel",
+          "label": "金甲神兵"
+        }
+      ],
+      "enemy_troops": {
+        "arrow_god": 300,
+        "quan_sheng": 700
+      },
+      "enemy_technology": {
+        "level": 9,
+        "guest_level": 80,
+        "guest_bonus": 0.26
+      },
+      "drop_table": {
+        "silver": 50000,
+        "mission_chest_v3_dongtian_fudi": 1
+      },
+      "daily_limit": 3
+    },
+    "jiufeng_feihuan": {
+      "key": "jiufeng_feihuan",
+      "name": "九峰匪患",
+      "difficulty": "intermediate",
+      "display_order": 1000,
+      "description": "话说有一座有着九个山峰的山叫做九峰山，那里山水秀丽，风景如画，九峰山下有个九峰村，这里的人民善良纯朴，吃苦耐劳，上天也因为这里的人勤劳善良，所以赐给了他们肥沃的土地，村民们也通过自己勤劳的双手将这片土地变成了万顷良田来回报上天的恩赐，于是一代一代的村民就在这里过着无忧无虑的生活。\n\n但有一天这美好日子被一群土匪给搅乱了，带领这帮土匪的是三兄弟分别叫大胖、二胖和小胖，这三人原本是这里的村民，可是这三人好吃懒做，从不去干活，把自己家田里的粮食吃光后还去偷别人的庄稼，最终被村长赶出村，上山做了土匪头子，他们怀恨在心，所以每个月都到山下的村庄来抢粮食、鸡、鸭、牛、羊，还试图抢良家妇女上山做压寨夫人，搞的民不聊生，怨声载道。\n\n于是村民们准备联合起来反抗，他们请村里的木匠赵牛把他发明的机关牛改造成可以防御土匪的武器，说到这赵牛发明的机关牛还真是神奇咧，不用吃草也不用喝水，却又能耕来又能拉，村民们种田犁地拉磨磨面都离不开它。听到了乡亲们的请求赵牛没日没夜的研制，最后给机关牛装上了厚厚的护甲和锋利的武器成为了攻防一体的兵器，同时村长给各地的庄主们发去了求援信希望能借助强大庄主的力量来帮助一起剿灭来犯的土匪，一场保卫九峰村的大战即将展开。\n",
+      "battle_type": "task1",
+      "enemy_guests": [
+        {
+          "key": "task_nine_peaks_bandit",
+          "label": "土匪"
+        },
+        {
+          "key": "task_nine_peaks_bandit",
+          "label": "土匪"
+        },
+        {
+          "key": "task_nine_peaks_bandit",
+          "label": "土匪"
+        }
+      ],
+      "enemy_troops": {
+        "quan_sheng": 500,
+        "arrow_god": 100
+      },
+      "enemy_technology": {
+        "level": 6,
+        "guest_level": 58,
+        "guest_bonus": 0.12
+      },
+      "drop_table": {
+        "silver": 20000,
+        "mission_chest_v3_jiufeng_feihuan": 1
+      },
+      "daily_limit": 3
+    },
+    "taozi_fenban": {
+      "key": "taozi_fenban",
+      "name": "我的桃子分你一半",
+      "difficulty": "junior",
+      "display_order": 8,
+      "description": "终南山为道教发祥地之一。据传，周康王时，函谷关关令尹喜，在山中结草为楼，每日登草楼观星望气。一日圣人老子经过此关，尹喜忙把老子请到楼观，执弟子礼，请其讲经著书。老子为尹喜讲授《道德经》五千言后飘然而去。传说今日楼观台的说经台就是当年老子讲经之处。道教产生后，尊老子为道祖，尹喜为文始真人，奉《道德经》为根本经典。于是终南山上的楼观成了\"天下道林张本之地\"。\n\n日后在山上修行的道士们在山下种了一片桃林，一方面种桃树可以修身养性、锻炼身体，这桃树还是道士们除妖降魔的利器桃木剑的主要材料，而且这道家圣地的桃林结的桃子也不普通，是三年开花三年结果的\"仙桃\"，吃了它不仅功力倍增，而且练起功来更是事半功倍，因此这山下的桃林对于道士们来说十分的重要。\n\n而另一方面众多孤魂野鬼也盯上了这片桃林，由于它是道士们制造桃木剑材料的主要来源，如果能占据它，那道士们就没有办法对付他们了，于是大批的妖魔鬼怪一同聚集到了这片桃林，道士们知道这样下去的结果是不堪设想的，妖魔鬼怪会给人间带来极大的灾难，于是他们进行了多次尝试想驱散妖怪们，但由于寡不敌众均败下阵来，就在这紧要关头他们向各大庄主发去了求援信，希望能借助强大庄主的力量来平定这场灾难，当然作为回报他们将赠与你15个经验桃子以示感谢。\n",
+      "battle_type": "task1",
+      "enemy_guests": [
+        {
+          "key": "task_orchard_wraith",
+          "label": "孤魂野鬼"
+        },
+        {
+          "key": "task_orchard_wraith",
+          "label": "孤魂野鬼"
+        },
+        {
+          "key": "task_orchard_wraith",
+          "label": "孤魂野鬼"
+        },
+        {
+          "key": "task_orchard_wraith",
+          "label": "孤魂野鬼"
+        },
+        {
+          "key": "task_orchard_wraith",
+          "label": "孤魂野鬼"
+        },
+        {
+          "key": "task_orchard_wraith",
+          "label": "孤魂野鬼"
+        },
+        {
+          "key": "task_orchard_wraith",
+          "label": "孤魂野鬼"
+        },
+        {
+          "key": "task_orchard_wraith",
+          "label": "孤魂野鬼"
+        }
+      ],
+      "enemy_technology": {
+        "level": 3,
+        "guest_level": 40,
+        "guest_bonus": 0.06
+      },
+      "drop_table": {
+        "mission_chest_v3_taozi_fenban": 1
+      },
+      "daily_limit": 1,
+      "mission_card_daily_limit": 0
+    },
+    "simian_chuge": {
+      "key": "simian_chuge",
+      "name": "四面楚歌",
+      "difficulty": "advanced",
+      "description": "楚汉相争时期，项羽、刘邦于荥阳、成皋相持两年多。项羽因腹背受敌，少食无助，被迫与刘邦订立和，以鸿沟为界，东归楚、西属汉。次年，刘邦、韩信、刘贾、彭越、英布等各路汉军约计40万人与10万楚军于垓下展开决战。汉军以韩信率军居中，将军孔熙为左翼、陈贺为右翼，刘邦率部跟进，将军周勃断后。韩信挥军进攻失利，引兵后退，命左、右翼军继续攻击。楚军迎战不利，韩信再挥军反击。楚军大败，退入壁垒坚守，被汉军重重包围。楚军屡战不胜，兵疲食尽。\n\n张良又命围困项羽的各营兵士吹奏楚乐，楚兵闻之，顿时涌起思乡之情，军心涣散，项羽也疑心汉军已进楚地，遂与美人虞姬对饮帐中，奋然起舞，悲歌慷慨，歌数阙，美人和之，慷慨悲凉，脍炙人口。项王涕泪行行，左右皆泣，莫能仰视。未几，虞姬自杀。项羽跨上乌骓协着姬首，率兵800突围而去，至乌江仅剩下26人，形势危急，您是否发兵相助，以求逆天？\n",
+      "battle_type": "task1",
+      "enemy_guests": [
+        {
+          "key": "task_simian_chuge_hanxin_boss",
+          "label": "韩信",
+          "skills": [
+            "stratagem_burst"
+          ]
+        },
+        {
+          "key": "task_simian_chuge_pengyue_boss",
+          "skills": [
+            "city_felling_strike"
+          ]
+        },
+        {
+          "key": "task_simian_chuge_yingbu_boss",
+          "skills": [
+            "city_felling_strike"
+          ]
+        }
+      ],
+      "enemy_troops": {
+        "dao_sheng": 500,
+        "qiang_wang": 500
+      },
+      "enemy_technology": {
+        "level": 10,
+        "guest_level": 100,
+        "guest_bonus": 0.28
+      },
+      "drop_table": {
+        "silver": 50000,
+        "mission_chest_v3_simian_chuge": 1
+      },
+      "daily_limit": 3
+    },
+    "manzu_ruqin": {
+      "key": "manzu_ruqin",
+      "name": "蛮族入侵",
+      "difficulty": "advanced",
+      "description": "北方的蛮族首领大胡子单于对中原广阔的土地已经虎视眈眈了许久，终于时机成熟他带领着他那强大的军队踏上了侵略中原的征程，眼看一场腥风血雨的浩劫即将席卷而来，可中原的各大庄主还浑然不知，这时蛮族军队中的一个打杂的坐不住了，他名叫蒲巴乙，这位小伙子长得十分帅气，因为父亲是胡人母亲是汉人的关系，所以他没有蛮族人粗陋的习俗，但他也并非自愿投军的。\n\n话说那日他为了参加\"村有好男儿\"的比赛正在山坡上练歌，刚唱了一句就被人一棍子打晕了，醒来后他发现他和村里的许多壮丁已经被抓到军营里了，他们被强征入伍，随军出征在军队中干杂活。当他想到中原即将生灵涂炭，就再也坐不住了，他想去通知中原的庄主们让他们对即将到来的战争做好准备，于是他偷了匹马乘着夜色逃出了军营，向着中原狂奔而去。\n",
+      "battle_type": "task1",
+      "is_defense": true,
+      "enemy_guests": [
+        {
+          "key": "task_barbarian_chanyu",
+          "label": "单于"
+        }
+      ],
+      "enemy_technology": {
+        "level": 10,
+        "guest_level": 100,
+        "guest_bonus": 0.5
+      },
+      "enemy_troops": {
+        "qiang_wang": 1500
+      },
+      "drop_table": {
+        "silver": 50000,
+        "mission_chest_v3_manzu_ruqin": 1
+      },
+      "daily_limit": 3
+    },
+    "zhuiji_manzu": {
+      "key": "zhuiji_manzu",
+      "name": "追击蛮族",
+      "difficulty": "advanced",
+      "description": "在蛮族入侵时，小伙子蒲巴乙为拯救中原的人们，使他们避免成为蛮族铁蹄下的冤魂，他偷偷溜出军营骑着马向着中原狂奔而去，经过七天七夜的日夜兼程，最后连马都累死在了半路上，终于他赶在蛮族军队到来之前向庄主们发出了蛮族准备入侵的讯息，各地的庄主得到了讯息之后，立即停止了互相征战，准备联手抗击蛮族，他们准备了周密的计划准备给大胡子单于来个\"瓮中捉鳖\"。\n\n很快蛮族的军队开始了攻城略地，一路上都十分顺利，其间只遭到了庄主们象征性的抵抗，这种轻而易举就取得胜利的状况开始让蛮族的军队放松了戒心，大胡子单于也开始幻想着在关内放牧的情景，然而他们不知道他们正一步步走进庄主们给他们布下的天罗地网。\n\n终于一天夜里领主们趁着夜色对蛮族军营发动了偷袭，毫无提防的蛮族士兵还没反应过来就已经被打得溃不成军，纷纷丢盔弃甲，落荒而逃。大胡子单于更是丢盔弃甲，落荒而逃，现在是抉择的时候了，到底是穷寇莫追，还是追击蛮族让他们再也不敢踏入中原半步呢？一切都由你决定！\n",
+      "battle_type": "task1",
+      "enemy_guests": [
+        {
+          "key": "task_barbarian_chanyu",
+          "label": "单于"
+        }
+      ],
+      "enemy_troops": {
+        "qiang_wang": 1000
+      },
+      "enemy_technology": {
+        "level": 10,
+        "guest_level": 100,
+        "guest_bonus": 0.26
+      },
+      "drop_table": {
+        "silver": 40000,
+        "mission_chest_v3_zhuiji_manzu": 1
+      },
+      "daily_limit": 3
+    },
+    "liangshanbo_zhuyingtai": {
+      "key": "liangshanbo_zhuyingtai",
+      "name": "梁山伯与祝英台",
+      "difficulty": "intermediate",
+      "available_weekdays": [
+        1,
+        3,
+        5,
+        6,
+        7
+      ],
+      "description": "红罗山书院里，三好学生梁山伯与女扮男装求学的祝英台在上学途中偶然相遇，二人一见如故，当下投名结义。三载同窗，情意在书声与山色间日渐深厚；待到英台学成归家，山伯一路相送十八里，英台屡借草木禽鸟暗寄芳心，山伯却迟迟未解。直到祝家厅前，英台换回红妆、手奉香茗，山伯方知“九弟即九妹”，二人遂私订终身。\n\n奈何祝家已受北马庄恶霸马文才蛊惑，应下婚约。待山伯依约前来议婚，只换得英台一腔泪语，道是姻缘已晚。山伯素来为人端方，交游甚广，诸多义士闻讯赶来，誓要助这对有情人冲破门第与礼法。他们细细勘定迎亲路线，在沿途埋下伏兵，又备足暗器，只待花轿启行时奋力抢亲。一场满载义气与正心的夺亲之战，即将打响。\n",
+      "battle_type": "task1",
+      "enemy_guests": [
+        {
+          "key": "orig_ma_wencai",
+          "label": "马文才",
+          "skills": [
+            "stratagem_burst"
+          ]
+        }
+      ],
+      "enemy_troops": {
+        "qiang_wang": 200,
+        "arrow_god": 200,
+        "dao_sheng": 200
+      },
+      "enemy_technology": {
+        "level": 5,
+        "guest_level": 60,
+        "guest_bonus": 0.16
+      },
+      "drop_table": {
+        "silver": 10000,
+        "mission_chest_v3_liangshanbo_zhuyingtai": 1
+      },
+      "base_travel_time": 1800,
+      "daily_limit": 3
+    },
+    "biyou_candeng": {
+      "key": "biyou_candeng",
+      "name": "封神之战：碧游残灯",
+      "difficulty": "advanced",
+      "description": "万仙阵外，截教败局已现。碧游宫阵旗折断，残灯将熄，周营与玉虚门人已封住阵门，准备将阵中余众一并清算。此时，一盏未灭的碧游残灯越过仙门禁制，落入庄园。灯火中传来截教残魂的求援：不是求逆转天命，也不是求替截教洗去旧罪，而是求庄园主入阵夺回第一面万仙阵旗，让尚未入榜、尚未作恶的门人有机会活着离开。\n\n庄园门客踏入阵门，从周营清剿军、玉虚巡阵者与失控剑痕之间杀出一条路。阵门之上，清算符诏仍在一笔一笔抹去榜外残名；阵门之下，碧游残灯只剩最后一线火光。若此战得胜，截教反攻便从这一点残火开始。\n",
+      "battle_type": "task1",
+      "enemy_guests": [
+        "task_wanxian_nangong_lie",
+        "task_wanxian_lu_xuanqing",
+        "task_wanxian_baihe_fushi",
+        "task_wanxian_zhuxian_canfeng",
+        "task_wanxian_yuzhu",
+        "task_wanxian_qingsuan_fuzhao"
+      ],
+      "enemy_troops": {
+        "dao_sheng": 700,
+        "qiang_wang": 650,
+        "arrow_god": 500
+      },
+      "enemy_technology": {
+        "level": 10,
+        "guest_level": 88,
+        "guest_bonus": 0.34
+      },
+      "drop_table": {
+        "silver": 60000,
+        "mission_chest_v3_biyou_candeng": 1
+      },
+      "base_travel_time": 1800,
+      "daily_limit": 3
+    },
+    "shier_xianyin": {
+      "key": "shier_xianyin",
+      "name": "封神之战：十二仙印",
+      "difficulty": "advanced",
+      "description": "阵旗重燃后，万仙阵中层忽然降下十二道玉虚仙印。它们不是仙人本尊，却承载着阐教诸仙的法宝、道统与杀伐意志。哪吒杀星开路，杨戬玄功镇身，太乙神火焚阵，广成番天印压断截教气运。凡庄园主之令入阵相助截教者，皆被天命识作乱榜异数。\n\n若十二印合拢，截教残部将被重新压回死局；若仙印破碎，万仙阵中层便会重开，截教败兵也将第一次从逃亡转为反攻。此战不问天命宽恕，只问仙印能否挡住人间兵锋。\n",
+      "battle_type": "task1",
+      "entry_cost": {
+        "wanyin_flag_fragment": 1
+      },
+      "enemy_guests": [
+        "task_wanxian_nezha",
+        "task_wanxian_yangjian",
+        "task_wanxian_taiyi",
+        "task_wanxian_guangchengzi",
+        "task_wanxian_chijingzi",
+        "task_wanxian_cihang",
+        "task_wanxian_juliusun",
+        "task_wanxian_shier_xianyin"
+      ],
+      "enemy_troops": {
+        "jian_sheng": 850,
+        "arrow_god": 800,
+        "qiang_wang": 750,
+        "quan_sheng": 500
+      },
+      "enemy_technology": {
+        "level": 10,
+        "guest_level": 94,
+        "guest_bonus": 0.46
+      },
+      "drop_table": {
+        "silver": 80000,
+        "mission_chest_v3_shier_xianyin": 1
+      },
+      "base_travel_time": 1800,
+      "daily_limit": 2
+    },
+    "fengbang_tianmen": {
+      "key": "fengbang_tianmen",
+      "name": "封神之战：封榜天门",
+      "difficulty": "advanced",
+      "description": "十二仙印破碎后，封神榜裂开一页，天门显现。姜子牙持榜而立，燃灯道人点起过去佛灯，打神鞭化为天罚，榜上神名也从金光中逐一醒来。此战已不是救援，而是夺榜改命。封榜天门前，清算将落，截教最后一页榜外残命悬于一线。\n\n庄园主率门客直面封神榜、打神鞭与玉虚天罚，要证明一件事：天命可以定胜负，却不能把所有失败者都抹成灰烬。若此战得胜，封神大势仍会落下，但碧游残火将不再被天命彻底抹去。\n",
+      "battle_type": "task1",
+      "entry_cost": {
+        "yuxu_broken_seal": 1
+      },
+      "enemy_guests": [
+        "task_wanxian_randeng",
+        "task_wanxian_nanji_xianweng",
+        "task_wanxian_jiang_ziya",
+        "task_wanxian_dashenbian",
+        "task_wanxian_bangshangming",
+        "task_wanxian_yuxu_tianfa"
+      ],
+      "enemy_troops": {
+        "dao_sheng": 1000,
+        "jian_sheng": 1000,
+        "arrow_god": 900,
+        "qiang_wang": 900,
+        "quan_sheng": 700
+      },
+      "enemy_technology": {
+        "level": 10,
+        "guest_level": 100,
+        "guest_bonus": 0.62
+      },
+      "drop_table": {
+        "silver": 100000,
+        "mission_chest_v3_fengbang_tianmen": 1
+      },
+      "base_travel_time": 1800,
+      "daily_limit": 1
+    },
+    "zhuolu_zhongyuan": {
+      "key": "zhuolu_zhongyuan",
+      "name": "逐鹿中原",
+      "difficulty": "advanced",
+      "description": "封榜天门之后，封神榜归位，天命暂定。但中原龙脉承受封神余威，竟引动上古涿鹿之战的兵主命格。九黎战旗自地脉升起，蚩尤率风伯、雨师重开涿鹿战局，欲以兵锋再问中原归属。\n\n轩辕剑光在梦中示警：此战若败，中原龙脉将被九黎战旗夺走，人间秩序也会重新落入上古兵争。庄园主须率门客入阵，与蚩尤正面逐鹿，镇住中原气运。\n",
+      "battle_type": "task1",
+      "enemy_guests": [
+        "task_zhuolu_chiyou",
+        "task_zhuolu_fengbo",
+        "task_zhuolu_yushi",
+        "task_zhuolu_shitieshou",
+        "task_zhuolu_shitieshou",
+        "task_zhuolu_shitieshou"
+      ],
+      "enemy_troops": {
+        "dao_sheng": 1000,
+        "qiang_wang": 1000,
+        "jian_sheng": 1000,
+        "quan_sheng": 900,
+        "arrow_god": 900
+      },
+      "enemy_technology": {
+        "level": 10,
+        "guest_level": 100,
+        "guest_bonus": 0.62
+      },
+      "drop_table": {
+        "silver": 100000,
+        "mission_chest_v3_zhuolu_zhongyuan": 1
+      },
+      "base_travel_time": 1800,
+      "daily_limit": 1
+    },
+    "guandu_zhizhan": {
+      "key": "guandu_zhizhan",
+      "name": "官渡之战",
+      "difficulty": "advanced",
+      "description": "袁绍拥河北四州之众，粮甲号称百万，正于官渡压境。曹军粮道危急，乌巢成为决定胜负的最后一线生机。\n\n此战不再是群雄混战，庄园主必须率军直面袁绍本人，在河北军势最盛之时击溃这位四世三公之后，夺下官渡最后的胜局。战后可从袁军遗库中寻得多件橙色装备。\n",
+      "battle_type": "task1",
+      "enemy_guests": [
+        {
+          "key": "task_guandu_yuanshao",
+          "label": "袁绍"
+        }
+      ],
+      "enemy_troops": {
+        "dao_sheng": 1400,
+        "qiang_wang": 1400,
+        "jian_sheng": 1200,
+        "quan_sheng": 1000,
+        "arrow_god": 1200
+      },
+      "enemy_technology": {
+        "level": 10,
+        "guest_level": 100,
+        "guest_bonus": 0.68,
+        "guest_skills": [
+          "stratagem_burst"
+        ]
+      },
+      "drop_table": {
+        "silver": 120000,
+        "mission_chest_v3_guandu_zhizhan": 1
+      },
+      "base_travel_time": 2400,
+      "daily_limit": 1
+    },
+    "huashan_lunjian_advanced": {
+      "key": "huashan_lunjian_advanced",
+      "name": "华山论剑",
+      "display_order": 1000,
+      "difficulty": "advanced",
+      "description": "天下风云出我辈，一入江湖岁月催。皇图霸业谈笑中，不胜人生一场醉。\n\n一张没有落款的论剑帖，自华山传入江湖。有人说，发帖之人要在绝顶重排天下高手座次；有人说，山巅藏着一坛开封即能忘忧的陈年好酒；还有人信誓旦旦地表示，自己只是路过，绝不是专程来抢宝箱的。消息传开后，闭关的出关了，隐姓埋名的改回本名了，连多年不肯下山的老前辈也开始认真挑选登山鞋。\n\n华山九重关，每一重都由一位绝顶高手镇守。扫地僧守心，张三丰守意，独孤求败守剑，东方不败守影；石破天、黄裳、阿青、逍遥子与王重阳也已在峰顶等候。这里没有客套寒暄，也没有凭年龄论资排辈，想在江湖留下名字，便把手中兵刃亮出来说话。\n\n此战只许门客登场。庄园主若能连破九关，便可登上华山绝顶，取走封存已久的武林宝箱。至于箱中是震动江湖的神兵奇珍，还是某位醉仙留下的压箱底玩意儿，只有最后站着的人，才有资格亲手打开。\n",
+      "battle_type": "task1",
+      "guest_only": true,
+      "enemy_guests": [
+        {
+          "key": "hero_sao_di_seng",
+          "label": "扫地僧",
+          "skills": [
+            "iron_wall_heart",
+            "last_chance_revival"
+          ]
+        },
+        {
+          "key": "hero_zhang_sanfeng",
+          "label": "张三丰",
+          "skills": [
+            "taiyi_wind",
+            "draw_enemy_blades"
+          ]
+        },
+        {
+          "key": "hero_dugu_qiubai",
+          "label": "独孤求败",
+          "skills": [
+            "fatal_chain_sword",
+            "prison_break_blade"
+          ]
+        },
+        {
+          "key": "hero_dongfang_bubai",
+          "label": "东方不败",
+          "skills": [
+            "flower_rain",
+            "meteor_pierce_moon"
+          ]
+        },
+        {
+          "key": "hero_shi_zhongjian",
+          "label": "石破天",
+          "skills": [
+            "dragon_roar",
+            "desperate_beast"
+          ]
+        },
+        {
+          "key": "task_huashan_huang_shang",
+          "label": "黄裳"
+        },
+        {
+          "key": "hero_a_qing",
+          "label": "阿青",
+          "skills": [
+            "city_felling_strike",
+            "meteor_pierce_moon"
+          ]
+        },
+        {
+          "key": "hero_xiaoyao_zi",
+          "label": "逍遥子",
+          "skills": [
+            "taiyi_wind",
+            "soul_erode"
+          ]
+        },
+        {
+          "key": "hero_wang_chongyang",
+          "label": "王重阳",
+          "skills": [
+            "thunder_nine_heavens",
+            "comrade_command"
+          ]
+        }
+      ],
+      "enemy_technology": {
+        "level": 10,
+        "guest_level": 100,
+        "guest_bonus": 0.68
+      },
+      "drop_table": {
+        "silver": 120000,
+        "mission_chest_v3_huashan_lunjian_advanced": 1
+      },
+      "base_travel_time": 2400,
+      "daily_limit": 1
+    },
+    "sishui_huaxiong_chengwei": {
+      "key": "sishui_huaxiong_chengwei",
+      "name": "飞将浮沉录：汜水关华雄逞威",
+      "display_order": 1001,
+      "difficulty": "advanced",
+      "description": "汜水关的酒还温着，华雄已经把联军先锋的名册划掉了一大半。他站在关楼上敲着大斧，逢人便问“还有谁”，问得守军都开始替对面捏汗——毕竟再这样下去，联军可能要先输掉士气，再输掉晚饭。\n\n庄园主必须带门客杀穿西凉军，给这位“汜水关话事人”一个正式答复。击败华雄后，夺走军帐中的汜水关战报；那张薄薄的纸，记录着虎牢关布防，也记录着华雄从“逞威”到“闭嘴”的全过程。\n",
+      "battle_type": "task1",
+      "enemy_guests": [
+        {
+          "key": "task_sishui_huaxiong",
+          "label": "华雄"
+        }
+      ],
+      "enemy_troops": {
+        "dao_sheng": 1200,
+        "qiang_wang": 1100,
+        "arrow_god": 900
+      },
+      "enemy_technology": {
+        "level": 10,
+        "guest_level": 92,
+        "guest_bonus": 0.58
+      },
+      "drop_table": {
+        "silver": 90000,
+        "mission_chest_v3_sishui_huaxiong_chengwei": 1
+      },
+      "base_travel_time": 2400,
+      "daily_limit": 1
+    },
+    "hulao_qunying_zhan_lvbu": {
+      "key": "hulao_qunying_zhan_lvbu",
+      "name": "飞将浮沉录：虎牢关群英战吕布",
+      "display_order": 1002,
+      "difficulty": "advanced",
+      "description": "汜水关的战报还没捂热，虎牢关的战鼓已经震得杯中茶水自己站了起来。吕布骑赤兔、执方天画戟，单骑出阵便把诸侯联军的气势砍成了好几段；有人提议讲道理，有人提议先撤退，最后大家一致决定——还是派最能打的上去试试。\n\n进入此关需要消耗一份「汜水关战报」。庄园主须在群英合围中正面击破吕布，并从战场遗物里搜寻方天画戟、龙鳞战甲与赤兔马的踪迹。若能活着离开，还要记得把虎牢关战旗带走——它将是下一场麻烦的入场券。\n",
+      "battle_type": "task1",
+      "entry_cost": {
+        "sishui_battle_report": 1
+      },
+      "enemy_guests": [
+        {
+          "key": "task_hulao_lvbu",
+          "label": "吕布"
+        }
+      ],
+      "enemy_troops": {
+        "dao_sheng": 1500,
+        "qiang_wang": 1500,
+        "jian_sheng": 1300,
+        "quan_sheng": 1000,
+        "arrow_god": 1300
+      },
+      "enemy_technology": {
+        "level": 10,
+        "guest_level": 100,
+        "guest_bonus": 0.72,
+        "guest_skills": [
+          "dragon_roar"
+        ]
+      },
+      "drop_table": {
+        "silver": 110000,
+        "mission_chest_v3_hulao_qunying_zhan_lvbu": 1
+      },
+      "base_travel_time": 2400,
+      "daily_limit": 1
+    },
+    "baimenlou_mingyun_jueze": {
+      "key": "baimenlou_mingyun_jueze",
+      "name": "飞将浮沉录：白门楼命运抉择",
+      "display_order": 1003,
+      "difficulty": "advanced",
+      "description": "虎牢关战旗染血之后，曹军围住下邳，白门楼成了吕布最后的落脚处。高顺在整军，张辽在寻找退路，陈宫在推演一条不必投降的路，臧霸守着最后的旧部；而吕布仍相信，只要再给他一次冲阵的机会，天下就还没有真正决定谁会输。\n\n然而江湖传闻，白门楼风声最紧时，总有一张没有落款的招贤帖在暗中流转。若它最终落到有缘人手中，史书上那句“吕布死于白门楼”未必还能照抄，城楼之下或许会多出一位改旗易帜的绝世猛将；只是新东家能不能压住他的脾气，就要看庄园主自己的本事了。\n\n进入此关需要消耗一面「虎牢关战旗」。庄园主须击破吕布、高顺、张辽、陈宫与臧霸的合围，替这段乱世故事写下最后一笔。\n",
+      "battle_type": "task1",
+      "entry_cost": {
+        "hulao_war_banner": 1
+      },
+      "enemy_guests": [
+        {
+          "key": "task_baimenlou_lvbu",
+          "label": "吕布"
+        },
+        {
+          "key": "task_baimenlou_gaoshun",
+          "label": "高顺"
+        },
+        {
+          "key": "task_baimenlou_zhangliao",
+          "label": "张辽"
+        },
+        {
+          "key": "task_baimenlou_chengong",
+          "label": "陈宫"
+        },
+        {
+          "key": "task_baimenlou_zangba",
+          "label": "臧霸"
+        }
+      ],
+      "enemy_troops": {
+        "dao_sheng": 1800,
+        "qiang_wang": 1700,
+        "jian_sheng": 1600,
+        "quan_sheng": 1200,
+        "arrow_god": 1500
+      },
+      "enemy_technology": {
+        "level": 10,
+        "guest_level": 100,
+        "guest_bonus": 0.8
+      },
+      "drop_table": {
+        "silver": 180000,
+        "mission_chest_v3_baimenlou_mingyun_jueze": 1
+      },
+      "base_travel_time": 2700,
+      "daily_limit": 1
+    },
+    "yaolu_hujing": {
+      "key": "yaolu_hujing",
+      "name": "药庐护经",
+      "difficulty": "junior",
+      "description": "山中药师携经归庐，却被成群盗匪堵住山道。刀客结阵护住匪首，匪首伺机快攻。护送药师脱险，药庐愿以珍藏经卷相赠。",
+      "battle_type": "task1",
+      "is_defense": false,
+      "guest_only": false,
+      "enemy_guests": [
+        {
+          "key": "task_cultivation_road_blade",
+          "skills": [
+            "iron_wall_heart"
+          ],
+          "label": "拦路刀客"
+        },
+        {
+          "key": "task_cultivation_road_blade",
+          "skills": [
+            "iron_wall_heart"
+          ],
+          "label": "拦路刀客"
+        },
+        {
+          "key": "task_cultivation_road_blade",
+          "skills": [
+            "iron_wall_heart"
+          ],
+          "label": "拦路刀客"
+        },
+        {
+          "key": "task_cultivation_road_blade",
+          "skills": [
+            "iron_wall_heart"
+          ],
+          "label": "拦路刀客"
+        },
+        {
+          "key": "task_cultivation_road_blade",
+          "skills": [
+            "iron_wall_heart"
+          ],
+          "label": "拦路刀客"
+        },
+        {
+          "key": "task_cultivation_road_blade",
+          "skills": [
+            "iron_wall_heart"
+          ],
+          "label": "拦路刀客"
+        },
+        {
+          "key": "task_cultivation_bandit_leader",
+          "skills": [],
+          "label": "劫经匪首"
+        }
+      ],
+      "enemy_troops": {},
+      "enemy_technology": {
+        "level": 7,
+        "guest_level": 35,
+        "guest_bonus": 0.12
+      },
+      "entry_cost": {},
+      "drop_table": {
+        "mission_chest_v3_yaolu_hujing": 1
+      },
+      "probability_drop_table": {},
+      "available_weekdays": [],
+      "display_order": 9,
+      "base_travel_time": 1800,
+      "daily_limit": 2,
+      "mission_card_daily_limit": 0
+    },
+    "xisui_yougu": {
+      "key": "xisui_yougu",
+      "name": "洗髓幽谷",
+      "difficulty": "intermediate",
+      "description": "幽谷药香不散，剑客结阵守谷，药师以言语扰敌。闯过守谷人的考验，便可带走谷中修行珍品。只重护甲，未必挡得住药师的攻势。",
+      "battle_type": "task1",
+      "is_defense": false,
+      "guest_only": false,
+      "enemy_guests": [
+        {
+          "key": "task_cultivation_valley_swordsman",
+          "skills": [
+            "iron_wall_heart"
+          ],
+          "label": "守谷剑客"
+        },
+        {
+          "key": "task_cultivation_valley_swordsman",
+          "skills": [
+            "iron_wall_heart"
+          ],
+          "label": "守谷剑客"
+        },
+        {
+          "key": "task_cultivation_valley_swordsman",
+          "skills": [
+            "iron_wall_heart",
+            "fatal_chain_sword"
+          ],
+          "label": "守谷剑客"
+        },
+        {
+          "key": "task_cultivation_valley_healer",
+          "skills": [
+            "flower_rain",
+            "steadfast_planning"
+          ],
+          "label": "幽谷药师"
+        },
+        {
+          "key": "task_cultivation_valley_healer",
+          "skills": [
+            "flower_rain",
+            "steadfast_planning"
+          ],
+          "label": "幽谷药师"
+        },
+        {
+          "key": "task_cultivation_valley_healer",
+          "skills": [
+            "flower_rain",
+            "steadfast_planning"
+          ],
+          "label": "幽谷药师"
+        }
+      ],
+      "enemy_troops": {
+        "arrow_god": 800,
+        "qiang_wang": 800,
+        "quan_sheng": 800
+      },
+      "enemy_technology": {
+        "level": 10,
+        "guest_level": 85,
+        "guest_bonus": 0.3
+      },
+      "entry_cost": {},
+      "drop_table": {
+        "mission_chest_v3_xisui_yougu": 1
+      },
+      "probability_drop_table": {},
+      "available_weekdays": [],
+      "display_order": 1000,
+      "base_travel_time": 1800,
+      "daily_limit": 2,
+      "mission_card_daily_limit": 0
+    },
+    "yijin_mijing": {
+      "key": "yijin_mijing",
+      "name": "易筋秘境",
+      "difficulty": "advanced",
+      "description": "古寺深处别有洞天。金刚护法引敌护阵，明心护法诵经伤敌，伏魔护法快攻破阵。胜过三位护法，可获经卷、灵丹与遗留武学。",
+      "battle_type": "task1",
+      "is_defense": false,
+      "guest_only": false,
+      "enemy_guests": [
+        {
+          "key": "task_cultivation_vajra_guard",
+          "label": "金刚护法",
+          "skills": [
+            "iron_wall_heart",
+            "draw_enemy_blades"
+          ]
+        },
+        {
+          "key": "task_cultivation_mind_guard",
+          "label": "明心护法",
+          "skills": [
+            "tangseng_sermon",
+            "steadfast_planning"
+          ]
+        },
+        {
+          "key": "task_cultivation_demon_guard",
+          "label": "伏魔护法",
+          "skills": [
+            "meteor_pierce_moon"
+          ]
+        }
+      ],
+      "enemy_troops": {
+        "arrow_god": 300,
+        "quan_sheng": 700
+      },
+      "enemy_technology": {
+        "level": 9,
+        "guest_level": 80,
+        "guest_bonus": 0.26
+      },
+      "entry_cost": {},
+      "drop_table": {
+        "mission_chest_v3_yijin_mijing": 1
+      },
+      "probability_drop_table": {},
+      "available_weekdays": [],
+      "display_order": 1000,
+      "base_travel_time": 1800,
+      "daily_limit": 1,
+      "mission_card_daily_limit": 0
+    },
+    "guild_personal_zhenlong_qipu": {
+      "key": "guild_personal_zhenlong_qipu",
+      "name": "白蛇盗仙草",
+      "display_order": 1301,
+      "difficulty": "junior",
+      "description": "端午一杯雄黄酒，白素贞现出原形，许仙惊惧倒地，命悬一线。为救丈夫，白素贞远赴昆仑仙山，求取能起死回生的灵芝仙草。帮会收到小青的求援，请你带门客入山相助。\n\n仙草近在眼前，鹤童与鹿童却拦住去路：鹤童身法轻灵，以奇策突袭扰乱来人；鹿童守住药圃，以铁壁心法抵挡攻势。击退二童，助白素贞带草归杭，让断魂之人重回人间。\n",
+      "battle_type": "task1",
+      "guest_only": true,
+      "enemy_guests": [
+        {
+          "key": "task_legend_crane_attendant",
+          "label": "鹤童",
+          "skills": [
+            "stratagem_burst"
+          ]
+        },
+        {
+          "key": "task_legend_deer_attendant",
+          "label": "鹿童",
+          "skills": [
+            "iron_wall_heart"
+          ]
+        }
+      ],
+      "enemy_technology": {
+        "level": 7,
+        "guest_level": 80,
+        "guest_bonus": 0.28
+      },
+      "drop_table": {
+        "silver": 40000,
+        "grain": 50000,
+        "guild_contribution": 100,
+        "red_ruby": {
+          "chance": 0.1,
+          "count": {
+            "min": 1,
+            "max": 2
+          }
+        }
+      },
+      "available_weekdays": [],
+      "base_travel_time": 1200,
+      "daily_limit": 10,
+      "mission_card_daily_limit": 0
+    },
+    "guild_personal_shaolin_night_shadow": {
+      "key": "guild_personal_shaolin_night_shadow",
+      "name": "八仙渡东海",
+      "display_order": 1302,
+      "difficulty": "intermediate",
+      "description": "八仙行至东海，不乘云驾雾，各执法宝渡海：铁拐李抛下葫芦，汉钟离展开芭蕉扇，吕洞宾踏剑逐浪，何仙姑立于荷花之上。正当众仙各显神通，海面忽然翻涌，龙宫水族拦住去路。\n\n蟹将横甲在前，引敌护阵；虾兵持刃突进，专打立足未稳之人；东海龙王居中发出龙吟，震得浪头齐起。帮会应邀助阵，请你带门客破开水族封锁，助八仙平安渡海。\n",
+      "battle_type": "task1",
+      "guest_only": true,
+      "enemy_guests": [
+        {
+          "key": "task_legend_crab_general",
+          "label": "蟹将",
+          "skills": [
+            "iron_wall_heart",
+            "draw_enemy_blades"
+          ]
+        },
+        {
+          "key": "task_legend_shrimp_vanguard",
+          "label": "虾兵先锋",
+          "skills": [
+            "meteor_pierce_moon"
+          ]
+        },
+        {
+          "key": "task_legend_east_sea_dragon",
+          "label": "东海龙王",
+          "skills": [
+            "dragon_roar"
+          ]
+        }
+      ],
+      "enemy_technology": {
+        "level": 9,
+        "guest_level": 94,
+        "guest_bonus": 0.46
+      },
+      "drop_table": {
+        "silver": 120000,
+        "grain": 150000,
+        "guild_contribution": 300,
+        "red_ruby": {
+          "chance": 0.2,
+          "count": {
+            "min": 1,
+            "max": 3
+          }
+        }
+      },
+      "available_weekdays": [],
+      "base_travel_time": 1500,
+      "daily_limit": 10,
+      "mission_card_daily_limit": 0
+    },
+    "zhanlong_yanshan_shizi": {
+      "key": "zhanlong_yanshan_shizi",
+      "name": "战龙在野第一关：北地燕山初识子龙",
+      "display_order": 1004,
+      "difficulty": "advanced",
+      "description": "北地入秋，燕山古道霜寒马瘦。连年兵乱让沿途村庄十室九空，逃难百姓带着仅剩的粮食与家当，沿山道向南求生。溃兵出身的寨主铁背熊却盘踞险隘，劫粮掠财，将不肯交出财物的百姓扣在山口。商路由此断绝，附近村民也无人敢再上山。\n\n庄园主押运物资途经山下，忽有伤者拦路求援：一名白袍小将为救被困百姓，独骑闯入匪阵，已在山口苦战多时。此人自称常山赵云，枪法凌厉，却因顾念身后老幼，始终无法放手突围。铁背熊披甲持锤堵住正道，故意招锋引敌，坡上弓手正趁他吸引火力之际张弓搭箭。\n\n山道狭窄，伏兵将成。还请庄园主率门客抢攻坡口，击溃拦路匪众，助这位素未谋面的白袍小将解开眼前危局。坡上三千八百箭神先发制人，拳系护院可凭远程防护抵住开场箭雨，并以克弓之长压制弓阵；门客仍须应付寨主引敌与重锤，兼顾破阵和攻坚。\n",
+      "battle_type": "task1",
+      "enemy_guests": [
+        {
+          "key": "task_zhanlong_tiebeixiong",
+          "label": "燕山寨主·铁背熊"
+        }
+      ],
+      "enemy_troops": {
+        "dao_sheng": 500,
+        "qiang_wang": 500,
+        "arrow_god": 3800
+      },
+      "enemy_technology": {
+        "level": 10,
+        "guest_level": 92,
+        "guest_bonus": 0.58
+      },
+      "drop_table": {
+        "silver": 90000,
+        "mission_chest_v3_zhanlong_yanshan_shizi": 1
+      },
+      "available_weekdays": [],
+      "base_travel_time": 2400,
+      "daily_limit": 1,
+      "mission_card_daily_limit": 5
+    },
+    "zhanlong_changban_tuwei": {
+      "key": "zhanlong_changban_tuwei",
+      "name": "战龙在野第二关：龙战长坂七进七出",
+      "display_order": 1005,
+      "difficulty": "advanced",
+      "description": "荆襄骤变，曹军铁骑昼夜南下。刘备携百姓撤往江陵，军民相杂，车仗连绵，行至当阳长坂时，被曹军前锋追及。仓促之间，队伍四散，粮车倾覆，家眷失落；漫山遍野尽是奔逃的人影，呼救声淹没在马蹄与战鼓之中。\n\n混乱之际，有人看见一员白袍将军逆着人潮杀回阵中，正是昔日燕山相识的赵子龙。刘备的家眷仍陷在重围深处，他不肯独自撤离，正在曹军阵间往返寻人。虎豹骑统领曹纯却已收拢精骑，以迅疾突击截杀外围接应之人，几条通往长坂桥的道路正被逐一封锁。\n\n旧日所赠的白马银枪令尚在手中，故人却已身陷生死之地。此行需消耗一枚「白马银枪令」，请庄园主率门客突入长坂乱军，击破曹纯与四千四百嗜血铁骑的拦截，替赵云打开接应之路。铁骑已研习全部满级专属科技，不受五行兵种克制；宜以防御、反击或反伤护院承受先攻，以门客输出击倒曹纯，使其督战增伤从下一轮起失效。曹纯生命低于三成时将进入狂暴，运势增加100，其他属性不变，虎豹奔袭转为攻击三人，需兼顾输出与残血阶段的承伤。\n",
+      "battle_type": "task1",
+      "entry_cost": {
+        "zhanlong_white_horse_token": 1
+      },
+      "enemy_guests": [
+        {
+          "key": "task_zhanlong_caochun",
+          "label": "曹纯"
+        }
+      ],
+      "enemy_troops": {
+        "bloodthirsty_cavalry": 4400
+      },
+      "enemy_technology": {
+        "level": 10,
+        "levels": {
+          "wolf_force": 10,
+          "wolf_defense": 10,
+          "wolf_hp": 10,
+          "wolf_agility": 10,
+          "wolf_berserk": 5
+        },
+        "guest_level": 96,
+        "guest_bonus": 0.66
+      },
+      "drop_table": {
+        "silver": 110000,
+        "mission_chest_v3_zhanlong_changban_tuwei": 1
+      },
+      "available_weekdays": [],
+      "base_travel_time": 2400,
+      "daily_limit": 1,
+      "mission_card_daily_limit": 5
+    },
+    "zhanlong_changban_duanqiao": {
+      "key": "zhanlong_changban_duanqiao",
+      "name": "战龙在野第三关：长坂桥张飞断水流",
+      "display_order": 1006,
+      "difficulty": "advanced",
+      "description": "长坂桥前，张飞横矛立马，怒目巡视来路。桥后树林烟尘滚滚，旌旗时隐时现，战马奔踏之声连绵不绝。逃来的散卒惊呼林中伏有百万大军，连追至岸边的曹军也勒马驻足，不敢贸然向前。\n\n庄园主率门客赶到桥头，尚未来得及通报身份，便被张飞一声断喝拦住。如今败军之中真假难辨，曹军又有乔装混入之嫌，他奉命守桥，绝不肯放来历未明的武装队伍靠近。桥后尚有百姓等待撤离，要取得信任，还须当面试过本领与胆色。\n\n桥后尘土愈起愈高，林中究竟藏着多少兵马，无人看得分明。眼前那杆丈八蛇矛却已缓缓抬起。此行需消耗一枚「长坂护主令」，请庄园主整顿队伍，迎接张翼德的桥头考验。桥头张飞武力650、防御480、敏捷400，虎啸龙吟伤害倍率为演武版本的两倍，生命低于两成后改为同时攻击两人。重矛之下，宜由高防减伤门客承担风险，辅以眩晕技能争取输出机会；护院仍需抵住守桥铁骑的持续冲击，阵容须兼顾控制、承伤与攻坚。\n",
+      "battle_type": "task1",
+      "entry_cost": {
+        "zhanlong_changban_guard_token": 1
+      },
+      "enemy_guests": [
+        {
+          "key": "task_zhanlong_zhangfei_bridge",
+          "label": "张飞"
+        }
+      ],
+      "enemy_troops": {
+        "bloodthirsty_cavalry": 5400
+      },
+      "enemy_troops_display": {
+        "bloodthirsty_cavalry": 1000000
+      },
+      "enemy_technology": {
+        "level": 10,
+        "levels": {
+          "wolf_force": 10,
+          "wolf_defense": 10,
+          "wolf_hp": 10,
+          "wolf_agility": 10,
+          "wolf_berserk": 5
+        },
+        "guest_level": 100,
+        "guest_bonus": 0.74
+      },
+      "drop_table": {
+        "silver": 130000,
+        "mission_chest_v3_zhanlong_changban_duanqiao": 1
+      },
+      "available_weekdays": [],
+      "base_travel_time": 2400,
+      "daily_limit": 1,
+      "mission_card_daily_limit": 5
+    },
+    "zhanlong_wuhu_shizhen": {
+      "key": "zhanlong_wuhu_shizhen",
+      "name": "战龙在野第四关：谁人德行服赵云",
+      "display_order": 1007,
+      "difficulty": "advanced",
+      "description": "自长坂一别，岁月流转，蜀中五虎如今已齐聚军前。庄园主昔日在燕山护民、长坂接应的经历，经赵云举荐传入刘备耳中。一封演武邀书送到庄园，邀众门客入营会武，也请庄园主当面谈一谈乱世之中如何待人、如何用人。\n\n演武场上，关羽按刀镇住阵脚，张飞持矛蓄势，赵云银枪穿阵，马超策马游走，黄忠在后方搭箭观阵。五人各有所长，彼此照应：重刀可破甲，蛇矛能聚力，银枪横扫三人并追击残血，快马压迫全阵，强弓专寻伤处。赵云虽是旧识，今日仍将亲自入阵，检验庄园门客的武艺与主人的临阵取舍。\n\n仁义之名须见诸行事，举荐之情也须以本领相承。此行需消耗一封「当阳义勇书」，请庄园主率众赴约，在五虎合阵之前展现庄园的担当。\n",
+      "battle_type": "task1",
+      "entry_cost": {
+        "zhanlong_dangyang_valor_letter": 1
+      },
+      "enemy_guests": [
+        {
+          "key": "task_zhanlong_guanyu",
+          "label": "关羽"
+        },
+        {
+          "key": "task_zhanlong_zhangfei",
+          "label": "张飞"
+        },
+        {
+          "key": "task_zhanlong_zhaoyun",
+          "label": "赵云"
+        },
+        {
+          "key": "task_zhanlong_machao",
+          "label": "马超"
+        },
+        {
+          "key": "task_zhanlong_huangzhong",
+          "label": "黄忠"
+        }
+      ],
+      "enemy_troops": {
+        "dao_sheng": 900,
+        "qiang_wang": 900,
+        "jian_sheng": 900,
+        "quan_sheng": 700,
+        "arrow_god": 900
+      },
+      "enemy_technology": {
+        "level": 10,
+        "guest_level": 100,
+        "guest_bonus": 0.78
+      },
+      "drop_table": {
+        "silver": 180000,
+        "mission_chest_v3_zhanlong_wuhu_shizhen": 1
+      },
+      "available_weekdays": [],
+      "base_travel_time": 2700,
+      "daily_limit": 1,
+      "mission_card_daily_limit": 5
+    },
+    "guild_personal_yanziwu_secret_letter": {
+      "key": "guild_personal_yanziwu_secret_letter",
+      "name": "沉香劈山救母",
+      "display_order": 1303,
+      "difficulty": "advanced",
+      "description": "三圣母因与凡人相爱，被二郎神压在华山之下。沉香长大后得知身世，历经艰险，终于持斧来到山前。山腹深处，母亲的声音依稀可闻；山门之外，守山之阵尚未松动。\n\n梅山守将披甲当关，哮天犬踏石扑来，二郎神持三尖两刃刀立于高处。帮会愿为这场救母之行出一份力，请你带门客迎战守军，为沉香争得劈山的一刻，让母子终能相见。\n",
+      "battle_type": "task1",
+      "guest_only": true,
+      "enemy_guests": [
+        {
+          "key": "task_legend_meishan_guard",
+          "label": "梅山守将",
+          "skills": [
+            "iron_wall_heart",
+            "draw_enemy_blades"
+          ]
+        },
+        {
+          "key": "task_legend_celestial_hound",
+          "label": "哮天犬",
+          "skills": [
+            "meteor_pierce_moon",
+            "desperate_beast"
+          ]
+        },
+        {
+          "key": "task_legend_erlang_shen",
+          "label": "二郎神",
+          "skills": [
+            "shenyi_poxu",
+            "steadfast_planning"
+          ]
+        }
+      ],
+      "enemy_technology": {
+        "level": 10,
+        "guest_level": 100,
+        "guest_bonus": 0.68
+      },
+      "drop_table": {
+        "silver": 280000,
+        "grain": 350000,
+        "guild_contribution": 600,
+        "red_ruby": {
+          "chance": 0.28,
+          "count": {
+            "min": 1,
+            "max": 5
+          }
+        }
+      },
+      "available_weekdays": [],
+      "base_travel_time": 1800,
+      "daily_limit": 10,
+      "mission_card_daily_limit": 0
+    }
+  },
+  "methodology": {
+    "data_scope": "按当前工作区YAML中的任务、敌将、技能、兵种与科技配置评估；不读取运行中游戏库的旧参数",
+    "threshold": 0.7,
+    "rating": "在首次达到70%胜率的相邻基准梯度间插值并向上取整为1至128分；最高梯度仍未达标时记128分",
+    "icons": "4星=1月亮，4月亮=1太阳，4太阳=1皇冠；允许不同图标混合显示，128分=双皇冠",
+    "players": "标准品质成长，2武1文循环，合法技能，装备按四维等额属性补正建模",
+    "troops": "遵守各梯度带兵容量；仅门客任务禁用护院；己方科技独立于敌方科技",
+    "defense": "保留攻守侧翻转，使用同档固定守军，不计城墙与箭塔；正式防守可使用全体闲置门客和库存护院",
+    "player_bonuses": "玩家采用基准科技，不计器械及帮会科技加成；装备按四维等额属性补正建模",
+    "limitations": "相对难度参考；不承诺特定实际门客、装备或技能搭配必定通关"
+  },
+  "total_battles": 18920,
+  "elapsed_seconds": 258.84,
+  "source_sha256": {
+    "data/mission_templates.yaml": "a37544275d886c513d47335b10415cfcfda40e55c5ce0d3bf2bfa7f804ccc91e",
+    "data/guest_skills.yaml": "b5e12a98728ee71d6ce2ac2ec01f3f1cad5a7081a5e1c591a9715a69895cdc2f",
+    "data/guest_templates.yaml": "f1f2dc9f7848ff459f04cfd94b24d649d7952e28e456378dc45401ee775eba0b",
+    "data/guest_growth_rules.yaml": "c3ac24912ae8a63e14668fbc12c74935e75a9998835c5a62305e79d329a6da7f",
+    "data/troop_templates.yaml": "2a9364ba494f1c1f86f96035b02008be3c3a0e7c77d258cce1f4f43af94868d8",
+    "data/technology_templates.yaml": "d79018fcfcf2752660d691ff73cff547481b79d5476c53d7f57c6fb3110bdb9b",
+    "data/guests/base.yaml": "c8486b98a686039b97b132e8306a1b603590bced63b49b545a74610cafa39b94",
+    "data/guests/chiyou_exchange.yaml": "cec21603b91a89ee3f3055765d790d204a1c62bf7c1b6df22dc14bdbf5b45bfd",
+    "data/guests/cultivation.yaml": "8a1b768110c52aab6b9af9a2ee7bf01ab9a0cbde4b32c4fe510420dc9bcf7960",
+    "data/guests/custom.yaml": "148ddf784361cdadb4f1d158b64f9bf746da1fc6e1dc5e3994d08151e4bfac83",
+    "data/guests/fengyun.yaml": "e4176d509cc66799a77ae1d1aab1cdfc3b72cd8abfe7a56b8601173491fd0647",
+    "data/guests/folk_legends.yaml": "5ae2cece5c302f4f477711a93e3b3ffbf46f89274bee2644dc56772d93b74044",
+    "data/guests/gulong.yaml": "4b7293b2328d49ae66fdb152bb5450b56eec87e46eaf0498078bccbcad23871f",
+    "data/guests/gulong_ilrock_01.yaml": "5770ce48c2770f2be65ad34a8a971a85c15c8a2e14f80d8735f20eaa6223732e",
+    "data/guests/hermits.yaml": "ca69f918a358de6331d20d6702fd79048f17a605193df8f45475678a35adb882",
+    "data/guests/history_ilrock_01.yaml": "82c8ce3474a03c20bf294aab7a00a1ca1ab7d3c188acdd079299ff449750a5b9",
+    "data/guests/history_mingqing_01.yaml": "dbdc305a367f7c960baeea49a334f09a91524691d847a308b399092c3a6766c5",
+    "data/guests/history_mingqing_02.yaml": "db7ac0e850bd3a0de352e0332f7ccff4fef41a24333bf459672c888927bdfd81",
+    "data/guests/history_mingqing_03.yaml": "5b9b6b41378b6d8d8fadfbac9baf1d1fbbfd52c731dd74d01fb56c97bbddcee7",
+    "data/guests/history_mingqing_04.yaml": "1a6a154c73ba173f7623d0728bf80ff00ee1bed278e11362716c7603dfbef71e",
+    "data/guests/history_mingqing_05.yaml": "593a0c558b79afda03efffce8103b316f721f1ecb48416f011f44bb6a75fb7e5",
+    "data/guests/history_mingqing_06.yaml": "bd6d50d2d96de328eb93cf424fed962505b14b4a14295ca0840411c102512f99",
+    "data/guests/history_mingqing_07.yaml": "8bc0fe80d9c4c2e406f6075fef246c57148a0564413f92de9ddde0233e47bf26",
+    "data/guests/history_mingqing_08.yaml": "cb25327fb636eab96f57b931187c728d25878d113112b0478d002238e0bbe10f",
+    "data/guests/history_mingqing_09.yaml": "58072b013619fc06f126546a6031fe20dea9711f99cccd13bc118c3153932bb1",
+    "data/guests/history_qinhan_01.yaml": "564927902aacced57878adc0ada1f3a66f71a403beaeaf859a11c4a92a44becf",
+    "data/guests/history_qinhan_02.yaml": "515f7a3a236aed8ee95a861fd5bcd4512b8af6bf3bccb872aa988187c0fceee2",
+    "data/guests/history_qinhan_03.yaml": "c5ae87be0eb7ca6fb6310d76babc8bb5b3740af09e7dabcb62f06374a00df74e",
+    "data/guests/history_qinhan_04.yaml": "46e69789fdf615e9b129ffec2f0845ab28c55b3062d33121fe5ca0550342ac8c",
+    "data/guests/history_qinhan_05.yaml": "7ce7fef41dd90a8b3d938c74c5b19105eb950c1e4000fe4c8765f8e0f0bee23b",
+    "data/guests/history_qinhan_06.yaml": "3b4d51d81381b0cd84dec6de1c65272f8b6444d1e17de33cfcb697b63c8a3939",
+    "data/guests/history_qinhan_07.yaml": "afeacbef159f6fb19852bbde86be2939b58fdcc34d39ae1ed624195f50a54acb",
+    "data/guests/history_qinhan_08.yaml": "979cf3440430916ce5999b2ad1def309a556d81c746a4b3d19ed7c14b76ab9e5",
+    "data/guests/history_qinhan_09.yaml": "a2013dd90963075a784223418e3fbf11e0e2456ef99540d92b76339c98ff84ef",
+    "data/guests/history_sljnbc_01.yaml": "d8c41363496dfdbfa24c0d1021ec98cca3d30c7c969c2e332a41af26e473635c",
+    "data/guests/history_sljnbc_02.yaml": "a23362b8dfc80c9f30f16e12a3e8ef7e12e31cb4845af69e909b8ca76e6d0394",
+    "data/guests/history_sljnbc_03.yaml": "2aa754f17b4fd26fe0c16bbbdfa83e7d2fd11d9fe57a8c7964c2a2f3b76c00bf",
+    "data/guests/history_sljnbc_04.yaml": "7e2dcc48bbfb5abfe5282f1f9f481f33def6683fc2f42fb9806c011507d2021f",
+    "data/guests/history_sljnbc_05.yaml": "87280a25410e2ee1123fb5bbec42e9ded3f1b06c8970c2cc99ff127627f114d4",
+    "data/guests/history_sljnbc_06.yaml": "bb38d81239bd27efc0445388f0401652f007e797529ef5395eb3bb265e834b9f",
+    "data/guests/history_sljnbc_07.yaml": "41b48d63f078e60579b6f902e5a3c340b7da77614531432c959b0705fdb2bd86",
+    "data/guests/history_sljnbc_08.yaml": "9f85f2d1371b69672046c5d5b46e1a4dad6e7e265561acaaff35862a8b0fc199",
+    "data/guests/history_sljnbc_09.yaml": "964ea3add29358f7d7a69fa4aed88ed66798e4b9f26b64372e4454821e7bd462",
+    "data/guests/history_sljnbc_10.yaml": "f5814edfce99fe427779fdd0c6672b88171a8bda42aaafa4a8f561d923abdb6e",
+    "data/guests/history_sljnbc_11.yaml": "5838c6ff10e23802cf779dc163ff75cbbf2cf129e446357a9cf2a26080db16b8",
+    "data/guests/history_songliaojinyuan_01.yaml": "61eb9cca78233f9fc48ebe701ef0bf2913f482e4a13a95ba03b3535e5c49f1db",
+    "data/guests/history_songliaojinyuan_02.yaml": "126373d56a7eda57b38776b4964936861938f3096cd426b60555633ce666c208",
+    "data/guests/history_songliaojinyuan_03.yaml": "a9ffe0b31ec23c38cdd5c000325fe8c885b7b28d0aab4f10a8c6f48916c66849",
+    "data/guests/history_songliaojinyuan_04.yaml": "02fd4b5da53edecce5a77931742a28f9235666924a419c020812a5aa0c6ecdcb",
+    "data/guests/history_songliaojinyuan_05.yaml": "7138100ce3d9d4a17e63883d6dfa0f6f31e7897df61b84ca9d11e62abb07ef37",
+    "data/guests/history_songliaojinyuan_06.yaml": "a87d77ba19c8d0de60c998cecb246b4d3282b15b0eb675c58fd337a62f1471f6",
+    "data/guests/history_songliaojinyuan_07.yaml": "1422d375fbf65694c437ba542672f0c50e65f2c9492423a2a30ff660fc6d9a28",
+    "data/guests/history_songliaojinyuan_08.yaml": "3b03f3a49a101453ce7d11b8134836da5aa74474980112429bd6f018e65d114e",
+    "data/guests/history_songliaojinyuan_09.yaml": "e6208a6a7b7e5867cc08db2daf37028227116bff47f7303023deedfb3a4d32ec",
+    "data/guests/history_songliaojinyuan_10.yaml": "e3a2e141b1b0ecdddc05aa929c93bf7636033fdc6aa34fcecd05a96b20b0673c",
+    "data/guests/history_songliaojinyuan_11.yaml": "8717f855172734b2d76a9abb6dc577be335451278744ac6748f43a89702e0242",
+    "data/guests/history_suitang_01.yaml": "23382ffc7d60f0e439ae3a5e2585e7da86ba71af3c4846b7c532c913e099cb7e",
+    "data/guests/history_suitang_02.yaml": "446c6831a643853f24abc7ea796e86b23c349aaab15b60be5efc6d97e902f5e0",
+    "data/guests/history_suitang_03.yaml": "4cf684b63240c4565c207c752f9ab7fb97f2e801b4bee9f696ce220b1f98236b",
+    "data/guests/history_suitang_04.yaml": "984a190282d947db0549af0b1b29be758e12fc8c686a906ad77730d28dfd076a",
+    "data/guests/history_suitang_05.yaml": "e7d5d07095a9d4afb2c25f089417d6ef6068f3c0e5640684236363e31e19a145",
+    "data/guests/history_suitang_06.yaml": "fcaeca302444979d60076399b840c49433d5d58a274ebbad239c05792bf05fa2",
+    "data/guests/history_suitang_07.yaml": "88561e7ec41f0cb5645bb731b48247b0f51733206e1ed07e188640c46f4988d8",
+    "data/guests/history_suitang_08.yaml": "af8a35d9fbf4fe03ef1900395c15f4bdefea299ef218e9e51ef3afc15a38db91",
+    "data/guests/history_suitang_09.yaml": "28f9330c58af91c0cd3623d082e0a1b813e413f274ab03f32565d08338335909",
+    "data/guests/history_suitang_10.yaml": "33c511164c7d665438e2d194ace79c403ca00beaffb47c9daf7ec5b98496b79d",
+    "data/guests/history_xianqin_01.yaml": "63ac3013288da9a80a328d331d9c34384b351b6e232ce752417920730fbf1228",
+    "data/guests/history_xianqin_02.yaml": "6e8632bc8b14ee870b62bae01a324f270f818bce8e5c11bf300d2bd40a150606",
+    "data/guests/history_xianqin_03.yaml": "43cb32609ca8e2f634423105b68060f124638577e8c4adb394a7eadd0d69c599",
+    "data/guests/history_xianqin_04.yaml": "15fea421e717c5520d21e8c707958345700b113ee30d71c6afc67dad142bd33c",
+    "data/guests/history_xianqin_05.yaml": "69bfb9f51d613c472da287093dc9741122c3b000a8a0f64e803710deb1afb52a",
+    "data/guests/history_xianqin_06.yaml": "8469d241eab679278e63ca2140fafb2c5e7531fc6a82927053ccb66290667c83",
+    "data/guests/history_xianqin_07.yaml": "2e853142459fbee449a85e399660ada7f6644f2dba222e11df351d835f5a67f8",
+    "data/guests/history_xianqin_08.yaml": "5d19b35c42886c5d82d8a2a159f8ef7795bcb84e6afe07848fca3ba8a64cffac",
+    "data/guests/history_xianqin_09.yaml": "d202c5b25a776dd116c8232de2e022b9571075cf09903efffe8902ae1439678c",
+    "data/guests/history_xianqin_10.yaml": "005aaf4b39212a2f2abe34e7f5ac79c5a333dc102ce347a2fd7e4b474c1f4c24",
+    "data/guests/huangyi.yaml": "ac780ece4a127f56e3cc32f73b20988e3e89dfb3ae07740d3d59994da369c945",
+    "data/guests/huangyi_ilrock_01.yaml": "adc36288d2b19041aaac24d36631afa8ca3ad6c436b0ddb6292ee64b291064ca",
+    "data/guests/jinyong.yaml": "ac81a2ac82e880f8a1ccf665804bbeafe199a23051dfcc8680dfe8d24c7e9fc7",
+    "data/guests/kunlun.yaml": "ec04dc7faf7d9709f76c785ca2877dcaac52c4989cf89e3cfa924fdadf3ea6d1",
+    "data/guests/liangyshen.yaml": "8b13056c4342b3631a642eecec7cdcb4601c0eb3ce5c1b9beae70cb141dcc83b",
+    "data/guests/original.yaml": "f1176388220fa95682b853e750539d9ad4cb7938fcca0934b1238c4fde9d9756",
+    "data/guests/sanguoyanyi.yaml": "dc1339a1be00bfd981da8256f3613f4d6add591ca15cf1e7a78d81a3efe76e21",
+    "data/guests/shuihu.yaml": "334f301dd6eb8160803d9a027ef5407a88f5b59737ea3791f5ae689499b967e0",
+    "data/guests/special.yaml": "ca2e37cd42cc725fdc9d32415208d85b10787b98a6e0d7f3b840737efcc8027a",
+    "data/guests/suitang.yaml": "57433c7182fbdd9e912094833df0745c931a73310ff058b4259bfa4501137d92",
+    "data/guests/surname_li.yaml": "2976f894aa6b4ef33017d6115ed6d8c386d3d0f7c7657ab4f5adafd28dac7bf2",
+    "data/guests/wenruian.yaml": "084d6e009d0a3a07ad68e102be3dc8cedb707041c46810c37f96df094956204b",
+    "data/guests/zhanlong.yaml": "7c43446234d375d335886dabc37687490e11d9bd75f8c1fc0f9a2a84cc7d3cc2",
+    "battle/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "battle/active_config.py": "0c1b4efc11769c4ca77e26b7c21dbf776b9d2dedf283c6d02f9d13ffbaa54073",
+    "battle/admin.py": "4bc2cfb4f7161557e4161f6734e298f7b513147ae6baf6d8bf4a6379e38868a6",
+    "battle/apps.py": "2274de89c2882217592df09775c164125fecadfc38b716f9bfe19b2178aacd20",
+    "battle/arena_coop.py": "27e5f04ed74d50a96fff712a68126ef70fe8fac556473681ddb207a0f66a7454",
+    "battle/city_defense.py": "bfde6044f4b22a21b6366dcacd660be50666accf6f79362db3a5156e1924b115",
+    "battle/combat_math.py": "9eb3edaf6668a9c8a89e11b89fc25bda90addc9b2bff65ddfba4d6c8f2dd516a",
+    "battle/combatants_pkg/__init__.py": "1186e316deb07d61e812b99e8cb5be6030270e30435ae92d4159f388edd7d896",
+    "battle/combatants_pkg/ai_generator.py": "7d40b304e24c71998050273f165888981ec7ab874b164bad8172bf725f9100de",
+    "battle/combatants_pkg/cache.py": "ec7dcdae5692a7a4a625e8ac0bb9234105049d6ae200ed5063fae6e34c56fc11",
+    "battle/combatants_pkg/core.py": "7eca10b8b77c390ac2d4133ffff3dad1abd20ed5fe8a98032476ce790838f27c",
+    "battle/combatants_pkg/guest_builder.py": "619c3e412fb2719cc5825f3fd737d53cf71713a631da3a586c34b3853957cf69",
+    "battle/combatants_pkg/tech_effects.py": "1af7bfdd909041bbbb9a09b1837b97af1f4cd1ab7844a1e37efaf97a60849691",
+    "battle/combatants_pkg/troop_builder.py": "a18a8d39153e6492a0702f02b0343fcf055608e8a24574c4e725d3f8cac262c6",
+    "battle/combatants_pkg/troop_device_bonuses.py": "cad488d3fcb3f8adb260acd3bee31cc4bc50b63618903cd41fb0ac55306a7151",
+    "battle/constants.py": "9d41897d654bd554ca1e966935dc58f5716cb6340bca7da4292e5ca5baf7dfa6",
+    "battle/defender_setup.py": "0e04c41460b6b3ae5c9eb376607f985186ce1f20f8768a07377675adee7a7fe9",
+    "battle/deployment.py": "6bef57eba7a509bdc69582e631ddff53969c65ba4cb8b31661759a35311ef9cd",
+    "battle/execution.py": "ea997f8038ff546ca5306b3c0434cd1142462cf1ac7107f96cad5e4712f232bd",
+    "battle/locking.py": "b83b6aa7bd1038b1f1361b1655bfd2e48d7219a204d80cf6eea2a6c2e196a3df",
+    "battle/management/__init__.py": "f30630e579b863d91669f602abaf846c85b916565b8f8dc6617264cef40b6d37",
+    "battle/management/commands/__init__.py": "6d267f8114e57cdc126e4925a0c2e4c0581a8a4a71e598eb09cad5c3bf3026cc",
+    "battle/management/commands/load_troop_templates.py": "f8dffebb6ffb2d38b73b0b9757a1dd90feea0fdce50977c304bbeb6b6ac3b2cb",
+    "battle/migrations/0001_initial.py": "56ce82eed0459ebcbffab379235d7e4b1a769e26084f89e052579405dc7e0ebb",
+    "battle/migrations/0002_battlereport_battle_type_battlereport_drops_and_more.py": "d43fe028ab87bbc958157a3f9a9d135d2b4888757c7b348a6d6642fc97554352",
+    "battle/migrations/0003_battlereport_attacker_troops_and_more.py": "3900394c09d9959051c6b095d96ee53a08f893a1cda45cc9a26a4e0aea909e3a",
+    "battle/migrations/0004_trooptemplate.py": "edfc9c8c0415c2a1d65339d7c0e53aed8da50386317b1fc88426ccda5c0de7db",
+    "battle/migrations/0005_add_player_troop.py": "6a86dbb815127b188599781117014d5f2cd74bb2f56047219c618e046f3e7f1f",
+    "battle/migrations/0006_battlereport_city_defenses.py": "b76d0923a6ab3443c1f20dba168b5bac4ed8db8bb11175b3f7679f11751d0d6c",
+    "battle/migrations/0007_battlereport_replay_versions.py": "6152b47713619300fe95bf69d8cc0dad3981bcd9e64d97532940eb768cd97e23",
+    "battle/migrations/0008_battlereport_equipment_bonuses.py": "f6b237e5f44ec48fce8b1bb19a484f12f4ca428cd8b08c33319f68c8ce3d7b6b",
+    "battle/migrations/0009_bloodthirsty_cavalry.py": "5ecc157b51146af845e83f9208bd6761985ae5a5bd3f4f600bfaeb7a97719143",
+    "battle/migrations/0010_cavalry_preemptive_attack.py": "3442c44158fb252e3ca83d1afa4e15906c9c6b6e29cb848adb393354cd1a465c",
+    "battle/migrations/0011_rename_cavalry_charge.py": "d636326c7597935d9d2628ecaa3f671d63bbc66714b8b145b41b52f9ce2e03e4",
+    "battle/migrations/0012_cavalry_mobility_stats.py": "0cce9a257c7b11163b79f2c0ee75b977e2e904882eb8684539dbb88504a4c3f4",
+    "battle/migrations/0013_cavalry_attack_increase.py": "d79f1024e3b31af66b0851ee0483e308cd7ec25be5d9a3226e32a2ec9db4c80b",
+    "battle/migrations/0014_cavalry_base_attack_17.py": "735a12959298dd75c827c3ff6978de766c39645fc9f3e3561788645d2e5181aa",
+    "battle/migrations/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "battle/models.py": "0408413d1961d4f937deacc12e295c73f3fcdb8af601d8fa4cead47ef1be20e2",
+    "battle/modifier_lifecycle.py": "ebb18ad481e1b934774b85f529a65905002d67729b8b6214444697a19ef65cd3",
+    "battle/passive_conditions.py": "a865ba2ce1ebd281c9833b67f2b159ba7ff2c8aee2151a6eac784d8a16585962",
+    "battle/passive_effects.py": "dcf6c94bd843b115c5a26be6f2b0c1dc760abfe13e5fb232ff74863f6690fd5b",
+    "battle/passive_transformations.py": "6ebff31ebc92261f92c49b7456d0c5346f6adf5cd04d90c0eb629c45e34cbacb",
+    "battle/passives.py": "44ab245a2ae27959acbbb94627bef938897ffa5a6825c7b23f024dd2a8ec1ffb",
+    "battle/random_context.py": "fc2a88a9fd5aa789c09f1be8444d30fdad46fa81700b388260aa4d3c82dbc73b",
+    "battle/replay_audit.py": "8f66287e54d95bae0e76e0a8e995f073292306f83b1b48a3c73487dd34a225b8",
+    "battle/report_events.py": "1db194920c3bf36ca14956a70baaf44a8e2e7ef695505a2efb85d106bcea876a",
+    "battle/rewards.py": "f5fa57e7da3a4d276f50c41b4b2f7f2932a9b5508b066af2a22e432a157c091b",
+    "battle/services.py": "fc8b3ab0e7615308f3cb86cb771c85e3057ad42019888eb87da2c47c5d171b46",
+    "battle/setup.py": "3cc1d383c08eae88f302e858b1d8c1bf61d26b50984d036f6dd4eaaa9b9a364c",
+    "battle/signals.py": "33b33f2b6a52b75ee1d1605a48bff3d3b440fb93b813c40c758b2089a43932a5",
+    "battle/simulation/__init__.py": "b0f1ca23b720bd02c14ccd48a4a826fda6c26d5a62f15ed934ebc425a47bf6e0",
+    "battle/simulation/attack_execution.py": "99ead9f6bdf99d3ada88a652c1f37275a5b3de39dd40cf96905e6f6a1612651d",
+    "battle/simulation/battle_flow.py": "80b659edafd85111e29e454784a3681f5c7f002793187a6c0a478389f29f939a",
+    "battle/simulation/constants.py": "9758fbb691d27335efe5a44f8e5c7f66770ca1284145bc6b518cc2776602d7e6",
+    "battle/simulation/damage_application.py": "c54e5b10c6733accb3109330b844e79109bc1d70eeef770ff907cea41d1de3bc",
+    "battle/simulation/damage_calculation.py": "1f92f83d6be980cec3b1bc64412486e9da5030267bd59b8cf15b954c3d60fa7e",
+    "battle/simulation/report_state.py": "41fdd5f206aa0404129a08aa4afde72e346703e86130541ef4e46bf5e8f53827",
+    "battle/simulation/target_selection.py": "9db77c68d9c1c301e97553beddc3ebe2cbc509c4adecf35b3997cbe28e96f85d",
+    "battle/simulation/turn_order.py": "29deaa8792b0341448154d9163e0e47afe3c967506f12a9a5798db58dda770d8",
+    "battle/simulation/types.py": "1a347c35a85c49d484e1f4dc62228eb56a64de88ead4a5a7e3efc7da2929ccd7",
+    "battle/simulation/utils.py": "dfe01787e974dca7339f1897e334eaff602cd5fadd00828fe63756adff19f965",
+    "battle/simulation_core.py": "bf947eb01a24ca9ee3ff50d3f22097d0058b7dd4281664a11049c234a94acd02",
+    "battle/skills.py": "4f9dda565cd452396a5d598bb7d9e916c5b878613673ec5e41cc953decdd8913",
+    "battle/status_manager.py": "7604c8a43608a72814ffebe66050cfb706be98dc00b189b1ae247814add21c57",
+    "battle/tasks.py": "f3bc9d025fa82ff245de0e9ece8d46ddf6b3b4f0835306e1d3c7cb4794c3eea5",
+    "battle/templatetags/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "battle/templatetags/battle_report.py": "8d780d9f022c1bb7df6bf7f9bd64e53921f2d7ece8e7fb3742ffceb53e545bc8",
+    "battle/troops.py": "b4d585977de6625cb61d35fa42bfc35a34d8372fb1cdd6f03cb2fe46b7f25f40",
+    "battle/urls.py": "48e84566650cb86c407c64512f4cb683b470b41a61e2c69cb4efac3ee0f62ecb",
+    "battle/utils/__init__.py": "8db6342fd36a154f30141933e730a59405016170cc1b31fcb300334c70badb03",
+    "battle/utils/battle_calculator.py": "2d7447a9769d895e1db1407fd383166cde30e05183d482dcfff1ada5579e9a8e",
+    "battle/utils/status_effects.py": "1a4a36e5348876043155911a9bdacae59f0d51558f22ac224c05a2d581945682",
+    "battle/view_helpers.py": "e075445077d2fc57080673a42bc968fc73f81f2f528991c770fbe27ba34bb3f6",
+    "battle/views.py": "3d3e2c4382aa169d621e606d050d0434ca22aaaec2f13233d92e023c97f938ad"
+  }
+}

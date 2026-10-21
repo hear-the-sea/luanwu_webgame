@@ -1,0 +1,55 @@
+# 姓氏传说之李的专属门客与任务敌将。
+heroes:
+  purple:
+    - key: hero_li_lizhen
+      name: 李利贞
+      archetype: civil
+      recruitable: false
+      default_gender: male
+      default_morality: 90
+      avatar: surname_li/li_lizhen.webp
+      flavor: 抱木简而守族谱，拾甘李以济饥寒。李利贞肩负延续宗族的重任，在追索与流离中护着族人辗转求生。纵使衣食难继、前路未明，他仍将记载先人名讳的木简珍藏怀中，不肯让一家一族的来处湮没于乱世。逃亡途中的甘李，既是果腹救命之物，也寄托着后人铭记患难、不忘根本的心愿。他性情温厚而有坚守，遇事善察人心、审度进退，常在众人慌乱之际理清头绪，为老弱安排退路，为同行者稳住心神。历经风霜后，他比旁人更珍惜安居的炊烟与灯火。入庄之后，愿以清明谋略辅佐庄主，护住族谱，也护住眼前百姓的生计，使木子传承在一代代人的守望中生生不息。
+      skills: [stratagem_burst, steadfast_planning]
+      growth_range: [6, 12]
+      attribute_weights: {force: 10, intellect: 45, defense: 20, agility: 25}
+      custom_stats:
+        force: 32
+        intellect: 56
+        defense: 28
+        agility: 42
+        luck: 141
+        base_hp: 800
+    - key: hero_heishan_laoyao
+      name: 黑山老妖
+      archetype: military
+      recruitable: false
+      default_gender: male
+      default_morality: 10
+      avatar: surname_li/heishan_laoyao.webp
+      flavor: 黑山幽谷积怨成形的妖王，长居阴雾不散、群鬼出没的荒山深处。黑袍之下煞气翻涌，所过之处寒意侵骨，连山间虫鸣也会骤然沉寂。他性情阴鸷，惯以威压慑服群邪，将幽谷视作自己的疆土，不容旁人轻易踏足。临阵时身法如影，往往借暗雾掩去行踪，待敌人惊觉寒意逼近，已陷入无声展开的杀阵；即使遭逢重创，也会困兽般暴起反扑，凶性愈发难制。三百恶人卡凝成缚妖契后，这位桀骜妖王才肯暂收锋芒，为持契之人驱使。契约能够约束他的行动，却难以磨平那份睥睨众生的傲慢。庄园灯火之外，他常独立夜色之中，黑袍无风而动，仿佛仍在倾听远处幽谷传来的低语。
+      skills: [hell_instant_formation, desperate_beast]
+      growth_range: [6, 12]
+      attribute_weights: {force: 40, intellect: 10, defense: 20, agility: 30}
+      custom_stats:
+        force: 62
+        intellect: 17
+        defense: 42
+        agility: 48
+        luck: 98
+        base_hp: 800
+  orange:
+    - key: task_surname_li_elai
+      name: 恶来
+      archetype: military
+      recruitable: false
+      default_gender: male
+      avatar: surname_li/elai.webp
+      flavor: 恶来挟重戟镇守李氏旧地，力能裂甲崩山。身陷绝境时愈战愈凶，唯有破其凶阵，方能取回李氏传承。
+      skills: [surname_li_elai_crushing_blow, surname_li_elai_last_stand]
+      custom_stats:
+        force: 360
+        intellect: 80
+        defense: 310
+        agility: 180
+        luck: 100
+        base_hp: 300000

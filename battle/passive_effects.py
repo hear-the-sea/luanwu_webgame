@@ -187,6 +187,23 @@ def apply_effect(effect: dict[str, Any], context: dict[str, Any]) -> None:
         explicit_scope=effect.get("scope"),
     )
 
+    if effect_type == "enrage":
+        from .passive_transformations import apply_enrage_effect
+
+        for target_unit in targets:
+            if apply_enrage_effect(target_unit, effect, source_key=source_key):
+                _append_passive_event(
+                    event_sink,
+                    {
+                        "side": target_unit.side,
+                        "unit": target_unit.name,
+                        "effect": str(effect.get("log_name") or context.get("skill_name") or "狂暴"),
+                        "message": str(effect.get("message") or "进入狂暴"),
+                        "unit_state": snapshot_unit_state(target_unit),
+                    },
+                )
+        return
+
     if effect_type == "heal_ratio":
         for target_unit in targets:
             base_hp = (

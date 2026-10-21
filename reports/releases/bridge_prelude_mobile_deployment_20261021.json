@@ -1,0 +1,32 @@
+{
+  "status": "deployed_and_verified",
+  "deployment_completed_at_utc": "2026-10-21T04:49:23.268389+00:00",
+  "image": "webgame:bridge-prelude-mobile-20261021",
+  "previous_image": "webgame:cavalry-preemptive-20261021",
+  "release": "/root/code/releases/bridge-prelude-mobile-20261021",
+  "server_verification": "/root/code/releases/bridge-prelude-mobile-20261021/verification.json",
+  "backup": "/root/code/releases/bridge-prelude-mobile-20261021/templates-before.json",
+  "archive_sha256": "f77cac17a2195e667fca458e22f81c6a2a5640c0212c3155fdd8289c82e05c81",
+  "migration": "gameplay.0235_bridge_roar_without_dust_passive",
+  "pending_migrations": 0,
+  "template_fields_preserved": true,
+  "bridge_only_active_skill": true,
+  "other_guest_skills_preserved": true,
+  "low_hp_two_targets_once": true,
+  "legacy_notice_before_first_round": true,
+  "offline_tests_passed": 272,
+  "browser_tests_passed": 8,
+  "browser_widths": [320, 390, 768, 1280],
+  "application_services_running_on_new_image": 8,
+  "runtime_file_hashes_verified_in_all_services": 10,
+  "workers_responding": 6,
+  "readiness": "passed",
+  "web_health": "healthy",
+  "application_log_tracebacks_since_restart": 0,
+  "public_http_status": {
+    "/health/live": 200,
+    "/accounts/login/": 200,
+    "/static/css/guest-roster.c9d48b6f88c8.css": 200
+  },
+  "public_css_matches_package": true
+}

@@ -667,6 +667,10 @@ def _apply_tool(item: InventoryItem) -> Dict[str, Any]:
     """
     payload = _require_effect_payload_dict(item)
     normalized_action = _normalize_optional_tool_action(payload)
+    if normalized_action == "heal_all_guests":
+        from .manor_healing import heal_manor_guests_locked
+
+        return heal_manor_guests_locked(item, payload.get("hp"))
     if normalized_action == "temporary_resource_production_boost":
         resource_type = _normalize_non_empty_string(payload.get("resource_type"), field_name="resource_type")
         if resource_type not in {ResourceType.GRAIN, ResourceType.SILVER}:

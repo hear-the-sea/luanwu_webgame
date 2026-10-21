@@ -1,0 +1,26 @@
+{
+  "local_only": true,
+  "backup": "/tmp/surname-li-portraits-before-20261021T215339",
+  "avatars": [
+    {
+      "key": "task_surname_li_elai",
+      "image": "guests/surname_li/elai.webp",
+      "http_status": 200,
+      "bytes": 18840
+    },
+    {
+      "key": "hero_li_lizhen",
+      "image": "guests/surname_li/li_lizhen.webp",
+      "http_status": 200,
+      "bytes": 13328
+    },
+    {
+      "key": "hero_heishan_laoyao",
+      "image": "guests/surname_li/heishan_laoyao.webp",
+      "http_status": 200,
+      "bytes": 13738
+    }
+  ],
+  "other_template_fields_preserved": true,
+  "png_originals_preserved": true
+}

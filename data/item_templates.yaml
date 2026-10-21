@@ -23,6 +23,97 @@
 # 稀有度说明：black(白色/普通) < green(绿色/优秀) < blue(蓝色/稀有) < purple(紫色/史诗)
 
 items:
+  - key: li_plum
+    name: 李子
+    description: 李树结下的紫色甘果。每次使用一颗，为本庄园全体门客各回复5000点生命值，不超过各自生命上限；无人需要治疗时不消耗。
+    effect_type: tool
+    rarity: purple
+    tradeable: false
+    price: 0
+    storage_space: 25
+    is_usable: true
+    image: surname_li/plum.webp
+    effect_payload:
+      action: heal_all_guests
+      hp: 5000
+
+  - key: li_clan_card
+    name: 李氏卡
+    description: 记录李氏传承的信物。集齐50张后使用，可兑换紫色门客「李利贞」；每个庄园限拥有一位，已拥有时不消耗卡片。
+    effect_type: tool
+    rarity: purple
+    tradeable: false
+    price: 0
+    storage_space: 25
+    is_usable: true
+    image: surname_li/li_clan_card.webp
+    effect_payload:
+      action: summon_guest
+      required_items:
+        li_clan_card: 49
+      exclusive_template_keys: [hero_li_lizhen]
+      choices:
+        - template_key: hero_li_lizhen
+          weight: 1
+
+  - key: villain_card
+    name: 恶人卡
+    description: 凝聚恶煞气息的信物。集齐300张后使用，可兑换紫色门客「黑山老妖」；每个庄园限拥有一位，已拥有时不消耗卡片。
+    effect_type: tool
+    rarity: purple
+    tradeable: false
+    price: 0
+    storage_space: 25
+    is_usable: true
+    image: surname_li/villain_card.webp
+    effect_payload:
+      action: summon_guest
+      required_items:
+        villain_card: 299
+      exclusive_template_keys: [hero_heishan_laoyao]
+      choices:
+        - template_key: hero_heishan_laoyao
+          weight: 1
+
+  - key: mission_chest_v3_surname_legend_li
+    name: 李氏宝箱
+    description: 守护李氏传承所得的宝箱。开启后获得李子×2，并有机会获得李氏卡、恶人卡。
+    effect_type: loot_box
+    rarity: purple
+    tradeable: false
+    price: 0
+    storage_space: 5
+    is_usable: true
+    image: mission_chest_v1.webp
+    effect_payload:
+      mission_reward_version: 1
+      mission_key: surname_legend_li
+      reward_theme: 木子传承：李子、李氏卡与恶人卡
+      reward_balance_version: 3
+      show_reward_probabilities: true
+      item_rewards:
+        - item_key: li_plum
+          min_quantity: 2
+          max_quantity: 2
+      random_item_groups:
+        - label: li_clan_card
+          chance: 0.1
+          min_quantity: 1
+          max_quantity: 1
+          choices:
+            - item_key: li_clan_card
+              weight: 1
+        - label: villain_card
+          chance: 0.5
+          min_quantity: 1
+          max_quantity: 1
+          choices:
+            - item_key: villain_card
+              weight: 1
+      blueprint_material_support: {}
+      blueprint_forging_requirements: {}
+      experience_fruit_source: battle_salvage
+
 
   - key: grain
     name: 粮食
@@ -1575,7 +1666,7 @@ items:
     description: 使用后可直接招募橙色门客「赵云」；若庄园已拥有该门客，则无法再次招募。
     effect_type: tool
     rarity: orange
-    tradeable: true
+    tradeable: false
     price: 8000000
     storage_space: 200
     is_usable: true

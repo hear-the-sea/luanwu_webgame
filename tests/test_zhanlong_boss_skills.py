@@ -88,8 +88,8 @@ def passives(timing, actor, allies, enemies, events=None, round_no=1):
     return event_sink
 
 
-def test_zhanlong_catalog_validates_and_has_all_nine_skills():
-    assert len(SKILLS) == 9
+def test_zhanlong_catalog_validates_and_has_all_eleven_skills():
+    assert len(SKILLS) == 11
     result = validate_guest_skills(CATALOG)
     assert result.is_valid, result
 

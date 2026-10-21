@@ -1,0 +1,31 @@
+{
+  "tool": "built-in image_gen.imagegen",
+  "reference_images": [
+    "data/images/items/equip_longlinzhanjia.png",
+    "data/images/items/mission_chest_v1.png",
+    "data/images/items/zhuyingtai_guest_scroll.png"
+  ],
+  "note": "References visually inspected; each asset generated from its own full text prompt. Chest generation omitted following user direction to reuse chest images.",
+  "assets": [
+    {
+      "filename": "equip_chiyoujia.png",
+      "prompt": "Use case: stylized-concept. Asset type: square inventory item illustration for a Chinese historical wuxia web game. Create exactly ONE complete empty suit of legendary Chiyou heavy armor, no wearer, centered occupying about 80% of the square with every edge fully visible and generous padding. Style: hand-painted 2D ancient Chinese game item icon, fine dark ink contours and delicate layered watercolor/gouache shading on very pale creamy yellow paper #fff9df, matching an ornate Chinese dragon-scale armor inventory icon. A thin subtle antique-gold rectangular border near canvas edge. Subject: top-tier Jiuli warlord lamellar heavy armor from neck opening to long armored skirt, powerful broad chest and layered arm guards, black iron overlapping scales, restrained dark red cloth lining, weathered antique gold trim, large bovine-horn beast-mask pauldrons with short upward curved horns, a dignified bronze horned beast relief on chest, seven small star rivets arranged as Big Dipper on the breastplate. The seven rivets are ornamental metallic inlays, not glowing magic. The craftsmanship should read as archaic Chinese mythic bronze and iron, not European fantasy. Empty collar and cuffs show clearly no person. Three-quarter front angle, readable silhouette, elegant fine detail, soft painted shadows, no photorealistic metal. No background scene, no floor, no extra objects, no human body, no face outside ornamental masks, no lettering or readable text, no logo, no watermark. Absolutely not 3D, not rendered, no huge spikes, no wings, no magic aura.",
+      "source_path": "/home/daniel/.codex/generated_images/01a159b9-bc4d-7be3-b1f2-deb4c98774b5/exec-c4521e8b-5159-492f-8b33-788d2866e326.png",
+      "workspace_path": "data/images/items/equip_chiyoujia.png",
+      "status": "generated_and_visually_checked"
+    },
+    {
+      "filename": "blueprint_chiyoujia.png",
+      "source_path": "/home/daniel/.codex/generated_images/01a159b9-bc4d-7be3-b1f2-deb4c98774b5/exec-8cf0e578-09d3-4f34-97aa-83c40b28900f.png",
+      "workspace_path": "data/images/items/blueprint_chiyoujia.png",
+      "status": "generated_and_visually_checked"
+    },
+    {
+      "filename": "chiyou_card.png",
+      "prompt": "Use case: stylized-concept. Asset type: ONE square inventory exchange-token icon for an ancient Chinese wuxia game. Create exactly a single fully visible thick ancient bronze command card or rectangular metal tally called Chiyou Card, without any written name. One card only, three-quarter view tilted gently, centered occupying approximately 78% of square with generous uncluttered padding. Hand-painted 2D Chinese game item illustration, fine dark ink contours and watercolor/gouache rendering, subtly textured very pale creamy yellow paper #fff9df background, thin antique-gold rectangular frame. The card is weathered ancient bronze with dark iron recesses and antique gold edges, the upper center bearing a raised dignified Jiuli bovine-horn warlord beast mask carved into the bronze, two short sweeping horns, no actual human face. Below and around the mask, seven small gold star studs form a Big Dipper constellation; restrained symmetrical archaic Chinese cloud and bronze scroll ornaments. A single short dark red silk cord threads through the top hole, with a small elegant knot and short tassel lying close to the same object. Strong visual family with Chiyou heavy armor: bovine horns, archaic bronze beast mask, black iron, antique gold, dark red, seven stars. Clear readable silhouette, softly painted depth, no studio-photo reflections. No other cards, no coins, no weapons, no scattered objects, no hands or humans, no scenery, absolutely no letters, no Chinese characters, no numbers, no readable writing, no logos or watermark. No 3D, no photorealism, no luminous magical effects, no western fantasy spikes.",
+      "source_path": "/home/daniel/.codex/generated_images/01a159b9-bc4d-7be3-b1f2-deb4c98774b5/exec-6ea70a07-df1c-4412-bbd3-595c76580304.png",
+      "workspace_path": "data/images/items/chiyou_card.png",
+      "status": "generated_and_visually_checked"
+    }
+  ]
+}

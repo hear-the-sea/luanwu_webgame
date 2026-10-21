@@ -1,0 +1,31 @@
+{
+  "mode": "built-in",
+  "assets": [
+    {
+      "key": "equip_shuduanbaijinpao",
+      "prompt": "Use case: stylized-concept. Asset type: one square inventory equipment illustration for an ancient Chinese fantasy RPG. Hand-drawn 2D Chinese historical game item art, refined fine dark ink outlines, delicate watercolor and matte gouache washes on extremely pale creamy yellow paper background #fff9df. Very thin understated warm-gold rectangular border with comfortable edge margins, subtle paper texture. Restrained elegant legendary orange-tier finish, clear silhouette readable as a small inventory icon. Center the entire object comfortably within square canvas, object about 80 percent of canvas, no cropping. Soft flat illustrated shading, no photorealism, no glossy 3D render, no dramatic rim lighting. Absolutely no text, lettering, labels, logo, watermark, people, skin, faces, heads, mannequin or background scenery. Subject: one complete EMPTY white Shu-brocade martial battle robe associated with the refined heroic general Zhao Yun. Three-quarter front view, upright, full garment from raised overlapping collar to both sleeve ends and entire ankle-length hem. Rich moon-white Shu silk brocade with subtle pale-cyan and silver embroidered cloud-and-dragon motifs woven into the fabric, understated silver-white light armor accents at shoulders and upper torso, pale celadon jade fasteners and a deep-cyan satin waist sash. Graceful but practical military garment: fitted waist, layered split riding skirt, sleeves suitable for action, no floating fantasy ribbons and no Taoist priest costume. Emphasize luxurious white fabric folds and pale-blue silver stitching, elegant heroic bearing through the garment alone. No gloves or hands, no helmet, no weapon, no human visible in any opening. A wearable empty garment illustration, not a flat sewing pattern.",
+      "source_path": "/home/daniel/.codex/generated_images/01a159b9-86ce-7060-badd-6bf6d3be8e6d/exec-a0f2f157-d89e-4c1a-80a3-09cacb73bb8f.png",
+      "destination_path": "data/images/items/equip_shuduanbaijinpao.png",
+      "generator": "built-in image_gen",
+      "reference_paths": [
+        "data/images/items/equip_longlinzhanjia.png",
+        "data/images/items/pozhenqiang.png",
+        "data/images/items/equip_tianyamingyuedao.png",
+        "data/images/items/equip_tianjikaijia.png"
+      ]
+    },
+    {
+      "key": "equip_longdanqiang",
+      "prompt": "Use case: stylized-concept. Asset type: one square inventory equipment illustration for an ancient Chinese fantasy RPG. Hand-drawn 2D Chinese historical game item art, refined fine dark ink outlines, delicate watercolor and matte gouache washes on extremely pale creamy yellow paper background #fff9df. Very thin understated warm-gold rectangular border with comfortable edge margins, subtle paper texture. Restrained elegant legendary orange-tier finish, clear silhouette readable as a small inventory icon. Center the entire object comfortably within square canvas, object about 80 percent of canvas, no cropping. Soft flat illustrated shading, no photorealism, no glossy 3D render, no dramatic rim lighting. Absolutely no text, lettering, labels, logo, watermark, people, skin, faces, heads, mannequin or background scenery. Subject: exactly ONE complete ancient Chinese Longdan spear associated with Zhao Yun. Arrange diagonally across the square from lower-left butt end to upper-right spearhead so the entire long straight pole and sharp tip are visible with safe margins. Long slender polished silver willow-leaf spearhead, clearly a pointed spear blade, sophisticated modest silver dragon-shaped socket or small guard immediately under the blade, a short clean white silk tassel at the neck, straight deep cyan lacquered pole with restrained silver fittings and a silver butt cap. The dragon is only a small metal fitting attached to the spear, not a living dragon. Convey precision, elegance and heroic martial strength, practical ancient Chinese long-spear proportions, continuous unbroken straight pole. No separate weapon, no curved sword blade, no dragon coiling in the background, no magic aura, no light rays, no human hands.",
+      "source_path": "/home/daniel/.codex/generated_images/01a159b9-86ce-7060-badd-6bf6d3be8e6d/exec-2c6aa1c1-a7e6-41b7-9ce2-2a41db52b3fb.png",
+      "destination_path": "data/images/items/equip_longdanqiang.png",
+      "generator": "built-in image_gen",
+      "reference_paths": [
+        "data/images/items/equip_longlinzhanjia.png",
+        "data/images/items/pozhenqiang.png",
+        "data/images/items/equip_tianyamingyuedao.png",
+        "data/images/items/equip_tianjikaijia.png"
+      ]
+    }
+  ]
+}

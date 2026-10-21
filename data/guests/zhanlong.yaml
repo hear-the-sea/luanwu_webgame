@@ -39,12 +39,12 @@ heroes:
       default_gender: male
       avatar: monkey/任务/武047_男_张飞.png
       flavor: 张飞横矛守住长坂桥，令少数骑兵于林中扬尘造势。来人身份未明，他已提起丈八蛇矛，准备试其本领与胆色。
-      skills: [zhanlong_tiger_dragon_roar, zhanlong_dust_ruse]
+      skills: [zhanlong_bridge_tiger_dragon_roar]
       custom_stats:
-        force: 600
+        force: 650
         intellect: 150
-        defense: 440
-        agility: 220
+        defense: 480
+        agility: 400
         luck: 160
         base_hp: 850000
     - key: task_zhanlong_guanyu
@@ -61,7 +61,7 @@ heroes:
         defense: 380
         agility: 290
         luck: 130
-        base_hp: 330000
+        base_hp: 250000
     - key: task_zhanlong_zhangfei
       name: 张飞
       archetype: military
@@ -76,22 +76,22 @@ heroes:
         defense: 355
         agility: 220
         luck: 120
-        base_hp: 280000
+        base_hp: 180000
     - key: task_zhanlong_zhaoyun
       name: 赵云
       archetype: military
       recruitable: false
       default_gender: male
       avatar: zhaoyun.png
-      flavor: 昔日燕山与长坂并肩的故人，如今执枪列于演武阵中。赵云守势沉稳、遇攻能还，要亲自检验庄园门客的持久战力。
-      skills: [zhanlong_dragon_guard]
+      flavor: 昔日燕山与长坂并肩的故人，如今执枪列于演武阵中。赵云银枪疾突、横扫破阵，专寻敌阵伤处追击，要亲自检验庄园门客应对连续攻势的本领。
+      skills: [zhanlong_dragon_assault]
       custom_stats:
         force: 410
         intellect: 220
         defense: 400
         agility: 350
         luck: 150
-        base_hp: 350000
+        base_hp: 280000
     - key: task_zhanlong_machao
       name: 马超
       archetype: military
@@ -106,7 +106,7 @@ heroes:
         defense: 310
         agility: 440
         luck: 125
-        base_hp: 220000
+        base_hp: 160000
     - key: task_zhanlong_huangzhong
       name: 黄忠
       archetype: military
@@ -121,4 +121,4 @@ heroes:
         defense: 300
         agility: 315
         luck: 140
-        base_hp: 190000
+        base_hp: 100000

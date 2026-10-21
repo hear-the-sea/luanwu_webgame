@@ -1,0 +1,36 @@
+{
+  "status": "applied_and_verified",
+  "mysql_memory_before_gib": 2,
+  "mysql_memory_after_gib": 3,
+  "mysql_restarted": false,
+  "server_release_dir": "/root/code/releases/memory-webp-20261021",
+  "converted_png_count": 65,
+  "source_bytes": 46317581,
+  "webp_bytes": 5564128,
+  "originals_preserved": true,
+  "legacy_image_urls_serve_webp": true,
+  "offline_tests_passed": 42,
+  "public_checks": [
+    {
+      "http_code": 200,
+      "content_type": "image/webp",
+      "size_download": 491498,
+      "time_total": 0.71628,
+      "path": "/static/images/buildings/3v3车轮战.d055cd456819.png"
+    },
+    {
+      "http_code": 200,
+      "content_type": "application/json",
+      "size_download": 16,
+      "time_total": 0.285117,
+      "path": "/health/live"
+    },
+    {
+      "http_code": 200,
+      "content_type": "text/html; charset=utf-8",
+      "size_download": 2706,
+      "time_total": 0.30985,
+      "path": "/accounts/login/"
+    }
+  ]
+}

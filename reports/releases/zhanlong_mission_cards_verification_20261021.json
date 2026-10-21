@@ -1,0 +1,34 @@
+{
+  "status": "deployed_and_verified",
+  "verified_at_utc": "2026-10-21T02:25:32.185809+00:00",
+  "image": "webgame:release-20261021-mission-cards",
+  "previous_image": "webgame:release-20261021-task-modal-armor-luck",
+  "release": "/root/code/releases/zhanlong-cards-20261021T021559Z",
+  "active_compose_override": "/root/code/releases/mission-cards-20261021/compose.release.json",
+  "migration": "gameplay.0231_zhanlong_mission_cards",
+  "pending_migrations": 0,
+  "missions": [
+    "zhanlong_yanshan_shizi",
+    "zhanlong_changban_tuwei",
+    "zhanlong_changban_duanqiao",
+    "zhanlong_wuhu_shizhen"
+  ],
+  "daily_limit_per_mission": 1,
+  "mission_card_daily_limit_per_mission": 5,
+  "maximum_daily_attempts_per_mission": 6,
+  "runtime_file_hashes": "Both release files match the validated local package",
+  "readiness": "passed",
+  "web_health": "healthy",
+  "responding_workers": 6,
+  "application_services_running": 8,
+  "application_service_restarts": 0,
+  "web_log_tracebacks": 0,
+  "public_http_status": {
+    "/health/live": 200,
+    "/accounts/login/": 200
+  },
+  "existing_chiyou_armor_luck": 15,
+  "offline_tests_passed": 27,
+  "backup_files": ["mission-records.before.json", "mission_templates.before.yaml"],
+  "deployment_note": "This session applied migration 0231 and completed a Web blue-green deployment. A concurrent release subsequently replaced all application services with webgame:release-20261021-mission-cards. Final verification inspected that actual running release, confirmed both target file hashes, and made no further production changes."
+}

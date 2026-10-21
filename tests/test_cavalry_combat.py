@@ -6,6 +6,7 @@ from types import SimpleNamespace
 import pytest
 
 from battle.combatants_pkg.troop_builder import _bloodthirsty_cavalry_skills, build_troop_combatants
+from battle.report_events import troop_phase_skill
 from battle.simulation.attack_execution import perform_attack
 from battle.simulation.battle_flow import _resolve_standard_round, resolve_priority_phases
 from battle.simulation.turn_order import determine_turn_order
@@ -228,3 +229,32 @@ def test_cavalry_attacks_in_preemptive_and_ordinary_rounds_but_not_ranged_phase(
     assert sum(event.get("actor") == cavalry.name and "damage" in event for event in phases[1]["events"]) == 1
     ordinary = _resolve_standard_round(attacker, defender, FixedRng(0.99), next_round)
     assert sum(event.get("actor") == cavalry.name and "damage" in event for event in ordinary["events"]) == 1
+
+
+@pytest.mark.parametrize("side", ["attacker", "defender"])
+@pytest.mark.parametrize("count", [100, 3000])
+@pytest.mark.parametrize("target_count", [1, 2])
+def test_cavalry_preemptive_attack_is_normal_and_ordinary_round_can_charge(monkeypatch, side, count, target_count):
+    monkeypatch.setattr("battle.combatants_pkg.troop_builder.load_troop_templates", load_troop_templates_from_yaml)
+    actor = build_troop_combatants({"bloodthirsty_cavalry": count}, side, tech_levels={"wolf_berserk": 5})[0]
+    enemy_side = "defender" if side == "attacker" else "attacker"
+    targets = [
+        build_troop_combatants({"qiang_wang": 1000000}, enemy_side, tech_levels={})[0] for _ in range(target_count)
+    ]
+    for index, target in enumerate(targets):
+        target.name = f"敌军{index}"
+    attacker, defender = ([actor], targets) if side == "attacker" else (targets, [actor])
+    phases, next_round = resolve_priority_phases(attacker, defender, FixedRng(0.25))
+    event = next(row for row in phases[0]["events"] if row.get("actor") == actor.name and "damage" in row)
+    for hit in [event, *event.get("additional_attacks", [])]:
+        assert hit["skills"] == []
+        assert hit["additional_targets"] == []
+        assert hit["actor_template_key"] == "bloodthirsty_cavalry"
+        assert troop_phase_skill(hit, event, -1) == ""
+    # 同一个单位继续进入普通回合，技能不被先攻回合永久清除。
+    actor.current_round = next_round
+    ordinary = perform_attack(actor, attacker, defender, FixedRng(0.25))
+    assert ordinary is not None
+    for hit in [ordinary, *ordinary.get("additional_attacks", [])]:
+        assert hit["skills"] == ["铁骑冲阵"]
+        assert len(hit["additional_targets"]) == target_count - 1

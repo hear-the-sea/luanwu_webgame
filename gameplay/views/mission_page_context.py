@@ -8,6 +8,7 @@ from django.http import HttpRequest
 from gameplay.models import MissionTemplate, ResourceType
 from gameplay.services.inventory.core import get_item_quantity
 from gameplay.services.manor.core import project_manor_activity_for_read
+from gameplay.services.mission_difficulty import load_mission_difficulty_ratings
 from gameplay.services.missions_impl.attempts import (
     MISSION_CARD_DAILY_LIMIT_PER_MISSION,
     bulk_get_mission_extra_attempts,
@@ -29,9 +30,24 @@ VALID_MISSION_TABS = {
     MissionTemplate.Difficulty.JUNIOR,
     MissionTemplate.Difficulty.INTERMEDIATE,
     MissionTemplate.Difficulty.ADVANCED,
+    "series",
     "guild",
 }
 BAIMENLOU_MISSION_KEY = "baimenlou_mingyun_jueze"
+SERIES_MISSION_KEYS = frozenset(
+    {
+        "sishui_huaxiong_chengwei",
+        "hulao_qunying_zhan_lvbu",
+        BAIMENLOU_MISSION_KEY,
+        "biyou_candeng",
+        "shier_xianyin",
+        "fengbang_tianmen",
+        "zhanlong_yanshan_shizi",
+        "zhanlong_changban_tuwei",
+        "zhanlong_changban_duanqiao",
+        "zhanlong_wuhu_shizhen",
+    }
+)
 
 
 def build_troop_config() -> tuple[dict[str, dict[str, Any]], list[dict[str, Any]]]:
@@ -45,8 +61,19 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
         logger=logger,
         source="task_board_view",
     )
+    difficulty_ratings = load_mission_difficulty_ratings()
+    missions = mission_helpers.filter_available_missions(
+        list(MissionTemplate.objects.all().order_by("display_order", "id"))
+    )
     missions = mission_helpers.order_missions_for_task_board(
-        mission_helpers.filter_available_missions(list(MissionTemplate.objects.all().order_by("display_order", "id")))
+        missions,
+        difficulty_scores={
+            mission.key: difficulty_ratings[mission.key]["value"]
+            for mission in missions
+            if mission.key in difficulty_ratings
+            and mission.key not in SERIES_MISSION_KEYS
+            and not is_personal_guild_mission(mission)
+        },
     )
     missions_by_key = {mission.key: mission for mission in missions}
     guild_personal_missions = [mission for mission in missions if is_personal_guild_mission(mission)]
@@ -78,17 +105,19 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
         }
         for mission in guild_personal_missions
     ]
+    for item in mission_data + guild_personal_mission_data:
+        item["difficulty_rating"] = difficulty_ratings.get(item["mission"].key)
     selected_key = request.GET.get("mission")
     selected_mission, selected_attempts, selected_daily_limit, selected_remaining = (
         mission_helpers.build_selection_summary(selected_key, missions_by_key, attempts, extra_attempts)
     )
     requested_tab = (request.GET.get("tab") or "").strip()
     selected_is_guild_mission = bool(selected_mission and is_personal_guild_mission(selected_mission))
-    active_tab = (
-        "guild"
-        if selected_is_guild_mission
-        else selected_mission.difficulty if selected_mission else MissionTemplate.Difficulty.JUNIOR
-    )
+    active_tab: str = MissionTemplate.Difficulty.JUNIOR
+    if selected_is_guild_mission:
+        active_tab = "guild"
+    elif selected_mission:
+        active_tab = "series" if selected_mission.key in SERIES_MISSION_KEYS else selected_mission.difficulty
     if not selected_mission and requested_tab in VALID_MISSION_TABS:
         active_tab = requested_tab
     available_guests = (
@@ -129,6 +158,13 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
         "missions": missions,
         "attempts_today": attempts,
         "mission_data": mission_data,
+        "advanced_mission_data": [
+            item
+            for item in mission_data
+            if item["mission"].difficulty == MissionTemplate.Difficulty.ADVANCED
+            and item["mission"].key not in SERIES_MISSION_KEYS
+        ],
+        "series_mission_data": [item for item in mission_data if item["mission"].key in SERIES_MISSION_KEYS],
         "guild_personal_mission_data": guild_personal_mission_data,
         "guild_personal_mission_status": guild_personal_status,
         "selected_mission": selected_mission,

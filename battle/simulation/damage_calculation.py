@@ -395,7 +395,12 @@ def calculate_attack_damage(
     for skill in skills:
         if "damage_multiplier" in skill:
             total_damage_value *= max(0.0, float(skill.get("damage_multiplier") or 0.0))
-        if "execute_hp_ratio" in skill and target.hp / max(1, target.max_hp) <= skill["execute_hp_ratio"]:
+        execute = (
+            target.hp / max(1, target.max_hp) < skill["execute_hp_ratio_lt"]
+            if "execute_hp_ratio_lt" in skill
+            else "execute_hp_ratio" in skill and target.hp / max(1, target.max_hp) <= skill["execute_hp_ratio"]
+        )
+        if execute:
             total_damage_value *= float(skill.get("execute_multiplier", 1.0))
 
     is_double_strike = _roll_double_strike(actor, rng)

@@ -1,0 +1,367 @@
+{
+  "schema_version": 1,
+  "simulation_report": "reports/mission_difficulty_simulation_20261021.json",
+  "simulation_battles": 27720,
+  "seeds_per_profile": 40,
+  "ratings": {
+    "surname_legend_li": {
+      "value": 25,
+      "label": "1个太阳＋2个月亮＋1颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 8,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "mid_autumn_moon_palace_trial": {
+      "value": 7,
+      "label": "1个月亮＋3颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 5,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "kasukabe_daisakusen": {
+      "value": 11,
+      "label": "2个月亮＋3颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 6,
+      "win_rate": 0.975,
+      "ceiling_exceeded": false
+    },
+    "huashan_lunjian": {
+      "value": 1,
+      "label": "一星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 1,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "wagangzhai_nixi": {
+      "value": 28,
+      "label": "1个太阳＋3个月亮",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 8,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "jingyanggang": {
+      "value": 1,
+      "label": "一星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 1,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "wulongshan": {
+      "value": 3,
+      "label": "3颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 3,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "wagangzhai": {
+      "value": 3,
+      "label": "3颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 3,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "fugui_shanzhuang": {
+      "value": 2,
+      "label": "2颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 2,
+      "win_rate": 0.875,
+      "ceiling_exceeded": false
+    },
+    "shizipo_heidian": {
+      "value": 7,
+      "label": "1个月亮＋3颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 5,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "shanhaiguan": {
+      "value": 11,
+      "label": "2个月亮＋3颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 6,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "shiren_daochang": {
+      "value": 7,
+      "label": "1个月亮＋3颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 5,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "jiguanshou_chuxian": {
+      "value": 7,
+      "label": "1个月亮＋3颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 5,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "biwu_zhaoqin": {
+      "value": 3,
+      "label": "3颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 3,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "tianpeng_dijiao_1": {
+      "value": 11,
+      "label": "2个月亮＋3颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 6,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "tianpeng_dijiao_2": {
+      "value": 26,
+      "label": "1个太阳＋2个月亮＋2颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 8,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "jiguan_chuniao": {
+      "value": 11,
+      "label": "2个月亮＋3颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 6,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "dongtian_fudi": {
+      "value": 27,
+      "label": "1个太阳＋2个月亮＋3颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 8,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "jiufeng_feihuan": {
+      "value": 8,
+      "label": "2个月亮",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 5,
+      "win_rate": 0.8,
+      "ceiling_exceeded": false
+    },
+    "taozi_fenban": {
+      "value": 7,
+      "label": "1个月亮＋3颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 5,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "simian_chuge": {
+      "value": 27,
+      "label": "1个太阳＋2个月亮＋3颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 8,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "manzu_ruqin": {
+      "value": 28,
+      "label": "1个太阳＋3个月亮",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 8,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "zhuiji_manzu": {
+      "value": 23,
+      "label": "1个太阳＋1个月亮＋3颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 8,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "liangshanbo_zhuyingtai": {
+      "value": 7,
+      "label": "1个月亮＋3颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 5,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "biyou_candeng": {
+      "value": 28,
+      "label": "1个太阳＋3个月亮",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 8,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "shier_xianyin": {
+      "value": 53,
+      "label": "3个太阳＋1个月亮＋1颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 10,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "fengbang_tianmen": {
+      "value": 107,
+      "label": "1个皇冠＋2个太阳＋2个月亮＋3颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 11,
+      "win_rate": 0.875,
+      "ceiling_exceeded": false
+    },
+    "zhuolu_zhongyuan": {
+      "value": 59,
+      "label": "3个太阳＋2个月亮＋3颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 10,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "guandu_zhizhan": {
+      "value": 44,
+      "label": "2个太阳＋3个月亮",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 9,
+      "win_rate": 0.975,
+      "ceiling_exceeded": false
+    },
+    "huashan_lunjian_advanced": {
+      "value": 45,
+      "label": "2个太阳＋3个月亮＋1颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 9,
+      "win_rate": 0.875,
+      "ceiling_exceeded": false
+    },
+    "sishui_huaxiong_chengwei": {
+      "value": 28,
+      "label": "1个太阳＋3个月亮",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 8,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "hulao_qunying_zhan_lvbu": {
+      "value": 54,
+      "label": "3个太阳＋1个月亮＋2颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 10,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "baimenlou_mingyun_jueze": {
+      "value": 128,
+      "label": "双皇冠",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 11,
+      "win_rate": 0.05,
+      "ceiling_exceeded": true
+    },
+    "yaolu_hujing": {
+      "value": 7,
+      "label": "1个月亮＋3颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 5,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "xisui_yougu": {
+      "value": 28,
+      "label": "1个太阳＋3个月亮",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 8,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "yijin_mijing": {
+      "value": 27,
+      "label": "1个太阳＋2个月亮＋3颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 8,
+      "win_rate": 1,
+      "ceiling_exceeded": false
+    },
+    "guild_personal_zhenlong_qipu": {
+      "value": 12,
+      "label": "3个月亮",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 6,
+      "win_rate": 0.825,
+      "ceiling_exceeded": false
+    },
+    "guild_personal_shaolin_night_shadow": {
+      "value": 48,
+      "label": "3个太阳",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 9,
+      "win_rate": 0.725,
+      "ceiling_exceeded": false
+    },
+    "zhanlong_yanshan_shizi": {
+      "value": 61,
+      "label": "3个太阳＋3个月亮＋1颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 10,
+      "win_rate": 0.89,
+      "ceiling_exceeded": false,
+      "simulation_report": "reports/zhanlong_progression_validation_20261021.json",
+      "seed_start": 450000,
+      "seeds_per_profile": 200
+    },
+    "zhanlong_changban_tuwei": {
+      "value": 76,
+      "label": "1个皇冠＋3个月亮",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 11,
+      "win_rate": 0.995,
+      "ceiling_exceeded": false,
+      "simulation_report": "reports/zhanlong_progression_validation_20261021.json",
+      "seed_start": 450000,
+      "seeds_per_profile": 200
+    },
+    "zhanlong_changban_duanqiao": {
+      "value": 112,
+      "label": "1个皇冠＋3个太阳",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 11,
+      "win_rate": 0.885,
+      "ceiling_exceeded": false,
+      "simulation_report": "reports/zhanlong_progression_validation_20261021.json",
+      "seed_start": 450000,
+      "seeds_per_profile": 200
+    },
+    "zhanlong_wuhu_shizhen": {
+      "value": 128,
+      "label": "双皇冠",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 11,
+      "win_rate": 0,
+      "ceiling_exceeded": true,
+      "simulation_report": "reports/zhanlong_progression_validation_20261021.json",
+      "seed_start": 450000,
+      "seeds_per_profile": 200
+    },
+    "guild_personal_yanziwu_secret_letter": {
+      "value": 110,
+      "label": "1个皇冠＋2个太阳＋3个月亮＋2颗星",
+      "summary": "4颗星＝1个月亮，4个月亮＝1个太阳，4个太阳＝1个皇冠。评级来自战斗模拟，阵容与技能搭配会影响实战。",
+      "profile": 11,
+      "win_rate": 0.9,
+      "ceiling_exceeded": false
+    }
+  },
+  "supplementary_simulation_reports": [
+    "reports/zhanlong_progression_validation_20261021.json"
+  ]
+}

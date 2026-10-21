@@ -32,8 +32,8 @@ def _report(**overrides):
         "attacker_team": [],
         "defender_team": [],
         "losses": {
-            "attacker": {"casualties": [{"key": "dao_jie", "lost": 200}]},
-            "defender": {"casualties": [{"key": "dao_jie", "lost": 200}]},
+            "attacker": {"casualties": [{"key": "dao_jie", "lost": 400}]},
+            "defender": {"casualties": [{"key": "dao_jie", "lost": 400}]},
         },
     }
     payload.update(overrides)
@@ -59,18 +59,28 @@ def _build(run, report):
 
 
 @pytest.mark.parametrize("is_defense", [False, True])
-def test_v3_direct_fruit_uses_actual_both_side_casualties_without_equipment(is_defense, monkeypatch):
-    # dao_jie 招募耗时 90 秒，双方各损失 200，总计恰好 1 个经验果。
+@pytest.mark.parametrize("lost,expected_fruit", [(200, 0), (400, 1), (600, 1), (800, 2)])
+def test_v3_direct_fruit_halves_both_side_casualties_without_equipment(is_defense, lost, expected_fruit, monkeypatch):
+    # dao_jie 招募耗时 90 秒，双方回收经验果汇总后减半并向下取整。
     run = _run(is_defense=is_defense)
-    report = _report(drops={} if is_defense else {"silver": 100, V3_BOX: 1})
+    report = _report(
+        drops={} if is_defense else {"silver": 100, V3_BOX: 1},
+        losses={
+            "attacker": {"casualties": [{"key": "dao_jie", "lost": lost}]},
+            "defender": {"casualties": [{"key": "dao_jie", "lost": lost}]},
+        },
+    )
     equipment = Mock(side_effect=AssertionError("v3 不应执行装备随机回收"))
     monkeypatch.setattr(battle_salvage, "_calculate_equipment_recovery", equipment)
 
-    assert _build(run, report) == {"silver": 100, V3_BOX: 1, "experience_fruit": 1}
+    expected_drops = {"silver": 100, V3_BOX: 1}
+    if expected_fruit:
+        expected_drops["experience_fruit"] = expected_fruit
+    assert _build(run, report) == expected_drops
     equipment.assert_not_called()
 
 
-def test_experience_only_matches_existing_salvage_with_defeated_guest_hp_ratios(monkeypatch):
+def test_mission_halves_troop_and_guest_experience_without_changing_shared_salvage(monkeypatch):
     report = _report(
         attacker_team=[
             {"level": 50, "rarity": "blue", "max_hp": 100, "initial_hp": 50, "remaining_hp": 0},
@@ -80,17 +90,17 @@ def test_experience_only_matches_existing_salvage_with_defeated_guest_hp_ratios(
             {"level": 99, "rarity": "orange", "max_hp": 100, "initial_hp": 100, "remaining_hp": 1},
         ],
     )
-    # 先汇总再取整：护院 1 + 我方门客 2.5 + 敌方门客 2 = 5。
+    # 先汇总再取整：护院 2 + 我方门客 2.5 + 敌方门客 2 = 6，PVE 减半为 3。
     expected, _ = battle_salvage.calculate_battle_salvage(report)
-    assert expected == 5
+    assert expected == 6
     equipment = Mock(side_effect=AssertionError("禁用装备回收后仍执行了装备循环"))
     monkeypatch.setattr(battle_salvage, "_calculate_equipment_recovery", equipment)
     assert battle_salvage.calculate_battle_salvage(report, include_equipment_recovery=False) == (expected, {})
-    assert _build(_run(), report)["experience_fruit"] == expected
+    assert _build(_run(), report)["experience_fruit"] == expected // 2
     equipment.assert_not_called()
 
 
-@pytest.mark.parametrize("lost", [0, 1])
+@pytest.mark.parametrize("lost", [0, 1, 400, 799])
 def test_no_loss_or_fractional_experience_does_not_grant_fruit(lost):
     report = _report(losses={"attacker": {"casualties": [{"key": "dao_jie", "lost": lost}]}, "defender": {}})
     assert _build(_run(), report) == {"silver": 100, V3_BOX: 1}
@@ -134,7 +144,7 @@ def test_pending_v2_report_keeps_old_box_without_extra_experience(monkeypatch):
     salvage.assert_not_called()
 
 
-def test_legacy_scattered_report_keeps_full_salvage_with_default_equipment_recovery(monkeypatch):
+def test_legacy_scattered_report_halves_new_fruit_and_keeps_saved_fruit_and_equipment(monkeypatch):
     report = _report(drops={"huashan_wulin_chest": 1, "experience_fruit": 3})
     equipment = Mock(return_value={"equip_dakandao": 2})
     monkeypatch.setattr(battle_salvage, "_calculate_equipment_recovery", equipment)
@@ -149,7 +159,7 @@ def test_legacy_scattered_report_keeps_full_salvage_with_default_equipment_recov
 def test_default_salvage_still_recovers_equipment(monkeypatch):
     equipment = Mock(return_value={"equip_dakandao": 2})
     monkeypatch.setattr(battle_salvage, "_calculate_equipment_recovery", equipment)
-    assert battle_salvage.calculate_battle_salvage(_report()) == (1, {"equip_dakandao": 2})
+    assert battle_salvage.calculate_battle_salvage(_report()) == (2, {"equip_dakandao": 2})
     equipment.assert_called_once()
 
 

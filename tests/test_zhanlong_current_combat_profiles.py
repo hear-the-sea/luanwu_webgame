@@ -16,6 +16,10 @@ rules = import_module("gameplay.migrations.0227_zhanlong_current_combat_profiles
 base = import_module("gameplay.migrations.0220_zhanlong_quest_chain")
 exchange = import_module("gameplay.migrations.0221_chiyou_rewards_and_unique_guests")
 card_rules = import_module("gameplay.migrations.0231_zhanlong_mission_cards")
+enrage_rules = import_module("gameplay.migrations.0232_caochun_enrage_and_cavalry")
+bridge_rules = import_module("gameplay.migrations.0233_bridge_zhangfei_fury")
+assault_rules = import_module("gameplay.migrations.0234_zhaoyun_dragon_assault")
+progression_rules = import_module("gameplay.migrations.0240_zhanlong_progressive_difficulty")
 DATA = Path(__file__).resolve().parents[1] / "data"
 STAT_FIELDS = {
     "force": "base_attack",
@@ -31,6 +35,10 @@ def test_final_migration_profiles_match_all_four_missions_and_ten_guest_template
     missions = {row["key"]: row for row in yaml.safe_load((DATA / "mission_templates.yaml").read_text())["missions"]}
     for key, defaults in base.MISSION_DEFAULTS.items():
         final = {**defaults, **rules.MISSION_UPDATES.get(key, {}), **card_rules.MISSION_UPDATES.get(key, {})}
+        final.update(enrage_rules.MISSION_UPDATES.get(key, {}))
+        final.update(bridge_rules.MISSION_UPDATES.get(key, {}))
+        final.update(assault_rules.MISSION_UPDATES.get(key, {}))
+        final.update(progression_rules.MISSION_UPDATES.get(key, {}))
         assert {field: missions[key].get(field) for field in final} == final
     all_defaults = {**base.ENEMY_DEFAULTS, **exchange.GUEST_DEFAULTS}
     changed = {}
@@ -47,8 +55,20 @@ def test_final_migration_profiles_match_all_four_missions_and_ten_guest_template
                 if delta:
                     changed[hero["key"]] = delta
                 final = {**defaults, **rules.GUEST_UPDATES.get(hero["key"], {})}
+                final.update(bridge_rules.GUEST_UPDATES.get(hero["key"], {}))
+                final.update(progression_rules.GUEST_UPDATES.get(hero["key"], {}))
                 assert {stat: final[field] for stat, field in STAT_FIELDS.items()} == hero["custom_stats"]
-    assert rules.GUEST_UPDATES == changed
+    final_updates = {key: dict(value) for key, value in rules.GUEST_UPDATES.items()}
+    for key, updates in bridge_rules.GUEST_UPDATES.items():
+        final_updates.setdefault(key, {}).update(updates)
+    for key, updates in progression_rules.GUEST_UPDATES.items():
+        final_updates.setdefault(key, {}).update(updates)
+    final_updates = {
+        key: {field: value for field, value in updates.items() if all_defaults[key][field] != value}
+        for key, updates in final_updates.items()
+    }
+    final_updates = {key: updates for key, updates in final_updates.items() if updates}
+    assert final_updates == changed
 
 
 @pytest.mark.django_db

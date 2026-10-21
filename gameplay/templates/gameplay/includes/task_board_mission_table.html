@@ -1,0 +1,38 @@
+<table class="tw-mission-table">
+    <thead>
+        <tr>
+            <th class="tw-mission-name-col">任务名称</th>
+            <th class="tw-mission-difficulty-col text-center">任务难度</th>
+            <th class="tw-mission-meta-col text-center">类型</th>
+            <th class="tw-mission-meta-col text-center">今日剩余</th>
+            <th class="tw-mission-action-col text-center">操作</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for item in items %}
+        {% with mission=item.mission %}
+        <tr>
+            <td class="tw-mission-name-col">
+                {% include "gameplay/includes/task_board_mission_name.html" %}
+            </td>
+            <td class="tw-mission-difficulty-col text-center">{% include "gameplay/includes/task_difficulty_rating.html" %}</td>
+            <td class="tw-mission-meta-col text-center">
+                <span class="tw-chip">
+                    {% if mission.is_defense %}防守{% elif mission.guest_only %}门客{% else %}护院{% endif %}
+                </span>
+            </td>
+            <td class="tw-mission-meta-col text-center">
+                <span class="tw-chip">{{ item.remaining }} / {{ item.daily_limit }}</span>
+            </td>
+            <td class="tw-mission-action-col text-center">
+                <a class="{% if item.remaining > 0 %}tw-btn-primary{% else %}tw-btn-secondary{% endif %} tw-btn-sm" href="?mission={{ mission.key }}">详情</a>
+            </td>
+        </tr>
+        {% endwith %}
+    {% empty %}
+        <tr>
+            <td colspan="5" class="tw-muted text-center py-8">暂无可领取的任务。</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

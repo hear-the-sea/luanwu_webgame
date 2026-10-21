@@ -32,18 +32,22 @@
 	handle @hashed_static {
 		uri strip_prefix /static
 		root * /srv/staticfiles
+		# Prefer prebuilt WebP companions while preserving existing image URLs.
+		try_files {path}.webp {path}
 		header Cache-Control "public, max-age=31536000, immutable"
 		file_server
 	}
 
 	handle_path /static/* {
 		root * /srv/staticfiles
+		try_files {path}.webp {path}
 		header Cache-Control "public, max-age=3600"
 		file_server
 	}
 
 	handle_path /media/* {
 		root * /srv/media
+		try_files {path}.webp {path}
 		header Cache-Control "public, max-age=86400"
 		file_server
 	}

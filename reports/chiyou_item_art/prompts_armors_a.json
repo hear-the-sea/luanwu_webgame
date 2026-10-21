@@ -1,0 +1,49 @@
+{
+  "mode": "built-in",
+  "assets": [
+    {
+      "key": "equip_tianshukaijia",
+      "prompt": "Use case: stylized-concept. Asset type: square inventory equipment icon for a Chinese ancient fantasy RPG, one single complete empty suit of body armor with shoulder guards, gauntlets and hanging armored skirt, no head and no wearer. Hand-drawn 2D ancient Chinese illustration, precise expressive dark ink linework and restrained watercolor/gouache coloring matching traditional illustrated game inventory objects. Three-quarter front view, upright centered object fills about 80 percent of square canvas, all extremities comfortably within frame. Pale very light creamy yellow paper background #fff9df, subtle paper grain, thin understated gold rectangular border near canvas edge. Clean quiet background, visually legible at small size. Purple-tier armor, elegant but moderately ornamented, simpler than legendary dragon armor. No text, letters, numbers, UI labels, logo, watermark, person, skin, head, helmet, weapons, scenic background, dramatic glow, photorealism, glossy 3D rendering. Subject: Tianshu armor (name is descriptive only, do not write it). Deep navy-blue iron lamellar cuirass with broad stout shoulders and a protective heavy hanging skirt, sober gold edge binding, a small understated golden Big Dipper seven-star motif on the upper chest with the first star slightly larger. Heavy protective silhouette communicates sturdiness and health. Navy cloth lining, symmetrical but naturally hand-drawn construction. Keep chest and broad shoulder plates clearly distinct; avoid dragon-head sculpture and spikes.",
+      "source_path": "/home/daniel/.codex/generated_images/01a159b9-86ce-7060-badd-6bf6d3be8e6d/exec-519254ed-dc7b-4833-a4fe-6106f60ce13f.png",
+      "destination_path": "data/images/items/equip_tianshukaijia.png",
+      "generator": "built-in image_gen",
+      "reference_paths": [
+        "data/images/items/equip_pojunzhanjia.png",
+        "data/images/items/equip_longlinzhanjia.png"
+      ]
+    },
+    {
+      "key": "equip_tianxuankaijia",
+      "prompt": "Use case: stylized-concept. Asset type: square inventory equipment icon for a Chinese ancient fantasy RPG, one single complete empty suit of body armor with shoulder guards, gauntlets and hanging armored skirt, no head and no wearer. Hand-drawn 2D ancient Chinese illustration, precise expressive dark ink linework and restrained watercolor/gouache coloring matching traditional illustrated game inventory objects. Three-quarter front view, upright centered object fills about 80 percent of square canvas, all extremities comfortably within frame. Pale very light creamy yellow paper background #fff9df, subtle paper grain, thin understated gold rectangular border near canvas edge. Clean quiet background, visually legible at small size. Purple-tier armor, elegant but moderately ornamented, simpler than legendary dragon armor. No text, letters, numbers, UI labels, logo, watermark, person, skin, head, helmet, weapons, scenic background, dramatic glow, photorealism, glossy 3D rendering. Subject: Tianxuan armor (name is descriptive only, do not write it). Dark forest-green lacquer and aged warm bronze Chinese heavy lamellar cuirass, angular forward-pointing protective shoulder plates and a firm broad waist belt, stout segmented armored gloves and long overlapping skirt panels. Clear powerful martial silhouette emphasizing physical attack. Tiny understated golden Big Dipper star medallion on upper breastplate, rust-red woven cords as restrained secondary detail, no dramatic sculptural heads. Same family as understated deep-navy star armor but distinctive green and bronze plate construction.",
+      "source_path": "/home/daniel/.codex/generated_images/01a159b9-86ce-7060-badd-6bf6d3be8e6d/exec-8e6ca3c4-8749-47ef-995d-6159381a2879.png",
+      "destination_path": "data/images/items/equip_tianxuankaijia.png",
+      "generator": "built-in image_gen",
+      "reference_paths": [
+        "data/images/items/equip_pojunzhanjia.png",
+        "data/images/items/equip_longlinzhanjia.png"
+      ]
+    },
+    {
+      "key": "equip_tianjikaijia",
+      "prompt": "Use case: stylized-concept. Asset type: square inventory equipment icon for a Chinese ancient fantasy RPG, one single complete empty suit of body armor with shoulder guards, gauntlets and hanging armored skirt, no head and no wearer. Hand-drawn 2D ancient Chinese illustration, precise expressive dark ink linework and restrained watercolor/gouache coloring matching traditional illustrated game inventory objects. Three-quarter front view, upright centered object fills about 80 percent of square canvas, all extremities comfortably within frame. Pale very light creamy yellow paper background #fff9df, subtle paper grain, thin understated gold rectangular border near canvas edge. Clean quiet background, visually legible at small size. Purple-tier armor, elegant but moderately ornamented, simpler than legendary dragon armor. No text, letters, numbers, UI labels, logo, watermark, person, skin, head, helmet, weapons, scenic background, dramatic glow, photorealism, glossy 3D rendering. Subject: Tianji armor (name is descriptive only, do not write it). Scholar-warrior ancient Chinese armor made of light cyan-blue steel and moon-white cloth, smooth curved layered breastplate, refined smaller rounded shoulder guards, slender forearm gauntlets, flowing pale silver-white fabric under a medium-length armored skirt. An understated engraved astronomical star-chart pattern and seven small muted gold stars on the chest imply strategic wisdom and intellect, purely decorative symbols, no writing. Calm intelligent balanced silhouette, silver trim with sparse warm-gold clasps, no bulky dragon sculpture, no magical glow. Same visual family as modest navy and green seven-star Chinese armor but distinctive pale-blue/white palette and scholarly details.",
+      "source_path": "/home/daniel/.codex/generated_images/01a159b9-86ce-7060-badd-6bf6d3be8e6d/exec-866d24d7-8960-4859-bcc7-636597f8507f.png",
+      "destination_path": "data/images/items/equip_tianjikaijia.png",
+      "generator": "built-in image_gen",
+      "reference_paths": [
+        "data/images/items/equip_pojunzhanjia.png",
+        "data/images/items/equip_longlinzhanjia.png"
+      ]
+    },
+    {
+      "key": "equip_yaoguangkaijia",
+      "prompt": "Use case: stylized-concept. Asset type: square inventory equipment icon for a Chinese ancient fantasy RPG, one single complete empty suit of body armor with shoulder guards, gauntlets and hanging armored skirt, no head and no wearer. Hand-drawn 2D ancient Chinese illustration, precise expressive dark ink linework and restrained watercolor/gouache coloring matching traditional illustrated game inventory objects. Three-quarter front view, upright centered object fills about 80 percent of square canvas, all extremities comfortably within frame. Pale very light creamy yellow paper background #fff9df, subtle paper grain, thin understated gold rectangular border near canvas edge. Clean quiet background, visually legible at small size. Purple-tier armor, elegant but moderately ornamented, simpler than legendary dragon armor. No text, letters, numbers, UI labels, logo, watermark, person, skin, head, helmet, weapons, scenic background, dramatic glow, photorealism, glossy 3D rendering. Subject: Yaoguang armor (name is descriptive only, do not write it). Nimble lightweight ancient Chinese armor in softly brushed silver and muted lavender-purple, narrow layered curved shoulder guards, slim flexible segmented breastplate, fitted waist, small elegant gauntlets and separated tapered skirt plates over light violet cloth strips. The silhouette feels agile and light while clearly retaining the same family construction of Chinese star-themed lamellar armor. A tiny restrained seven-star pattern engraved on upper chest, sparse warm gold accents and silver edging. Avoid heavy shoulder mass, avoid dragon head sculptures, avoid overly ornate legendary design or magical glow. Make the complete empty armor visible including sleeve ends and entire hem.",
+      "source_path": "/home/daniel/.codex/generated_images/01a159b9-86ce-7060-badd-6bf6d3be8e6d/exec-4d20ad84-15e2-4089-9af4-63f6044b9c33.png",
+      "destination_path": "data/images/items/equip_yaoguangkaijia.png",
+      "generator": "built-in image_gen",
+      "reference_paths": [
+        "data/images/items/equip_pojunzhanjia.png",
+        "data/images/items/equip_longlinzhanjia.png"
+      ]
+    }
+  ]
+}

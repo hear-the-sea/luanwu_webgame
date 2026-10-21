@@ -45,10 +45,10 @@ def _reward_keys(box):
 
 
 def test_all_personal_missions_award_one_named_chest_without_scattered_items():
-    assert len(MISSION_CHEST_MISSIONS) == len(BOXES) == 39
+    assert len(MISSION_CHEST_MISSIONS) == len(BOXES) == 40
     assert len(HISTORICAL_BOXES) == 32
-    assert len({box["key"] for box in ALL_BOXES}) == 71
-    assert len({box["effect_payload"]["mission_key"] for box in BOXES}) == 39
+    assert len({box["key"] for box in ALL_BOXES}) == 72
+    assert len({box["effect_payload"]["mission_key"] for box in BOXES}) == 40
     for mission in MISSION_CHEST_MISSIONS:
         drops = mission["drop_table"]
         box_keys = set(drops) - {"silver"}
@@ -66,7 +66,7 @@ def test_all_personal_missions_award_one_named_chest_without_scattered_items():
         assert box["effect_type"] == "loot_box" and box["is_usable"]
         assert box["tradeable"] is False and box["storage_space"] == 5
         assert not mission.get("probability_drop_table")
-        assert box["image"] == "mission_chest_v1.png"
+        assert box["image"] in {"mission_chest_v1.png", "mission_chest_v1.webp"}
         assert (DATA / "images/items" / box["image"]).is_file()
 
 
@@ -270,7 +270,7 @@ def test_pending_legacy_report_keeps_original_rewards_and_salvage(monkeypatch, o
     )
     assert build_mission_drops_with_salvage(
         run, report, "attacker", logger=logging.getLogger(__name__), resolve_defense_drops_if_missing=lambda *_args: {}
-    ) == {"silver": 7000, old_item: 1, "experience_fruit": 7, "equip_tiejian": 2}
+    ) == {"silver": 7000, old_item: 1, "experience_fruit": 3, "equip_tiejian": 2}
 
 
 @pytest.mark.parametrize("is_retreating,winner", [(True, "attacker"), (False, "defender")])
@@ -297,7 +297,7 @@ def test_all_current_and_legacy_task_chests_display_task_chest_category():
         "huashan_wulin_chest",
     }
     boxes = [entry for key, entry in ITEMS.items() if key.startswith("mission_chest_") or key in legacy_keys]
-    assert len(boxes) == 77
+    assert len(boxes) == 78
     for entry in boxes:
         template = ItemTemplate(key=entry["key"], effect_type=entry["effect_type"])
         assert InventoryItem(template=template).category_display == "任务宝箱"

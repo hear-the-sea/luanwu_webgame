@@ -22,7 +22,7 @@ def test_mission_salvage_passes_player_side_to_equipment_recovery(monkeypatch):
     assert called["report"] is report
     assert called["kwargs"].get("equipment_casualty_side") == "defender"
     assert drops["silver"] == 10
-    assert drops["experience_fruit"] == 3
+    assert drops["experience_fruit"] == 1
     assert drops["equip_duandao"] == 2
 
 

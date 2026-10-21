@@ -1,0 +1,27 @@
+{
+  "mode": "built-in",
+  "assets": [
+    {
+      "key": "equip_shuduanbaijinpao",
+      "prompt": "Use case: stylized-concept. Asset type: a single square inventory equipment icon for an ancient Chinese fantasy RPG. Reference images are style references only: match their refined hand-drawn 2D fine ink outlines and watercolor/gouache rendering, extremely pale creamy yellow paper background (#fff9df), thin understated gold border. Crisp silhouette readable at 200 pixels. Center one complete equipment object with comfortable margins. No text, letters, logos, watermark, humans, skin, face, head, mannequin, landscape, photorealism or 3D render. Primary request: Completely redesign Shu Duan Bai Jin Pao (蜀缎白锦袍) as Zhao Yun's unmistakable heroic SILVER-WHITE BATTLE ARMOR, not a fabric robe. One empty wearable ancient Chinese general's armor displayed upright in three-quarter front view. The dominant visual is solid polished silver overlapping breastplate and intricately articulated silver-white lamellar plates. Distinct finely carved silver dragon-head shoulder pauldrons, protective collar, fitted cuirass bearing a restrained engraved coiling dragon, layered armored waist/tassets protecting the thighs, matched armored vambraces connected by practical narrow white sleeves. White Shu-brocade cloth with pale icy-blue cloud embroidery appears ONLY underneath the metal armor and as a short flowing white back cape and small split waist panels. Deep blue waist sash, silver fittings, minimal pale jade detail. Compact strong martial proportions; solid silver armor must cover most of the torso and shoulders. No long wide sleeves, no floor-length dress, no giant loose cloth panels. Make it elegant, mobile and valiant: the iconic white-armored general Zhao Yun. Very subtle effects only: a few tiny icy-blue glints near the shoulders and dragon engraving, under 3 percent of the canvas. The illustrated metal, white brocade and visible brushwork remain the focus.",
+      "reference_paths": [
+        "/home/daniel/code/web_game_v5/data/images/items/equip_longlinzhanjia.png",
+        "/home/daniel/code/web_game_v5/data/images/items/equip_tianjikaijia.png"
+      ],
+      "destination_path": "data/images/items/equip_shuduanbaijinpao.png",
+      "source_path": "/home/daniel/.codex/generated_images/01a15997-5407-73c3-9830-683e4b32ff6d/exec-e5cf0669-5a67-4fcc-8b40-50dc391a2812.png",
+      "generator": "built-in image_gen"
+    },
+    {
+      "key": "equip_longdanqiang",
+      "prompt": "Use case: stylized-concept. Asset type: a single square inventory equipment icon for an ancient Chinese fantasy RPG. Reference images are style references only: match their refined hand-drawn 2D fine ink outlines and watercolor/gouache rendering, extremely pale creamy yellow paper background (#fff9df), thin understated gold border. Crisp silhouette readable at 200 pixels. Center one complete equipment object with comfortable margins. No text, letters, logos, watermark, humans, skin, face, head, mannequin, landscape, photorealism or 3D render. Primary request: Completely redesign Zhao Yun's legendary Longdan Liangyin spear (龙胆亮银枪), a single elegant yet imposing ancient Chinese long spear, with a SMALL amount of restrained magical effects. Show the entire unbroken weapon diagonally from lower-left butt cap to upper-right sharp tip, with safe margins and strong icon readability. Long bright SILVER shaft with subtle blue-steel grip sections and exquisite fine engraved dragon-scale metal fittings, not a plain blue wooden stick. The upper blade is a magnificent narrow polished silver lance spearhead with a crisp pointed tip and defined central ridge, spearhead and dragon socket large enough to be readable. A sculpted silver dragon head forms the blade socket, its body wraps once around the metal neck as a metal ornament attached to the weapon. Short flowing white silk tassel immediately beneath the spearhead. Matching silver butt cap. A single fine pale-cyan luminous energy wisp curves around the upper blade/neck and a few tiny icy-blue sparks, effects stay within the upper quarter of the weapon and occupy less than 8 percent of the composition. No large aura, no lightning storm, no living dragon in the background, no giant glowing ring. Elegant silver-white and icy-blue Zhao Yun identity, refined hand-painted highlights and tactile ink details. Practical straight long-spear silhouette, not a sword, halberd or trident; no second weapon.",
+      "reference_paths": [
+        "/home/daniel/code/web_game_v5/data/images/items/equip_longdanqiang.png",
+        "/home/daniel/code/web_game_v5/data/images/items/equip_tianjikaijia.png"
+      ],
+      "destination_path": "data/images/items/equip_longdanqiang.png",
+      "source_path": "/home/daniel/.codex/generated_images/01a15997-5407-73c3-9830-683e4b32ff6d/exec-eb532410-56b5-4e7e-920e-22199873730a.png",
+      "generator": "built-in image_gen"
+    }
+  ]
+}

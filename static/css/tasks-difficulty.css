@@ -1,0 +1,48 @@
+/* 任务难度沿用门客属性的星、月、日、皇冠精灵图。 */
+.tw-mission-difficulty-col {
+  width: 12.5rem;
+  min-width: 12.5rem;
+  white-space: nowrap;
+}
+
+.task-difficulty-rating,
+.task-difficulty-rating .attr-pack {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  flex-wrap: nowrap;
+  max-width: 100%;
+  vertical-align: middle;
+}
+
+.task-difficulty-rating .attr-icon {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  background-image: url("../images/attri/sprite.png");
+  background-image: image-set(
+    url("../images/attri/sprite.webp") type("image/webp"),
+    url("../images/attri/sprite.png") type("image/png")
+  );
+  background-repeat: no-repeat;
+  background-size: 64px 16px;
+}
+
+.task-difficulty-rating .attr-crown { background-position: 0 0; }
+.task-difficulty-rating .attr-sun { background-position: -16px 0; }
+.task-difficulty-rating .attr-moon { background-position: -32px 0; }
+.task-difficulty-rating .attr-star { background-position: -48px 0; }
+
+.task-difficulty-pending {
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+}
+
+@media (max-width: 780px) {
+  .tw-mission-table .tw-mission-difficulty-col {
+    display: none;
+  }
+}

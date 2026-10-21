@@ -133,6 +133,36 @@
 # ============================================================
 
 missions:
+  - key: surname_legend_li
+    name: 姓氏传说之“李”
+    display_order: 1000
+    difficulty: advanced
+    description: |
+      话说商纣王当政时，理氏一族因直言进谏获罪，利贞随母亲四处逃难。母子断粮多日，幸得荒野中一株李树结满甘果，这才保住性命。为报救命之恩，利贞决定改“理”为“李”，谁知新姓氏刚取好，老仇家却追上了门。
+
+      助纣为虐的恶来奉命赶尽杀绝，率领精兵封住去路，连那株救命的李树也不肯放过。附近百姓有心相助，却敌不过他的凶猛重戟，只得向各庄园求援。还请庄园主率领门客击退恶来，护住母子二人，让这段“木子成李”的传说得以流传。
+    battle_type: task1
+    is_defense: false
+    guest_only: false
+    enemy_guests:
+      - key: task_surname_li_elai
+        label: 恶来
+    enemy_troops:
+      dao_sheng: 800
+      qiang_wang: 400
+    enemy_technology:
+      level: 10
+      guest_level: 100
+      guest_bonus: 0.25
+    entry_cost: {}
+    drop_table:
+      mission_chest_v3_surname_legend_li: 1
+    probability_drop_table: {}
+    available_weekdays: []
+    base_travel_time: 1800
+    daily_limit: 3
+    mission_card_daily_limit: 5
+
   # ========================================
   # 中秋活动：广寒宫试炼
   # ========================================
@@ -252,7 +282,7 @@ missions:
       在上一次广大庄园主联手扫荡瓦岗寨时，正值瓦岗五虎出门执行任务，翟让和程咬金输的并不服气，为了证明瓦岗寨的实力，翟让率领瓦岗五虎"秦叔宝"、"单雄信"、"王伯当"、"罗成"、"程咬金"携山寨喽啰兵600人亲自上各庄园寻衅……这一次的战场变成了您的庄园，请加强防御设施，让您的门客和护院准备好迎接战斗洗礼。
     battle_type: task1
     is_defense: true
-    display_order: 7
+    display_order: 1000
 
     enemy_guests:
       - key: hist_suitang_0162_zhairang
@@ -387,7 +417,7 @@ missions:
   - key: shizipo_heidian
     name: 十字坡黑店
     difficulty: intermediate
-    display_order: 5
+    display_order: 1000
     description: |
       孙二娘和张青在十字坡开酒店，常用蒙汗药蒙翻过往行人。他们将行人杀死后，大块好肉当作黄牛肉卖，零碎小肉，做馅包馒头。江湖有传言说："大树十字坡，客人谁敢那里过？肥的切做馒头馅，瘦的却丢去填河。"
     battle_type: task1
@@ -416,7 +446,7 @@ missions:
   - key: shanhaiguan
     name: 山海关
     difficulty: intermediate
-    display_order: 6
+    display_order: 1000
     description: |
       山海关所在的河西走廊是华北通向东北的咽喉地带，是一座及其重要的军事重镇，主要防御外族势力的入侵。吴三桂作为镇守山海关的大将，居然意图勾结外族势力，入侵中原。
     battle_type: task1
@@ -443,7 +473,7 @@ missions:
   - key: shiren_daochang
     name: 十人道场
     difficulty: intermediate
-    display_order: 3
+    display_order: 1000
     description: |
       十人道场是春秋世界初级试炼之地，由恶人谷十大恶人驻守。只要能击败十大恶人，通过试炼，就能极速提升门客的等级和能力。
     battle_type: task1
@@ -537,7 +567,7 @@ missions:
   - key: tianpeng_dijiao_1
     name: 天蓬元帅的地窖（第一层）
     difficulty: intermediate
-    display_order: 1
+    display_order: 1000
     description: |
       天蓬元帅何许人也，我想不必多加介绍，他的大名你我也都如雷贯耳了。天蓬元帅耳大招风，腰缠"万贯"，气宇方刚，心宽体胖。当然，他最出名的还是吃，不仅会吃，吃遍天下美食，还私藏了许多琼浆玉液、佳肴珍馐。每次天庭大请宾筵，我们的大元帅都是不仅吃得饱饱的，还要兜着走。拿了这么多食物，一时半会儿也消灭不了，那到底放在哪里才算妥当安全呢？天蓬元帅还真是聪明，他想到他在高老庄的老相好，还有他那个老丈人，也是很喜欢这个勤奋的女婿的，他们特地留出一块上好的、超大平方米、黄金地段、冬暖夏凉的地窖给猪女婿保存食物。要说天神也有打瞌睡的时候，天蓬元帅乘天门打开之际，每次都私自下凡，偷渡美食于此地窖中。经年累月，地窖倒也藏了不少宝贝。
     battle_type: task1
@@ -605,7 +635,7 @@ missions:
 
     enemy_technology:
       level: 9
-      guest_level: 80
+      guest_level: 100
       guest_bonus: 0.20
 
     drop_table:
@@ -615,7 +645,7 @@ missions:
   - key: jiguan_chuniao
     name: 机关雏鸟
     difficulty: intermediate
-    display_order: 4
+    display_order: 1000
     description: |
       话说江家堡被仇家围攻，四面受敌，堡内粮草只能维持3天生计，突围的任务迫在眉睫。堡主曾派壮丁驾快马送信求救，可惜都遭遇埋伏。管家之子江犁墨献上自制的木结构机关雏鸟。其鸟可避弓矢，自动飞达目的地。江家堡靠此木鸟最终送出求救信号，得盟友支援解困。后来此鸟被奉为堡内"幸运鸟"，经改造后功能更强大，已成为江家堡著名的机关武器之一。
     battle_type: task1
@@ -674,7 +704,7 @@ missions:
   - key: jiufeng_feihuan
     name: 九峰匪患
     difficulty: intermediate
-    display_order: 2
+    display_order: 1000
     description: |
       话说有一座有着九个山峰的山叫做九峰山，那里山水秀丽，风景如画，九峰山下有个九峰村，这里的人民善良纯朴，吃苦耐劳，上天也因为这里的人勤劳善良，所以赐给了他们肥沃的土地，村民们也通过自己勤劳的双手将这片土地变成了万顷良田来回报上天的恩赐，于是一代一代的村民就在这里过着无忧无虑的生活。
 
@@ -1048,7 +1078,7 @@ missions:
   # ========================================
   - key: huashan_lunjian_advanced
     name: 华山论剑
-    display_order: 1100
+    display_order: 1000
     difficulty: advanced
     description: |
       天下风云出我辈，一入江湖岁月催。皇图霸业谈笑中，不胜人生一场醉。
@@ -1502,7 +1532,7 @@ missions:
       mission_chest_v3_xisui_yougu: 1
     probability_drop_table: {}
     available_weekdays: []
-    display_order: 9
+    display_order: 1000
     base_travel_time: 1800
     daily_limit: 2
     mission_card_daily_limit: 0
@@ -1540,7 +1570,7 @@ missions:
       mission_chest_v3_yijin_mijing: 1
     probability_drop_table: {}
     available_weekdays: []
-    display_order: 9
+    display_order: 1000
     base_travel_time: 1800
     daily_limit: 1
     mission_card_daily_limit: 0
@@ -1627,7 +1657,7 @@ missions:
 
       庄园主押运物资途经山下，忽有伤者拦路求援：一名白袍小将为救被困百姓，独骑闯入匪阵，已在山口苦战多时。此人自称常山赵云，枪法凌厉，却因顾念身后老幼，始终无法放手突围。铁背熊披甲持锤堵住正道，故意招锋引敌，坡上弓手正趁他吸引火力之际张弓搭箭。
 
-      山道狭窄，伏兵将成。还请庄园主率门客抢攻坡口，击溃拦路匪众，助这位素未谋面的白袍小将解开眼前危局。
+      山道狭窄，伏兵将成。还请庄园主率门客抢攻坡口，击溃拦路匪众，助这位素未谋面的白袍小将解开眼前危局。坡上三千八百箭神先发制人，拳系护院可凭远程防护抵住开场箭雨，并以克弓之长压制弓阵；门客仍须应付寨主引敌与重锤，兼顾破阵和攻坚。
     battle_type: task1
     enemy_guests:
       - key: task_zhanlong_tiebeixiong
@@ -1635,7 +1665,7 @@ missions:
     enemy_troops:
       dao_sheng: 500
       qiang_wang: 500
-      arrow_god: 5000
+      arrow_god: 3800
     enemy_technology:
       level: 10
       guest_level: 92
@@ -1657,7 +1687,7 @@ missions:
 
       混乱之际，有人看见一员白袍将军逆着人潮杀回阵中，正是昔日燕山相识的赵子龙。刘备的家眷仍陷在重围深处，他不肯独自撤离，正在曹军阵间往返寻人。虎豹骑统领曹纯却已收拢精骑，以迅疾突击截杀外围接应之人，几条通往长坂桥的道路正被逐一封锁。
 
-      旧日所赠的白马银枪令尚在手中，故人却已身陷生死之地。此行需消耗一枚「白马银枪令」，请庄园主率门客突入长坂乱军，击破曹纯与虎豹骑的拦截，替赵云打开接应之路。
+      旧日所赠的白马银枪令尚在手中，故人却已身陷生死之地。此行需消耗一枚「白马银枪令」，请庄园主率门客突入长坂乱军，击破曹纯与四千四百嗜血铁骑的拦截，替赵云打开接应之路。铁骑已研习全部满级专属科技，不受五行兵种克制；宜以防御、反击或反伤护院承受先攻，以门客输出击倒曹纯，使其督战增伤从下一轮起失效。曹纯生命低于三成时将进入狂暴，运势增加100，其他属性不变，虎豹奔袭转为攻击三人，需兼顾输出与残血阶段的承伤。
     battle_type: task1
     entry_cost:
       zhanlong_white_horse_token: 1
@@ -1665,11 +1695,15 @@ missions:
       - key: task_zhanlong_caochun
         label: 曹纯
     enemy_troops:
-      dao_sheng: 1200
-      qiang_wang: 1200
-      arrow_god: 1300
+      bloodthirsty_cavalry: 4400
     enemy_technology:
       level: 10
+      levels:
+        wolf_force: 10
+        wolf_defense: 10
+        wolf_hp: 10
+        wolf_agility: 10
+        wolf_berserk: 5
       guest_level: 96
       guest_bonus: 0.66
     drop_table:
@@ -1689,7 +1723,7 @@ missions:
 
       庄园主率门客赶到桥头，尚未来得及通报身份，便被张飞一声断喝拦住。如今败军之中真假难辨，曹军又有乔装混入之嫌，他奉命守桥，绝不肯放来历未明的武装队伍靠近。桥后尚有百姓等待撤离，要取得信任，还须当面试过本领与胆色。
 
-      桥后尘土愈起愈高，林中究竟藏着多少兵马，无人看得分明。眼前那杆丈八蛇矛却已缓缓抬起。此行需消耗一枚「长坂护主令」，请庄园主整顿队伍，迎接张翼德的桥头考验。
+      桥后尘土愈起愈高，林中究竟藏着多少兵马，无人看得分明。眼前那杆丈八蛇矛却已缓缓抬起。此行需消耗一枚「长坂护主令」，请庄园主整顿队伍，迎接张翼德的桥头考验。桥头张飞武力650、防御480、敏捷400，虎啸龙吟伤害倍率为演武版本的两倍，生命低于两成后改为同时攻击两人。重矛之下，宜由高防减伤门客承担风险，辅以眩晕技能争取输出机会；护院仍需抵住守桥铁骑的持续冲击，阵容须兼顾控制、承伤与攻坚。
     battle_type: task1
     entry_cost:
       zhanlong_changban_guard_token: 1
@@ -1697,11 +1731,17 @@ missions:
       - key: task_zhanlong_zhangfei_bridge
         label: 张飞
     enemy_troops:
-      qiang_wang: 500
+      bloodthirsty_cavalry: 5400
     enemy_troops_display:
-      qiang_wang: 1000000
+      bloodthirsty_cavalry: 1000000
     enemy_technology:
       level: 10
+      levels:
+        wolf_force: 10
+        wolf_defense: 10
+        wolf_hp: 10
+        wolf_agility: 10
+        wolf_berserk: 5
       guest_level: 100
       guest_bonus: 0.74
     drop_table:
@@ -1719,7 +1759,7 @@ missions:
     description: |
       自长坂一别，岁月流转，蜀中五虎如今已齐聚军前。庄园主昔日在燕山护民、长坂接应的经历，经赵云举荐传入刘备耳中。一封演武邀书送到庄园，邀众门客入营会武，也请庄园主当面谈一谈乱世之中如何待人、如何用人。
 
-      演武场上，关羽按刀镇住阵脚，张飞持矛蓄势，赵云银枪护身，马超策马游走，黄忠在后方搭箭观阵。五人各有所长，彼此照应：重刀可破甲，蛇矛能聚力，银枪善守反击，快马压迫全阵，强弓专寻伤处。赵云虽是旧识，今日仍将亲自入阵，检验庄园门客的武艺与主人的临阵取舍。
+      演武场上，关羽按刀镇住阵脚，张飞持矛蓄势，赵云银枪穿阵，马超策马游走，黄忠在后方搭箭观阵。五人各有所长，彼此照应：重刀可破甲，蛇矛能聚力，银枪横扫三人并追击残血，快马压迫全阵，强弓专寻伤处。赵云虽是旧识，今日仍将亲自入阵，检验庄园门客的武艺与主人的临阵取舍。
 
       仁义之名须见诸行事，举荐之情也须以本领相承。此行需消耗一封「当阳义勇书」，请庄园主率众赴约，在五虎合阵之前展现庄园的担当。
     battle_type: task1

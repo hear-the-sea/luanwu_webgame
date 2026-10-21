@@ -3,6 +3,7 @@ from __future__ import annotations
 import random
 from dataclasses import dataclass
 from datetime import timedelta
+from decimal import Decimal
 
 from django.db import transaction
 from django.db.models import F
@@ -34,6 +35,27 @@ class _ProductionCandidate:
     quantity: int
     contribution_cost: int
     rarity_rank: int
+
+
+def get_guild_technology_daily_upkeep(guild: Guild) -> dict[str, Decimal]:
+    """按当前科技等级与产出周期，计算足额生产所需的日均资源。"""
+    daily_contribution = Decimal(0)
+    technologies = GuildTechnology.objects.filter(
+        guild=guild, tech_key__in=PRODUCTION_TECH_KEYS, level__gt=0
+    ).values_list("tech_key", "level")
+    for tech_key, level in technologies:
+        interval_days = max(1, int(TECHNOLOGY_NODE_BY_KEY[tech_key].get("production_interval_days", 1) or 1))
+        contribution = sum(
+            max(0, int(item.quantity or 0)) * max(0, int(item.contribution_cost or 0))
+            for item in get_technology_production_items(tech_key, level)
+        )
+        daily_contribution += Decimal(contribution) / interval_days
+
+    return {
+        resource: daily_contribution
+        * max(0, int(guild_constants.TECH_PRODUCTION_UPKEEP.get(f"{resource}_per_contribution", 0) or 0))
+        for resource in ("silver", "grain")
+    }
 
 
 def _is_technology_production_due(tech: GuildTechnology, now) -> bool:

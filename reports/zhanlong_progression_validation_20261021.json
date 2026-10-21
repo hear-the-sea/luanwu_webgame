@@ -1,0 +1,824 @@
+{
+  "schema_version": 1,
+  "engine": "4",
+  "rng_version": 1,
+  "seed_start": 450000,
+  "seeds": 200,
+  "profiles": [
+    [
+      3,
+      10,
+      "blue",
+      0,
+      0,
+      0
+    ],
+    [
+      3,
+      20,
+      "blue",
+      5,
+      2,
+      300
+    ],
+    [
+      5,
+      30,
+      "blue",
+      15,
+      3,
+      600
+    ],
+    [
+      5,
+      40,
+      "blue",
+      25,
+      4,
+      800
+    ],
+    [
+      5,
+      50,
+      "purple",
+      35,
+      5,
+      1000
+    ],
+    [
+      8,
+      60,
+      "purple",
+      45,
+      6,
+      1600
+    ],
+    [
+      10,
+      70,
+      "purple",
+      55,
+      7,
+      2500
+    ],
+    [
+      12,
+      80,
+      "orange",
+      65,
+      8,
+      3000
+    ],
+    [
+      15,
+      90,
+      "orange",
+      75,
+      9,
+      3750
+    ],
+    [
+      18,
+      100,
+      "orange",
+      85,
+      10,
+      4500
+    ],
+    [
+      20,
+      100,
+      "orange",
+      100,
+      10,
+      5000
+    ]
+  ],
+  "rows": [
+    {
+      "key": "zhanlong_yanshan_shizi",
+      "name": "战龙在野第一关：北地燕山初识子龙",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 1,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.04,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.19,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.13,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 8,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 6.42,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 9,
+          "trials": 200,
+          "wins": 3,
+          "win_rate": 0.015,
+          "mean_rounds": 10.96,
+          "mean_survivors": 0.03
+        },
+        {
+          "profile": 10,
+          "trials": 200,
+          "wins": 178,
+          "win_rate": 0.89,
+          "mean_rounds": 11.71,
+          "mean_survivors": 5.75
+        },
+        {
+          "profile": 11,
+          "trials": 200,
+          "wins": 200,
+          "win_rate": 1,
+          "mean_rounds": 7.91,
+          "mean_survivors": 13.03
+        }
+      ]
+    },
+    {
+      "key": "zhanlong_changban_tuwei",
+      "name": "战龙在野第二关：龙战长坂七进七出",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 1,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.61,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.29,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.22,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 8,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 7.09,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 9,
+          "trials": 200,
+          "wins": 1,
+          "win_rate": 0.005,
+          "mean_rounds": 10.97,
+          "mean_survivors": 0.01
+        },
+        {
+          "profile": 10,
+          "trials": 200,
+          "wins": 127,
+          "win_rate": 0.635,
+          "mean_rounds": 15.03,
+          "mean_survivors": 2.21
+        },
+        {
+          "profile": 11,
+          "trials": 200,
+          "wins": 199,
+          "win_rate": 0.995,
+          "mean_rounds": 9.25,
+          "mean_survivors": 8.73
+        }
+      ]
+    },
+    {
+      "key": "zhanlong_changban_duanqiao",
+      "name": "战龙在野第三关：长坂桥张飞断水流",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 1,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.02,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.05,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 8,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 6.62,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 9,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 9.2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 10,
+          "trials": 200,
+          "wins": 34,
+          "win_rate": 0.17,
+          "mean_rounds": 16.57,
+          "mean_survivors": 0.28
+        },
+        {
+          "profile": 11,
+          "trials": 200,
+          "wins": 177,
+          "win_rate": 0.885,
+          "mean_rounds": 12.73,
+          "mean_survivors": 4.47
+        }
+      ]
+    },
+    {
+      "key": "zhanlong_wuhu_shizhen",
+      "name": "战龙在野第四关：谁人德行服赵云",
+      "measurements": [
+        {
+          "profile": 1,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 2,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.31,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 3,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.77,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 4,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 2.79,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 5,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 6,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.06,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 7,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 3.59,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 8,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 4.76,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 9,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 6.12,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 10,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 8.55,
+          "mean_survivors": 0
+        },
+        {
+          "profile": 11,
+          "trials": 200,
+          "wins": 0,
+          "win_rate": 0,
+          "mean_rounds": 10.64,
+          "mean_survivors": 0
+        }
+      ]
+    }
+  ],
+  "mission_inputs": {
+    "zhanlong_yanshan_shizi": {
+      "key": "zhanlong_yanshan_shizi",
+      "name": "战龙在野第一关：北地燕山初识子龙",
+      "display_order": 1004,
+      "difficulty": "advanced",
+      "description": "北地入秋，燕山古道霜寒马瘦。连年兵乱让沿途村庄十室九空，逃难百姓带着仅剩的粮食与家当，沿山道向南求生。溃兵出身的寨主铁背熊却盘踞险隘，劫粮掠财，将不肯交出财物的百姓扣在山口。商路由此断绝，附近村民也无人敢再上山。\n\n庄园主押运物资途经山下，忽有伤者拦路求援：一名白袍小将为救被困百姓，独骑闯入匪阵，已在山口苦战多时。此人自称常山赵云，枪法凌厉，却因顾念身后老幼，始终无法放手突围。铁背熊披甲持锤堵住正道，故意招锋引敌，坡上弓手正趁他吸引火力之际张弓搭箭。\n\n山道狭窄，伏兵将成。还请庄园主率门客抢攻坡口，击溃拦路匪众，助这位素未谋面的白袍小将解开眼前危局。坡上三千八百箭神先发制人，拳系护院可凭远程防护抵住开场箭雨，并以克弓之长压制弓阵；门客仍须应付寨主引敌与重锤，兼顾破阵和攻坚。\n",
+      "battle_type": "task1",
+      "enemy_guests": [
+        {
+          "key": "task_zhanlong_tiebeixiong",
+          "label": "燕山寨主·铁背熊"
+        }
+      ],
+      "enemy_troops": {
+        "dao_sheng": 500,
+        "qiang_wang": 500,
+        "arrow_god": 3800
+      },
+      "enemy_technology": {
+        "level": 10,
+        "guest_level": 92,
+        "guest_bonus": 0.58
+      },
+      "drop_table": {
+        "silver": 90000,
+        "mission_chest_v3_zhanlong_yanshan_shizi": 1
+      },
+      "available_weekdays": [],
+      "base_travel_time": 2400,
+      "daily_limit": 1,
+      "mission_card_daily_limit": 5
+    },
+    "zhanlong_changban_tuwei": {
+      "key": "zhanlong_changban_tuwei",
+      "name": "战龙在野第二关：龙战长坂七进七出",
+      "display_order": 1005,
+      "difficulty": "advanced",
+      "description": "荆襄骤变，曹军铁骑昼夜南下。刘备携百姓撤往江陵，军民相杂，车仗连绵，行至当阳长坂时，被曹军前锋追及。仓促之间，队伍四散，粮车倾覆，家眷失落；漫山遍野尽是奔逃的人影，呼救声淹没在马蹄与战鼓之中。\n\n混乱之际，有人看见一员白袍将军逆着人潮杀回阵中，正是昔日燕山相识的赵子龙。刘备的家眷仍陷在重围深处，他不肯独自撤离，正在曹军阵间往返寻人。虎豹骑统领曹纯却已收拢精骑，以迅疾突击截杀外围接应之人，几条通往长坂桥的道路正被逐一封锁。\n\n旧日所赠的白马银枪令尚在手中，故人却已身陷生死之地。此行需消耗一枚「白马银枪令」，请庄园主率门客突入长坂乱军，击破曹纯与四千四百嗜血铁骑的拦截，替赵云打开接应之路。铁骑已研习全部满级专属科技，不受五行兵种克制；宜以防御、反击或反伤护院承受先攻，以门客输出击倒曹纯，使其督战增伤从下一轮起失效。曹纯生命低于三成时将进入狂暴，运势增加100，其他属性不变，虎豹奔袭转为攻击三人，需兼顾输出与残血阶段的承伤。\n",
+      "battle_type": "task1",
+      "entry_cost": {
+        "zhanlong_white_horse_token": 1
+      },
+      "enemy_guests": [
+        {
+          "key": "task_zhanlong_caochun",
+          "label": "曹纯"
+        }
+      ],
+      "enemy_troops": {
+        "bloodthirsty_cavalry": 4400
+      },
+      "enemy_technology": {
+        "level": 10,
+        "levels": {
+          "wolf_force": 10,
+          "wolf_defense": 10,
+          "wolf_hp": 10,
+          "wolf_agility": 10,
+          "wolf_berserk": 5
+        },
+        "guest_level": 96,
+        "guest_bonus": 0.66
+      },
+      "drop_table": {
+        "silver": 110000,
+        "mission_chest_v3_zhanlong_changban_tuwei": 1
+      },
+      "available_weekdays": [],
+      "base_travel_time": 2400,
+      "daily_limit": 1,
+      "mission_card_daily_limit": 5
+    },
+    "zhanlong_changban_duanqiao": {
+      "key": "zhanlong_changban_duanqiao",
+      "name": "战龙在野第三关：长坂桥张飞断水流",
+      "display_order": 1006,
+      "difficulty": "advanced",
+      "description": "长坂桥前，张飞横矛立马，怒目巡视来路。桥后树林烟尘滚滚，旌旗时隐时现，战马奔踏之声连绵不绝。逃来的散卒惊呼林中伏有百万大军，连追至岸边的曹军也勒马驻足，不敢贸然向前。\n\n庄园主率门客赶到桥头，尚未来得及通报身份，便被张飞一声断喝拦住。如今败军之中真假难辨，曹军又有乔装混入之嫌，他奉命守桥，绝不肯放来历未明的武装队伍靠近。桥后尚有百姓等待撤离，要取得信任，还须当面试过本领与胆色。\n\n桥后尘土愈起愈高，林中究竟藏着多少兵马，无人看得分明。眼前那杆丈八蛇矛却已缓缓抬起。此行需消耗一枚「长坂护主令」，请庄园主整顿队伍，迎接张翼德的桥头考验。桥头张飞武力650、防御480、敏捷400，虎啸龙吟伤害倍率为演武版本的两倍，生命低于两成后改为同时攻击两人。重矛之下，宜由高防减伤门客承担风险，辅以眩晕技能争取输出机会；护院仍需抵住守桥铁骑的持续冲击，阵容须兼顾控制、承伤与攻坚。\n",
+      "battle_type": "task1",
+      "entry_cost": {
+        "zhanlong_changban_guard_token": 1
+      },
+      "enemy_guests": [
+        {
+          "key": "task_zhanlong_zhangfei_bridge",
+          "label": "张飞"
+        }
+      ],
+      "enemy_troops": {
+        "bloodthirsty_cavalry": 5400
+      },
+      "enemy_troops_display": {
+        "bloodthirsty_cavalry": 1000000
+      },
+      "enemy_technology": {
+        "level": 10,
+        "levels": {
+          "wolf_force": 10,
+          "wolf_defense": 10,
+          "wolf_hp": 10,
+          "wolf_agility": 10,
+          "wolf_berserk": 5
+        },
+        "guest_level": 100,
+        "guest_bonus": 0.74
+      },
+      "drop_table": {
+        "silver": 130000,
+        "mission_chest_v3_zhanlong_changban_duanqiao": 1
+      },
+      "available_weekdays": [],
+      "base_travel_time": 2400,
+      "daily_limit": 1,
+      "mission_card_daily_limit": 5
+    },
+    "zhanlong_wuhu_shizhen": {
+      "key": "zhanlong_wuhu_shizhen",
+      "name": "战龙在野第四关：谁人德行服赵云",
+      "display_order": 1007,
+      "difficulty": "advanced",
+      "description": "自长坂一别，岁月流转，蜀中五虎如今已齐聚军前。庄园主昔日在燕山护民、长坂接应的经历，经赵云举荐传入刘备耳中。一封演武邀书送到庄园，邀众门客入营会武，也请庄园主当面谈一谈乱世之中如何待人、如何用人。\n\n演武场上，关羽按刀镇住阵脚，张飞持矛蓄势，赵云银枪穿阵，马超策马游走，黄忠在后方搭箭观阵。五人各有所长，彼此照应：重刀可破甲，蛇矛能聚力，银枪横扫三人并追击残血，快马压迫全阵，强弓专寻伤处。赵云虽是旧识，今日仍将亲自入阵，检验庄园门客的武艺与主人的临阵取舍。\n\n仁义之名须见诸行事，举荐之情也须以本领相承。此行需消耗一封「当阳义勇书」，请庄园主率众赴约，在五虎合阵之前展现庄园的担当。\n",
+      "battle_type": "task1",
+      "entry_cost": {
+        "zhanlong_dangyang_valor_letter": 1
+      },
+      "enemy_guests": [
+        {
+          "key": "task_zhanlong_guanyu",
+          "label": "关羽"
+        },
+        {
+          "key": "task_zhanlong_zhangfei",
+          "label": "张飞"
+        },
+        {
+          "key": "task_zhanlong_zhaoyun",
+          "label": "赵云"
+        },
+        {
+          "key": "task_zhanlong_machao",
+          "label": "马超"
+        },
+        {
+          "key": "task_zhanlong_huangzhong",
+          "label": "黄忠"
+        }
+      ],
+      "enemy_troops": {
+        "dao_sheng": 900,
+        "qiang_wang": 900,
+        "jian_sheng": 900,
+        "quan_sheng": 700,
+        "arrow_god": 900
+      },
+      "enemy_technology": {
+        "level": 10,
+        "guest_level": 100,
+        "guest_bonus": 0.78
+      },
+      "drop_table": {
+        "silver": 180000,
+        "mission_chest_v3_zhanlong_wuhu_shizhen": 1
+      },
+      "available_weekdays": [],
+      "base_travel_time": 2700,
+      "daily_limit": 1,
+      "mission_card_daily_limit": 5
+    }
+  },
+  "methodology": {
+    "data_scope": "按当前工作区YAML中的任务、敌将、技能、兵种与科技配置评估；不读取运行中游戏库的旧参数",
+    "threshold": 0.7,
+    "rating": "在首次达到70%胜率的相邻基准梯度间插值并向上取整为1至128分；最高梯度仍未达标时记128分",
+    "icons": "4星=1月亮，4月亮=1太阳，4太阳=1皇冠；允许不同图标混合显示，128分=双皇冠",
+    "players": "标准品质成长，2武1文循环，合法技能，装备按四维等额属性补正建模",
+    "troops": "遵守各梯度带兵容量；仅门客任务禁用护院；己方科技独立于敌方科技",
+    "defense": "保留攻守侧翻转，使用同档固定守军，不计城墙与箭塔；正式防守可使用全体闲置门客和库存护院",
+    "player_bonuses": "玩家采用基准科技，不计器械及帮会科技加成；装备按四维等额属性补正建模",
+    "limitations": "相对难度参考；不承诺特定实际门客、装备或技能搭配必定通关"
+  },
+  "total_battles": 8800,
+  "elapsed_seconds": 294.87,
+  "source_sha256": {
+    "data/mission_templates.yaml": "a37544275d886c513d47335b10415cfcfda40e55c5ce0d3bf2bfa7f804ccc91e",
+    "data/guest_skills.yaml": "b5e12a98728ee71d6ce2ac2ec01f3f1cad5a7081a5e1c591a9715a69895cdc2f",
+    "data/guest_templates.yaml": "f1f2dc9f7848ff459f04cfd94b24d649d7952e28e456378dc45401ee775eba0b",
+    "data/guest_growth_rules.yaml": "c3ac24912ae8a63e14668fbc12c74935e75a9998835c5a62305e79d329a6da7f",
+    "data/troop_templates.yaml": "2a9364ba494f1c1f86f96035b02008be3c3a0e7c77d258cce1f4f43af94868d8",
+    "data/technology_templates.yaml": "d79018fcfcf2752660d691ff73cff547481b79d5476c53d7f57c6fb3110bdb9b",
+    "data/guests/base.yaml": "c8486b98a686039b97b132e8306a1b603590bced63b49b545a74610cafa39b94",
+    "data/guests/chiyou_exchange.yaml": "cec21603b91a89ee3f3055765d790d204a1c62bf7c1b6df22dc14bdbf5b45bfd",
+    "data/guests/cultivation.yaml": "8a1b768110c52aab6b9af9a2ee7bf01ab9a0cbde4b32c4fe510420dc9bcf7960",
+    "data/guests/custom.yaml": "148ddf784361cdadb4f1d158b64f9bf746da1fc6e1dc5e3994d08151e4bfac83",
+    "data/guests/fengyun.yaml": "e4176d509cc66799a77ae1d1aab1cdfc3b72cd8abfe7a56b8601173491fd0647",
+    "data/guests/folk_legends.yaml": "5ae2cece5c302f4f477711a93e3b3ffbf46f89274bee2644dc56772d93b74044",
+    "data/guests/gulong.yaml": "4b7293b2328d49ae66fdb152bb5450b56eec87e46eaf0498078bccbcad23871f",
+    "data/guests/gulong_ilrock_01.yaml": "5770ce48c2770f2be65ad34a8a971a85c15c8a2e14f80d8735f20eaa6223732e",
+    "data/guests/hermits.yaml": "ca69f918a358de6331d20d6702fd79048f17a605193df8f45475678a35adb882",
+    "data/guests/history_ilrock_01.yaml": "82c8ce3474a03c20bf294aab7a00a1ca1ab7d3c188acdd079299ff449750a5b9",
+    "data/guests/history_mingqing_01.yaml": "dbdc305a367f7c960baeea49a334f09a91524691d847a308b399092c3a6766c5",
+    "data/guests/history_mingqing_02.yaml": "db7ac0e850bd3a0de352e0332f7ccff4fef41a24333bf459672c888927bdfd81",
+    "data/guests/history_mingqing_03.yaml": "5b9b6b41378b6d8d8fadfbac9baf1d1fbbfd52c731dd74d01fb56c97bbddcee7",
+    "data/guests/history_mingqing_04.yaml": "1a6a154c73ba173f7623d0728bf80ff00ee1bed278e11362716c7603dfbef71e",
+    "data/guests/history_mingqing_05.yaml": "593a0c558b79afda03efffce8103b316f721f1ecb48416f011f44bb6a75fb7e5",
+    "data/guests/history_mingqing_06.yaml": "bd6d50d2d96de328eb93cf424fed962505b14b4a14295ca0840411c102512f99",
+    "data/guests/history_mingqing_07.yaml": "8bc0fe80d9c4c2e406f6075fef246c57148a0564413f92de9ddde0233e47bf26",
+    "data/guests/history_mingqing_08.yaml": "cb25327fb636eab96f57b931187c728d25878d113112b0478d002238e0bbe10f",
+    "data/guests/history_mingqing_09.yaml": "58072b013619fc06f126546a6031fe20dea9711f99cccd13bc118c3153932bb1",
+    "data/guests/history_qinhan_01.yaml": "564927902aacced57878adc0ada1f3a66f71a403beaeaf859a11c4a92a44becf",
+    "data/guests/history_qinhan_02.yaml": "515f7a3a236aed8ee95a861fd5bcd4512b8af6bf3bccb872aa988187c0fceee2",
+    "data/guests/history_qinhan_03.yaml": "c5ae87be0eb7ca6fb6310d76babc8bb5b3740af09e7dabcb62f06374a00df74e",
+    "data/guests/history_qinhan_04.yaml": "46e69789fdf615e9b129ffec2f0845ab28c55b3062d33121fe5ca0550342ac8c",
+    "data/guests/history_qinhan_05.yaml": "7ce7fef41dd90a8b3d938c74c5b19105eb950c1e4000fe4c8765f8e0f0bee23b",
+    "data/guests/history_qinhan_06.yaml": "3b4d51d81381b0cd84dec6de1c65272f8b6444d1e17de33cfcb697b63c8a3939",
+    "data/guests/history_qinhan_07.yaml": "afeacbef159f6fb19852bbde86be2939b58fdcc34d39ae1ed624195f50a54acb",
+    "data/guests/history_qinhan_08.yaml": "979cf3440430916ce5999b2ad1def309a556d81c746a4b3d19ed7c14b76ab9e5",
+    "data/guests/history_qinhan_09.yaml": "a2013dd90963075a784223418e3fbf11e0e2456ef99540d92b76339c98ff84ef",
+    "data/guests/history_sljnbc_01.yaml": "d8c41363496dfdbfa24c0d1021ec98cca3d30c7c969c2e332a41af26e473635c",
+    "data/guests/history_sljnbc_02.yaml": "a23362b8dfc80c9f30f16e12a3e8ef7e12e31cb4845af69e909b8ca76e6d0394",
+    "data/guests/history_sljnbc_03.yaml": "2aa754f17b4fd26fe0c16bbbdfa83e7d2fd11d9fe57a8c7964c2a2f3b76c00bf",
+    "data/guests/history_sljnbc_04.yaml": "7e2dcc48bbfb5abfe5282f1f9f481f33def6683fc2f42fb9806c011507d2021f",
+    "data/guests/history_sljnbc_05.yaml": "87280a25410e2ee1123fb5bbec42e9ded3f1b06c8970c2cc99ff127627f114d4",
+    "data/guests/history_sljnbc_06.yaml": "bb38d81239bd27efc0445388f0401652f007e797529ef5395eb3bb265e834b9f",
+    "data/guests/history_sljnbc_07.yaml": "41b48d63f078e60579b6f902e5a3c340b7da77614531432c959b0705fdb2bd86",
+    "data/guests/history_sljnbc_08.yaml": "9f85f2d1371b69672046c5d5b46e1a4dad6e7e265561acaaff35862a8b0fc199",
+    "data/guests/history_sljnbc_09.yaml": "964ea3add29358f7d7a69fa4aed88ed66798e4b9f26b64372e4454821e7bd462",
+    "data/guests/history_sljnbc_10.yaml": "f5814edfce99fe427779fdd0c6672b88171a8bda42aaafa4a8f561d923abdb6e",
+    "data/guests/history_sljnbc_11.yaml": "5838c6ff10e23802cf779dc163ff75cbbf2cf129e446357a9cf2a26080db16b8",
+    "data/guests/history_songliaojinyuan_01.yaml": "61eb9cca78233f9fc48ebe701ef0bf2913f482e4a13a95ba03b3535e5c49f1db",
+    "data/guests/history_songliaojinyuan_02.yaml": "126373d56a7eda57b38776b4964936861938f3096cd426b60555633ce666c208",
+    "data/guests/history_songliaojinyuan_03.yaml": "a9ffe0b31ec23c38cdd5c000325fe8c885b7b28d0aab4f10a8c6f48916c66849",
+    "data/guests/history_songliaojinyuan_04.yaml": "02fd4b5da53edecce5a77931742a28f9235666924a419c020812a5aa0c6ecdcb",
+    "data/guests/history_songliaojinyuan_05.yaml": "7138100ce3d9d4a17e63883d6dfa0f6f31e7897df61b84ca9d11e62abb07ef37",
+    "data/guests/history_songliaojinyuan_06.yaml": "a87d77ba19c8d0de60c998cecb246b4d3282b15b0eb675c58fd337a62f1471f6",
+    "data/guests/history_songliaojinyuan_07.yaml": "1422d375fbf65694c437ba542672f0c50e65f2c9492423a2a30ff660fc6d9a28",
+    "data/guests/history_songliaojinyuan_08.yaml": "3b03f3a49a101453ce7d11b8134836da5aa74474980112429bd6f018e65d114e",
+    "data/guests/history_songliaojinyuan_09.yaml": "e6208a6a7b7e5867cc08db2daf37028227116bff47f7303023deedfb3a4d32ec",
+    "data/guests/history_songliaojinyuan_10.yaml": "e3a2e141b1b0ecdddc05aa929c93bf7636033fdc6aa34fcecd05a96b20b0673c",
+    "data/guests/history_songliaojinyuan_11.yaml": "8717f855172734b2d76a9abb6dc577be335451278744ac6748f43a89702e0242",
+    "data/guests/history_suitang_01.yaml": "23382ffc7d60f0e439ae3a5e2585e7da86ba71af3c4846b7c532c913e099cb7e",
+    "data/guests/history_suitang_02.yaml": "446c6831a643853f24abc7ea796e86b23c349aaab15b60be5efc6d97e902f5e0",
+    "data/guests/history_suitang_03.yaml": "4cf684b63240c4565c207c752f9ab7fb97f2e801b4bee9f696ce220b1f98236b",
+    "data/guests/history_suitang_04.yaml": "984a190282d947db0549af0b1b29be758e12fc8c686a906ad77730d28dfd076a",
+    "data/guests/history_suitang_05.yaml": "e7d5d07095a9d4afb2c25f089417d6ef6068f3c0e5640684236363e31e19a145",
+    "data/guests/history_suitang_06.yaml": "fcaeca302444979d60076399b840c49433d5d58a274ebbad239c05792bf05fa2",
+    "data/guests/history_suitang_07.yaml": "88561e7ec41f0cb5645bb731b48247b0f51733206e1ed07e188640c46f4988d8",
+    "data/guests/history_suitang_08.yaml": "af8a35d9fbf4fe03ef1900395c15f4bdefea299ef218e9e51ef3afc15a38db91",
+    "data/guests/history_suitang_09.yaml": "28f9330c58af91c0cd3623d082e0a1b813e413f274ab03f32565d08338335909",
+    "data/guests/history_suitang_10.yaml": "33c511164c7d665438e2d194ace79c403ca00beaffb47c9daf7ec5b98496b79d",
+    "data/guests/history_xianqin_01.yaml": "63ac3013288da9a80a328d331d9c34384b351b6e232ce752417920730fbf1228",
+    "data/guests/history_xianqin_02.yaml": "6e8632bc8b14ee870b62bae01a324f270f818bce8e5c11bf300d2bd40a150606",
+    "data/guests/history_xianqin_03.yaml": "43cb32609ca8e2f634423105b68060f124638577e8c4adb394a7eadd0d69c599",
+    "data/guests/history_xianqin_04.yaml": "15fea421e717c5520d21e8c707958345700b113ee30d71c6afc67dad142bd33c",
+    "data/guests/history_xianqin_05.yaml": "69bfb9f51d613c472da287093dc9741122c3b000a8a0f64e803710deb1afb52a",
+    "data/guests/history_xianqin_06.yaml": "8469d241eab679278e63ca2140fafb2c5e7531fc6a82927053ccb66290667c83",
+    "data/guests/history_xianqin_07.yaml": "2e853142459fbee449a85e399660ada7f6644f2dba222e11df351d835f5a67f8",
+    "data/guests/history_xianqin_08.yaml": "5d19b35c42886c5d82d8a2a159f8ef7795bcb84e6afe07848fca3ba8a64cffac",
+    "data/guests/history_xianqin_09.yaml": "d202c5b25a776dd116c8232de2e022b9571075cf09903efffe8902ae1439678c",
+    "data/guests/history_xianqin_10.yaml": "005aaf4b39212a2f2abe34e7f5ac79c5a333dc102ce347a2fd7e4b474c1f4c24",
+    "data/guests/huangyi.yaml": "ac780ece4a127f56e3cc32f73b20988e3e89dfb3ae07740d3d59994da369c945",
+    "data/guests/huangyi_ilrock_01.yaml": "adc36288d2b19041aaac24d36631afa8ca3ad6c436b0ddb6292ee64b291064ca",
+    "data/guests/jinyong.yaml": "ac81a2ac82e880f8a1ccf665804bbeafe199a23051dfcc8680dfe8d24c7e9fc7",
+    "data/guests/kunlun.yaml": "ec04dc7faf7d9709f76c785ca2877dcaac52c4989cf89e3cfa924fdadf3ea6d1",
+    "data/guests/liangyshen.yaml": "8b13056c4342b3631a642eecec7cdcb4601c0eb3ce5c1b9beae70cb141dcc83b",
+    "data/guests/original.yaml": "f1176388220fa95682b853e750539d9ad4cb7938fcca0934b1238c4fde9d9756",
+    "data/guests/sanguoyanyi.yaml": "dc1339a1be00bfd981da8256f3613f4d6add591ca15cf1e7a78d81a3efe76e21",
+    "data/guests/shuihu.yaml": "334f301dd6eb8160803d9a027ef5407a88f5b59737ea3791f5ae689499b967e0",
+    "data/guests/special.yaml": "ca2e37cd42cc725fdc9d32415208d85b10787b98a6e0d7f3b840737efcc8027a",
+    "data/guests/suitang.yaml": "57433c7182fbdd9e912094833df0745c931a73310ff058b4259bfa4501137d92",
+    "data/guests/surname_li.yaml": "2976f894aa6b4ef33017d6115ed6d8c386d3d0f7c7657ab4f5adafd28dac7bf2",
+    "data/guests/wenruian.yaml": "084d6e009d0a3a07ad68e102be3dc8cedb707041c46810c37f96df094956204b",
+    "data/guests/zhanlong.yaml": "7c43446234d375d335886dabc37687490e11d9bd75f8c1fc0f9a2a84cc7d3cc2",
+    "battle/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "battle/active_config.py": "0c1b4efc11769c4ca77e26b7c21dbf776b9d2dedf283c6d02f9d13ffbaa54073",
+    "battle/admin.py": "4bc2cfb4f7161557e4161f6734e298f7b513147ae6baf6d8bf4a6379e38868a6",
+    "battle/apps.py": "2274de89c2882217592df09775c164125fecadfc38b716f9bfe19b2178aacd20",
+    "battle/arena_coop.py": "27e5f04ed74d50a96fff712a68126ef70fe8fac556473681ddb207a0f66a7454",
+    "battle/city_defense.py": "bfde6044f4b22a21b6366dcacd660be50666accf6f79362db3a5156e1924b115",
+    "battle/combat_math.py": "9eb3edaf6668a9c8a89e11b89fc25bda90addc9b2bff65ddfba4d6c8f2dd516a",
+    "battle/combatants_pkg/__init__.py": "1186e316deb07d61e812b99e8cb5be6030270e30435ae92d4159f388edd7d896",
+    "battle/combatants_pkg/ai_generator.py": "7d40b304e24c71998050273f165888981ec7ab874b164bad8172bf725f9100de",
+    "battle/combatants_pkg/cache.py": "ec7dcdae5692a7a4a625e8ac0bb9234105049d6ae200ed5063fae6e34c56fc11",
+    "battle/combatants_pkg/core.py": "7eca10b8b77c390ac2d4133ffff3dad1abd20ed5fe8a98032476ce790838f27c",
+    "battle/combatants_pkg/guest_builder.py": "619c3e412fb2719cc5825f3fd737d53cf71713a631da3a586c34b3853957cf69",
+    "battle/combatants_pkg/tech_effects.py": "1af7bfdd909041bbbb9a09b1837b97af1f4cd1ab7844a1e37efaf97a60849691",
+    "battle/combatants_pkg/troop_builder.py": "a18a8d39153e6492a0702f02b0343fcf055608e8a24574c4e725d3f8cac262c6",
+    "battle/combatants_pkg/troop_device_bonuses.py": "cad488d3fcb3f8adb260acd3bee31cc4bc50b63618903cd41fb0ac55306a7151",
+    "battle/constants.py": "9d41897d654bd554ca1e966935dc58f5716cb6340bca7da4292e5ca5baf7dfa6",
+    "battle/defender_setup.py": "0e04c41460b6b3ae5c9eb376607f985186ce1f20f8768a07377675adee7a7fe9",
+    "battle/deployment.py": "6bef57eba7a509bdc69582e631ddff53969c65ba4cb8b31661759a35311ef9cd",
+    "battle/execution.py": "ea997f8038ff546ca5306b3c0434cd1142462cf1ac7107f96cad5e4712f232bd",
+    "battle/locking.py": "b83b6aa7bd1038b1f1361b1655bfd2e48d7219a204d80cf6eea2a6c2e196a3df",
+    "battle/management/__init__.py": "f30630e579b863d91669f602abaf846c85b916565b8f8dc6617264cef40b6d37",
+    "battle/management/commands/__init__.py": "6d267f8114e57cdc126e4925a0c2e4c0581a8a4a71e598eb09cad5c3bf3026cc",
+    "battle/management/commands/load_troop_templates.py": "f8dffebb6ffb2d38b73b0b9757a1dd90feea0fdce50977c304bbeb6b6ac3b2cb",
+    "battle/migrations/0001_initial.py": "56ce82eed0459ebcbffab379235d7e4b1a769e26084f89e052579405dc7e0ebb",
+    "battle/migrations/0002_battlereport_battle_type_battlereport_drops_and_more.py": "d43fe028ab87bbc958157a3f9a9d135d2b4888757c7b348a6d6642fc97554352",
+    "battle/migrations/0003_battlereport_attacker_troops_and_more.py": "3900394c09d9959051c6b095d96ee53a08f893a1cda45cc9a26a4e0aea909e3a",
+    "battle/migrations/0004_trooptemplate.py": "edfc9c8c0415c2a1d65339d7c0e53aed8da50386317b1fc88426ccda5c0de7db",
+    "battle/migrations/0005_add_player_troop.py": "6a86dbb815127b188599781117014d5f2cd74bb2f56047219c618e046f3e7f1f",
+    "battle/migrations/0006_battlereport_city_defenses.py": "b76d0923a6ab3443c1f20dba168b5bac4ed8db8bb11175b3f7679f11751d0d6c",
+    "battle/migrations/0007_battlereport_replay_versions.py": "6152b47713619300fe95bf69d8cc0dad3981bcd9e64d97532940eb768cd97e23",
+    "battle/migrations/0008_battlereport_equipment_bonuses.py": "f6b237e5f44ec48fce8b1bb19a484f12f4ca428cd8b08c33319f68c8ce3d7b6b",
+    "battle/migrations/0009_bloodthirsty_cavalry.py": "5ecc157b51146af845e83f9208bd6761985ae5a5bd3f4f600bfaeb7a97719143",
+    "battle/migrations/0010_cavalry_preemptive_attack.py": "3442c44158fb252e3ca83d1afa4e15906c9c6b6e29cb848adb393354cd1a465c",
+    "battle/migrations/0011_rename_cavalry_charge.py": "d636326c7597935d9d2628ecaa3f671d63bbc66714b8b145b41b52f9ce2e03e4",
+    "battle/migrations/0012_cavalry_mobility_stats.py": "0cce9a257c7b11163b79f2c0ee75b977e2e904882eb8684539dbb88504a4c3f4",
+    "battle/migrations/0013_cavalry_attack_increase.py": "d79f1024e3b31af66b0851ee0483e308cd7ec25be5d9a3226e32a2ec9db4c80b",
+    "battle/migrations/0014_cavalry_base_attack_17.py": "735a12959298dd75c827c3ff6978de766c39645fc9f3e3561788645d2e5181aa",
+    "battle/migrations/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "battle/models.py": "0408413d1961d4f937deacc12e295c73f3fcdb8af601d8fa4cead47ef1be20e2",
+    "battle/modifier_lifecycle.py": "ebb18ad481e1b934774b85f529a65905002d67729b8b6214444697a19ef65cd3",
+    "battle/passive_conditions.py": "a865ba2ce1ebd281c9833b67f2b159ba7ff2c8aee2151a6eac784d8a16585962",
+    "battle/passive_effects.py": "dcf6c94bd843b115c5a26be6f2b0c1dc760abfe13e5fb232ff74863f6690fd5b",
+    "battle/passive_transformations.py": "6ebff31ebc92261f92c49b7456d0c5346f6adf5cd04d90c0eb629c45e34cbacb",
+    "battle/passives.py": "44ab245a2ae27959acbbb94627bef938897ffa5a6825c7b23f024dd2a8ec1ffb",
+    "battle/random_context.py": "fc2a88a9fd5aa789c09f1be8444d30fdad46fa81700b388260aa4d3c82dbc73b",
+    "battle/replay_audit.py": "8f66287e54d95bae0e76e0a8e995f073292306f83b1b48a3c73487dd34a225b8",
+    "battle/report_events.py": "1db194920c3bf36ca14956a70baaf44a8e2e7ef695505a2efb85d106bcea876a",
+    "battle/rewards.py": "f5fa57e7da3a4d276f50c41b4b2f7f2932a9b5508b066af2a22e432a157c091b",
+    "battle/services.py": "fc8b3ab0e7615308f3cb86cb771c85e3057ad42019888eb87da2c47c5d171b46",
+    "battle/setup.py": "3cc1d383c08eae88f302e858b1d8c1bf61d26b50984d036f6dd4eaaa9b9a364c",
+    "battle/signals.py": "33b33f2b6a52b75ee1d1605a48bff3d3b440fb93b813c40c758b2089a43932a5",
+    "battle/simulation/__init__.py": "b0f1ca23b720bd02c14ccd48a4a826fda6c26d5a62f15ed934ebc425a47bf6e0",
+    "battle/simulation/attack_execution.py": "99ead9f6bdf99d3ada88a652c1f37275a5b3de39dd40cf96905e6f6a1612651d",
+    "battle/simulation/battle_flow.py": "80b659edafd85111e29e454784a3681f5c7f002793187a6c0a478389f29f939a",
+    "battle/simulation/constants.py": "9758fbb691d27335efe5a44f8e5c7f66770ca1284145bc6b518cc2776602d7e6",
+    "battle/simulation/damage_application.py": "c54e5b10c6733accb3109330b844e79109bc1d70eeef770ff907cea41d1de3bc",
+    "battle/simulation/damage_calculation.py": "1f92f83d6be980cec3b1bc64412486e9da5030267bd59b8cf15b954c3d60fa7e",
+    "battle/simulation/report_state.py": "41fdd5f206aa0404129a08aa4afde72e346703e86130541ef4e46bf5e8f53827",
+    "battle/simulation/target_selection.py": "9db77c68d9c1c301e97553beddc3ebe2cbc509c4adecf35b3997cbe28e96f85d",
+    "battle/simulation/turn_order.py": "29deaa8792b0341448154d9163e0e47afe3c967506f12a9a5798db58dda770d8",
+    "battle/simulation/types.py": "1a347c35a85c49d484e1f4dc62228eb56a64de88ead4a5a7e3efc7da2929ccd7",
+    "battle/simulation/utils.py": "dfe01787e974dca7339f1897e334eaff602cd5fadd00828fe63756adff19f965",
+    "battle/simulation_core.py": "bf947eb01a24ca9ee3ff50d3f22097d0058b7dd4281664a11049c234a94acd02",
+    "battle/skills.py": "4f9dda565cd452396a5d598bb7d9e916c5b878613673ec5e41cc953decdd8913",
+    "battle/status_manager.py": "7604c8a43608a72814ffebe66050cfb706be98dc00b189b1ae247814add21c57",
+    "battle/tasks.py": "f3bc9d025fa82ff245de0e9ece8d46ddf6b3b4f0835306e1d3c7cb4794c3eea5",
+    "battle/templatetags/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "battle/templatetags/battle_report.py": "8d780d9f022c1bb7df6bf7f9bd64e53921f2d7ece8e7fb3742ffceb53e545bc8",
+    "battle/troops.py": "b4d585977de6625cb61d35fa42bfc35a34d8372fb1cdd6f03cb2fe46b7f25f40",
+    "battle/urls.py": "48e84566650cb86c407c64512f4cb683b470b41a61e2c69cb4efac3ee0f62ecb",
+    "battle/utils/__init__.py": "8db6342fd36a154f30141933e730a59405016170cc1b31fcb300334c70badb03",
+    "battle/utils/battle_calculator.py": "2d7447a9769d895e1db1407fd383166cde30e05183d482dcfff1ada5579e9a8e",
+    "battle/utils/status_effects.py": "1a4a36e5348876043155911a9bdacae59f0d51558f22ac224c05a2d581945682",
+    "battle/view_helpers.py": "e075445077d2fc57080673a42bc968fc73f81f2f528991c770fbe27ba34bb3f6",
+    "battle/views.py": "3d3e2c4382aa169d621e606d050d0434ca22aaaec2f13233d92e023c97f938ad"
+  }
+}

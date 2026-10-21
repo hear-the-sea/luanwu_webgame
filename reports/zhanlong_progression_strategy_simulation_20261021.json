@@ -1,0 +1,298 @@
+{
+  "seed_start": 460000,
+  "trials_per_case": 100,
+  "total_battles": 1800,
+  "rows": [
+    {
+      "mission": "zhanlong_yanshan_shizi",
+      "profile": 9,
+      "variant": "balanced",
+      "trials": 100,
+      "wins": 5,
+      "mean_survivors": 0.11
+    },
+    {
+      "mission": "zhanlong_yanshan_shizi",
+      "profile": 9,
+      "variant": "quan",
+      "trials": 100,
+      "wins": 69,
+      "mean_survivors": 0.2
+    },
+    {
+      "mission": "zhanlong_yanshan_shizi",
+      "profile": 9,
+      "variant": "jian",
+      "trials": 100,
+      "wins": 0,
+      "mean_survivors": 0.0
+    },
+    {
+      "mission": "zhanlong_yanshan_shizi",
+      "profile": 9,
+      "variant": "qiang",
+      "trials": 100,
+      "wins": 6,
+      "mean_survivors": 0.36
+    },
+    {
+      "mission": "zhanlong_yanshan_shizi",
+      "profile": 9,
+      "variant": "balanced_control",
+      "trials": 100,
+      "wins": 2,
+      "mean_survivors": 0.11
+    },
+    {
+      "mission": "zhanlong_yanshan_shizi",
+      "profile": 9,
+      "variant": "jian_control",
+      "trials": 100,
+      "wins": 0,
+      "mean_survivors": 0.0
+    },
+    {
+      "mission": "zhanlong_changban_tuwei",
+      "profile": 10,
+      "variant": "balanced",
+      "trials": 100,
+      "wins": 67,
+      "mean_survivors": 1.77
+    },
+    {
+      "mission": "zhanlong_changban_tuwei",
+      "profile": 10,
+      "variant": "quan",
+      "trials": 100,
+      "wins": 96,
+      "mean_survivors": 0.18
+    },
+    {
+      "mission": "zhanlong_changban_tuwei",
+      "profile": 10,
+      "variant": "jian",
+      "trials": 100,
+      "wins": 60,
+      "mean_survivors": 0.25
+    },
+    {
+      "mission": "zhanlong_changban_tuwei",
+      "profile": 10,
+      "variant": "qiang",
+      "trials": 100,
+      "wins": 99,
+      "mean_survivors": 0.09
+    },
+    {
+      "mission": "zhanlong_changban_tuwei",
+      "profile": 10,
+      "variant": "balanced_control",
+      "trials": 100,
+      "wins": 69,
+      "mean_survivors": 2.84
+    },
+    {
+      "mission": "zhanlong_changban_tuwei",
+      "profile": 10,
+      "variant": "jian_control",
+      "trials": 100,
+      "wins": 55,
+      "mean_survivors": 0.41
+    },
+    {
+      "mission": "zhanlong_changban_duanqiao",
+      "profile": 10,
+      "variant": "balanced",
+      "trials": 100,
+      "wins": 9,
+      "mean_survivors": 0.21
+    },
+    {
+      "mission": "zhanlong_changban_duanqiao",
+      "profile": 10,
+      "variant": "quan",
+      "trials": 100,
+      "wins": 18,
+      "mean_survivors": 0.03
+    },
+    {
+      "mission": "zhanlong_changban_duanqiao",
+      "profile": 10,
+      "variant": "jian",
+      "trials": 100,
+      "wins": 7,
+      "mean_survivors": 0.0
+    },
+    {
+      "mission": "zhanlong_changban_duanqiao",
+      "profile": 10,
+      "variant": "qiang",
+      "trials": 100,
+      "wins": 23,
+      "mean_survivors": 0.0
+    },
+    {
+      "mission": "zhanlong_changban_duanqiao",
+      "profile": 10,
+      "variant": "balanced_control",
+      "trials": 100,
+      "wins": 19,
+      "mean_survivors": 0.38
+    },
+    {
+      "mission": "zhanlong_changban_duanqiao",
+      "profile": 10,
+      "variant": "jian_control",
+      "trials": 100,
+      "wins": 4,
+      "mean_survivors": 0.0
+    }
+  ],
+  "mission_inputs": {
+    "zhanlong_yanshan_shizi": {
+      "key": "zhanlong_yanshan_shizi",
+      "name": "战龙在野第一关：北地燕山初识子龙",
+      "display_order": 1004,
+      "difficulty": "advanced",
+      "description": "北地入秋，燕山古道霜寒马瘦。连年兵乱让沿途村庄十室九空，逃难百姓带着仅剩的粮食与家当，沿山道向南求生。溃兵出身的寨主铁背熊却盘踞险隘，劫粮掠财，将不肯交出财物的百姓扣在山口。商路由此断绝，附近村民也无人敢再上山。\n\n庄园主押运物资途经山下，忽有伤者拦路求援：一名白袍小将为救被困百姓，独骑闯入匪阵，已在山口苦战多时。此人自称常山赵云，枪法凌厉，却因顾念身后老幼，始终无法放手突围。铁背熊披甲持锤堵住正道，故意招锋引敌，坡上弓手正趁他吸引火力之际张弓搭箭。\n\n山道狭窄，伏兵将成。还请庄园主率门客抢攻坡口，击溃拦路匪众，助这位素未谋面的白袍小将解开眼前危局。坡上三千八百箭神先发制人，拳系护院可凭远程防护抵住开场箭雨，并以克弓之长压制弓阵；门客仍须应付寨主引敌与重锤，兼顾破阵和攻坚。\n",
+      "battle_type": "task1",
+      "enemy_guests": [
+        {
+          "key": "task_zhanlong_tiebeixiong",
+          "label": "燕山寨主·铁背熊"
+        }
+      ],
+      "enemy_troops": {
+        "dao_sheng": 500,
+        "qiang_wang": 500,
+        "arrow_god": 3800
+      },
+      "enemy_technology": {
+        "level": 10,
+        "guest_level": 92,
+        "guest_bonus": 0.58
+      },
+      "drop_table": {
+        "silver": 90000,
+        "mission_chest_v3_zhanlong_yanshan_shizi": 1
+      },
+      "available_weekdays": [],
+      "base_travel_time": 2400,
+      "daily_limit": 1,
+      "mission_card_daily_limit": 5
+    },
+    "zhanlong_changban_tuwei": {
+      "key": "zhanlong_changban_tuwei",
+      "name": "战龙在野第二关：龙战长坂七进七出",
+      "display_order": 1005,
+      "difficulty": "advanced",
+      "description": "荆襄骤变，曹军铁骑昼夜南下。刘备携百姓撤往江陵，军民相杂，车仗连绵，行至当阳长坂时，被曹军前锋追及。仓促之间，队伍四散，粮车倾覆，家眷失落；漫山遍野尽是奔逃的人影，呼救声淹没在马蹄与战鼓之中。\n\n混乱之际，有人看见一员白袍将军逆着人潮杀回阵中，正是昔日燕山相识的赵子龙。刘备的家眷仍陷在重围深处，他不肯独自撤离，正在曹军阵间往返寻人。虎豹骑统领曹纯却已收拢精骑，以迅疾突击截杀外围接应之人，几条通往长坂桥的道路正被逐一封锁。\n\n旧日所赠的白马银枪令尚在手中，故人却已身陷生死之地。此行需消耗一枚「白马银枪令」，请庄园主率门客突入长坂乱军，击破曹纯与四千四百嗜血铁骑的拦截，替赵云打开接应之路。铁骑已研习全部满级专属科技，不受五行兵种克制；宜以防御、反击或反伤护院承受先攻，以门客输出击倒曹纯，使其督战增伤从下一轮起失效。曹纯生命低于三成时将进入狂暴，运势增加100，其他属性不变，虎豹奔袭转为攻击三人，需兼顾输出与残血阶段的承伤。\n",
+      "battle_type": "task1",
+      "entry_cost": {
+        "zhanlong_white_horse_token": 1
+      },
+      "enemy_guests": [
+        {
+          "key": "task_zhanlong_caochun",
+          "label": "曹纯"
+        }
+      ],
+      "enemy_troops": {
+        "bloodthirsty_cavalry": 4400
+      },
+      "enemy_technology": {
+        "level": 10,
+        "levels": {
+          "wolf_force": 10,
+          "wolf_defense": 10,
+          "wolf_hp": 10,
+          "wolf_agility": 10,
+          "wolf_berserk": 5
+        },
+        "guest_level": 96,
+        "guest_bonus": 0.66
+      },
+      "drop_table": {
+        "silver": 110000,
+        "mission_chest_v3_zhanlong_changban_tuwei": 1
+      },
+      "available_weekdays": [],
+      "base_travel_time": 2400,
+      "daily_limit": 1,
+      "mission_card_daily_limit": 5
+    },
+    "zhanlong_changban_duanqiao": {
+      "key": "zhanlong_changban_duanqiao",
+      "name": "战龙在野第三关：长坂桥张飞断水流",
+      "display_order": 1006,
+      "difficulty": "advanced",
+      "description": "长坂桥前，张飞横矛立马，怒目巡视来路。桥后树林烟尘滚滚，旌旗时隐时现，战马奔踏之声连绵不绝。逃来的散卒惊呼林中伏有百万大军，连追至岸边的曹军也勒马驻足，不敢贸然向前。\n\n庄园主率门客赶到桥头，尚未来得及通报身份，便被张飞一声断喝拦住。如今败军之中真假难辨，曹军又有乔装混入之嫌，他奉命守桥，绝不肯放来历未明的武装队伍靠近。桥后尚有百姓等待撤离，要取得信任，还须当面试过本领与胆色。\n\n桥后尘土愈起愈高，林中究竟藏着多少兵马，无人看得分明。眼前那杆丈八蛇矛却已缓缓抬起。此行需消耗一枚「长坂护主令」，请庄园主整顿队伍，迎接张翼德的桥头考验。桥头张飞武力650、防御480、敏捷400，虎啸龙吟伤害倍率为演武版本的两倍，生命低于两成后改为同时攻击两人。重矛之下，宜由高防减伤门客承担风险，辅以眩晕技能争取输出机会；护院仍需抵住守桥铁骑的持续冲击，阵容须兼顾控制、承伤与攻坚。\n",
+      "battle_type": "task1",
+      "entry_cost": {
+        "zhanlong_changban_guard_token": 1
+      },
+      "enemy_guests": [
+        {
+          "key": "task_zhanlong_zhangfei_bridge",
+          "label": "张飞"
+        }
+      ],
+      "enemy_troops": {
+        "bloodthirsty_cavalry": 5400
+      },
+      "enemy_troops_display": {
+        "bloodthirsty_cavalry": 1000000
+      },
+      "enemy_technology": {
+        "level": 10,
+        "levels": {
+          "wolf_force": 10,
+          "wolf_defense": 10,
+          "wolf_hp": 10,
+          "wolf_agility": 10,
+          "wolf_berserk": 5
+        },
+        "guest_level": 100,
+        "guest_bonus": 0.74
+      },
+      "drop_table": {
+        "silver": 130000,
+        "mission_chest_v3_zhanlong_changban_duanqiao": 1
+      },
+      "available_weekdays": [],
+      "base_travel_time": 2400,
+      "daily_limit": 1,
+      "mission_card_daily_limit": 5
+    }
+  },
+  "profiles": {
+    "9": [
+      15,
+      90,
+      "orange",
+      75,
+      9,
+      3750
+    ],
+    "10": [
+      18,
+      100,
+      "orange",
+      85,
+      10,
+      4500
+    ]
+  },
+  "methodology": {
+    "constants": "同档人数、等级、品质、装备补正、科技和总兵量一致，仅改变兵种比例或文系主动技能",
+    "variants": "balanced=五兵种均分；quan=80%拳圣20%枪王；jian=2/3剑圣1/3枪王；qiang=全枪王",
+    "control": "通过正式学习条件与非装备属性检查后，文系主动改为奇策突袭，武系主动及所有被动保持",
+    "survivors": "仅统计存活门客；护院存活也能获胜，高胜率不等于低门客损耗",
+    "limits": "固定基准的相对参考；无器械、帮会科技或城防加成"
+  },
+  "source_sha256": {
+    "data/mission_templates.yaml": "a37544275d886c513d47335b10415cfcfda40e55c5ce0d3bf2bfa7f804ccc91e",
+    "data/guests/zhanlong.yaml": "7c43446234d375d335886dabc37687490e11d9bd75f8c1fc0f9a2a84cc7d3cc2",
+    "data/guest_skills.yaml": "b5e12a98728ee71d6ce2ac2ec01f3f1cad5a7081a5e1c591a9715a69895cdc2f"
+  }
+}

@@ -240,7 +240,15 @@ def _perform_single_attack(
     """
 
     extra_target_effects = consume_pending_extra_target_true_damage(actor)
-    selection = select_attack_targets(actor, attacker_team, defender_team, rng, _trigger_attack_skills)
+    # 铁骑的开战先攻只进行普攻，普通回合才判定铁骑冲阵。
+    cavalry_preemptive = actor.kind == "troop" and actor.template_key == "bloodthirsty_cavalry" and round_priority < 0
+    selection = select_attack_targets(
+        actor,
+        attacker_team,
+        defender_team,
+        rng,
+        (lambda _actor, _rng: []) if cavalry_preemptive else _trigger_attack_skills,
+    )
     if selection is None:
         return cast(dict[str, Any] | None, _finalize_attack_round(actor, []))
 
@@ -291,6 +299,7 @@ def _perform_single_attack(
                 "target_strength_before": max(0, int(current_target.troop_strength)),
                 "target_strength_after": max(0, int(current_target.troop_strength)),
                 "actor_guest_id": actor.guest_id,
+                "actor_template_key": actor.template_key,
                 "actor_owner_entry_id": actor.owner_entry_id,
                 "actor_combatant_slot": actor.combatant_slot,
                 "target_guest_id": current_target.guest_id,
@@ -406,6 +415,7 @@ def _perform_single_attack(
             "attack_type": attack_type,
             "actor_defeated": actor_defeated,
             "actor_guest_id": actor.guest_id,
+            "actor_template_key": actor.template_key,
             "actor_owner_entry_id": actor.owner_entry_id,
             "actor_combatant_slot": actor.combatant_slot,
             "target_guest_id": current_target.guest_id,

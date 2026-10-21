@@ -24,6 +24,47 @@ def _text(node) -> str:
     return "".join(node.get_text().split())
 
 
+@pytest.mark.parametrize("legacy", [False, True])
+@pytest.mark.parametrize("nested", [False, True])
+@pytest.mark.parametrize("dodge", [False, True])
+def test_cavalry_preemptive_report_uses_normal_attack_without_sword_technology(legacy, nested, dodge):
+    hit = {
+        "actor": "嗜血铁骑",
+        "target": "枪王",
+        "kind": "troop",
+        "side": "attacker",
+        "priority": -1,
+        "priority_phase": -1,
+        "damage": 123,
+        "skills": [],
+        "is_dodge": dodge,
+    }
+    if not legacy:
+        hit["actor_template_key"] = "bloodthirsty_cavalry"
+    if nested:
+        hit["additional_attacks"] = [{"actor": "嗜血铁骑", "target": "枪王", "damage": 123, "skills": []}]
+    body = render_to_string("battle/partials/round_event_list.html", {"events": [hit], "my_side": "attacker"})
+    assert "驭剑之术" not in body
+    assert "铁骑冲阵" not in body
+    assert "普通攻击" in body
+
+
+def test_cavalry_charge_report_keeps_active_skill_name():
+    hit = {
+        "actor": "嗜血铁骑",
+        "actor_template_key": "bloodthirsty_cavalry",
+        "target": "枪王",
+        "kind": "troop",
+        "side": "attacker",
+        "priority": -1,
+        "damage": 123,
+        "skills": ["铁骑冲阵"],
+    }
+    body = render_to_string("battle/partials/round_event_list.html", {"events": [hit], "my_side": "attacker"})
+    assert "爆发技能：铁骑冲阵" in body
+    assert "驭剑之术" not in body
+
+
 @pytest.mark.parametrize("viewer", ["attacker", "defender", "spectator"])
 @pytest.mark.parametrize("side", ["attacker", "defender"])
 @pytest.mark.parametrize("branch", ["normal", "crit", "double", "bow", "sword", "counter", "reflect", "city"])

@@ -13,6 +13,7 @@ from .troops import load_troop_templates
 from .view_helpers import (
     attach_avatar_urls,
     build_arena_matchup_context,
+    build_battle_prelude,
     build_raid_matchup_context,
     build_report_title,
     build_reward_context,
@@ -116,6 +117,7 @@ class BattleReportDetailView(LoginRequiredMixin, DetailView):
         attach_avatar_urls(attacker_team, avatar_map)
         attach_avatar_urls(defender_team, avatar_map)
         context["battle_rounds"] = build_rounds_display(report.rounds or [], avatar_map)
+        context["battle_prelude"] = build_battle_prelude(report.rounds or [], template_keys)
 
         my_team, enemy_team, my_troops_raw, enemy_troops_raw, my_loss, enemy_loss = resolve_perspective(
             report,

@@ -1,3 +1,19 @@
+.guest-roster-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.guest-roster-actions > form {
+    margin: 0;
+}
+
+.guest-roster-actions > a.tw-btn-primary {
+    color: var(--text-light, #fff8e7);
+    text-decoration: none;
+}
+
 .guest-roster-card {
     display: block;
     max-height: none;
@@ -162,15 +178,33 @@
         gap: 0.75rem;
     }
 
-    .tw-section-header > div:last-child {
-        flex-wrap: wrap;
+    .tw-section-header > .guest-roster-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: stretch;
+        width: 100%;
     }
 
-    .tw-section-header .tw-btn-primary,
-    .tw-section-header .tw-btn-secondary {
-        flex: 1;
-        min-width: 120px;
+    .guest-roster-actions > form {
+        grid-column: 1 / -1;
+    }
+
+    .guest-roster-actions .tw-btn-primary,
+    .guest-roster-actions .tw-btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        width: 100%;
+        min-width: 0;
+        min-height: 44px;
+        padding: 0.5rem;
+        line-height: 1.5;
         text-align: center;
+    }
+
+    .guest-roster-actions > a {
+        white-space: nowrap;
     }
 
     .guest-roster-card {

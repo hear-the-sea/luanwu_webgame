@@ -2,6 +2,46 @@
 # skills/skill_books 由 load_guest_templates 导入。
 
 skills:
+  # ---------- 姓氏传说之李：恶来专属技能 ----------
+  - key: surname_li_elai_crushing_blow
+    name: 崩山裂甲
+    rarity: orange
+    kind: active
+    description: 恶来以35%固定概率挥动重戟，攻击两名敌人并施加破甲，使其有效防御降低25%，持续两次行动机会。恶煞死战触发后改为攻击三名敌人。
+    targets: 2
+    damage_formula:
+      base: 700
+      ally: {force: 4.0, defense: 1.0}
+      enemy: {defense: 0.3}
+    status_effect: armor_broken
+    status_probability: 1.0
+    status_duration: 2
+    passive_config:
+      active:
+        trigger_chance: 0.35
+
+  - key: surname_li_elai_last_stand
+    name: 恶煞死战
+    rarity: orange
+    kind: passive
+    description: 生命低于30%时进入死战状态，崩山裂甲改为攻击三名敌人，每场战斗仅触发一次，持续至战斗结束。
+    passive_config:
+      triggers:
+        - timing: hit_taken
+          conditions:
+            hp_ratio_lt: 0.3
+          effects: &surname_li_elai_last_stand_effects
+            - type: enrage
+              luck_bonus: 0
+              skill_key: surname_li_elai_crushing_blow
+              targets: 3
+              log_name: 恶煞死战
+              message: 恶来怒吼死战，崩山裂甲转为同时攻击三人！
+        - timing: action_before
+          conditions:
+            hp_ratio_lt: 0.3
+          effects: *surname_li_elai_last_stand_effects
+
   # ---------- 战龙在野任务专属技能 ----------
   - key: zhanlong_iron_hammer
     name: 铁锤压顶
@@ -21,7 +61,7 @@ skills:
     name: 虎豹奔袭
     rarity: purple
     kind: active
-    description: 率精骑疾冲，对两名目标造成武力与敏捷伤害。
+    description: 率精骑疾冲，对两名目标造成武力与敏捷伤害；狂暴后改为攻击三名目标。
     targets: 2
     damage_formula:
       base: 700
@@ -32,7 +72,7 @@ skills:
     name: 精骑督战
     rarity: purple
     kind: passive
-    description: 每轮令己方护院伤害提高12%；统领阵亡后，下一轮不再获得督战增益。
+    description: 每轮令己方护院伤害提高12%；统领阵亡后，下一轮不再获得督战增益。生命低于30%时进入狂暴，运势增加100，虎豹奔袭改为攻击三名目标；其他属性不变，每场战斗仅触发一次，持续至战斗结束。
     passive_config:
       triggers:
         - timing: round_start
@@ -41,6 +81,20 @@ skills:
               value: 1.12
               target_scope: allies
               target_kind_is: troop
+        - timing: hit_taken
+          conditions:
+            hp_ratio_lt: 0.3
+          effects: &zhanlong_caochun_enrage_effects
+            - type: enrage
+              luck_bonus: 100
+              skill_key: zhanlong_cavalry_assault
+              targets: 3
+              log_name: 精骑狂暴
+              message: 曹纯血战狂啸，运势增加100，虎豹奔袭转为攻击三人！
+        - timing: action_before
+          conditions:
+            hp_ratio_lt: 0.3
+          effects: *zhanlong_caochun_enrage_effects
 
   - key: zhanlong_tiger_dragon_roar
     name: 虎啸龙吟
@@ -56,11 +110,40 @@ skills:
         trigger_chance: 0.25
         damage_multiplier: 2.3
 
+  - key: zhanlong_bridge_tiger_dragon_roar
+    name: 虎啸龙吟
+    rarity: orange
+    kind: active
+    description: 桥头张飞以25%固定概率怒喝出矛，伤害倍率为演武虎啸龙吟的两倍；生命低于20%后，每次触发攻击两名目标。
+    targets: 1
+    damage_formula:
+      ally: {force: 4.0}
+      enemy: {defense: 0.4}
+    passive_config:
+      active:
+        trigger_chance: 0.25
+        damage_multiplier: 4.6
+      triggers:
+        - timing: hit_taken
+          conditions:
+            hp_ratio_lt: 0.2
+          effects: &zhanlong_bridge_roar_fury_effects
+            - type: enrage
+              luck_bonus: 0
+              skill_key: zhanlong_bridge_tiger_dragon_roar
+              targets: 2
+              log_name: 虎啸破阵
+              message: 桥头张飞怒啸震桥，虎啸龙吟转为同时攻击两人！
+        - timing: action_before
+          conditions:
+            hp_ratio_lt: 0.2
+          effects: *zhanlong_bridge_roar_fury_effects
+
   - key: zhanlong_dust_ruse
     name: 疑兵扬尘
     rarity: purple
     kind: passive
-    description: 开场揭示桥后扬尘疑兵，百万声势不计入实际参战兵力。
+    description: 开场揭示桥后扬尘疑兵，百万声势不计入实际参战兵力。桥头张飞生命低于20%后，虎啸龙吟改为攻击两名目标，每场仅转换一次，持续至战斗结束。
     passive_config:
       triggers:
         - timing: round_start
@@ -73,6 +156,20 @@ skills:
             - type: set_state
               key: zhanlong_dust_revealed
               value: true
+        - timing: hit_taken
+          conditions:
+            hp_ratio_lt: 0.2
+          effects: &zhanlong_bridge_fury_effects
+            - type: enrage
+              luck_bonus: 0
+              skill_key: zhanlong_bridge_tiger_dragon_roar
+              targets: 2
+              log_name: 虎啸破阵
+              message: 桥头张飞怒啸震桥，虎啸龙吟转为同时攻击两人！
+        - timing: action_before
+          conditions:
+            hp_ratio_lt: 0.2
+          effects: *zhanlong_bridge_fury_effects
 
   - key: zhanlong_azure_dragon_slash
     name: 青龙偃月
@@ -102,6 +199,21 @@ skills:
             - type: set_counter
               chance: 0.3
               damage_multiplier: 0.8
+
+  - key: zhanlong_dragon_assault
+    name: 龙胆破阵
+    rarity: orange
+    kind: active
+    description: 银枪横扫三名目标，以武力与敏捷造成伤害；每个目标生命低于35%时，对该目标的本次伤害提高50%。
+    targets: 3
+    damage_formula:
+      base: 700
+      ally: {force: 3.6, agility: 2.4}
+      enemy: {defense: 0.25}
+    passive_config:
+      active:
+        execute_hp_ratio_lt: 0.35
+        execute_multiplier: 1.5
 
   - key: zhanlong_xiliang_charge
     name: 西凉驰突
