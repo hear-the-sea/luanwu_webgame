@@ -26,6 +26,15 @@ from tests.jail_persuasion.conftest import persuasion_world as persuasion_world 
 PROJECT_ROOT = Path(__file__).parent.parent
 
 
+@pytest.fixture
+def guest_hp_before_level_growth(monkeypatch):
+    """旧数据迁移用例使用 0093 之前的生命口径，不受当前模型规则影响。"""
+    monkeypatch.setattr(
+        "guests.guest_rules.compute_guest_max_hp",
+        lambda guest: max(200, int(guest.template.base_hp) + int(guest.hp_bonus) + int(guest.defense_stat) * 50),
+    )
+
+
 @pytest.fixture(autouse=True)
 def _reset_bootstrap_catalog_cache():
     from gameplay.services.virtual_player_core.bootstrap_catalog import clear_bootstrap_catalog_cache

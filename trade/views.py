@@ -208,9 +208,20 @@ def market_create_listing_view(request: HttpRequest) -> HttpResponse:
 @rate_limit_redirect("market_purchase", limit=10, window_seconds=60)
 def market_purchase_view(request: HttpRequest, listing_id: int) -> HttpResponse:
     """购买交易行物品"""
+    purchase_mode = request.POST.get("purchase_mode", "all")
+    if purchase_mode not in {"partial", "all"}:
+        return trade_view_helpers.trade_input_error(request, "购买方式无效", tab="market", view="buy")
+    quantity: int | None = None
+    if purchase_mode == "partial":
+        parsed_quantity = _parse_positive_post_int_or_redirect(
+            request, "quantity", "购买数量必须是正整数", tab="market", view="buy"
+        )
+        if isinstance(parsed_quantity, HttpResponseRedirect):
+            return parsed_quantity
+        quantity = parsed_quantity
 
     def _purchase(manor: Manor) -> Any:
-        transaction = purchase_listing(manor, listing_id)
+        transaction = purchase_listing(manor, listing_id, quantity=quantity)
         trade_view_helpers.warn_if_threshold_exceeded(
             setting_name="TRADE_HIGH_VALUE_SILVER_THRESHOLD",
             default=1_000_000,
@@ -225,7 +236,7 @@ def market_purchase_view(request: HttpRequest, listing_id: int) -> HttpResponse:
         op="market_purchase",
         action_factory=_purchase,
         success_message=lambda transaction: (
-            f"成功购买 {transaction.listing.item_template.name} ×{transaction.listing.quantity}，"
+            f"成功购买 {transaction.listing.item_template.name} ×{transaction.quantity}，"
             f"花费 {transaction.total_price:,} 银两。物品已直接存入仓库，请查收！"
         ),
         tab="market",

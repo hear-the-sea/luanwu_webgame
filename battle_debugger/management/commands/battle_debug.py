@@ -308,7 +308,11 @@ class Command(BaseCommand):
                     context["attack"] = attack
                     body = render_to_string("battle/partials/attack_action_details.html", context)
                     text = "".join(strip_tags(body).split())
-                    actor_prefix = "" if troop_phase_skill(attack, action, priority) else f"{action.get('actor', '?')} "
+                    actor_prefix = (
+                        ""
+                        if attack.get("reaction_type") == "counter" or troop_phase_skill(attack, action, priority)
+                        else f"{action.get('actor', '?')} "
+                    )
                     marker = f"  [{i+1}] " if index == 0 else "      "
                     self.stdout.write(f"{marker}{actor_prefix}{text}")
 

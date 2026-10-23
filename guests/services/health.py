@@ -11,11 +11,8 @@ from fractions import Fraction
 from typing import TYPE_CHECKING, Any, Dict
 
 from django.db import connection, transaction
-from django.db.models import BigIntegerField, F, Value
-from django.db.models.functions import Cast, Greatest
 from django.utils import timezone
 
-from core.config import GUEST
 from core.exceptions import (
     GuestFullHpError,
     GuestItemConfigurationError,
@@ -31,6 +28,7 @@ from gameplay.services.inventory import core as inventory_core
 from .. import guest_health_rules as _guest_health_rules
 from ..constants import TimeConstants
 from ..models import Guest, GuestStatus
+from ..query_utils import guest_max_hp_expression
 from .loyalty import apply_injury_loyalty_decay, clear_injury_loyalty_decay
 from .status import GUEST_STATUS_UPDATE_FIELDS, prepare_guest_status_transition, schedule_resumed_guest_training
 
@@ -788,13 +786,7 @@ def heal_all_guests_with_medicine(manor: Manor) -> dict[str, int]:
         .order_by("template__key", "id")
     )
     # 与 Guest.max_hp 的规则一致，在数据库中排除满血门客，缩小锁范围。
-    max_hp = Greatest(
-        Value(GUEST.MIN_HP_FLOOR),
-        Cast(F("template__base_hp"), BigIntegerField())
-        + F("hp_bonus")
-        + Cast(F("defense_stat"), BigIntegerField()) * GUEST.DEFENSE_TO_HP_MULTIPLIER,
-        output_field=BigIntegerField(),
-    )
+    max_hp = guest_max_hp_expression()
     guests = list(
         Guest.objects.select_for_update(of=lock_targets)
         .select_related("template")

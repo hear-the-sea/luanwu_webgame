@@ -197,6 +197,7 @@ def _guest_power(guest: Guest) -> int:
         hp_bonus=int(guest.hp_bonus),
         archetype=str(guest.template.archetype),
         base_hp=int(guest.template.base_hp),
+        level=int(guest.level),
     )
 
 
@@ -277,6 +278,7 @@ def test_empty_slot_builds_exact_spec_and_uses_snapshots_without_queries(
         hp_bonus=int(guest_snapshot.hp_bonus),
         archetype=str(guest_snapshot.template.archetype),
         base_hp=int(guest_snapshot.template.base_hp),
+        level=int(guest_snapshot.level),
     )
     expected_gain = expected_guest_power - _guest_power(guest_snapshot)
     assert intent.strength_after.components["arena_lineup_power"] == (
@@ -341,6 +343,7 @@ def test_single_capacity_replacement_removes_old_direct_stats_and_weakens_never(
         hp_bonus=int(guest_snapshot.hp_bonus),
         archetype=str(guest_snapshot.template.archetype),
         base_hp=int(guest_snapshot.template.base_hp),
+        level=int(guest_snapshot.level),
     )
     assert candidates[0].strength_after.components["arena_lineup_power"] == (
         strength_before.components["arena_lineup_power"] - _guest_power(guest_snapshot) + expected_power
@@ -399,6 +402,7 @@ def test_set_activation_projects_exact_power_with_set_defense_as_defense_stat(
         hp_bonus=int(guest_snapshot.hp_bonus),
         archetype=str(guest_snapshot.template.archetype),
         base_hp=int(guest_snapshot.template.base_hp),
+        level=int(guest_snapshot.level),
     )
     assert candidates[0].strength_after.components["arena_lineup_power"] == (
         strength_before.components["arena_lineup_power"] - _guest_power(guest_snapshot) + expected_power
@@ -460,6 +464,7 @@ def test_replacement_projects_set_loss_before_adding_new_direct_stats(
         hp_bonus=int(guest_snapshot.hp_bonus),
         archetype=str(guest_snapshot.template.archetype),
         base_hp=int(guest_snapshot.template.base_hp),
+        level=int(guest_snapshot.level),
     )
     assert candidates[0].strength_after.components["arena_lineup_power"] == (
         strength_before.components["arena_lineup_power"] - _guest_power(guest_snapshot) + expected_power
@@ -606,6 +611,7 @@ def test_swap_inertia_uses_eight_to_fifteen_percent_threshold(manor_factory) -> 
                 hp_bonus=int(guest_snapshot.hp_bonus),
                 archetype=str(guest_snapshot.template.archetype),
                 base_hp=int(guest_snapshot.template.base_hp),
+                level=int(guest_snapshot.level),
             )
             - before_power
         )

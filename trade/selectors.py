@@ -63,6 +63,8 @@ def _base_trade_context(tab: str, manor: Any) -> dict[str, Any]:
         "auction_can_enter": can_enter_auction(manor),
         "auction_min_prestige": AUCTION_MIN_PRESTIGE,
         "market_can_buy_or_list": market_service.can_buy_or_list_on_market(manor),
+        # 旧进程加载新模板时仍显示整单入口，避免部分购买被旧逻辑按整单处理。
+        "market_partial_purchase_enabled": True,
         "market_min_prestige": market_service.MARKET_MIN_PRESTIGE,
         "market_duration_options": _build_market_duration_options(),
     }

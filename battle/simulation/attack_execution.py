@@ -5,18 +5,24 @@
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 from ..passive_effects import consume_pending_extra_target_true_damage
 from ..passives import run_passives_for_timing
-from ..random_context import CURRENT_BATTLE_ENGINE_VERSION, GROUPED_ATTACK_ENGINE_VERSIONS
+from ..random_context import (
+    CURRENT_BATTLE_ENGINE_VERSION,
+    DEFERRED_QIANG_WANG_COUNTER_ENGINE_VERSIONS,
+    GROUPED_ATTACK_ENGINE_VERSIONS,
+    GUEST_ACTION_CONSISTENCY_ENGINE_VERSIONS,
+    GUEST_BURST_ENGINE_VERSIONS,
+)
 from .constants import TROOP_EXTRA_ATTACK_INTERVAL, TROOP_GROUP_DAMAGE_MULTIPLIER
-from .damage_application import apply_damage_results
+from .damage_application import apply_damage_results, defer_qiang_wang_counters, resolve_deferred_qiang_wang_counters
 from .damage_calculation import calculate_attack_damage, calculate_passive_true_damage, process_status_effects
 from .report_state import snapshot_unit_state
 from .target_selection import is_ranged_attack, select_attack_targets
-from .types import AttackLogEntry, AttackSkill, AttackType
-from .utils import calculate_dodge_chance
+from .types import AttackLogEntry, AttackSkill, AttackType, _SelectedAttackTargets
+from .utils import alive, calculate_dodge_chance
 
 if TYPE_CHECKING:
     from ..combatants_pkg.core import Combatant
@@ -35,15 +41,22 @@ def _trigger_attack_skills(actor: "Combatant", rng: random.Random) -> list[Attac
     return trigger_skills(actor, rng)
 
 
-def _finalize_attack_round(actor: "Combatant", action_logs: list[AttackLogEntry]) -> AttackLogEntry | None:
+def _mark_action_complete(actor: "Combatant") -> None:
+    actor.has_acted_this_round = True
+    actor.last_round_acted = actor.current_round
+
+
+def _finalize_attack_round(
+    actor: "Combatant", action_logs: list[AttackLogEntry], *, finalize_action: bool = True
+) -> AttackLogEntry | None:
     """
     完成本次行动的统一结算：
     - 标记行动完成（`has_acted_this_round` / `last_round_acted`）
     - 将本次攻击的额外目标或追加命中日志挂载到主日志 `additional_targets`
     """
 
-    actor.has_acted_this_round = True
-    actor.last_round_acted = actor.current_round
+    if finalize_action:
+        _mark_action_complete(actor)
     if not action_logs:
         return None
 
@@ -100,6 +113,7 @@ def _apply_extra_target_true_damage(
     battle_engine_version: str,
     index: int,
     fallback_to_selected_target: bool = False,
+    run_actor_attack_passives: bool = True,
 ) -> AttackLogEntry:
     passive_events_before: list[dict[str, Any]] = [
         {
@@ -111,16 +125,17 @@ def _apply_extra_target_true_damage(
             "unit_state": snapshot_unit_state(actor),
         }
     ]
-    run_passives_for_timing(
-        "attack_before",
-        actor=actor,
-        target=target,
-        attacker_team=attacker_team,
-        defender_team=defender_team,
-        round_no=actor.current_round,
-        event_sink=passive_events_before,
-        rng=rng,
-    )
+    if run_actor_attack_passives:
+        run_passives_for_timing(
+            "attack_before",
+            actor=actor,
+            target=target,
+            attacker_team=attacker_team,
+            defender_team=defender_team,
+            round_no=actor.current_round,
+            event_sink=passive_events_before,
+            rng=rng,
+        )
 
     damage = calculate_passive_true_damage(
         actor,
@@ -135,6 +150,7 @@ def _apply_extra_target_true_damage(
         damage,
         rng,
         ranged_attack=ranged_attack and battle_engine_version in GROUPED_ATTACK_ENGINE_VERSIONS,
+        battle_engine_version=battle_engine_version,
     )
     damage_contract = _read_damage_contract(application, target)
     reflect_applied_damage, reflect_overkill_damage = _read_secondary_damage(application, "reflect")
@@ -152,16 +168,17 @@ def _apply_extra_target_true_damage(
         event_sink=passive_events_after,
         rng=rng,
     )
-    run_passives_for_timing(
-        "attack_after",
-        actor=actor,
-        target=target,
-        attacker_team=attacker_team,
-        defender_team=defender_team,
-        round_no=actor.current_round,
-        event_sink=passive_events_after,
-        rng=rng,
-    )
+    if run_actor_attack_passives:
+        run_passives_for_timing(
+            "attack_after",
+            actor=actor,
+            target=target,
+            attacker_team=attacker_team,
+            defender_team=defender_team,
+            round_no=actor.current_round,
+            event_sink=passive_events_after,
+            rng=rng,
+        )
 
     return cast(
         AttackLogEntry,
@@ -227,6 +244,10 @@ def _perform_single_attack(
     troop_attack_strength: int | None = None,
     troop_damage_multiplier: float = 1.0,
     battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
+    selection: _SelectedAttackTargets | None = None,
+    attack_phase: Literal["burst", "normal"] | None = None,
+    finalize_action: bool = True,
+    run_actor_attack_passives: bool = True,
 ) -> dict[str, Any] | None:
     """
     执行一次攻击（可能包含多目标技能）。
@@ -239,18 +260,19 @@ def _perform_single_attack(
     - 本函数严格维护 RNG 的消耗顺序，以确保历史 seed 的战斗回放一致。
     """
 
-    extra_target_effects = consume_pending_extra_target_true_damage(actor)
+    extra_target_effects = [] if attack_phase == "burst" else consume_pending_extra_target_true_damage(actor)
     # 铁骑的开战先攻只进行普攻，普通回合才判定铁骑冲阵。
     cavalry_preemptive = actor.kind == "troop" and actor.template_key == "bloodthirsty_cavalry" and round_priority < 0
-    selection = select_attack_targets(
+    selection = selection or select_attack_targets(
         actor,
         attacker_team,
         defender_team,
         rng,
-        (lambda _actor, _rng: []) if cavalry_preemptive else _trigger_attack_skills,
+        (lambda _actor, _rng: []) if cavalry_preemptive or attack_phase == "normal" else _trigger_attack_skills,
+        battle_engine_version=battle_engine_version,
     )
     if selection is None:
-        return cast(dict[str, Any] | None, _finalize_attack_round(actor, []))
+        return cast(dict[str, Any] | None, _finalize_attack_round(actor, [], finalize_action=finalize_action))
 
     opposing_team = defender_team if actor.side == "attacker" else attacker_team
     selected_target_ids = {id(target) for target in selection.engaged_targets}
@@ -264,16 +286,17 @@ def _perform_single_attack(
     actor_defeated = False
     for idx, current_target in enumerate(selection.engaged_targets):
         passive_events_before: list[dict[str, Any]] = []
-        run_passives_for_timing(
-            "attack_before",
-            actor=actor,
-            target=current_target,
-            attacker_team=attacker_team,
-            defender_team=defender_team,
-            round_no=actor.current_round,
-            event_sink=passive_events_before,
-            rng=rng,
-        )
+        if run_actor_attack_passives:
+            run_passives_for_timing(
+                "attack_before",
+                actor=actor,
+                target=current_target,
+                attacker_team=attacker_team,
+                defender_team=defender_team,
+                round_no=actor.current_round,
+                event_sink=passive_events_before,
+                rng=rng,
+            )
         dodge_chance = calculate_dodge_chance(current_target)
         if rng.random() < dodge_chance:
             dodge_entry: AttackLogEntry = {
@@ -312,6 +335,8 @@ def _perform_single_attack(
             }
             if passive_events_before:
                 dodge_entry["passive_events_before"] = passive_events_before
+            if attack_phase:
+                dodge_entry["attack_phase"] = attack_phase
             action_logs.append(dodge_entry)
             continue
 
@@ -325,6 +350,8 @@ def _perform_single_attack(
             troop_damage_multiplier=troop_damage_multiplier,
             enable_ranged_damage_reduction=battle_engine_version in GROUPED_ATTACK_ENGINE_VERSIONS,
             enable_siege_damage_bonus=battle_engine_version in GROUPED_ATTACK_ENGINE_VERSIONS,
+            battle_engine_version=battle_engine_version,
+            damage_component="burst" if attack_phase == "burst" else "combined",
         )
 
         damage_to_apply: int | float = damage_calc.damage
@@ -352,13 +379,19 @@ def _perform_single_attack(
                 )
 
         ranged_attack = is_ranged_attack(actor, round_priority)
-        applied = apply_damage_results(
-            actor,
-            current_target,
-            damage_to_apply,
-            rng,
-            ranged_attack=ranged_attack and battle_engine_version in GROUPED_ATTACK_ENGINE_VERSIONS,
-        )
+        if attack_phase == "burst" and damage_to_apply <= 0:
+            applied = apply_damage_results(
+                actor, current_target, 0, rng, trigger_reactions=False, battle_engine_version=battle_engine_version
+            )
+        else:
+            applied = apply_damage_results(
+                actor,
+                current_target,
+                damage_to_apply,
+                rng,
+                ranged_attack=ranged_attack and battle_engine_version in GROUPED_ATTACK_ENGINE_VERSIONS,
+                battle_engine_version=battle_engine_version,
+            )
         damage_contract = _read_damage_contract(applied, current_target)
         reflect_applied_damage, reflect_overkill_damage = _read_secondary_damage(applied, "reflect")
         counter_applied_damage, counter_overkill_damage = _read_secondary_damage(applied, "counter")
@@ -366,16 +399,17 @@ def _perform_single_attack(
         target_state = snapshot_unit_state(current_target)
         actor_defeated = actor_defeated or applied.actor_defeated
         passive_events_after: list[dict[str, Any]] = []
-        run_passives_for_timing(
-            "hit_taken",
-            actor=current_target,
-            target=actor,
-            attacker_team=attacker_team,
-            defender_team=defender_team,
-            round_no=actor.current_round,
-            event_sink=passive_events_after,
-            rng=rng,
-        )
+        if attack_phase != "burst" or damage_to_apply > 0:
+            run_passives_for_timing(
+                "hit_taken",
+                actor=current_target,
+                target=actor,
+                attacker_team=attacker_team,
+                defender_team=defender_team,
+                round_no=actor.current_round,
+                event_sink=passive_events_after,
+                rng=rng,
+            )
 
         attack_type: AttackType = "ranged" if ranged_attack else "melee"
         entry: AttackLogEntry = {
@@ -428,20 +462,23 @@ def _perform_single_attack(
         }
         if passive_events_before:
             entry["passive_events_before"] = passive_events_before
+        if attack_phase:
+            entry["attack_phase"] = attack_phase
 
         entry["status_inflicted"] = process_status_effects(
             actor, current_target, selection.skills, rng, phase="inflict"
         )
-        run_passives_for_timing(
-            "attack_after",
-            actor=actor,
-            target=current_target,
-            attacker_team=attacker_team,
-            defender_team=defender_team,
-            round_no=actor.current_round,
-            event_sink=passive_events_after,
-            rng=rng,
-        )
+        if run_actor_attack_passives:
+            run_passives_for_timing(
+                "attack_after",
+                actor=actor,
+                target=current_target,
+                attacker_team=attacker_team,
+                defender_team=defender_team,
+                round_no=actor.current_round,
+                event_sink=passive_events_after,
+                rng=rng,
+            )
         if passive_events_after:
             entry["passive_events_after"] = passive_events_after
         action_logs.append(entry)
@@ -486,16 +523,134 @@ def _perform_single_attack(
                 battle_engine_version=battle_engine_version,
                 index=len(action_logs),
                 fallback_to_selected_target=fallback_to_selected_target,
+                run_actor_attack_passives=run_actor_attack_passives,
             )
             action_logs.append(extra_entry)
             if extra_entry["actor_defeated"]:
                 actor_defeated = True
                 break
 
-    return cast(dict[str, Any] | None, _finalize_attack_round(actor, action_logs))
+    return cast(dict[str, Any] | None, _finalize_attack_round(actor, action_logs, finalize_action=finalize_action))
 
 
-def perform_attack(
+def _perform_guest_attack(
+    actor: "Combatant",
+    attacker_team: list["Combatant"],
+    defender_team: list["Combatant"],
+    rng: random.Random,
+    *,
+    round_priority: int,
+    battle_engine_version: str,
+) -> dict[str, Any] | None:
+    """技能增量与独立选敌普攻分段结算，行动及攻击类被动仍只触发一次。"""
+    selection = select_attack_targets(
+        actor,
+        attacker_team,
+        defender_team,
+        rng,
+        _trigger_attack_skills,
+        battle_engine_version=battle_engine_version,
+    )
+    if selection is None:
+        _mark_action_complete(actor)
+        return None
+    consistent_action = battle_engine_version in GUEST_ACTION_CONSISTENCY_ENGINE_VERSIONS
+    if not selection.skills and not consistent_action:
+        return _perform_single_attack(
+            actor,
+            attacker_team,
+            defender_team,
+            rng,
+            round_priority,
+            battle_engine_version=battle_engine_version,
+            selection=selection,
+            attack_phase="normal",
+        )
+
+    before_events: list[dict[str, Any]] = []
+    run_passives_for_timing(
+        "attack_before",
+        actor=actor,
+        target=selection.engaged_targets[0],
+        attacker_team=attacker_team,
+        defender_team=defender_team,
+        round_no=actor.current_round,
+        event_sink=before_events,
+        rng=rng,
+    )
+    primary = _perform_single_attack(
+        actor,
+        attacker_team,
+        defender_team,
+        rng,
+        round_priority,
+        battle_engine_version=battle_engine_version,
+        selection=selection,
+        attack_phase="burst" if selection.skills else "normal",
+        finalize_action=False,
+        run_actor_attack_passives=False,
+    )
+    if primary is None:
+        _mark_action_complete(actor)
+        return None
+    if before_events:
+        primary["passive_events_before"] = before_events + list(primary.get("passive_events_before") or [])
+
+    last_segment = primary
+    last_target = selection.engaged_targets[0]
+    opposing_team = defender_team if actor.side == "attacker" else attacker_team
+    if selection.skills and actor.hp > 0 and not primary.get("actor_defeated") and alive(opposing_team):
+        # 重新读取技能结算后的存活名单，不继承技能专属选敌条件，也不重复判定技能。
+        normal_selection = select_attack_targets(
+            actor,
+            attacker_team,
+            defender_team,
+            rng,
+            lambda _actor, _rng: [],
+            battle_engine_version=battle_engine_version,
+        )
+        if normal_selection is not None:
+            normal = _perform_single_attack(
+                actor,
+                attacker_team,
+                defender_team,
+                rng,
+                round_priority,
+                battle_engine_version=battle_engine_version,
+                selection=normal_selection,
+                attack_phase="normal",
+                finalize_action=False,
+                run_actor_attack_passives=False,
+            )
+            if normal is not None:
+                primary["additional_attacks"] = [normal]
+                last_segment = normal
+                last_target = normal_selection.engaged_targets[0]
+
+    after_events: list[dict[str, Any]] = []
+    if not consistent_action or actor.hp > 0:
+        run_passives_for_timing(
+            "attack_after",
+            actor=actor,
+            target=last_target,
+            attacker_team=attacker_team,
+            defender_team=defender_team,
+            round_no=actor.current_round,
+            event_sink=after_events,
+            rng=rng,
+        )
+    if after_events:
+        last_hit = (last_segment.get("additional_targets") or [last_segment])[-1]
+        last_hit.setdefault("passive_events_after", []).extend(after_events)
+    primary["actor_state"] = snapshot_unit_state(actor)
+    primary["actor_defeated"] = bool(
+        primary.get("actor_defeated") or last_segment.get("actor_defeated") or actor.hp <= 0
+    )
+    _mark_action_complete(actor)
+    return primary
+
+
+def _perform_attack(
     actor: "Combatant",
     attacker_team: list["Combatant"],
     defender_team: list["Combatant"],
@@ -505,6 +660,16 @@ def perform_attack(
     battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
 ) -> dict[str, Any] | None:
     """执行一次行动；达到人数门槛的护院依次完成分队攻击。"""
+
+    if actor.kind == "guest" and battle_engine_version in GUEST_BURST_ENGINE_VERSIONS:
+        return _perform_guest_attack(
+            actor,
+            attacker_team,
+            defender_team,
+            rng,
+            round_priority=round_priority,
+            battle_engine_version=battle_engine_version,
+        )
 
     if (
         battle_engine_version not in GROUPED_ATTACK_ENGINE_VERSIONS
@@ -553,3 +718,80 @@ def perform_attack(
     primary["actor_state"] = attacks[-1]["actor_state"]
     primary["actor_defeated"] = any(attack.get("actor_defeated", False) for attack in attacks)
     return primary
+
+
+def perform_attack(
+    actor: "Combatant",
+    attacker_team: list["Combatant"],
+    defender_team: list["Combatant"],
+    rng: random.Random,
+    round_priority: int = 0,
+    *,
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
+) -> dict[str, Any] | None:
+    """完成全部攻击后结算枪王反击，旧版本仍按原有逐次命中规则处理。"""
+    if battle_engine_version not in DEFERRED_QIANG_WANG_COUNTER_ENGINE_VERSIONS:
+        return _perform_attack(
+            actor,
+            attacker_team,
+            defender_team,
+            rng,
+            round_priority,
+            battle_engine_version=battle_engine_version,
+        )
+
+    with defer_qiang_wang_counters(actor) as pending:
+        event = _perform_attack(
+            actor,
+            attacker_team,
+            defender_team,
+            rng,
+            round_priority,
+            battle_engine_version=battle_engine_version,
+        )
+    if event is None:
+        return None
+
+    for source, application in resolve_deferred_qiang_wang_counters(
+        actor, pending, rng, battle_engine_version=battle_engine_version
+    ):
+        # 独立事件放在技能、普攻及追加命中之后，不能借用最终其他目标的反击字段。
+        counter: AttackLogEntry = {
+            "actor": source.name,
+            "target": actor.name,
+            "damage": application.raw_damage,
+            "is_crit": False,
+            "is_dodge": False,
+            "side": source.side,
+            "skills": [],
+            "agility": int(source.agility),
+            "kind": source.kind,
+            "priority": source.priority,
+            "status_inflicted": [],
+            "index": len(event.get("additional_attacks") or []) + 1,
+            "kills": application.kills,
+            "target_defeated": application.defeated,
+            "raw_damage": application.raw_damage,
+            "applied_damage": application.applied_damage,
+            "overkill_damage": application.overkill_damage,
+            "target_hp_before": application.hp_before,
+            "target_hp_after": application.hp_after,
+            "target_strength_before": application.strength_before,
+            "target_strength_after": application.strength_after,
+            "actor_guest_id": source.guest_id,
+            "actor_owner_entry_id": source.owner_entry_id,
+            "actor_combatant_slot": source.combatant_slot,
+            "actor_template_key": source.template_key,
+            "target_guest_id": actor.guest_id,
+            "target_owner_entry_id": actor.owner_entry_id,
+            "target_combatant_slot": actor.combatant_slot,
+            "target_template_key": actor.template_key,
+            "target_is_boss": actor.is_boss,
+            "actor_state": snapshot_unit_state(source),
+            "target_state": snapshot_unit_state(actor),
+            "reaction_type": "counter",
+        }
+        event.setdefault("additional_attacks", []).append(counter)
+    event["actor_state"] = snapshot_unit_state(actor)
+    event["actor_defeated"] = bool(event.get("actor_defeated") or actor.hp <= 0)
+    return event

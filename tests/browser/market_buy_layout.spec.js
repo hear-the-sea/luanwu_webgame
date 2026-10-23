@@ -35,9 +35,11 @@ for (const width of [320, 375, 414, 768, 769, 1280]) {
     }
     const rows = market.locator("tbody tr");
     await expect(rows).toHaveCount(3);
-    await expect(rows.nth(0).getByRole("button", { name: "购买", exact: true })).toBeEnabled();
-    await expect(rows.nth(1).getByRole("button", { name: "购买", exact: true })).toBeDisabled();
-    await expect(rows.nth(2).getByRole("button", { name: "无法购买", exact: true })).toBeDisabled();
+    await expect(rows.nth(0).getByRole("button", { name: "购买全部", exact: true })).toBeEnabled();
+    await expect(rows.nth(1).getByRole("button", { name: "购买全部", exact: true })).toBeDisabled();
+    await expect(rows.nth(1).getByRole("button", { name: "购买部分", exact: true })).toBeEnabled();
+    await expect(rows.nth(2).getByRole("button", { name: "购买部分", exact: true })).toBeDisabled();
+    await expect(rows.nth(2).getByRole("button", { name: "购买全部", exact: true })).toBeDisabled();
     await expect(rows.nth(0).locator("form")).toHaveAttribute("method", "post");
     await expect(rows.nth(0).locator("form")).toHaveAttribute("action", /\/1\//);
     if (width <= 768) {
@@ -47,7 +49,7 @@ for (const width of [320, 375, 414, 768, 769, 1280]) {
         );
         expect(content).toBe(`"${label}"`);
       }
-      await expect(rows.nth(0).getByRole("button", { name: "购买", exact: true })).toHaveCSS("min-height", "44px");
+      await expect(rows.nth(0).getByRole("button", { name: "购买全部", exact: true })).toHaveCSS("min-height", "44px");
     } else {
       await expect(market.locator("thead")).toBeVisible();
     }
@@ -62,6 +64,28 @@ for (const width of [320, 375, 414, 768, 769, 1280]) {
     await page.getByLabel("类别", { exact: true }).selectOption("tool");
     expect(await page.evaluate(() => window.__marketFilters)).toMatchObject({
       tab: "market", view: "buy", category: "tool", rarity: "all", order_by: "-listed_at",
+    });
+  });
+}
+
+
+for (const mode of ["partial", "all"]) {
+  test(`market purchase submits ${mode} with the correct quantity and keeps return state`, async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 900 });
+    await page.setContent(marketHtml);
+    await page.addScriptTag({ path: path.join(projectRoot, "static/js/trade_core.js") });
+    await page.addScriptTag({ path: path.join(projectRoot, "static/js/trade.js") });
+    const form = page.locator("[data-market-purchase]").first();
+    await form.evaluate(el => el.addEventListener("submit", event => {
+      event.preventDefault();
+      window.__marketPurchase = Object.fromEntries(new FormData(el, event.submitter));
+    }));
+    await form.locator('input[name="quantity"]').fill(mode === "partial" ? "2" : "");
+    await expect(form.locator("[data-market-purchase-total]")).toHaveText(mode === "partial" ? "400" : "—");
+    await form.locator(`button[value="${mode}"]`).click();
+    expect(await page.evaluate(() => window.__marketPurchase)).toMatchObject({
+      purchase_mode: mode, quantity: mode === "partial" ? "2" : "",
+      category: "all", rarity: "all", page: "1234", order_by: "-listed_at",
     });
   });
 }

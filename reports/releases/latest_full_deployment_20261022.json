@@ -1,0 +1,229 @@
+{
+  "verified_at_utc": "2026-10-22T15:31:30.222420+00:00",
+  "services": {
+    "web": {
+      "image": "webgame:latest-full-20261022t150001z",
+      "running": true,
+      "health": "healthy",
+      "memory_mib": 768,
+      "oom_killed": false,
+      "restart_count": 0,
+      "startup_errors": 0
+    },
+    "worker": {
+      "image": "webgame:latest-full-20261022t150001z",
+      "running": true,
+      "health": null,
+      "memory_mib": 256,
+      "oom_killed": false,
+      "restart_count": 0,
+      "startup_errors": 0
+    },
+    "worker_battle": {
+      "image": "webgame:latest-full-20261022t150001z",
+      "running": true,
+      "health": null,
+      "memory_mib": 384,
+      "oom_killed": false,
+      "restart_count": 0,
+      "startup_errors": 0
+    },
+    "worker_timer": {
+      "image": "webgame:latest-full-20261022t150001z",
+      "running": true,
+      "health": null,
+      "memory_mib": 1024,
+      "oom_killed": false,
+      "restart_count": 0,
+      "startup_errors": 0
+    },
+    "worker_timer_scan": {
+      "image": "webgame:latest-full-20261022t150001z",
+      "running": true,
+      "health": null,
+      "memory_mib": 384,
+      "oom_killed": false,
+      "restart_count": 0,
+      "startup_errors": 0
+    },
+    "worker_timer_safety": {
+      "image": "webgame:latest-full-20261022t150001z",
+      "running": true,
+      "health": null,
+      "memory_mib": 512,
+      "oom_killed": false,
+      "restart_count": 0,
+      "startup_errors": 0
+    },
+    "worker_timer_maintenance": {
+      "image": "webgame:latest-full-20261022t150001z",
+      "running": true,
+      "health": null,
+      "memory_mib": 768,
+      "oom_killed": false,
+      "restart_count": 0,
+      "startup_errors": 0
+    },
+    "beat": {
+      "image": "webgame:latest-full-20261022t150001z",
+      "running": true,
+      "health": null,
+      "memory_mib": 192,
+      "oom_killed": false,
+      "restart_count": 0,
+      "startup_errors": 0
+    }
+  },
+  "celery_workers_responding": 6,
+  "internal_readiness": "passed",
+  "public_http": {
+    "/health/live": {
+      "status": 200,
+      "bytes": 16,
+      "sha256": "08e2c358ce13cb67f94ebb35b0f67c8763190a857c0db68da6eb196dfe9da46a"
+    },
+    "/accounts/login/": {
+      "status": 200,
+      "bytes": 2706,
+      "sha256": "859acdaa04cd5779e08ba8b2f2d96526ad7ce36dcdc6238a6816580d75d5ecd6"
+    },
+    "/static/css/style.930666cda631.css": {
+      "status": 200,
+      "bytes": 97093,
+      "sha256": "2c904d03365f3c8c803c37b6461010aa6cc2852fb6d8a32e3bf441cf1f16164f"
+    },
+    "/static/css/tailwind.3ede15a1a96a.css": {
+      "status": 200,
+      "bytes": 166848,
+      "sha256": "50e8a92f6308fb0bb606f2310b6c1452be11175b6b48626d9aa21095e6227d0b"
+    },
+    "/static/js/trade.ba86e8ac6707.js": {
+      "status": 200,
+      "bytes": 19765,
+      "sha256": "1d8690b6adfbe63c0af85b72fdf5cd8a83a8021b87b3a88e068aadcfd6db9b60"
+    }
+  },
+  "host_source_files_verified": 1864,
+  "migration_plan": "empty",
+  "battle_and_config_verification": {
+    "engine": "8",
+    "burst_then_normal": true,
+    "troop_screening_chance": 0.75,
+    "skill_increment_vs_troop": 3.0,
+    "level_hp_preserved": true,
+    "bow_phase_name": true,
+    "runtime_configs": {
+      "shop_items": 47,
+      "luanwu_shop_items": 13,
+      "auction_items": 5,
+      "warehouse_techs": 23,
+      "forge_equipment": 34,
+      "forge_blueprints": 37,
+      "forge_decompose_rarities": 4,
+      "stable_entries": 3,
+      "ranch_entries": 5,
+      "smithy_entries": 10,
+      "guest_growth_rarities": 7,
+      "recruitment_rarity_weights": 7,
+      "arena_rewards": 13,
+      "arena_rank_rules": 10,
+      "arena_coop_rank_rules": 3,
+      "trade_listing_durations": 3,
+      "guild_tech_rules": 34,
+      "virtual_players": 5,
+      "jail_persuasion_methods": 4
+    },
+    "guest_templates_verified": 3749,
+    "template_counts_verified": {
+      "items": 553,
+      "troops": 22,
+      "mission_templates.yaml": 43,
+      "building_templates.yaml": 22,
+      "guild_mission_templates.yaml": 3
+    },
+    "official_work_templates": 14,
+    "market_partial_purchase_schema": true,
+    "static_urls": [
+      "/static/css/style.930666cda631.css",
+      "/static/css/tailwind.3ede15a1a96a.css",
+      "/static/js/trade.ba86e8ac6707.js"
+    ],
+    "image": "webgame:latest-full-20261022t150001z",
+    "services": 8,
+    "runtime_files_verified_per_service": 1864,
+    "player_guest_count_preserved": 12484,
+    "routing_preserved": true,
+    "pending_migrations": 0,
+    "memory_limits_preserved": true
+  },
+  "status": "deployed_and_verified",
+  "site": "https://luanwu.top",
+  "release": "/root/code/releases/latest-full-20261022t150001z",
+  "previous_image": "webgame:battle-hp-20261022t135049z",
+  "archive_sha256": "3cb17f230274905d49de2c92687d4d6a9f6f9e997fc6bbc7535c976a08533a9e",
+  "deployment_source": "Complete current runtime source; 1864 files verified in all eight application services and host source tree",
+  "offline_verification": {
+    "release": "latest-full-20261022t150001z",
+    "verified_at_utc": "2026-10-22T15:26:36.554351+00:00",
+    "runtime_files": 1864,
+    "python_regression": {
+      "passed": 8916,
+      "skipped": 20,
+      "failed": 0,
+      "historical_and_configuration_assertions_updated": true,
+      "integration_and_evidence_excluded": true
+    },
+    "browser_passed": 147,
+    "javascript_passed": 40,
+    "config_rehearsal": {
+      "runtime_configs": {
+        "shop_items": 47,
+        "luanwu_shop_items": 13,
+        "auction_items": 5,
+        "warehouse_techs": 23,
+        "forge_equipment": 34,
+        "forge_blueprints": 37,
+        "forge_decompose_rarities": 4,
+        "stable_entries": 3,
+        "ranch_entries": 5,
+        "smithy_entries": 10,
+        "guest_growth_rarities": 7,
+        "recruitment_rarity_weights": 7,
+        "arena_rewards": 13,
+        "arena_rank_rules": 10,
+        "arena_coop_rank_rules": 3,
+        "trade_listing_durations": 3,
+        "guild_tech_rules": 34,
+        "virtual_players": 5,
+        "jail_persuasion_methods": 4
+      },
+      "guest_templates_verified": 3749,
+      "template_counts_verified": {
+        "items": 553,
+        "troops": 22,
+        "mission_templates.yaml": 43,
+        "building_templates.yaml": 22,
+        "guild_mission_templates.yaml": 3
+      },
+      "official_work_templates": 14,
+      "market_partial_purchase_schema": true,
+      "static_urls": [
+        "/static/css/style.css",
+        "/static/css/tailwind.css",
+        "/static/js/trade.js"
+      ]
+    },
+    "source_manifest_matches_current_workspace": true
+  },
+  "applied_migration": "trade.0012_market_partial_purchases",
+  "backups": {
+    "database": "database-before.sql.gz",
+    "database_bytes": 934450085,
+    "media_and_static": "media-static-before.tar.gz",
+    "media_and_static_bytes": 123134893,
+    "quiescent_market_tables": "market-tables-before.sql.gz",
+    "previous_host_sources": "host-source-before.tar.gz"
+  },
+  "deployment_method": "Maintenance response; drain requests; stop application writers; migrate; reload all templates and runtime configurations; update existing official work templates preserving IDs; collect static; recreate eight services; verify readiness, all source hashes and player guest/skill/routing preservation; reopen access",
+  "principles": "Reuse bootstrap and template loaders; add explicit idempotent work-template refresh; preserve active assignment IDs and existing memory expansion; complete local and server verification"
+}

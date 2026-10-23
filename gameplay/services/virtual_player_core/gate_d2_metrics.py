@@ -146,6 +146,7 @@ def _guest_arena_power(profile: GateD2RawProfile) -> int:
             hp_bonus=guest.hp_bonus,
             archetype=guest.archetype,
             base_hp=guest.base_hp,
+            level=guest.level,
         )
         for guest in profile.guests
     )

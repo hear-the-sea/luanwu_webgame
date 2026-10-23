@@ -112,7 +112,7 @@ def test_review_covers_the_exact_batch_and_keeps_total_growth_and_identity():
 @pytest.mark.parametrize("yaml_first", [False, True])
 @pytest.mark.parametrize("hp_state", ["full", "wounded", "zero"])
 def test_type_changes_preserve_growth_allocations_health_and_conversion_descendants(
-    django_user_model, key, yaml_first, hp_state
+    django_user_model, key, yaml_first, hp_state, guest_hp_before_level_growth
 ):
     manor = ensure_manor(django_user_model.objects.create_user(username="growth_review", password="pass"))
     source = _template(key, yaml_first=yaml_first)

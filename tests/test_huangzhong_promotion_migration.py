@@ -97,7 +97,9 @@ def _assert_guest(guest, *, growth_deltas, hp_state, old_max_hp, old_current_hp)
 @pytest.mark.django_db
 @pytest.mark.parametrize("hp_state", ["full", "wounded", "zero"])
 @pytest.mark.parametrize("template_state", ["blue", "previous_purple", "yaml_purple"])
-def test_huangzhong_promotion_preserves_owned_rolls_and_updates_candidates(django_user_model, template_state, hp_state):
+def test_huangzhong_promotion_preserves_owned_rolls_and_updates_candidates(
+    django_user_model, template_state, hp_state, guest_hp_before_level_growth
+):
     manor = ensure_manor(django_user_model.objects.create_user(username="huangzhong_original", password="pass"))
     profile = OLD_PROFILE if template_state == "blue" else NEW_PROFILE
     growth_range = {"blue": [6, 9], "previous_purple": [6, 11], "yaml_purple": [6, 12]}[template_state]
@@ -140,7 +142,7 @@ def test_huangzhong_promotion_preserves_owned_rolls_and_updates_candidates(djang
 @pytest.mark.parametrize("hp_state", ["full", "wounded", "zero"])
 @pytest.mark.parametrize("converted_state", ["old_default", "old_explicit", "new_default", "already_current"])
 def test_huangzhong_promotion_updates_existing_conversion_without_duplicate_growth(
-    django_user_model, converted_state, hp_state
+    django_user_model, converted_state, hp_state, guest_hp_before_level_growth
 ):
     manor = ensure_manor(django_user_model.objects.create_user(username="huangzhong_converted", password="pass"))
     source = _create_template(key="hist_sljnbc_0059", rarity="blue", profile=OLD_PROFILE, growth_range=[6, 9])

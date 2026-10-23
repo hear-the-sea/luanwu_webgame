@@ -24,6 +24,7 @@ from guests.avatar import (
 )
 from guests.constants import RARITY_CONVERSION_TEMPLATE_KEY_PREFIX
 from guests.growth_rules import RARITY_HP_PROFILES
+from guests.guest_rules import compute_guest_level_hp_bonus
 from guests.models import (
     Guest,
     GuestRarity,
@@ -488,6 +489,7 @@ class Command(BaseCommand):
         dirty_guests: list[Guest] = []
         guest_qs = Guest.objects.filter(template=template).only(
             "id",
+            "level",
             "current_hp",
             "hp_bonus",
             "defense_stat",
@@ -500,15 +502,24 @@ class Command(BaseCommand):
         now = timezone.now()
         resumed_guests: list[Guest] = []
         for guest in guest_qs:
-            old_max_hp = max(
-                hp_floor,
-                int(previous_base_hp)
-                + int(getattr(guest, "hp_bonus", 0) or 0)
-                + int(guest.defense_stat or 0) * defense_to_hp,
+            level_hp = compute_guest_level_hp_bonus(guest.level)
+            old_max_hp = (
+                max(
+                    hp_floor,
+                    int(previous_base_hp)
+                    + int(getattr(guest, "hp_bonus", 0) or 0)
+                    + int(guest.defense_stat or 0) * defense_to_hp,
+                )
+                + level_hp
             )
-            new_max_hp = max(
-                hp_floor,
-                new_base_hp + int(getattr(guest, "hp_bonus", 0) or 0) + int(guest.defense_stat or 0) * defense_to_hp,
+            new_max_hp = (
+                max(
+                    hp_floor,
+                    new_base_hp
+                    + int(getattr(guest, "hp_bonus", 0) or 0)
+                    + int(guest.defense_stat or 0) * defense_to_hp,
+                )
+                + level_hp
             )
             current_hp = int(getattr(guest, "current_hp", 0) or 0)
             if current_hp <= 0:

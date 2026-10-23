@@ -208,6 +208,20 @@
   outline-offset: 2px;
 }
 
+.forge-page .forge-item-tooltip {
+  box-sizing: border-box;
+  min-width: 0;
+  width: min(280px, calc(100vw - 40px));
+  max-width: calc(100vw - 40px);
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  pointer-events: auto;
+  overflow-wrap: anywhere;
+}
+
 .forge-item-tooltip .tw-tooltip-header,
 .forge-item-tooltip .tw-tooltip-category,
 .forge-item-tooltip .tw-tooltip-desc,

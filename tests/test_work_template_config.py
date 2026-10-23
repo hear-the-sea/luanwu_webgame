@@ -57,6 +57,36 @@ def test_seed_work_template_descriptions_explain_relevant_duties():
     assert "校勘" in descriptions["guozijian"]
 
 
+@pytest.mark.django_db
+def test_reload_work_templates_preserves_existing_assignment_and_custom_templates(manor_with_user):
+    from django.utils import timezone
+
+    from gameplay.models import WorkAssignment
+    from guests.models import Guest, GuestTemplate
+
+    manor, _ = manor_with_user
+    work, _ = WorkTemplate.objects.update_or_create(key="jiulou", defaults={"name": "旧酒楼", "required_level": 99})
+    custom = WorkTemplate.objects.create(key="custom_release_work", name="自定义工作", required_level=88)
+    guest = Guest.objects.create(
+        manor=manor, template=GuestTemplate.objects.create(key="work_reload_guest", name="测试门客")
+    )
+    assignment = WorkAssignment.objects.create(
+        manor=manor, guest=guest, work_template=work, complete_at=timezone.now() + timezone.timedelta(hours=1)
+    )
+
+    call_command("seed_work_templates", update_existing=True, verbosity=0)
+    call_command("seed_work_templates", update_existing=True, verbosity=0)
+
+    work.refresh_from_db()
+    assignment.refresh_from_db()
+    custom.refresh_from_db()
+    assert work.name == "酒楼" and work.required_level == 3
+    assert assignment.work_template_id == work.pk
+    assert assignment.status == WorkAssignment.Status.WORKING
+    assert custom.name == "自定义工作" and custom.required_level == 88
+    assert WorkTemplate.objects.filter(key__in=EXPECTED_WORK_REQUIREMENTS).count() == 14
+
+
 def test_work_template_admin_lists_all_attribute_requirements():
     work_admin = WorkTemplateAdmin(WorkTemplate, AdminSite())
 

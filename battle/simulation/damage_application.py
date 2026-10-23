@@ -5,9 +5,11 @@
 from __future__ import annotations
 
 import random
+from contextlib import contextmanager
 from math import ceil
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, Iterator, cast
 
+from ..random_context import CURRENT_BATTLE_ENGINE_VERSION, DEFERRED_QIANG_WANG_COUNTER_ENGINE_VERSIONS
 from .types import _DamageApplication, _UnitDamageApplication
 
 if TYPE_CHECKING:
@@ -16,6 +18,40 @@ if TYPE_CHECKING:
 
 _SWORD_REFLECT_PRE_HIT_HP_CAP_RATIO = 1.20
 _SPEAR_COUNTER_MAX_STRENGTH = 1000
+_DEFERRED_QIANG_WANG_COUNTERS_KEY = "_deferred_qiang_wang_counters"
+_QIANG_WANG_COUNTER_ATTEMPTS_KEY = "_qiang_wang_counter_attempts"
+
+
+@contextmanager
+def defer_qiang_wang_counters(actor: "Combatant") -> Iterator[list["Combatant"]]:
+    """仅在本次行动中收集受击枪王，避免技能、普攻和分队逐段反击。"""
+    pending: list["Combatant"] = []
+    state = actor.battle_state
+    existed = _DEFERRED_QIANG_WANG_COUNTERS_KEY in state
+    previous = state.get(_DEFERRED_QIANG_WANG_COUNTERS_KEY)
+    state[_DEFERRED_QIANG_WANG_COUNTERS_KEY] = pending
+    try:
+        yield pending
+    finally:
+        if existed:
+            state[_DEFERRED_QIANG_WANG_COUNTERS_KEY] = previous
+        else:
+            state.pop(_DEFERRED_QIANG_WANG_COUNTERS_KEY, None)
+
+
+def _claim_qiang_wang_counter_attempt(actor: "Combatant", target: "Combatant") -> bool:
+    """身份仅用于战斗内比较，不写入战报；同名或同模板单位不会共享次数。"""
+    round_no = target.current_round
+    attempts = target.battle_state.get(_QIANG_WANG_COUNTER_ATTEMPTS_KEY)
+    if not isinstance(attempts, dict) or attempts.get("round") != round_no:
+        attempts = {"round": round_no, "actors": set()}
+        target.battle_state[_QIANG_WANG_COUNTER_ATTEMPTS_KEY] = attempts
+    actor_id = id(actor)
+    if actor_id in attempts["actors"]:
+        return False
+    # 失败也消耗本回合机会，不能在后续追加攻击中再次掷反击概率。
+    attempts["actors"].add(actor_id)
+    return True
 
 
 def _normalize_non_negative_int(value: object) -> int:
@@ -130,11 +166,26 @@ def _apply_counter(
     troop_unit_hp_fn,
     *,
     ranged_attack: bool,
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
 ) -> _UnitDamageApplication:
     """Apply counter secondary damage without normal-attack multipliers."""
 
     if ranged_attack and target.troop_class == "qiang":
         return _snapshot_zero_damage(actor, troop_unit_hp_fn)
+
+    limited_counter = (
+        battle_engine_version in DEFERRED_QIANG_WANG_COUNTER_ENGINE_VERSIONS
+        and target.kind == "troop"
+        and target.template_key == "qiang_wang"
+    )
+    if limited_counter:
+        if actor.hp <= 0 or target.hp <= 0:
+            return _snapshot_zero_damage(actor, troop_unit_hp_fn)
+        pending = actor.battle_state.get(_DEFERRED_QIANG_WANG_COUNTERS_KEY)
+        if isinstance(pending, list):
+            if not any(unit is target for unit in pending):
+                pending.append(target)
+            return _snapshot_zero_damage(actor, troop_unit_hp_fn)
 
     counter_chance = target.tech_effects.get("counter_attack_chance", 0)
     counter_mult = target.tech_effects.get("counter_attack_damage", 0.30)
@@ -142,7 +193,11 @@ def _apply_counter(
         if float(source["chance"]) > counter_chance:
             counter_chance = float(source["chance"])
             counter_mult = float(source["damage_multiplier"])
-    if counter_chance <= 0 or target.hp <= 0 or rng.random() >= counter_chance:
+    if counter_chance <= 0 or target.hp <= 0:
+        return _snapshot_zero_damage(actor, troop_unit_hp_fn)
+    if limited_counter and not _claim_qiang_wang_counter_attempt(actor, target):
+        return _snapshot_zero_damage(actor, troop_unit_hp_fn)
+    if rng.random() >= counter_chance:
         return _snapshot_zero_damage(actor, troop_unit_hp_fn)
 
     if target.kind == "troop" and target.troop_class == "qiang":
@@ -154,6 +209,31 @@ def _apply_counter(
     return _apply_unit_damage(actor, counter_damage, troop_unit_hp_fn)
 
 
+def resolve_deferred_qiang_wang_counters(
+    actor: "Combatant",
+    pending: list["Combatant"],
+    rng: random.Random,
+    *,
+    battle_engine_version: str,
+) -> Iterator[tuple["Combatant", _UnitDamageApplication]]:
+    from ..combat_math import effective_attack_value, troop_unit_hp
+
+    for target in pending:
+        if actor.hp <= 0:
+            break
+        application = _apply_counter(
+            actor,
+            target,
+            rng,
+            effective_attack_value,
+            troop_unit_hp,
+            ranged_attack=False,
+            battle_engine_version=battle_engine_version,
+        )
+        if application.applied_damage > 0:
+            yield target, application
+
+
 def apply_damage_results(
     actor: "Combatant",
     target: "Combatant",
@@ -161,6 +241,8 @@ def apply_damage_results(
     rng: random.Random,
     *,
     ranged_attack: bool = False,
+    trigger_reactions: bool = True,
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
 ) -> _DamageApplication:
     """
     将伤害应用到目标，并处理命中后结算：
@@ -173,6 +255,12 @@ def apply_damage_results(
     from ..combat_math import effective_attack_value, troop_unit_hp
 
     target_application = _apply_unit_damage(target, damage, troop_unit_hp)
+    if not trigger_reactions:
+        return _DamageApplication(
+            target=target_application,
+            reflect=_snapshot_zero_damage(actor, troop_unit_hp),
+            counter=_snapshot_zero_damage(actor, troop_unit_hp),
+        )
     reflect_application = _apply_reflect(
         actor,
         target,
@@ -188,6 +276,7 @@ def apply_damage_results(
         effective_attack_value,
         troop_unit_hp,
         ranged_attack=ranged_attack,
+        battle_engine_version=battle_engine_version,
     )
 
     return _DamageApplication(

@@ -1,0 +1,154 @@
+{
+  "verified_at_utc": "2026-10-23T00:12:55.413284+00:00",
+  "services": {
+    "web": {
+      "image": "webgame:equipment-zero-display-20261023t000952z",
+      "running": true,
+      "health": "healthy",
+      "memory_mib": 768,
+      "oom_killed": false,
+      "restart_count": 0,
+      "startup_errors": 0
+    },
+    "worker": {
+      "image": "webgame:equipment-zero-display-20261023t000952z",
+      "running": true,
+      "health": null,
+      "memory_mib": 256,
+      "oom_killed": false,
+      "restart_count": 0,
+      "startup_errors": 0
+    },
+    "worker_battle": {
+      "image": "webgame:equipment-zero-display-20261023t000952z",
+      "running": true,
+      "health": null,
+      "memory_mib": 384,
+      "oom_killed": false,
+      "restart_count": 0,
+      "startup_errors": 0
+    },
+    "worker_timer": {
+      "image": "webgame:equipment-zero-display-20261023t000952z",
+      "running": true,
+      "health": null,
+      "memory_mib": 1024,
+      "oom_killed": false,
+      "restart_count": 0,
+      "startup_errors": 0
+    },
+    "worker_timer_scan": {
+      "image": "webgame:equipment-zero-display-20261023t000952z",
+      "running": true,
+      "health": null,
+      "memory_mib": 384,
+      "oom_killed": false,
+      "restart_count": 0,
+      "startup_errors": 0
+    },
+    "worker_timer_safety": {
+      "image": "webgame:equipment-zero-display-20261023t000952z",
+      "running": true,
+      "health": null,
+      "memory_mib": 512,
+      "oom_killed": false,
+      "restart_count": 0,
+      "startup_errors": 0
+    },
+    "worker_timer_maintenance": {
+      "image": "webgame:equipment-zero-display-20261023t000952z",
+      "running": true,
+      "health": null,
+      "memory_mib": 768,
+      "oom_killed": false,
+      "restart_count": 0,
+      "startup_errors": 0
+    },
+    "beat": {
+      "image": "webgame:equipment-zero-display-20261023t000952z",
+      "running": true,
+      "health": null,
+      "memory_mib": 192,
+      "oom_killed": false,
+      "restart_count": 0,
+      "startup_errors": 0
+    }
+  },
+  "celery_workers_responding": 6,
+  "internal_readiness": "passed",
+  "public_http": {
+    "/health/live": {
+      "status": 200,
+      "bytes": 16,
+      "sha256": "08e2c358ce13cb67f94ebb35b0f67c8763190a857c0db68da6eb196dfe9da46a"
+    },
+    "/accounts/login/": {
+      "status": 200,
+      "bytes": 2706,
+      "sha256": "e79b87e59ccb1ed52e82c3f937b15b47272ec67082dd16349bd6eae87dac1011"
+    },
+    "/static/css/style.ad71fd52e9ad.css": {
+      "status": 200,
+      "bytes": 97162,
+      "sha256": "4a11e6e6319b8a9685d36b1ee569d184d41f3668c89e7d0de4d596153084cfef"
+    },
+    "/static/css/tailwind.3ede15a1a96a.css": {
+      "status": 200,
+      "bytes": 166848,
+      "sha256": "50e8a92f6308fb0bb606f2310b6c1452be11175b6b48626d9aa21095e6227d0b"
+    },
+    "/static/js/trade.ba86e8ac6707.js": {
+      "status": 200,
+      "bytes": 19765,
+      "sha256": "1d8690b6adfbe63c0af85b72fdf5cd8a83a8021b87b3a88e068aadcfd6db9b60"
+    }
+  },
+  "host_source_files_verified": 1864,
+  "migration_plan": "empty",
+  "battle_and_config_verification": {
+    "engine": "8",
+    "burst_then_normal": true,
+    "troop_screening_chance": 0.75,
+    "skill_increment_vs_troop": 3.0,
+    "level_hp_preserved": true,
+    "bow_phase_name": true,
+    "zero_stat_equipment_verified": 10,
+    "zero_set_bonus_hidden": true,
+    "nonzero_stats_preserved": true,
+    "equipment_payload_unchanged": true,
+    "static_urls": [
+      "/static/css/style.ad71fd52e9ad.css",
+      "/static/css/tailwind.3ede15a1a96a.css",
+      "/static/js/trade.ba86e8ac6707.js"
+    ],
+    "image": "webgame:equipment-zero-display-20261023t000952z",
+    "services": 8,
+    "runtime_files_verified_per_service": 1864,
+    "pending_migrations": 0,
+    "memory_limits_preserved": true,
+    "database_migrations_applied": false,
+    "configuration_reload_required": false
+  },
+  "status": "deployed_and_verified",
+  "site": "https://luanwu.top",
+  "release": "/root/code/releases/equipment-zero-display-20261023t000952z",
+  "previous_image": "webgame:latest-full-repeat-20261022t154626z",
+  "archive_sha256": "8d2f5b6d9fd937e3d8fe3b26747dd0dea9e94245701bf1408dfe50250b872d92",
+  "changed_files": [
+    "gameplay/models/items.py",
+    "guests/templatetags/guest_extras.py"
+  ],
+  "offline_verification": {
+    "release": "equipment-zero-display-20261023t000952z",
+    "python_tests_passed": 17,
+    "actual_equipment_configs_verified": 10,
+    "zero_set_bonus_checked": true,
+    "nonzero_stats_and_payload_preserved": true,
+    "changed_files": [
+      "gameplay/models/items.py",
+      "guests/templatetags/guest_extras.py"
+    ]
+  },
+  "backup": "host-source-before.tar.gz",
+  "deployment_principles": "Reuse shared gear description and tooltip functions; filter numeric zero at presentation; preserve game data; verify source consistency in all eight services, readiness, memory and public access"
+}

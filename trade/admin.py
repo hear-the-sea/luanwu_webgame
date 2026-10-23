@@ -136,7 +136,7 @@ class MarketTransactionAdmin(admin.ModelAdmin):
 
     @admin.display(description="物品")
     def get_item_name(self, obj):
-        return f"{obj.listing.item_template.name} x{obj.listing.quantity}"
+        return f"{obj.listing.item_template.name} x{obj.quantity}"
 
 
 # ============ 拍卖行管理 ============

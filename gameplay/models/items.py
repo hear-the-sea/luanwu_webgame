@@ -227,7 +227,7 @@ def _equipment_set_summary(payload: dict) -> str:
         for key, value in bonus_map.items():
             if key in {"pieces", "bonus", "bonuses"}:
                 continue
-            if value is None:
+            if value is None or value == 0:
                 continue
             bonus_parts.append(f"{_ITEM_EFFECT_STAT_LABELS.get(key, '未知属性')}+{value}")
         piece_text = f"（{pieces}件）" if pieces else ""
@@ -243,7 +243,9 @@ def _equipment_set_summary(payload: dict) -> str:
 def _equipment_summary(payload: dict) -> str:
     parts = []
     for key, value in payload.items():
-        if value is None or key in {
+        if value is None or value == 0:
+            continue
+        if key in {
             "set_key",
             "set_bonus",
             "set_description",

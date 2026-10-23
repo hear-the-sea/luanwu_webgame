@@ -106,7 +106,16 @@ def configure_arena_coop_enemy_guest(guest: Any) -> bool:
     base_hp = int(getattr(template, "base_hp", 0) or 0)
     defense_stat = int(profile["defense_stat"])
     final_hp = int(profile["final_hp"])
-    hp_bonus = max(0, final_hp - base_hp - defense_stat * int(GUEST.DEFENSE_TO_HP_MULTIPLIER))
+    from guests.guest_rules import compute_guest_level_hp_bonus
+
+    # 联合作战首领使用显式的最终血量预算，包含等级带来的生命。
+    hp_bonus = max(
+        0,
+        final_hp
+        - base_hp
+        - defense_stat * int(GUEST.DEFENSE_TO_HP_MULTIPLIER)
+        - compute_guest_level_hp_bonus(guest.level),
+    )
     setattr(guest, "hp_bonus", hp_bonus)
     setattr(guest, "current_hp", final_hp)
     return True

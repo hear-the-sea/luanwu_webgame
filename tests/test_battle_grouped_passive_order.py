@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 import random
-from pathlib import Path
 
 import pytest
-import yaml
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
@@ -49,8 +47,6 @@ def make_attack_event(engine_version: str) -> dict:
         troop_class="quan",
         current_round=1,
     )
-    skill_path = Path(__file__).resolve().parents[1] / "data" / "arena_coop_special_skills.yaml"
-    skills = yaml.safe_load(skill_path.read_text(encoding="utf-8"))["skills"]
     target = Combatant(
         name="张无忌",
         attack=1,
@@ -64,7 +60,24 @@ def make_attack_event(engine_version: str) -> dict:
         priority=0,
         kind="guest",
         troop_strength=0,
-        skills=[next(skill for skill in skills if skill["key"] == "gl_top_qiankun_shift")],
+        skills=[
+            {
+                "key": "hit_taken_order_test",
+                "name": "受击留痕",
+                "kind": "passive",
+                "passive_config": {
+                    "triggers": [
+                        {
+                            "timing": "hit_taken",
+                            "effects": [
+                                {"type": "emit_log", "log_name": "受击留痕", "message": "受击后留下反震护体"},
+                                {"type": "set_reflect", "ratio": 0.1, "cap": 8000, "scope": "round"},
+                            ],
+                        }
+                    ]
+                },
+            }
+        ],
         current_round=1,
     )
     attack = perform_attack(actor, [actor], [target], FixedRng(), battle_engine_version=engine_version)
@@ -85,12 +98,12 @@ def test_grouped_troop_attacks_keep_real_hit_taken_passive_between_hits(viewer):
     )
     text = "".join(strip_tags(html).split())
     first_hit = text.index("普通攻击：对张无忌")
-    first_passive = text.index("被动技能：乾坤大挪移")
+    first_passive = text.index("被动技能：受击留痕")
     second_hit = text.index("普通攻击：对张无忌", first_hit + 1)
-    second_passive = text.index("被动技能：乾坤大挪移", first_passive + 1)
+    second_passive = text.index("被动技能：受击留痕", first_passive + 1)
 
     assert first_hit < first_passive < second_hit < second_passive
-    assert text.count("被动技能：乾坤大挪移") == 2
+    assert text.count("被动技能：受击留痕") == 2
     assert len(events) == 1
 
 
@@ -103,4 +116,4 @@ def test_previous_engine_keeps_single_attack_passive_as_ordered_top_level_event(
     assert "passive_events_after" not in attack
     assert [event.get("type", "attack") for event in events] == ["attack", "passive"]
     assert [event["order"] for event in events] == [1, 2]
-    assert events[1]["effect"] == "乾坤大挪移"
+    assert events[1]["effect"] == "受击留痕"

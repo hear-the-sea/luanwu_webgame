@@ -10,6 +10,9 @@ from typing import Dict
 # 这个权重经过平衡性考虑：既能遏制炮灰策略，又保留足够的不确定性
 PRIORITY_TARGET_WEIGHT = 0.60
 
+# 护院原本选中门客，且门客一方仍有护院时，改攻护院的概率。
+TROOP_SCREENING_CHANCE = 0.75
+
 # 同一种护院每满 1000 名，当前行动增加一次分队攻击。
 TROOP_EXTRA_ATTACK_INTERVAL = 1000
 TROOP_GROUP_DAMAGE_MULTIPLIER = 1.2
@@ -92,8 +95,9 @@ DAMAGE_VARIANCE_MAX = 1.1
 GUEST_VS_TROOP_DEFENSE_CONSTANT = 50
 
 # 门客技能打护院的额外伤害倍率（普攻屠戮倍率独立计算）
-# 与门客对门客的技能倍率保持一致
-GUEST_SKILL_VS_TROOP_MULTIPLIER = 2.0
+# 仅放大技能增量，不对整次技能伤害再次乘算；历史版本保持 2 倍。
+GUEST_SKILL_VS_TROOP_MULTIPLIER = 3.0
+LEGACY_GUEST_SKILL_VS_TROOP_MULTIPLIER = 2.0
 
 # ============ 城防伤害倍率 ============
 

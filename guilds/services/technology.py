@@ -37,6 +37,7 @@ MAX_GUILD_DISPATCH_CAPACITY = 25
 GUEST_BONUS_TYPES = {"guest_force", "guest_intellect", "guest_defense"}
 TROOP_TACTICS_RUNTIME_MAX_LEVEL = 10
 ROUTE_COST_MULTIPLIER = 1.2
+TECH_RESOURCE_COST_MULTIPLIER = 20
 RESOURCE_PRODUCTION_TECH_KEYS = {"sheep_farmland", "sheep_silver_mine"}
 
 
@@ -112,7 +113,7 @@ def _route_cost_multiplier(guild: Guild | None, tech_key: str) -> float:
     return ROUTE_COST_MULTIPLIER ** len(completed)
 
 
-def calculate_tech_upgrade_cost(tech_key, current_level, *, guild: Guild | None = None):
+def _calculate_tech_upgrade_base_cost(tech_key, current_level, *, guild: Guild | None = None):
     """
     计算科技升级成本
 
@@ -147,6 +148,17 @@ def calculate_tech_upgrade_cost(tech_key, current_level, *, guild: Guild | None 
     return {key: math.ceil(amount * route_multiplier) for key, amount in level_cost.items()}
 
 
+def calculate_tech_upgrade_cost(tech_key, current_level, *, guild: Guild | None = None):
+    """计算实际升级费用，强兵战术保持原价，其余科技银两、粮食费用提高20倍。"""
+    cost = _calculate_tech_upgrade_base_cost(tech_key, current_level, guild=guild)
+    if tech_key == "troop_tactics" or tech_key not in TECHNOLOGY_NODE_BY_KEY:
+        return cost
+    return {
+        key: amount * TECH_RESOURCE_COST_MULTIPLIER if key in {"silver", "grain"} else amount
+        for key, amount in cost.items()
+    }
+
+
 def _route_for_technology(tech_key: str) -> dict | None:
     return next(
         (route for route in TECHNOLOGY_ROUTES if any(node["key"] == tech_key for node in route["nodes"])),
@@ -155,14 +167,39 @@ def _route_for_technology(tech_key: str) -> dict | None:
 
 
 def _calculate_route_investment(guild: Guild, route: dict, levels: dict[str, int]) -> dict[str, int]:
-    """按当前路线倍率汇总各科技已升级等级的实际投入。"""
+    """银两、粮食按本轮升级流水退款，无流水的历史等级沿用调价前费用。"""
+    last_reset_id = (
+        GuildResourceLog.objects.filter(
+            guild=guild, action="tech_reset", note__startswith=f"取消{route['title']}路线并清零等级"
+        )
+        .order_by("-pk")
+        .values_list("pk", flat=True)
+        .first()
+    )
+    upgrade_logs = GuildResourceLog.objects.filter(guild=guild, action="tech_upgrade")
+    if last_reset_id is not None:
+        upgrade_logs = upgrade_logs.filter(pk__gt=last_reset_id)
+    paid_costs: dict[str, dict[str, int]] = {}
+    for note, silver_change, grain_change in upgrade_logs.order_by("-pk").values_list(
+        "note", "silver_change", "grain_change"
+    ):
+        paid_costs.setdefault(
+            note.split("（", 1)[0], {"silver": max(0, -silver_change), "grain": max(0, -grain_change)}
+        )
     invested: dict[str, int] = {}
     for node in route["nodes"]:
         if not node["enabled"]:
             continue
         level = min(max(0, int(levels.get(node["key"], 0))), int(node["max_level"]))
         for current_level in range(level):
-            for resource_key, amount in calculate_tech_upgrade_cost(node["key"], current_level, guild=guild).items():
+            cost = _calculate_tech_upgrade_base_cost(node["key"], current_level, guild=guild)
+            tech_name = guild_constants.TECH_NAMES.get(node["key"], "该科技")
+            paid = paid_costs.get(f"升级{tech_name}至{current_level + 1}级")
+            if paid is not None:
+                for resource_key in ("silver", "grain"):
+                    if resource_key in cost:
+                        cost[resource_key] = paid[resource_key]
+            for resource_key, amount in cost.items():
                 invested[resource_key] = invested.get(resource_key, 0) + int(amount)
     return invested
 

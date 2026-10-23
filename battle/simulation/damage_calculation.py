@@ -5,8 +5,14 @@
 from __future__ import annotations
 
 import random
+from functools import partial
 from typing import TYPE_CHECKING, Callable, List, Literal, overload
 
+from ..random_context import (
+    CURRENT_BATTLE_ENGINE_VERSION,
+    GUEST_ACTION_CONSISTENCY_ENGINE_VERSIONS,
+    GUEST_TROOP_BALANCE_ENGINE_VERSIONS,
+)
 from .constants import (
     ARROW_TOWER_VS_GUEST_DAMAGE_MULTIPLIER,
     ARROW_TOWER_VS_TROOP_DAMAGE_MULTIPLIER,
@@ -23,6 +29,7 @@ from .constants import (
     GUEST_VS_GUEST_DEFENSE_CONSTANT,
     GUEST_VS_TROOP_DEFENSE_CONSTANT,
     HARDCAP,
+    LEGACY_GUEST_SKILL_VS_TROOP_MULTIPLIER,
     PREEMPTIVE_DAMAGE_REDUCTION,
     SOFTCAP_THRESHOLD,
     TROOP_COUNTERS,
@@ -222,13 +229,19 @@ def _apply_guest_vs_troop_split_scaling(
     base_damage: float,
     total_damage: float,
     calculate_slaughter_multiplier_fn: Callable[["Combatant", "Combatant"], float],
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
 ) -> float:
     slaughter_mult = calculate_slaughter_multiplier_fn(actor, target)
     if slaughter_mult == 1.0:
         return total_damage
 
     skill_damage = total_damage - base_damage
-    return base_damage * slaughter_mult + skill_damage * GUEST_SKILL_VS_TROOP_MULTIPLIER
+    skill_multiplier = (
+        GUEST_SKILL_VS_TROOP_MULTIPLIER
+        if battle_engine_version in GUEST_TROOP_BALANCE_ENGINE_VERSIONS
+        else LEGACY_GUEST_SKILL_VS_TROOP_MULTIPLIER
+    )
+    return base_damage * slaughter_mult + skill_damage * skill_multiplier
 
 
 def _apply_guest_vs_guest_split_scaling(*, base_damage: float, total_damage: float) -> float:
@@ -336,6 +349,35 @@ def process_status_effects(
     return apply_skill_statuses(skills, target, rng)
 
 
+def _apply_final_damage_modifiers(
+    actor: "Combatant",
+    target: "Combatant",
+    damage: float,
+    *,
+    round_priority: int,
+    troop_damage_multiplier: float,
+    enable_siege_damage_bonus: bool,
+    enable_ranged_damage_reduction: bool,
+    include_passive_true_damage: bool,
+) -> float:
+    """共用同一末端数值链，暴击标记比较也计入减伤、软上限及最终取整。"""
+    from ..arena_coop import adjust_arena_coop_damage
+
+    city_defense_multiplier = _city_defense_damage_multiplier(
+        actor, target, enable_siege_damage_bonus=enable_siege_damage_bonus
+    )
+    if city_defense_multiplier != 1.0:
+        damage = damage * city_defense_multiplier
+    if actor.kind == "troop":
+        damage *= troop_damage_multiplier
+    damage = adjust_arena_coop_damage(actor, target, damage)
+    if enable_ranged_damage_reduction:
+        damage = _apply_ranged_damage_reduction(actor, target, round_priority, damage)
+    if include_passive_true_damage:
+        damage = _apply_passive_true_damage(actor, target, damage)
+    return damage
+
+
 def calculate_attack_damage(
     actor: "Combatant",
     target: "Combatant",
@@ -347,6 +389,8 @@ def calculate_attack_damage(
     troop_damage_multiplier: float = 1.0,
     enable_ranged_damage_reduction: bool = True,
     enable_siege_damage_bonus: bool = True,
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
+    damage_component: Literal["combined", "burst"] = "combined",
 ) -> _DamageCalculation:
     """
     计算本次命中对目标造成的最终伤害。
@@ -372,6 +416,10 @@ def calculate_attack_damage(
     from ..combat_math import calculate_slaughter_multiplier, effective_attack_value, effective_defense_value
     from ..skills import skill_damage_bonus
 
+    versioned_slaughter_multiplier = partial(
+        calculate_slaughter_multiplier, battle_engine_version=battle_engine_version
+    )
+
     attack_value: float = effective_attack_value(actor, target, troop_attack_strength=troop_attack_strength)
 
     defense_value = _calculate_defense_value(actor, target, effective_defense_value)
@@ -383,6 +431,7 @@ def calculate_attack_damage(
 
     attack_multiplier = rng.uniform(DAMAGE_VARIANCE_MIN, DAMAGE_VARIANCE_MAX)
     base_damage = _calculate_base_damage(actor, target, attack_value, damage_reduction, attack_multiplier)
+    base_damage_without_crit = base_damage
 
     crit_chance = BASE_CRIT_CHANCE
     is_crit = rng.random() < crit_chance
@@ -392,16 +441,21 @@ def calculate_attack_damage(
     bonus = skill_damage_bonus(skills, actor, target)
     base_damage_value = base_damage
     total_damage_value = base_damage + bonus
+    skill_base_multiplier = 1.0
     for skill in skills:
         if "damage_multiplier" in skill:
-            total_damage_value *= max(0.0, float(skill.get("damage_multiplier") or 0.0))
+            multiplier = max(0.0, float(skill.get("damage_multiplier") or 0.0))
+            total_damage_value *= multiplier
+            skill_base_multiplier *= multiplier
         execute = (
             target.hp / max(1, target.max_hp) < skill["execute_hp_ratio_lt"]
             if "execute_hp_ratio_lt" in skill
             else "execute_hp_ratio" in skill and target.hp / max(1, target.max_hp) <= skill["execute_hp_ratio"]
         )
         if execute:
-            total_damage_value *= float(skill.get("execute_multiplier", 1.0))
+            multiplier = float(skill.get("execute_multiplier", 1.0))
+            total_damage_value *= multiplier
+            skill_base_multiplier *= multiplier
 
     is_double_strike = _roll_double_strike(actor, rng)
     base_damage_value = _apply_post_damage_modifiers(
@@ -423,13 +477,38 @@ def calculate_attack_damage(
         rng=rng,
     )
 
-    if actor.kind == "guest" and target.kind == "troop":
+    noncritical_burst_damage = None
+    if damage_component == "burst":
+        # 倍率和斩杀造成的额外伤害也属于技能增量，不能把普攻基础重复计入。
+        damage = max(0.0, total_damage_value - base_damage_value)
+        if target.kind == "troop":
+            damage *= GUEST_SKILL_VS_TROOP_MULTIPLIER
+        elif target.kind == "guest":
+            damage *= GUEST_SKILL_VS_GUEST_MULTIPLIER
+        if battle_engine_version in GUEST_ACTION_CONSISTENCY_ENGINE_VERSIONS and is_crit:
+            # 纯加法技能的基础暴击会在 total-base 中抵消；只给实际增加技能伤害的暴击标记。
+            crit_increment = _apply_post_damage_modifiers(
+                actor,
+                target,
+                skills,
+                round_priority=round_priority,
+                damage=(base_damage - base_damage_without_crit) * (skill_base_multiplier - 1.0),
+                is_double_strike=is_double_strike,
+                rng=rng,
+            )
+            noncritical_burst_damage = max(0.0, total_damage_value - base_damage_value - crit_increment)
+            if target.kind == "troop":
+                noncritical_burst_damage *= GUEST_SKILL_VS_TROOP_MULTIPLIER
+            elif target.kind == "guest":
+                noncritical_burst_damage *= GUEST_SKILL_VS_GUEST_MULTIPLIER
+    elif actor.kind == "guest" and target.kind == "troop":
         damage = _apply_guest_vs_troop_split_scaling(
             actor,
             target,
             base_damage=base_damage_value,
             total_damage=total_damage_value,
-            calculate_slaughter_multiplier_fn=calculate_slaughter_multiplier,
+            calculate_slaughter_multiplier_fn=versioned_slaughter_multiplier,
+            battle_engine_version=battle_engine_version,
         )
     elif actor.kind == "guest" and target.kind == "guest":
         damage = _apply_guest_vs_guest_split_scaling(
@@ -437,23 +516,22 @@ def calculate_attack_damage(
             total_damage=total_damage_value,
         )
     else:
-        damage = _apply_slaughter_multiplier(actor, target, total_damage_value, calculate_slaughter_multiplier)
+        damage = _apply_slaughter_multiplier(actor, target, total_damage_value, versioned_slaughter_multiplier)
 
-    city_defense_multiplier = _city_defense_damage_multiplier(
-        actor, target, enable_siege_damage_bonus=enable_siege_damage_bonus
+    finalize_modifiers = partial(
+        _apply_final_damage_modifiers,
+        actor,
+        target,
+        round_priority=round_priority,
+        troop_damage_multiplier=troop_damage_multiplier,
+        enable_siege_damage_bonus=enable_siege_damage_bonus,
+        enable_ranged_damage_reduction=enable_ranged_damage_reduction,
+        include_passive_true_damage=damage_component != "burst",
     )
-    if city_defense_multiplier != 1.0:
-        damage = damage * city_defense_multiplier
-
-    if actor.kind == "troop":
-        damage *= troop_damage_multiplier
-
-    from ..arena_coop import adjust_arena_coop_damage
-
-    damage = adjust_arena_coop_damage(actor, target, damage)
-    if enable_ranged_damage_reduction:
-        damage = _apply_ranged_damage_reduction(actor, target, round_priority, damage)
-    damage = _apply_passive_true_damage(actor, target, damage)
-    damage = _finalize_damage(damage)
+    damage = finalize_modifiers(damage)
+    # 辅助技能允许零伤害；普攻和历史混合攻击保留原有伤害下限。
+    damage = max(0, int(damage)) if damage_component == "burst" else _finalize_damage(damage)
+    if noncritical_burst_damage is not None:
+        is_crit = damage > max(0, int(finalize_modifiers(noncritical_burst_damage)))
 
     return _DamageCalculation(damage=damage, is_crit=is_crit, is_double_strike=is_double_strike)

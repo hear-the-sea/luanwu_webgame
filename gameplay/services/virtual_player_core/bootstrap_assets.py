@@ -299,6 +299,8 @@ def _weighted_guest_choice(
 def _guest_arena_power(
     template: GuestCatalogEntry,
     attributes: GuestSeedAttributes,
+    *,
+    level: int,
 ) -> int:
     return calculate_guest_arena_power(
         force=attributes.force,
@@ -308,6 +310,7 @@ def _guest_arena_power(
         hp_bonus=0,
         archetype=str(template.archetype),
         base_hp=int(template.base_hp),
+        level=level,
     )
 
 
@@ -449,7 +452,15 @@ def _guest_targets(
 
     skill_by_key = {entry.key: entry for entry in catalog.skills}
     targets: list[BootstrapGuestTarget] = []
-    actual_arena_power = 0
+    seed_attributes = tuple(
+        guest_seed_attributes(context, ordinal=index + 1, template=template) for index, template in enumerate(selected)
+    )
+    base_powers = tuple(
+        _guest_arena_power(template, attributes, level=1) for template, attributes in zip(selected, seed_attributes)
+    )
+    remaining_level_power = target_arena_power - sum(base_powers)
+    if remaining_level_power < 0:
+        raise BootstrapAssetPlanningError("guest catalog minimum strength exceeds the bootstrap arena cap")
     core_count = max(1, math.ceil(guest_count * 0.2))
     secondary_count = max(0, math.ceil(guest_count * 0.35))
     for index, template in enumerate(selected):
@@ -466,14 +477,16 @@ def _guest_targets(
         level = max(1, int(max_guest_level * level_ratio))
         if ordinal == 1:
             level = max_guest_level
-        attributes = guest_seed_attributes(
-            context,
-            ordinal=ordinal,
-            template=template,
-        )
-        actual_arena_power += _guest_arena_power(template, attributes)
-        if actual_arena_power > target_arena_power:
-            raise BootstrapAssetPlanningError("guest catalog minimum strength exceeds the bootstrap arena cap")
+        attributes = seed_attributes[index]
+        level_power = _guest_arena_power(template, attributes, level=level) - base_powers[index]
+        # Reserve every guest's initial strength before allocating level HP,
+        # keeping the first core guest at the requested maximum level.
+        if ordinal == 1 and level_power > remaining_level_power:
+            raise BootstrapAssetPlanningError("guest maximum level exceeds the bootstrap arena cap")
+        while level_power > remaining_level_power and level > 1:
+            level -= 1
+            level_power = _guest_arena_power(template, attributes, level=level) - base_powers[index]
+        remaining_level_power -= level_power
 
         eligible_skills = [
             skill for skill in catalog.skills if _skill_is_eligible(skill, level=level, attributes=attributes)

@@ -132,26 +132,34 @@
                             </span>
                         </td>
                         <td>
-                            <form method="post" action="{% url 'trade:market_purchase' listing.id %}">
+                            <form method="post" action="{% url 'trade:market_purchase' listing.id %}"
+                                  class="tw-market-purchase" data-market-purchase data-unit-price="{{ listing.unit_price }}">
                                 {% csrf_token %}
-                            {% include "trade/partials/_action_return_state.html" with current_tab="market" %}
-                                <button type="submit"
-                                        class="tw-btn-trade"
-                                        {% if not market_can_buy_or_list %}
-                                        disabled title="声望达到 {{ market_min_prestige }} 后可购买"
-                                        {% elif listing.seller == manor %}
-                                        disabled title="不能购买自己的商品"
-                                        {% elif manor.silver < listing.total_price %}
-                                        disabled title="银两不足"
-                                        {% endif %}>
-                                    {% if not market_can_buy_or_list %}
-                                    声望不足
-                                    {% elif listing.seller == manor %}
-                                    无法购买
-                                    {% else %}
-                                    购买
+                                {% include "trade/partials/_action_return_state.html" with current_tab="market" %}
+                                {% if market_partial_purchase_enabled %}
+                                <label class="tw-market-purchase-quantity" for="market-quantity-{{ listing.id }}">
+                                    <span>购买数量</span>
+                                    <input class="tw-form-input" id="market-quantity-{{ listing.id }}" name="quantity" type="number"
+                                           min="1" max="{{ listing.quantity }}" step="1" value="1" required
+                                           aria-label="购买数量（{{ listing.item_template.name }}）"
+                                           {% if not market_can_buy_or_list or listing.seller == manor %}disabled{% endif %}>
+                                </label>
+                                <p class="tw-market-purchase-total">所选合计：<span data-market-purchase-total>{{ listing.unit_price|floatformat:0 }}</span> 银两</p>
+                                {% endif %}
+                                <div {% if market_partial_purchase_enabled %}class="tw-market-purchase-actions"{% endif %}>
+                                    {% if market_partial_purchase_enabled %}
+                                    <button type="submit" class="tw-btn-trade" name="purchase_mode" value="partial"
+                                            {% if not market_can_buy_or_list %}disabled title="声望达到 {{ market_min_prestige }} 后可购买"
+                                            {% elif listing.seller == manor %}disabled title="不能购买自己的商品"
+                                            {% elif manor.silver < listing.unit_price %}disabled title="银两不足"
+                                            {% endif %}>购买部分</button>
                                     {% endif %}
-                                </button>
+                                    <button type="submit" class="tw-btn-trade" name="purchase_mode" value="all" formnovalidate
+                                            {% if not market_can_buy_or_list %}disabled title="声望达到 {{ market_min_prestige }} 后可购买"
+                                            {% elif listing.seller == manor %}disabled title="不能购买自己的商品"
+                                            {% elif manor.silver < listing.total_price %}disabled title="银两不足"
+                                            {% endif %}>{% if market_partial_purchase_enabled %}购买全部{% else %}购买{% endif %}</button>
+                                </div>
                             </form>
                         </td>
                     </tr>

@@ -3209,6 +3209,7 @@ def _training_candidates(
                 intellect=completion.intellect,
                 defense=completion.defense_stat,
                 agility=completion.agility,
+                level=completion.level,
             )
             normalized_cost = max(
                 1,

@@ -865,6 +865,7 @@ def _guest_power(guest: Guest) -> int:
         hp_bonus=int(guest.hp_bonus),
         archetype=str(guest.template.archetype),
         base_hp=int(guest.template.base_hp),
+        level=int(guest.level),
     )
 
 

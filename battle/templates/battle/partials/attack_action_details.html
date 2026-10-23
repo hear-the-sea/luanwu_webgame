@@ -1,8 +1,10 @@
 {% load battle_report %}{% report_event_side attack event as action_side %}
 {% for recovery in attack.action_recovery_events_before %}
-    <div class="event-action-recovery">
+    <div class="event-action-recovery{% if recovery.effect == '嗜血狂怒' %} event-passive-entry{% endif %}">
         {% if recovery.type == 'heal' %}
             {% include "battle/partials/heal_effect_summary.html" with event=recovery %}
+        {% elif recovery.effect == '嗜血狂怒' %}
+            {% include "battle/partials/passive_event_summary.html" with passive_event=recovery visible_side=my_side spectator=is_spectator %}
         {% else %}
             <span class="tech-tag heal">{{ recovery.effect }}</span>{% include "battle/partials/passive_event_extra.html" with passive_event=recovery %}
         {% endif %}
@@ -24,9 +26,13 @@
     {% for passive in sub.passive_events_before %}
         <div class="event-passive-entry">{% include "battle/partials/passive_event_summary.html" with passive_event=passive visible_side=my_side spectator=is_spectator %}</div>
     {% endfor %}
-    {% include "battle/partials/attack_damage_summary.html" with attack=sub is_secondary=True visible_side=my_side spectator=is_spectator %}
+    {% secondary_attack_kind sub attack round.priority as secondary_kind %}
+    {% include "battle/partials/attack_damage_summary.html" with attack=sub is_secondary=True secondary_kind=secondary_kind visible_side=my_side spectator=is_spectator %}
     {% if sub.reflect_damage %}
         {% reflect_effect_name sub as sub_reflect_effect %}
+        {% if sub_reflect_effect == '乾坤大挪移' %}
+        <div class="reflect-text">{% include "battle/partials/retaliation_damage_summary.html" with attack=sub action_side=sub.side|default:action_side effect=sub_reflect_effect damage=sub.reflect_damage kills=sub.reflect_kills defeated=sub.reflect_defeated visible_side=my_side spectator=is_spectator %}</div>
+        {% else %}
         <div class="event-target-summary event-actor-settlement-summary reflect-text event-line">
             <div class="event-unit-summary">
                 <strong class="event-unit-name">{{ sub.actor }}</strong>
@@ -34,6 +40,7 @@
                 <span class="event-unit-skills event-target-detail">{% include "battle/partials/retaliation_damage_summary.html" with attack=sub action_side=sub.side|default:action_side effect=sub_reflect_effect damage=sub.reflect_damage kills=sub.reflect_kills defeated=sub.reflect_defeated visible_side=my_side spectator=is_spectator %}</span>
             </div>
         </div>
+        {% endif %}
     {% endif %}
     {% if sub.counter_damage %}<div class="counter-text">{% include "battle/partials/retaliation_damage_summary.html" with attack=sub action_side=sub.side|default:action_side effect="反戈一击" damage=sub.counter_damage kills=sub.counter_kills defeated=sub.counter_defeated visible_side=my_side spectator=is_spectator %}</div>{% endif %}
     {% if sub.status_inflicted %}<div class="status-tag">对{{ sub.target }}造成状态：{{ sub.status_inflicted|join:"、" }}</div>{% endif %}

@@ -5650,6 +5650,62 @@ body:has(.tw-arena-page),
 
 /* 集市购买筛选独立布局，避免表单最小宽度撑开页面。 */
 
+@media (max-width: 640px) {
+  .tw-work-card .tw-card-actions > .tw-market-purchase {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.tw-market-purchase {
+  display: flex;
+  min-width: 0px;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  min-width: 12rem;
+}
+
+@media (max-width: 640px) {
+  .tw-work-card .tw-card-actions > .tw-market-purchase-quantity {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.tw-market-purchase-quantity {
+  display: flex;
+  min-width: 0px;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.tw-market-purchase-quantity .tw-form-input {
+  width: 100%;
+  min-width: 0px;
+  min-height: 44px;
+}
+
+.tw-market-purchase-quantity > span {
+  flex-shrink: 0;
+}
+
+.tw-market-purchase-total {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: var(--text-muted);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.tw-market-purchase-actions {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .tw-market-content,
   #market-buy-section {
   min-width: 0px;

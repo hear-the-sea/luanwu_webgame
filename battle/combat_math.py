@@ -6,12 +6,14 @@ from typing import Any
 from core.exceptions import GameError
 from core.utils import require_positive_int
 
+from .random_context import CURRENT_BATTLE_ENGINE_VERSION, GUEST_TROOP_BALANCE_ENGINE_VERSIONS
+
 # ============ 战斗数值常量 ============
 
 # 门客对小兵的屠戮倍率
 # 设计理由：让门客对小兵有压倒性优势，配合单兵防御系统保持合理战斗节奏
-# 效果示例：600伤害门客 vs 弓箭手(单位HP13)，击杀数约为692人
-SLAUGHTER_MULTIPLIER = 15
+SLAUGHTER_MULTIPLIER = 20
+LEGACY_SLAUGHTER_MULTIPLIER = 15
 
 # 小兵对门客的攻击除数
 # 公式：effective_attack = unit_attack * (strength / divisor)
@@ -115,29 +117,13 @@ def troop_unit_hp(unit: Any) -> float:
     return max(1.0, max_hp / strength)
 
 
-def calculate_slaughter_multiplier(attacker: Any, target: Any) -> float:
-    """
-    计算门客对小兵的屠戮倍率加成
-
-    设计目标：让门客对小兵有明显优势，配合单兵防御系统保持合理战斗节奏
-
-    计算公式：
-    - 固定倍率：10倍
-    - 在结算时将门客对小兵的最终伤害乘以该倍率
-      （见 simulation_core.perform_attack），击杀数按
-      kills = int(final_damage / per_unit_hp) 计算。
-
-    效果示例（600伤害 vs 弓箭手单位HP13）：
-    - 基础击杀：600 / 13 ≈ 46人
-    - 屠戮加成：final_damage = 600 * 10 = 6000
-      kills = 6000 / 13 ≈ 461人
-    - 倍率效果：10x击杀速度
-
-    战斗预期（配合单兵防御系统）：
-    - 600攻击门客 vs 2000满科技小兵（单兵防御12）：约20回合
-    - 门客有压倒性优势但需要合理回合数
-    - 小兵防御提升（科技）能延长战斗时间
-    """
+def calculate_slaughter_multiplier(
+    attacker: Any,
+    target: Any,
+    *,
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
+) -> float:
+    """门客对护院的基础伤害倍率；版本 5 为 20，历史版本保留 15。"""
     # 只对门客攻击小兵生效
     if getattr(attacker, "kind", "") != "guest":
         return 1.0
@@ -145,7 +131,9 @@ def calculate_slaughter_multiplier(attacker: Any, target: Any) -> float:
         return 1.0
 
     # 固定倍率，配合单兵防御系统提供合理的击杀速度
-    return SLAUGHTER_MULTIPLIER
+    if battle_engine_version in GUEST_TROOP_BALANCE_ENGINE_VERSIONS:
+        return SLAUGHTER_MULTIPLIER
+    return LEGACY_SLAUGHTER_MULTIPLIER
 
 
 def effective_attack_value(actor: Any, target: Any | None = None, *, troop_attack_strength: int | None = None) -> float:

@@ -49,11 +49,12 @@ def test_full_arena_coop_simulation_runs_phase_mechanics_end_to_end():
             "passive_config": {
                 "triggers": [
                     {
-                        "timing": "hit_taken",
-                        "conditions": {"hp_ratio_lte": 0.4},
+                        "timing": "round_start",
+                        "chance": 0.75,
                         "effects": [
-                            {"type": "set_reflect", "ratio": 0.1, "cap": 8000},
-                            {"type": "set_softcap", "threshold": 16000, "overflow_ratio": 0.35},
+                            {"type": "emit_log", "log_name": "乾坤大挪移", "message": "本回合获得卸力反震"},
+                            {"type": "set_reflect", "ratio": 0.1, "cap": 8000, "scope": "round"},
+                            {"type": "set_softcap", "threshold": 16000, "overflow_ratio": 0.35, "scope": "round"},
                         ],
                     }
                 ]

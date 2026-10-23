@@ -60,6 +60,7 @@ context = {
     "current_tab": "market",
     "market_view": "buy",
     "market_can_buy_or_list": True,
+    "market_partial_purchase_enabled": True,
     "market_min_prestige": 100,
     "listings": listings,
     "page_obj": page,

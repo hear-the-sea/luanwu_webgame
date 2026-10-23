@@ -262,6 +262,7 @@ def _guest_power(
         hp_bonus=int(guest.hp_bonus),
         archetype=str(guest.template.archetype),
         base_hp=int(guest.template.base_hp),
+        level=int(guest.level),
     )
 
 
@@ -479,6 +480,7 @@ def build_virtual_equipment_candidates(
                 hp_bonus=int(projected_guest.hp_bonus),
                 archetype=str(projected_guest.template.archetype),
                 base_hp=int(projected_guest.template.base_hp),
+                level=int(projected_guest.level),
             )
             power_gain = max(0, after_power - before_power)
             if power_gain <= 0:

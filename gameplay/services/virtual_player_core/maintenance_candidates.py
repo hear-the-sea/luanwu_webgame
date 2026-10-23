@@ -502,6 +502,7 @@ def build_equipment_equip_candidates(
             hp_bonus=int(guest.hp_bonus),
             archetype=str(guest.template.archetype),
             base_hp=int(guest.template.base_hp),
+            level=int(guest.level),
         )
         persisted_state = {field: int(getattr(guest, field) or 0) for field in _PROJECTED_GUEST_FIELDS}
         current_set_bonus = normalize_active_set_bonus(guest.gear_set_bonus)
@@ -555,6 +556,7 @@ def build_equipment_equip_candidates(
                 hp_bonus=projected_state["hp_bonus"],
                 archetype=str(guest.template.archetype),
                 base_hp=int(guest.template.base_hp),
+                level=int(guest.level),
             )
             power_gain = guest_power_after - guest_power_before
             if power_gain < 0:

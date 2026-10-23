@@ -114,6 +114,11 @@ def _load_guest_detail(manor, guest_pk: int):
 
 def _build_gear_set_context(gear_items):
     from gameplay.models import ItemTemplate
+    from gameplay.services.equipment_affixes import BASE_KEY_FIELD, BASE_NAME_FIELD
+    from gameplay.services.equipment_template_sync import LEGACY_EQUIPMENT_KEY_ALIASES
+
+    def base_key(key):
+        return LEGACY_EQUIPMENT_KEY_ALIASES.get(key, key)
 
     equipped_templates = [item.template for item in gear_items]
     set_keys = {tpl.set_key for tpl in equipped_templates if getattr(tpl, "set_key", "")}
@@ -128,20 +133,28 @@ def _build_gear_set_context(gear_items):
         .order_by("effect_type", "key")
     )
     templates_by_set = {}
+    catalog_base_keys = {}
     for tpl in catalog_templates:
         payload = tpl.effect_payload
         if not isinstance(payload, dict):
             continue
         set_key = payload.get("set_key")
         if set_key in set_keys:
-            templates_by_set.setdefault(set_key, []).append((tpl, payload))
-    equipped_keys = {tpl.key for tpl in equipped_templates}
+            # 词缀变体和历史别名属于同一成员，优先使用基础模板展示。
+            member_key = base_key(payload.get(BASE_KEY_FIELD) or tpl.key)
+            catalog_base_keys[tpl.key] = member_key
+            members = templates_by_set.setdefault(set_key, {})
+            if member_key not in members or tpl.key == member_key:
+                members[member_key] = (tpl, payload)
+    equipped_keys = {
+        base_key(getattr(tpl, "base_key", "") or catalog_base_keys.get(tpl.key, tpl.key)) for tpl in equipped_templates
+    }
     slot_labels = dict(GearSlot.choices)
     for set_key in sorted(templates_by_set):
-        members = templates_by_set.get(set_key, [])
+        members = sorted(templates_by_set[set_key].items(), key=lambda entry: (entry[1][0].effect_type, entry[0]))
         if not members:
             continue
-        first_payload = members[0][1]
+        first_payload = members[0][1][1]
         bonus = first_payload.get("set_bonus") or {}
         pieces = None
         if isinstance(bonus, dict):
@@ -151,13 +164,13 @@ def _build_gear_set_context(gear_items):
         members_payload = [
             {
                 "id": tpl.id,
-                "key": tpl.key,
-                "name": tpl.name,
+                "key": member_key,
+                "name": member_payload.get(BASE_NAME_FIELD) or tpl.name,
                 "slot": slot_labels.get(tpl.effect_type.removeprefix("equip_"), tpl.effect_type),
                 "rarity": tpl.rarity,
-                "equipped": tpl.key in equipped_keys,
+                "equipped": member_key in equipped_keys,
             }
-            for tpl, _payload in members
+            for member_key, (tpl, member_payload) in members
         ]
         set_desc = first_payload.get("set_description") or ""
         payload = {

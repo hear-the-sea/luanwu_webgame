@@ -65,45 +65,50 @@ def send_purchase_notifications(
     seller_received: int,
     safe_create_message,
     safe_notify_user,
+    transaction_record=None,
 ) -> tuple[bool, bool]:
+    # 挂单保存的是剩余库存，通知使用本次成交的独立快照。
+    quantity = transaction_record.quantity if transaction_record is not None else listing.quantity
+    total_price = transaction_record.total_price if transaction_record is not None else listing.total_price
+    sold_at = transaction_record.transaction_at if transaction_record is not None else listing.sold_at
     buyer_mail_sent = safe_create_message(
         manor=buyer,
         kind="system",
         title="【交易成功】您购买的物品已送达",
         body=(
-            f"恭喜！您成功购买了 {listing.item_template.name} ×{listing.quantity}，"
-            f"花费 {listing.total_price:,} 银两。\n\n"
+            f"恭喜！您成功购买了 {listing.item_template.name} ×{quantity}，"
+            f"花费 {total_price:,} 银两。\n\n"
             f"物品已直接存入您的仓库，请前往查看。\n\n"
             f"交易详情：\n"
             f"- 物品：{listing.item_template.name}\n"
-            f"- 数量：{listing.quantity}\n"
+            f"- 数量：{quantity}\n"
             f"- 单价：{listing.unit_price:,} 银两\n"
-            f"- 总价：{listing.total_price:,} 银两\n"
+            f"- 总价：{total_price:,} 银两\n"
             f"- 卖家：{listing.seller.display_name}\n"
-            f"- 成交时间：{timezone.localtime(listing.sold_at).strftime('%Y-%m-%d %H:%M:%S')}"
+            f"- 成交时间：{timezone.localtime(sold_at).strftime('%Y-%m-%d %H:%M:%S')}"
         ),
     )
 
     seller_mail_sent = False
     if listing.seller_id:
-        discarded_silver = max(0, listing.total_price - tax_amount - seller_received)
+        discarded_silver = max(0, total_price - tax_amount - seller_received)
         overflow_notice = f"- 银库容量不足，超出容量的 {discarded_silver:,} 银两已丢弃\n" if discarded_silver else ""
         seller_mail_sent = safe_create_message(
             manor=listing.seller,
             kind="system",
             title="【交易成功】您的物品已售出",
             body=(
-                f"恭喜！您上架的 {listing.item_template.name} ×{listing.quantity} 已成功售出！\n\n"
+                f"恭喜！您上架的 {listing.item_template.name} ×{quantity} 已成功售出！\n\n"
                 f"成交收入已按银库容量存入，实际到账 {seller_received:,} 银两。\n\n"
                 f"交易详情：\n"
                 f"- 物品：{listing.item_template.name}\n"
-                f"- 数量：{listing.quantity}\n"
-                f"- 成交价：{listing.total_price:,} 银两\n"
+                f"- 数量：{quantity}\n"
+                f"- 成交价：{total_price:,} 银两\n"
                 f"- 税费（10%）：{tax_amount:,} 银两\n"
                 f"- 实际到账：{seller_received:,} 银两\n"
                 f"{overflow_notice}"
                 f"- 买家：{buyer.display_name}\n"
-                f"- 成交时间：{timezone.localtime(listing.sold_at).strftime('%Y-%m-%d %H:%M:%S')}"
+                f"- 成交时间：{timezone.localtime(sold_at).strftime('%Y-%m-%d %H:%M:%S')}"
             ),
         )
 
@@ -114,7 +119,7 @@ def send_purchase_notifications(
                 "title": "【交易成功】您的物品已售出",
                 "item_name": listing.item_template.name,
                 "item_key": listing.item_template.key,
-                "quantity": listing.quantity,
+                "quantity": quantity,
                 "silver_received": seller_received,
             },
             log_context="market sold notification",

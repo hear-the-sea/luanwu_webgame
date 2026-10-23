@@ -163,7 +163,7 @@ def test_minimum_attribute_formula_rewards_balanced_stats(force, intellect):
 
 
 @pytest.mark.parametrize("kind", ["guest", "troop"])
-def test_minimum_formula_uses_unit_defense_and_final_two_times_skill_multiplier(kind):
+def test_minimum_formula_uses_unit_defense_and_target_specific_skill_multiplier(kind):
     actor = make_unit(attack=0, force_attr=500, intellect_attr=400)
     target = make_unit(
         kind=kind,
@@ -182,7 +182,8 @@ def test_minimum_formula_uses_unit_defense_and_final_two_times_skill_multiplier(
     }
     defense = 2.5 if kind == "troop" else 10000
     result = calculate_attack_damage(actor, target, skills=[skill], rng=FixedRng(), round_priority=0)
-    assert result.damage == int((5000 + 15 * 400 - 0.3 * defense) * 2)
+    skill_multiplier = 3 if kind == "troop" else 2
+    assert result.damage == int((5000 + 15 * 400 - 0.3 * defense) * skill_multiplier)
 
 
 def test_minimum_formula_adds_to_existing_linear_terms():
@@ -414,7 +415,7 @@ def test_guest_vs_troop_damage_keeps_fractional_unit_defense_until_damage_roundi
     assert result.damage == int(base_damage * SLAUGHTER_MULTIPLIER)
 
 
-def test_guest_vs_troop_skill_damage_uses_two_times_skill_multiplier():
+def test_guest_vs_troop_skill_damage_uses_three_times_skill_multiplier():
     actor = make_unit(kind="guest", attack=1000, priority=0)
     target = make_unit(kind="troop", side="defender", unit_defense=10, troop_strength=200, unit_hp=10)
     skill = {"name": "Flat Bonus", "damage_formula": {"base": 2000}}

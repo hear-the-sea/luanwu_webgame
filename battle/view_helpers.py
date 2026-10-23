@@ -12,7 +12,7 @@ from core.game_data.troop_device_bonus_display import format_aggregated_troop_de
 from gameplay.utils.template_loader import get_item_templates_by_keys
 from guests.models import Guest, GuestTemplate, SkillBook
 
-from .report_events import group_action_recovery_events, report_event_side
+from .report_events import group_action_recovery_events, prepare_passive_display_events, report_event_side
 
 if TYPE_CHECKING:
     from .models import BattleReport
@@ -501,9 +501,11 @@ def build_rounds_display(rounds: Iterable[dict[str, Any]], avatar_map: dict[str,
         has_lineup_snapshot = isinstance(raw_lineups, dict) and "attacker" in raw_lineups and "defender" in raw_lineups
         lineups = raw_lineups if isinstance(raw_lineups, dict) else {}
         events = group_action_recovery_events(
-            event
-            for event in (raw_round.get("events") or [])
-            if isinstance(event, dict) and not _is_dust_ruse_event(event)
+            prepare_passive_display_events(
+                event
+                for event in (raw_round.get("events") or [])
+                if isinstance(event, dict) and not _is_dust_ruse_event(event)
+            )
         )
         display_rounds.append(
             {

@@ -41,7 +41,7 @@ def _iter_template_stat_parts(template) -> list[str]:
         parts.append(f"{_GEAR_STAT_LABELS['defense']}+{defense_bonus}")
     extra_stats = getattr(template, "extra_stats", {}) or {}
     for key, value in extra_stats.items():
-        if value is None:
+        if value is None or value == 0:
             continue
         parts.append(f"{_GEAR_STAT_LABELS.get(key, '未知属性')}+{value}")
     return parts
@@ -75,7 +75,7 @@ def _build_set_bonus_summary(set_description: str, set_bonus) -> str:
         for key, value in bonus_map.items():
             if key in {"pieces", "bonus", "bonuses"}:
                 continue
-            if value is None:
+            if value is None or value == 0:
                 continue
             bonus_parts.append(f"{_GEAR_STAT_LABELS.get(key, '未知属性')}+{value}")
         piece_text = f"{pieces}件" if pieces else "套装"
@@ -125,7 +125,7 @@ def _render_set_bonus_lines(lines: list, bonus_map: dict, esc) -> None:
         for key, value in entry_bonus_map.items():
             if key in {"pieces", "bonus", "bonuses"}:
                 continue
-            if value is None:
+            if value is None or value == 0:
                 continue
             label = _GEAR_STAT_LABELS.get(key, "未知属性")
             bonus_parts.append(format_html("{}+{}", esc(label), value))

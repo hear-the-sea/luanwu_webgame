@@ -108,7 +108,9 @@ def expire_listings_queryset(
                         "quantity": quantity,
                     }
 
-                    listing.delete()
+                    # 部分成交的挂单保留，以免级联删除已有成交记录。
+                    if not listing.transactions.exists():
+                        listing.delete()
                     count += 1
 
                 stats_changed = True

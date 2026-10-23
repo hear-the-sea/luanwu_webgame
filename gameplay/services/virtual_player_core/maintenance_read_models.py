@@ -17,6 +17,7 @@ def guest_arena_power(
     intellect: int,
     defense: int,
     agility: int,
+    level: int | None = None,
 ) -> int:
     """Calculate arena power from already-loaded guest and template values."""
 
@@ -28,6 +29,7 @@ def guest_arena_power(
         hp_bonus=int(guest.hp_bonus),
         archetype=str(guest.template.archetype),
         base_hp=int(guest.template.base_hp),
+        level=int(guest.level if level is None else level),
     )
 
 

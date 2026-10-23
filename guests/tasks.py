@@ -7,8 +7,7 @@ from typing import Callable
 
 from celery import shared_task
 from django.db import transaction
-from django.db.models import F, IntegerField, Q, Value
-from django.db.models.functions import Greatest
+from django.db.models import Q
 from django.utils import timezone
 
 from common.utils.celery import safe_apply_async_with_dedup
@@ -29,6 +28,7 @@ from gameplay.services.virtual_player_core.recovery import (
     record_recovery_failure,
     recovery_circuit_is_open,
 )
+from guests.query_utils import guest_max_hp_expression
 from guests.services.custom_guest import CUSTOM_GUEST_TEMPLATE_KEYS, is_custom_guest
 from guests.services.world_unique import is_world_unique_guest
 from guests.utils.training_timer import guest_training_eta_max_seconds, training_completion_dedup_key
@@ -409,11 +409,7 @@ def scan_passive_hp_recovery(limit: int = 200) -> int:
     now = timezone.now()
     batch_limit = max(0, int(limit))
     cutoff = now - timedelta(seconds=TimeConstants.HP_RECOVERY_INTERVAL)
-    max_hp_expr = Greatest(
-        F("template__base_hp") + F("hp_bonus") + F("defense_stat") * int(GUEST.DEFENSE_TO_HP_MULTIPLIER),
-        Value(int(GUEST.MIN_HP_FLOOR)),
-        output_field=IntegerField(),
-    )
+    max_hp_expr = guest_max_hp_expression()
     guest_ids = list(
         Guest.objects.filter(
             last_hp_recovery_at__lte=cutoff,

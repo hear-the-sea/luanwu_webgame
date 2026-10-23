@@ -9,6 +9,7 @@ from types import MappingProxyType
 from typing import Final
 
 from core.config import GUEST
+from guests.guest_rules import compute_guest_level_hp_bonus
 
 from .contracts import calculate_positive_growth_bps
 from .random_context import RandomContext
@@ -120,6 +121,7 @@ def calculate_guest_arena_power(
     hp_bonus: int,
     archetype: str,
     base_hp: int,
+    level: int = 1,
 ) -> int:
     """计算真人快照与 V2 发展预测共用的单门客竞技强度。
 
@@ -139,7 +141,7 @@ def calculate_guest_arena_power(
     max_hp = max(
         int(GUEST.MIN_HP_FLOOR),
         max(0, int(base_hp)) + max(0, int(hp_bonus)) + normalized_defense * int(GUEST.DEFENSE_TO_HP_MULTIPLIER),
-    )
+    ) + compute_guest_level_hp_bonus(level)
     agility_power = int(normalized_agility * GUEST.AGILITY_TO_ARENA_POWER_WEIGHT)
     return max(1, attack) + max(1, normalized_defense) + max(0, agility_power) + max_hp // 10
 

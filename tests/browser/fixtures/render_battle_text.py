@@ -33,6 +33,16 @@ sub = {
     "reflect_defeated": True,
     "status_inflicted": ["审计次目标眩晕"],
     "actor_state": {"side": "attacker", "kind": "guest", "percent": 0},
+    "passive_events_before": [
+        {
+            "type": "passive",
+            "side": "attacker",
+            "unit": "浪翻云",
+            "effect": "嗜血狂怒",
+            "message": "随机追加目标",
+            "unit_state": base["actor_state"],
+        }
+    ],
 }
 extra = {
     "type": "passive",
@@ -40,6 +50,7 @@ extra = {
     "unit": "长风万里踏破江湖行侠仗义的门客姓名",
     "effect": "长篇被动技能名称审计",
     "healed": 1234,
+    "message": "恶来怒吼死战，崩山裂甲转为同时攻击三人！",
     "unit_state": base["actor_state"],
 }
 events = [
@@ -58,17 +69,48 @@ events = [
     {**base, "actor": "长风万里踏破江湖行侠仗义的门客姓名", "target": "拳圣"},
 ]
 styles = render_to_string("battle/partials/report_detail_styles.html")
+if len(sys.argv) > 2 and sys.argv[2] == "qiankun":
+    notice = {
+        "type": "passive",
+        "side": "defender",
+        "unit": "张无忌",
+        "effect": "乾坤大挪移",
+        "message": "本回合获得卸力反震",
+        "unit_state": {"side": "defender", "current": 1000, "percent": 70},
+    }
+    reflection = {**base, "target": "张无忌", "reflect_effect": "乾坤大挪移", "reflect_damage": 4321}
+    events = [
+        notice,
+        {**reflection, "additional_targets": [{**reflection, "reflect_damage": 1234}]},
+        {**notice, "message": "卸力反震", "unit_state": {"current": 0}},
+    ]
 for viewer in [sys.argv[1]]:
     rows = build_rounds_display([{"events": events}], {})[0]
     content = render_to_string(
         "battle/partials/round_event_list.html",
         {"events": rows["attacker_events"], "my_side": viewer, "is_spectator": viewer == "spectator"},
     )
+    defender_content = (
+        render_to_string(
+            "battle/partials/round_event_list.html",
+            {
+                "events": rows["defender_events"],
+                "my_side": viewer,
+                "is_spectator": viewer == "spectator",
+            },
+        )
+        if rows["defender_events"]
+        else ""
+    )
     html = (
         '<html><head><meta charset="utf-8">'
         + styles
-        + '</head><body><main class="battle-report-page" style="width:100%;padding:8px;box-sizing:border-box"><section class="battle-rounds-card"><div class="battle-round"><div class="battle-round-table"><div class="round-action-cell attacker">'
+        + '</head><body><main class="battle-report-page" style="width:100%;padding:8px;box-sizing:border-box">'
+        '<section class="battle-rounds-card"><div class="battle-round"><div class="battle-round-table">'
+        '<div class="round-action-cell attacker">'
         + content
-        + '</div><div class="round-action-cell defender"></div></div></div></section></main></body></html>'
+        + '</div><div class="round-action-cell defender">'
+        + defender_content
+        + "</div></div></div></section></main></body></html>"
     )
     print(html)

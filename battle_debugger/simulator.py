@@ -27,7 +27,7 @@ def _patch_slaughter_multiplier(cm, params: Dict[str, Any], originals: Dict[str,
     originals["slaughter"] = cm.calculate_slaughter_multiplier
     multiplier = params["slaughter_multiplier"]
 
-    def custom_slaughter(attacker, target):
+    def custom_slaughter(attacker, target, *, battle_engine_version=None):
         if getattr(attacker, "kind", "") != "guest":
             return 1.0
         if getattr(target, "kind", "") != "troop":
@@ -430,13 +430,6 @@ class BattleSimulator:
         Returns:
             HP值
         """
-        # 获取基础HP（从模板）
-        base_hp = guest.template.base_hp
+        from guests.guest_rules import compute_guest_max_hp
 
-        # 获取防御
-        defense = guest.defense_stat
-
-        # HP = 基础HP + 防御×50
-        hp = int(base_hp + defense * 50)
-
-        return max(200, hp)
+        return compute_guest_max_hp(guest)

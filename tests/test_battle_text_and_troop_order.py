@@ -113,6 +113,7 @@ def test_primary_dodge_preserves_skill_name_and_secondary_status(viewer):
 def test_target_statuses_follow_their_own_hit_instead_of_the_last_target():
     event = {
         "actor": "浪翻云",
+        "skills": ["覆雨剑法"],
         "target": "刀霸",
         "damage": 100,
         "status_inflicted": ["主目标标记"],

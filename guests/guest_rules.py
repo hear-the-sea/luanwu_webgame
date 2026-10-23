@@ -5,12 +5,18 @@ from typing import Any
 from core.config import GUEST
 
 
+def compute_guest_level_hp_bonus(level: int) -> int:
+    """所有稀有度从 1 级起统一计算固定生命成长。"""
+    return max(0, int(level or 1) - 1) * int(GUEST.LEVEL_HP_GAIN)
+
+
 def compute_guest_max_hp(guest: Any) -> int:
     base_hp = int(getattr(getattr(guest, "template", None), "base_hp", 0) or 0) + int(
         getattr(guest, "hp_bonus", 0) or 0
     )
     defense_hp = int(getattr(guest, "defense_stat", 0) or 0) * int(GUEST.DEFENSE_TO_HP_MULTIPLIER)
-    return int(max(int(GUEST.MIN_HP_FLOOR), base_hp + defense_hp))
+    level_hp = compute_guest_level_hp_bonus(getattr(guest, "level", 1))
+    return int(max(int(GUEST.MIN_HP_FLOOR), base_hp + defense_hp)) + level_hp
 
 
 def compute_guest_attack_attribute_component(guest: Any) -> int:

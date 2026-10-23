@@ -49,12 +49,15 @@ def _iter_phase_attackers(
     defender_team: List["Combatant"],
     rng: random.Random,
     priority: int,
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
 ) -> list["Combatant"]:
     # Negative priority phases are cumulative by design: a faster unit with
     # priority -2 acts in both the -2 phase and the later -1 phase.
     return [
         actor
-        for actor in determine_turn_order(attacker_team, defender_team, rng, round_priority=priority)
+        for actor in determine_turn_order(
+            attacker_team, defender_team, rng, round_priority=priority, battle_engine_version=battle_engine_version
+        )
         if actor.priority <= priority
     ]
 
@@ -327,7 +330,9 @@ def resolve_priority_phases(
                 rng=rng,
             )
             _append_passive_events(events, passive_events)
-        phase_attackers = _iter_phase_attackers(attacker_team, defender_team, rng, priority)
+        phase_attackers = _iter_phase_attackers(
+            attacker_team, defender_team, rng, priority, battle_engine_version=battle_engine_version
+        )
         for actor in phase_attackers:
             if actor.hp <= 0:
                 continue

@@ -50,7 +50,9 @@ def _template(case, yaml_first=False):
 @pytest.mark.parametrize("case", CASES, ids=["sunwu", "xiangyu"])
 @pytest.mark.parametrize("yaml_first", [False, True])
 @pytest.mark.parametrize("hp_state", ["full", "wounded", "zero"])
-def test_promotion_preserves_investments_and_health(django_user_model, case, yaml_first, hp_state):
+def test_promotion_preserves_investments_and_health(
+    django_user_model, case, yaml_first, hp_state, guest_hp_before_level_growth
+):
     manor = ensure_manor(django_user_model.objects.create_user(username="promotion", password="pass"))
     template = _template(case, yaml_first)
     new_profile = NEW_PROFILES[case[1]]

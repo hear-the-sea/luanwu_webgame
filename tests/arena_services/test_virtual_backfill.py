@@ -33,6 +33,7 @@ from gameplay.services.arena.virtual_reserve_fill import (
 )
 from gameplay.services.arena.virtual_reserve_pool import evaluate_bot_lineup
 from gameplay.services.manor.core import ensure_manor
+from guests.guest_rules import compute_guest_level_hp_bonus
 from guests.models import Guest, GuestStatus
 from tests.arena_services.support import User, create_guest, create_guest_template
 
@@ -93,6 +94,8 @@ def _create_bot_profile(
             template=template,
             custom_name=f"{username}-门客-{index}",
             level=30,
+            # 这组补位用例对照固定战力的历史快照，保持合成阵容原有生命预算。
+            hp_bonus=-compute_guest_level_hp_bonus(30),
             force=force,
             intellect=intellect,
             defense_stat=defense,

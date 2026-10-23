@@ -85,6 +85,7 @@ def purchase_market_listing(
     buyer,
     listing_id: int,
     *,
+    quantity: int | None = None,
     market_listing_model,
     market_transaction_model,
     manor_model,
@@ -110,6 +111,12 @@ def purchase_market_listing(
             buyer,
             active_status=market_listing_model.Status.ACTIVE,
         )
+        purchase_quantity = listing.quantity if quantity is None else quantity
+        if type(purchase_quantity) is not int or purchase_quantity <= 0:
+            raise TradeValidationError("购买数量必须是正整数")
+        if purchase_quantity > listing.quantity:
+            raise TradeValidationError(f"剩余数量不足，当前仅剩 {listing.quantity} 件，请刷新后重试")
+        purchase_total = listing.unit_price * purchase_quantity
         buyer_locked, seller_locked = lock_purchase_parties(
             manor_model=manor_model,
             buyer_pk=buyer.pk,
@@ -120,11 +127,11 @@ def purchase_market_listing(
         pay_market_purchase(
             buyer_locked,
             item_name=listing.item_template.name,
-            total_price=listing.total_price,
+            total_price=purchase_total,
         )
 
-        tax_amount = int(listing.total_price * transaction_tax_rate)
-        seller_received = listing.total_price - tax_amount
+        tax_amount = int(purchase_total * transaction_tax_rate)
+        seller_received = purchase_total - tax_amount
 
         if seller_locked is not None:
             seller_received = settle_market_sale_proceeds(
@@ -134,15 +141,21 @@ def purchase_market_listing(
             )
 
         now = timezone.now()
-        listing.status = market_listing_model.Status.SOLD
-        listing.buyer = buyer_locked
-        listing.sold_at = now
-        listing.save(update_fields=["status", "buyer", "sold_at"])
+        if purchase_quantity == listing.quantity:
+            listing.status = market_listing_model.Status.SOLD
+            listing.buyer = buyer_locked
+            listing.sold_at = now
+            listing.save(update_fields=["status", "buyer", "sold_at"])
+        else:
+            listing.quantity -= purchase_quantity
+            listing.total_price = listing.unit_price * listing.quantity
+            listing.save(update_fields=["quantity", "total_price"])
 
         transaction_record = market_transaction_model.objects.create(
             listing=listing,
             buyer=buyer_locked,
-            total_price=listing.total_price,
+            quantity=purchase_quantity,
+            total_price=purchase_total,
             tax_amount=tax_amount,
             seller_received=seller_received,
         )
@@ -150,7 +163,7 @@ def purchase_market_listing(
         grant_listing_item_to_buyer_locked(
             buyer_locked=buyer_locked,
             item_template=listing.item_template,
-            quantity=listing.quantity,
+            quantity=purchase_quantity,
             grant_item_locked=grant_market_item_locked,
         )
         schedule_market_stats_cache_invalidation()
@@ -160,6 +173,7 @@ def purchase_market_listing(
         listing=listing,
         tax_amount=tax_amount,
         seller_received=seller_received,
+        transaction_record=transaction_record,
     )
     transaction_record.buyer_mail_sent = buyer_mail_sent
     transaction_record.seller_mail_sent = seller_mail_sent

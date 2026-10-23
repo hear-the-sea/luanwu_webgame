@@ -1,8 +1,10 @@
+{% load battle_report %}
 <div class="event-unit-summary event-passive-layout">
-    <strong class="event-unit-name event-passive-name">{{ passive_event.unit }}</strong>
+    <strong class="event-unit-name event-passive-name">{% if passive_event.effect == '乾坤大挪移' %}{% report_event_side passive_event as passive_side %}{% battle_side_label passive_side visible_side spectator %}{% endif %}{{ passive_event.unit }}</strong>
     {% include "battle/partials/unit_state_bar.html" with state=passive_event.unit_state visible_side=visible_side spectator=spectator %}
     <span class="event-unit-skills event-passive-tag">
-        <span class="tech-tag heal">被动技能：{{ passive_event.effect|default:"触发" }}</span>
-        {% include "battle/partials/passive_event_extra.html" with passive_event=passive_event %}
+        <span class="tech-tag event-passive-skill"><span class="event-passive-label">被动技能：</span><strong>{{ passive_event.effect|default:"触发" }}</strong></span>
+        {% include "battle/partials/passive_event_extra.html" with passive_event=passive_event hide_message=True %}
     </span>
+    {% if passive_event.message %}<span class="event-passive-message">{{ passive_event.message }}</span>{% endif %}
 </div>

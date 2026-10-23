@@ -1,6 +1,6 @@
 <ul class="battle-events round-action-list {{ event_list_class }}">
     {% for event in events %}
-        <li>
+        <li{% if event.type == 'passive' %} class="event-passive-row"{% endif %}>
             {% if event.type == 'heal' %}
                 <div class="event-line">
                     <span class="event-order">{{ event.order }}</span>
@@ -18,7 +18,7 @@
                 </div>
             {% elif event.type == 'passive' %}
                 <div class="event-line">
-                    <span class="event-order">{{ event.order }}</span>
+                    {% if not event.message %}<span class="event-order">{{ event.order }}</span>{% endif %}
                     {% include "battle/partials/passive_event_summary.html" with passive_event=event visible_side=my_side spectator=is_spectator %}
                 </div>
             {% elif event.status %}

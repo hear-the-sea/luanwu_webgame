@@ -13,6 +13,7 @@ from django.db import connection
 from battle.combatants_pkg.guest_builder import _serialize_skill
 from battle.simulation.attack_execution import perform_attack
 from battle.simulation.damage_application import apply_damage_results
+from battle.simulation.damage_calculation import calculate_attack_damage
 from battle.simulation.target_selection import select_attack_targets
 from battle.skills import trigger_skills
 from core.utils.yaml_validators import validate_guest_skills
@@ -67,10 +68,15 @@ def test_assault_uses_luck_and_both_force_and_agility():
     assert damage(actor, target, [current]) > original
 
 
-def test_one_attack_checks_three_target_health_ratios_independently(monkeypatch):
+def test_burst_checks_three_target_health_ratios_then_follows_with_normal_attack(monkeypatch):
     actor = zhaoyun()
     targets = [unit(side="defender", name=f"敌将{i}", hp=hp) for i, hp in enumerate([34999, 35000, 90000])]
-    expected = {target.name: damage(actor, target, actor.skills) for target in targets}
+    expected = {
+        target.name: calculate_attack_damage(
+            actor, target, actor.skills, FixedRng(), round_priority=0, damage_component="burst"
+        ).damage
+        for target in targets
+    }
     monkeypatch.setattr("battle.simulation.attack_execution._trigger_attack_skills", lambda *_args: actor.skills)
     result = perform_attack(actor, [actor], targets, FixedRng(), round_priority=0)
     hits = [result, *result.get("additional_targets", [])]
@@ -78,6 +84,9 @@ def test_one_attack_checks_three_target_health_ratios_independently(monkeypatch)
     assert {hit["target"]: hit["damage"] for hit in hits} == expected
     assert expected[targets[0].name] > expected[targets[1].name]
     assert expected[targets[1].name] == expected[targets[2].name]
+    (normal,) = result["additional_attacks"]
+    assert normal["attack_phase"] == "normal"
+    assert normal["skills"] == []
 
 
 def test_zhaoyun_no_longer_receives_old_damage_reduction_or_counter():

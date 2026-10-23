@@ -147,9 +147,9 @@ def test_guest_average_excludes_troops_and_does_not_override_unit_agility():
     assert [unit.name for unit in ordered] == ["守方快护院", "攻方护院", "守方护院", "攻方门客", "守方门客"]
 
 
-@pytest.mark.parametrize("version", ["legacy", "2", "3", "4"])
+@pytest.mark.parametrize("version", ["legacy", "2", "3", "4", "5", "6", "7", "8"])
 @pytest.mark.parametrize("priority", [-2, -1, 0])
-def test_troops_precede_faster_guests_only_in_new_standard_rounds(version, priority):
+def test_troop_priority_preserves_legacy_opening_order(version, priority):
     guest = make_combatant("高速门客", "attacker", 300)
     troop = make_combatant("低速护院", "defender", 80)
     troop.kind = "troop"
@@ -158,7 +158,8 @@ def test_troops_precede_faster_guests_only_in_new_standard_rounds(version, prior
         [guest], [troop], NoRandomRng(), round_priority=priority, battle_engine_version=version
     )
 
-    expected = [troop, guest] if version == "4" and priority == 0 else [guest, troop]
+    troops_first = version in {"5", "6", "7", "8"} or (version == "4" and priority == 0)
+    expected = [troop, guest] if troops_first else [guest, troop]
     assert ordered == expected
 
 
@@ -179,8 +180,8 @@ def test_fixed_first_precedes_troops_and_dead_or_skipping_units_are_excluded():
     assert determine_turn_order([troop, dead], [guest, tower, wall], NoRandomRng()) == [tower, troop, guest]
 
 
-@pytest.mark.parametrize("version", ["3", "4"])
-def test_simulation_preserves_opening_order_and_versions_standard_round_order(version):
+@pytest.mark.parametrize("version", ["3", "4", "5", "6", "7", "8"])
+def test_simulation_versions_opening_and_standard_round_order(version):
     guest = make_combatant("高速门客", "attacker", 300)
     troop = make_combatant("低速护院", "defender", 80)
     troop.kind = "troop"
@@ -205,8 +206,30 @@ def test_simulation_preserves_opening_order_and_versions_standard_round_order(ve
     assert result.rounds[0]["priority"] == -1
     opening_attacks = [event["actor"] for event in result.rounds[0]["events"] if "damage" in event]
     standard_attacks = [event["actor"] for event in result.rounds[1]["events"] if "damage" in event]
-    assert opening_attacks == [guest.name, troop.name]
-    assert standard_attacks == ([troop.name, guest.name] if version == "4" else [guest.name, troop.name])
+    assert opening_attacks == (
+        [troop.name, guest.name] if version in {"5", "6", "7", "8"} else [guest.name, troop.name]
+    )
+    assert standard_attacks == (
+        [troop.name, guest.name] if version in {"4", "5", "6", "7", "8"} else [guest.name, troop.name]
+    )
+
+
+@pytest.mark.parametrize("priority", [-2, -1])
+def test_preemptive_ranged_then_troops_then_guests_each_sorted_by_agility(priority):
+    guests = [make_combatant("快门客", "attacker", 900), make_combatant("慢门客", "defender", 700)]
+    troops = [make_combatant("快护院", "attacker", 600), make_combatant("慢护院", "defender", 400)]
+    ranged = [make_combatant("快弓兵", "attacker", 100), make_combatant("慢弓兵", "defender", 50)]
+    for unit in troops + ranged:
+        unit.kind = "troop"
+    for unit in ranged:
+        unit.troop_class = "gong"
+    ordered = determine_turn_order(
+        [guests[0], troops[0], ranged[0]],
+        [ranged[1], troops[1], guests[1]],
+        NoRandomRng(),
+        round_priority=priority,
+    )
+    assert ordered == ranged + troops + guests
 
 
 def test_guest_killed_by_troop_before_action_does_not_act():

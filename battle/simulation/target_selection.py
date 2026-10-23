@@ -8,8 +8,9 @@ import random
 from typing import TYPE_CHECKING, Callable
 
 from battle.city_defense import WALL_INTERCEPT_CHANCE
+from battle.random_context import CURRENT_BATTLE_ENGINE_VERSION, GUEST_TROOP_BALANCE_ENGINE_VERSIONS
 
-from .constants import PRIORITY_TARGET_WEIGHT, TROOP_COUNTERS
+from .constants import PRIORITY_TARGET_WEIGHT, TROOP_COUNTERS, TROOP_SCREENING_CHANCE
 from .types import AttackSkill, _SelectedAttackTargets
 from .utils import alive
 
@@ -58,7 +59,9 @@ def is_ranged_attack(actor: "Combatant", round_priority: int) -> bool:
     return round_priority < 0
 
 
-def select_target_with_priority(actor: "Combatant", opponents: list["Combatant"], rng: random.Random) -> "Combatant":
+def _select_target_without_screening(
+    actor: "Combatant", opponents: list["Combatant"], rng: random.Random
+) -> "Combatant":
     """
     加权概率选择攻击目标。
 
@@ -74,9 +77,9 @@ def select_target_with_priority(actor: "Combatant", opponents: list["Combatant"]
         选中的攻击目标
 
     Examples:
-        >>> # 刀兵有70%概率优先攻击剑兵
-        >>> # 门客有70%概率优先攻击敌方门客
-        >>> # 30%概率随机选择，增加战斗不确定性
+        >>> # 刀兵有60%概率优先攻击剑兵
+        >>> # 门客有60%概率优先攻击敌方门客
+        >>> # 40%概率随机选择，增加战斗不确定性
     """
     priority_targets: list["Combatant"] = []
 
@@ -114,12 +117,34 @@ def select_target_with_priority(actor: "Combatant", opponents: list["Combatant"]
     return _weighted_choice(opponents, rng)
 
 
+def select_target_with_priority(
+    actor: "Combatant",
+    opponents: list["Combatant"],
+    rng: random.Random,
+    *,
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
+) -> "Combatant":
+    """先按原规则选敌；版本 5 中存活护院有 75% 概率掩护己方门客。"""
+    target = _select_target_without_screening(actor, opponents, rng)
+    if (
+        battle_engine_version in GUEST_TROOP_BALANCE_ENGINE_VERSIONS
+        and actor.kind == "troop"
+        and target.kind == "guest"
+    ):
+        screening_troops = [unit for unit in opponents if unit.kind == "troop" and unit.hp > 0]
+        if screening_troops and rng.random() < TROOP_SCREENING_CHANCE:
+            return _select_target_without_screening(actor, screening_troops, rng)
+    return target
+
+
 def select_attack_targets(
     actor: "Combatant",
     attacker_team: list["Combatant"],
     defender_team: list["Combatant"],
     rng: random.Random,
     trigger_attack_skills_fn: Callable[["Combatant", random.Random], list[AttackSkill]],
+    *,
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
 ) -> _SelectedAttackTargets | None:
     """
     选择本次行动的攻击目标（含多目标技能的扩展目标）。
@@ -141,7 +166,7 @@ def select_attack_targets(
         return None
 
     # 关键：保持 RNG 消耗顺序——先选主目标，再触发技能（历史实现依赖此顺序保证可复现）
-    primary_target = select_target_with_priority(actor, opponents, rng)
+    primary_target = select_target_with_priority(actor, opponents, rng, battle_engine_version=battle_engine_version)
     skills = _active_attack_skills(trigger_attack_skills_fn(actor, rng))
     if any(skill.get("target_priority") == "lowest_hp_ratio" for skill in skills):
         primary_target = min(opponents, key=lambda unit: unit.hp / max(1, unit.max_hp))

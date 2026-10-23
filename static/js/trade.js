@@ -303,6 +303,16 @@
     ).toLocaleString();
   }
 
+  function updateMarketPurchaseTotal(form) {
+    const input = form.querySelector('input[name="quantity"]');
+    const total = form.querySelector("[data-market-purchase-total]");
+    if (!input || !total) return;
+    const quantity = Number(input.value);
+    total.textContent = Number.isSafeInteger(quantity) && quantity > 0 && quantity <= Number(input.max)
+      ? (quantity * Number(form.dataset.unitPrice)).toLocaleString()
+      : "—";
+  }
+
   function openListingModal(root, trigger) {
     const modal = root.querySelector("#listingModal");
     const itemKeyElement = root.querySelector("#modal-item-key");
@@ -477,6 +487,10 @@
     };
 
     inputHandler = (event) => {
+      const purchaseForm = event.target.closest("[data-market-purchase]");
+      if (purchaseForm && root.contains(purchaseForm)) {
+        updateMarketPurchaseTotal(purchaseForm);
+      }
       if (event.target.matches("#modal-quantity, #modal-unit-price")) {
         updateListingTotalPrice(root);
       }

@@ -79,7 +79,7 @@ def make_target(*, hp: int = 1_000_000) -> Combatant:
         (2000, [8004, 8004, 7992]),
     ],
 )
-@pytest.mark.parametrize("engine_version", ["3", "4"])
+@pytest.mark.parametrize("engine_version", ["3", "4", "5", "6", "7", "8"])
 def test_troop_attacks_use_current_strength_split_and_single_bonus(count, expected_damage, engine_version):
     actor = make_troop(count)
     target = make_target()

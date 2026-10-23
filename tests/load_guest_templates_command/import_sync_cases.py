@@ -556,8 +556,8 @@ def test_load_guest_templates_reimport_syncs_existing_guest_current_hp_for_base_
         current_hp=full_guest.max_hp // 2,
     )
 
-    assert full_guest.current_hp == 5200
-    assert half_guest.current_hp == 2600
+    assert full_guest.current_hp == 5740
+    assert half_guest.current_hp == 2870
 
     call_command(
         "load_guest_templates",
@@ -571,10 +571,10 @@ def test_load_guest_templates_reimport_syncs_existing_guest_current_hp_for_base_
     full_guest.refresh_from_db()
     half_guest.refresh_from_db()
 
-    assert full_guest.max_hp == 5000
-    assert half_guest.max_hp == 5000
-    assert full_guest.current_hp == 5000
-    assert half_guest.current_hp == 2500
+    assert full_guest.max_hp == 5540
+    assert half_guest.max_hp == 5540
+    assert full_guest.current_hp == 5540
+    assert half_guest.current_hp == 2770
 
 
 @pytest.mark.django_db
@@ -637,7 +637,7 @@ def test_load_guest_templates_reimport_clears_injured_status_when_hp_sync_reache
         force=100,
         intellect=80,
         defense_stat=80,
-        current_hp=5200,
+        current_hp=5740,
         status=GuestStatus.INJURED,
         injury_loyalty_processed_at=timezone.now(),
     )
@@ -653,7 +653,7 @@ def test_load_guest_templates_reimport_clears_injured_status_when_hp_sync_reache
 
     guest.refresh_from_db()
 
-    assert guest.max_hp == 5000
-    assert guest.current_hp == 5000
+    assert guest.max_hp == 5540
+    assert guest.current_hp == 5540
     assert guest.status == GuestStatus.IDLE
     assert guest.injury_loyalty_processed_at is None

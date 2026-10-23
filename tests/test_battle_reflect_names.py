@@ -1,4 +1,5 @@
 import random
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
@@ -10,7 +11,47 @@ from battle.modifier_lifecycle import clear_modifier_scope
 from battle.passives import run_passives_for_timing
 from battle.simulation.attack_execution import perform_attack
 from battle.simulation.damage_application import apply_damage_results
+from battle.view_helpers import build_rounds_display
 from tests.test_battle_damage_invariants import _make_guest, _make_troop
+
+
+@pytest.mark.parametrize("nested", [False, True])
+@pytest.mark.parametrize("current", [0, 1, 100])
+def test_qiankun_notice_stays_with_hit_and_hides_only_defeated_activation(nested, current):
+    notice = {
+        "type": "passive",
+        "unit": "张无忌",
+        "effect": "乾坤大挪移",
+        "side": "defender",
+        "message": "卸力反震",
+        "unit_state": {"current": current, "maximum": 1000, "percent": 0},
+    }
+    hit = {
+        "actor": "段誉",
+        "side": "attacker",
+        "target": "张无忌",
+        "damage": 100,
+        "kind": "guest",
+        "reflect_damage": 10,
+        "reflect_effect": "乾坤大挪移",
+    }
+    events = [{**hit, "additional_targets": [{**hit, "passive_events_after": [notice]}]}] if nested else [hit, notice]
+    original = deepcopy(events)
+    display = build_rounds_display([{"events": events}], {})[0]
+    assert display["defender_events"] == []
+    html = render_to_string(
+        "battle/partials/round_event_list.html",
+        {
+            "events": display["attacker_events"],
+            "my_side": "attacker",
+        },
+    )
+    text = "".join(strip_tags(html).split())
+    assert "敌方张无忌触发乾坤大挪移" in text
+    assert "对我方段誉造成反震伤害10" in text
+    assert ("卸力蓄势，后续受击时反震" in text) == (current > 0)
+    assert ("被动技能：乾坤大挪移" in text) == (current > 0)
+    assert events == original
 
 
 def _set_reflect(target, skill):
@@ -42,7 +83,7 @@ def test_actual_boss_passives_record_active_reflection_source():
 
     target.skills = [skills["gl_top_qiankun_shift"]]
     run_passives_for_timing(
-        "hit_taken",
+        "round_start",
         actor=target,
         target=actor,
         attacker_team=[actor],
@@ -111,7 +152,11 @@ def test_report_renders_actual_source_on_each_hit(secondary, viewer, source):
         {"events": [event], "my_side": viewer, "is_spectator": viewer == "spectator"},
     )
     text = "".join(strip_tags(html).split())
-    assert f"张无忌爆发{source}，造成伤害10" in text
+    if source == "乾坤大挪移":
+        assert "张无忌触发乾坤大挪移" in text
+        assert "攻击者造成反震伤害10" in text
+    else:
+        assert f"张无忌爆发{source}，造成伤害10" in text
     assert "护身剑罡" not in text
 
 

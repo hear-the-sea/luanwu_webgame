@@ -12,7 +12,9 @@ from guests.models import Guest, GuestTemplate, RecruitmentCandidate, Recruitmen
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("yaml_imported_first", [False, True])
-def test_dianwei_promotion_keeps_owned_guests_full_hp_and_updates_candidates(django_user_model, yaml_imported_first):
+def test_dianwei_promotion_keeps_owned_guests_full_hp_and_updates_candidates(
+    django_user_model, yaml_imported_first, guest_hp_before_level_growth
+):
     manor = ensure_manor(
         django_user_model.objects.create_user(username=f"dianwei_promotion_{yaml_imported_first}", password="pass")
     )

@@ -57,7 +57,8 @@ def get_troop_recruitment_context(manor: Any, *, selected_category: str) -> dict
     training_multiplier = manor.guard_training_speed_multiplier
     citang_multiplier = manor.citang_recruitment_speed_multiplier
     total_multiplier = training_multiplier * citang_multiplier
-    speed_bonus_percent = int((total_multiplier - 1) * 100)
+    # 募兵时长除以速度倍率，界面展示相对基础时长减少的百分比。
+    speed_bonus_percent = int((total_multiplier - 1) / total_multiplier * 100)
 
     recruitment_options = get_recruitment_options(manor)
     recruitment_options.sort(key=lambda row: troop_display_sort_key(str(row.get("key", ""))))

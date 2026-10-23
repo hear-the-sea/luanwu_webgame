@@ -332,12 +332,14 @@ def _send_purchase_notifications(
     listing: MarketListing,
     tax_amount: int,
     seller_received: int,
+    transaction_record: MarketTransaction | None = None,
 ) -> tuple[bool, bool]:
     return _send_purchase_notifications_entry(
         buyer=buyer,
         listing=listing,
         tax_amount=tax_amount,
         seller_received=seller_received,
+        transaction_record=transaction_record,
         send_purchase_notifications=_market_notification_helpers.send_purchase_notifications,
         safe_send_market_message=_market_notification_helpers.safe_send_market_message,
         safe_send_market_notification=_market_notification_helpers.safe_send_market_notification,
@@ -347,7 +349,7 @@ def _send_purchase_notifications(
     )
 
 
-def purchase_listing(buyer: Manor, listing_id: int) -> MarketTransaction:
+def purchase_listing(buyer: Manor, listing_id: int, *, quantity: int | None = None) -> MarketTransaction:
     """
     购买挂单物品（并发安全版本）
 
@@ -363,6 +365,7 @@ def purchase_listing(buyer: Manor, listing_id: int) -> MarketTransaction:
     Args:
         buyer: 买家庄园
         listing_id: 挂单ID
+        quantity: 购买数量，省略时购买锁定挂单后的全部余量
 
     Returns:
         交易记录对象
@@ -373,6 +376,7 @@ def purchase_listing(buyer: Manor, listing_id: int) -> MarketTransaction:
     return _market_commands.purchase_market_listing(
         buyer,
         listing_id,
+        quantity=quantity,
         market_listing_model=MarketListing,
         market_transaction_model=MarketTransaction,
         manor_model=Manor,

@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.db import transaction
 
 from gameplay.models import WorkTemplate
 
@@ -6,8 +7,14 @@ from gameplay.models import WorkTemplate
 class Command(BaseCommand):
     help = "初始化工作模板数据"
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--update-existing", action="store_true", help="按 key 更新官方工作配置，保留正在进行的打工记录。"
+        )
+
+    @transaction.atomic
     def handle(self, *args, **options):
-        if WorkTemplate.objects.exists():
+        if WorkTemplate.objects.exists() and not options.get("update_existing"):
             self.stdout.write(self.style.WARNING("工作模板数据已存在，跳过初始化"))
             return
 
@@ -213,7 +220,19 @@ class Command(BaseCommand):
             ),
         ]
 
-        WorkTemplate.objects.bulk_create(works)
+        if options.get("update_existing"):
+            fields = [
+                field.name
+                for field in WorkTemplate._meta.concrete_fields
+                if field.name not in {"id", "key", "created_at", "updated_at"}
+            ]
+            for work in works:
+                WorkTemplate.objects.update_or_create(
+                    key=work.key,
+                    defaults={field: getattr(work, field) for field in fields},
+                )
+        else:
+            WorkTemplate.objects.bulk_create(works)
 
         self.stdout.write(self.style.SUCCESS(f"成功创建 {len(works)} 个工作模板"))
         self.stdout.write(self.style.SUCCESS("初级工作区: 6个工作"))

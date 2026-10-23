@@ -25,7 +25,7 @@ skills:
   - key: gl_top_qiankun_shift
     name: 乾坤大挪移
     rarity: purple
-    description: 挪移劲力、卸转强攻，压缩单次爆发并在后段反震来敌。
+    description: 每回合开始时有75%概率挪移劲力，本回合反震所受伤害的10%（单次最多8000），并将单次伤害超过16000的部分压缩至35%。
     base_probability: 0.75
     kind: passive
     damage_formula:
@@ -33,13 +33,12 @@ skills:
     targets: 1
     passive_config:
       triggers:
-        - timing: hit_taken
-          conditions:
-            hp_ratio_lte: 0.4
+        - timing: round_start
+          chance: 0.75
           effects:
             - type: emit_log
               log_name: 乾坤大挪移
-              message: 卸力反震
+              message: 本回合获得卸力反震
             - type: set_reflect
               ratio: 0.1
               cap: 8000

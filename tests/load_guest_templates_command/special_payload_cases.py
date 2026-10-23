@@ -207,6 +207,10 @@ def test_default_arena_coop_special_skills_include_passive_configs() -> None:
 
     mingjiao = skills["gl_top_mingjiao_command"]
     qiankun = skills["gl_top_qiankun_shift"]
+    qiankun_trigger = qiankun["passive_config"]["triggers"][0]
+    assert qiankun_trigger["timing"] == "round_start"
+    assert qiankun_trigger["chance"] == 0.75
+    assert not qiankun_trigger.get("conditions")
     holy_flame = skills["gl_top_holy_flame_rage"]
     five_flags = skills["gl_top_five_flags_barrier"]
     guard_morale = skills["gl_top_guard_morale"]

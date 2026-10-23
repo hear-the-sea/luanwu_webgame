@@ -157,10 +157,10 @@ class MarketListing(models.Model):
 class MarketTransaction(models.Model):
     """交易行成交记录"""
 
-    listing = models.OneToOneField(
+    listing = models.ForeignKey(
         MarketListing,
         on_delete=models.CASCADE,
-        related_name="transaction",
+        related_name="transactions",
         verbose_name="挂单",
     )
     buyer = models.ForeignKey(
@@ -169,6 +169,8 @@ class MarketTransaction(models.Model):
         related_name="market_transactions",
         verbose_name="买家",
     )
+
+    quantity = models.PositiveIntegerField(verbose_name="成交数量")
 
     # 交易金额
     total_price = models.PositiveIntegerField(verbose_name="成交价")

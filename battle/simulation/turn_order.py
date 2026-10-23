@@ -7,7 +7,8 @@ from __future__ import annotations
 import random
 from typing import TYPE_CHECKING, List
 
-from ..random_context import CURRENT_BATTLE_ENGINE_VERSION
+from ..random_context import CURRENT_BATTLE_ENGINE_VERSION, TROOP_FIRST_ENGINE_VERSIONS
+from .target_selection import is_ranged_attack
 from .utils import alive
 
 if TYPE_CHECKING:
@@ -35,12 +36,17 @@ def determine_turn_order(
     for side, team in (("attacker", attacker_team), ("defender", defender_team)):
         guests = [unit for unit in team if unit.kind == "guest"]
         average_guest_agility[side] = sum(unit.agility for unit in guests) / len(guests) if guests else 0
+    # 版本 4 仅普通回合护院优先，保留旧先攻回合的敏捷顺序。
+    troops_first = battle_engine_version in TROOP_FIRST_ENGINE_VERSIONS and (
+        battle_engine_version != "4" or round_priority == 0
+    )
     return sorted(
         participants,
         key=lambda combatant: (
             1 if getattr(combatant, "battle_modifiers", {}).get("fixed_first") else 0,
-            # 仅新版本普通回合按护院、门客分组；开战先攻与旧版本保留原顺序。
-            1 if battle_engine_version == "4" and round_priority == 0 and combatant.kind == "troop" else 0,
+            # 新版本先攻先排远程，其余护院、门客分组后各按敏捷排序。
+            (1 if troops_first and is_ranged_attack(combatant, round_priority) else 0),
+            1 if troops_first and combatant.kind == "troop" else 0,
             combatant.agility,
             average_guest_agility[combatant.side],
             1 if combatant.side == "defender" else 0,

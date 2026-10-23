@@ -215,6 +215,7 @@ def _guest_arena_power(row: Mapping[str, Any]) -> int:
         hp_bonus=int(row["hp_bonus"] or 0),
         archetype=str(row["template__archetype"] or ""),
         base_hp=int(row["template__base_hp"] or 0),
+        level=int(row["level"] or 1),
     )
 
 
@@ -546,6 +547,7 @@ def load_manor_strength_summaries(
                     hp_bonus=int(guest.hp_bonus or 0),
                     archetype=str(guest.template.archetype or ""),
                     base_hp=int(guest.template.base_hp or 0),
+                    level=int(guest.level or 1),
                 )
 
     return {

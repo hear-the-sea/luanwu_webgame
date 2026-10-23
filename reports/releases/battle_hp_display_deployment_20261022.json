@@ -1,0 +1,136 @@
+{
+  "status": "deployed_and_verified",
+  "deployment_completed_at_utc": "2026-10-22T14:03:26.345992+00:00",
+  "site": "https://luanwu.top",
+  "image": "webgame:battle-hp-20261022t135049z",
+  "previous_image": "webgame:reviewed-4c8c273bc1ff",
+  "source_base_commit": "4c8c273bc1ff88171a31dc25462292664d98ccee",
+  "deployment_source": "Scoped working-tree overlay; no git commit or branch created",
+  "scope": [
+    "fixed 60 HP per guest level",
+    "bow preemptive report names",
+    "bold borderless passive descriptions below names"
+  ],
+  "release": "/root/code/releases/battle-hp-20261022t135049z",
+  "archive_sha256": "c52b6444b09dc6b0953a09e0042f2c212dd5621d58fde04b656699471565c471",
+  "applied_migration": "guests.0093_guest_level_hp_gain",
+  "existing_guest_hp_records_verified": 12458,
+  "health_policy": "Full HP stays full; wounded HP ratio preserved; zero HP stays zero; level-one HP unchanged",
+  "offline_tests": {
+    "python_passed": 312,
+    "browser_passed": 12,
+    "tested_from_production_base_with_only_scoped_overlay": true
+  },
+  "runtime_files_verified_on_each_application_service": [
+    "core/config.py",
+    "guests/guest_rules.py",
+    "guests/query_utils.py",
+    "guests/services/health.py",
+    "guests/tasks.py",
+    "guests/management/commands/load_guest_templates.py",
+    "guests/migrations/0093_guest_level_hp_gain.py",
+    "battle/arena_coop.py",
+    "battle_debugger/simulator.py",
+    "gameplay/services/virtual_player_core/bootstrap_assets.py",
+    "gameplay/services/virtual_player_core/gate_d2_metrics.py",
+    "gameplay/services/virtual_player_core/maintenance.py",
+    "gameplay/services/virtual_player_core/maintenance_candidates.py",
+    "gameplay/services/virtual_player_core/maintenance_read_models.py",
+    "gameplay/services/virtual_player_core/projection.py",
+    "gameplay/services/virtual_player_core/recruitment.py",
+    "gameplay/services/virtual_player_core/reference_snapshots.py",
+    "gameplay/services/virtual_player_core/virtual_candidate_pools.py",
+    "battle/report_events.py",
+    "battle/templates/battle/partials/passive_event_extra.html",
+    "battle/templates/battle/partials/passive_event_summary.html",
+    "battle/templates/battle/partials/round_event_list.html",
+    "static/css/style.css"
+  ],
+  "application_services": {
+    "web": {
+      "image": "webgame:battle-hp-20261022t135049z",
+      "running": true,
+      "health": "healthy",
+      "tracebacks": 0,
+      "error_lines": 0
+    },
+    "worker": {
+      "image": "webgame:battle-hp-20261022t135049z",
+      "running": true,
+      "health": null,
+      "tracebacks": 0,
+      "error_lines": 0
+    },
+    "worker_battle": {
+      "image": "webgame:battle-hp-20261022t135049z",
+      "running": true,
+      "health": null,
+      "tracebacks": 0,
+      "error_lines": 0
+    },
+    "worker_timer": {
+      "image": "webgame:battle-hp-20261022t135049z",
+      "running": true,
+      "health": null,
+      "tracebacks": 0,
+      "error_lines": 0
+    },
+    "worker_timer_scan": {
+      "image": "webgame:battle-hp-20261022t135049z",
+      "running": true,
+      "health": null,
+      "tracebacks": 0,
+      "error_lines": 0
+    },
+    "worker_timer_safety": {
+      "image": "webgame:battle-hp-20261022t135049z",
+      "running": true,
+      "health": null,
+      "tracebacks": 0,
+      "error_lines": 0
+    },
+    "worker_timer_maintenance": {
+      "image": "webgame:battle-hp-20261022t135049z",
+      "running": true,
+      "health": null,
+      "tracebacks": 0,
+      "error_lines": 0
+    },
+    "beat": {
+      "image": "webgame:battle-hp-20261022t135049z",
+      "running": true,
+      "health": null,
+      "tracebacks": 0,
+      "error_lines": 0
+    }
+  },
+  "workers_responding": 6,
+  "pending_migrations": 0,
+  "virtual_player_routing_preserved": true,
+  "public": {
+    "/health/live": {
+      "status": 200,
+      "bytes": 16
+    },
+    "/accounts/login/": {
+      "status": 200,
+      "bytes": 2706
+    },
+    "/static/css/style.05f74a9ab401.css": {
+      "status": 200,
+      "bytes": 95318,
+      "sha256": "4f60d3ad88450a53ff99ebfa94f7f7c15045447b7359d81ac02ccd050e408f6c",
+      "bold_passive_description": true
+    }
+  },
+  "public_css_matches_runtime_file": true,
+  "backups": {
+    "database": "database-before.sql.gz",
+    "database_bytes": 936604298,
+    "gzip_integrity": "passed",
+    "static_files": "static-before.tar.gz",
+    "exact_pre_migration_hp_snapshot": "guest-hp-before.json"
+  },
+  "deployment_method": "Caddy maintenance; 65-second HTTP drain; stop application writers; targeted HP data migration; collectstatic preserving old hashes; restart eight application services; readiness and file integrity checks; reopen public traffic",
+  "other_services": "Database, Redis, Caddy and unrelated sites kept running"
+}

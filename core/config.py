@@ -54,6 +54,7 @@ class GuestConfig:
     # 属性计算
     DEFENSE_TO_HP_MULTIPLIER: int = 50  # 每点防御提供的额外HP
     MIN_HP_FLOOR: int = 200  # 最低HP下限
+    LEVEL_HP_GAIN: int = 60  # 所有门客每次升级固定增加的生命上限
 
     # 带兵容量
     BASE_TROOP_CAPACITY: int = 200  # 基础带兵数量

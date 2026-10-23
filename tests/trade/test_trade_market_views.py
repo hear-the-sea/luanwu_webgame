@@ -337,6 +337,7 @@ def test_market_purchase_view_success(monkeypatch, client, django_user_model):
         item_template = _Template()
 
     class _DummyTransaction:
+        quantity = 2
         total_price = 100
         listing = _DummyListing()
 
@@ -395,6 +396,7 @@ def test_market_purchase_view_tolerates_missing_threshold_setting(monkeypatch, c
         item_template = _Template()
 
     class _DummyTransaction:
+        quantity = 2
         total_price = 100
         listing = _DummyListing()
 
@@ -422,6 +424,7 @@ def test_market_purchase_view_tolerates_invalid_threshold_setting(monkeypatch, c
         item_template = _Template()
 
     class _DummyTransaction:
+        quantity = 2
         total_price = 100
         listing = _DummyListing()
 
@@ -449,6 +452,7 @@ def test_market_purchase_view_uses_shared_threshold_warning_helper(monkeypatch, 
         item_template = _Template()
 
     class _DummyTransaction:
+        quantity = 2
         total_price = 123
         listing = _DummyListing()
 
@@ -491,3 +495,65 @@ def test_market_cancel_view_success(monkeypatch, client, django_user_model):
     resp = client.post(reverse("trade:market_cancel", args=[1]))
     assert resp.status_code == 302
     assert "view=my_listings" in resp["Location"]
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("mode, quantity, expected", [("partial", "3", 3), ("all", "bad", None)])
+def test_market_purchase_view_selects_purchase_mode_and_preserves_filters(
+    monkeypatch, client, django_user_model, mode, quantity, expected
+):
+    from types import SimpleNamespace
+
+    calls = []
+
+    def purchase(manor, listing_id, *, quantity):
+        calls.append((listing_id, quantity))
+        return SimpleNamespace(
+            quantity=3,
+            total_price=6000,
+            listing=SimpleNamespace(quantity=7, item_template=SimpleNamespace(name="测试物品")),
+        )
+
+    monkeypatch.setattr("trade.views.purchase_listing", purchase)
+    user = django_user_model.objects.create_user(username="market_purchase_mode", password="pass12345")
+    ensure_manor(user)
+    client.force_login(user)
+    response = client.post(
+        reverse("trade:market_purchase", args=[1]),
+        {
+            "purchase_mode": mode,
+            "quantity": quantity,
+            "category": "tool",
+            "rarity": "purple",
+            "page": "2",
+            "order_by": "unit_price",
+        },
+    )
+    assert calls == [(1, expected)]
+    assert "page=2" in response["Location"] and "category=tool" in response["Location"]
+    messages = [message.message for message in get_messages(response.wsgi_request)]
+    assert any("×3" in message and "6,000" in message for message in messages)
+    assert not any("×7" in message for message in messages)
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"purchase_mode": "partial"},
+        {"purchase_mode": "partial", "quantity": "0"},
+        {"purchase_mode": "partial", "quantity": "-2"},
+        {"purchase_mode": "partial", "quantity": "1.5"},
+        {"purchase_mode": "partial", "quantity": "bad"},
+        {"purchase_mode": "invalid", "quantity": "2"},
+    ],
+)
+def test_market_purchase_view_rejects_invalid_input_without_buying(monkeypatch, client, django_user_model, payload):
+    calls = []
+    monkeypatch.setattr("trade.views.purchase_listing", lambda *args, **kwargs: calls.append(args))
+    user = django_user_model.objects.create_user(username="market_purchase_bad_quantity", password="pass12345")
+    ensure_manor(user)
+    client.force_login(user)
+    response = client.post(reverse("trade:market_purchase", args=[1]), payload)
+    assert response.status_code == 302 and calls == []
+    assert list(get_messages(response.wsgi_request))

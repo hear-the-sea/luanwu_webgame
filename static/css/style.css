@@ -1452,6 +1452,43 @@ table.table tbody tr+tr {
   white-space: normal;
 }
 
+.battle-report-page .event-passive-tag > .event-passive-skill {
+  display: inline-flex;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 0.15rem;
+  width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0.12rem 0.4rem;
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: #21613a;
+  border: 1px solid rgba(39, 174, 96, 0.25);
+  border-radius: 4px;
+  background: rgba(39, 174, 96, 0.1);
+}
+
+.event-passive-skill > strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.event-passive-label {
+  color: #466b4c;
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+.event-unit-skills.event-passive-tag > .event-passive-extra {
+  flex-basis: 100%;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  font-variant-numeric: tabular-nums;
+}
+
 .event-unit-skills .tech-tag {
   margin-left: 0;
 }
@@ -1503,6 +1540,31 @@ table.table tbody tr+tr {
 
 .event-unit-summary.event-status-layout:not(:has(> .battle-unit-state)) > .event-unit-name {
   align-self: center;
+}
+
+/* 仅将被动描述另起一行，横跨姓名与技能两列。 */
+.event-unit-summary.event-passive-layout:has(> .event-passive-message) {
+  grid-template-areas:
+    "unit-name skills"
+    "unit-state skills"
+    "passive-message passive-message";
+}
+
+.event-unit-summary.event-passive-layout:has(> .event-passive-message):not(:has(> .battle-unit-state)) {
+  grid-template-areas:
+    "unit-name skills"
+    "passive-message passive-message";
+}
+
+.event-passive-layout > .event-passive-message {
+  grid-area: passive-message;
+  min-width: 0;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: #76512f;
+  white-space: normal;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 
 .event-unit-name {
@@ -1616,6 +1678,10 @@ table.table tbody tr+tr {
   column-gap: 0.4rem;
 }
 
+.event-damage-summary.event-skill-wave {
+  padding-left: 0.65rem;
+}
+
 .event-target-arrow {
   color: var(--accent-gold);
   font-weight: 700;
@@ -1666,6 +1732,20 @@ table.table tbody tr+tr {
   .event-passive-entry > .event-unit-summary {
     grid-template-columns: minmax(3.75rem, 4.5rem) minmax(0, 1fr);
     column-gap: 0.45rem;
+  }
+
+  /* 被动技能纵向阅读，避免双栏战报内的长姓名与技能互相挤压。 */
+  .event-unit-summary.event-passive-layout,
+  .event-unit-summary.event-passive-layout:has(> .event-passive-message),
+  .event-unit-summary.event-passive-layout:has(> .event-passive-message):not(:has(> .battle-unit-state)) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "unit-name" "unit-state" "skills" "passive-message";
+    row-gap: 0.3rem;
+  }
+
+  .event-unit-summary.event-passive-layout:not(:has(> .battle-unit-state)),
+  .event-unit-summary.event-passive-layout:has(> .event-passive-message):not(:has(> .battle-unit-state)) {
+    grid-template-areas: "unit-name" "skills" "passive-message";
   }
 
   .battle-unit-state {
@@ -4537,9 +4617,19 @@ a.rarity-text:hover {
   background: rgba(39, 174, 96, 0.05);
 }
 
+.event-action-recovery.event-passive-entry {
+  border-left-color: rgba(39, 174, 96, 0.45);
+  background: rgba(39, 174, 96, 0.06);
+}
+
 .reflect-text {
   color: #744493;
   background: rgba(116, 68, 147, 0.05);
+}
+
+.reflect-text:has(> .event-qiankun-reflect) {
+  color: #21613a;
+  background: rgba(39, 174, 96, 0.06);
 }
 
 .event-effect-source { font-weight: 600; }

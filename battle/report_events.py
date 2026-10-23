@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Iterator, Mapping
+from copy import deepcopy
 from typing import Any
 
 
@@ -35,18 +36,24 @@ def troop_phase_skill(attack: object, action: object = None, round_priority: obj
     action = action if isinstance(action, Mapping) else attack
     if attack.get("kind", action.get("kind")) != "troop":
         return ""
+    from battle.troops import load_troop_templates_from_yaml
+    from core.game_data.technology import get_troop_class_for_key
+
     actor_key = attack.get("actor_template_key", action.get("actor_template_key"))
     actor_name = attack.get("actor", action.get("actor"))
-    # 铁骑自带先攻，不属于剑系科技；名称兼容未记录模板键的旧战报。
-    if actor_key == "bloodthirsty_cavalry" or actor_name == "嗜血铁骑":
-        return ""
+    # 旧战报没有模板键，按配置中的名称恢复兵种；不因自带先攻误判科技。
+    if not actor_key:
+        actor_key = next(
+            (key for key, template in load_troop_templates_from_yaml().items() if template["label"] == actor_name),
+            "",
+        )
+    troop_class = get_troop_class_for_key(actor_key)
     phase = attack.get("priority_phase", action.get("priority_phase", round_priority))
     priority = attack.get("priority", action.get("priority"))
-    # Bow technology grants priority -2, while sword technology grants -1.
-    # Units retain priority in ordinary rounds, which are not technology phases.
-    if priority == -2 and phase in (-2, -1):
+    # 弓系远射和普通先攻统一显示凤舞九天，普通回合不显示；仅调整战报命名。
+    if troop_class == "gong" and priority in (-2, -1) and phase in (-2, -1):
         return "凤舞九天"
-    if priority == -1 and phase == -1:
+    if troop_class == "jian" and priority == -1 and phase == -1:
         return "驭剑之术"
     return ""
 
@@ -70,6 +77,99 @@ def report_event_side(event: object, action: object = None, *, target: bool = Fa
                 return "defender" if side == "attacker" else "attacker"
             return str(side)
     return ""
+
+
+def _merge_bloodthirsty_recovery(row: dict[str, Any]) -> dict[str, Any]:
+    """将同次出手的扣血与追加目标说明合并，只修改展示副本。"""
+    recoveries = row.get("action_recovery_events_before") or []
+    if not any(recovery.get("effect") == "嗜血狂怒" and recovery.get("lost") for recovery in recoveries):
+        return row
+    row = deepcopy(row)
+    recoveries = row["action_recovery_events_before"]
+    for recovery in list(recoveries):
+        if recovery.get("effect") != "嗜血狂怒" or not recovery.get("lost"):
+            continue
+        groups = [(recoveries, row)] + [
+            (attack.get("passive_events_before") or [], attack) for attack in _iter_nested_damage_events([row])
+        ]
+        for passives, attack in groups:
+            match = next(
+                (
+                    passive
+                    for passive in passives
+                    if (
+                        passive.get("effect") == "嗜血狂怒"
+                        and passive.get("unit") == recovery.get("unit")
+                        and passive is not recovery
+                        and passive.get("message") in {"随机追加目标", "当前目标追加伤害", "本次攻击追加真实伤害"}
+                        and (report_event_side(passive, attack) or report_event_side(row))
+                        == report_event_side(recovery, row)
+                    )
+                ),
+                None,
+            )
+            if match is not None:
+                lost = recovery["lost"]
+                recovery.update(match)
+                recovery["lost"] = lost
+                if passives is not recoveries and isinstance(attack, dict):
+                    attack["passive_damage_source"] = "嗜血狂怒"
+                passives.remove(match)
+                break
+    return row
+
+
+def secondary_attack_kind(attack: object, parent: object = None, round_priority: object = None) -> str:
+    """按所属攻击段识别技能波及与被动追加目标，避免将普通攻击写成波及。"""
+    if not isinstance(attack, Mapping):
+        return "normal"
+    parent = parent if isinstance(parent, Mapping) else {}
+    if attack.get("current_target_bonus") or attack.get("passive_damage_source") == "嗜血狂怒":
+        return "passive"
+    if any(passive.get("effect") == "嗜血狂怒" for passive in (attack.get("passive_events_before") or [])):
+        return "passive"
+    phase = attack.get("attack_phase", parent.get("attack_phase"))
+    if phase == "normal":
+        return "normal"
+    if (
+        phase == "burst"
+        or attack.get("skills")
+        or parent.get("skills")
+        or troop_phase_skill(attack, parent, round_priority)
+    ):
+        return "skill"
+    return "normal"
+
+
+def prepare_passive_display_events(events: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
+    """将受击被动留在对应攻击下方，区分生效提示与实际反震结算。"""
+    result: list[dict[str, Any]] = []
+    for event in events:
+        if not isinstance(event, dict):
+            continue
+        row = dict(event)
+        if row.get("type") == "passive" and row.get("effect") == "乾坤大挪移":
+            state = row.get("unit_state") or {}
+            if state.get("current") == 0 or state.get("status") == "empty":
+                continue
+            legacy_hit_notice = row.get("message") == "卸力反震"
+            if legacy_hit_notice:
+                row["message"] = "卸力蓄势，后续受击时反震"
+            previous = result[-1] if result else None
+            if (
+                legacy_hit_notice
+                and previous
+                and previous.get("target") == row.get("unit")
+                and previous.get("type") in (None, "attack")
+                and report_event_side(previous, target=True) == report_event_side(row)
+            ):
+                previous["passive_events_after"] = [*previous.get("passive_events_after", []), row]
+                continue
+        for key in ("additional_targets", "additional_attacks", "passive_events_before", "passive_events_after"):
+            if isinstance(row.get(key), list):
+                row[key] = prepare_passive_display_events(row[key])
+        result.append(row)
+    return result
 
 
 def group_action_recovery_events(events: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -123,7 +223,7 @@ def group_action_recovery_events(events: Iterable[dict[str, Any]]) -> list[dict[
                 else:
                     recoveries.append(recovery)
             row["action_recovery_events_before"] = recoveries
-        grouped.append(row)
+        grouped.append(_merge_bloodthirsty_recovery(row))
     return grouped
 
 

@@ -125,6 +125,9 @@ RESOURCE_PACK_STORAGE = {
     "resource_pack_advanced": 100,
 }
 STRATEGIC_ITEM_STORAGE = {
+    "li_plum": 25,
+    "li_clan_card": 25,
+    "villain_card": 25,
     "custom_guest_card": 1,
     "chiyou_card": 25,
     "yijinjing": 1,

@@ -15,12 +15,14 @@ def send_purchase_notifications_entry(
     create_message_func: Callable[..., Any],
     notify_user_func: Callable[..., Any],
     logger: Any,
+    transaction_record: Any = None,
 ) -> tuple[bool, bool]:
     return send_purchase_notifications(
         buyer=buyer,
         listing=listing,
         tax_amount=tax_amount,
         seller_received=seller_received,
+        transaction_record=transaction_record,
         safe_create_message=lambda **kwargs: safe_send_market_message(
             create_message_func=create_message_func,
             logger=logger,

@@ -73,7 +73,9 @@ def test_matching_specializations_have_clear_quality_progression():
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("health", [1, 999999])
-def test_migration_preserves_naked_stats_allocations_inventory_sets_and_soul(django_user_model, health):
+def test_migration_preserves_naked_stats_allocations_inventory_sets_and_soul(
+    django_user_model, health, guest_hp_before_level_growth
+):
     from django.apps import apps
     from django.db import connection
 

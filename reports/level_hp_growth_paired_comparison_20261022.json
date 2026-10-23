@@ -1,0 +1,1058 @@
+{
+  "bootstrap_replicates": 2000,
+  "comparisons": [
+    {
+      "scenario": "pvp_50_with_troops",
+      "candidate": "fixed_50",
+      "reference": "baseline",
+      "win_flips": 24,
+      "standard_rounds": {
+        "paired_mean_difference": 0.7,
+        "bootstrap_95_pct_interval": [
+          0.45,
+          0.95
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": -2.0,
+        "bootstrap_95_pct_interval": [
+          -3.2,
+          -1.0
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": -1.6,
+        "bootstrap_95_pct_interval": [
+          -8.8,
+          5.6
+        ]
+      }
+    },
+    {
+      "scenario": "pvp_50_with_troops",
+      "candidate": "random_40_60",
+      "reference": "fixed_50",
+      "win_flips": 2,
+      "standard_rounds": {
+        "paired_mean_difference": -0.1,
+        "bootstrap_95_pct_interval": [
+          -0.21,
+          -0.01
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": 0.2,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.6
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 0.4,
+        "bootstrap_95_pct_interval": [
+          -0.4,
+          1.4
+        ]
+      }
+    },
+    {
+      "scenario": "pvp_50_with_troops",
+      "candidate": "fixed_60",
+      "reference": "fixed_50",
+      "win_flips": 7,
+      "standard_rounds": {
+        "paired_mean_difference": 0.09,
+        "bootstrap_95_pct_interval": [
+          -0.12,
+          0.3
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": -0.4,
+        "bootstrap_95_pct_interval": [
+          -1.0,
+          0.0
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 1.4,
+        "bootstrap_95_pct_interval": [
+          -2.0,
+          5.0
+        ]
+      }
+    },
+    {
+      "scenario": "pvp_70_with_troops",
+      "candidate": "fixed_50",
+      "reference": "baseline",
+      "win_flips": 33,
+      "standard_rounds": {
+        "paired_mean_difference": 0.56,
+        "bootstrap_95_pct_interval": [
+          0.28,
+          0.85
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": -2.3,
+        "bootstrap_95_pct_interval": [
+          -3.7,
+          -1.0
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": -3.7,
+        "bootstrap_95_pct_interval": [
+          -11.1,
+          3.7
+        ]
+      }
+    },
+    {
+      "scenario": "pvp_70_with_troops",
+      "candidate": "random_40_60",
+      "reference": "fixed_50",
+      "win_flips": 0,
+      "standard_rounds": {
+        "paired_mean_difference": -0.02,
+        "bootstrap_95_pct_interval": [
+          -0.09,
+          0.04
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": 0.0,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": -0.7,
+        "bootstrap_95_pct_interval": [
+          -2.2,
+          0.7
+        ]
+      }
+    },
+    {
+      "scenario": "pvp_70_with_troops",
+      "candidate": "fixed_60",
+      "reference": "fixed_50",
+      "win_flips": 26,
+      "standard_rounds": {
+        "paired_mean_difference": 0.24,
+        "bootstrap_95_pct_interval": [
+          0.01,
+          0.45
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": -0.4,
+        "bootstrap_95_pct_interval": [
+          -0.8,
+          -0.1
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 3.1,
+        "bootstrap_95_pct_interval": [
+          -2.7,
+          8.9
+        ]
+      }
+    },
+    {
+      "scenario": "pvp_100_with_troops",
+      "candidate": "fixed_50",
+      "reference": "baseline",
+      "win_flips": 29,
+      "standard_rounds": {
+        "paired_mean_difference": 0.49,
+        "bootstrap_95_pct_interval": [
+          0.19,
+          0.82
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": -3.944444444444444,
+        "bootstrap_95_pct_interval": [
+          -5.222222222222222,
+          -2.7222222222222223
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 4.618527782440651e-16,
+        "bootstrap_95_pct_interval": [
+          -6.666666666666665,
+          6.388888888888889
+        ]
+      }
+    },
+    {
+      "scenario": "pvp_100_with_troops",
+      "candidate": "random_40_60",
+      "reference": "fixed_50",
+      "win_flips": 5,
+      "standard_rounds": {
+        "paired_mean_difference": -0.16,
+        "bootstrap_95_pct_interval": [
+          -0.4,
+          0.05
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": 0.05555555555555557,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.1666666666666667
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 0.44444444444444425,
+        "bootstrap_95_pct_interval": [
+          -2.0,
+          2.8888888888888884
+        ]
+      }
+    },
+    {
+      "scenario": "pvp_100_with_troops",
+      "candidate": "fixed_60",
+      "reference": "fixed_50",
+      "win_flips": 25,
+      "standard_rounds": {
+        "paired_mean_difference": 0.14,
+        "bootstrap_95_pct_interval": [
+          -0.22,
+          0.5
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": -0.16666666666666666,
+        "bootstrap_95_pct_interval": [
+          -0.7777777777777778,
+          0.4444444444444445
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": -0.5555555555555552,
+        "bootstrap_95_pct_interval": [
+          -6.055555555555555,
+          5.222222222222222
+        ]
+      }
+    },
+    {
+      "scenario": "pvp_70_guest_only",
+      "candidate": "fixed_50",
+      "reference": "baseline",
+      "win_flips": 31,
+      "standard_rounds": {
+        "paired_mean_difference": 0.6,
+        "bootstrap_95_pct_interval": [
+          0.37,
+          0.82
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": -3.1,
+        "bootstrap_95_pct_interval": [
+          -4.4,
+          -1.8
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 4.0,
+        "bootstrap_95_pct_interval": [
+          -2.9,
+          11.3
+        ]
+      }
+    },
+    {
+      "scenario": "pvp_70_guest_only",
+      "candidate": "random_40_60",
+      "reference": "fixed_50",
+      "win_flips": 1,
+      "standard_rounds": {
+        "paired_mean_difference": 0,
+        "bootstrap_95_pct_interval": [
+          -0.06,
+          0.05
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": 0.1,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.3
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 0.4,
+        "bootstrap_95_pct_interval": [
+          -0.6,
+          1.7
+        ]
+      }
+    },
+    {
+      "scenario": "pvp_70_guest_only",
+      "candidate": "fixed_60",
+      "reference": "fixed_50",
+      "win_flips": 12,
+      "standard_rounds": {
+        "paired_mean_difference": 0.35,
+        "bootstrap_95_pct_interval": [
+          0.15,
+          0.55
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": -0.7,
+        "bootstrap_95_pct_interval": [
+          -1.3,
+          -0.2
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": -1.9,
+        "bootstrap_95_pct_interval": [
+          -6.3,
+          2.3
+        ]
+      }
+    },
+    {
+      "scenario": "pvp_100_guest_only",
+      "candidate": "fixed_50",
+      "reference": "baseline",
+      "win_flips": 38,
+      "standard_rounds": {
+        "paired_mean_difference": 0.56,
+        "bootstrap_95_pct_interval": [
+          0.39,
+          0.73
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": -4.888888888888889,
+        "bootstrap_95_pct_interval": [
+          -6.111111111111112,
+          -3.666666666666667
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 4.0555555555555545,
+        "bootstrap_95_pct_interval": [
+          -3.166666666666668,
+          11.333333333333332
+        ]
+      }
+    },
+    {
+      "scenario": "pvp_100_guest_only",
+      "candidate": "random_40_60",
+      "reference": "fixed_50",
+      "win_flips": 2,
+      "standard_rounds": {
+        "paired_mean_difference": 0.02,
+        "bootstrap_95_pct_interval": [
+          -0.02,
+          0.07
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": 0.05555555555555555,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.16666666666666666
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": -1.222222222222222,
+        "bootstrap_95_pct_interval": [
+          -2.7777777777777777,
+          0.166666666666667
+        ]
+      }
+    },
+    {
+      "scenario": "pvp_100_guest_only",
+      "candidate": "fixed_60",
+      "reference": "fixed_50",
+      "win_flips": 29,
+      "standard_rounds": {
+        "paired_mean_difference": 0.09,
+        "bootstrap_95_pct_interval": [
+          -0.11,
+          0.3
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": -0.4444444444444444,
+        "bootstrap_95_pct_interval": [
+          -1.222222222222222,
+          0.38888888888888895
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": -2.833333333333333,
+        "bootstrap_95_pct_interval": [
+          -9.222222222222221,
+          3.2222222222222223
+        ]
+      }
+    },
+    {
+      "scenario": "surname_li",
+      "candidate": "fixed_50",
+      "reference": "baseline",
+      "win_flips": 0,
+      "standard_rounds": {
+        "paired_mean_difference": 0,
+        "bootstrap_95_pct_interval": [
+          -0.04,
+          0.04
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": -0.2,
+        "bootstrap_95_pct_interval": [
+          -0.4666666666666667,
+          0.0
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 0.466666666666667,
+        "bootstrap_95_pct_interval": [
+          0.20000000000000015,
+          0.8666666666666673
+        ]
+      }
+    },
+    {
+      "scenario": "surname_li",
+      "candidate": "random_40_60",
+      "reference": "fixed_50",
+      "win_flips": 0,
+      "standard_rounds": {
+        "paired_mean_difference": 0,
+        "bootstrap_95_pct_interval": [
+          0,
+          0
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": 0.0,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 0.0,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "scenario": "surname_li",
+      "candidate": "fixed_60",
+      "reference": "fixed_50",
+      "win_flips": 0,
+      "standard_rounds": {
+        "paired_mean_difference": 0.02,
+        "bootstrap_95_pct_interval": [
+          0,
+          0.05
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": 0.0,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": -0.06666666666666671,
+        "bootstrap_95_pct_interval": [
+          -0.20000000000000015,
+          0.0
+        ]
+      }
+    },
+    {
+      "scenario": "tianpeng_2",
+      "candidate": "fixed_50",
+      "reference": "baseline",
+      "win_flips": 0,
+      "standard_rounds": {
+        "paired_mean_difference": 0.42,
+        "bootstrap_95_pct_interval": [
+          0.32,
+          0.52
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": 0.13333333333333333,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.33333333333333337
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": -0.13333333333333341,
+        "bootstrap_95_pct_interval": [
+          -0.3333333333333336,
+          0.0
+        ]
+      }
+    },
+    {
+      "scenario": "tianpeng_2",
+      "candidate": "random_40_60",
+      "reference": "fixed_50",
+      "win_flips": 0,
+      "standard_rounds": {
+        "paired_mean_difference": 0.01,
+        "bootstrap_95_pct_interval": [
+          0,
+          0.03
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": 0.0,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 0.0,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "scenario": "tianpeng_2",
+      "candidate": "fixed_60",
+      "reference": "fixed_50",
+      "win_flips": 0,
+      "standard_rounds": {
+        "paired_mean_difference": 0.05,
+        "bootstrap_95_pct_interval": [
+          0,
+          0.1
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": -0.06666666666666667,
+        "bootstrap_95_pct_interval": [
+          -0.2,
+          0.0
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 0.0,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "scenario": "huashan_advanced",
+      "candidate": "fixed_50",
+      "reference": "baseline",
+      "win_flips": 0,
+      "standard_rounds": {
+        "paired_mean_difference": 0.23,
+        "bootstrap_95_pct_interval": [
+          0.13,
+          0.33
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": -1.2777777777777777,
+        "bootstrap_95_pct_interval": [
+          -1.8333333333333333,
+          -0.7777777777777778
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 3.2222222222222228,
+        "bootstrap_95_pct_interval": [
+          2.0000000000000004,
+          4.555555555555556
+        ]
+      }
+    },
+    {
+      "scenario": "huashan_advanced",
+      "candidate": "random_40_60",
+      "reference": "fixed_50",
+      "win_flips": 0,
+      "standard_rounds": {
+        "paired_mean_difference": 0,
+        "bootstrap_95_pct_interval": [
+          0,
+          0
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": 0.05555555555555555,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.16666666666666666
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 0.0,
+        "bootstrap_95_pct_interval": [
+          -0.1666666666666667,
+          0.1666666666666667
+        ]
+      }
+    },
+    {
+      "scenario": "huashan_advanced",
+      "candidate": "fixed_60",
+      "reference": "fixed_50",
+      "win_flips": 0,
+      "standard_rounds": {
+        "paired_mean_difference": 0.02,
+        "bootstrap_95_pct_interval": [
+          -0.07,
+          0.11
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": -0.05555555555555555,
+        "bootstrap_95_pct_interval": [
+          -0.2777777777777778,
+          0.1111111111111111
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 0.11111111111111115,
+        "bootstrap_95_pct_interval": [
+          -0.6666666666666669,
+          0.8333333333333336
+        ]
+      }
+    },
+    {
+      "scenario": "yijin_mijing",
+      "candidate": "fixed_50",
+      "reference": "baseline",
+      "win_flips": 0,
+      "standard_rounds": {
+        "paired_mean_difference": 0.13,
+        "bootstrap_95_pct_interval": [
+          0.04,
+          0.22
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": 0.0,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 1.4166666666666663,
+        "bootstrap_95_pct_interval": [
+          0.33333333333333287,
+          2.499999999999999
+        ]
+      }
+    },
+    {
+      "scenario": "yijin_mijing",
+      "candidate": "random_40_60",
+      "reference": "fixed_50",
+      "win_flips": 0,
+      "standard_rounds": {
+        "paired_mean_difference": 0,
+        "bootstrap_95_pct_interval": [
+          0,
+          0
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": 0.0,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 0.16666666666666657,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.4166666666666664
+        ]
+      }
+    },
+    {
+      "scenario": "yijin_mijing",
+      "candidate": "fixed_60",
+      "reference": "fixed_50",
+      "win_flips": 0,
+      "standard_rounds": {
+        "paired_mean_difference": -0.06,
+        "bootstrap_95_pct_interval": [
+          -0.13,
+          0
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": 0.0,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 0.6666666666666664,
+        "bootstrap_95_pct_interval": [
+          0.16666666666666657,
+          1.2499999999999996
+        ]
+      }
+    },
+    {
+      "scenario": "zhanlong_1",
+      "candidate": "fixed_50",
+      "reference": "baseline",
+      "win_flips": 0,
+      "standard_rounds": {
+        "paired_mean_difference": -0.21,
+        "bootstrap_95_pct_interval": [
+          -0.35,
+          -0.07
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": -0.8888888888888888,
+        "bootstrap_95_pct_interval": [
+          -1.5555555555555556,
+          -0.2222222222222222
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 3.944444444444445,
+        "bootstrap_95_pct_interval": [
+          2.5000000000000004,
+          5.38888888888889
+        ]
+      }
+    },
+    {
+      "scenario": "zhanlong_1",
+      "candidate": "random_40_60",
+      "reference": "fixed_50",
+      "win_flips": 0,
+      "standard_rounds": {
+        "paired_mean_difference": 0.01,
+        "bootstrap_95_pct_interval": [
+          0,
+          0.03
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": 0.0,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": -0.1666666666666667,
+        "bootstrap_95_pct_interval": [
+          -0.5000000000000001,
+          0.0
+        ]
+      }
+    },
+    {
+      "scenario": "zhanlong_1",
+      "candidate": "fixed_60",
+      "reference": "fixed_50",
+      "win_flips": 0,
+      "standard_rounds": {
+        "paired_mean_difference": -0.04,
+        "bootstrap_95_pct_interval": [
+          -0.14,
+          0.05
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": -0.2222222222222222,
+        "bootstrap_95_pct_interval": [
+          -0.5,
+          0.0
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 1.1111111111111114,
+        "bootstrap_95_pct_interval": [
+          0.388888888888889,
+          1.8888888888888895
+        ]
+      }
+    },
+    {
+      "scenario": "zhanlong_2",
+      "candidate": "fixed_50",
+      "reference": "baseline",
+      "win_flips": 0,
+      "standard_rounds": {
+        "paired_mean_difference": -0.64,
+        "bootstrap_95_pct_interval": [
+          -0.83,
+          -0.47
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": -3.111111111111111,
+        "bootstrap_95_pct_interval": [
+          -3.944444444444444,
+          -2.2777777777777777
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 11.444444444444443,
+        "bootstrap_95_pct_interval": [
+          8.999999999999998,
+          13.944444444444443
+        ]
+      }
+    },
+    {
+      "scenario": "zhanlong_2",
+      "candidate": "random_40_60",
+      "reference": "fixed_50",
+      "win_flips": 0,
+      "standard_rounds": {
+        "paired_mean_difference": 0,
+        "bootstrap_95_pct_interval": [
+          0,
+          0
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": 0.0,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 0.27777777777777773,
+        "bootstrap_95_pct_interval": [
+          -0.05555555555555557,
+          0.722222222222222
+        ]
+      }
+    },
+    {
+      "scenario": "zhanlong_2",
+      "candidate": "fixed_60",
+      "reference": "fixed_50",
+      "win_flips": 0,
+      "standard_rounds": {
+        "paired_mean_difference": -0.02,
+        "bootstrap_95_pct_interval": [
+          -0.1,
+          0.05
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": -0.22222222222222224,
+        "bootstrap_95_pct_interval": [
+          -0.5,
+          0.0
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 1.8888888888888895,
+        "bootstrap_95_pct_interval": [
+          0.5000000000000001,
+          3.333333333333334
+        ]
+      }
+    },
+    {
+      "scenario": "zhanlong_3",
+      "candidate": "fixed_50",
+      "reference": "baseline",
+      "win_flips": 0,
+      "standard_rounds": {
+        "paired_mean_difference": -0.42,
+        "bootstrap_95_pct_interval": [
+          -0.61,
+          -0.23
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": -1.5,
+        "bootstrap_95_pct_interval": [
+          -2.15,
+          -0.9
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 9.35,
+        "bootstrap_95_pct_interval": [
+          6.5,
+          12.05
+        ]
+      }
+    },
+    {
+      "scenario": "zhanlong_3",
+      "candidate": "random_40_60",
+      "reference": "fixed_50",
+      "win_flips": 0,
+      "standard_rounds": {
+        "paired_mean_difference": 0,
+        "bootstrap_95_pct_interval": [
+          0,
+          0
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": 0.0,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 0.0,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "scenario": "zhanlong_3",
+      "candidate": "fixed_60",
+      "reference": "fixed_50",
+      "win_flips": 0,
+      "standard_rounds": {
+        "paired_mean_difference": 0.02,
+        "bootstrap_95_pct_interval": [
+          -0.08,
+          0.12
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": 0.0,
+        "bootstrap_95_pct_interval": [
+          -0.4,
+          0.4
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 0.9,
+        "bootstrap_95_pct_interval": [
+          -0.45,
+          2.25
+        ]
+      }
+    },
+    {
+      "scenario": "zhanlong_4",
+      "candidate": "fixed_50",
+      "reference": "baseline",
+      "win_flips": 0,
+      "standard_rounds": {
+        "paired_mean_difference": 1.54,
+        "bootstrap_95_pct_interval": [
+          1.13,
+          1.97
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": -4.2,
+        "bootstrap_95_pct_interval": [
+          -5.2,
+          -3.3
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 0.0,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "scenario": "zhanlong_4",
+      "candidate": "random_40_60",
+      "reference": "fixed_50",
+      "win_flips": 0,
+      "standard_rounds": {
+        "paired_mean_difference": 0.01,
+        "bootstrap_95_pct_interval": [
+          -0.08,
+          0.09
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": 0.0,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 0.0,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "scenario": "zhanlong_4",
+      "candidate": "fixed_60",
+      "reference": "fixed_50",
+      "win_flips": 1,
+      "standard_rounds": {
+        "paired_mean_difference": 0.25,
+        "bootstrap_95_pct_interval": [
+          -0.05,
+          0.53
+        ]
+      },
+      "death_before_attack_pct": {
+        "paired_mean_difference": -0.25,
+        "bootstrap_95_pct_interval": [
+          -0.65,
+          0.15
+        ]
+      },
+      "player_guest_survival_pct": {
+        "paired_mean_difference": 0.05,
+        "bootstrap_95_pct_interval": [
+          0.0,
+          0.15
+        ]
+      }
+    }
+  ]
+}

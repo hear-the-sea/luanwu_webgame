@@ -41,7 +41,7 @@ def test_requested_guild_technology_maximum_costs_are_exact():
         "forging_mechanism_blueprint": (5, {"gold_bar": 130, "red_ruby": 130}),
         "hero_skill_books": (10, {"gold_bar": 1953}),
         "troop_tactics": (10, {"silver": 200_000_220, "grain": 200_000_220}),
-        "sheep_farmland": (3, {"silver": 900_000, "grain": 900_000, "gold_bar": 20}),
+        "sheep_farmland": (3, {"silver": 18_000_000, "grain": 18_000_000, "gold_bar": 20}),
         "march_speed": (5, {"gold_bar": 184}),
         "guild_lineup_capacity": (20, {"red_ruby": 1050}),
         "guild_dispatch_capacity": (20, {"gold_bar": 420}),

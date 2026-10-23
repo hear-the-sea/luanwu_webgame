@@ -2985,6 +2985,36 @@
   }
 
   /* 集市购买筛选独立布局，避免表单最小宽度撑开页面。 */
+  .tw-market-purchase {
+    @apply flex min-w-0 flex-col gap-2;
+    width: 100%;
+    min-width: 12rem;
+  }
+
+  .tw-market-purchase-quantity {
+    @apply flex min-w-0 items-center gap-2 text-sm;
+  }
+
+  .tw-market-purchase-quantity .tw-form-input {
+    @apply w-full min-w-0;
+    min-height: 44px;
+  }
+
+  .tw-market-purchase-quantity > span {
+    @apply shrink-0;
+  }
+
+  .tw-market-purchase-total {
+    @apply text-xs text-text-muted;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .tw-market-purchase-actions {
+    @apply grid gap-2;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .tw-market-content,
   #market-buy-section {
     @apply min-w-0 max-w-full;

@@ -42,6 +42,8 @@ class AttackLogEntry(TypedDict):
     passive_events_before: NotRequired[List[PassiveLogEntry]]
     passive_events_after: NotRequired[List[PassiveLogEntry]]
     current_target_bonus: NotRequired[bool]
+    attack_phase: NotRequired[Literal["burst", "normal"]]
+    reaction_type: NotRequired[Literal["counter"]]
 
     # 武艺/技术特殊效果（命中时才会记录）
     is_double_strike: NotRequired[bool]

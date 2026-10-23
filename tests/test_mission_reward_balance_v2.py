@@ -25,7 +25,7 @@ TOKENS = [x for x in ITEMS.values() if x.get("effect_payload", {}).get("collecti
 
 
 def test_v2_has_daily_fengshen_progression_and_bounded_collection_goals():
-    assert len(BOXES) == 39 and len(TOKENS) == 6
+    assert len(BOXES) == 40 and len(TOKENS) == 6
     assert len(HISTORICAL_BOXES) == 32
     assert all(x["effect_payload"]["reward_balance_version"] == 3 for x in BOXES)
     assert all(x["effect_payload"]["reward_balance_version"] == 2 for x in HISTORICAL_BOXES)

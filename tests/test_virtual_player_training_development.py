@@ -17,7 +17,9 @@ from guests.models import Guest, GuestArchetype, GuestRarity, GuestTemplate, Tra
 from guests.services.training import apply_training_locked, project_training_completion
 
 
-def _guest_arena_power(guest: Guest, *, force: int, intellect: int, defense: int, agility: int) -> int:
+def _guest_arena_power(
+    guest: Guest, *, force: int, intellect: int, defense: int, agility: int, level: int | None = None
+) -> int:
     return calculate_guest_arena_power(
         force=force,
         intellect=intellect,
@@ -26,6 +28,7 @@ def _guest_arena_power(guest: Guest, *, force: int, intellect: int, defense: int
         hp_bonus=int(guest.hp_bonus),
         archetype=str(guest.template.archetype),
         base_hp=int(guest.template.base_hp),
+        level=int(guest.level if level is None else level),
     )
 
 
@@ -42,6 +45,20 @@ def test_guest_arena_power_includes_agility() -> None:
     higher_agility = calculate_guest_arena_power(**common, agility=180)
 
     assert higher_agility - lower_agility == 100
+
+
+@pytest.mark.parametrize(("base_hp", "defense"), [(1_000, 100), (0, 0)])
+def test_guest_arena_power_includes_level_hp_growth(base_hp: int, defense: int) -> None:
+    common = {
+        "force": 100,
+        "intellect": 100,
+        "defense": defense,
+        "agility": 80,
+        "hp_bonus": 0,
+        "archetype": "military",
+        "base_hp": base_hp,
+    }
+    assert calculate_guest_arena_power(**common, level=11) - calculate_guest_arena_power(**common, level=1) == 60
 
 
 @pytest.mark.django_db
@@ -109,6 +126,7 @@ def test_training_intent_prediction_matches_committed_strength(manor_factory):
             intellect=completion.intellect,
             defense=completion.defense_stat,
             agility=completion.agility,
+            level=completion.level,
         ),
         utility_score=1.0,
     )

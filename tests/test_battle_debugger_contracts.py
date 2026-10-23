@@ -104,7 +104,7 @@ def test_debugger_web_report_shows_followup_attack_dodge_and_status():
     assert "普通攻击：对枪兵造成伤害6000" in report_text
     assert "普通攻击：盾兵闪避了攻击" in report_text
     assert "普通攻击：对刀兵造成伤害5000" in report_text
-    assert "波及援军，造成伤害100，伤害人数1" in report_text
+    assert "普通攻击：对援军造成伤害100，伤害人数1" in report_text
     assert "造成状态：流血" in report_text
     assert "盾兵造成伤害0" not in report_text
 

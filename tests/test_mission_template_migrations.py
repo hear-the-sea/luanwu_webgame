@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+import importlib
+
 import pytest
-from django.db import connection
+from django.db import connection, migrations
 from django.db.migrations.executor import MigrationExecutor
 
 
 @pytest.mark.django_db(transaction=True)
-def test_migration_0108_removes_style_probe_task():
+def test_migration_0108_removes_style_probe_task(monkeypatch):
+    # 空测试库回退旧任务结构时，无成交记录需要撤销数量回填。
+    market_migration = importlib.import_module("trade.migrations.0012_market_partial_purchases")
+    monkeypatch.setattr(market_migration.Migration.operations[2], "reverse_code", migrations.RunPython.noop)
     migrate_from = [("gameplay", "0107_four_continents_regions")]
     migrate_to = [("gameplay", "0108_remove_style_probe_task_mission")]
 
