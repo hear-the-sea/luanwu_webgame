@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from datetime import date, timedelta
+from io import BytesIO
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -9,10 +10,17 @@ from django.db import DatabaseError, connection
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone
+from PIL import Image
 
 from battle.models import TroopTemplate
 from gameplay.models import InventoryItem, ItemTemplate, MissionExtraAttempt, MissionRun, MissionTemplate, PlayerTroop
-from guests.models import Guest, GuestStatus, GuestTemplate
+from guests.models import Guest, GuestStatus, GuestTemplate, WorldUniqueGuest
+
+
+def _png_upload(name: str, color: str) -> SimpleUploadedFile:
+    buffer = BytesIO()
+    Image.new("RGB", (1, 1), color).save(buffer, format="PNG")
+    return SimpleUploadedFile(name, buffer.getvalue(), content_type="image/png")
 
 
 @pytest.mark.django_db
@@ -217,6 +225,59 @@ class TestTaskBoardPage:
         assert other_response.context["world_unique_guest_status"] is None
         assert "吕布状态" not in other_response.content.decode("utf-8")
 
+    @pytest.mark.parametrize("owned_index", [0, 1])
+    def test_zhuolu_shows_both_unique_guests_and_refreshes_ownership(self, manor_with_user, owned_index):
+        manor, client = manor_with_user
+        mission, _ = MissionTemplate.objects.update_or_create(
+            key="zhuolu_zhongyuan",
+            defaults={"name": "逐鹿中原", "difficulty": MissionTemplate.Difficulty.ADVANCED, "daily_limit": 1},
+        )
+        templates = []
+        for key, name in (("hero_yang_zheng_purple", "杨铮"), ("hero_di_qinglin", "狄青麟")):
+            template, _ = GuestTemplate.objects.update_or_create(
+                key=key, defaults={"name": name, "rarity": "purple", "is_world_unique": True}
+            )
+            WorldUniqueGuest.objects.update_or_create(
+                template=template, defaults={"status": "wild", "owner_manor": None, "owner_guest": None}
+            )
+            templates.append(template)
+        state_count = WorldUniqueGuest.objects.count()
+        url = reverse("gameplay:tasks") + f"?mission={mission.key}"
+        response = client.get(url)
+        assert response.status_code == 200
+        statuses = response.context["chiyou_unique_guest_statuses"]
+        assert [(s["guest_name"], s["summary"]) for s in statuses] == [("杨铮", "在野"), ("狄青麟", "在野")]
+        body = response.content.decode("utf-8")
+        assert "杨铮状态" in body and "狄青麟状态" in body
+        assert body.count("当前在野，可消耗100张蚩尤卡选择招募") == 2
+        assert "吕布状态" not in body
+        assert WorldUniqueGuest.objects.count() == state_count
+
+        owned_template = templates[owned_index]
+        guest = Guest.objects.create(manor=manor, template=owned_template)
+        WorldUniqueGuest.objects.filter(template=owned_template).update(
+            status="serving", owner_manor=manor, owner_guest=guest
+        )
+        response = client.get(url)
+        statuses = response.context["chiyou_unique_guest_statuses"]
+        assert statuses[owned_index]["is_available"] is False
+        assert statuses[owned_index]["owner_name"] == manor.display_name
+        assert statuses[1 - owned_index]["summary"] == "在野"
+        body = response.content.decode("utf-8")
+        assert f"{owned_template.name}已仕官，当前不可招募" in body
+        assert manor.display_name in body
+        assert manor.location_display in body
+        assert body.count("当前在野，可消耗100张蚩尤卡选择招募") == 1
+
+        other, _ = MissionTemplate.objects.update_or_create(
+            key="task_board_without_chiyou_status",
+            defaults={"name": "其它任务", "difficulty": MissionTemplate.Difficulty.ADVANCED, "daily_limit": 1},
+        )
+        response = client.get(reverse("gameplay:tasks") + f"?mission={other.key}")
+        assert response.context["chiyou_unique_guest_statuses"] == []
+        body = response.content.decode("utf-8")
+        assert "杨铮状态" not in body and "狄青麟状态" not in body
+
     def test_task_board_renders_mission_card_confirmation_metadata(self, manor_with_user):
         manor, client = manor_with_user
         mission = MissionTemplate.objects.create(
@@ -323,7 +384,7 @@ class TestTaskBoardPage:
         image_item = ItemTemplate.objects.create(
             key="task_board_drop_icon_image",
             name="图标物品",
-            image=SimpleUploadedFile("drop-icon.png", b"drop-image", content_type="image/png"),
+            image=_png_upload("drop-icon.png", "red"),
             rarity="blue",
         )
         placeholder_item = ItemTemplate.objects.create(
@@ -346,6 +407,7 @@ class TestTaskBoardPage:
 
         assert response.status_code == 200
         body = response.content.decode("utf-8")
+        assert image_item.image.name.endswith(".webp")
         assert image_item.image.url in body
         assert 'src="/static/items/guild_silver_boost_card.png"' in body
         assert 'class="tw-drop-icon rarity-blue"' in body
@@ -359,13 +421,13 @@ class TestTaskBoardPage:
         helmet = ItemTemplate.objects.create(
             key="task_board_choice_pool_helmet",
             name="青龙盔图纸",
-            image=SimpleUploadedFile("qinglong-helmet.png", b"helmet", content_type="image/png"),
+            image=_png_upload("qinglong-helmet.png", "blue"),
             rarity="blue",
         )
         armor = ItemTemplate.objects.create(
             key="task_board_choice_pool_armor",
             name="青龙甲图纸",
-            image=SimpleUploadedFile("qinglong-armor.png", b"armor", content_type="image/png"),
+            image=_png_upload("qinglong-armor.png", "green"),
             rarity="blue",
         )
         mission = MissionTemplate.objects.create(
@@ -384,6 +446,8 @@ class TestTaskBoardPage:
 
         assert response.status_code == 200
         body = response.content.decode("utf-8")
+        assert helmet.image.name.endswith(".webp")
+        assert armor.image.name.endswith(".webp")
         assert helmet.image.url in body
         assert armor.image.url in body
         for label in ("青龙盔图纸 ×1", "青龙甲图纸 ×1"):
@@ -739,7 +803,7 @@ class TestTaskBoardPage:
             name="关卡首领",
             archetype="military",
             rarity="orange",
-            avatar=SimpleUploadedFile("task-boss.png", b"boss-avatar", content_type="image/png"),
+            avatar=_png_upload("task-boss.png", "orange"),
         )
         mission = MissionTemplate.objects.create(
             key="task_board_boss_avatar_tooltip_mission",
@@ -752,7 +816,8 @@ class TestTaskBoardPage:
         assert response.status_code == 200
         body = response.content.decode("utf-8")
         assert '<button type="button" class="tw-item-cell tw-enemy-avatar-trigger" aria-label="关卡首领">' in body
-        assert '<img src="/media/guests/task-boss.png" alt="" class="tw-enemy-avatar"' in body
+        assert GuestTemplate.objects.get(key="task_board_boss_avatar_tooltip").avatar.name.endswith(".webp")
+        assert '<img src="/media/guests/task-boss.webp" alt="" class="tw-enemy-avatar"' in body
         assert '<span class="tw-item-tooltip"><span class="tw-tooltip-header">关卡首领</span></span>' in body
 
     def test_task_board_selected_mission_omits_dynamic_travel_time_note(self, manor_with_user):

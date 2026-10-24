@@ -79,6 +79,31 @@ def test_assign_agility_based_priorities_prefers_defender_when_cutoff_ties():
     assert attacker.priority == 0
 
 
+@pytest.mark.parametrize(("total", "expected_count"), [(0, 0), (1, 1), (4, 1), (8, 1), (12, 2), (20, 4)])
+def test_vanguard_selects_fastest_twenty_percent_across_both_sides(total, expected_count):
+    guests = [
+        make_combatant(f"门客{idx}", "attacker" if idx % 2 == 0 else "defender", 100 + idx) for idx in range(total)
+    ]
+    troop = make_combatant("高速护院", "attacker", 1000)
+    troop.kind = "troop"
+
+    assign_agility_based_priorities([troop, *guests[::2]], guests[1::2])
+
+    vanguard = [guest for guest in guests if guest.priority == -1]
+    assert len(vanguard) == expected_count
+    assert [guest.name for guest in vanguard] == [guest.name for guest in guests[total - expected_count :]]
+    assert troop.priority == 0
+
+
+@pytest.mark.parametrize(("battle_engine_version", "expected_count"), [("8", 2), ("9", 1)])
+def test_vanguard_ratio_is_preserved_by_battle_engine_version(battle_engine_version, expected_count):
+    guests = [make_combatant(f"门客{idx}", "attacker", 100 + idx) for idx in range(8)]
+
+    assign_agility_based_priorities([], guests, battle_engine_version=battle_engine_version)
+
+    assert sum(guest.priority == -1 for guest in guests) == expected_count
+
+
 @pytest.mark.parametrize(
     ("attacker_agilities", "defender_agilities", "expected_sides"),
     [

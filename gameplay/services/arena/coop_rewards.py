@@ -3,6 +3,32 @@ from __future__ import annotations
 import random
 
 
+def build_mingjiao_rewards(row: dict, *, config: dict, boss_defeated: bool, rng: random.Random) -> dict:
+    snapshots = row.get("guest_snapshots") or []
+    low_rarity = len(snapshots) == 3 and all(
+        isinstance(snapshot, dict) and snapshot.get("rarity") in {"green", "blue"} for snapshot in snapshots
+    )
+    eligible = boss_defeated and bool(config.get("enabled", False))
+    tier = "low_rarity" if low_rarity else "other"
+    fire_seeds = int(config.get(f"{tier}_fire_seeds", 0)) if eligible else 0
+    token_chance_bps = int(config.get(f"{tier}_token_chance_bps", 0)) if eligible else 0
+    token_quantity = int(eligible and rng.random() < token_chance_bps / 10000)
+    return {
+        "low_rarity_lineup": low_rarity,
+        "fire_seed_quantity": fire_seeds,
+        "holy_fire_token_quantity": token_quantity,
+        "holy_fire_token_chance_bps": token_chance_bps,
+        "item_rewards": {
+            key: quantity
+            for key, quantity in (
+                (config.get("fire_seed_item_key"), fire_seeds),
+                (config.get("holy_fire_token_item_key"), token_quantity),
+            )
+            if key and quantity > 0
+        },
+    }
+
+
 def select_rare_drop_item_key(rare_drop: dict, *, rng: random.Random) -> str:
     choices = rare_drop.get("item_choices") or []
     weighted_choices = [
@@ -59,4 +85,7 @@ def build_reward_breakdown(
         "total_coins": participation + damage_coins + rank_coins + clear_coins,
         "rare_drop_granted": rare_drop_granted,
         "rare_drop_item_key": select_rare_drop_item_key(rules["rare_drop"], rng=rng) if rare_drop_granted else "",
+        "mingjiao": build_mingjiao_rewards(
+            row, config=rules["rewards"].get("mingjiao") or {}, boss_defeated=boss_defeated, rng=rng
+        ),
     }

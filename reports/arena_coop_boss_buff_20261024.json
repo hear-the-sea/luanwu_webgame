@@ -1,0 +1,71 @@
+{
+  "note": "固定15人测试阵容和10组配对种子，用于比较配置增幅，不代表线上通关率。",
+  "before": {
+    "level": 85,
+    "force": 1180,
+    "intellect": 860,
+    "defense_stat": 650,
+    "agility": 300,
+    "luck": 160,
+    "final_hp": 200000
+  },
+  "after": {
+    "level": 85,
+    "force": 1475,
+    "intellect": 1075,
+    "defense_stat": 650,
+    "agility": 300,
+    "luck": 160,
+    "final_hp": 300000
+  },
+  "summaries": [
+    {
+      "player_attribute": 650,
+      "version": "before",
+      "simulations": 10,
+      "player_wins": 10,
+      "mean_rounds": 4.2,
+      "mean_boss_damage": 87850.1
+    },
+    {
+      "player_attribute": 650,
+      "version": "after",
+      "simulations": 10,
+      "player_wins": 10,
+      "mean_rounds": 5.4,
+      "mean_boss_damage": 120108.2
+    },
+    {
+      "player_attribute": 1000,
+      "version": "before",
+      "simulations": 10,
+      "player_wins": 10,
+      "mean_rounds": 3.5,
+      "mean_boss_damage": 71313.6
+    },
+    {
+      "player_attribute": 1000,
+      "version": "after",
+      "simulations": 10,
+      "player_wins": 10,
+      "mean_rounds": 4.2,
+      "mean_boss_damage": 100298.5
+    },
+    {
+      "player_attribute": 1350,
+      "version": "before",
+      "simulations": 10,
+      "player_wins": 10,
+      "mean_rounds": 3,
+      "mean_boss_damage": 52381.4
+    },
+    {
+      "player_attribute": 1350,
+      "version": "after",
+      "simulations": 10,
+      "player_wins": 10,
+      "mean_rounds": 3.5,
+      "mean_boss_damage": 67801.3
+    }
+  ]
+}

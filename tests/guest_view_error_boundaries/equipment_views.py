@@ -27,7 +27,7 @@ def test_equip_view_game_error_shows_business_message(django_user_model, monkeyp
     )
 
     assert response.status_code == 302
-    assert response.url == reverse("gameplay:recruitment_hall")
+    assert response.url == reverse("guests:detail", args=[guest.pk])
     assert "装备受限" in messages(response)
 
 
@@ -49,7 +49,7 @@ def test_equip_view_database_error_degrades_with_message(django_user_model, monk
     )
 
     assert response.status_code == 302
-    assert response.url == reverse("gameplay:recruitment_hall")
+    assert response.url == reverse("guests:detail", args=[guest.pk])
     assert "操作失败，请稍后重试" in messages(response)
 
 

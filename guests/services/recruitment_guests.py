@@ -281,6 +281,7 @@ def bulk_finalize_candidates(
     locked_candidates_map = {
         candidate.id: candidate
         for candidate in RecruitmentCandidate.objects.select_for_update()
+        .select_related("template")
         .filter(manor_id=manor.id, id__in=requested_ids)
         .order_by("id")
     }

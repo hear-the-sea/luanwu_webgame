@@ -29,7 +29,7 @@ from .deployment import recover_orphaned_deployed_guests as _recover_orphaned_de
 from .deployment import (
     recover_orphaned_locked_guest_statuses as _recover_orphaned_locked_guest_statuses_from_deployment,
 )
-from .execution import _DEFAULT_ATTACKER_MANOR, BattleOptions
+from .execution import _DEFAULT_ATTACKER_MANOR, BattleOptions, PreparedBattleTeams
 from .execution import execute_battle as _execute_battle
 from .locking import collect_guest_ids as _collect_guest_ids
 from .locking import collect_manor_ids as _collect_manor_ids
@@ -244,6 +244,8 @@ def simulate_report(
     validate_attacker_troop_capacity: bool = True,
     attacker_troop_loss_rate: float | None = None,
     defender_troop_loss_rate: float | None = None,
+    persist_report: bool = True,
+    prepared_teams: PreparedBattleTeams | None = None,
 ) -> BattleReport:
     """
     Top-level entry point for simulating a battle and producing reports/messages.
@@ -278,10 +280,34 @@ def simulate_report(
         validate_attacker_troop_capacity: 是否校验攻击方带兵上限（默认开启）
         attacker_troop_loss_rate: 攻击方被击败护院的阵亡概率（可选）
         defender_troop_loss_rate: 防守方被击败护院的阵亡概率（可选）
+        persist_report: 是否保存战报；关闭时仅允许无副作用的显式快照战斗
+        prepared_teams: 短事务中物化的完整战斗输入；仅用于不持久化的快照模拟
 
     Returns:
         BattleReport: 战斗报告实例
     """
+    if prepared_teams is not None and persist_report:
+        raise ValueError("prepared battle teams require side-effect-free snapshot combat")
+    if not persist_report:
+        if (
+            auto_reward
+            or apply_damage
+            or send_message
+            or use_lock
+            or drop_handler is not None
+            or defender_manor is not None
+            or not attacker_guests
+            or not defender_guests
+            or any(
+                is_live_guest_model(guest) or not getattr(guest, "is_battle_snapshot_proxy", False)
+                for guest in [*attacker_guests, *defender_guests]
+            )
+        ):
+            raise ValueError("unsaved battle reports require side-effect-free snapshot combat")
+
+    if prepared_teams is not None:
+        return _execution.execute_prepared_snapshot_battle(manor, prepared_teams)
+
     # 确定本场上阵人数（默认遵循庄园可上阵上限）
     limit = max_squad or (getattr(manor, "max_squad_size", None) or MAX_SQUAD)
     guests, active_guests = _resolve_attacker_guests(manor, attacker_guests, limit)
@@ -314,6 +340,10 @@ def simulate_report(
         attacker_troop_loss_rate=attacker_troop_loss_rate,
         defender_troop_loss_rate=defender_troop_loss_rate,
     )
+    if not persist_report:
+        options.persist_report = False
+        options.apply_victory_loyalty = False
+        options.recover_live_guest_hp = False
     return _execute_battle_with_optional_lock(
         manor=manor,
         guests=guests,

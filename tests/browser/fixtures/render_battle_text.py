@@ -84,6 +84,12 @@ if len(sys.argv) > 2 and sys.argv[2] == "qiankun":
         {**reflection, "additional_targets": [{**reflection, "reflect_damage": 1234}]},
         {**notice, "message": "卸力反震", "unit_state": {"current": 0}},
     ]
+if len(sys.argv) > 2 and sys.argv[2] == "boss-passives":
+    events = []
+    for source in ("乾坤大挪移", "明教号令", "圣火狂势"):
+        events.append({"type": "passive", "side": "defender", "unit": "张无忌", "effect": source})
+        reflection = {**base, "target": "张无忌", "reflect_effect": source, "reflect_damage": 4321}
+        events.append({**reflection, "additional_targets": [{**reflection, "reflect_damage": 1234}]})
 for viewer in [sys.argv[1]]:
     rows = build_rounds_display([{"events": events}], {})[0]
     content = render_to_string(

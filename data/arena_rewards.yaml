@@ -127,6 +127,14 @@ rewards:
         - item_key: equip_shangshanfaeling
           weight: 1
 
+  - key: mingjiao_fire_seed_exchange
+    name: 火种
+    description: 消耗20角斗币兑换1个火种。火种不可交易，可与明教圣火令一同用于招募小昭。
+    cost_coins: 20
+    rewards:
+      items:
+        mingjiao_fire_seed: 1
+
   - key: panfeng_guest_exchange
     name: 潘凤门客兑换
     description: 兑换后获得「潘凤门客卡」，可直接招募绿色门客潘凤。注:潘凤为无双上将，拥有强大的潜力！

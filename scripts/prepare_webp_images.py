@@ -10,13 +10,16 @@ from pathlib import Path
 
 from PIL import Image, ImageSequence
 
-SOURCE_EXTENSIONS = frozenset({".png", ".jpg", ".jpeg"})
+from core.utils.image_utils import DEFAULT_TRANSPARENT_BACKGROUND_COLOR, flatten_transparent_image
+
+SOURCE_EXTENSIONS = frozenset({".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tif", ".tiff"})
 
 
 def prepare_image(source: Path, *, apply: bool = False, quality: int = 85) -> dict:
     destination = source.with_name(source.name + ".webp")
     result = {"path": str(source), "source_bytes": source.stat().st_size}
-    fingerprint = f"webgame-webp-q{quality}:" + hashlib.sha256(source.read_bytes()).hexdigest()
+    background_tag = "".join(f"{channel:02x}" for channel in DEFAULT_TRANSPARENT_BACKGROUND_COLOR)
+    fingerprint = f"webgame-webp-v2-q{quality}-bg-{background_tag}:" + hashlib.sha256(source.read_bytes()).hexdigest()
     if destination.exists():
         with Image.open(destination) as previous:
             if previous.format == "WEBP" and previous.getexif().get(270) == fingerprint:
@@ -28,7 +31,7 @@ def prepare_image(source: Path, *, apply: bool = False, quality: int = 85) -> di
     temporary = destination.with_name(destination.name + f".{os.getpid()}.tmp")
     try:
         with Image.open(source) as image:
-            frames = [frame.convert("RGBA") for frame in ImageSequence.Iterator(image)]
+            frames = [flatten_transparent_image(frame) for frame in ImageSequence.Iterator(image)]
             metadata = Image.Exif()
             metadata[270] = fingerprint
             options = {"format": "WEBP", "quality": quality, "method": 6, "exif": metadata}

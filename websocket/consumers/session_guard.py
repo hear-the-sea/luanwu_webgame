@@ -4,12 +4,15 @@ import asyncio
 import logging
 import time
 from enum import Enum
+from importlib import import_module
 from typing import Any
 
 from asgiref.sync import sync_to_async
 from autobahn.exception import Disconnected
 from channels.db import database_sync_to_async
 from django.conf import settings
+from django.contrib.auth import BACKEND_SESSION_KEY, HASH_SESSION_KEY, SESSION_KEY, load_backend
+from django.utils.crypto import constant_time_compare
 from django_redis import get_redis_connection
 
 from core.middleware.single_session import (
@@ -69,24 +72,31 @@ def is_websocket_session_valid(scope: dict) -> bool:
     if not current_session_key:
         return False
 
-    exists = getattr(session, "exists", None)
-    if callable(exists):
-        try:
-            if not exists(current_session_key):
-                return False
-        except WEBSOCKET_SESSION_VALIDATION_EXCEPTIONS as exc:
-            raise WebSocketSessionValidationUnavailable("session existence check unavailable") from exc
-
     try:
-        session_user_id = session.get("_auth_user_id")
-    except WEBSOCKET_SESSION_VALIDATION_EXCEPTIONS as exc:
-        raise WebSocketSessionValidationUnavailable("session payload check unavailable") from exc
-
-    if str(session_user_id) != str(user.id):
-        return False
-
-    try:
+        # A connection's scope caches both user and session for its whole lifetime.
+        # Reload through the configured store so expiry and revocation take effect.
+        fresh_session = import_module(settings.SESSION_ENGINE).SessionStore(session_key=current_session_key)
+        session_data = fresh_session.load()
+        if str(session_data.get(SESSION_KEY)) != str(user.id):
+            return False
+        backend_path = session_data.get(BACKEND_SESSION_KEY)
+        if backend_path not in settings.AUTHENTICATION_BACKENDS:
+            return False
+        current_user = load_backend(backend_path).get_user(user.id)
+        if current_user is None or not current_user.is_active:
+            return False
+        session_hash = session_data.get(HASH_SESSION_KEY)
+        if not session_hash or not (
+            constant_time_compare(session_hash, current_user.get_session_auth_hash())
+            or any(
+                constant_time_compare(session_hash, fallback_hash)
+                for fallback_hash in current_user.get_session_auth_fallback_hash()
+            )
+        ):
+            return False
         return is_single_session_request_valid(int(user.id), str(current_session_key))
+    except WEBSOCKET_SESSION_VALIDATION_EXCEPTIONS as exc:
+        raise WebSocketSessionValidationUnavailable("session authentication check unavailable") from exc
     except SessionValidationUnavailable as exc:
         raise WebSocketSessionValidationUnavailable("single-session validation unavailable") from exc
 

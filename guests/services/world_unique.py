@@ -81,6 +81,19 @@ def _build_serving_anomaly_status(state: WorldUniqueGuest) -> dict[str, Any]:
 
 
 def _status_payload_from_state(state: WorldUniqueGuest) -> dict[str, Any]:
+    if state.status == WorldUniqueGuest.Status.CAPTURED:
+        owner = state.owner_manor
+        return {
+            "template_key": state.template.key,
+            "guest_name": state.template.name,
+            "status": state.status,
+            "status_display": state.get_status_display(),
+            "summary": f"被俘（{owner.display_name}，坐标{owner.location_display}）" if owner else "被俘（状态异常）",
+            "owner_manor_id": state.owner_manor_id,
+            "owner_name": owner.display_name if owner else "",
+            "owner_location": owner.location_display if owner else "",
+            "is_available": False,
+        }
     if state.status != WorldUniqueGuest.Status.SERVING:
         return _build_wild_status(
             template_key=state.template.key,
@@ -137,13 +150,85 @@ def _get_locked_state(template: GuestTemplate) -> WorldUniqueGuest:
 
 
 def _validate_state_consistency(state: WorldUniqueGuest) -> None:
-    has_owner = state.owner_manor_id is not None or state.owner_guest_id is not None
+    has_owner = any((state.owner_manor_id, state.owner_guest_id, state.owner_prisoner_id))
     if state.status == WorldUniqueGuest.Status.WILD and has_owner:
         raise WorldUniqueGuestError(message=f"{state.template.name}的唯一状态异常，请联系管理员")
     if state.status == WorldUniqueGuest.Status.SERVING and (
-        state.owner_manor_id is None or state.owner_guest_id is None
+        state.owner_manor_id is None or state.owner_guest_id is None or state.owner_prisoner_id is not None
     ):
         raise WorldUniqueGuestError(message=f"{state.template.name}的唯一状态异常，请联系管理员")
+    if state.status == WorldUniqueGuest.Status.CAPTURED and (
+        state.owner_manor_id is None or state.owner_guest_id is not None or state.owner_prisoner_id is None
+    ):
+        raise WorldUniqueGuestError(message=f"{state.template.name}的唯一状态异常，请联系管理员")
+
+
+def capture_world_unique_guest(guest: Guest, prisoner: Any) -> None:
+    """调用方事务内将唯一身份从门客实例转交给俘虏记录。"""
+    if not is_world_unique_template(guest.template):
+        return
+    if guest.template.key == WORLD_UNIQUE_LUBU_TEMPLATE_KEY:
+        raise WorldUniqueGuestError(message="吕布不可被俘虏")
+    state = _get_locked_state(guest.template)
+    _validate_state_consistency(state)
+    if state.status != WorldUniqueGuest.Status.SERVING or (
+        state.owner_guest_id != guest.pk or state.owner_manor_id != guest.manor_id
+    ):
+        raise WorldUniqueGuestError(message="唯一门客归属状态异常，无法俘虏")
+    state.status = WorldUniqueGuest.Status.CAPTURED
+    state.owner_guest = None
+    state.owner_manor_id = prisoner.captor_id
+    state.owner_prisoner = prisoner
+    state.version += 1
+    state.save(update_fields=["status", "owner_guest", "owner_manor", "owner_prisoner", "version", "updated_at"])
+
+
+def lock_world_unique_prisoner(prisoner: Any) -> WorldUniqueGuest | None:
+    """收编前锁定唯一归属，防止普通或历史囚徒记录制造副本。"""
+    if not is_world_unique_template(prisoner.guest_template):
+        return None
+    state = _get_locked_state(prisoner.guest_template)
+    _validate_state_consistency(state)
+    if state.status != WorldUniqueGuest.Status.CAPTURED or (
+        state.owner_prisoner_id != prisoner.pk or state.owner_manor_id != prisoner.captor_id
+    ):
+        raise WorldUniqueGuestError(message="唯一门客归属状态异常，无法收编")
+    return state
+
+
+def transfer_world_unique_prisoner(state: WorldUniqueGuest | None, captor: Manor) -> None:
+    """俘虏易手时保留唯一身份，仅变更关押庄园。"""
+    if state is None:
+        return
+    state.owner_manor_id = captor.pk
+    state.version += 1
+    state.save(update_fields=["owner_manor", "version", "updated_at"])
+
+
+def recruit_world_unique_prisoner(state: WorldUniqueGuest | None, guest: Guest) -> None:
+    if state is None:
+        return
+    state.status = WorldUniqueGuest.Status.SERVING
+    state.owner_prisoner = None
+    state.owner_manor_id = guest.manor_id
+    state.owner_guest = guest
+    state.version += 1
+    state.save(update_fields=["status", "owner_prisoner", "owner_manor", "owner_guest", "version", "updated_at"])
+
+
+def release_world_unique_prisoners(prisoner_ids: Any) -> None:
+    """调用方释放囚徒的同一事务内，恢复对应唯一身份为在野。"""
+    states = (
+        WorldUniqueGuest.objects.select_for_update()
+        .filter(status=WorldUniqueGuest.Status.CAPTURED, owner_prisoner_id__in=prisoner_ids)
+        .order_by("pk")
+    )
+    for state in states:
+        state.status = WorldUniqueGuest.Status.WILD
+        state.owner_prisoner = None
+        state.owner_manor = None
+        state.version += 1
+        state.save(update_fields=["status", "owner_prisoner", "owner_manor", "version", "updated_at"])
 
 
 @transaction.atomic

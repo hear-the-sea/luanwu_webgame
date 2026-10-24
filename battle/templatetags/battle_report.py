@@ -11,6 +11,12 @@ register.simple_tag(reflect_effect_name)
 register.simple_tag(secondary_attack_kind)
 
 
+@register.filter
+def is_boss_passive_reflect(effect: object) -> bool:
+    """统一首领被动反震显示，同时兼容旧战报中的技能来源。"""
+    return effect in ("乾坤大挪移", "明教号令", "圣火狂势")
+
+
 @register.simple_tag
 def battle_side_label(side: object, visible_side: object = "attacker", spectator=False, opposite=False) -> str:
     """按观看者视角显示阵营；反击和受击阵营可通过 opposite 换算。"""

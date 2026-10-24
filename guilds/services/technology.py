@@ -2,6 +2,7 @@
 
 import logging
 import math
+import re
 from collections.abc import Iterable
 from datetime import datetime
 from typing import SupportsInt, cast
@@ -21,6 +22,7 @@ from .. import constants as guild_constants
 from ..models import Guild, GuildMember, GuildResourceLog, GuildTechnology, GuildWarehouse
 from ..technology_tree import TECHNOLOGY_NODE_BY_KEY, TECHNOLOGY_ROUTES, is_technology_route_complete
 from .guild import create_announcement
+from .resource_locks import GuildResourceLockScope, lock_guild_resource_manors, settle_guild_resource_manors
 from .utils import get_active_membership, lock_active_member_for_guild
 from .warehouse import spend_guild_warehouse_items_locked
 
@@ -38,14 +40,39 @@ GUEST_BONUS_TYPES = {"guest_force", "guest_intellect", "guest_defense"}
 TROOP_TACTICS_RUNTIME_MAX_LEVEL = 10
 ROUTE_COST_MULTIPLIER = 1.2
 TECH_RESOURCE_COST_MULTIPLIER = 20
+# 在既有银粮价格上分阶段增加消耗，保留原始基准供历史退款使用。
+TECH_RESOURCE_STAGE_PERCENTAGES = {
+    1: (120,),
+    3: (110, 120, 130),
+    5: (110, 115, 120, 125, 130),
+    # 十级铁骑强化所在路线投入最高，增幅收敛到5%～15%。
+    10: (105, 105, 105, 110, 110, 110, 115, 115, 115, 115),
+}
+# 普通稀有资源温和加价，产出高品质物品的科技另按专属档位计算。
+TECH_RARE_RESOURCE_STAGE_PERCENTAGES = {
+    1: (130,),
+    3: (120, 130, 150),
+    5: (120, 130, 140, 150, 160),
+    10: (120, 120, 125, 130, 135, 140, 145, 150, 155, 160),
+    20: (120,) * 5 + (130,) * 5 + (140,) * 5 + (150,) * 5,
+}
+TECH_PREMIUM_RARE_RESOURCE_PERCENTAGES = {
+    "hero_marrow_pill": (150, 175, 200),
+    "hero_blue_purple_pill": (150, 175, 200),
+    "wolf_golden_white_horse": (150, 175, 200),
+    "wolf_soul_container": (150, 175, 200),
+    "sheep_wrath": (200,),
+    "forging_mechanism_blueprint": (125, 140, 160, 180, 200),
+    "hero_skill_books": (120, 120, 130, 130, 150, 150, 175, 175, 200, 200),
+    "forging_equipment_forge": (120, 120, 130, 130, 150, 150, 175, 175, 200, 200),
+}
 RESOURCE_PRODUCTION_TECH_KEYS = {"sheep_farmland", "sheep_silver_mine"}
 
 
-def _settle_guild_member_resource_production_locked(guild: Guild, *, now: datetime) -> None:
-    from gameplay.services.resources import settle_resource_production_for_users_locked
-
-    member_user_ids = GuildMember.objects.filter(guild=guild, is_active=True).values_list("user_id", flat=True)
-    settle_resource_production_for_users_locked(member_user_ids, now=now)
+def _settle_guild_member_resource_production_locked(
+    guild: Guild, scope: GuildResourceLockScope, *, now: datetime
+) -> None:
+    settle_guild_resource_manors(guild, scope, now=now)
 
 
 def _is_supported_tech_key(tech_key: str) -> bool:
@@ -149,12 +176,24 @@ def _calculate_tech_upgrade_base_cost(tech_key, current_level, *, guild: Guild |
 
 
 def calculate_tech_upgrade_cost(tech_key, current_level, *, guild: Guild | None = None):
-    """计算实际升级费用，强兵战术保持原价，其余科技银两、粮食费用提高20倍。"""
+    """分阶段提高资源消耗，高品质物品产出科技额外提高金条与红宝石费用。"""
     cost = _calculate_tech_upgrade_base_cost(tech_key, current_level, guild=guild)
     if tech_key == "troop_tactics" or tech_key not in TECHNOLOGY_NODE_BY_KEY:
         return cost
+    max_level = int(TECHNOLOGY_NODE_BY_KEY[tech_key]["max_level"])
+    percentages = TECH_RESOURCE_STAGE_PERCENTAGES.get(max_level)
+    current_level = int(current_level)
+    percentage = percentages[current_level] if percentages and 0 <= current_level < len(percentages) else 100
+    rare_percentages = TECH_PREMIUM_RARE_RESOURCE_PERCENTAGES.get(
+        tech_key, TECH_RARE_RESOURCE_STAGE_PERCENTAGES.get(max_level, ())
+    )
+    rare_percentage = rare_percentages[current_level] if 0 <= current_level < len(rare_percentages) else 100
     return {
-        key: amount * TECH_RESOURCE_COST_MULTIPLIER if key in {"silver", "grain"} else amount
+        key: (
+            (amount * TECH_RESOURCE_COST_MULTIPLIER * percentage + 99) // 100
+            if key in {"silver", "grain"}
+            else (amount * rare_percentage + 99) // 100 if key in {"gold_bar", "red_ruby"} else amount
+        )
         for key, amount in cost.items()
     }
 
@@ -167,7 +206,7 @@ def _route_for_technology(tech_key: str) -> dict | None:
 
 
 def _calculate_route_investment(guild: Guild, route: dict, levels: dict[str, int]) -> dict[str, int]:
-    """银两、粮食按本轮升级流水退款，无流水的历史等级沿用调价前费用。"""
+    """按本轮实际投入退款，缺失流水的资源沿用调价前基准，避免多退旧投入。"""
     last_reset_id = (
         GuildResourceLog.objects.filter(
             guild=guild, action="tech_reset", note__startswith=f"取消{route['title']}路线并清零等级"
@@ -180,12 +219,20 @@ def _calculate_route_investment(guild: Guild, route: dict, levels: dict[str, int
     if last_reset_id is not None:
         upgrade_logs = upgrade_logs.filter(pk__gt=last_reset_id)
     paid_costs: dict[str, dict[str, int]] = {}
-    for note, silver_change, grain_change in upgrade_logs.order_by("-pk").values_list(
-        "note", "silver_change", "grain_change"
+    for note, silver_change, grain_change, gold_bar_change in upgrade_logs.order_by("-pk").values_list(
+        "note", "silver_change", "grain_change", "gold_bar_change"
     ):
-        paid_costs.setdefault(
-            note.split("（", 1)[0], {"silver": max(0, -silver_change), "grain": max(0, -grain_change)}
-        )
+        paid_entry = {
+            "silver": max(0, -silver_change),
+            "grain": max(0, -grain_change),
+            "gold_bar": max(0, -gold_bar_change),
+        }
+        # 红宝石尚无独立流水字段；升级服务已在消耗明细中记录实际支付数量。
+        cost_details = re.search(r"（消耗([^）]*)）", note)
+        ruby_match = re.search(r"(?:^|、)红宝石×([0-9]+)(?=、|$)", cost_details.group(1)) if cost_details else None
+        if ruby_match:
+            paid_entry["red_ruby"] = int(ruby_match.group(1))
+        paid_costs.setdefault(note.split("（", 1)[0], paid_entry)
     invested: dict[str, int] = {}
     for node in route["nodes"]:
         if not node["enabled"]:
@@ -196,8 +243,8 @@ def _calculate_route_investment(guild: Guild, route: dict, levels: dict[str, int
             tech_name = guild_constants.TECH_NAMES.get(node["key"], "该科技")
             paid = paid_costs.get(f"升级{tech_name}至{current_level + 1}级")
             if paid is not None:
-                for resource_key in ("silver", "grain"):
-                    if resource_key in cost:
+                for resource_key in ("silver", "grain", "gold_bar", "red_ruby"):
+                    if resource_key in cost and resource_key in paid:
                         cost[resource_key] = paid[resource_key]
             for resource_key, amount in cost.items():
                 invested[resource_key] = invested.get(resource_key, 0) + int(amount)
@@ -305,6 +352,7 @@ def upgrade_technology(guild, tech_key, operator):
 
     # 并发安全的事务处理
     with transaction.atomic():
+        resource_scope = lock_guild_resource_manors(guild.pk) if tech_key in RESOURCE_PRODUCTION_TECH_KEYS else None
         # 步骤1：锁定帮会和科技，防止并发升级
         guild_locked = Guild.objects.select_for_update().get(pk=guild.pk)
         tech_locked = GuildTechnology.objects.select_for_update().get(pk=tech.pk)
@@ -350,8 +398,8 @@ def upgrade_technology(guild, tech_key, operator):
         if silver_cost > int(guild_locked.silver):
             raise GuildTechnologyError(f"帮会银两不足，需要{silver_cost}")
 
-        if tech_key in RESOURCE_PRODUCTION_TECH_KEYS:
-            _settle_guild_member_resource_production_locked(guild_locked, now=timezone.now())
+        if resource_scope is not None:
+            _settle_guild_member_resource_production_locked(guild_locked, resource_scope, now=timezone.now())
 
         if warehouse_cost:
             try:
@@ -501,6 +549,8 @@ def reset_technology_route(guild: Guild, route_key: str, operator) -> dict[str, 
         raise GuildTechnologyError("科技路线不存在")
 
     with transaction.atomic():
+        changes_production = any(node["key"] in RESOURCE_PRODUCTION_TECH_KEYS for node in route["nodes"])
+        resource_scope = lock_guild_resource_manors(guild.pk) if changes_production else None
         guild_locked = Guild.objects.select_for_update().get(pk=guild.pk)
         if getattr(membership, "pk", None) is not None:
             try:
@@ -523,8 +573,8 @@ def reset_technology_route(guild: Guild, route_key: str, operator) -> dict[str, 
         if is_technology_route_complete(route, levels):
             raise GuildTechnologyError("已完成的科技路线不能重置")
 
-        if RESOURCE_PRODUCTION_TECH_KEYS.intersection(route_tech_keys):
-            _settle_guild_member_resource_production_locked(guild_locked, now=timezone.now())
+        if resource_scope is not None:
+            _settle_guild_member_resource_production_locked(guild_locked, resource_scope, now=timezone.now())
 
         invested = _calculate_route_investment(guild_locked, route, levels)
         refund = {resource_key: amount // 2 for resource_key, amount in invested.items()}

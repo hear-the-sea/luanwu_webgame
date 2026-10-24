@@ -89,7 +89,7 @@ def _load_report_message_for_manor(report: "BattleReport", *, manor_id: int):
 
     Message = apps.get_model("gameplay", "Message")
     messages = Message.objects.filter(battle_report_id=report_id, manor_id=manor_id).order_by("-created_at", "-id")
-    auxiliary_titles = {"门客被俘通知", "唯一门客失去通知"}
+    auxiliary_titles = {"门客被俘通知", "唯一门客失去通知", "监牢俘虏被夺通知", "监牢俘虏夺取通知"}
     for message in messages:
         if str(getattr(message, "title", "") or "").strip() not in auxiliary_titles:
             return message

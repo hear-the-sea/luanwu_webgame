@@ -246,7 +246,7 @@ def test_cleanup_old_data_task_deletes_only_published_terminal_fill_evidence_and
 
 
 @pytest.mark.django_db
-def test_cleanup_old_data_task_deletes_at_most_one_batch_per_table(monkeypatch, django_user_model):
+def test_cleanup_old_data_task_honors_configured_batch_limit(monkeypatch, django_user_model, settings):
     from gameplay.tasks import maintenance
 
     user = django_user_model.objects.create_user(username="cleanup_batch_limit_user", password="pass123")
@@ -264,6 +264,8 @@ def test_cleanup_old_data_task_deletes_at_most_one_batch_per_table(monkeypatch, 
     cutoff = timezone.now() - timedelta(days=RESOURCE_EVENT_RETENTION_DAYS + 1)
     ResourceEvent.objects.filter(pk__in=[row.pk for row in stale]).update(created_at=cutoff)
     monkeypatch.setattr(maintenance, "CLEANUP_TASK_BATCH_SIZE", 1)
+    monkeypatch.setattr(maintenance, "CLEANUP_HISTORY_BATCH_SIZE", 1)
+    settings.CLEANUP_TASK_MAX_BATCHES = 1
 
     cleanup_old_data_task.run()
 

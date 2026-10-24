@@ -25,26 +25,26 @@ def test_calculate_tech_upgrade_cost_uses_staged_curves_without_exponential_fall
     with pytest.raises(GuildTechnologyError, match="缺少升至3级的费用配置"):
         calculate_tech_upgrade_cost("unknown", 2)
 
-    assert calculate_tech_upgrade_cost("forging_equipment_forge", 1) == {"gold_bar": 6}
-    assert calculate_tech_upgrade_cost("forging_equipment_forge", 8) == {"gold_bar": 450}
-    assert calculate_tech_upgrade_cost("forging_equipment_forge", 9) == {"gold_bar": 1050}
-    assert calculate_tech_upgrade_cost("march_speed", 4) == {"gold_bar": 120}
-    assert calculate_tech_upgrade_cost("guild_lineup_capacity", 19) == {"red_ruby": 100}
-    assert calculate_tech_upgrade_cost("guild_dispatch_capacity", 19) == {"gold_bar": 40}
+    assert calculate_tech_upgrade_cost("forging_equipment_forge", 1) == {"gold_bar": 8}
+    assert calculate_tech_upgrade_cost("forging_equipment_forge", 8) == {"gold_bar": 900}
+    assert calculate_tech_upgrade_cost("forging_equipment_forge", 9) == {"gold_bar": 2100}
+    assert calculate_tech_upgrade_cost("march_speed", 4) == {"gold_bar": 192}
+    assert calculate_tech_upgrade_cost("guild_lineup_capacity", 19) == {"red_ruby": 150}
+    assert calculate_tech_upgrade_cost("guild_dispatch_capacity", 19) == {"gold_bar": 60}
 
 
 def test_requested_guild_technology_maximum_costs_are_exact():
     from guilds.services.technology import calculate_tech_upgrade_cost
 
     expected_totals = {
-        "forging_equipment_forge": (10, {"gold_bar": 1953}),
-        "forging_mechanism_blueprint": (5, {"gold_bar": 130, "red_ruby": 130}),
-        "hero_skill_books": (10, {"gold_bar": 1953}),
+        "forging_equipment_forge": (10, {"gold_bar": 3752}),
+        "forging_mechanism_blueprint": (5, {"gold_bar": 236, "red_ruby": 236}),
+        "hero_skill_books": (10, {"gold_bar": 3752}),
         "troop_tactics": (10, {"silver": 200_000_220, "grain": 200_000_220}),
-        "sheep_farmland": (3, {"silver": 18_000_000, "grain": 18_000_000, "gold_bar": 20}),
-        "march_speed": (5, {"gold_bar": 184}),
-        "guild_lineup_capacity": (20, {"red_ruby": 1050}),
-        "guild_dispatch_capacity": (20, {"gold_bar": 420}),
+        "sheep_farmland": (3, {"silver": 22_500_000, "grain": 22_500_000, "gold_bar": 29}),
+        "march_speed": (5, {"gold_bar": 286}),
+        "guild_lineup_capacity": (20, {"red_ruby": 1482}),
+        "guild_dispatch_capacity": (20, {"gold_bar": 598}),
     }
 
     for tech_key, (max_level, expected) in expected_totals.items():
@@ -437,8 +437,8 @@ def test_upgrade_technology_spends_grain_and_gold_bar_from_warehouse(monkeypatch
     assert guild.silver == 0
     assert guild.grain == 0
     assert guild.gold_bar == 0
-    assert gold_bar_row.quantity == 2
-    assert gold_bar_row.total_exchanged == 2
+    assert gold_bar_row.quantity == 1
+    assert gold_bar_row.total_exchanged == 3
 
 
 @pytest.mark.django_db
@@ -630,7 +630,7 @@ def test_upgrade_technology_insufficient_resources(monkeypatch, django_user_mode
     tech = GuildTechnology.objects.create(guild=guild, tech_key="guild_dispatch_capacity", level=0, max_level=20)
     gold_bar = GuildWarehouse.objects.create(guild=guild, item_key="gold_bar", quantity=1, contribution_cost=50)
 
-    with pytest.raises(GuildTechnologyError, match="帮会资产金条不足，需要2"):
+    with pytest.raises(GuildTechnologyError, match="帮会资产金条不足，需要3"):
         upgrade_technology(guild, "guild_dispatch_capacity", operator)
 
     tech.refresh_from_db()
@@ -654,7 +654,7 @@ def test_upgrade_new_guild_dispatch_capacity_tech_consumes_gold_bar_at_low_level
     founder = django_user_model.objects.create_user(username="tech_founder_red_ruby", password="pass")
     guild = Guild.objects.create(name="TechGuildRedRuby", founder=founder, silver=0, grain=0, gold_bar=0)
     tech = GuildTechnology.objects.create(guild=guild, tech_key="guild_dispatch_capacity", level=0, max_level=5)
-    gold = GuildWarehouse.objects.create(guild=guild, item_key="gold_bar", quantity=2, contribution_cost=0)
+    gold = GuildWarehouse.objects.create(guild=guild, item_key="gold_bar", quantity=3, contribution_cost=0)
 
     upgrade_technology(guild, "guild_dispatch_capacity", operator)
 
@@ -669,7 +669,7 @@ def test_upgrade_new_guild_dispatch_capacity_tech_consumes_gold_bar_at_low_level
     assert GuildResourceLog.objects.filter(
         guild=guild,
         action="tech_upgrade",
-        note__contains="金条×2",
+        note__contains="金条×3",
     ).exists()
 
 
@@ -688,7 +688,7 @@ def test_upgrade_guild_dispatch_capacity_tech_consumes_only_gold_bars_at_high_le
     founder = django_user_model.objects.create_user(username="tech_founder_capacity_high", password="pass")
     guild = Guild.objects.create(name="TechGuildCapacityHigh", founder=founder, silver=0, grain=0, gold_bar=0)
     tech = GuildTechnology.objects.create(guild=guild, tech_key="guild_dispatch_capacity", level=15, max_level=20)
-    gold = GuildWarehouse.objects.create(guild=guild, item_key="gold_bar", quantity=32, contribution_cost=0)
+    gold = GuildWarehouse.objects.create(guild=guild, item_key="gold_bar", quantity=48, contribution_cost=0)
     ruby = GuildWarehouse.objects.create(guild=guild, item_key="red_ruby", quantity=36, contribution_cost=0)
 
     upgrade_technology(guild, "guild_dispatch_capacity", operator)
@@ -701,8 +701,8 @@ def test_upgrade_guild_dispatch_capacity_tech_consumes_only_gold_bars_at_high_le
     assert GuildResourceLog.objects.filter(
         guild=guild,
         action="tech_upgrade",
-        gold_bar_change=-32,
-        note__contains="出征位扩容至16级（消耗金条×32）",
+        gold_bar_change=-48,
+        note__contains="出征位扩容至16级（消耗金条×48）",
     ).exists()
 
 
@@ -736,33 +736,33 @@ def test_upgrade_soul_container_uses_tree_cost_curve_and_stops_at_level_three(mo
         level=0,
         max_level=3,
     )
-    GuildWarehouse.objects.create(guild=guild, item_key="red_ruby", quantity=2000, contribution_cost=0)
+    GuildWarehouse.objects.create(guild=guild, item_key="red_ruby", quantity=3750, contribution_cost=0)
 
-    assert calculate_tech_upgrade_cost("wolf_soul_container", 0) == {"red_ruby": 200}
-    assert calculate_tech_upgrade_cost("wolf_soul_container", 1) == {"red_ruby": 600}
-    assert calculate_tech_upgrade_cost("wolf_soul_container", 2) == {"red_ruby": 1200}
+    assert calculate_tech_upgrade_cost("wolf_soul_container", 0) == {"red_ruby": 300}
+    assert calculate_tech_upgrade_cost("wolf_soul_container", 1) == {"red_ruby": 1050}
+    assert calculate_tech_upgrade_cost("wolf_soul_container", 2) == {"red_ruby": 2400}
 
     upgrade_technology(guild, "wolf_soul_container", operator)
 
     tech.refresh_from_db()
     assert tech.level == 1
-    assert GuildWarehouse.objects.get(guild=guild, item_key="red_ruby").quantity == 1800
+    assert GuildWarehouse.objects.get(guild=guild, item_key="red_ruby").quantity == 3450
     assert GuildResourceLog.objects.filter(
         guild=guild,
         action="tech_upgrade",
-        note__contains="灵魂容器至1级（消耗红宝石×200）",
+        note__contains="灵魂容器至1级（消耗红宝石×300）",
     ).exists()
 
     upgrade_technology(guild, "wolf_soul_container", operator)
 
     tech.refresh_from_db()
     assert tech.level == 2
-    assert GuildWarehouse.objects.get(guild=guild, item_key="red_ruby").quantity == 1200
+    assert GuildWarehouse.objects.get(guild=guild, item_key="red_ruby").quantity == 2400
     assert GuildResourceLog.objects.filter(
         guild=guild,
         action="tech_upgrade",
         gold_bar_change=0,
-        note__contains="灵魂容器至2级（消耗红宝石×600）",
+        note__contains="灵魂容器至2级（消耗红宝石×1050）",
     ).exists()
 
     upgrade_technology(guild, "wolf_soul_container", operator)
@@ -774,7 +774,7 @@ def test_upgrade_soul_container_uses_tree_cost_curve_and_stops_at_level_three(mo
         guild=guild,
         action="tech_upgrade",
         gold_bar_change=0,
-        note__contains="灵魂容器至3级（消耗红宝石×1200）",
+        note__contains="灵魂容器至3级（消耗红宝石×2400）",
     ).exists()
 
     with pytest.raises(GuildTechnologyError, match="科技已达最高等级"):
@@ -866,7 +866,7 @@ def test_upgrade_soul_container_does_not_partially_spend_when_rubies_are_insuffi
     )
     ruby = GuildWarehouse.objects.create(guild=guild, item_key="red_ruby", quantity=599, contribution_cost=0)
 
-    with pytest.raises(GuildTechnologyError, match="帮会资产红宝石不足，需要600"):
+    with pytest.raises(GuildTechnologyError, match="帮会资产红宝石不足，需要1050"):
         upgrade_technology(guild, "wolf_soul_container", operator)
 
     tech.refresh_from_db()

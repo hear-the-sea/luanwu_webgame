@@ -275,12 +275,16 @@ def _perform_single_attack(
         return cast(dict[str, Any] | None, _finalize_attack_round(actor, [], finalize_action=finalize_action))
 
     opposing_team = defender_team if actor.side == "attacker" else attacker_team
-    selected_target_ids = {id(target) for target in selection.engaged_targets}
-    has_unselected_alive_target = any(
-        int(getattr(target, "hp", 0) or 0) > 0 and id(target) not in selected_target_ids for target in opposing_team
-    )
-    current_target_bonus_effects: list[dict[str, Any]] = [] if has_unselected_alive_target else extra_target_effects
+    selected_target_ids: set[int] = set()
+    current_target_bonus_effects: list[dict[str, Any]] = []
     merged_extra_effect_ids: set[int] = set()
+    if extra_target_effects:
+        selected_target_ids = {id(target) for target in selection.engaged_targets}
+        has_unselected_alive_target = any(
+            int(getattr(target, "hp", 0) or 0) > 0 and id(target) not in selected_target_ids for target in opposing_team
+        )
+        if not has_unselected_alive_target:
+            current_target_bonus_effects = extra_target_effects
 
     action_logs: list[AttackLogEntry] = []
     actor_defeated = False
@@ -486,49 +490,50 @@ def _perform_single_attack(
         if actor_defeated:
             break
 
-    remaining_extra_target_effects = [
-        effect for effect in extra_target_effects if id(effect) not in merged_extra_effect_ids
-    ]
-    if not actor_defeated and int(getattr(actor, "hp", 0) or 0) > 0 and remaining_extra_target_effects:
-        additional_target_ids: set[int] = set()
-        for effect in remaining_extra_target_effects:
-            candidates = [
-                target
-                for target in opposing_team
-                if int(getattr(target, "hp", 0) or 0) > 0
-                and id(target) not in selected_target_ids
-                and id(target) not in additional_target_ids
-            ]
-            fallback_to_selected_target = not candidates
-            if not candidates:
+    if extra_target_effects:
+        remaining_extra_target_effects = [
+            effect for effect in extra_target_effects if id(effect) not in merged_extra_effect_ids
+        ]
+        if not actor_defeated and int(getattr(actor, "hp", 0) or 0) > 0 and remaining_extra_target_effects:
+            additional_target_ids: set[int] = set()
+            for effect in remaining_extra_target_effects:
                 candidates = [
                     target
-                    for target in selection.engaged_targets
-                    if int(getattr(target, "hp", 0) or 0) > 0 and id(target) not in additional_target_ids
+                    for target in opposing_team
+                    if int(getattr(target, "hp", 0) or 0) > 0
+                    and id(target) not in selected_target_ids
+                    and id(target) not in additional_target_ids
                 ]
+                fallback_to_selected_target = not candidates
                 if not candidates:
+                    candidates = [
+                        target
+                        for target in selection.engaged_targets
+                        if int(getattr(target, "hp", 0) or 0) > 0 and id(target) not in additional_target_ids
+                    ]
+                    if not candidates:
+                        break
+                    extra_target = candidates[0]
+                else:
+                    extra_target = rng.choice(candidates)
+                additional_target_ids.add(id(extra_target))
+                extra_entry = _apply_extra_target_true_damage(
+                    actor,
+                    extra_target,
+                    effect,
+                    attacker_team=attacker_team,
+                    defender_team=defender_team,
+                    rng=rng,
+                    round_priority=round_priority,
+                    battle_engine_version=battle_engine_version,
+                    index=len(action_logs),
+                    fallback_to_selected_target=fallback_to_selected_target,
+                    run_actor_attack_passives=run_actor_attack_passives,
+                )
+                action_logs.append(extra_entry)
+                if extra_entry["actor_defeated"]:
+                    actor_defeated = True
                     break
-                extra_target = candidates[0]
-            else:
-                extra_target = rng.choice(candidates)
-            additional_target_ids.add(id(extra_target))
-            extra_entry = _apply_extra_target_true_damage(
-                actor,
-                extra_target,
-                effect,
-                attacker_team=attacker_team,
-                defender_team=defender_team,
-                rng=rng,
-                round_priority=round_priority,
-                battle_engine_version=battle_engine_version,
-                index=len(action_logs),
-                fallback_to_selected_target=fallback_to_selected_target,
-                run_actor_attack_passives=run_actor_attack_passives,
-            )
-            action_logs.append(extra_entry)
-            if extra_entry["actor_defeated"]:
-                actor_defeated = True
-                break
 
     return cast(dict[str, Any] | None, _finalize_attack_round(actor, action_logs, finalize_action=finalize_action))
 

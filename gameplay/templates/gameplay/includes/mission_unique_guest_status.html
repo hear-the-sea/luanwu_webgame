@@ -1,0 +1,11 @@
+<section class="tw-task-detail-section">
+    <h5 class="text-text-primary text-lg font-bold mb-2">{{ guest_name }}状态</h5>
+    <div class="flex flex-wrap items-center gap-2">
+        <span class="tw-pill">{{ status.summary }}</span>
+        {% if status.is_available %}
+        <span class="tw-muted text-sm">{{ available_message }}</span>
+        {% else %}
+        <span class="tw-muted text-sm">{{ guest_name }}{% if status.status == 'captured' %}已被俘{% else %}已仕官{% endif %}，当前不可招募</span>
+        {% endif %}
+    </div>
+</section>

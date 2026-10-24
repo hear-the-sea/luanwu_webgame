@@ -103,6 +103,15 @@ def test_action_modifier_expires_after_action_cleanup():
     assert actor.battle_modifiers == {}
 
 
+def test_clearing_absent_action_modifiers_does_not_create_registry():
+    actor = make_unit(battle_modifiers={}, battle_state={})
+
+    clear_action_modifiers([actor])
+
+    assert actor.battle_modifiers == {}
+    assert actor.battle_state == {}
+
+
 def test_hit_taken_modifier_can_explicitly_live_for_the_round():
     actor = make_unit(
         battle_modifiers={},

@@ -10,112 +10,133 @@
             {% with panel=slot_panels_map.helmet %}
             <div class="equip-line">
                 <span class="equip-line-title">头盔：</span>
-                {% if panel.equipped %}
-                    {% for item in panel.equipped %}
-                        <label class="equip-chip rarity-text {{ item.template.rarity|rarity_class }} guest-equip-tooltip-trigger">
-                            <input type="checkbox" name="gear" value="{{ item.id }}"> {{ item.template.name }}{% if item.is_bound %} <span class="text-xs">（绑定）</span>{% endif %}
-                            <span class="guest-equip-tooltip-bubble">{{ item.template|gear_tooltip:gear_set_map }}</span>
-                        </label>
-                    {% endfor %}
-                {% else %}
-                    <button type="button" class="tw-btn-secondary tw-btn-sm equip-open" data-slot="helmet">装备</button>
-                {% endif %}
+                <div class="equip-line-items">
+                    {% if panel.equipped %}
+                        {% for item in panel.equipped %}
+                            <label class="equip-chip rarity-text {{ item.template.rarity|rarity_class }} guest-equip-tooltip-trigger">
+                                <input type="checkbox" name="gear" value="{{ item.id }}">
+                                <span class="equip-chip-name">{{ item.template.name }}{% if item.is_bound %}<span class="equip-chip-bound">（绑定）</span>{% endif %}</span>
+                                <span class="guest-equip-tooltip-bubble"><strong>{{ item.template.name }}</strong>{{ item.template|gear_tooltip:gear_set_map }}</span>
+                            </label>
+                        {% endfor %}
+                    {% else %}
+                        <button type="button" class="tw-btn-secondary tw-btn-sm equip-open" data-slot="helmet">装备</button>
+                    {% endif %}
+                </div>
             </div>
             {% endwith %}
 
             {% with panel=slot_panels_map.armor %}
             <div class="equip-line">
                 <span class="equip-line-title">衣甲：</span>
-                {% if panel.equipped %}
-                    {% for item in panel.equipped %}
-                        <label class="equip-chip rarity-text {{ item.template.rarity|rarity_class }} guest-equip-tooltip-trigger">
-                            <input type="checkbox" name="gear" value="{{ item.id }}"> {{ item.template.name }}{% if item.is_bound %} <span class="text-xs">（绑定）</span>{% endif %}
-                            <span class="guest-equip-tooltip-bubble">{{ item.template|gear_tooltip:gear_set_map }}</span>
-                        </label>
-                    {% endfor %}
-                {% else %}
-                    <button type="button" class="tw-btn-secondary tw-btn-sm equip-open" data-slot="armor">装备</button>
-                {% endif %}
+                <div class="equip-line-items">
+                    {% if panel.equipped %}
+                        {% for item in panel.equipped %}
+                            <label class="equip-chip rarity-text {{ item.template.rarity|rarity_class }} guest-equip-tooltip-trigger">
+                                <input type="checkbox" name="gear" value="{{ item.id }}">
+                                <span class="equip-chip-name">{{ item.template.name }}{% if item.is_bound %}<span class="equip-chip-bound">（绑定）</span>{% endif %}</span>
+                                <span class="guest-equip-tooltip-bubble"><strong>{{ item.template.name }}</strong>{{ item.template|gear_tooltip:gear_set_map }}</span>
+                            </label>
+                        {% endfor %}
+                    {% else %}
+                        <button type="button" class="tw-btn-secondary tw-btn-sm equip-open" data-slot="armor">装备</button>
+                    {% endif %}
+                </div>
             </div>
             {% endwith %}
 
             {% with panel=slot_panels_map.weapon %}
             <div class="equip-line">
                 <span class="equip-line-title">武器：</span>
-                {% if panel.equipped %}
-                    {% for item in panel.equipped %}
-                        <label class="equip-chip rarity-text {{ item.template.rarity|rarity_class }} guest-equip-tooltip-trigger">
-                            <input type="checkbox" name="gear" value="{{ item.id }}"> {{ item.template.name }}{% if item.is_bound %} <span class="text-xs">（绑定）</span>{% endif %}
-                            <span class="guest-equip-tooltip-bubble">{{ item.template|gear_tooltip:gear_set_map }}</span>
-                        </label>
-                    {% endfor %}
-                {% else %}
-                    <button type="button" class="tw-btn-secondary tw-btn-sm equip-open" data-slot="weapon">装备</button>
-                {% endif %}
+                <div class="equip-line-items">
+                    {% if panel.equipped %}
+                        {% for item in panel.equipped %}
+                            <label class="equip-chip rarity-text {{ item.template.rarity|rarity_class }} guest-equip-tooltip-trigger">
+                                <input type="checkbox" name="gear" value="{{ item.id }}">
+                                <span class="equip-chip-name">{{ item.template.name }}{% if item.is_bound %}<span class="equip-chip-bound">（绑定）</span>{% endif %}</span>
+                                <span class="guest-equip-tooltip-bubble"><strong>{{ item.template.name }}</strong>{{ item.template|gear_tooltip:gear_set_map }}</span>
+                            </label>
+                        {% endfor %}
+                    {% else %}
+                        <button type="button" class="tw-btn-secondary tw-btn-sm equip-open" data-slot="weapon">装备</button>
+                    {% endif %}
+                </div>
             </div>
             {% endwith %}
 
             {% with panel=slot_panels_map.shoes %}
             <div class="equip-line">
                 <span class="equip-line-title">鞋子：</span>
-                {% if panel.equipped %}
-                    {% for item in panel.equipped %}
-                        <label class="equip-chip rarity-text {{ item.template.rarity|rarity_class }} guest-equip-tooltip-trigger">
-                            <input type="checkbox" name="gear" value="{{ item.id }}"> {{ item.template.name }}{% if item.is_bound %} <span class="text-xs">（绑定）</span>{% endif %}
-                            <span class="guest-equip-tooltip-bubble">{{ item.template|gear_tooltip:gear_set_map }}</span>
-                        </label>
-                    {% endfor %}
-                {% else %}
-                    <button type="button" class="tw-btn-secondary tw-btn-sm equip-open" data-slot="shoes">装备</button>
-                {% endif %}
+                <div class="equip-line-items">
+                    {% if panel.equipped %}
+                        {% for item in panel.equipped %}
+                            <label class="equip-chip rarity-text {{ item.template.rarity|rarity_class }} guest-equip-tooltip-trigger">
+                                <input type="checkbox" name="gear" value="{{ item.id }}">
+                                <span class="equip-chip-name">{{ item.template.name }}{% if item.is_bound %}<span class="equip-chip-bound">（绑定）</span>{% endif %}</span>
+                                <span class="guest-equip-tooltip-bubble"><strong>{{ item.template.name }}</strong>{{ item.template|gear_tooltip:gear_set_map }}</span>
+                            </label>
+                        {% endfor %}
+                    {% else %}
+                        <button type="button" class="tw-btn-secondary tw-btn-sm equip-open" data-slot="shoes">装备</button>
+                    {% endif %}
+                </div>
             </div>
             {% endwith %}
 
             {% with panel=slot_panels_map.ornament %}
             <div class="equip-line wide">
                 <span class="equip-line-title">饰品：</span>
-                {% for item in panel.positions %}
-                    {% if item %}
-                        <label class="equip-chip rarity-text {{ item.template.rarity|rarity_class }} guest-equip-tooltip-trigger">
-                            <input type="checkbox" name="gear" value="{{ item.id }}"> {{ item.template.name }}{% if item.is_bound %} <span class="text-xs">（绑定）</span>{% endif %}
-                            <span class="guest-equip-tooltip-bubble">{{ item.template|gear_tooltip:gear_set_map }}</span>
-                        </label>
-                    {% else %}
-                        <button type="button" class="tw-btn-secondary tw-btn-sm equip-open" data-slot="ornament">装备</button>
-                    {% endif %}
-                {% endfor %}
+                <div class="equip-line-items">
+                    {% for item in panel.positions %}
+                        {% if item %}
+                            <label class="equip-chip rarity-text {{ item.template.rarity|rarity_class }} guest-equip-tooltip-trigger">
+                                <input type="checkbox" name="gear" value="{{ item.id }}">
+                                <span class="equip-chip-name">{{ item.template.name }}{% if item.is_bound %}<span class="equip-chip-bound">（绑定）</span>{% endif %}</span>
+                                <span class="guest-equip-tooltip-bubble"><strong>{{ item.template.name }}</strong>{{ item.template|gear_tooltip:gear_set_map }}</span>
+                            </label>
+                        {% else %}
+                            <button type="button" class="tw-btn-secondary tw-btn-sm equip-open" data-slot="ornament">装备</button>
+                        {% endif %}
+                    {% endfor %}
+                </div>
             </div>
             {% endwith %}
 
             {% with panel=slot_panels_map.device %}
             <div class="equip-line wide">
                 <span class="equip-line-title">器械：</span>
-                {% for item in panel.positions %}
-                    {% if item %}
-                        <label class="equip-chip rarity-text {{ item.template.rarity|rarity_class }} guest-equip-tooltip-trigger">
-                            <input type="checkbox" name="gear" value="{{ item.id }}"> {{ item.template.name }}{% if item.is_bound %} <span class="text-xs">（绑定）</span>{% endif %}
-                            <span class="guest-equip-tooltip-bubble">{{ item.template|gear_tooltip:gear_set_map }}</span>
-                        </label>
-                    {% else %}
-                        <button type="button" class="tw-btn-secondary tw-btn-sm equip-open" data-slot="device">装备</button>
-                    {% endif %}
-                {% endfor %}
+                <div class="equip-line-items">
+                    {% for item in panel.positions %}
+                        {% if item %}
+                            <label class="equip-chip rarity-text {{ item.template.rarity|rarity_class }} guest-equip-tooltip-trigger">
+                                <input type="checkbox" name="gear" value="{{ item.id }}">
+                                <span class="equip-chip-name">{{ item.template.name }}{% if item.is_bound %}<span class="equip-chip-bound">（绑定）</span>{% endif %}</span>
+                                <span class="guest-equip-tooltip-bubble"><strong>{{ item.template.name }}</strong>{{ item.template|gear_tooltip:gear_set_map }}</span>
+                            </label>
+                        {% else %}
+                            <button type="button" class="tw-btn-secondary tw-btn-sm equip-open" data-slot="device">装备</button>
+                        {% endif %}
+                    {% endfor %}
+                </div>
             </div>
             {% endwith %}
 
             {% with panel=slot_panels_map.mount %}
             <div class="equip-line wide">
                 <span class="equip-line-title">坐骑：</span>
-                {% if panel.equipped %}
-                    {% for item in panel.equipped %}
-                        <label class="equip-chip rarity-text {{ item.template.rarity|rarity_class }} guest-equip-tooltip-trigger">
-                            <input type="checkbox" name="gear" value="{{ item.id }}"> {{ item.template.name }}{% if item.is_bound %} <span class="text-xs">（绑定）</span>{% endif %}
-                            <span class="guest-equip-tooltip-bubble">{{ item.template|gear_tooltip:gear_set_map }}</span>
-                        </label>
-                    {% endfor %}
-                {% else %}
-                    <button type="button" class="tw-btn-secondary tw-btn-sm equip-open" data-slot="mount">装备</button>
-                {% endif %}
+                <div class="equip-line-items">
+                    {% if panel.equipped %}
+                        {% for item in panel.equipped %}
+                            <label class="equip-chip rarity-text {{ item.template.rarity|rarity_class }} guest-equip-tooltip-trigger">
+                                <input type="checkbox" name="gear" value="{{ item.id }}">
+                                <span class="equip-chip-name">{{ item.template.name }}{% if item.is_bound %}<span class="equip-chip-bound">（绑定）</span>{% endif %}</span>
+                                <span class="guest-equip-tooltip-bubble"><strong>{{ item.template.name }}</strong>{{ item.template|gear_tooltip:gear_set_map }}</span>
+                            </label>
+                        {% endfor %}
+                    {% else %}
+                        <button type="button" class="tw-btn-secondary tw-btn-sm equip-open" data-slot="mount">装备</button>
+                    {% endif %}
+                </div>
             </div>
             {% endwith %}
         </div>

@@ -86,7 +86,7 @@ def test_inspection_is_free_idempotent_and_stale(ring_players):
     assert receipt.buyer_id == b.pk and receipt.lineup["guests"][0]["guest_id"] == ga.pk
     assert not ResourceEvent.objects.filter(manor=b, delta__lt=0).exists()
     inspect_ring(**target(b, occupied))
-    assert ArenaRingInspection.objects.count() == 2
+    assert ArenaRingInspection.objects.count() == 1
     update_ring_lineup(**target(a, occupied), guest_ids=[ga.pk], troop_loadout={})
     with pytest.raises(ArenaRingError, match="已变化"):
         inspect_ring(**target(b, occupied))
@@ -227,7 +227,7 @@ def test_challenge_records_battle_without_rewards_or_real_damage(ring_players, m
 
     def simulate(**kwargs):
         assert kwargs["apply_damage"] is False and kwargs["fill_default_troops"] is False
-        return BattleReport.objects.create(
+        return BattleReport(
             manor=b,
             opponent_name="A",
             winner="defender",
@@ -309,6 +309,7 @@ def test_real_battle_uses_full_technology_and_frozen_device_bonuses(
     original = execution.build_troop_combatants
 
     def capture(loadout, **kwargs):
+        assert kwargs.get("manor") is None
         units = original(loadout, **kwargs)
         seen[kwargs["side"]] = units
         seen_tech_levels[kwargs["side"]] = kwargs["tech_levels"]
@@ -415,7 +416,7 @@ def test_daily_challenge_quota_without_rewards(ring_players, monkeypatch):
     ArenaRingDaily.objects.create(manor=b, date=day, challenges=9)
 
     def simulate(**kwargs):
-        return BattleReport.objects.create(
+        return BattleReport(
             manor=b,
             opponent_name="A",
             winner="defender",
@@ -439,7 +440,7 @@ def test_pair_battles_on_two_rings_do_not_grant_rewards(ring_players, monkeypatc
     occupied = occupy(a, ga)
 
     def simulate(**kwargs):
-        return BattleReport.objects.create(
+        return BattleReport(
             manor=kwargs["manor"],
             opponent_name="对手",
             winner="defender",
@@ -495,7 +496,7 @@ def test_registration_preserves_busy_status_and_battle_uses_saved_guest_snapshot
         defender = kwargs["defender_guests"][0]
         assert defender.attack == saved["attack"]
         assert defender.max_hp == saved["max_hp"]
-        return BattleReport.objects.create(
+        return BattleReport(
             manor=b,
             opponent_name="A",
             winner="defender",
@@ -539,7 +540,7 @@ def test_streak_wins_and_breaks_do_not_award_currency(ring_players, manor_factor
     winner = "defender"
 
     def simulate(**kwargs):
-        return BattleReport.objects.create(
+        return BattleReport(
             manor=kwargs["manor"],
             opponent_name="A",
             winner=winner,
@@ -643,7 +644,7 @@ def test_admin_reset_clears_return_cooldowns_without_deleting_history(ring_playe
     assert old.lineup["guest_count"] == 1
 
     def simulate(**kwargs):
-        return BattleReport.objects.create(
+        return BattleReport(
             manor=b,
             opponent_name="A",
             winner="defender",
@@ -758,7 +759,7 @@ def test_two_challenges_per_holder_with_ten_minute_cooldown(ring_players, manor_
     monkeypatch.setattr(service.timezone, "now", lambda: start)
 
     def simulate(**kwargs):
-        return BattleReport.objects.create(
+        return BattleReport(
             manor=kwargs["manor"],
             opponent_name="擂主",
             winner="defender",

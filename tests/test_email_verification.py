@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from datetime import timedelta
+from unittest.mock import patch
 
 import pytest
 from django.core import mail
@@ -12,9 +13,10 @@ from django.urls import reverse
 from django.utils import timezone
 
 from accounts import views as account_views
+from accounts.email_delivery import create_email_verification_delivery, process_email_verification_delivery
 from accounts.email_providers import EMAIL_PROVIDER_BREVO, EMAIL_PROVIDER_RESEND
 from accounts.email_quota import EmailQuotaExceeded, quota_month, release_email_send_slot, reserve_email_send_slot
-from accounts.email_verification import build_email_verification_token
+from accounts.email_verification import EMAIL_VERIFICATION_LEGACY_SALT, build_email_verification_token
 from accounts.forms import EmailVerificationRecoveryForm, SignUpForm
 from accounts.models import EmailProviderDailyQuota, EmailSendQuota
 
@@ -71,7 +73,117 @@ def test_registration_creates_pending_user_and_sends_verification_email(client, 
     assert "email-pending@example.com" in mail.outbox[0].to
     assert mail.outbox[0].subject == "完成邮箱验证，开启你的春秋乱世之旅"
     assert "verify-email/" in mail.outbox[0].body
+    assert _verification_token_from_email() not in response.content.decode()
     assert EmailSendQuota.objects.get(month=quota_month()).sent_count == 1
+
+
+@pytest.mark.parametrize("resend", [False, True])
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+def test_pending_page_resend_credential_cannot_activate_account(client, django_user_model, resend):
+    cache.clear()
+    response = client.post(
+        reverse("accounts:register"),
+        _registration_data(
+            username="email_credential_isolation",
+            email="unowned-email@example.com",
+            manor_name="邮箱凭据隔离庄园",
+        ),
+    )
+    resend_token_match = re.search(r'name="token" value="([^"]+)"', response.content.decode())
+    assert resend_token_match is not None
+    resend_token = resend_token_match.group(1)
+    if resend:
+        # The page credential works without relying on the registration session.
+        client.session.flush()
+        response = client.post(reverse("accounts:resend_email_verification"), {"token": resend_token})
+        assert response.status_code == 200
+        assert len(mail.outbox) == 2
+        resend_token_match = re.search(r'name="token" value="([^"]+)"', response.content.decode())
+        assert resend_token_match is not None
+        resend_token = resend_token_match.group(1)
+
+    email_token = _verification_token_from_email()
+    assert email_token not in response.content.decode()
+    rejected = client.post(reverse("accounts:verify_email", kwargs={"token": resend_token}))
+    assert rejected.status_code == 400
+    user = django_user_model.objects.get(username="email_credential_isolation")
+    assert not user.email_verified and not user.is_active
+    assert client.session.get("_auth_user_id") is None
+
+    verified = client.post(reverse("accounts:verify_email", kwargs={"token": email_token}))
+    assert verified.status_code == 302
+    user.refresh_from_db()
+    assert user.email_verified and user.is_active
+
+
+@pytest.mark.parametrize("legacy_age_hours", [0, 48])
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+def test_queued_legacy_activation_token_only_allows_limited_email_resend(client, django_user_model, legacy_age_hours):
+    cache.clear()
+    user = _create_pending_user(
+        django_user_model, username="email_legacy_rotation", email="legacy-rotation@example.com"
+    )
+    issued_at = timezone.now().timestamp() - legacy_age_hours * 3600
+    with patch("django.core.signing.time.time", return_value=issued_at):
+        legacy_token = TimestampSigner(salt=EMAIL_VERIFICATION_LEGACY_SALT).sign_object(
+            {"user_id": int(user.pk), "email": str(user.email)}
+        )
+
+    # Already-persisted deliveries keep their original URL. The received old
+    # link must recover safely without a data migration or direct activation.
+    legacy_url = reverse("accounts:verify_email", kwargs={"token": legacy_token})
+    delivery = create_email_verification_delivery(
+        user=user,
+        reservation=reserve_email_send_slot(preferred_provider=EMAIL_PROVIDER_RESEND),
+        verification_url=f"https://testserver{legacy_url}",
+    )
+    assert process_email_verification_delivery(delivery.pk)
+    assert _verification_token_from_email() == legacy_token
+    landing = client.get(legacy_url)
+    assert landing.status_code == 400
+    assert "重新发送验证邮件" in landing.content.decode()
+    assert client.post(legacy_url).status_code == 400
+    user.refresh_from_db()
+    assert not user.is_active and not user.email_verified
+    assert client.session.get("_auth_user_id") is None
+
+    resent = client.post(reverse("accounts:resend_email_verification"), {"token": legacy_token})
+    assert resent.status_code == 200
+    assert len(mail.outbox) == 2
+    current_token = _verification_token_from_email()
+    assert current_token != legacy_token
+    assert current_token not in resent.content.decode()
+    repeated = client.post(reverse("accounts:resend_email_verification"), {"token": legacy_token})
+    assert "验证邮件刚刚发送过" in repeated.content.decode()
+    assert len(mail.outbox) == 2
+    assert EmailSendQuota.objects.get(month=quota_month()).sent_count == 2
+
+    assert client.post(reverse("accounts:verify_email", kwargs={"token": current_token})).status_code == 302
+    user.refresh_from_db()
+    assert user.is_active and user.email_verified
+
+
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+def test_verification_rechecks_email_after_acquiring_user_lock(client, django_user_model, monkeypatch):
+    user = _create_pending_user(
+        django_user_model, username="email_changed_during_verification", email="verified-address@example.com"
+    )
+    token = build_email_verification_token(user)
+    original_resolve = account_views.get_user_from_email_verification_token
+
+    def change_email_after_token_validation(value):
+        resolved_user = original_resolve(value)
+        assert resolved_user is not None
+        django_user_model.objects.filter(pk=resolved_user.pk).update(email="different-address@example.com")
+        return resolved_user
+
+    monkeypatch.setattr(account_views, "get_user_from_email_verification_token", change_email_after_token_validation)
+    response = client.post(reverse("accounts:verify_email", kwargs={"token": token}))
+    user.refresh_from_db()
+    assert response.status_code == 400
+    assert user.email == "different-address@example.com"
+    assert not user.is_active and not user.email_verified
+    assert client.session.get("_auth_user_id") is None
 
 
 @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
@@ -426,7 +538,7 @@ def test_resend_cooldown_prevents_duplicate_messages(client):
 @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
 def test_resend_token_keeps_parallel_registration_bound_to_its_user(client):
     cache.clear()
-    client.post(
+    registration = client.post(
         reverse("accounts:register"),
         _registration_data(
             username="email_parallel_user_a",
@@ -435,7 +547,9 @@ def test_resend_token_keeps_parallel_registration_bound_to_its_user(client):
         ),
         REMOTE_ADDR="203.0.113.210",
     )
-    token_a = _verification_token_from_email()
+    token_match = re.search(r'name="token" value="([^"]+)"', registration.content.decode())
+    assert token_match is not None
+    token_a = token_match.group(1)
 
     client.post(
         reverse("accounts:register"),

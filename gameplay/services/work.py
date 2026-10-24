@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Any, Dict, List
 
-from django.db import IntegrityError, transaction
+from django.conf import settings
+from django.db import IntegrityError, connection, transaction
+from django.db.models import Q
 from django.utils import timezone
 
 from core.exceptions import (
@@ -139,66 +141,143 @@ def assign_guest_to_work(guest: Guest, work_template: WorkTemplate) -> WorkAssig
     return assignment
 
 
-def _complete_assignment_batch(assignment_ids: List[int], now) -> int:
-    """批量完成仍处于打工中的任务，并仅回写实际完成的门客状态。"""
+def _complete_assignment_batch(assignment_ids: List[int], now, *, locked_guests: List[Guest]) -> int:
+    """调用方按庄园、门客、任务顺序持锁后，完成本批任务并恢复实际释放的门客。"""
     updated_count = WorkAssignment.objects.filter(
         id__in=assignment_ids,
         status=WorkAssignment.Status.WORKING,
+        complete_at__lte=now,
     ).update(status=WorkAssignment.Status.COMPLETED, finished_at=now)
 
     if updated_count <= 0:
         return 0
 
-    completed_guest_ids = list(
+    completed_guest_ids = set(
         WorkAssignment.objects.filter(
             id__in=assignment_ids,
             status=WorkAssignment.Status.COMPLETED,
+            finished_at=now,
         )
+        .order_by()
         .values_list("guest_id", flat=True)
         .distinct()
     )
     if completed_guest_ids:
-        locked_guests = list(
-            Guest.objects.select_for_update()
-            .filter(id__in=completed_guest_ids, status=GuestStatus.WORKING)
-            .order_by("id")
+        active_guest_ids = set(
+            WorkAssignment.objects.filter(
+                guest_id__in=completed_guest_ids,
+                status=WorkAssignment.Status.WORKING,
+            )
+            .order_by()
+            .values_list("guest_id", flat=True)
+            .distinct()
         )
         persist_guest_status_transitions(
-            locked_guests,
+            [
+                guest
+                for guest in locked_guests
+                if guest.pk in completed_guest_ids
+                and guest.pk not in active_guest_ids
+                and guest.status == GuestStatus.WORKING
+            ],
             GuestStatus.IDLE,
+            now=now,
             source="work_complete",
         )
 
     return updated_count
 
 
-def complete_work_assignments() -> int:
-    """
-    完成所有到期的打工任务
-    由定时任务调用
-    返回完成的任务数量
-
-    性能优化：使用批量更新替代逐条更新，减少数据库查询
-    """
-    now = timezone.now()
-    from gameplay.services.inventory.target_items import release_expired_guest_occupations
-
-    release_expired_guest_occupations(now=now)
-
+def _complete_locked_work_batch(candidates: list[tuple[int, int, int, datetime]], now, *, skip_locked: bool) -> int:
+    """候选只用于定位；庄园锁内重新读取门客和任务，避免旧快照覆盖召回后的派遣。"""
     with transaction.atomic():
-        # 查找所有到期的打工任务
-        assignments = list(
-            WorkAssignment.objects.select_for_update()
-            .filter(status=WorkAssignment.Status.WORKING, complete_at__lte=now)
-            .select_related("guest")
+        manor_ids = {row[1] for row in candidates}
+        manor_locks = Manor.objects.select_for_update(
+            skip_locked=skip_locked and connection.features.has_select_for_update_skip_locked,
         )
-
-        if not assignments:
+        locked_manor_ids = set(manor_locks.filter(pk__in=manor_ids).order_by("pk").values_list("pk", flat=True))
+        if not locked_manor_ids:
             return 0
 
-        assignment_ids = [a.id for a in assignments]
+        assignment_ids = [row[0] for row in candidates if row[1] in locked_manor_ids]
+        guest_ids = {row[2] for row in candidates if row[1] in locked_manor_ids}
+        locked_guests = list(
+            Guest.objects.select_for_update().filter(pk__in=guest_ids, manor_id__in=locked_manor_ids).order_by("pk")
+        )
+        locked_assignment_ids = list(
+            WorkAssignment.objects.select_for_update()
+            .filter(
+                pk__in=assignment_ids,
+                manor_id__in=locked_manor_ids,
+                guest_id__in=[guest.pk for guest in locked_guests],
+                status=WorkAssignment.Status.WORKING,
+                complete_at__lte=now,
+            )
+            .order_by("pk")
+            .values_list("pk", flat=True)
+        )
+        if not locked_assignment_ids:
+            return 0
+        return _complete_assignment_batch(locked_assignment_ids, now, locked_guests=locked_guests)
 
-        return _complete_assignment_batch(assignment_ids, now)
+
+def _complete_due_work_assignments(
+    *, now, limit: int, batch_size: int, manor_id: int | None = None, skip_locked: bool = False
+) -> int:
+    due = WorkAssignment.objects.filter(status=WorkAssignment.Status.WORKING, complete_at__lte=now)
+    if manor_id is not None:
+        due = due.filter(manor_id=manor_id)
+    due = due.order_by("complete_at", "pk")
+    cursor: tuple[datetime, int] | None = None
+    inspected = 0
+    completed = 0
+    while inspected < limit:
+        candidates_query = due
+        if cursor is not None:
+            candidates_query = candidates_query.filter(
+                Q(complete_at__gt=cursor[0]) | Q(complete_at=cursor[0], pk__gt=cursor[1])
+            )
+        current_limit = min(batch_size, limit - inspected)
+        candidates = list(candidates_query.values_list("pk", "manor_id", "guest_id", "complete_at")[:current_limit])
+        if not candidates:
+            break
+        inspected += len(candidates)
+        cursor = (candidates[-1][3], candidates[-1][0])
+        completed += _complete_locked_work_batch(candidates, now, skip_locked=skip_locked)
+        if len(candidates) < current_limit:
+            break
+    return completed
+
+
+def complete_work_assignments(*, limit: int | None = None) -> int:
+    """定时结算到期打工；每批独立提交，每次调用最多检查配置数量的候选任务。"""
+    now = timezone.now()
+    scan_limit = max(0, int(limit if limit is not None else getattr(settings, "WORK_COMPLETION_SCAN_LIMIT", 1000)))
+    if scan_limit == 0:
+        return 0
+    batch_size = max(1, int(getattr(settings, "WORK_COMPLETION_BATCH_SIZE", 250)))
+    from gameplay.services.inventory.target_items import release_expired_guest_occupations
+
+    release_expired_guest_occupations(now=now, limit=min(batch_size, scan_limit))
+    return _complete_due_work_assignments(now=now, limit=scan_limit, batch_size=batch_size, skip_locked=True)
+
+
+def _lock_work_assignment(assignment: WorkAssignment) -> tuple[Manor, Guest, WorkAssignment] | None:
+    """调用方事务内统一按庄园、门客、任务顺序获取行锁，不联结其他表扩大锁范围。"""
+    manor = Manor.objects.select_for_update().filter(pk=assignment.manor_id).first()
+    if manor is None:
+        return None
+    guest = Guest.objects.select_for_update().filter(pk=assignment.guest_id, manor_id=manor.pk).first()
+    if guest is None:
+        return None
+    locked_assignment = (
+        WorkAssignment.objects.select_for_update()
+        .filter(pk=assignment.pk, manor_id=manor.pk, guest_id=guest.pk)
+        .first()
+    )
+    if locked_assignment is None:
+        return None
+    return manor, guest, locked_assignment
 
 
 def recall_guest_from_work(assignment: WorkAssignment) -> bool:
@@ -207,10 +286,11 @@ def recall_guest_from_work(assignment: WorkAssignment) -> bool:
     不发放任何报酬
     """
     with transaction.atomic():
-        locked_assignment = (
-            WorkAssignment.objects.select_for_update().select_related("guest").filter(pk=assignment.pk).first()
-        )
-        if not locked_assignment or locked_assignment.status != WorkAssignment.Status.WORKING:
+        locked_state = _lock_work_assignment(assignment)
+        if locked_state is None:
+            raise WorkNotInProgressError()
+        _manor, locked_guest, locked_assignment = locked_state
+        if locked_assignment.status != WorkAssignment.Status.WORKING:
             raise WorkNotInProgressError()
 
         # 更新任务状态
@@ -220,7 +300,6 @@ def recall_guest_from_work(assignment: WorkAssignment) -> bool:
         locked_assignment.save(update_fields=["status", "finished_at"])
 
         # 更新门客状态
-        locked_guest = Guest.objects.select_for_update().get(pk=locked_assignment.guest_id)
         persist_guest_status_transition(
             locked_guest,
             GuestStatus.IDLE,
@@ -243,13 +322,11 @@ def claim_work_reward(assignment: WorkAssignment) -> Dict[str, Any]:
     返回获得的资源
     """
     with transaction.atomic():
-        locked_assignment = (
-            WorkAssignment.objects.select_for_update()
-            .select_related("manor", "guest", "work_template")
-            .filter(pk=assignment.pk)
-            .first()
-        )
-        if not locked_assignment or locked_assignment.status != WorkAssignment.Status.COMPLETED:
+        locked_state = _lock_work_assignment(assignment)
+        if locked_state is None:
+            raise WorkNotCompletedError()
+        manor, guest, locked_assignment = locked_state
+        if locked_assignment.status != WorkAssignment.Status.COMPLETED:
             raise WorkNotCompletedError()
         if locked_assignment.reward_claimed:
             raise WorkRewardClaimedError()
@@ -257,8 +334,7 @@ def claim_work_reward(assignment: WorkAssignment) -> Dict[str, Any]:
         reward_silver = locked_assignment.work_template.reward_silver
         chest_key = WORK_TIER_CHEST_KEYS[locked_assignment.work_template.tier]
 
-        manor = Manor.objects.select_for_update().get(pk=locked_assignment.manor_id)
-        reward_note = f"{locked_assignment.guest.display_name} 在 {locked_assignment.work_template.name} 打工获得报酬"
+        reward_note = f"{guest.display_name} 在 {locked_assignment.work_template.name} 打工获得报酬"
         credited, _overflow = grant_resources_locked(
             manor,
             {ResourceType.SILVER: reward_silver},
@@ -303,27 +379,10 @@ def claim_work_reward_with_refresh(*, manor: Manor, assignment: WorkAssignment) 
 
 
 def refresh_work_assignments(manor: Manor) -> int:
-    """
-    刷新打工状态
-    自动完成到期的任务
-
-    性能优化：使用批量更新替代逐条更新
-    """
-    now = timezone.now()
-
-    with transaction.atomic():
-        # 查找该庄园所有到期的打工任务
-        assignments = list(
-            WorkAssignment.objects.select_for_update().filter(
-                manor=manor,
-                status=WorkAssignment.Status.WORKING,
-                complete_at__lte=now,
-            )
-        )
-
-        if not assignments:
-            return 0
-
-        assignment_ids = [a.id for a in assignments]
-
-        return _complete_assignment_batch(assignment_ids, now)
+    """按同一锁顺序刷新当前庄园到期任务，与全站扫描共用有界结算。"""
+    return _complete_due_work_assignments(
+        now=timezone.now(),
+        limit=max(1, int(getattr(settings, "WORK_COMPLETION_SCAN_LIMIT", 1000))),
+        batch_size=max(1, int(getattr(settings, "WORK_COMPLETION_BATCH_SIZE", 250))),
+        manor_id=manor.pk,
+    )

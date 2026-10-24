@@ -168,6 +168,41 @@ def test_missing_bound_template_preserves_whole_mail_until_catalog_is_fixed(mano
 
 
 @pytest.mark.django_db
+def test_missing_unbound_template_preserves_all_rewards_until_catalog_is_fixed(manor_factory):
+    manor, _user = manor_factory()
+    template = ItemTemplate.objects.create(key="existing_before_missing_plain", name="已有道具")
+    original_silver = manor.silver
+    message = create_message(
+        manor,
+        Message.Kind.REWARD,
+        "等待普通附件配置修复",
+        attachments={
+            "resources": {"silver": 10},
+            "items": {template.key: 2, "missing_unbound_reward": 3},
+            "bound_items": {template.key: 4},
+        },
+    )
+
+    with pytest.raises(ItemNotFoundError):
+        claim_message_attachments(message)
+
+    message.refresh_from_db()
+    manor.refresh_from_db()
+    assert not message.is_claimed and message.has_protected_attachments
+    assert manor.silver == original_silver
+    assert not InventoryItem.objects.filter(manor=manor, template=template).exists()
+
+    missing = ItemTemplate.objects.create(key="missing_unbound_reward", name="恢复的普通道具")
+    claim_message_attachments(message)
+    restored = InventoryItem.objects.get(manor=manor, template=missing)
+    assert (restored.quantity, restored.bound_quantity) == (3, 0)
+    existing = InventoryItem.objects.get(manor=manor, template=template)
+    assert (existing.quantity, existing.bound_quantity) == (6, 4)
+    message.refresh_from_db()
+    assert message.is_claimed
+
+
+@pytest.mark.django_db
 def test_integer_string_bound_amount_is_normalized_in_receipt(manor_factory):
     manor, _user = manor_factory()
     template = ItemTemplate.objects.create(key="numeric_string_bound_pill", name="洗髓丹")

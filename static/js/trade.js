@@ -11,6 +11,8 @@
   let changeHandler = null;
   let inputHandler = null;
   let submitHandler = null;
+  let keydownHandler = null;
+  let purchaseTrigger = null;
   let countdownTimer = null;
   let marketCountdownRoot = null;
   let marketCountdownElements = [];
@@ -53,11 +55,16 @@
     if (submitHandler) {
       activeRoot.removeEventListener("submit", submitHandler);
     }
+    if (keydownHandler) {
+      activeRoot.removeEventListener("keydown", keydownHandler);
+    }
     activeRoot = null;
     clickHandler = null;
     changeHandler = null;
     inputHandler = null;
     submitHandler = null;
+    keydownHandler = null;
+    purchaseTrigger = null;
   }
 
   function resetBankTransferState(root) {
@@ -306,11 +313,66 @@
   function updateMarketPurchaseTotal(form) {
     const input = form.querySelector('input[name="quantity"]');
     const total = form.querySelector("[data-market-purchase-total]");
-    if (!input || !total) return;
-    const quantity = Number(input.value);
-    total.textContent = Number.isSafeInteger(quantity) && quantity > 0 && quantity <= Number(input.max)
-      ? (quantity * Number(form.dataset.unitPrice)).toLocaleString()
-      : "—";
+    const confirm = form.querySelector("[data-market-purchase-confirm]");
+    const hint = form.querySelector("#market-purchase-hint");
+    if (!total || !confirm || !hint) return;
+    const available = Number(form.dataset.available);
+    const quantity = input ? Number(input.value) : available;
+    const price = Number(form.dataset.unitPrice);
+    const valid = Number.isSafeInteger(quantity) && quantity > 0 && quantity <= available
+      && Number.isSafeInteger(price) && price > 0;
+    const amount = valid ? BigInt(quantity) * BigInt(price) : 0n;
+    const affordable = valid && amount <= BigInt(form.dataset.silver || "0");
+    total.textContent = valid ? amount.toLocaleString() : "—";
+    confirm.disabled = !affordable || form.dataset.purchasePending === "1";
+    hint.textContent = !valid
+      ? `请输入 1 至 ${available.toLocaleString()} 的整数数量。`
+      : !affordable ? "银两不足，请减少购买数量。" : `最多可购买 ${available.toLocaleString()} 件。`;
+  }
+
+  function openMarketPurchaseModal(root, trigger) {
+    const modal = root.querySelector("#marketPurchaseModal");
+    const form = modal?.querySelector("[data-market-purchase]");
+    if (!form || trigger.disabled || form.dataset.purchasePending === "1") return;
+    const available = Number(trigger.dataset.available);
+    const price = Number(trigger.dataset.unitPrice);
+    if (!trigger.dataset.purchaseUrl || !Number.isSafeInteger(available) || available <= 0
+      || !Number.isSafeInteger(price) || price <= 0) return;
+    form.action = trigger.dataset.purchaseUrl;
+    form.dataset.available = String(available);
+    form.dataset.unitPrice = String(price);
+    const name = modal.querySelector("#market-purchase-item-name");
+    name.textContent = trigger.dataset.itemName || "物品";
+    name.className = `tw-item-name rarity-${trigger.dataset.rarity || "gray"}`;
+    modal.querySelector("[data-purchase-available]").textContent = available.toLocaleString();
+    modal.querySelector("[data-purchase-unit-price]").textContent = price.toLocaleString();
+    const input = form.querySelector('input[name="quantity"]');
+    form.querySelector('input[name="purchase_mode"]').value = input ? "partial" : "all";
+    if (input) {
+      input.max = String(available);
+      input.value = "1";
+    }
+    purchaseTrigger = trigger;
+    updateMarketPurchaseTotal(form);
+    modal.style.display = "flex";
+    (input || modal.querySelector("[data-market-purchase-confirm]")).focus();
+    input?.select();
+  }
+
+  function closeMarketPurchaseModal(root) {
+    const modal = root.querySelector("#marketPurchaseModal");
+    if (modal) modal.style.display = "none";
+    if (purchaseTrigger?.isConnected) purchaseTrigger.focus();
+    purchaseTrigger = null;
+  }
+
+  function resetMarketPurchaseState(root) {
+    const form = root?.querySelector("[data-market-purchase]");
+    if (!form) return;
+    delete form.dataset.purchasePending;
+    form.removeAttribute("aria-busy");
+    form.querySelector("[data-market-purchase-confirm]").textContent = "确认";
+    if (form.dataset.available) updateMarketPurchaseTotal(form);
   }
 
   function openListingModal(root, trigger) {
@@ -452,11 +514,30 @@
         return;
       }
 
+      const purchaseButton = event.target.closest(".js-open-market-purchase");
+      if (purchaseButton && root.contains(purchaseButton)) {
+        event.preventDefault();
+        openMarketPurchaseModal(root, purchaseButton);
+        return;
+      }
+
+      const purchaseAll = event.target.closest("[data-market-purchase-all]");
+      if (purchaseAll && root.contains(purchaseAll)) {
+        const form = purchaseAll.closest("[data-market-purchase]");
+        if (form.dataset.purchasePending === "1") return;
+        form.querySelector('input[name="quantity"]').value = form.dataset.available;
+        form.querySelector('input[name="purchase_mode"]').value = "all";
+        updateMarketPurchaseTotal(form);
+        return;
+      }
+
       const closeButton = event.target.closest("[data-trade-close-modal]");
       if (closeButton && root.contains(closeButton)) {
         event.preventDefault();
         if (closeButton.dataset.tradeCloseModal === "bid") {
           closeBidModal(root);
+        } else if (closeButton.dataset.tradeCloseModal === "purchase") {
+          closeMarketPurchaseModal(root);
         } else {
           closeListingModal(root);
         }
@@ -470,6 +551,9 @@
 
       if (event.target.id === "listingModal") {
         closeListingModal(root);
+      }
+      if (event.target.id === "marketPurchaseModal") {
+        closeMarketPurchaseModal(root);
       }
     };
 
@@ -489,6 +573,7 @@
     inputHandler = (event) => {
       const purchaseForm = event.target.closest("[data-market-purchase]");
       if (purchaseForm && root.contains(purchaseForm)) {
+        purchaseForm.querySelector('input[name="purchase_mode"]').value = "partial";
         updateMarketPurchaseTotal(purchaseForm);
       }
       if (event.target.matches("#modal-quantity, #modal-unit-price")) {
@@ -497,6 +582,21 @@
     };
 
     submitHandler = async (event) => {
+      const purchaseForm = event.target.closest("[data-market-purchase]");
+      if (purchaseForm && root.contains(purchaseForm)) {
+        updateMarketPurchaseTotal(purchaseForm);
+        const confirm = purchaseForm.querySelector("[data-market-purchase-confirm]");
+        if (confirm.disabled || !purchaseForm.checkValidity()) {
+          event.preventDefault();
+          purchaseForm.reportValidity();
+          return;
+        }
+        purchaseForm.dataset.purchasePending = "1";
+        purchaseForm.setAttribute("aria-busy", "true");
+        confirm.disabled = true;
+        confirm.textContent = "购买中…";
+        return;
+      }
       const bankForm = event.target.closest("[data-bank-transfer]");
       if (bankForm && root.contains(bankForm)) {
         if (root.dataset.bankTransferPending === "1") {
@@ -568,10 +668,31 @@
       }
     };
 
+    keydownHandler = (event) => {
+      const modal = root.querySelector("#marketPurchaseModal");
+      if (!modal || modal.style.display === "none") return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeMarketPurchaseModal(root);
+      } else if (event.key === "Tab") {
+        const controls = Array.from(modal.querySelectorAll('button:not([disabled]), input:not([type="hidden"]):not([disabled])'));
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
     root.addEventListener("click", clickHandler);
     root.addEventListener("change", changeHandler);
     root.addEventListener("input", inputHandler);
     root.addEventListener("submit", submitHandler);
+    root.addEventListener("keydown", keydownHandler);
   }
 
   function initTooltip() {
@@ -593,6 +714,7 @@
     teardownTradePage();
     activeRoot = root;
     resetBankTransferState(root);
+    resetMarketPurchaseState(root);
     bindTradeEvents(root);
     initTooltip();
     startMarketCountdowns(root);
@@ -603,6 +725,9 @@
   document.addEventListener("DOMContentLoaded", initTradePage);
   document.addEventListener("partial-nav:loaded", initTradePage);
   window.addEventListener?.("pageshow", (event) => {
-    if (event.persisted) resetBankTransferState(activeRoot);
+    if (event.persisted) {
+      resetBankTransferState(activeRoot);
+      resetMarketPurchaseState(activeRoot);
+    }
   });
 })();

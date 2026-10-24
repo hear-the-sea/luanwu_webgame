@@ -5,6 +5,36 @@ from types import SimpleNamespace
 from gameplay.services.raid.combat import messaging as raid_messaging
 
 
+def test_prisoner_transfer_messages_describe_enemy_jail_instead_of_new_guest_capture(monkeypatch):
+    sent = []
+    monkeypatch.setattr(raid_messaging, "create_message", lambda **kwargs: sent.append(kwargs))
+    attacker = SimpleNamespace(location_display="江南", display_name="进攻方")
+    defender = SimpleNamespace(display_name="防守方")
+    report = object()
+    run = SimpleNamespace(
+        is_attacker_victory=True,
+        battle_rewards={"capture": {"guest_name": "杨铮", "source": "enemy_jail", "from": "defender"}},
+        loot_resources={},
+        loot_items={},
+        attacker_prestige_change=10,
+        defender_prestige_change=-20,
+        attacker=attacker,
+        defender=defender,
+        battle_report=report,
+    )
+    raid_messaging._send_raid_battle_messages(run)
+    assert len(sent) == 4
+    assert sent[2]["title"] == "监牢俘虏被夺通知"
+    assert sent[2]["manor"] is defender
+    assert sent[3]["title"] == "监牢俘虏夺取通知"
+    assert sent[3]["manor"] is attacker
+    for message in sent:
+        assert "杨铮" in message["body"]
+        assert "监牢" in message["body"]
+        assert "装备尽失" not in message["body"]
+        assert message["battle_report"] is report
+
+
 def test_send_raid_battle_messages_sends_extra_capture_notice_to_defender_when_defender_guest_is_captured(monkeypatch):
     sent: list[dict[str, object]] = []
 

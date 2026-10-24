@@ -5,6 +5,56 @@
 
 {% block extra_head %}
 <style>
+    /* 聚贤庄固定在游戏视口内，由主内容区承接纵向滚动。 */
+    html:has([data-recruitment-hall-page]),
+    body:has([data-recruitment-hall-page]) {
+        height: 100vh;
+        height: 100dvh;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .game-container:has([data-recruitment-hall-page]) {
+        height: 100vh;
+        height: 100dvh;
+        min-height: 0;
+        margin-block: 0;
+        overflow: hidden;
+    }
+
+    #page-shell.full-layout:has([data-recruitment-hall-page]) {
+        flex: 1 1 0%;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .content-area:has([data-recruitment-hall-page]) {
+        flex: 1 1 0%;
+        min-height: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior-y: contain;
+        scrollbar-color: var(--border-primary) rgba(139, 69, 19, 0.1);
+        scrollbar-gutter: stable;
+        scrollbar-width: thin;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .content-area:has([data-recruitment-hall-page])::-webkit-scrollbar {
+        width: 9px;
+    }
+
+    .content-area:has([data-recruitment-hall-page])::-webkit-scrollbar-track {
+        background: rgba(139, 69, 19, 0.1);
+    }
+
+    .content-area:has([data-recruitment-hall-page])::-webkit-scrollbar-thumb {
+        border: 2px solid transparent;
+        border-radius: 999px;
+        background: var(--border-primary);
+        background-clip: content-box;
+    }
+
     .pool-card-responsive {
         display: flex;
         flex-direction: column;
@@ -113,7 +163,7 @@
 {% endblock %}
 
 {% block content %}
-<section class="dashboard">
+<section class="dashboard" data-recruitment-hall-page>
     <div class="tw-panel-header mb-4 bg-transparent border-0 p-0 text-2xl">聚贤庄</div>
 
     {% include "gameplay/partials/recruitment_pools_section.html" %}

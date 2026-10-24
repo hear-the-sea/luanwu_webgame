@@ -26,12 +26,7 @@ def lock_active_member_for_guild(
     if member_pk is None or guild_id is None:
         raise GuildMembershipError(error_msg)
 
-    locked_member = (
-        model.objects.select_for_update()
-        .select_related("guild", "user")
-        .filter(pk=member_pk, guild_id=guild_id, is_active=True)
-        .first()
-    )
+    locked_member = model.objects.select_for_update().filter(pk=member_pk, guild_id=guild_id, is_active=True).first()
     if locked_member is None:
         raise GuildMembershipError(error_msg)
     return locked_member

@@ -138,7 +138,7 @@ def test_owner_can_update_troops_after_completed_defense(ring_view_world, monkey
     def simulate(**kwargs):
         assert kwargs["apply_damage"] is False
         now = timezone.now()
-        return BattleReport.objects.create(
+        return BattleReport(
             manor=viewer,
             winner="defender",
             opponent_name=owner.display_name,

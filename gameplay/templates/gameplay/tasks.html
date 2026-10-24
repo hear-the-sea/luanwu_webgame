@@ -275,18 +275,11 @@
                         </div>
                     </section>
                     {% if world_unique_guest_status %}
-                    <section class="tw-task-detail-section">
-                        <h5 class="text-text-primary text-lg font-bold mb-2">吕布状态</h5>
-                        <div class="flex flex-wrap items-center gap-2">
-                            <span class="tw-pill">{{ world_unique_guest_status.summary }}</span>
-                            {% if world_unique_guest_status.is_available %}
-                            <span class="tw-muted text-sm">当前可使用吕布召唤卷轴招募</span>
-                            {% else %}
-                            <span class="tw-muted text-sm">吕布当前由其他玩家持有</span>
-                            {% endif %}
-                        </div>
-                    </section>
+                    {% include "gameplay/includes/mission_unique_guest_status.html" with status=world_unique_guest_status guest_name="吕布" available_message="当前可使用吕布召唤卷轴招募" only %}
                     {% endif %}
+                    {% for status in chiyou_unique_guest_statuses %}
+                    {% include "gameplay/includes/mission_unique_guest_status.html" with status=status guest_name=status.guest_name available_message="当前在野，可消耗100张蚩尤卡选择招募" only %}
+                    {% endfor %}
                     <section class="tw-task-detail-section">
                         <h5 class="text-text-primary text-lg font-bold mb-2">掉落预览</h5>
                         <div class="tw-drop-grid">

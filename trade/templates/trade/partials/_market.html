@@ -132,35 +132,18 @@
                             </span>
                         </td>
                         <td>
-                            <form method="post" action="{% url 'trade:market_purchase' listing.id %}"
-                                  class="tw-market-purchase" data-market-purchase data-unit-price="{{ listing.unit_price }}">
-                                {% csrf_token %}
-                                {% include "trade/partials/_action_return_state.html" with current_tab="market" %}
-                                {% if market_partial_purchase_enabled %}
-                                <label class="tw-market-purchase-quantity" for="market-quantity-{{ listing.id }}">
-                                    <span>购买数量</span>
-                                    <input class="tw-form-input" id="market-quantity-{{ listing.id }}" name="quantity" type="number"
-                                           min="1" max="{{ listing.quantity }}" step="1" value="1" required
-                                           aria-label="购买数量（{{ listing.item_template.name }}）"
-                                           {% if not market_can_buy_or_list or listing.seller == manor %}disabled{% endif %}>
-                                </label>
-                                <p class="tw-market-purchase-total">所选合计：<span data-market-purchase-total>{{ listing.unit_price|floatformat:0 }}</span> 银两</p>
-                                {% endif %}
-                                <div {% if market_partial_purchase_enabled %}class="tw-market-purchase-actions"{% endif %}>
-                                    {% if market_partial_purchase_enabled %}
-                                    <button type="submit" class="tw-btn-trade" name="purchase_mode" value="partial"
-                                            {% if not market_can_buy_or_list %}disabled title="声望达到 {{ market_min_prestige }} 后可购买"
-                                            {% elif listing.seller == manor %}disabled title="不能购买自己的商品"
-                                            {% elif manor.silver < listing.unit_price %}disabled title="银两不足"
-                                            {% endif %}>购买部分</button>
-                                    {% endif %}
-                                    <button type="submit" class="tw-btn-trade" name="purchase_mode" value="all" formnovalidate
-                                            {% if not market_can_buy_or_list %}disabled title="声望达到 {{ market_min_prestige }} 后可购买"
-                                            {% elif listing.seller == manor %}disabled title="不能购买自己的商品"
-                                            {% elif manor.silver < listing.total_price %}disabled title="银两不足"
-                                            {% endif %}>{% if market_partial_purchase_enabled %}购买全部{% else %}购买{% endif %}</button>
-                                </div>
-                            </form>
+                            <button type="button" class="tw-btn-trade js-open-market-purchase"
+                                    data-purchase-url="{% url 'trade:market_purchase' listing.id %}"
+                                    data-item-name="{{ listing.item_template.name }}"
+                                    data-rarity="{{ listing.item_template.rarity }}"
+                                    data-available="{{ listing.quantity }}"
+                                    data-unit-price="{{ listing.unit_price }}"
+                                    aria-haspopup="dialog" aria-controls="marketPurchaseModal"
+                                    {% if not market_can_buy_or_list %}disabled title="声望达到 {{ market_min_prestige }} 后可购买"
+                                    {% elif listing.seller == manor %}disabled title="不能购买自己的商品"
+                                    {% elif market_partial_purchase_enabled and manor.silver < listing.unit_price %}disabled title="银两不足"
+                                    {% elif not market_partial_purchase_enabled and manor.silver < listing.total_price %}disabled title="银两不足"
+                                    {% endif %}>购买</button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -408,6 +391,46 @@
     </div>
     {% endif %}
 </div>
+
+{% if market_view == 'buy' or not market_view %}
+<div id="marketPurchaseModal" class="tw-modal-overlay" style="display: none;">
+    <div class="tw-modal-content tw-market-purchase-dialog" role="dialog" aria-modal="true"
+         aria-labelledby="market-purchase-title" aria-describedby="market-purchase-item-name">
+        <div class="tw-modal-header">
+            <h3 id="market-purchase-title">购买物品</h3>
+            <button type="button" class="tw-modal-close" data-trade-close-modal="purchase" aria-label="关闭购买弹窗">&times;</button>
+        </div>
+        <form method="post" class="tw-modal-form" data-market-purchase data-silver="{{ manor.silver }}">
+            {% csrf_token %}
+            {% include "trade/partials/_action_return_state.html" with current_tab="market" %}
+            <input type="hidden" name="purchase_mode" value="{% if market_partial_purchase_enabled %}partial{% else %}all{% endif %}">
+            <div class="tw-modal-body">
+                <div class="tw-market-purchase-item">
+                    <strong id="market-purchase-item-name" class="tw-item-name"></strong>
+                    <span class="tw-market-purchase-stock">剩余 <strong data-purchase-available></strong> 件 · 单价 <strong data-purchase-unit-price></strong> 银两</span>
+                </div>
+                {% if market_partial_purchase_enabled %}
+                <label for="market-purchase-quantity" class="tw-filter-label">购买数量</label>
+                <div class="tw-market-purchase-quantity">
+                    <input class="tw-form-input" id="market-purchase-quantity" name="quantity" type="number"
+                           min="1" step="1" value="1" required inputmode="numeric" aria-describedby="market-purchase-hint">
+                    <button type="button" class="tw-btn-secondary" data-market-purchase-all>全部</button>
+                </div>
+                {% endif %}
+                <p id="market-purchase-hint" class="tw-market-purchase-hint" aria-live="polite"></p>
+                <div class="tw-listing-total-row">
+                    <span>合计</span>
+                    <strong class="tw-listing-total-value"><span data-market-purchase-total>—</span> 银两</strong>
+                </div>
+            </div>
+            <div class="tw-modal-footer">
+                <button type="button" class="tw-btn-secondary" data-trade-close-modal="purchase">取消</button>
+                <button type="submit" class="tw-btn-primary" data-market-purchase-confirm>确认</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
 
 <!-- 上架弹窗 -->
 <div id="listingModal" class="tw-modal-overlay" style="display: none;">

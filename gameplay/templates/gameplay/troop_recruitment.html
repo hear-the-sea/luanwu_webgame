@@ -119,6 +119,7 @@
                         {% csrf_token %}
                         <input type="hidden" name="troop_key" value="{{ troop.key }}">
                         <input type="hidden" name="category" value="{{ current_category }}">
+                        <input type="hidden" name="page" value="{{ recruitment_page_obj.number }}">
                         {% if not troop.is_unlocked %}
                         <button type="button" class="tw-btn-secondary w-full" disabled>未解锁</button>
                         {% elif is_recruiting %}

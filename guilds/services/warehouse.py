@@ -538,16 +538,18 @@ def exchange_item(member: GuildMember, item_key: str, quantity: int = 1) -> None
     requires_inventory_template = item_key not in MANOR_RESOURCE_ITEM_KEYS
 
     # 并发安全的事务处理
-    # 锁定顺序：Manor -> GuildMember -> GuildWarehouse
+    # 锁定顺序：Manor -> Guild -> GuildMember -> GuildWarehouse
     with transaction.atomic():
         # 与帮会捐赠保持一致的共享锁顺序，避免 Manor/GuildMember 交叉等待。
         manor_locked = Manor.objects.select_for_update().get(user=member.user)
+        guild_locked = Guild.objects.select_for_update().get(pk=member.guild_id)
 
         # 步骤1：锁定成员并验证兑换次数和贡献度
         try:
             member_locked = lock_active_member_for_guild(member, model=GuildMember)
         except GuildMembershipError as exc:
             raise GuildWarehouseError(str(exc)) from exc
+        member_locked.guild = guild_locked
 
         # 重置每日限制（必须在锁内执行，避免并发下穿透每日上限）
         member_locked.reset_daily_limits()

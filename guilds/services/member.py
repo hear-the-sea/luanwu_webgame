@@ -9,6 +9,7 @@ from django.utils import timezone
 
 from core.exceptions import GuildMembershipError, GuildPermissionError
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
+from gameplay.models import Manor
 
 from ..models import Guild, GuildApplication, GuildMember
 from .guild import create_announcement
@@ -72,17 +73,18 @@ def _schedule_followup_after_commit(callback: Callable[[], None]) -> None:
 
 def _approve_application_state(application, reviewer, auto=False):
     with transaction.atomic():
+        applicant_id, guild_id = GuildApplication.objects.values_list("applicant_id", "guild_id").get(pk=application.pk)
+        list(Manor.objects.select_for_update().filter(user_id=applicant_id).order_by("pk"))
+        guild_locked = Guild.objects.select_for_update().get(pk=guild_id)
+        if not guild_locked.is_active:
+            raise GuildMembershipError("帮会已解散")
         # 锁定申请行，避免并发重复处理
-        application_locked = (
-            GuildApplication.objects.select_for_update().select_related("guild", "applicant").get(pk=application.pk)
-        )
+        application_locked = GuildApplication.objects.select_for_update().get(pk=application.pk)
+        if (application_locked.applicant_id, application_locked.guild_id) != (applicant_id, guild_id):
+            raise GuildMembershipError("申请已变化，请刷新后重试")
         if application_locked.status != "pending":
             raise GuildMembershipError("申请已被处理")
-
-        guild = application_locked.guild
-
-        # 锁定帮会行，串行化审批，避免并发超员
-        guild_locked = Guild.objects.select_for_update().get(pk=guild.pk)
+        application_locked.guild = guild_locked
 
         # 验证权限（非自动审批时）
         if not auto:
@@ -183,9 +185,12 @@ def _send_approve_application_followups(guild, applicant_user_id: int, guild_nam
 
 def _reject_application_state(application, reviewer, note=""):
     with transaction.atomic():
-        application_locked = (
-            GuildApplication.objects.select_for_update().select_related("guild", "applicant").get(pk=application.pk)
-        )
+        guild_id = GuildApplication.objects.values_list("guild_id", flat=True).get(pk=application.pk)
+        guild_locked = Guild.objects.select_for_update().get(pk=guild_id)
+        application_locked = GuildApplication.objects.select_for_update().get(pk=application.pk)
+        if application_locked.guild_id != guild_id:
+            raise GuildMembershipError("申请已变化，请刷新后重试")
+        application_locked.guild = guild_locked
         if application_locked.status != "pending":
             raise GuildMembershipError("申请已被处理")
 
@@ -223,6 +228,7 @@ def _leave_guild_state(member):
 
     guild = member.guild
     with transaction.atomic():
+        list(Manor.objects.select_for_update().filter(user_id=member.user_id).order_by("pk"))
         guild_locked = Guild.objects.select_for_update().get(pk=guild.pk, is_active=True)
         member_locked = lock_active_member_for_guild(member, error_msg="您不在帮会中")
         left_at = timezone.now()
@@ -260,6 +266,7 @@ def _kick_member_state(target_member, operator):
 
     guild = target_member.guild
     with transaction.atomic():
+        list(Manor.objects.select_for_update().filter(user_id=target_member.user_id).order_by("pk"))
         guild_locked = Guild.objects.select_for_update().get(pk=guild.pk, is_active=True)
         operator_member = lock_active_member_for_guild(operator_member, error_msg="您没有辞退权限")
         if not operator_member.can_manage:
@@ -360,6 +367,7 @@ def _demote_admin_state(target_member, operator):
 
     guild = target_member.guild
     with transaction.atomic():
+        Guild.objects.select_for_update().get(pk=guild.pk, is_active=True)
         operator_member = lock_active_member_for_guild(operator_member, error_msg="只有帮主可以罢免管理员")
         if not operator_member.is_leader:
             raise GuildPermissionError("只有帮主可以罢免管理员")
@@ -401,6 +409,7 @@ def _transfer_leadership_state(current_leader_member, new_leader_member):
 
     guild = current_leader_member.guild
     with transaction.atomic():
+        Guild.objects.select_for_update().get(pk=guild.pk, is_active=True)
         current_locked = lock_active_member_for_guild(current_leader_member, error_msg="您不是帮主")
         new_locked = lock_active_member_for_guild(new_leader_member, error_msg="该成员已离开帮会")
 

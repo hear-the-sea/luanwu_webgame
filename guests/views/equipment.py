@@ -13,6 +13,7 @@ from django.core.cache import cache
 from django.db import DatabaseError
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 from django.views.decorators.http import require_GET, require_POST
 
 from core.exceptions import EquipmentError, GameError
@@ -56,12 +57,17 @@ def equip_view(request: HttpRequest) -> HttpResponse:
     from gameplay.services.manor.core import get_manor
 
     manor = get_manor(request.user)
+    next_url = safe_redirect_url(request, request.POST.get("next"), reverse("guests:roster"))
 
     try:
         slot = request.POST.get("slot") or ""
         form = EquipForm(request.POST, manor=manor)
 
-        if not form.is_valid():
+        valid = form.is_valid()
+        guest = form.cleaned_data.get("guest")
+        default_url = reverse("guests:detail", args=[guest.pk]) if guest else reverse("guests:roster")
+        next_url = safe_redirect_url(request, request.POST.get("next"), default_url)
+        if not valid:
             raise EquipmentError("请选择门客与可用装备")
 
         guest = form.cleaned_data["guest"]
@@ -75,7 +81,7 @@ def equip_view(request: HttpRequest) -> HttpResponse:
         if is_ajax_request(request):
             return json_error(error_msg, status=400, include_message=True)
         messages.error(request, error_msg)
-        return redirect("gameplay:recruitment_hall")
+        return redirect(next_url)
     except DatabaseError as exc:
         logger.exception(
             "Unexpected equip view database error: manor_id=%s user_id=%s slot=%s",
@@ -87,14 +93,14 @@ def equip_view(request: HttpRequest) -> HttpResponse:
         if is_ajax_request(request):
             return json_error(error_msg, status=500, include_message=True)
         messages.error(request, error_msg)
-        return redirect("gameplay:recruitment_hall")
+        return redirect(next_url)
 
     # AJAX 请求返回 JSON 响应
     if is_ajax_request(request):
         return json_success(message=f"{guest.display_name} 已装备 {gear.template.name}")
 
     messages.success(request, f"{guest.display_name} 已装备 {gear.template.name}")
-    return redirect("guests:detail", pk=guest.pk)
+    return redirect(next_url)
 
 
 @login_required

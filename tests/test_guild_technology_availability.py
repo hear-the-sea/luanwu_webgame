@@ -172,14 +172,14 @@ def test_equipment_forge_unlocks_mechanism_blueprint(technology_world):
     upgrade_technology(guild, "forging_equipment_forge", member.user)
     gold.refresh_from_db()
     equipment_forge.refresh_from_db()
-    assert gold.quantity == 97
+    assert gold.quantity == 96
     assert equipment_forge.level == 1
     upgrade_technology(guild, "forging_mechanism_blueprint", member.user)
     gold.refresh_from_db()
     ruby.refresh_from_db()
     mechanism_blueprint.refresh_from_db()
-    assert gold.quantity == 92
-    assert ruby.quantity == 95
+    assert gold.quantity == 89
+    assert ruby.quantity == 93
     assert mechanism_blueprint.level == 1
 
 
@@ -260,7 +260,7 @@ def test_equipment_forge_is_in_the_forging_tree_and_shows_daily_boxes(technology
     assert set(tactical_cards) == {"forging_slave_card", "forging_theft_card", "forging_injury_card"}
     assert all(card["requires"] == ("forging_equipment_forge",) for card in tactical_cards.values())
     assert "帮会宗师秘匣 ×2" in node["daily_output"]
-    assert "帮会精铸紫装箱 ×2" in node["daily_output"]
+    assert "帮会精铸装备箱 ×2" in node["daily_output"]
 
 
 def test_sheep_wrath_node_hides_redeemable_item_details(technology_world, client):

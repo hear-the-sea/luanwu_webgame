@@ -1,0 +1,147 @@
+{
+  "note": "固定15人测试阵容和10组配对种子，用于比较配置增幅，不代表线上通关率。",
+  "before": {
+    "arena_gl_top_zhang_wuji_boss": {
+      "level": 85,
+      "force": 1475,
+      "intellect": 1075,
+      "defense_stat": 650,
+      "agility": 300,
+      "luck": 160,
+      "final_hp": 300000
+    },
+    "arena_gl_top_yang_xiao_guard": {
+      "level": 85,
+      "force": 870,
+      "intellect": 660,
+      "defense_stat": 520,
+      "agility": 240,
+      "luck": 115,
+      "final_hp": 120000
+    },
+    "arena_gl_top_wei_yixiao_guard": {
+      "level": 85,
+      "force": 800,
+      "intellect": 480,
+      "defense_stat": 470,
+      "agility": 310,
+      "luck": 130,
+      "final_hp": 120000
+    },
+    "arena_gl_top_five_flags_elite_front": {
+      "level": 85,
+      "force": 700,
+      "intellect": 380,
+      "defense_stat": 440,
+      "agility": 190,
+      "luck": 100,
+      "final_hp": 120000
+    },
+    "arena_gl_top_five_flags_elite_rear": {
+      "level": 85,
+      "force": 650,
+      "intellect": 420,
+      "defense_stat": 440,
+      "agility": 200,
+      "luck": 100,
+      "final_hp": 120000
+    }
+  },
+  "after": {
+    "arena_gl_top_zhang_wuji_boss": {
+      "level": 85,
+      "force": 1475,
+      "intellect": 1075,
+      "defense_stat": 650,
+      "agility": 300,
+      "luck": 160,
+      "final_hp": 300000
+    },
+    "arena_gl_top_yang_xiao_guard": {
+      "level": 85,
+      "force": 1088,
+      "intellect": 825,
+      "defense_stat": 520,
+      "agility": 240,
+      "luck": 115,
+      "final_hp": 180000
+    },
+    "arena_gl_top_wei_yixiao_guard": {
+      "level": 85,
+      "force": 1000,
+      "intellect": 600,
+      "defense_stat": 470,
+      "agility": 310,
+      "luck": 130,
+      "final_hp": 180000
+    },
+    "arena_gl_top_five_flags_elite_front": {
+      "level": 85,
+      "force": 700,
+      "intellect": 380,
+      "defense_stat": 440,
+      "agility": 190,
+      "luck": 100,
+      "final_hp": 120000
+    },
+    "arena_gl_top_five_flags_elite_rear": {
+      "level": 85,
+      "force": 650,
+      "intellect": 420,
+      "defense_stat": 440,
+      "agility": 200,
+      "luck": 100,
+      "final_hp": 120000
+    }
+  },
+  "summaries": [
+    {
+      "player_attribute": 650,
+      "version": "before",
+      "simulations": 10,
+      "player_wins": 10,
+      "mean_rounds": 5.4,
+      "mean_enemy_damage": 171361.8
+    },
+    {
+      "player_attribute": 650,
+      "version": "after",
+      "simulations": 10,
+      "player_wins": 10,
+      "mean_rounds": 6.1,
+      "mean_enemy_damage": 233196.4
+    },
+    {
+      "player_attribute": 1000,
+      "version": "before",
+      "simulations": 10,
+      "player_wins": 10,
+      "mean_rounds": 4.2,
+      "mean_enemy_damage": 130499.1
+    },
+    {
+      "player_attribute": 1000,
+      "version": "after",
+      "simulations": 10,
+      "player_wins": 10,
+      "mean_rounds": 4.3,
+      "mean_enemy_damage": 147513.2
+    },
+    {
+      "player_attribute": 1350,
+      "version": "before",
+      "simulations": 10,
+      "player_wins": 10,
+      "mean_rounds": 3.5,
+      "mean_enemy_damage": 93325
+    },
+    {
+      "player_attribute": 1350,
+      "version": "after",
+      "simulations": 10,
+      "player_wins": 10,
+      "mean_rounds": 3.8,
+      "mean_enemy_damage": 118747.5
+    }
+  ]
+}

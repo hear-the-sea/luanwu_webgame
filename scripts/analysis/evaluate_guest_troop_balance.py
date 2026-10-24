@@ -159,7 +159,11 @@ def trial(teams, seed, options):
     for side, team in [("attacker", attackers), ("defender", defenders)]:
         for i, unit in enumerate(team):
             unit.name = f"{side}:{i}:{unit.name}"
-    assign_agility_based_priorities(attackers, defenders)
+    assign_agility_based_priorities(
+        attackers,
+        defenders,
+        battle_engine_version=options.get("engine", "4"),
+    )
     all_units = attackers + defenders
     lookup = {u.name: u for u in all_units}
     guests = [u for u in all_units if u.kind == "guest"]

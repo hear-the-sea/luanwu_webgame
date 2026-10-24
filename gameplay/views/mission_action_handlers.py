@@ -126,8 +126,8 @@ def handle_retreat_mission(
         status=MissionRun.Status.ACTIVE,
     )
 
-    def _dashboard_redirect() -> HttpResponse:
-        return redirect("gameplay:dashboard")
+    def _home_redirect() -> HttpResponse:
+        return redirect("home")
 
     def _perform_retreat() -> None:
         request_retreat_fn(run)
@@ -136,13 +136,13 @@ def handle_retreat_mission(
 
     def _on_lock_conflict() -> HttpResponse:
         messages.warning(request, "任务请求处理中，请稍候重试")
-        return _dashboard_redirect()
+        return _home_redirect()
 
     def _on_known_error(exc: Exception) -> HttpResponse:
         return handle_known_mission_exception(
             request,
             exc,
-            redirect_func=_dashboard_redirect,
+            redirect_func=_home_redirect,
         )
 
     def _on_database_error(exc: DatabaseError) -> HttpResponse:
@@ -157,7 +157,7 @@ def handle_retreat_mission(
                 getattr(run, "mission_id", None),
             ),
         )
-        return _dashboard_redirect()
+        return _home_redirect()
 
     return execute_locked_action(
         action_name="retreat_mission",
@@ -167,7 +167,7 @@ def handle_retreat_mission(
         release_lock_fn=mission_helpers.release_mission_action_lock,
         on_lock_conflict=_on_lock_conflict,
         operation=_perform_retreat,
-        on_success=lambda _result: _dashboard_redirect(),
+        on_success=lambda _result: _home_redirect(),
         known_exceptions=(GameError,),
         on_known_error=_on_known_error,
         on_database_error=_on_database_error,

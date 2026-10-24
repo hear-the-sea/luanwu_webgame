@@ -171,6 +171,7 @@ def get_arena_coop_event_detail_context(manor: Manor, event_id: int) -> dict | N
                     "total_damage": row.total_damage,
                     "boss_damage": row.boss_damage,
                     "total_coins": row.total_coins,
+                    "mingjiao_rewards": (row.reward_payload or {}).get("mingjiao") or {},
                 }
                 for row in real_contributions
             ],

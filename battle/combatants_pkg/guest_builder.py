@@ -13,6 +13,7 @@ from guests.guest_combat_stats import resolve_guest_combat_stats
 from guests.models import Guest, Skill, SkillKind
 
 from ..active_config import ACTIVE_OPTION_KEYS
+from ..random_context import CURRENT_BATTLE_ENGINE_VERSION, VANGUARD_20_PERCENT_ENGINE_VERSIONS
 from .core import Combatant
 
 logger = logging.getLogger(__name__)
@@ -20,7 +21,8 @@ logger = logging.getLogger(__name__)
 # Guest combat constants
 DEFAULT_GUEST_AGILITY = 80
 DEFAULT_LUCK = 50
-VANGUARD_RATIO = 0.25
+LEGACY_VANGUARD_RATIO = 0.25
+VANGUARD_RATIO = 0.20
 
 # Import from parent module to avoid circular imports
 MAX_SQUAD = 5  # Will be overridden by constants import
@@ -260,13 +262,16 @@ def build_guest_combatants(
 def assign_agility_based_priorities(
     attacker_units: List[Combatant],
     defender_units: List[Combatant],
+    *,
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
 ) -> None:
     """
     Dynamically assign priorities based on agility distribution.
 
     Rules:
-    - Top 25% fastest guests -> priority -1 (vanguard, round 1)
-    - Remaining 75% guests -> priority 0 (main force, round 2)
+    - Battle engine version 9 assigns the fastest 20% as vanguard.
+    - Older versions keep the historical 25% vanguard ratio.
+    - Remaining guests receive priority 0 (main force, round 2).
     """
     all_units = attacker_units + defender_units
     guests = [u for u in all_units if u.kind == "guest"]
@@ -284,7 +289,8 @@ def assign_agility_based_priorities(
     )
     total = len(sorted_guests)
 
-    cutoff = max(1, int(total * VANGUARD_RATIO))
+    ratio = VANGUARD_RATIO if battle_engine_version in VANGUARD_20_PERCENT_ENGINE_VERSIONS else LEGACY_VANGUARD_RATIO
+    cutoff = max(1, int(total * ratio))
 
     for idx, guest in enumerate(sorted_guests):
         if idx < cutoff:

@@ -66,6 +66,7 @@ def test_arena_coop_detail_view_renders(arena_client):
         rank_coins=80,
         clear_coins=40,
         total_coins=170,
+        reward_payload={"mingjiao": {"fire_seed_quantity": 0, "holy_fire_token_quantity": 1}},
     )
 
     response = client.get(reverse("gameplay:arena_coop_detail", args=[event.id]))
@@ -75,6 +76,8 @@ def test_arena_coop_detail_view_renders(arena_client):
     assert "围攻光明顶" in body
     assert "首领" in body
     assert "1234" in body
+    assert "明教圣火令 ×1" in body
+    assert "火种 ×0" not in body
 
 
 @pytest.mark.django_db

@@ -4627,11 +4627,6 @@ a.rarity-text:hover {
   background: rgba(116, 68, 147, 0.05);
 }
 
-.reflect-text:has(> .event-qiankun-reflect) {
-  color: #21613a;
-  background: rgba(39, 174, 96, 0.06);
-}
-
 .event-effect-source { font-weight: 600; }
 .event-effect-defeat { flex-basis: 100%; }
 

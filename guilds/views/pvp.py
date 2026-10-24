@@ -6,10 +6,11 @@ from typing import Any
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from core.utils import safe_int, sanitize_error_message
+from core.utils import safe_int, safe_redirect_url, sanitize_error_message
 from core.utils.rate_limit import rate_limit_json
 from gameplay.views.runtime_refresh_support import run_refresh_api
 
@@ -81,9 +82,10 @@ def launch_guild_raid(request: Any) -> HttpResponse:
 @require_POST
 def retreat_guild_raid(request: Any) -> HttpResponse:
     member = request.guild_member
+    return_url = safe_redirect_url(request, request.POST.get("next"), reverse("guilds:pvp"))
     run_id = safe_int(request.POST.get("run_id"), default=None, min_val=1)
     if run_id is None:
-        return redirect("guilds:pvp")
+        return redirect(return_url)
 
     run = get_object_or_404(GuildRaidRun, pk=run_id, attacker_guild=member.guild)
     execute_guild_action(
@@ -92,4 +94,4 @@ def retreat_guild_raid(request: Any) -> HttpResponse:
         success_message="帮会部队已撤回",
         error_message_formatter=sanitize_error_message,
     )
-    return redirect("guilds:pvp")
+    return redirect(return_url)

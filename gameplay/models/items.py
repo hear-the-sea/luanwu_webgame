@@ -11,6 +11,7 @@ from django.db.models.deletion import ProtectedError
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 
+from core.fields import WebPImageField
 from core.game_data.troop_device_bonus_display import format_raw_troop_device_bonus
 
 from .manor import ResourceType
@@ -75,6 +76,7 @@ class ResourceEvent(models.Model):
         verbose_name_plural = "资源流水"
         ordering = ("-created_at",)
         indexes = [
+            models.Index(fields=["created_at", "id"], name="resource_event_retention_idx"),
             models.Index(fields=["manor", "-created_at"]),
             models.Index(fields=["manor", "reason", "-created_at"]),
         ]
@@ -96,7 +98,13 @@ class ItemTemplate(models.Model):
     effect_type = models.CharField(max_length=32, choices=EffectType.choices, default=EffectType.RESOURCE_PACK)
     effect_payload = models.JSONField(default=dict, blank=True)
     icon = models.CharField(max_length=32, blank=True)
-    image = models.ImageField(upload_to="items/", blank=True, null=True, verbose_name="物品图片")
+    image = WebPImageField(
+        upload_to="items/",
+        max_size=(200, 200),
+        blank=True,
+        null=True,
+        verbose_name="物品图片",
+    )
     rarity = models.CharField(max_length=16, default="gray")
     tradeable = models.BooleanField(default=False)
     default_bound = models.BooleanField("默认绑定", default=False)

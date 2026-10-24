@@ -15,14 +15,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.db import DatabaseError
 from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.shortcuts import redirect
+from django.shortcuts import redirect, resolve_url
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 
 from core.decorators import flash_unexpected_view_error
 from core.exceptions import GameError
-from core.utils import safe_positive_int, sanitize_error_message
+from core.utils import safe_positive_int, safe_redirect_url, sanitize_error_message
 from core.utils.rate_limit import rate_limit_json, rate_limit_redirect
 from gameplay.constants import UIConstants
 from gameplay.models import Manor
@@ -146,14 +146,15 @@ def _run_basic_production_start(
     log_message: str,
 ) -> HttpResponse:
     manor = get_manor(request.user)
+    redirect_url = safe_redirect_url(request, request.POST.get("next"), reverse(redirect_name))
     quantity = _parse_positive_quantity(raw_quantity)
 
     if not item_key:
         messages.error(request, missing_key_message)
-        return redirect(redirect_name)
+        return redirect(redirect_url)
     if quantity is None:
         messages.error(request, "无效的数量")
-        return redirect(redirect_name)
+        return redirect(redirect_url)
 
     try:
         production = start_operation(manor, item_key, quantity)
@@ -173,7 +174,7 @@ def _run_basic_production_start(
             ),
         )
 
-    return redirect(redirect_name)
+    return redirect(redirect_url)
 
 
 def _run_production_cancel(
@@ -204,7 +205,7 @@ def _run_production_cancel(
             ),
         )
 
-    return redirect(redirect_target)
+    return redirect(safe_redirect_url(request, request.POST.get("next"), resolve_url(redirect_target)))
 
 
 def _refresh_all_active_productions(manor: Manor) -> int:

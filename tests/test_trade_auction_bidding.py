@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from types import SimpleNamespace
 
 import pytest
 from django.utils import timezone
@@ -36,6 +37,42 @@ def test_validate_bid_amount_rejects_below_starting_price(django_user_model):
 
     with pytest.raises(TradeValidationError, match="起拍价"):
         auction_service.validate_bid_amount(slot, 1)
+
+
+@pytest.mark.parametrize("existing_bid_path", ["new", "current_bid", "manor"])
+def test_starting_price_applies_to_every_bid_path(existing_bid_path):
+    slot = SimpleNamespace(starting_price=100, quantity=2, min_increment=1)
+    old_bid = SimpleNamespace(amount=10, manor_id=1)
+    kwargs = {"ranking": [old_bid]}
+    if existing_bid_path == "current_bid":
+        kwargs["current_bid"] = old_bid
+    elif existing_bid_path == "manor":
+        kwargs["manor"] = SimpleNamespace(id=1)
+
+    with pytest.raises(TradeValidationError, match="起拍价 100"):
+        auction_service.validate_bid_amount(slot, 99, **kwargs)
+
+
+@pytest.mark.django_db
+def test_second_bidder_cannot_lower_underfilled_auction_below_starting_price(django_user_model):
+    first = ensure_manor(django_user_model.objects.create_user(username="auction_floor_first"))
+    second = ensure_manor(django_user_model.objects.create_user(username="auction_floor_second"))
+    _prepare_auction_bidder(first, 200)
+    _prepare_auction_bidder(second, 200)
+    slot = create_active_round_slot(item_key="auction_underfilled_floor", starting_price=100, quantity=2)
+    auction_service.place_bid(first, slot.id, 100)
+
+    with pytest.raises(TradeValidationError, match="起拍价 100"):
+        auction_service.place_bid(second, slot.id, 1)
+
+    assert not AuctionBid.objects.filter(slot=slot, manor=second).exists()
+    assert auction_service.get_available_gold_bars(second) == 200
+    slot.refresh_from_db()
+    assert (slot.current_price, slot.bid_count) == (100, 1)
+
+    second_bid, _ = auction_service.place_bid(second, slot.id, 100)
+    assert second_bid.amount == 100
+    assert auction_service.get_available_gold_bars(second) == 100
 
 
 @pytest.mark.django_db

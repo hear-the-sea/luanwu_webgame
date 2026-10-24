@@ -74,7 +74,7 @@ def _lock_guild_and_active_member(
 ) -> tuple[Guild, GuildMember]:
     locked_guild = Guild.objects.select_for_update().get(pk=guild_id)
     member_qs = (
-        GuildMember.objects.select_for_update()
+        GuildMember.objects.select_for_update(of=("self",))
         .select_related("guild", "user")
         .filter(
             guild=locked_guild,
@@ -125,7 +125,7 @@ def submit_hero_pool_entry(
     guild, locked_member = _lock_guild_and_active_member(guild_id=member.guild_id, member_id=member.pk)
 
     locked_guest = (
-        Guest.objects.select_for_update()
+        Guest.objects.select_for_update(of=("self",))
         .select_related("template")
         .filter(id=normalized_guest_id, manor=locked_member.user.manor)
         .first()
@@ -134,7 +134,7 @@ def submit_hero_pool_entry(
         raise GuildMembershipError("该门客不存在或不属于您")
 
     existing_entry = (
-        GuildHeroPoolEntry.objects.select_for_update()
+        GuildHeroPoolEntry.objects.select_for_update(of=("self",))
         .select_related("owner_member", "source_guest")
         .filter(guild=guild, owner_member=locked_member, slot_index=normalized_slot)
         .first()
@@ -144,7 +144,7 @@ def submit_hero_pool_entry(
         existing_entry = None
 
     duplicate_entry = (
-        GuildHeroPoolEntry.objects.select_for_update()
+        GuildHeroPoolEntry.objects.select_for_update(of=("self",))
         .select_related("owner_member", "source_guest")
         .filter(guild=guild, owner_member=locked_member, source_guest_id=locked_guest.id)
         .exclude(slot_index=normalized_slot)
@@ -197,7 +197,7 @@ def remove_hero_pool_entry(member: GuildMember, *, slot_index: int) -> HeroPoolR
     guild, locked_member = _lock_guild_and_active_member(guild_id=member.guild_id, member_id=member.pk)
 
     target_entry = (
-        GuildHeroPoolEntry.objects.select_for_update()
+        GuildHeroPoolEntry.objects.select_for_update(of=("self",))
         .filter(guild=guild, owner_member_id=locked_member.id, slot_index=normalized_slot)
         .first()
     )
@@ -241,7 +241,7 @@ def add_lineup_entry(
         raise GuildPermissionError("只有管理员/帮主可以设置出战名单")
 
     pool_entry = (
-        GuildHeroPoolEntry.objects.select_for_update()
+        GuildHeroPoolEntry.objects.select_for_update(of=("self",))
         .select_related("owner_member", "source_guest")
         .filter(pk=pool_entry_id, guild=locked_guild)
         .first()
@@ -284,7 +284,7 @@ def remove_lineup_entry(*, guild: Guild, operator: Any, lineup_entry_id: int) ->
         raise GuildPermissionError("只有管理员/帮主可以调整出战名单")
 
     lineup_entry = (
-        GuildBattleLineupEntry.objects.select_for_update()
+        GuildBattleLineupEntry.objects.select_for_update(of=("self",))
         .filter(
             pk=lineup_entry_id,
             guild=locked_guild,
@@ -355,7 +355,7 @@ def lock_guild_lineup_for_dispatch(guild: Guild, *, now: datetime | None = None)
     locked_at = now or timezone.now()
     locked_guild = Guild.objects.select_for_update().get(pk=guild.pk)
     lineup_entries = list(
-        GuildBattleLineupEntry.objects.select_for_update()
+        GuildBattleLineupEntry.objects.select_for_update(of=("self", "pool_entry"))
         .select_related("pool_entry__owner_member", "pool_entry__source_guest")
         .filter(guild=locked_guild)
         .order_by("slot_index", "id")

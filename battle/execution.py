@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import random
+from contextlib import nullcontext
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List
 
@@ -77,6 +79,27 @@ class BattleOptions:
     validate_attacker_troop_capacity: bool = True
     attacker_troop_loss_rate: float | None = None
     defender_troop_loss_rate: float | None = None
+    persist_report: bool = True
+
+
+@dataclass(frozen=True)
+class PreparedBattleTeams:
+    """在短事务内物化全部战斗定义，供事务外的只读模拟使用。"""
+
+    manor_id: int
+    options: BattleOptions
+    guests: List[Guest]
+    config: Dict[str, Any]
+    random_context: BattleRandomContext
+    attacker_guests: List[Combatant]
+    attacker_troops: List[Combatant]
+    defender_guests: List[Combatant]
+    defender_troops: List[Combatant]
+    defender_city_defenses: List[Combatant]
+    attacker_loadout: Dict[str, int]
+    defender_loadout: Dict[str, int]
+    attacker_equipment: list[dict[str, Any]]
+    defender_equipment: list[dict[str, Any]]
 
 
 def _normalize_optional_mapping(raw: Any, *, contract_name: str) -> Dict[str, Any]:
@@ -284,7 +307,11 @@ def _execute_simulation(
     rng: random.Random,
     final_seed: int,
 ) -> tuple[Any, str]:
-    assign_agility_based_priorities(attacker_units, defender_units)
+    assign_agility_based_priorities(
+        attacker_units,
+        defender_units,
+        battle_engine_version=options.battle_engine_version,
+    )
     opponent_label = options.opponent_name or config.get("name", "乱军试炼")
     simulation = simulate_battle(
         attacker_units=attacker_units,
@@ -369,7 +396,7 @@ def _finalize_battle_results(
         simulation.seed,
         rng_version=options.rng_version,
     )
-    with transaction.atomic():
+    with transaction.atomic() if options.persist_report else nullcontext():
         grant_battle_rewards(
             manor,
             simulation.drops,
@@ -401,7 +428,8 @@ def _finalize_battle_results(
 
             apply_city_defense_battle_damage(options.defender_manor, defender_city_defense_rows)
 
-        report = BattleReport.objects.create(
+        report_factory = BattleReport.objects.create if options.persist_report else BattleReport
+        report = report_factory(
             manor=manor,
             opponent_name=opponent_label,
             battle_type=options.battle_type,
@@ -423,7 +451,6 @@ def _finalize_battle_results(
             rng_version=resolved_random_context.rng_version,
             battle_engine_version=options.battle_engine_version,
         )
-
         if options.send_message:
             transaction.on_commit(lambda: dispatch_battle_message(manor, opponent_label, report))
         return report
@@ -435,6 +462,8 @@ def execute_battle(
     active_guests: List[Guest],
     options: BattleOptions,
 ) -> BattleReport:
+    if not options.persist_report:
+        _validate_snapshot_options(options, active_guests)
     config = get_battle_config(options.battle_type)
     normalized_loadout = _prepare_battle_environment(active_guests, options)
     random_context, rng = _resolve_battle_rng(
@@ -484,11 +513,99 @@ def execute_battle(
     )
 
 
+def prepare_snapshot_battle_teams(manor, guests: List[Guest], options: BattleOptions) -> PreparedBattleTeams:
+    """只准备快照战斗，不进行模拟、持久化或真实门客状态变更。"""
+    _validate_snapshot_options(options, guests)
+    if options.attacker_manor is not None:
+        raise ValueError("prepared snapshot combat requires explicit frozen technology")
+    config = get_battle_config(options.battle_type)
+    loadout = _prepare_battle_environment(guests, options)
+    random_context, _rng = _resolve_battle_rng(options.seed, options.rng_source, rng_version=options.rng_version)
+    attacker_guests, attacker_troops, attacker_devices = _build_attacker_units(guests, guests, loadout, options, manor)
+    defender_guests, defender_troops, city_defenses, defender_loadout, defender_devices = _build_defender_units(
+        options, random_context.rng(RNG_STREAM_AI_GROWTH), timezone.now()
+    )
+    # Combatants 和 options 内含可变技能字典；与调用者、模板缓存全部断开引用。
+    return deepcopy(
+        PreparedBattleTeams(
+            manor_id=manor.pk,
+            options=options,
+            guests=guests,
+            config=config,
+            random_context=random_context,
+            attacker_guests=attacker_guests,
+            attacker_troops=attacker_troops,
+            defender_guests=defender_guests,
+            defender_troops=defender_troops,
+            defender_city_defenses=city_defenses,
+            attacker_loadout=loadout,
+            defender_loadout=defender_loadout,
+            attacker_equipment=attacker_devices.devices,
+            defender_equipment=defender_devices.devices,
+        )
+    )
+
+
+def _validate_snapshot_options(options: BattleOptions, guests: List[Guest]) -> None:
+    if (
+        options.persist_report
+        or options.auto_reward
+        or options.apply_damage
+        or options.apply_victory_loyalty
+        or options.recover_live_guest_hp
+        or options.send_message
+        or options.drop_handler is not None
+        or options.defender_manor is not None
+        or not guests
+        or not options.defender_guests
+        or any(
+            is_live_guest_model(guest) or not getattr(guest, "is_battle_snapshot_proxy", False)
+            for guest in [*guests, *(options.defender_guests or [])]
+        )
+    ):
+        raise ValueError("prepared battle teams require side-effect-free snapshot combat")
+
+
+def execute_prepared_snapshot_battle(manor, prepared: PreparedBattleTeams) -> BattleReport:
+    """使用已固定的团队运行纯内存模拟；重复执行不会修改准备好的输入。"""
+    _validate_snapshot_options(prepared.options, prepared.guests)
+    if manor.pk != prepared.manor_id:
+        raise ValueError("prepared battle teams belong to another manor")
+    battle = deepcopy(prepared)
+    options = battle.options
+    simulation, label = _execute_simulation(
+        battle.attacker_guests + battle.attacker_troops,
+        battle.defender_guests + battle.defender_troops + battle.defender_city_defenses,
+        options,
+        battle.config,
+        battle.random_context.rng(RNG_STREAM_COMBAT),
+        battle.random_context.base_seed,
+    )
+    return _finalize_battle_results(
+        manor,
+        simulation,
+        battle.guests,
+        battle.attacker_guests,
+        battle.defender_guests,
+        battle.defender_city_defenses,
+        battle.attacker_loadout,
+        battle.defender_loadout,
+        options,
+        label,
+        battle.random_context,
+        attacker_equipment_bonuses=battle.attacker_equipment,
+        defender_equipment_bonuses=battle.defender_equipment,
+    )
+
+
 __all__ = [
     "BattleOptions",
+    "PreparedBattleTeams",
     "_build_defender_guest_and_loadout",
     "_extract_defender_tech_profile",
     "apply_guest_hp_updates",
     "execute_battle",
+    "execute_prepared_snapshot_battle",
+    "prepare_snapshot_battle_teams",
     "validate_troop_capacity",
 ]

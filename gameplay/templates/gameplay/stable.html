@@ -58,6 +58,7 @@
                               data-confirm-message="取消后不会获得产物，已消耗的材料不会返还。确定取消吗？"
                               data-confirm-ok-text="确认取消">
                             {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
                             <button type="submit" class="tw-btn-danger tw-btn-sm">取消生产</button>
                         </form>
                         {% endif %}
@@ -115,6 +116,7 @@
 
                     <form method="post" action="{% url 'gameplay:start_horse_production' %}" class="tw-card-actions production-option-card__actions production-compact-actions{% if not horse.is_unlocked or production_queue_full %} production-compact-actions--button-only{% endif %}">
                         {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
                         <input type="hidden" name="horse_key" value="{{ horse.key }}">
                         {% if not horse.is_unlocked %}
                         <button type="button" class="tw-btn-secondary w-full" disabled>未解锁</button>

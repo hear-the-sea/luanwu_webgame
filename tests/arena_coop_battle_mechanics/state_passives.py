@@ -27,15 +27,25 @@ def _assert_softcap_source(unit, skill_key: str, *, threshold: float, overflow_r
 def test_configure_arena_coop_enemy_guest_applies_fixed_final_hp():
     boss = make_guest("arena_gl_top_zhang_wuji_boss", base_hp=6200)
     yang = make_guest("arena_gl_top_yang_xiao_guard", base_hp=3600)
+    wei = make_guest("arena_gl_top_wei_yixiao_guard", base_hp=3300)
 
     assert configure_arena_coop_enemy_guest(boss) is True
     assert configure_arena_coop_enemy_guest(yang) is True
+    assert configure_arena_coop_enemy_guest(wei) is True
 
     assert boss.current_hp == 200000
+    assert boss.force == 1300
+    assert boss.intellect == 950
     assert boss.defense_stat == 650
     assert boss.hp_bonus > 0
-    assert yang.current_hp == 120000
+    assert yang.current_hp == 150000
+    assert yang.force == 950
+    assert yang.intellect == 720
     assert yang.hp_bonus > 0
+    assert wei.current_hp == 150000
+    assert wei.force == 880
+    assert wei.intellect == 530
+    assert wei.hp_bonus > 0
 
 
 def test_sync_arena_coop_combat_state_updates_boss_phase_and_modifiers():

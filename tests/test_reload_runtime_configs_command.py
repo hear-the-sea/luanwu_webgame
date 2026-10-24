@@ -357,9 +357,9 @@ def test_reload_runtime_configs_updates_guild_service_runtime_values(monkeypatch
                 type("Entry", (), {"last_submitted_at": submitted_at})()
             )
 
-            assert cost == {"silver": 140000, "grain": 60000, "gold_bar": 2}
-            assert level_two_cost == {"silver": 700000, "grain": 300000, "gold_bar": 10}
-            assert lineup_cost == {"red_ruby": 5}
+            assert cost == {"silver": 147000, "grain": 63000, "gold_bar": 3}
+            assert level_two_cost == {"silver": 735000, "grain": 315000, "gold_bar": 12}
+            assert lineup_cost == {"red_ruby": 6}
             assert int((cooldown_until - submitted_at).total_seconds()) == 120
     finally:
         clear_guild_rules_cache()

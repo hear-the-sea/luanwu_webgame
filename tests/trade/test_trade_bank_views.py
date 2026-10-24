@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 from django.contrib.messages import get_messages
+from django.core.cache import cache
 from django.db import DatabaseError
 from django.urls import reverse
 
@@ -40,6 +41,28 @@ def test_exchange_gold_bar_view_redirects_to_bank_tab(monkeypatch, client, djang
     resp = client.post(reverse("trade:exchange_gold_bar"), {"quantity": "1"})
     assert resp.status_code == 302
     assert resp["Location"].endswith("?tab=bank")
+
+
+@pytest.mark.django_db
+def test_completed_exchange_view_handles_unavailable_next_rate(monkeypatch, client, django_user_model):
+    cache.clear()
+    monkeypatch.setattr(
+        "trade.views.exchange_gold_bar",
+        lambda *_args, **_kwargs: {"quantity": 1, "total_cost": 100, "fee": 10, "next_rate": None},
+    )
+    user = django_user_model.objects.create_user(username="bank_display_unavailable")
+    ensure_manor(user)
+    client.force_login(user)
+
+    response = client.post(reverse("trade:exchange_gold_bar"), {"quantity": "1"})
+
+    assert response.status_code == 302
+    feedback = list(get_messages(response.wsgi_request))
+    assert len(feedback) == 1
+    assert feedback[0].level_tag == "success"
+    assert "成功兑换 1 根金条" in feedback[0].message
+    assert "下一根汇率暂时不可用" in feedback[0].message
+    cache.clear()
 
 
 @pytest.mark.django_db

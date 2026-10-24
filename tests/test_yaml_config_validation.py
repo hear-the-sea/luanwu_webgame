@@ -72,6 +72,7 @@ def test_shop_items_match_expected_public_sale_catalog():
         "zhuyingtai_guest_scroll",
         "liangshanbo_guest_scroll",
         "mawencai_guest_scroll",
+        "xiaozhao_recruit_scroll",
         *sorted(recruit_equipment_keys),
     ]
 

@@ -42,6 +42,12 @@ from guests.services.template_identity import (
     get_owned_non_repeatable_template_ids,
 )
 from guests.services.training import ensure_auto_training
+from guests.services.world_unique import (
+    WORLD_UNIQUE_LUBU_TEMPLATE_KEY,
+    lock_world_unique_prisoner,
+    recruit_world_unique_prisoner,
+    release_world_unique_prisoners,
+)
 from guests.utils.recruitment_variance import apply_recruitment_variance
 from trade.services.auction.gold_bars import consume_available_gold_bars_locked
 
@@ -232,6 +238,7 @@ def _release_jail_prisoners_batch(
     if captor_ids is not None:
         release_queryset = release_queryset.filter(captor_id__in=captor_ids)
     released = release_queryset.update(status=JailPrisoner.Status.RELEASED)
+    release_world_unique_prisoners(prisoner_ids)
     return _JailCleanupBatchResult(
         scanned=locked,
         locked=locked,
@@ -410,6 +417,7 @@ def _release_prisoner(manor: Manor, prisoner_id: int) -> JailPrisoner | None:
 
     prisoner.status = JailPrisoner.Status.RELEASED
     prisoner.save(update_fields=["status"])
+    release_world_unique_prisoners([prisoner.pk])
 
     return prisoner
 
@@ -485,8 +493,9 @@ def _recruit_prisoner(
         raise GuestCapacityFullError()
 
     template: GuestTemplate = prisoner.guest_template
-    if getattr(template, "is_world_unique", False):
-        raise WorldUniqueGuestError(message="全服唯一门客不可通过监牢收编")
+    if template.key == WORLD_UNIQUE_LUBU_TEMPLATE_KEY:
+        raise WorldUniqueGuestError(message="吕布不可通过监牢收编")
+    unique_state = lock_world_unique_prisoner(prisoner)
     repeatable_template_keys = _get_prisoner_recruit_repeatable_keys(template.key)
     duplicate_template_keys = _get_prisoner_recruit_duplicate_keys(template.key)
     if duplicate_template_keys and not repeatable_template_keys:
@@ -577,6 +586,7 @@ def _recruit_prisoner(
 
         prisoner.status = JailPrisoner.Status.RECRUITED
         prisoner.save(update_fields=["status"])
+        recruit_world_unique_prisoner(unique_state, guest)
 
     copy_pool_name = "recruitment_copy" if recruited else "recruitment_failure_copy"
     copy_pool = load_jail_persuasion_profiles()[copy_pool_name][offer.mode]

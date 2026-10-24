@@ -42,6 +42,15 @@ DEFAULT_ARENA_COOP_RULES: dict[str, Any] = {
             {"min_share_bps": 2500, "coins": 100},
         ],
         "rank_rewards": {1: 80, 2: 50, 3: 30},
+        "mingjiao": {
+            "enabled": True,
+            "fire_seed_item_key": "mingjiao_fire_seed",
+            "holy_fire_token_item_key": "mingjiao_holy_fire_token",
+            "low_rarity_fire_seeds": 50,
+            "other_fire_seeds": 10,
+            "low_rarity_token_chance_bps": 5000,
+            "other_token_chance_bps": 1000,
+        },
     },
     "rare_drop": {
         "enabled": True,
@@ -202,6 +211,27 @@ def normalize_arena_coop_rules(raw: Any) -> dict[str, Any]:
             minimum=0,
         ),
     }
+    mingjiao = rewards.get("mingjiao")
+    mingjiao = mingjiao if isinstance(mingjiao, dict) else {}
+    mingjiao_defaults = config["rewards"]["mingjiao"]
+    mingjiao_config: dict[str, Any] = {
+        "enabled": bool(mingjiao.get("enabled", mingjiao_defaults["enabled"])),
+        **{
+            key: str(mingjiao.get(key) or mingjiao_defaults[key])
+            for key in ("fire_seed_item_key", "holy_fire_token_item_key")
+        },
+        **{
+            key: _to_positive_int(mingjiao.get(key), mingjiao_defaults[key])
+            for key in (
+                "low_rarity_fire_seeds",
+                "other_fire_seeds",
+                "low_rarity_token_chance_bps",
+                "other_token_chance_bps",
+            )
+        },
+    }
+    for key in ("low_rarity_token_chance_bps", "other_token_chance_bps"):
+        mingjiao_config[key] = min(10000, mingjiao_config[key])
     config["rewards"] = {
         "participation_coins": _to_positive_int(
             rewards.get("participation_coins"),
@@ -215,6 +245,7 @@ def normalize_arena_coop_rules(raw: Any) -> dict[str, Any]:
         ),
         "damage_tiers": _normalize_damage_tiers(rewards.get("damage_tiers")),
         "rank_rewards": _normalize_rank_rewards(rewards.get("rank_rewards")),
+        "mingjiao": mingjiao_config,
     }
     config["rare_drop"] = {
         "enabled": bool(rare_drop.get("enabled", config["rare_drop"]["enabled"])),

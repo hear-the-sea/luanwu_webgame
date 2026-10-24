@@ -205,7 +205,7 @@ class BattleSimulator:
         attacker_units = attacker_guests + attacker_troops
         defender_units = defender_guests + defender_troops
 
-        # 根据敏捷分配门客优先级（前25%快的门客获得先攻）
+        # 根据敏捷分配门客优先级（当前规则前20%快的门客获得先攻）
         assign_agility_based_priorities(attacker_units, defender_units)
 
         # 生成随机数生成器

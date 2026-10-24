@@ -210,7 +210,7 @@ def get_ring_event_detail_context(manor: Manor, tenure_id: int, page: Any = 1) -
     if tenure is None:
         return None
     context = build_common_context(manor)
-    matches = tenure.matches.select_related("attacker", "defender", "winner", "battle_report").order_by("-created_at")
+    matches = tenure.matches.select_related("attacker", "defender", "winner").order_by("-created_at")
     match_page = Paginator(matches, 30).get_page(page)
     context.update(
         {

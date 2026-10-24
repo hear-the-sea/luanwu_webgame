@@ -187,6 +187,7 @@ def test_release_prisoner_sets_status_to_released():
     """Test that release_prisoner sets status to RELEASED."""
     manor = SimpleNamespace(pk=1)
     prisoner = MagicMock()
+    prisoner.pk = 1
     prisoner.status = jail_service.JailPrisoner.Status.HELD
 
     with patch.object(jail_service.JailPrisoner, "objects") as mock_qs:
@@ -321,7 +322,7 @@ def test_recruit_prisoner_raises_when_gold_insufficient(mock_manor_model):
     prisoner = MagicMock()
     prisoner.status = jail_service.JailPrisoner.Status.HELD
     prisoner.loyalty = 20
-    prisoner.guest_template = SimpleNamespace(id=2, key="hist_sljnbc_0013", name="吕布")
+    prisoner.guest_template = SimpleNamespace(id=2, key="test_jail_standard_guest", name="测试门客")
 
     with patch.object(jail_service.JailPrisoner, "objects") as mock_qs:
         mock_qs.select_for_update.return_value.select_related.return_value.filter.return_value.first.return_value = (
@@ -352,8 +353,8 @@ def test_recruit_prisoner_rejects_duplicate_standard_guest(mock_manor_model):
     prisoner.status = jail_service.JailPrisoner.Status.HELD
     prisoner.loyalty = 20
     prisoner.guest_template = SimpleNamespace(
-        key="hist_sljnbc_0013",
-        name="吕布",
+        key="test_jail_standard_guest",
+        name="测试门客",
         default_gender="male",
         default_morality=60,
         base_attack=100,
@@ -400,15 +401,15 @@ def test_recruit_prisoner_allows_duplicate_repeatable_standard_guest(mock_manor_
     monkeypatch.setattr(
         jail_service,
         "PRISONER_RECRUIT_REPEATABLE_TEMPLATE_GROUPS",
-        {"hist_sljnbc_0013": ("hist_sljnbc_0013",)},
+        {"test_jail_standard_guest": ("test_jail_standard_guest",)},
     )
 
     prisoner = MagicMock()
     prisoner.status = jail_service.JailPrisoner.Status.HELD
     prisoner.loyalty = 20
     prisoner.guest_template = SimpleNamespace(
-        key="hist_sljnbc_0013",
-        name="吕布",
+        key="test_jail_standard_guest",
+        name="测试门客",
         default_gender="male",
         default_morality=60,
         base_attack=100,

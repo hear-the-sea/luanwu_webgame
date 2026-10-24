@@ -1,5 +1,23 @@
 from __future__ import annotations
 
+import logging
+
+from django.db import ProgrammingError, transaction
+
+from core.utils.infrastructure import (
+    DATABASE_INFRASTRUCTURE_EXCEPTIONS,
+    InfrastructureExceptions,
+    combine_infrastructure_exceptions,
+)
+
+from .bank_pricing import GoldBarPricingUnavailableError
+
+logger = logging.getLogger(__name__)
+BANK_RATE_DISPLAY_EXCEPTIONS: InfrastructureExceptions = (ProgrammingError,) + combine_infrastructure_exceptions(
+    GoldBarPricingUnavailableError,
+    infrastructure_exceptions=DATABASE_INFRASTRUCTURE_EXCEPTIONS,
+)
+
 
 def execute_gold_bar_exchange(
     manor,
@@ -37,6 +55,15 @@ def resolve_pricing_status(pricing_source: str) -> tuple[bool, str]:
 
 
 def build_exchange_result(manor, quantity: int, cost_info: dict, *, calculate_next_rate) -> dict[str, object]:
+    # 兑换已经完成，展示汇率不可用不能把成功扣费误报为交易失败。
+    try:
+        # 隔离可选查询的数据库错误，兼容调用方仍处于外层事务的场景。
+        with transaction.atomic():
+            next_rate = calculate_next_rate(manor, fail_closed=True)
+    except BANK_RATE_DISPLAY_EXCEPTIONS:
+        logger.warning("Bank exchange completed but next rate is unavailable: manor_id=%s", manor.pk, exc_info=True)
+        next_rate = None
+
     return {
         "quantity": quantity,
         "total_cost": cost_info["total_cost"],
@@ -44,7 +71,7 @@ def build_exchange_result(manor, quantity: int, cost_info: dict, *, calculate_ne
         "fee": cost_info["fee"],
         "avg_rate": cost_info["avg_rate"],
         "rate_details": cost_info["rate_details"],
-        "next_rate": calculate_next_rate(manor, fail_closed=True),
+        "next_rate": next_rate,
     }
 
 

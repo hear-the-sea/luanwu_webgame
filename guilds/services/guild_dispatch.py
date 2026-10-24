@@ -30,7 +30,7 @@ def normalize_positive_ids(raw_values: list[Any]) -> list[int]:
 
 def lock_manage_member(*, guild: Guild, operator, permission_label: str) -> GuildMember:
     membership = (
-        GuildMember.objects.select_for_update()
+        GuildMember.objects.select_for_update(of=("self",))
         .select_related("guild", "user")
         .filter(guild=guild, user=operator, is_active=True)
         .first()
@@ -45,7 +45,10 @@ def lock_manage_member(*, guild: Guild, operator, permission_label: str) -> Guil
 def load_dispatch_lineup_rows(*, guild: Guild, pool_entry_ids: list[int]) -> list[GuildBattleLineupEntry]:
     row_map = {
         row.pool_entry_id: row
-        for row in GuildBattleLineupEntry.objects.select_for_update()
+        # 身份校验需要联查庄园；它不属于出征写集合，不能在帮会锁后隐式加锁。
+        for row in GuildBattleLineupEntry.objects.select_for_update(
+            of=("self", "pool_entry", "pool_entry__source_guest")
+        )
         .select_related("pool_entry__source_guest__template")
         .filter(
             guild=guild,

@@ -186,6 +186,7 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
         "selected_entry_cost_items": [],
         "can_afford_entry_cost": True,
         "world_unique_guest_status": None,
+        "chiyou_unique_guest_statuses": [],
         "available_guests": available_guests,
         "troop_config": config_items,
         "player_troops": get_player_troops(manor, include_bank=True),
@@ -204,6 +205,13 @@ def build_task_board_context(request: HttpRequest) -> dict[str, Any]:
     if selected_mission:
         if selected_mission.key == BAIMENLOU_MISSION_KEY:
             context["world_unique_guest_status"] = get_world_unique_guest_status()
+        elif selected_mission.key == "zhuolu_zhongyuan":
+            for template_key, guest_name in (
+                ("hero_yang_zheng_purple", "杨铮"),
+                ("hero_di_qinglin", "狄青麟"),
+            ):
+                status = get_world_unique_guest_status(template_key=template_key)
+                context["chiyou_unique_guest_statuses"].append({**status, "guest_name": guest_name})
         guaranteed_drops, probability_drops = mission_helpers.build_drop_lists(
             selected_mission,
             drop_labels,

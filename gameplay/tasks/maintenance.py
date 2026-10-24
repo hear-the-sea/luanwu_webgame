@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -35,6 +36,7 @@ VIRTUAL_PLAYER_SAFETY_AUDIT_RETENTION_DAYS = bounded_retention_days(
     getattr(settings, "VIRTUAL_PLAYER_SAFETY_AUDIT_RETENTION_DAYS", MAX_RECORD_RETENTION_DAYS)
 )
 CLEANUP_TASK_BATCH_SIZE = 500
+CLEANUP_HISTORY_BATCH_SIZE = max(1, int(getattr(settings, "CLEANUP_HISTORY_BATCH_SIZE", 1000)))
 
 
 def _jail_cleanup_as_of(value: str | datetime | None) -> datetime:
@@ -55,18 +57,37 @@ def _batched_delete_before(
     cutoff,
     batch_size: int | None = None,
 ) -> int:
-    """Delete at most one scheduled batch of rows older than cutoff."""
-    effective_batch_size = CLEANUP_TASK_BATCH_SIZE if batch_size is None else batch_size
+    """Drain expired rows in small transactions within a per-table work budget."""
+    effective_batch_size = CLEANUP_HISTORY_BATCH_SIZE if batch_size is None else batch_size
+    max_batches = max(1, int(getattr(settings, "CLEANUP_TASK_MAX_BATCHES", 240)))
+    deadline = time.monotonic() + max(0.01, float(getattr(settings, "CLEANUP_TASK_BUDGET_SECONDS", 5.0)))
     filter_kwargs = {f"{time_field}__lt": cutoff}
-    ids_to_delete = list(
-        model.objects.filter(**filter_kwargs)
-        .order_by(time_field, "pk")
-        .values_list("pk", flat=True)[:effective_batch_size]
+    total_deleted = 0
+    for _ in range(max_batches):
+        ids_to_delete = list(
+            model.objects.filter(**filter_kwargs)
+            .order_by(time_field, "pk")
+            .values_list("pk", flat=True)[:effective_batch_size]
+        )
+        if not ids_to_delete:
+            return total_deleted
+        deleted, _ = model.objects.filter(pk__in=ids_to_delete, **filter_kwargs).delete()
+        total_deleted += int(deleted)
+        if not deleted or len(ids_to_delete) < effective_batch_size:
+            return total_deleted
+        if time.monotonic() >= deadline:
+            break
+    oldest_remaining = (
+        model.objects.filter(**filter_kwargs).order_by(time_field, "pk").values_list(time_field, flat=True).first()
     )
-    if not ids_to_delete:
-        return 0
-    deleted, _ = model.objects.filter(pk__in=ids_to_delete, **filter_kwargs).delete()
-    return int(deleted)
+    if oldest_remaining is not None:
+        logger.warning(
+            "Retention work budget reached: model=%s deleted=%s oldest_expired=%s",
+            model._meta.label,
+            total_deleted,
+            oldest_remaining.isoformat(),
+        )
+    return total_deleted
 
 
 @shared_task(name="gameplay.cleanup_old_data")
@@ -74,7 +95,7 @@ def cleanup_old_data_task():
     """
     Clean up expired transaction records to save database space.
 
-    Runs hourly and deletes one bounded batch per model:
+    Runs hourly and drains historical tables within bounded batches and time:
     - Historical transaction records: keep no more than 15 days
     - Message: keep MESSAGE.RETENTION_DAYS days, except unclaimed attachments
     - Terminal guest, mission, and virtual-player records: keep no more than 15 days
@@ -83,6 +104,7 @@ def cleanup_old_data_task():
     from battle.models import BattleReport
     from gameplay.models import ArenaExchangeRecord, BotSafetyDecisionAudit, ResourceEvent
     from gameplay.services.arena.fill_service_retention import cleanup_fill_service_rows
+    from gameplay.services.arena.ring_retention import cleanup_ring_history
     from gameplay.services.utils.messages import delete_expired_messages
 
     now = timezone.now()
@@ -121,6 +143,14 @@ def cleanup_old_data_task():
         time_field="created_at",
         cutoff=safety_audit_cutoff,
     )
+    ring_history_deleted = {"inspections": 0, "actions": 0, "matches": 0, "tenures": 0, "daily": 0}
+    ring_deadline = time.monotonic() + max(0.01, float(getattr(settings, "CLEANUP_TASK_BUDGET_SECONDS", 5.0)))
+    for _ in range(max(1, int(getattr(settings, "CLEANUP_TASK_MAX_BATCHES", 240)))):
+        ring_batch = cleanup_ring_history(now=now, batch_size=CLEANUP_TASK_BATCH_SIZE)
+        for category, deleted in ring_batch.items():
+            ring_history_deleted[category] += deleted
+        if max(ring_batch.values(), default=0) < CLEANUP_TASK_BATCH_SIZE or time.monotonic() >= ring_deadline:
+            break
 
     terminal_deleted: dict[str, int] = {}
     for model_path, time_field in (
@@ -146,12 +176,13 @@ def cleanup_old_data_task():
         + message_deleted
         + fill_service_deleted
         + safety_audit_deleted
+        + sum(ring_history_deleted.values())
         + sum(terminal_deleted.values())
     )
     logger.info(
         "Cleaned old data: total=%d (resource_events=%d, arena_exchange_records=%d, battle_reports=%d, "
         "messages=%d, protected_messages=%d, fill_service_episodes=%d, fill_service_outcomes=%d, "
-        "safety_audits=%d, terminal_records=%s, scheduled_batch_size=%d)",
+        "safety_audits=%d, ring_history=%s, terminal_records=%s, scheduled_batch_sizes=(history=%d, related=%d))",
         total_deleted,
         resource_deleted,
         arena_exchange_deleted,
@@ -161,7 +192,9 @@ def cleanup_old_data_task():
         fill_service_episodes_deleted,
         fill_service_outcomes_deleted,
         safety_audit_deleted,
+        ring_history_deleted,
         terminal_deleted,
+        CLEANUP_HISTORY_BATCH_SIZE,
         CLEANUP_TASK_BATCH_SIZE,
     )
     return total_deleted

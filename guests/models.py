@@ -7,6 +7,7 @@ from django.db import models
 from django.utils import timezone
 
 from core.config import GUEST
+from core.fields import WebPImageField
 
 from . import guest_rules as _guest_rules
 
@@ -61,7 +62,13 @@ class GuestTemplate(models.Model):
     base_agility = models.PositiveIntegerField(default=80)
     base_luck = models.PositiveIntegerField(default=50)
     base_hp = models.PositiveIntegerField(default=1200)
-    avatar = models.ImageField(upload_to="guests/", blank=True, null=True, verbose_name="门客头像")
+    avatar = WebPImageField(
+        upload_to="guests/",
+        max_size=(400, 400),
+        blank=True,
+        null=True,
+        verbose_name="门客头像",
+    )
     flavor = models.CharField(max_length=512, blank=True)
     default_gender = models.CharField(max_length=16, choices=GENDER_CHOICES, default="unknown")
     default_morality = models.PositiveIntegerField(default=50)
@@ -411,6 +418,7 @@ class WorldUniqueGuest(models.Model):
     class Status(models.TextChoices):
         WILD = "wild", "在野"
         SERVING = "serving", "仕官"
+        CAPTURED = "captured", "被俘"
 
     template = models.OneToOneField(
         GuestTemplate,
@@ -441,6 +449,14 @@ class WorldUniqueGuest(models.Model):
         default=Status.WILD,
         db_index=True,
     )
+    owner_prisoner = models.OneToOneField(
+        "gameplay.JailPrisoner",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="world_unique_state",
+        verbose_name="当前俘虏记录",
+    )
     version = models.PositiveBigIntegerField("状态版本", default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -451,8 +467,21 @@ class WorldUniqueGuest(models.Model):
         constraints = [
             models.CheckConstraint(
                 condition=(
-                    models.Q(status="wild", owner_manor__isnull=True, owner_guest__isnull=True)
-                    | models.Q(status="serving", owner_manor__isnull=False, owner_guest__isnull=False)
+                    models.Q(
+                        status="wild", owner_manor__isnull=True, owner_guest__isnull=True, owner_prisoner__isnull=True
+                    )
+                    | models.Q(
+                        status="serving",
+                        owner_manor__isnull=False,
+                        owner_guest__isnull=False,
+                        owner_prisoner__isnull=True,
+                    )
+                    | models.Q(
+                        status="captured",
+                        owner_manor__isnull=False,
+                        owner_guest__isnull=True,
+                        owner_prisoner__isnull=False,
+                    )
                 ),
                 name="world_unique_guest_owner_consistency",
             )

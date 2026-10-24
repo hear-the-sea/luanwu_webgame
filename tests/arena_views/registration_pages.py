@@ -248,8 +248,8 @@ def test_arena_exchange_page_view_renders(arena_client):
     second_body = second_page.content.decode("utf-8")
     assert "奖励兑换" in first_body
     assert "随机蓝色装备图纸" in first_body
-    assert "随机紫色装备图纸" in first_body
-    assert "随机紫色装备图纸" not in second_body
+    assert "随机紫色装备图纸" not in first_body
+    assert "随机紫色装备图纸" in second_body
     assert "武林宝箱" in first_body
     assert "周限 2" in first_body
     assert "查看随机奖励概率" not in first_body + second_body

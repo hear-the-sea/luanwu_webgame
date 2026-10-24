@@ -5363,22 +5363,6 @@ heroes:
       intellect: 55
       defense: 20
       agility: 15
-  - key: hero_jinyong_0215
-    name: 小昭
-    avatar: monkey_wen_female5.png
-    archetype: civil
-    flavor: 明教的异域少女，眼神温柔，心事却深得像海。她背负母亲的身份与族群的枷锁，却仍愿在乱局里为所爱之人留一线光；轻声细语之下，是极难得的坚定与牺牲。她不以刀剑成名，却用一颗不肯变冷的心，把江湖最柔软也最疼痛的章节写完。出自金庸小说《倚天屠龙记》
-    default_gender: female
-    default_morality: 60
-    recruitable: true
-    growth_range:
-    - 5
-    - 8
-    attribute_weights:
-      force: 20
-      intellect: 40
-      defense: 15
-      agility: 25
   - key: hero_jinyong_0243
     name: 苗若兰
     avatar: monkey_wen_female10.png
@@ -5828,6 +5812,22 @@ heroes:
       defense: 25
       agility: 30
   purple:
+  - key: hero_jinyong_0215
+    name: 小昭
+    avatar: monkey/xiaozhao.png
+    archetype: civil
+    flavor: 黛绮丝之女，聪慧细腻，身手轻灵。她随侍张无忌，以通晓波斯文字之长助其参悟乾坤大挪移心法；后来为保护母亲与同伴远赴波斯，出任明教总教教主。她善于察言观色、临机应变，温柔之下自有坚定心志。出自金庸小说《倚天屠龙记》
+    default_gender: female
+    default_morality: 60
+    recruitable: false
+    growth_range:
+    - 6
+    - 12
+    attribute_weights:
+      force: 10
+      intellect: 45
+      defense: 10
+      agility: 35
   - key: hero_huang_rong
     name: 黄蓉
     avatar: monkey/金庸/黄蓉.png

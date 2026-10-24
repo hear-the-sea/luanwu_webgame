@@ -156,5 +156,8 @@ def test_partial_controls_only_render_for_backend_supporting_quantity(partial_li
         },
     )
     assert ('value="partial"' in html) is enabled
-    assert (f'id="market-quantity-{partial_listing.pk}"' in html) is enabled
-    assert ('value="all"' in html) is True
+    assert ('id="market-purchase-quantity"' in html) is enabled
+    assert ("data-market-purchase-all" in html) is enabled
+    assert "js-open-market-purchase" in html
+    mode = "partial" if enabled else "all"
+    assert f'name="purchase_mode" value="{mode}"' in html

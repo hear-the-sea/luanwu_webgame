@@ -136,8 +136,15 @@ def refresh_modifier_projections(modifiers: dict[str, Any]) -> None:
 
 
 def clear_modifier_scope(unit: Any, scope: str) -> None:
-    registry = _modifier_registry(unit)
-    scoped = registry.pop(scope, {})
+    state = getattr(unit, "battle_state", None)
+    if not isinstance(state, dict):
+        return
+    registry = state.get(_REGISTRY_STATE_KEY)
+    if not isinstance(registry, dict):
+        return
+    scoped = registry.pop(scope, None)
+    if not scoped:
+        return
     modifiers = getattr(unit, "battle_modifiers", None)
     if not isinstance(modifiers, dict):
         return

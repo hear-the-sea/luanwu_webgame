@@ -33,9 +33,19 @@ def _target_weight(unit: "Combatant") -> float:
 def _weighted_choice(units: list["Combatant"], rng: random.Random) -> "Combatant":
     if not units:
         raise AssertionError("expected non-empty unit list")
+    if not any(getattr(unit, "battle_modifiers", None) for unit in units):
+        return rng.choice(units)
 
-    weights = [_target_weight(unit) for unit in units]
-    if not any(weight != 1.0 for weight in weights):
+    weights: list[float] | None = None
+    for index, unit in enumerate(units):
+        weight = _target_weight(unit)
+        if weights is None:
+            if weight == 1.0:
+                continue
+            weights = [1.0] * index
+        weights.append(weight)
+
+    if weights is None:
         return rng.choice(units)
 
     total = sum(weights)
@@ -103,11 +113,17 @@ def _select_target_without_screening(
     if actor.kind == "troop":
         counter_class = TROOP_COUNTERS.get(actor.troop_class)
         if counter_class:
-            priority_targets = [unit for unit in opponents if unit.troop_class == counter_class]
+            if all(unit.troop_class == counter_class for unit in opponents):
+                priority_targets = opponents
+            else:
+                priority_targets = [unit for unit in opponents if unit.troop_class == counter_class]
 
     # 门客：优先攻击敌方门客
     elif actor.kind == "guest":
-        priority_targets = [unit for unit in opponents if unit.kind == "guest"]
+        if all(unit.kind == "guest" for unit in opponents):
+            priority_targets = opponents
+        else:
+            priority_targets = [unit for unit in opponents if unit.kind == "guest"]
 
     # 加权概率判定
     if priority_targets and rng.random() < PRIORITY_TARGET_WEIGHT:

@@ -7,20 +7,22 @@ from dataclasses import dataclass
 from typing import Any, cast
 
 CURRENT_RNG_VERSION = 1
-CURRENT_BATTLE_ENGINE_VERSION = "8"
+CURRENT_BATTLE_ENGINE_VERSION = "9"
 # 保留既有版本 2 兼容入口；版本 3 的规则另按下面的版本集合启用。
 PREVIOUS_BATTLE_ENGINE_VERSION = "2"
 # 后续版本继续保留分队攻击、远程与攻城规则，以及版本 4 的护院优先行动。
-GROUPED_ATTACK_ENGINE_VERSIONS = frozenset({"3", "4", "5", "6", "7", "8"})
-TROOP_FIRST_ENGINE_VERSIONS = frozenset({"4", "5", "6", "7", "8"})
+GROUPED_ATTACK_ENGINE_VERSIONS = frozenset({"3", "4", "5", "6", "7", "8", "9"})
+TROOP_FIRST_ENGINE_VERSIONS = frozenset({"4", "5", "6", "7", "8", "9"})
 # 版本 5 引入护院掩护与门客清兵 20/3，旧战报保留原规则和随机数消耗。
-GUEST_TROOP_BALANCE_ENGINE_VERSIONS = frozenset({"5", "6", "7", "8"})
+GUEST_TROOP_BALANCE_ENGINE_VERSIONS = frozenset({"5", "6", "7", "8", "9"})
 # 版本 6 的门客先结算技能增量，再独立选敌普攻，仍属于一次行动。
-GUEST_BURST_ENGINE_VERSIONS = frozenset({"6", "7", "8"})
+GUEST_BURST_ENGINE_VERSIONS = frozenset({"6", "7", "8", "9"})
 # 版本 7 的枪王在攻击者行动结束后，每回合对同一战斗对象仅判定一次反击。
-DEFERRED_QIANG_WANG_COUNTER_ENGINE_VERSIONS = frozenset({"7", "8"})
+DEFERRED_QIANG_WANG_COUNTER_ENGINE_VERSIONS = frozenset({"7", "8", "9"})
 # 版本 8 修复技能暴击标记、无技能追加伤害的被动次数及阵亡后普通回血。
-GUEST_ACTION_CONSISTENCY_ENGINE_VERSIONS = frozenset({"8"})
+GUEST_ACTION_CONSISTENCY_ENGINE_VERSIONS = frozenset({"8", "9"})
+# 版本 9 将先锋比例调整为 20%；旧版本继续使用 25%。
+VANGUARD_20_PERCENT_ENGINE_VERSIONS = frozenset({"9"})
 LEGACY_RNG_VERSION = 0
 LEGACY_BATTLE_ENGINE_VERSION = "legacy"
 MAX_PERSISTED_SEED = 2_147_483_647

@@ -134,6 +134,7 @@ class WorkAssignment(models.Model):
             models.Index(fields=["status", "-started_at"]),
             models.Index(fields=["guest", "-started_at"]),
             models.Index(fields=["manor", "status", "complete_at"], name="work_manor_sts_comp_idx"),
+            models.Index(fields=["status", "complete_at", "id"], name="work_sts_due_id_idx"),
         ]
         constraints = [
             models.UniqueConstraint(

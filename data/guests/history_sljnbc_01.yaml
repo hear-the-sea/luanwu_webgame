@@ -592,6 +592,7 @@ heroes:
   orange:
   - key: hist_sljnbc_0012
     name: 赵云
+    recruitable: false
     avatar: zhaoyun.png
     default_gender: male
     archetype: military

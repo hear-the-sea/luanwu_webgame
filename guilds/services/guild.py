@@ -20,6 +20,7 @@ from trade.services.auction.gold_bars import consume_available_gold_bars_locked
 
 from .. import constants as guild_constants
 from ..models import Guild, GuildAnnouncement, GuildHeroPoolEntry, GuildMember, GuildRaidRun, GuildTechnology
+from .resource_locks import lock_guild_resource_manors, settle_guild_resource_manors
 from .utils import get_active_membership, lock_active_member_for_guild
 from .warehouse import spend_guild_warehouse_items_locked
 
@@ -74,15 +75,14 @@ def create_guild(user, name, description="", emblem="default"):
     required_gold_bars = guild_constants.GUILD_CREATION_COST["gold_bar"]
 
     with transaction.atomic():
+        # 庄园是玩家写操作的共同锁锚点，必须先于成员和帮会获取。
+        manor = Manor.objects.select_for_update().get(user=user)
         # 并发安全：锁定并校验当前用户的帮会成员记录（OneToOneField 防止重复入帮）
         membership = GuildMember.objects.select_for_update().filter(user=user).first()
         if membership and membership.is_active:
             raise GuildMembershipError("您已加入帮会，无法创建新帮会")
         if membership and not membership.is_active:
             membership.delete()
-
-        # 锁定庄园行（同时作为创建流程的串行化锚点）
-        manor = Manor.objects.select_for_update().get(user=user)
 
         # 锁定并扣减未被冻结的金条库存（仓库）
         try:
@@ -275,6 +275,7 @@ def disband_guild(guild, operator):
         raise GuildPermissionError("只有帮主可以解散帮会")
 
     with transaction.atomic():
+        resource_scope = lock_guild_resource_manors(guild.pk)
         try:
             guild_locked = Guild.objects.select_for_update().get(pk=guild.pk, is_active=True)
         except Guild.DoesNotExist as exc:
@@ -302,12 +303,9 @@ def disband_guild(guild, operator):
             raise GuildValidationError("存在进行中的帮会对战，请先撤回或等待出征完成后再解散")
 
         # 预加载成员 user_id，确保通知对象来自锁内的当前活跃成员集合。
-        member_user_ids = list(guild_locked.members.filter(is_active=True).values_list("user_id", flat=True))
         guild_name = guild_locked.name
         disbanded_at = timezone.now()
-        from gameplay.services.resources import settle_resource_production_for_users_locked
-
-        settle_resource_production_for_users_locked(member_user_ids, now=disbanded_at)
+        member_user_ids = settle_guild_resource_manors(guild_locked, resource_scope, now=disbanded_at)
 
         # 标记帮会为不活跃
         guild_locked.is_active = False

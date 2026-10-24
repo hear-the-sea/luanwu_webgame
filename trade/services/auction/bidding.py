@@ -228,15 +228,14 @@ def validate_bid_amount(
 ) -> None:
     """验证出价金额是否合法。"""
     amount = _normalize_bid_amount(amount)
+    if amount < slot.starting_price:
+        raise TradeValidationError(f"出价金额不得低于起拍价 {slot.starting_price} 金条")
 
     # When there are no active bids, treat it as the first bid regardless of
     # `slot.bid_count` (which is a historical counter).
     if ranking is None:
         ranking = get_slot_ranking(slot)
     if not ranking and not current_bid:
-        min_bid = slot.starting_price
-        if amount < min_bid:
-            raise TradeValidationError(f"出价金额不得低于起拍价 {min_bid} 金条")
         return
 
     # 如果已有出价，检查是否为加价

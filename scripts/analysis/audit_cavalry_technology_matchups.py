@@ -116,7 +116,11 @@ def matchup(cavalry_level, ordinary_level, opponent, mixed, count, seeds):
         cavalry_side, other_side = ("defender", "attacker") if swap else ("attacker", "defender")
         cavalry = team(CAVALRY, cavalry_side, cavalry_levels(cavalry_level), count, mixed)
         other = team(opponent, other_side, build_uniform_tech_levels(ordinary_level), count, mixed)
-        assign_agility_based_priorities(cavalry, other)
+        assign_agility_based_priorities(
+            cavalry,
+            other,
+            battle_engine_version=CURRENT_BATTLE_ENGINE_VERSION,
+        )
         template = (other, cavalry) if swap else (cavalry, other)
         for seed in range(SEED_START, SEED_START + seeds):
             attacker, defender = copy.deepcopy(template)

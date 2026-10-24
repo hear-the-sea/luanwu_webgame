@@ -5510,6 +5510,11 @@ body:has(.tw-arena-page),
   gap: 0.5rem;
 }
 
+.tw-trade-header > .tw-mode-switch,
+  .tw-market-content > .tw-mode-switch {
+  padding-right: 0.75rem;
+}
+
 .tw-mode-btn {
   cursor: pointer;
   border-radius: 0.375rem;
@@ -5642,28 +5647,70 @@ body:has(.tw-arena-page),
   transform: none;
 }
 
+/* 商店与集市按钮统一紧凑尺寸，减少表格中的视觉占位。 */
+
+.shop-section .tw-btn-trade,
+  .tw-market-content .tw-btn-trade,
+  .tw-market-content .tw-mode-btn,
+  #market-my-section tbody .tw-btn-secondary {
+  min-width: 3.25rem;
+  min-height: 2rem;
+  padding: 0.25rem 0.625rem;
+  border-width: 1px;
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
+}
+
 .tw-btn-trade--danger {
   background: linear-gradient(180deg, #a63d32 0%, #7f241d 100%);
   border-color: #641c17;
   box-shadow: 0 2px 6px rgba(127, 36, 29, 0.2);
 }
 
-/* 集市购买筛选独立布局，避免表单最小宽度撑开页面。 */
+/* 购买操作收进弹窗，列表只保留单个按钮。 */
+
+.tw-modal-content.tw-market-purchase-dialog {
+  width: calc(100% - 2rem);
+  max-width: 24rem;
+}
+
+.tw-market-purchase-dialog .tw-modal-footer {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.tw-market-purchase-dialog .tw-modal-footer button,
+  .tw-market-purchase-dialog .tw-modal-close {
+  min-height: 44px;
+  min-width: 44px;
+}
 
 @media (max-width: 640px) {
-  .tw-work-card .tw-card-actions > .tw-market-purchase {
+  .tw-work-card .tw-card-actions > .tw-market-purchase-item {
     flex-direction: column;
     align-items: stretch;
   }
 }
 
-.tw-market-purchase {
+.tw-market-purchase-item {
+  margin-bottom: 1.25rem;
   display: flex;
   min-width: 0px;
   flex-direction: column;
   gap: 0.5rem;
-  width: 100%;
-  min-width: 12rem;
+}
+
+.tw-market-purchase-item .tw-item-name {
+  white-space: normal;
+  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+.tw-market-purchase-stock {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 640px) {
@@ -5688,23 +5735,21 @@ body:has(.tw-arena-page),
   min-height: 44px;
 }
 
-.tw-market-purchase-quantity > span {
+.tw-market-purchase-quantity > button {
   flex-shrink: 0;
+  min-height: 44px;
 }
 
-.tw-market-purchase-total {
+.tw-market-purchase-hint {
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
   font-size: 0.75rem;
   line-height: 1rem;
   color: var(--text-muted);
-  white-space: normal;
-  overflow-wrap: anywhere;
+  min-height: 1rem;
 }
 
-.tw-market-purchase-actions {
-  display: grid;
-  gap: 0.5rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
+/* 集市筛选独立布局，避免表单最小宽度撑开页面。 */
 
 .tw-market-content,
   #market-buy-section {
@@ -7305,6 +7350,10 @@ body:has(.tw-arena-page),
   margin-bottom: 1rem;
 }
 
+.mb-5 {
+  margin-bottom: 1.25rem;
+}
+
 .mb-6 {
   margin-bottom: 1.5rem;
 }
@@ -7786,6 +7835,10 @@ body:has(.tw-arena-page),
 
 .text-ellipsis {
   text-overflow: ellipsis;
+}
+
+.whitespace-normal {
+  white-space: normal;
 }
 
 .whitespace-nowrap {
@@ -8579,6 +8632,13 @@ body:has(.tw-arena-page),
 
   /* 商店表格移动端 */
 
+  .shop-section .tw-btn-trade,
+  .tw-market-content .tw-btn-trade,
+  .tw-market-content .tw-mode-btn,
+  #market-my-section tbody .tw-btn-secondary {
+    min-height: 2.25rem;
+  }
+
   .tw-shop-table-wrapper {
     overflow-x: visible;
   }
@@ -8773,7 +8833,7 @@ body:has(.tw-arena-page),
 
   .tw-market-content > .tw-mode-switch .tw-mode-btn {
     min-width: 0;
-    padding: 0.5rem;
+    padding: 0.25rem 0.625rem;
     overflow-wrap: anywhere;
   }
 
@@ -8826,8 +8886,9 @@ body:has(.tw-arena-page),
   }
 
   #market-buy-section .tw-btn-trade {
-    width: 100%;
-    min-height: 44px;
+    width: auto;
+    min-height: 36px;
+    justify-self: start;
   }
 
   .tw-bid-kpi-grid {

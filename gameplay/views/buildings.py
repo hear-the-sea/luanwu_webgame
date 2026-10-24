@@ -12,7 +12,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import DatabaseError
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
@@ -101,6 +101,7 @@ class UpgradeBuildingView(LoginRequiredMixin, TemplateView):
 @require_POST
 @rate_limit_redirect("building_upgrade_cancel", limit=10, window_seconds=60)
 def cancel_building_upgrade_view(request: HttpRequest, pk: int) -> HttpResponse:
+    redirect_url = safe_redirect_url(request, request.POST.get("next"), reverse("gameplay:dashboard"))
     manor = get_manor(request.user)
     try:
         cancelled = cancel_building_upgrade(manor, pk)
@@ -119,7 +120,7 @@ def cancel_building_upgrade_view(request: HttpRequest, pk: int) -> HttpResponse:
                 pk,
             ),
         )
-    return redirect("gameplay:dashboard")
+    return redirect(redirect_url)
 
 
 @method_decorator(require_POST, name="dispatch")

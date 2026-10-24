@@ -31,6 +31,14 @@ rewards:
     1: 80
     2: 50
     3: 30
+  mingjiao:
+    enabled: true
+    fire_seed_item_key: mingjiao_fire_seed
+    holy_fire_token_item_key: mingjiao_holy_fire_token
+    low_rarity_fire_seeds: 50
+    other_fire_seeds: 10
+    low_rarity_token_chance_bps: 5000
+    other_token_chance_bps: 1000
 
 rare_drop:
   enabled: true

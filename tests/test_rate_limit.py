@@ -177,3 +177,34 @@ def test_rate_limit_redirect_rejects_non_positive_limit():
 def test_rate_limit_redirect_rejects_non_positive_window():
     with pytest.raises(AssertionError, match="positive window_seconds"):
         rate_limit_redirect("bad", limit=1, window_seconds=0)
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("count", [None, 2])
+@pytest.mark.parametrize(
+    ("next_url", "referer", "expected"),
+    [
+        ("/manor/?category=military#building-1", "/other", "/manor/?category=military#building-1"),
+        ("/guests/?page=2", "", "/guests/?page=2"),
+        ("https://external.invalid/", "/origin", "/origin"),
+        ("//external.invalid/", "/origin", "/origin"),
+        ("", "/origin", "/origin"),
+        ("", "https://external.invalid/", "/"),
+    ],
+)
+def test_rate_limit_failure_keeps_safe_return_context(monkeypatch, count, next_url, referer, expected):
+    from types import SimpleNamespace
+
+    @rate_limit_redirect("return_context", limit=1, window_seconds=60)
+    def limited_view(_request):
+        raise AssertionError("limited action must not execute")
+
+    request = RequestFactory().post("/action", {"next": next_url}, HTTP_REFERER=referer)
+    request.user = SimpleNamespace(is_authenticated=True, pk=1)
+    _attach_session_and_messages(request)
+    monkeypatch.setattr("core.utils.rate_limit._get_rate_limit_count", lambda *_args: count)
+
+    response = limited_view(request)
+
+    assert response.status_code == 302
+    assert response.url == expected

@@ -76,10 +76,9 @@ def test_actual_boss_passives_record_active_reflection_source():
     target.template_key = "arena_gl_top_zhang_wuji_boss"
     actor = _make_guest(name="攻击者", side="attacker", hp=20000)
     _set_reflect(target, skills["gl_top_holy_flame_rage"])
-    assert target.battle_modifiers["reflect_name"] == "圣火狂势"
+    assert "reflect_name" not in target.battle_modifiers
     application = apply_damage_results(actor, target, 1000, random.Random(1))
-    assert application.reflect_damage == 100
-    assert application.reflect_effect == "圣火狂势"
+    assert application.reflect_damage == 0
 
     target.skills = [skills["gl_top_qiankun_shift"]]
     run_passives_for_timing(
@@ -152,11 +151,9 @@ def test_report_renders_actual_source_on_each_hit(secondary, viewer, source):
         {"events": [event], "my_side": viewer, "is_spectator": viewer == "spectator"},
     )
     text = "".join(strip_tags(html).split())
-    if source == "乾坤大挪移":
-        assert "张无忌触发乾坤大挪移" in text
-        assert "攻击者造成反震伤害10" in text
-    else:
-        assert f"张无忌爆发{source}，造成伤害10" in text
+    assert f"张无忌触发{source}" in text
+    assert "攻击者造成反震伤害10" in text
+    assert "event-passive-reflect" in html
     assert "护身剑罡" not in text
 
 

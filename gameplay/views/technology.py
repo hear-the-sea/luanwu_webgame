@@ -141,7 +141,7 @@ def cancel_technology_upgrade_view(request: HttpRequest, tech_key: str) -> HttpR
                 tech_key,
             ),
         )
-    return redirect("gameplay:dashboard")
+    return redirect(safe_redirect_url(request, request.POST.get("next"), reverse("gameplay:dashboard")))
 
 
 @login_required

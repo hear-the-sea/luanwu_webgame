@@ -146,6 +146,9 @@ STRATEGIC_ITEM_STORAGE = {
     "zhanlong_white_horse_token": 10,
     "zhanlong_changban_guard_token": 10,
     "zhanlong_dangyang_valor_letter": 10,
+    "mingjiao_fire_seed": 1,
+    "mingjiao_holy_fire_token": 1,
+    "xiaozhao_recruit_scroll": 150,
 }
 
 

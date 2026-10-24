@@ -5,6 +5,7 @@ from datetime import timezone as datetime_timezone
 
 import pytest
 from django.core.cache import cache
+from django.db import OperationalError, ProgrammingError
 from django.utils import timezone
 from django_redis.exceptions import ConnectionInterrupted
 
@@ -13,6 +14,7 @@ from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.manor.core import ensure_manor
 from trade.models import GoldBarExchangeLog
 from trade.services import bank_service, bank_supply_runtime
+from trade.services.bank_pricing import GoldBarPricingUnavailableError
 from trade.services.bank_runtime import get_today_exchange_count
 
 
@@ -185,6 +187,48 @@ def test_exchange_gold_bar_deducts_silver_and_creates_inventory(monkeypatch, dja
     assert log.quantity == 2
     assert log.silver_cost == 110
     assert log.exchange_date == timezone.localdate()
+
+
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.parametrize(
+    "display_error",
+    [
+        GoldBarPricingUnavailableError(),
+        OperationalError("rate read failed"),
+        ProgrammingError("next-rate display query failed"),
+    ],
+)
+def test_completed_exchange_survives_next_rate_failure(monkeypatch, django_user_model, display_error):
+    user = django_user_model.objects.create_user(username="bank_completed_display_failure")
+    manor = ensure_manor(user)
+    _fund_manor_for_exchange(manor)
+    template = _ensure_gold_bar_template()
+    monkeypatch.setattr(
+        bank_service,
+        "calculate_gold_bar_cost",
+        lambda *_args, **_kwargs: {
+            "base_cost": 100,
+            "fee": 10,
+            "total_cost": 110,
+            "rate_details": [100],
+            "avg_rate": 100,
+        },
+    )
+
+    def unavailable_next_rate(*_args, **_kwargs):
+        raise display_error
+
+    monkeypatch.setattr(bank_service, "calculate_next_rate", unavailable_next_rate)
+
+    result = bank_service.exchange_gold_bar(manor, 1)
+
+    assert result["next_rate"] is None
+    assert result["total_cost"] == 110
+    manor.refresh_from_db()
+    assert manor.silver == 1_000_000_000 - 110
+    assert InventoryItem.objects.get(manor=manor, template=template).quantity == 1
+    log = GoldBarExchangeLog.objects.get(manor=manor)
+    assert (log.quantity, log.silver_cost) == (1, 110)
 
 
 @pytest.mark.django_db

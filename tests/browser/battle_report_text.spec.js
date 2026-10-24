@@ -4,6 +4,7 @@ const path = require("node:path");
 const root = path.resolve(__dirname, "../..");
 const pages = {};
 const qiankunPages = {};
+const bossPassivePages = {};
 test.beforeAll(() => {
   for (const viewer of ["attacker", "defender", "spectator"]) {
     pages[viewer] = execFileSync("python", [path.join(__dirname, "fixtures/render_battle_text.py"), viewer], {
@@ -12,10 +13,32 @@ test.beforeAll(() => {
     qiankunPages[viewer] = execFileSync("python", [path.join(__dirname, "fixtures/render_battle_text.py"), viewer, "qiankun"], {
       cwd: root, env: { ...process.env, PYTHONPATH: root }, encoding: "utf8",
     });
+    bossPassivePages[viewer] = execFileSync("python", [path.join(__dirname, "fixtures/render_battle_text.py"), viewer, "boss-passives"], {
+      cwd: root, env: { ...process.env, PYTHONPATH: root }, encoding: "utf8",
+    });
   }
 });
 for (const width of [320, 390, 768, 1280]) {
   for (const viewer of ["attacker", "defender", "spectator"]) {
+    test(`${width}px ${viewer} sees consistent boss passive colors including historical reflections`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.setContent(bossPassivePages[viewer]);
+      for (const css of ["style", "tailwind"]) {
+        await page.addStyleTag({ path: path.join(root, "static/css", `${css}.css`) });
+      }
+      await expect(page.locator(".event-passive-skill")).toHaveCount(3);
+      await expect(page.locator(".event-passive-reflect")).toHaveCount(6);
+      for (const source of ["乾坤大挪移", "明教号令", "圣火狂势"]) {
+        await expect(page.locator(".event-passive-skill").filter({ hasText: source })).toHaveCSS("color", "rgb(33, 97, 58)");
+        const reflections = page.locator(".reflect-text").filter({ hasText: source });
+        await expect(reflections).toHaveCount(2);
+        for (const reflection of await reflections.all()) {
+          await expect(reflection).toHaveCSS("color", "rgb(116, 68, 147)");
+          await expect(reflection).toHaveCSS("background-color", "rgba(116, 68, 147, 0.05)");
+          expect(await reflection.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+        }
+      }
+    });
     test(`${width}px ${viewer} sees qiankun activation and reflection separately`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
       await page.setContent(qiankunPages[viewer]);
@@ -35,7 +58,8 @@ for (const width of [320, 390, 768, 1280]) {
         const reflection = reflections.nth(index);
         await expect(reflection).toContainText(`${sourceSide}张无忌触发乾坤大挪移`);
         await expect(reflection).toContainText(`对${recipientSide}浪翻云造成反震伤害${index ? 1234 : 4321}`);
-        await expect(reflection.locator("xpath=..")).toHaveCSS("background-color", "rgba(39, 174, 96, 0.06)");
+        await expect(reflection.locator("xpath=..")).toHaveCSS("color", "rgb(116, 68, 147)");
+        await expect(reflection.locator("xpath=..")).toHaveCSS("background-color", "rgba(116, 68, 147, 0.05)");
       }
       await expect(page.locator(".event-passive-message")).toHaveCount(1);
       const overflow = await page.locator(".event-qiankun-reflect, .event-passive-layout, .round-action-cell")
@@ -49,6 +73,7 @@ for (const width of [320, 390, 768, 1280]) {
         await page.addStyleTag({ path: path.join(root, "static/css", `${css}.css`) });
       }
       await expect(page.locator(".reflect-text")).toContainText("造成伤害123456");
+      await expect(page.locator(".reflect-text")).toHaveCSS("color", "rgb(116, 68, 147)");
       await expect(page.locator(".event-effect-source")).toContainText("剑圣爆发护身剑罡");
       await expect(page.locator(".reflect-text > .event-unit-name")).toHaveCount(0);
       await expect(page.locator(".reflect-text .event-unit-summary > .event-unit-name")).toHaveText("浪翻云");

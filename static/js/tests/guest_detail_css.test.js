@@ -14,14 +14,16 @@ function assertDeclaration(ruleBody, declaration) {
   assert.match(ruleBody, new RegExp(`${declaration}\\s*;`));
 }
 
-test("guest detail equipment chips keep equipped gear on one line", () => {
+test("guest detail equipment names wrap in their own column", () => {
   const css = fs.readFileSync(path.join(__dirname, "../../css/guest-detail.css"), "utf8");
   const chipRule = cssRuleBody(css, ".guest-detail .equip-chip");
 
-  assertDeclaration(chipRule, "gap:\\s*0");
-  assertDeclaration(chipRule, "white-space:\\s*nowrap");
-  assertDeclaration(chipRule, "overflow:\\s*hidden");
-  assertDeclaration(chipRule, "text-overflow:\\s*ellipsis");
+  const nameRule = cssRuleBody(css, ".guest-detail .equip-chip-name");
+  const selectableRule = cssRuleBody(css, ".guest-detail .equip-unequip-form .equip-chip");
+  assertDeclaration(selectableRule, "display:\\s*grid");
+  assertDeclaration(nameRule, "white-space:\\s*normal");
+  assertDeclaration(nameRule, "overflow-wrap:\\s*anywhere");
+  assert.doesNotMatch(chipRule, /overflow:\s*hidden/);
 });
 
 test("guest detail equipment slot titles stay on one line", () => {
@@ -32,12 +34,13 @@ test("guest detail equipment slot titles stay on one line", () => {
   assertDeclaration(titleRule, "flex:\\s*0\\s+0\\s+auto");
 });
 
-test("guest detail equipment rows keep title and item spacing compact", () => {
+test("guest detail equipment rows reserve space for the slot title", () => {
   const css = fs.readFileSync(path.join(__dirname, "../../css/guest-detail.css"), "utf8");
   const lineRule = cssRuleBody(css, ".guest-detail .equip-line");
 
-  assertDeclaration(lineRule, "gap:\\s*0");
-  assertDeclaration(lineRule, "padding:\\s*0");
+  assertDeclaration(lineRule, "display:\\s*grid");
+  assertDeclaration(lineRule, "min-width:\\s*0");
+  assert.match(lineRule, /grid-template-columns:\s*3em\s+minmax\(0,\s*1fr\)/);
 });
 
 test("guest detail equipment tooltip wraps long set content inside the viewport", () => {

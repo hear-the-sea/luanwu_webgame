@@ -20,7 +20,7 @@ coverage==7.11.3
 cryptography==46.0.3
 daphne==4.2.1
 distlib==0.4.0
-Django==5.2.8
+Django==5.2.18
 django-cors-headers==4.9.0
 django-redis==6.0.0
 django-stubs==5.2.9

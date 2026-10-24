@@ -1,8 +1,23 @@
+from __future__ import annotations
+
+from typing import Any
+
 from django.contrib.admin import AdminSite
+from django.contrib.auth.decorators import login_not_required
+from django.http import HttpRequest, HttpResponse
 
 
 class GameAdminSite(AdminSite):
     index_template = "admin/operations_index.html"
+
+    @login_not_required
+    def login(self, request: HttpRequest, extra_context: dict[str, Any] | None = None) -> HttpResponse:
+        if self.login_form is None:
+            # 避免后台站点初始化期间提前加载 User 模型，保留可配置的表单扩展点。
+            from accounts.admin_authentication import ThrottledAdminAuthenticationForm
+
+            self.login_form = ThrottledAdminAuthenticationForm
+        return super().login(request, extra_context)
 
     def index(self, request, extra_context=None):
         # 使用 Django 已过滤权限的菜单，避免向无权限人员暴露入口。

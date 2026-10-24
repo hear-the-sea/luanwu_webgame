@@ -126,7 +126,9 @@ def test_arena_coop_report_uses_participant_message_title(client, django_user_mo
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("notification_title", ["门客被俘通知", "唯一门客失去通知"])
+@pytest.mark.parametrize(
+    "notification_title", ["门客被俘通知", "唯一门客失去通知", "监牢俘虏被夺通知", "监牢俘虏夺取通知"]
+)
 @pytest.mark.parametrize("has_battle_message", [False, True])
 def test_raid_report_title_prefers_battle_message(client, django_user_model, notification_title, has_battle_message):
     user = django_user_model.objects.create_user(username="raid_report_capture_title", password="pass123")

@@ -54,6 +54,7 @@
 
                     <form method="post" action="{% url 'guilds:exchange_item' item.item_key %}" class="tw-guild-exchange-form">
                         {% csrf_token %}
+                        <input type="hidden" name="page" value="{{ pagination.page }}">
                         <label for="exchange-quantity-{{ forloop.counter }}">数量</label>
                         <input
                             type="number"

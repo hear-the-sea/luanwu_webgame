@@ -55,6 +55,13 @@ class TestCoreViews:
         assert f'action="{reverse("gameplay:cancel_building_upgrade", args=[building.pk])}"' in body
         assert f'action="{reverse("gameplay:cancel_technology_upgrade", args=[technology.tech_key])}"' in body
         assert body.count('class="js-production-cancel-form"') == 2
+        for cancel_url in (
+            reverse("gameplay:cancel_building_upgrade", args=[building.pk]),
+            reverse("gameplay:cancel_technology_upgrade", args=[technology.tech_key]),
+        ):
+            form = re.search(r'<form[^>]*action="' + re.escape(cancel_url) + r'"[^>]*>(.*?)</form>', body, re.S)
+            assert form is not None
+            assert f'name="next" value="{reverse("home")}"' in form.group(1)
         assert "已消耗的资源和行动力不会返还" in body
         assert "已消耗的银两不会返还" in body
         assert "/static/js/production-cancel.js" in body
@@ -488,12 +495,8 @@ class TestCoreViews:
         assert f'href="{reverse("gameplay:messages")}" class="btn-menu"' in body
         assert f'href="{reverse("gameplay:settings")}" class="btn-menu"' in body
 
-    def test_guide_page_renders_beginner_tips_with_shared_layout(self, manor_with_user, monkeypatch):
-        manor, client = manor_with_user
-        manor.action_points = 987
-        manor.action_points_updated_at = timezone.now()
-        manor.save(update_fields=["action_points", "action_points_updated_at"])
-        monkeypatch.setattr("gameplay.views.core.ACTION_POINTS_MAX", 777)
+    def test_guide_page_renders_beginner_tips_with_shared_layout(self, manor_with_user):
+        _manor, client = manor_with_user
 
         response = client.get(reverse("gameplay:guide"))
 
@@ -501,16 +504,20 @@ class TestCoreViews:
         body = response.content.decode("utf-8")
         assert "游戏攻略" in body
         assert "粮食主要靠农田" in body
-        assert "门客去聚贤庄招募" in body
-        assert "装备可以从打工宝箱" in body
-        assert "987/777" in body
-        assert ">777 <small>行动力上限</small>" in body
+        assert "放大镜" in body
+        assert "打工宝箱" in body
+        assert "20%" in body
+        assert "自定义门客卡" in body
+        for anchor in ("guests", "troops", "work", "expeditions", "economy"):
+            assert f'href="#{anchor}"' in body
+            assert f'id="{anchor}"' in body
         assert "跳到攻略正文" in body
         assert "css/guide.css" in body
         assert "js/guide-page.js" in body
         assert 'class="dashboard"' in body
-        assert 'class="tw-panel' in body
-        assert "guide-card" not in body
+        assert body.count('class="guide-section"') == 5
+        assert "guide-summary" not in body
+        assert "guide-tile" not in body
 
     def test_authenticated_layout_loads_chat_widget_modules_in_order(self, manor_with_user):
         """聊天挂件脚本应按 core -> renderer -> layout -> connection -> main 的顺序加载。"""

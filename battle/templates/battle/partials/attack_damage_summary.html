@@ -1,7 +1,7 @@
 {% load battle_report %}
 {% troop_phase_skill attack event round.priority as phase_skill %}
 <div class="event-target-summary event-damage-summary{% if is_secondary and secondary_kind == 'skill' %} event-skill-wave{% endif %}">
-    <span class="event-target-arrow" aria-hidden="true">→</span>
+    <span class="event-target-arrow" aria-hidden="true">{% if attack.reaction_type == 'counter' %}←{% else %}→{% endif %}</span>
     <span class="event-target-detail">
         {% if attack.reaction_type == 'counter' %}
             {% report_event_side attack event as reaction_side %}<span class="event-effect-source">{% battle_side_label reaction_side visible_side spectator %}{{ attack.actor }}爆发反戈一击</span>，对<strong class="event-target-name">{{ attack.target }}</strong>{% if attack.is_dodge %}未命中{% else %}造成伤害<strong class="event-damage-value">{{ attack.damage|default:0 }}</strong>{% if attack.target_state.kind != 'city_defense' %}，伤害人数<strong class="event-kill-count">{{ attack.kills|default:0 }}</strong>{% endif %}{% include "battle/partials/target_defeat_summary.html" %}{% endif %}

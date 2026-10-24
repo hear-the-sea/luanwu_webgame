@@ -15,7 +15,9 @@ from .models import User
 
 logger = logging.getLogger(__name__)
 
-EMAIL_VERIFICATION_SALT = "accounts.email-verification"
+EMAIL_VERIFICATION_LEGACY_SALT = "accounts.email-verification"
+EMAIL_VERIFICATION_SALT = "accounts.email-verification.v2"
+EMAIL_VERIFICATION_RESEND_SALT = "accounts.email-verification-resend"
 
 
 class EmailVerificationDeliveryError(RuntimeError):
@@ -38,16 +40,38 @@ class EmailVerificationDeliveryError(RuntimeError):
 
 
 def build_email_verification_token(user: User) -> str:
+    return _build_email_token(user, salt=EMAIL_VERIFICATION_SALT)
+
+
+def build_email_verification_resend_token(user: User) -> str:
+    """Create a resend-only credential that cannot activate an account."""
+    return _build_email_token(user, salt=EMAIL_VERIFICATION_RESEND_SALT)
+
+
+def _build_email_token(user: User, *, salt: str) -> str:
     if not user.pk or not user.email:
         raise ValueError("email verification requires a persisted user with an email")
-    signer = TimestampSigner(salt=EMAIL_VERIFICATION_SALT)
+    signer = TimestampSigner(salt=salt)
     return signer.sign_object({"user_id": int(user.pk), "email": str(user.email)})
 
 
 def get_user_from_email_verification_token(token: str, *, allow_expired: bool = False) -> User | None:
     """Resolve a signed token; expiry bypass is only for resend recovery."""
+    return _get_user_from_email_token(token, salt=EMAIL_VERIFICATION_SALT, allow_expired=allow_expired)
 
-    signer = TimestampSigner(salt=EMAIL_VERIFICATION_SALT)
+
+def get_user_from_email_verification_resend_token(token: str) -> User | None:
+    # Legacy activation credentials were exposed in pages. They may recover
+    # email delivery, but only v2 credentials delivered by email can activate.
+    for salt in (EMAIL_VERIFICATION_RESEND_SALT, EMAIL_VERIFICATION_SALT, EMAIL_VERIFICATION_LEGACY_SALT):
+        user = _get_user_from_email_token(token, salt=salt, allow_expired=True)
+        if user is not None:
+            return user
+    return None
+
+
+def _get_user_from_email_token(token: str, *, salt: str, allow_expired: bool) -> User | None:
+    signer = TimestampSigner(salt=salt)
     try:
         payload: Any = signer.unsign_object(
             token,

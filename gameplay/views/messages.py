@@ -299,7 +299,7 @@ def view_message(request: HttpRequest, pk: int) -> HttpResponse:
     """
     manor = get_manor(request.user)
     message = get_object_or_404(
-        manor.messages.select_related("battle_report"),
+        manor.messages,
         pk=pk,
     )
 

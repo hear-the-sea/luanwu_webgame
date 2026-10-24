@@ -26,6 +26,22 @@ def _send_raid_capture_messages(run: RaidRun, capture_payload: object) -> None:
     winner_manor = run.attacker if run.is_attacker_victory else run.defender
     winner_name = getattr(winner_manor, "display_name", "对手")
     loser_name = getattr(loser_manor, "display_name", "对手")
+    if isinstance(capture_payload, dict) and capture_payload.get("source") == "enemy_jail":
+        create_message(
+            manor=loser_manor,
+            kind="battle",
+            title="监牢俘虏被夺通知",
+            body=f"本次踢馆防守失败，{winner_name} 从你的监牢夺取了一名俘虏。\n\n{capture_desc}",
+            battle_report=run.battle_report,
+        )
+        create_message(
+            manor=winner_manor,
+            kind="battle",
+            title="监牢俘虏夺取通知",
+            body=f"本次踢馆进攻获胜，你从 {loser_name} 的监牢夺取了一名俘虏，已将其转入己方监牢。\n\n{capture_desc}",
+            battle_report=run.battle_report,
+        )
+        return
 
     create_message(
         manor=loser_manor,

@@ -5,7 +5,7 @@ historical_gate_evidence_updated: false
 production_certification: false
 runtime_activation_authorized: false
 source_file_sha256:
-  Makefile: 6cc425e33d8b3743c8a8168c92e216a74c73f9a15e2c3719ff51cf0d4c7046e8
+  Makefile: b685f1b3d9ddd4e823eff40779f4f041f19b1476d1c249a20907fbf7f25064fa
   tests/arena_services/test_virtual_reserve.py: 543f07b274306d56d176ac691689df1db5789210a40dffac5eb4d6a1135604c9
   tests/raid_concurrency_integration/h01_cross_races.py: 18512f4e4ef844e9d3a6808725b9efeda239ce675ccc21f2519cc1e1b807d028
   tests/test_arena_schedule.py: 86aa5068242e1d09a5b4ea1ac62063fc7d57ed1c024e5481ef71342c3254d987
@@ -36,7 +36,7 @@ source_file_sha256:
   tests/test_virtual_player_projection.py: 26bef894e9846bc9dde41d020798bdce808316c91d1fa260feb4f65e1c549e76
   tests/test_virtual_player_random_context.py: 9d26d1cd8a00622e36eee876bff089703d64b2a35cc0ed85fc9ad3b3feff4931
   tests/test_virtual_player_recruitment.py: 4d32b0d2008dd4480918436afb309d6488c025825d0c29066d59dfa41dfa5ffe
-  tests/test_virtual_player_registration_population.py: 10173ea89b474d9be547456007110ae565bdc8c7c61099f095ae7fab87415baa
+  tests/test_virtual_player_registration_population.py: 43f3669f66a74d856b1c85bacc27d51ad8ad84235c947a739f0b373f20dfb29d
   tests/test_virtual_player_strength_budget.py: 56f593c6886d7b953d1d7b8e37f60768eb574f7eb02a18853e188d361e30db32
 checksum_algorithm: sha256
 checksum_input: sorted_pytest_nodeids_joined_with_lf_and_terminal_lf
@@ -67,7 +67,7 @@ suites:
     - tests/test_virtual_player_health.py
     - tests/test_virtual_player_gate_d1_automation.py
     - tests/test_virtual_player_gate_e_automation.py
-    collected_at_utc: '2026-10-19T15:17:08Z'
+    collected_at_utc: '2026-10-24T12:31:46Z'
     real_services_configured: false
   d1_core_real_service:
     expected_nodeid_count: 10
@@ -75,14 +75,14 @@ suites:
     files:
     - tests/test_virtual_player_gate_d1_concurrency_integration.py
     - tests/test_virtual_player_health_mysql_integration.py
-    collected_at_utc: '2026-10-19T15:17:09Z'
+    collected_at_utc: '2026-10-24T12:31:47Z'
     real_services_configured: true
   d1_adjacent_real_service:
     expected_nodeid_count: 5
     nodeid_checksum: 1a90e5c1cbeba46f0bb2cb71f78e174df038c7c1b51ab58ff871793f1d6318c2
     files:
     - tests/test_arena_virtual_population_concurrency_integration.py
-    collected_at_utc: '2026-10-19T15:17:10Z'
+    collected_at_utc: '2026-10-24T12:31:48Z'
     real_services_configured: true
   gate_a_union:
     expected_nodeid_count: 190
@@ -96,5 +96,5 @@ suites:
     - tests/test_pytest_configuration.py
     - tests/test_virtual_player_baseline_audit.py
     - tests/raid_concurrency_integration/h01_cross_races.py
-    collected_at_utc: '2026-10-19T15:17:11Z'
+    collected_at_utc: '2026-10-24T12:31:49Z'
     real_services_configured: true

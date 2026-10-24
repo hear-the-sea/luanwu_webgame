@@ -23,6 +23,50 @@
 # 稀有度说明：black(白色/普通) < green(绿色/优秀) < blue(蓝色/稀有) < purple(紫色/史诗)
 
 items:
+  - key: mingjiao_holy_fire_token
+    name: 明教圣火令
+    description: 圣火不熄，故人有约。通关围攻光明顶时有机会获得；集齐12个明教圣火令与1000火种后，在仓库使用小昭招募卷轴，可邀紫色门客「小昭」入庄。不可交易。
+    effect_type: tool
+    rarity: purple
+    tradeable: false
+    default_bound: true
+    price: 0
+    storage_space: 1
+    is_usable: false
+    image: mingjiao_holy_fire_token.png
+
+  - key: mingjiao_fire_seed
+    name: 火种
+    description: 光明顶上留存的一缕圣火，微光虽小，但星星之火可以燎原。与明教圣火令一同用于招募小昭，不可交易。
+    effect_type: tool
+    rarity: blue
+    tradeable: false
+    default_bound: true
+    price: 0
+    storage_space: 1
+    is_usable: false
+    image: mingjiao_fire_seed.png
+
+  - key: xiaozhao_recruit_scroll
+    name: 小昭招募卷轴
+    description: 仓库中使用并消耗12个明教圣火令与1000火种后，可获得紫色门客「小昭」。若庄园已拥有该门客，则无法再次获得。
+    effect_type: tool
+    rarity: purple
+    tradeable: true
+    price: 6000000
+    storage_space: 150
+    is_usable: true
+    image: zhuyingtai_guest_scroll.png
+    effect_payload:
+      action: summon_guest
+      required_items:
+        mingjiao_holy_fire_token: 12
+        mingjiao_fire_seed: 1000
+      exclusive_template_keys: [hero_jinyong_0215]
+      choices:
+        - template_key: hero_jinyong_0215
+          weight: 100
+
   - key: li_plum
     name: 李子
     description: 李树结下的紫色甘果。每次使用一颗，为本庄园全体门客各回复5000点生命值，不超过各自生命上限；无人需要治疗时不消耗。
@@ -2661,7 +2705,7 @@ items:
 
   - key: guild_skill_book_box_blue
     name: 帮会中级技能书箱
-    description: 帮会藏书阁整理的中级技能书箱，可开出一本蓝色技能书。
+    description: 帮会藏书阁整理的进阶书箱，必得1本蓝色或紫色技能书，紫色概率约14.15%。
     effect_type: loot_box
     rarity: blue
     tradeable: false
@@ -2689,7 +2733,7 @@ items:
 
   - key: guild_skill_book_box_purple
     name: 帮会高级技能书箱
-    description: 帮会藏书阁整理的高级技能书箱，可开出一本紫色技能书。
+    description: 必得1本紫色技能书，不再开出蓝色技能书。
     effect_type: loot_box
     rarity: purple
     tradeable: false
@@ -2700,10 +2744,6 @@ items:
     effect_payload:
       skill_book_chance: 1
       skill_book_choices:
-        - item_key: book_thunder_nine_heavens
-          weight: 18
-        - item_key: book_tangseng_sermon
-          weight: 18
         - item_key: book_five_thunder_descent
           weight: 18
         - item_key: book_brahma_true_fire
@@ -2721,7 +2761,7 @@ items:
 
   - key: guild_skill_book_box_refined
     name: 帮会精研技能书箱
-    description: 藏书阁精挑的秘籍，打开随机获得一本蓝色或紫色技能书。
+    description: 精研秘籍，独立抽取2本紫色技能书，每本均为紫色，可能重复。
     effect_type: loot_box
     rarity: purple
     tradeable: false
@@ -2736,8 +2776,6 @@ items:
           weight: 22
         - item_key: book_brahma_true_fire
           weight: 22
-        - item_key: book_thunder_nine_heavens
-          weight: 20
         - item_key: book_hell_instant_formation
           weight: 18
         - item_key: book_city_felling_strike
@@ -2748,10 +2786,29 @@ items:
           weight: 16
         - item_key: book_bloodthirsty_fury
           weight: 14
+      random_item_groups:
+        - chance: 1
+          min_quantity: 1
+          max_quantity: 1
+          choices:
+            - item_key: book_five_thunder_descent
+              weight: 22
+            - item_key: book_brahma_true_fire
+              weight: 22
+            - item_key: book_hell_instant_formation
+              weight: 18
+            - item_key: book_city_felling_strike
+              weight: 18
+            - item_key: book_comrade_command
+              weight: 16
+            - item_key: book_desperate_beast
+              weight: 16
+            - item_key: book_bloodthirsty_fury
+              weight: 14
 
   - key: guild_skill_book_box_master
     name: 帮会宗师技能秘匣
-    description: 藏书阁的压箱底，打开随机获得一本紫色技能书。
+    description: 宗师秘藏，独立抽取3本紫色技能书，含神意破虚、奇策突袭等高阶秘籍，可能重复。
     effect_type: loot_box
     rarity: purple
     tradeable: false
@@ -2780,6 +2837,51 @@ items:
           weight: 16
         - item_key: book_bloodthirsty_fury
           weight: 14
+      random_item_groups:
+        - chance: 1
+          min_quantity: 1
+          max_quantity: 1
+          choices:
+            - item_key: book_five_thunder_descent
+              weight: 22
+            - item_key: book_brahma_true_fire
+              weight: 22
+            - item_key: book_shenyi_poxu
+              weight: 22
+            - item_key: book_stratagem_burst
+              weight: 20
+            - item_key: book_city_felling_strike
+              weight: 18
+            - item_key: book_hell_instant_formation
+              weight: 18
+            - item_key: book_comrade_command
+              weight: 16
+            - item_key: book_desperate_beast
+              weight: 16
+            - item_key: book_bloodthirsty_fury
+              weight: 14
+        - chance: 1
+          min_quantity: 1
+          max_quantity: 1
+          choices:
+            - item_key: book_five_thunder_descent
+              weight: 22
+            - item_key: book_brahma_true_fire
+              weight: 22
+            - item_key: book_shenyi_poxu
+              weight: 22
+            - item_key: book_stratagem_burst
+              weight: 20
+            - item_key: book_city_felling_strike
+              weight: 18
+            - item_key: book_hell_instant_formation
+              weight: 18
+            - item_key: book_comrade_command
+              weight: 16
+            - item_key: book_desperate_beast
+              weight: 16
+            - item_key: book_bloodthirsty_fury
+              weight: 14
 
   # ---------- 帮会装备箱 ----------
 
@@ -2876,8 +2978,8 @@ items:
           weight: 13
 
   - key: guild_gear_box_refined_purple
-    name: 帮会精铸紫装箱
-    description: 匠师精心打好的行头，打开随机获得一件紫色装备。
+    name: 帮会精铸装备箱
+    description: 随机获得1件装备，紫色概率80%、橙色概率20%；橙装不含任务专属和收集兑换装备。
     effect_type: loot_box
     rarity: purple
     tradeable: false
@@ -2889,23 +2991,45 @@ items:
       gear_chance: 1
       gear_choices:
         - item_key: equip_qilinkui
-          weight: 20
+          weight: 10
         - item_key: equip_qilinjia
-          weight: 20
+          weight: 10
         - item_key: equip_qilinxue
-          weight: 20
+          weight: 10
         - item_key: equip_qixingjian
-          weight: 14
+          weight: 10
         - item_key: equip_bawangqiang
-          weight: 13
+          weight: 10
         - item_key: equip_qilindao
-          weight: 13
+          weight: 10
         - item_key: equip_huxianxie
-          weight: 13
+          weight: 10
+        - item_key: equip_huxianpao
+          weight: 10
+        - item_key: equip_taixudiguan
+          weight: 2
+        - item_key: equip_longlinzhanjia
+          weight: 2
+        - item_key: equip_hundunlongpao
+          weight: 2
+        - item_key: equip_jinsirujia
+          weight: 2
+        - item_key: equip_ruanweijia
+          weight: 2
+        - item_key: equip_tatianxue
+          weight: 2
+        - item_key: equip_shenxingxue
+          weight: 2
+        - item_key: equip_wujixingxue
+          weight: 2
+        - item_key: equip_yitianjian
+          weight: 2
+        - item_key: equip_tianyamingyuedao
+          weight: 2
 
   - key: guild_gear_box_master
     name: 帮会宗师秘匣
-    description: 宗师藏好的得意之作，打开随机获得一件紫色装备。
+    description: 独立抽取2件装备，每件紫色概率70%、橙色概率30%，至少获得1件橙装的概率为51%；可能重复，不含任务专属和收集兑换装备。
     effect_type: loot_box
     rarity: purple
     tradeable: false
@@ -2917,19 +3041,78 @@ items:
       gear_chance: 1
       gear_choices:
         - item_key: equip_qilinjia
-          weight: 18
+          weight: 10
         - item_key: equip_qilinkui
-          weight: 16
+          weight: 10
         - item_key: equip_qilinxue
-          weight: 16
+          weight: 10
         - item_key: equip_qixingjian
-          weight: 14
+          weight: 10
         - item_key: equip_bawangqiang
-          weight: 14
+          weight: 10
         - item_key: equip_qilindao
-          weight: 12
+          weight: 10
         - item_key: equip_qilinzui
           weight: 10
+        - item_key: equip_taixudiguan
+          weight: 3
+        - item_key: equip_longlinzhanjia
+          weight: 3
+        - item_key: equip_hundunlongpao
+          weight: 3
+        - item_key: equip_jinsirujia
+          weight: 3
+        - item_key: equip_ruanweijia
+          weight: 3
+        - item_key: equip_tatianxue
+          weight: 3
+        - item_key: equip_shenxingxue
+          weight: 3
+        - item_key: equip_wujixingxue
+          weight: 3
+        - item_key: equip_yitianjian
+          weight: 3
+        - item_key: equip_tianyamingyuedao
+          weight: 3
+      random_item_groups:
+        - chance: 1
+          min_quantity: 1
+          max_quantity: 1
+          choices:
+            - item_key: equip_qilinjia
+              weight: 10
+            - item_key: equip_qilinkui
+              weight: 10
+            - item_key: equip_qilinxue
+              weight: 10
+            - item_key: equip_qixingjian
+              weight: 10
+            - item_key: equip_bawangqiang
+              weight: 10
+            - item_key: equip_qilindao
+              weight: 10
+            - item_key: equip_qilinzui
+              weight: 10
+            - item_key: equip_taixudiguan
+              weight: 3
+            - item_key: equip_longlinzhanjia
+              weight: 3
+            - item_key: equip_hundunlongpao
+              weight: 3
+            - item_key: equip_jinsirujia
+              weight: 3
+            - item_key: equip_ruanweijia
+              weight: 3
+            - item_key: equip_tatianxue
+              weight: 3
+            - item_key: equip_shenxingxue
+              weight: 3
+            - item_key: equip_wujixingxue
+              weight: 3
+            - item_key: equip_yitianjian
+              weight: 3
+            - item_key: equip_tianyamingyuedao
+              weight: 3
 
   # ---------- 帮会机关兽图纸箱 ----------
 
@@ -14373,7 +14556,7 @@ items:
 
   - key: mission_chest_v3_zhanlong_wuhu_shizhen
     name: 五虎演武宝箱
-    description: 五虎会武的任务宝箱，内有演武补给；有1%的机会获得赵云招募卷轴，另有10%的机会获得蜀缎白锦袍或龙胆枪。两件装备出现的机会相同，且与卷轴互不影响。
+    description: 五虎齐聚，演武馈赠。开启可获得演武补给，并有机会额外收获珍稀装备、图纸及赵云招募卷轴。
     effect_type: loot_box
     rarity: purple
     tradeable: false

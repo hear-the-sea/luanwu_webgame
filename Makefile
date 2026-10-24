@@ -344,12 +344,12 @@ cov-html:
 
 # Code formatting and linting
 format:
-	$(BLACK) .
-	$(ISORT) .
+	$(BLACK) . --extend-exclude reports/releases
+	$(ISORT) . --skip-glob "reports/releases/**"
 
 format-check:
-	$(BLACK) --check .
-	$(ISORT) --check-only .
+	$(BLACK) --check . --extend-exclude reports/releases
+	$(ISORT) --check-only . --skip-glob "reports/releases/**"
 
 check-frontend-contracts:
 	$(PYTHON) scripts/check_frontend_contracts.py

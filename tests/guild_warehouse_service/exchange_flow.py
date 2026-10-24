@@ -281,6 +281,15 @@ def test_exchange_item_locks_manor_before_member_for_non_projected_items(monkeyp
             assert user is member_locked.user
             return manor_locked
 
+    class _GuildObjects:
+        def select_for_update(self):
+            events.append("guild_lock")
+            return self
+
+        def get(self, pk):
+            assert pk == member.guild_id
+            return guild
+
     class _ItemTemplateObjects:
         def get(self, key):
             assert key == "guild_wh_item"
@@ -295,6 +304,7 @@ def test_exchange_item_locks_manor_before_member_for_non_projected_items(monkeyp
         type("GuildWarehouseModel", (), {"objects": _WarehouseObjects()}),
     )
     monkeypatch.setattr("guilds.services.warehouse.Manor", type("ManorModel", (), {"objects": _ManorObjects()}))
+    monkeypatch.setattr("guilds.services.warehouse.Guild", type("GuildModel", (), {"objects": _GuildObjects()}))
     monkeypatch.setattr(
         "gameplay.models.ItemTemplate",
         type("ItemTemplateModel", (), {"objects": _ItemTemplateObjects(), "DoesNotExist": LookupError}),
@@ -314,7 +324,7 @@ def test_exchange_item_locks_manor_before_member_for_non_projected_items(monkeyp
 
     exchange_item(member, "guild_wh_item", 2)
 
-    assert events.index("manor_lock") < events.index("member_lock")
+    assert events.index("manor_lock") < events.index("guild_lock") < events.index("member_lock")
     assert events.index("member_lock") < events.index("warehouse_lock")
 
 

@@ -13,6 +13,7 @@ from guests.constants import RARITY_CONVERSION_TEMPLATE_KEY_PREFIX
 from guests.models import Guest, GuestStatus, GuestTemplate
 
 
+@pytest.mark.django_db
 @pytest.mark.parametrize(
     ("is_attacker_victory", "expected_losing_side"),
     [(True, "defender"), (False, "attacker")],

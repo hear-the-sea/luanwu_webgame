@@ -80,7 +80,7 @@ for (const width of [320, 1280]) {
     await expect(detail.getByRole("heading", { name: "装备锻造" })).toBeVisible();
     await expect(detail).toContainText("等级 10 / 10");
     await expect(detail).toContainText("帮会绿装箱 ×2");
-    await expect(detail).toContainText("帮会精铸紫装箱 ×2");
+    await expect(detail).toContainText("帮会精铸装备箱 ×2");
     await expect(detail).toContainText("帮会宗师秘匣 ×2");
   });
 }

@@ -16,7 +16,7 @@ from tests.guild_pvp_service.support import create_guest, create_guild_with_lead
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("initial_level,upgrade_cost,capacity", [(0, 5, 21), (19, 100, 40)])
+@pytest.mark.parametrize("initial_level,upgrade_cost,capacity", [(0, 6, 21), (19, 150, 40)])
 def test_lineup_upgrade_unlocks_slots_and_full_defense_without_expanding_dispatch(
     django_user_model, initial_level, upgrade_cost, capacity
 ):

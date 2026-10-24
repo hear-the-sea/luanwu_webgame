@@ -370,7 +370,7 @@ def list_messages(manor: Manor):
     Returns:
         消息查询集（按创建时间倒序）
     """
-    return manor.messages.select_related("battle_report").order_by("-created_at")
+    return manor.messages.order_by("-created_at")
 
 
 def delete_messages(manor: Manor, message_ids) -> MessageDeleteResult:
@@ -520,6 +520,9 @@ def claim_message_attachments(message: Message) -> Dict:
     missing_bound_keys = set(bound_items) - set(item_templates_map)
     if missing_bound_keys:
         raise ItemNotFoundError("绑定附件物品不存在，请联系管理员", item_key=sorted(missing_bound_keys)[0])
+    missing_item_keys = set(items) - set(item_templates_map)
+    if missing_item_keys:
+        raise ItemNotFoundError("附件物品不存在，请联系管理员", item_key=sorted(missing_item_keys)[0])
 
     # 发放资源
     claimed_resources, _overflow = grant_resources_locked(
@@ -540,9 +543,7 @@ def claim_message_attachments(message: Message) -> Dict:
                 continue
 
             # 从预加载的字典中查找物品模板
-            item_template = item_templates_map.get(item_key)
-            if not item_template:
-                continue
+            item_template = item_templates_map[item_key]
 
             add_item_to_inventory_locked(
                 manor,
@@ -556,9 +557,7 @@ def claim_message_attachments(message: Message) -> Dict:
             claimed_items[item_key] = quantity
 
         for item_key, quantity in bound_items.items():
-            item_template = item_templates_map.get(item_key)
-            if not item_template:
-                continue
+            item_template = item_templates_map[item_key]
             add_item_to_inventory_locked(
                 manor,
                 item_key,

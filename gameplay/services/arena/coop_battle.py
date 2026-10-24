@@ -33,6 +33,9 @@ def load_runtime_rules_for_event(base_rules: dict[str, Any], event: ArenaCoopEve
     merge_mapping(rules["enemy"], event.enemy_snapshot if isinstance(event.enemy_snapshot, dict) else {})
     reward_snapshot = event.reward_snapshot if isinstance(event.reward_snapshot, dict) else {}
     merge_mapping(rules["rewards"], reward_snapshot.get("rewards"))
+    # Existing events keep the reward contract captured when they were created.
+    if "mingjiao" not in (reward_snapshot.get("rewards") or {}):
+        rules["rewards"].pop("mingjiao", None)
     rare_drop_snapshot = reward_snapshot.get("rare_drop")
     if (
         isinstance(rare_drop_snapshot, dict)

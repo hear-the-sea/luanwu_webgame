@@ -91,6 +91,7 @@ def ring_guest_proxies(lineup: dict[str, Any]) -> list[Any]:
     proxies: list[Any] = []
     for snapshot in lineup["guests"]:
         proxy: Any = ArenaGuestSnapshotProxy(snapshot)
+        proxy.is_battle_snapshot_proxy = True
         proxy.current_hp = proxy.max_hp
         proxy.troop_capacity = snapshot["troop_capacity"]
         proxy.has_troop_device_bonus_sources = True

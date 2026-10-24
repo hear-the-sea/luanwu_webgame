@@ -66,6 +66,7 @@ def test_shop_config_is_limited_to_grain_trumpet_medicine_recruit_equipment_and_
         "zhuyingtai_guest_scroll",
         "liangshanbo_guest_scroll",
         "mawencai_guest_scroll",
+        "xiaozhao_recruit_scroll",
     }
 
     troop_data = yaml.safe_load(Path("data/troop_templates.yaml").read_text(encoding="utf-8"))

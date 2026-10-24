@@ -59,7 +59,9 @@ def test_reward_migration_freezes_current_equipment_and_recipe():
         defaults = rules.GUEST_DEFAULTS[hero["key"]]
         assert defaults["name"] == hero["name"]
         assert defaults["flavor"] == hero["flavor"]
-        assert growth_rules.GUEST_GROWTH_RANGES[hero["key"]] == hero["growth_range"]
+        # 0223 是历史迁移；当前蚩尤兑换配置刻意将两位门客的成长上限调至 13。
+        assert growth_rules.GUEST_GROWTH_RANGES[hero["key"]] == [6, 14]
+        assert hero["growth_range"] == [6, 13]
         assert growth_rules.GUEST_ATTRIBUTE_WEIGHTS[hero["key"]] == hero["attribute_weights"]
         assert rules.IMAGE_SOURCES[defaults["avatar"]] == "guests/" + hero["avatar"]
         assert defaults["is_world_unique"] is hero["is_world_unique"] is True

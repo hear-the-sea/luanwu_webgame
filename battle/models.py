@@ -3,6 +3,8 @@ from __future__ import annotations
 from django.db import models
 from django.utils import timezone
 
+from core.fields import WebPImageField
+
 
 class TroopTemplate(models.Model):
     """兵种模板"""
@@ -16,7 +18,13 @@ class TroopTemplate(models.Model):
     speed_bonus = models.PositiveIntegerField(default=10, verbose_name="速度加成")
     priority = models.IntegerField(default=0, verbose_name="显示优先级")
     default_count = models.PositiveIntegerField(default=120, verbose_name="默认数量")
-    avatar = models.ImageField(upload_to="troops/", blank=True, null=True, verbose_name="兵种形象")
+    avatar = WebPImageField(
+        upload_to="troops/",
+        max_size=(300, 300),
+        blank=True,
+        null=True,
+        verbose_name="兵种形象",
+    )
 
     class Meta:
         verbose_name = "兵种模板"
@@ -61,6 +69,7 @@ class BattleReport(models.Model):
         verbose_name_plural = "战报"
         ordering = ("-created_at",)
         indexes = [
+            models.Index(fields=["created_at", "id"], name="battle_report_retention_idx"),
             models.Index(fields=["manor", "-created_at"], name="battlereport_manor_cr_idx"),
         ]
 

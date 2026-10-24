@@ -44,7 +44,15 @@
                         <td class="py-2">{{ row.manor_name }}</td>
                         <td class="py-2 text-right">{{ row.total_damage }}</td>
                         <td class="py-2 text-right">{{ row.boss_damage }}</td>
-                        <td class="py-2 text-right">{{ row.total_coins }}</td>
+                        <td class="py-2 text-right">
+                            <div>角斗币 ×{{ row.total_coins }}</div>
+                            {% if row.mingjiao_rewards.fire_seed_quantity %}
+                            <div>火种 ×{{ row.mingjiao_rewards.fire_seed_quantity }}</div>
+                            {% endif %}
+                            {% if row.mingjiao_rewards.holy_fire_token_quantity %}
+                            <div>明教圣火令 ×{{ row.mingjiao_rewards.holy_fire_token_quantity }}</div>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>

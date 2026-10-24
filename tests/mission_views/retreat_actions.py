@@ -4,13 +4,41 @@ import pytest
 from django.db import DatabaseError
 from django.urls import reverse
 
-from core.exceptions import ScoutRetreatStateError
+from core.exceptions import MissionCannotRetreatError, ScoutRetreatStateError
 from gameplay.models import MissionRun, MissionTemplate
 from tests.mission_views.support import assert_redirect, build_scout_record, response_messages
 
 
 @pytest.mark.django_db
 class TestRetreatViews:
+    def test_retreat_mission_returns_home_and_starts_return_journey(self, manor_with_user, monkeypatch):
+        manor, client = manor_with_user
+        mission = MissionTemplate.objects.create(key=f"retreat_home_{manor.id}", name="返程测试")
+        run = MissionRun.objects.create(manor=manor, mission=mission, status=MissionRun.Status.ACTIVE, travel_time=300)
+        monkeypatch.setattr("gameplay.services.missions_impl.execution.schedule_mission_completion", lambda _run: None)
+
+        response = client.post(reverse("gameplay:mission_retreat", kwargs={"pk": run.pk}))
+
+        assert_redirect(response, reverse("home"))
+        run.refresh_from_db()
+        assert run.is_retreating is True
+        assert run.return_at is not None
+        assert any("已撤退" in message for message in response_messages(response))
+
+    def test_retreat_mission_known_error_returns_home(self, manor_with_user, monkeypatch):
+        manor, client = manor_with_user
+        mission = MissionTemplate.objects.create(key=f"retreat_home_error_{manor.id}", name="撤退受限")
+        run = MissionRun.objects.create(manor=manor, mission=mission, status=MissionRun.Status.ACTIVE)
+
+        def reject_retreat(_run):
+            raise MissionCannotRetreatError(reason="returning")
+
+        monkeypatch.setattr("gameplay.views.missions.request_retreat", reject_retreat)
+        response = client.post(reverse("gameplay:mission_retreat", kwargs={"pk": run.pk}))
+
+        assert_redirect(response, reverse("home"))
+        assert any("已进入返程" in message for message in response_messages(response))
+
     def test_retreat_mission_rejects_when_action_lock_conflicts(self, manor_with_user, monkeypatch):
         manor, client = manor_with_user
         mission = MissionTemplate.objects.create(
@@ -32,7 +60,7 @@ class TestRetreatViews:
         monkeypatch.setattr("gameplay.views.missions.request_retreat", _unexpected_retreat)
 
         response = client.post(reverse("gameplay:mission_retreat", kwargs={"pk": run.pk}))
-        assert_redirect(response, reverse("gameplay:dashboard"))
+        assert_redirect(response, reverse("home"))
         assert any("任务请求处理中，请稍候重试" in message for message in response_messages(response))
         assert called["count"] == 0
 
@@ -75,7 +103,7 @@ class TestRetreatViews:
         )
 
         response = client.post(reverse("gameplay:mission_retreat", kwargs={"pk": run.pk}))
-        assert_redirect(response, reverse("gameplay:dashboard"))
+        assert_redirect(response, reverse("home"))
         assert any("操作失败，请稍后重试" in message for message in response_messages(response))
 
     def test_retreat_mission_programming_error_bubbles_up(self, manor_with_user, monkeypatch):

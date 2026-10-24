@@ -110,7 +110,7 @@ def test_chiyou_exchange_guests_are_individually_world_unique_with_configured_pu
         assert hero["recruitable"] is False
         assert hero["default_gender"] == "male"
         assert hero["archetype"] == "military"
-        assert hero["growth_range"] == [6, 14]
+        assert hero["growth_range"] == [6, 13]
         assert sum(hero["attribute_weights"].values()) == 100
         assert sum(hero["custom_stats"][stat] for stat in stats) == sum(purple_military[stat] for stat in stats)
         assert hero["custom_stats"]["luck"] == 98

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from datetime import timedelta
 
 import pytest
@@ -9,6 +10,12 @@ from django.utils import timezone
 
 from gameplay.services.manor.core import ensure_manor
 from guilds.models import Guild, GuildMember, GuildMissionRun, GuildMissionTemplate, GuildRaidRun
+
+
+def assert_home_return_form(body, action):
+    form = re.search(r'<form\b[^>]*action="' + re.escape(action) + r'"[^>]*>(.*?)</form>', body, re.S)
+    assert form is not None
+    assert f'<input type="hidden" name="next" value="{reverse("home")}">' in form.group(1)
 
 
 @pytest.mark.django_db
@@ -124,6 +131,7 @@ def test_home_page_shows_guild_mission_retreat_for_manage_member(client, django_
 
     body = response.content.decode("utf-8")
     assert reverse("guilds:mission_retreat") in body
+    assert_home_return_form(body, reverse("guilds:mission_retreat"))
     assert f'value="{run.id}"' in body
     assert ">撤回<" in body
 
@@ -198,13 +206,14 @@ def test_manage_member_can_retreat_guild_mission_from_home_event(client, django_
 
     response = client.post(
         reverse("guilds:mission_retreat"),
-        {"run_id": str(run.id)},
+        {"run_id": str(run.id), "next": reverse("home")},
         follow=True,
     )
 
     run.refresh_from_db()
     messages = [str(message) for message in get_messages(response.wsgi_request)]
     assert response.redirect_chain
+    assert response.redirect_chain[0] == (reverse("home"), 302)
     assert run.status == GuildMissionRun.Status.RETREATED
     assert messages[-1] == "帮会任务已撤回"
 
@@ -239,6 +248,7 @@ def test_home_page_shows_active_guild_pvp_event_with_retreat_for_manage_member(c
     assert f"正在向{defender_guild.name}进军" in body
     assert "预计到达" in body
     assert reverse("guilds:pvp_retreat") in body
+    assert_home_return_form(body, reverse("guilds:pvp_retreat"))
     assert f'value="{run.id}"' in body
     assert ">撤回<" in body
     assert reverse("guilds:pvp") in body

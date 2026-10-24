@@ -25,7 +25,7 @@ def _lock_active_member(member: GuildMember) -> GuildMember:
         raise GuildMembershipError("您不在帮会中")
 
     locked_member = (
-        GuildMember.objects.select_for_update()
+        GuildMember.objects.select_for_update(of=("self",))
         .select_related("user")
         .filter(pk=member.pk, guild=locked_guild, is_active=True)
         .first()
@@ -187,7 +187,7 @@ def apply_guild_troop_losses(
 
     storages = {
         storage.troop_template.key: storage
-        for storage in GuildTroopStorage.objects.select_for_update()
+        for storage in GuildTroopStorage.objects.select_for_update(of=("self",))
         .select_related("troop_template")
         .filter(guild=guild, troop_template__key__in=troops_lost.keys())
         .order_by("troop_template__priority", "troop_template__id")
@@ -221,7 +221,7 @@ def deduct_guild_troops(*, guild: Guild, loadout: dict[str, int]) -> dict[str, i
 
     storages = {
         storage.troop_template.key: storage
-        for storage in GuildTroopStorage.objects.select_for_update()
+        for storage in GuildTroopStorage.objects.select_for_update(of=("self",))
         .select_related("troop_template")
         .filter(guild=guild, troop_template__key__in=normalized_loadout.keys())
         .order_by("troop_template_id")
@@ -303,7 +303,7 @@ def donate_troops(*, member: GuildMember, troop_key: str, quantity: int) -> int:
         raise GuildValidationError(f"贡献度已达上限（{MAX_CONTRIBUTION:,}）")
 
     player_troop = (
-        PlayerTroop.objects.select_for_update()
+        PlayerTroop.objects.select_for_update(of=("self",))
         .select_related("troop_template")
         .filter(manor=locked_member.user.manor, troop_template__key=normalized_key)
         .first()

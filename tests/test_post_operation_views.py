@@ -126,7 +126,8 @@ class TestPostOperations:
         assert response.status_code == 302
         assert response.url == reverse("gameplay:dashboard")
 
-    def test_cancel_building_upgrade_clears_timer_without_refunding_costs(self, manor_with_user):
+    @pytest.mark.parametrize("next_target", [None, "/", "https://external.invalid/"])
+    def test_cancel_building_upgrade_clears_timer_without_refunding_costs(self, manor_with_user, next_target):
         manor, client = manor_with_user
         building = manor.buildings.first()
         building.is_upgrading = True
@@ -138,12 +139,15 @@ class TestPostOperations:
         manor.save(update_fields=["silver", "grain", "action_points"])
         resource_event_count = manor.resource_events.count()
 
-        response = client.post(reverse("gameplay:cancel_building_upgrade", args=[building.pk]))
+        response = client.post(
+            reverse("gameplay:cancel_building_upgrade", args=[building.pk]),
+            {"next": next_target} if next_target else {},
+        )
 
         building.refresh_from_db()
         manor.refresh_from_db()
         assert response.status_code == 302
-        assert response.url == reverse("gameplay:dashboard")
+        assert response.url == (reverse("home") if next_target == "/" else reverse("gameplay:dashboard"))
         assert building.level == 1
         assert building.is_upgrading is False
         assert building.upgrade_complete_at is None

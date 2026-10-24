@@ -59,6 +59,18 @@ def format_rare_drop_summary(rare_drop_item_key: str) -> str:
     return f"掉落稀有奖励：{item_name}"
 
 
+def format_mingjiao_reward_summary(reward_payload: dict) -> str:
+    rewards = reward_payload.get("mingjiao") or {}
+    fire_seeds = int(rewards.get("fire_seed_quantity") or 0)
+    token_quantity = int(rewards.get("holy_fire_token_quantity") or 0)
+    items = []
+    if fire_seeds:
+        items.append(f"火种 ×{fire_seeds}")
+    if token_quantity:
+        items.append(f"明教圣火令 ×{token_quantity}")
+    return f"通关奖励：{'，'.join(items)}。" if items else ""
+
+
 def send_coop_settlement_messages(
     *,
     locked_event: ArenaCoopEvent,
@@ -76,6 +88,7 @@ def send_coop_settlement_messages(
         f"排名第 {contribution.damage_rank}，"
         f"角斗币 {contribution.total_coins}。"
         f"{format_rare_drop_summary(contribution.rare_drop_item_key)}。"
+        f"{format_mingjiao_reward_summary(getattr(contribution, 'reward_payload', {}) or {})}"
     )
 
     create_message_fn(
@@ -103,6 +116,8 @@ def settle_coop_event_locked(
     logger: logging.Logger,
     create_message_fn: CreateMessageFn,
 ) -> None:
+    if locked_event.status == ArenaCoopEvent.Status.COMPLETED:
+        return
     rules = load_runtime_rules_for_event(base_rules, locked_event)
     damage_rows = aggregate_event_damage(report.rounds or [], boss_template_key=locked_event.boss_template_key)
     real_entries = [entry for entry in registered_entries if entry.source == ArenaCoopEntry.Source.PLAYER]
@@ -123,6 +138,9 @@ def settle_coop_event_locked(
                 "guard_damage": bucket["guard_damage"],
                 "damage_share_bps": share_bps,
                 "met_minimum_contribution": share_bps >= int(rules["contribution"]["minimum_share_bps"]),
+                "guest_snapshots": list(
+                    entry.entry_guests.order_by("slot_index", "id").values_list("snapshot", flat=True)
+                ),
             }
         )
 
@@ -210,6 +228,9 @@ def settle_coop_event_locked(
             contribution.rare_drop_item_key = actual_drop_key
             contribution.reward_payload = {**contribution.reward_payload, "rare_drop_item_key": actual_drop_key}
             contribution.save(update_fields=["rare_drop_item_key", "reward_payload"])
+        item_rewards = (contribution.reward_payload.get("mingjiao") or {}).get("item_rewards") or {}
+        for item_key, quantity in item_rewards.items():
+            grant_item_with_equipment_affixes_locked(locked_manor, item_key, int(quantity))
 
         def _send_settlement_messages(
             *,

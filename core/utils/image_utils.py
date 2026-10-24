@@ -3,10 +3,68 @@
 import hashlib
 from io import BytesIO
 from pathlib import Path
-from typing import Tuple
+from typing import Any, BinaryIO, Protocol, Tuple, cast
 
 from django.core.files.base import ContentFile
-from PIL import Image
+from PIL import Image, ImageSequence
+
+DEFAULT_TRANSPARENT_BACKGROUND_COLOR = (248, 248, 232)
+
+
+class SeekableBinaryFile(Protocol):
+    def read(self, size: int = -1) -> bytes: ...
+
+    def seek(self, offset: int, whence: int = 0) -> int: ...
+
+    def tell(self) -> int: ...
+
+
+def flatten_transparent_image(image: Image.Image) -> Image.Image:
+    """将透明区域合成到与现有门客素材接近的浅暖黄色底色。"""
+    rgba_image = image.convert("RGBA")
+    background = Image.new("RGBA", rgba_image.size, (*DEFAULT_TRANSPARENT_BACKGROUND_COLOR, 255))
+    return Image.alpha_composite(background, rgba_image).convert("RGB")
+
+
+def convert_image_content_to_webp(
+    image_file: SeekableBinaryFile,
+    original_name: str,
+    max_size: Tuple[int, int] | None = None,
+    quality: int = 85,
+) -> Tuple[ContentFile, str]:
+    """把上传图片统一转为 WebP，并保留动画帧及浅暖黄色透明底色。"""
+    try:
+        image_file.seek(0)
+    except (AttributeError, OSError):
+        pass
+    output_name = f"{Path(original_name).stem or 'image'}.webp"
+    with Image.open(cast(BinaryIO, image_file)) as image:
+        frame_count = getattr(image, "n_frames", 1)
+        has_transparency = "A" in image.getbands() or "transparency" in image.info
+        exceeds_max_size = max_size is not None and (image.width > max_size[0] or image.height > max_size[1])
+
+        # 已经是符合限制的不透明 WebP 时直接复用编码数据，避免无谓的二次有损压缩。
+        if image.format == "WEBP" and frame_count == 1 and not has_transparency and not exceeds_max_size:
+            image_file.seek(0)
+            source_bytes = image_file.read()
+            return ContentFile(source_bytes), output_name
+
+        loop = image.info.get("loop", 0)
+        frames = []
+        durations = []
+        for frame in ImageSequence.Iterator(image):
+            prepared = flatten_transparent_image(frame)
+            if max_size is not None:
+                prepared.thumbnail(max_size, Image.Resampling.LANCZOS)
+            frames.append(prepared)
+            durations.append(frame.info.get("duration", image.info.get("duration", 100)))
+
+        buffer = BytesIO()
+        options: dict[str, Any] = {"format": "WEBP", "quality": quality, "method": 6}
+        if len(frames) > 1:
+            options.update(save_all=True, append_images=frames[1:], duration=durations, loop=loop)
+        frames[0].save(buffer, **options)
+    return ContentFile(buffer.getvalue()), output_name
 
 
 def get_file_hash(file_path: Path) -> str:
@@ -44,42 +102,22 @@ def compress_and_resize_image(
     Returns:
         (压缩后的文件对象, 文件名)
     """
-    with Image.open(image_path) as img:
-        # 转换为 RGB 模式（WebP 不支持 RGBA 某些情况）
-        if img.mode in ("RGBA", "LA", "P"):
-            # 如果有透明通道，保留它
-            if img.mode == "P":
-                img = img.convert("RGBA")
-            # 创建白色背景
-            background = Image.new("RGB", img.size, (255, 255, 255))
-            if img.mode == "RGBA" or img.mode == "LA":
-                background.paste(img, mask=img.split()[-1])  # 使用 alpha 通道作为 mask
-            else:
-                background.paste(img)
-            img = background
-        elif img.mode != "RGB":
-            img = img.convert("RGB")
+    if convert_to_webp:
+        with image_path.open("rb") as image_file:
+            return convert_image_content_to_webp(
+                image_file,
+                image_path.name,
+                max_size=max_size,
+                quality=quality,
+            )
 
-        # 保持宽高比缩放
-        img.thumbnail(max_size, Image.Resampling.LANCZOS)
-
-        # 保存到内存
+    with Image.open(image_path) as image:
+        image_format = image.format or "JPEG"
+        prepared = flatten_transparent_image(image)
+        prepared.thumbnail(max_size, Image.Resampling.LANCZOS)
         buffer = BytesIO()
-
-        if convert_to_webp:
-            # 转换为 WebP 格式
-            img.save(buffer, format="WEBP", quality=quality, method=6)
-            # 修改文件扩展名
-            original_name = image_path.stem
-            new_filename = f"{original_name}.webp"
-        else:
-            # 保持原格式
-            img_format = img.format or "JPEG"
-            img.save(buffer, format=img_format, quality=quality, optimize=True)
-            new_filename = image_path.name
-
-        buffer.seek(0)
-        return ContentFile(buffer.read()), new_filename
+        prepared.save(buffer, format=image_format, quality=quality, optimize=True)
+    return ContentFile(buffer.getvalue()), image_path.name
 
 
 def get_image_info(image_path: Path) -> dict:

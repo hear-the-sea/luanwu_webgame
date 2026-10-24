@@ -5,10 +5,12 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
+from django.db import transaction
 from django.utils import timezone
 
 from gameplay.constants import PVPConstants
 from gameplay.models import JailPrisoner
+from guests.services.world_unique import release_world_unique_prisoners
 
 JAIL_MAX_HOLD_DAYS = int(PVPConstants.JAIL_MAX_HOLD_DAYS)
 JAIL_MAX_HOLD_DURATION = timedelta(days=JAIL_MAX_HOLD_DAYS)
@@ -39,6 +41,7 @@ def is_prisoner_expired(prisoner: Any, *, as_of: datetime | None = None) -> bool
     return expires_at is not None and expires_at <= normalize_jail_time(as_of)
 
 
+@transaction.atomic
 def release_expired_prisoner_if_needed(prisoner: JailPrisoner, *, as_of: datetime | None = None) -> bool:
     """Release one locked held prisoner if its 30-day holding period has ended."""
     if prisoner.status != JailPrisoner.Status.HELD or not is_prisoner_expired(prisoner, as_of=as_of):
@@ -46,17 +49,26 @@ def release_expired_prisoner_if_needed(prisoner: JailPrisoner, *, as_of: datetim
 
     prisoner.status = JailPrisoner.Status.RELEASED
     prisoner.save(update_fields=["status"])
+    release_world_unique_prisoners([prisoner.pk])
     return True
 
 
+@transaction.atomic
 def release_expired_prisoners_for_captor(captor: Any, *, as_of: datetime | None = None) -> int:
     """Release all currently-held expired prisoners for one captor."""
     cutoff = jail_expiration_cutoff(as_of)
     captor_id = getattr(captor, "pk", captor)
-    return int(
-        JailPrisoner.objects.filter(
+    prisoner_ids = list(
+        JailPrisoner.objects.select_for_update()
+        .filter(
             captor_id=captor_id,
             status=JailPrisoner.Status.HELD,
             captured_at__lte=cutoff,
-        ).update(status=JailPrisoner.Status.RELEASED)
+        )
+        .values_list("pk", flat=True)
     )
+    released = JailPrisoner.objects.filter(pk__in=prisoner_ids, status=JailPrisoner.Status.HELD).update(
+        status=JailPrisoner.Status.RELEASED
+    )
+    release_world_unique_prisoners(prisoner_ids)
+    return int(released)

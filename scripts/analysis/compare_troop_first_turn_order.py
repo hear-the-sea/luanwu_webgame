@@ -151,7 +151,7 @@ def one_battle(profile_a, profile_b, swap, city, seed, version, level):
     # 城防永远属于防守方；交换攻守是在相同城防条件下比较进攻阵容。
     if city:
         defender.extend(make_city_defenses())
-    assign_agility_based_priorities(attacker, defender)
+    assign_agility_based_priorities(attacker, defender, battle_engine_version=version)
     units = attacker + defender
     guests = [unit for unit in units if unit.kind == "guest"]
     troops = [unit for unit in units if unit.kind == "troop"]

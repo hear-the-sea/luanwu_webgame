@@ -91,4 +91,5 @@ def test_chests_can_grant_the_new_book_bound_to_source(django_user_model, monkey
     monkeypatch.setattr(inventory_use, "weighted_random_choice", choose)
     inventory_use.use_inventory_item(source, manor)
     granted = InventoryItem.objects.get(manor=manor, template=book)
-    assert granted.quantity == granted.bound_quantity == 1
+    expected_quantity = 3 if key == rules.GUILD_CHEST else 1
+    assert granted.quantity == granted.bound_quantity == expected_quantity

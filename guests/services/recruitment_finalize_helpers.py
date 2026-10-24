@@ -62,6 +62,8 @@ def _get_owned_template_ids_for_finalization(manor: Manor) -> set[int]:
 
 
 def ensure_candidate_template_available(manor: Manor, candidate: RecruitmentCandidate) -> None:
+    if not candidate.template.recruitable or candidate.template.is_world_unique:
+        raise RecruitmentCandidateStateError(message="该门客仅可通过专属途径获得，无法普通招募")
     if candidate.rarity not in NON_REPEATABLE_RARITIES:
         return
     if candidate.template_id in _get_owned_template_ids_for_finalization(manor):
@@ -79,6 +81,9 @@ def partition_non_repeatable_candidates(
     accepted: list[RecruitmentCandidate] = []
     rejected: list[RecruitmentCandidate] = []
     for candidate in candidates:
+        if not candidate.template.recruitable or candidate.template.is_world_unique:
+            rejected.append(candidate)
+            continue
         is_non_repeatable = candidate.rarity in NON_REPEATABLE_RARITIES
         if is_non_repeatable and candidate.template_id in owned_template_ids:
             rejected.append(candidate)

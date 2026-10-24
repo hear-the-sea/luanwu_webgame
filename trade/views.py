@@ -73,7 +73,9 @@ def shop_sell_view(request: HttpRequest) -> HttpResponse:
         request,
         op="shop_sell",
         action_factory=lambda manor: sell_item(manor, parsed.item_key, parsed.quantity),
-        success_message=lambda result: f"成功出售 {result['item_name']} ×{result['quantity']}，获得 {result['total_income']} 银两",
+        success_message=lambda result: (
+            f"成功出售 {result['item_name']} ×{result['quantity']}，获得 {result['total_income']} 银两"
+        ),
         tab="shop",
         view="sell",
     )
@@ -101,7 +103,12 @@ def exchange_gold_bar_view(request: HttpRequest) -> HttpResponse:
         action_factory=lambda manor: exchange_gold_bar(manor, quantity),
         success_message=lambda result: (
             f"成功兑换 {result['quantity']} 根金条，花费 {result['total_cost']:,} 银两"
-            f"（含手续费 {result['fee']:,} 银两）。下一根汇率：{result['next_rate']:,} 银两。"
+            f"（含手续费 {result['fee']:,} 银两）。"
+            + (
+                f"下一根汇率：{result['next_rate']:,} 银两。"
+                if result["next_rate"] is not None
+                else "下一根汇率暂时不可用，请稍后刷新。"
+            )
         ),
         tab="bank",
         troop_category=troop_category,

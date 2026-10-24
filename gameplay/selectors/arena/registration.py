@@ -107,6 +107,10 @@ def get_arena_coop_summary_context(manor: Manor) -> dict:
                     "比赛方式",
                     "与其他玩家组成15人队伍，共同击败明教众人，获胜还有神秘奖励哦。",
                 ),
+                (
+                    "通关奖励",
+                    "依据贡献排名获得不同角斗币奖励，若使用绿/蓝色门客通关还有额外奖励哦。",
+                ),
             ),
         },
         "arena_coop_active_entry": active_entry,

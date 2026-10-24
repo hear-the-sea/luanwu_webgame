@@ -15,6 +15,17 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 @pytest.mark.parametrize("filename", ["requirements.lock.txt", "requirements-dev.lock.txt"])
+def test_django_lock_includes_the_security_patch_floor(filename):
+    django = next(
+        Requirement(line) for line in (ROOT / filename).read_text().splitlines() if line.lower().startswith("django==")
+    )
+    assert next(iter(django.specifier)).version == "5.2.18"
+    root_django = Requirement((ROOT / "requirements.txt").read_text().splitlines()[0])
+    assert not root_django.specifier.contains("5.2.17")
+    assert root_django.specifier.contains("5.2.18")
+
+
+@pytest.mark.parametrize("filename", ["requirements.lock.txt", "requirements-dev.lock.txt"])
 def test_locked_daphne_keeps_twisted_tls_extra_and_its_dependencies(filename):
     requirements = {
         canonicalize_name(req.name): req

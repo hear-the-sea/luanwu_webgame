@@ -69,6 +69,8 @@ def conditions_match(conditions: dict[str, Any], context: dict[str, Any]) -> boo
         return False
     if "hp_ratio_lte" in conditions and actor_ratio > float(conditions["hp_ratio_lte"]):
         return False
+    if "hp_ratio_gt" in conditions and actor_ratio <= float(conditions["hp_ratio_gt"]):
+        return False
     if "hp_ratio_gte" in conditions and actor_ratio < float(conditions["hp_ratio_gte"]):
         return False
     if "self_is_boss" in conditions and bool(getattr(actor, "is_boss", False)) is not bool(conditions["self_is_boss"]):

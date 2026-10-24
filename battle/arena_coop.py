@@ -25,8 +25,8 @@ ARENA_COOP_GUARD_TEMPLATE_KEYS = {
 ARENA_COOP_ENEMY_FINAL_STATS: dict[str, dict[str, int]] = {
     ARENA_COOP_BOSS_TEMPLATE_KEY: {
         "level": 85,
-        "force": 1180,
-        "intellect": 860,
+        "force": 1300,
+        "intellect": 950,
         "defense_stat": 650,
         "agility": 300,
         "luck": 160,
@@ -34,21 +34,21 @@ ARENA_COOP_ENEMY_FINAL_STATS: dict[str, dict[str, int]] = {
     },
     ARENA_COOP_YANG_XIAO_TEMPLATE_KEY: {
         "level": 85,
-        "force": 870,
-        "intellect": 660,
+        "force": 950,
+        "intellect": 720,
         "defense_stat": 520,
         "agility": 240,
         "luck": 115,
-        "final_hp": 120000,
+        "final_hp": 150000,
     },
     ARENA_COOP_WEI_YIXIAO_TEMPLATE_KEY: {
         "level": 85,
-        "force": 800,
-        "intellect": 480,
+        "force": 880,
+        "intellect": 530,
         "defense_stat": 470,
         "agility": 310,
         "luck": 130,
-        "final_hp": 120000,
+        "final_hp": 150000,
     },
     ARENA_COOP_FIVE_FLAGS_FRONT_TEMPLATE_KEY: {
         "level": 85,
@@ -71,7 +71,7 @@ ARENA_COOP_ENEMY_FINAL_STATS: dict[str, dict[str, int]] = {
 }
 
 ARENA_COOP_PHASE_MESSAGES = {
-    2: "明教号令震荡全场，张无忌踏入二阶段",
+    2: "圣火升腾，张无忌踏入二阶段",
     3: "圣火狂势彻底爆发，张无忌踏入三阶段",
 }
 ARENA_COOP_GUARD_STATE_KEYS = {

@@ -30,7 +30,12 @@ def _get_recruitable_templates_by_rarity() -> Dict[str, List[GuestTemplate]]:
     if cached is not None:
         cached_template_ids_by_rarity: Dict[str, List[int]] = cached
         all_template_ids = [template_id for ids in cached_template_ids_by_rarity.values() for template_id in ids]
-        templates_by_id = {template.id: template for template in GuestTemplate.objects.filter(id__in=all_template_ids)}
+        templates_by_id = {
+            template.id: template
+            for template in GuestTemplate.objects.filter(
+                id__in=all_template_ids, recruitable=True, is_world_unique=False
+            )
+        }
         cached_result: Dict[str, List[GuestTemplate]] = {}
         for rarity, ids in cached_template_ids_by_rarity.items():
             cached_result[rarity] = [

@@ -6,6 +6,7 @@ import logging
 import random
 from typing import Any, Dict, List, Optional
 
+from django.db import transaction
 from django.db.models import Q
 
 from core.utils.infrastructure import DATABASE_INFRASTRUCTURE_EXCEPTIONS
@@ -13,7 +14,13 @@ from gameplay.constants import get_raid_capture_guest_rate
 from guests.constants import RARITY_CONVERSION_TEMPLATE_KEY_PREFIX
 from guests.models import Guest, GuestRarity, GuestStatus, GuestTemplate, WorldUniqueGuest
 from guests.services.custom_guest import CUSTOM_GUEST_TEMPLATE_KEYS, is_custom_guest
-from guests.services.world_unique import WORLD_UNIQUE_LUBU_TEMPLATE_KEY, release_world_unique_guest_after_raid
+from guests.services.world_unique import (
+    WORLD_UNIQUE_LUBU_TEMPLATE_KEY,
+    capture_world_unique_guest,
+    lock_world_unique_prisoner,
+    release_world_unique_guest_after_raid,
+    transfer_world_unique_prisoner,
+)
 
 from ....models import JailPrisoner, Manor, OathBond, RaidRun
 from ...jail_expiration import release_expired_prisoners_for_captor
@@ -49,6 +56,43 @@ def _can_attempt_capture(winner: Manor, *, losing_side: str, rng: random.Random)
     return True
 
 
+def _try_take_enemy_prisoner(winner: Manor, loser: Manor) -> Dict[str, Any] | None:
+    """进攻获胜时优先夺取一名未过期俘虏；调用方持有结算事务。"""
+    locked_manors = {
+        manor.pk: manor
+        for manor in Manor.objects.select_for_update().filter(pk__in=[winner.pk, loser.pk]).order_by("pk")
+    }
+    winner = locked_manors[winner.pk]
+    loser = locked_manors[loser.pk]
+    if winner.jail_capacity <= 0:
+        return None
+    release_expired_prisoners_for_captor(winner)
+    if JailPrisoner.objects.filter(captor=winner, status=JailPrisoner.Status.HELD).count() >= winner.jail_capacity:
+        return None
+    release_expired_prisoners_for_captor(loser)
+    prisoner = (
+        JailPrisoner.objects.select_for_update()
+        .select_related("guest_template")
+        .filter(captor=loser, status=JailPrisoner.Status.HELD)
+        .exclude(guest_template__key=WORLD_UNIQUE_LUBU_TEMPLATE_KEY)
+        .order_by("captured_at", "pk")
+        .first()
+    )
+    if prisoner is None:
+        return None
+    unique_state = lock_world_unique_prisoner(prisoner)
+    prisoner.captor = winner
+    prisoner.save(update_fields=["captor"])
+    transfer_world_unique_prisoner(unique_state, winner)
+    return {
+        **_capture_guest_payload(
+            prisoner.display_name, prisoner.guest_template.rarity, prisoner.guest_template.key, True
+        ),
+        "source": "enemy_jail",
+        "prisoner_id": prisoner.pk,
+    }
+
+
 def _collect_losing_guest_ids(report: Any, is_attacker_victory: bool) -> List[int]:
     losing_team = (report.defender_team or []) if is_attacker_victory else (report.attacker_team or [])
     losing_guest_ids: List[int] = []
@@ -66,20 +110,16 @@ def _collect_losing_guest_ids(report: Any, is_attacker_victory: bool) -> List[in
 
 
 def _filter_capture_candidates(losing_guest_ids: List[int]) -> List[int]:
-    unique_guest_ids = set(
+    protected_guest_ids = set(
         Guest.objects.filter(
             id__in=losing_guest_ids,
         )
-        .filter(
-            Q(template__is_world_unique=True)
-            | Q(template__key=WORLD_UNIQUE_LUBU_TEMPLATE_KEY)
-            | Q(template__key__in=CUSTOM_GUEST_TEMPLATE_KEYS)
-        )
+        .filter(Q(template__key=WORLD_UNIQUE_LUBU_TEMPLATE_KEY) | Q(template__key__in=CUSTOM_GUEST_TEMPLATE_KEYS))
         .values_list("id", flat=True)
     )
     oathed_ids = set(OathBond.objects.filter(guest_id__in=losing_guest_ids).values_list("guest_id", flat=True))
     return [
-        guest_id for guest_id in losing_guest_ids if guest_id not in oathed_ids and guest_id not in unique_guest_ids
+        guest_id for guest_id in losing_guest_ids if guest_id not in oathed_ids and guest_id not in protected_guest_ids
     ]
 
 
@@ -119,7 +159,7 @@ def _select_capture_target(
 
     if OathBond.objects.filter(guest=target).exists():
         return None
-    if getattr(target.template, "is_world_unique", False) or target.template.key == WORLD_UNIQUE_LUBU_TEMPLATE_KEY:
+    if target.template.key == WORLD_UNIQUE_LUBU_TEMPLATE_KEY:
         return None
 
     return target
@@ -247,6 +287,7 @@ def _capture_guest_payload(
     }
 
 
+@transaction.atomic
 def _try_capture_guest(
     run: RaidRun,
     report: Any,
@@ -262,10 +303,16 @@ def _try_capture_guest(
     - 失败方：从本场出战门客中抽取；防守方战败时，逍遥山庄归闲门客也可被抽取
     - 出战门客权重为2，逍遥山庄归闲门客权重为1
     - 结义门客不可被俘获
+    - 吕布不可被俘获，其他全服唯一门客按普通规则判定
+    - 进攻胜利且监牢有空位时，优先夺取对方监牢一名俘虏，不再抽取出战门客
     - 监牢满员时不进行俘获判定，不给任何补偿
     - 俘获成功：门客从失败方移除，装备自动消失，进入胜利方监牢
     """
     winner, loser = _resolve_capture_sides(run, is_attacker_victory)
+    if is_attacker_victory and getattr(report, "winner", "") == "attacker":
+        prisoner_payload = _try_take_enemy_prisoner(winner, loser)
+        if prisoner_payload:
+            return prisoner_payload
     losing_side = "defender" if is_attacker_victory else "attacker"
     if not _can_attempt_capture(winner, losing_side=losing_side, rng=rng):
         return None
@@ -293,7 +340,7 @@ def _try_capture_guest(
 
     _delete_captured_guest_gear(run, target)
 
-    JailPrisoner.objects.create(
+    prisoner = JailPrisoner.objects.create(
         captor=winner,
         original_manor=loser,
         guest_template=captured_template,
@@ -308,6 +355,7 @@ def _try_capture_guest(
         raid_run=run,
     )
 
+    capture_world_unique_guest(target, prisoner)
     target.delete()
 
     return _capture_guest_payload(captured_name, captured_rarity, captured_template_key, is_attacker_victory)

@@ -35,11 +35,16 @@ from .runtime_refresh_support import run_refresh_api
 logger = logging.getLogger(__name__)
 
 
-def _recruitment_redirect(category: str | None = None) -> HttpResponse:
+def _recruitment_redirect(category: str | None = None, page: int = 1) -> HttpResponse:
     base_url = reverse("gameplay:troop_recruitment")
     normalized_category = (category or "all").strip()
+    params: dict[str, str | int] = {}
     if normalized_category and normalized_category != "all":
-        return redirect(f"{base_url}?{urlencode({'category': normalized_category})}")
+        params["category"] = normalized_category
+    if page > 1:
+        params["page"] = page
+    if params:
+        return redirect(f"{base_url}?{urlencode(params)}")
     return redirect(base_url)
 
 
@@ -138,15 +143,16 @@ def start_troop_recruitment_view(request: HttpRequest) -> HttpResponse:
     """开始募兵"""
     manor = get_manor(request.user)
     selected_category = (request.POST.get("category") or "all").strip()
+    selected_page = safe_positive_int(request.POST.get("page"), default=1) or 1
     troop_key = (request.POST.get("troop_key") or "").strip()
     quantity = safe_positive_int(request.POST.get("quantity"), default=None)
 
     if not troop_key:
         messages.error(request, "请选择兵种")
-        return _recruitment_redirect(selected_category)
+        return _recruitment_redirect(selected_category, selected_page)
     if quantity is None:
         messages.error(request, "无效的数量")
-        return _recruitment_redirect(selected_category)
+        return _recruitment_redirect(selected_category, selected_page)
 
     try:
         from gameplay.services.recruitment.recruitment import start_troop_recruitment
@@ -170,7 +176,7 @@ def start_troop_recruitment_view(request: HttpRequest) -> HttpResponse:
                 request.POST.get("quantity"),
             ),
         )
-    return _recruitment_redirect(selected_category)
+    return _recruitment_redirect(selected_category, selected_page)
 
 
 @login_required

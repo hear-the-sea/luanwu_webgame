@@ -9,11 +9,11 @@ from django.contrib import messages
 from django.core.cache import cache
 from django.http import HttpRequest
 from django.shortcuts import redirect
-from django.utils.http import url_has_allowed_host_and_scheme
 
 from core.utils.http import is_json_request
 from core.utils.network import get_client_ip
 from core.utils.responses import json_error
+from core.utils.validation import safe_redirect_url
 from gameplay.services.utils.cache_exceptions import CACHE_INFRASTRUCTURE_EXCEPTIONS
 
 logger = logging.getLogger(__name__)
@@ -30,10 +30,10 @@ def _cache_error_response(is_json: bool, error_message: str, request: HttpReques
     if redirect_url:
         return redirect(redirect_url)
 
-    referer = request.META.get("HTTP_REFERER", "")
-    if referer and url_has_allowed_host_and_scheme(referer, allowed_hosts={request.get_host()}):
-        return redirect(referer)
-    return redirect("/")
+    next_url = safe_redirect_url(request, request.POST.get("next"), "")
+    if next_url:
+        return redirect(next_url)
+    return redirect(safe_redirect_url(request, request.META.get("HTTP_REFERER"), "/"))
 
 
 def _default_identifier(request: HttpRequest) -> str:

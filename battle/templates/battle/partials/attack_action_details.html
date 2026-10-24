@@ -30,7 +30,7 @@
     {% include "battle/partials/attack_damage_summary.html" with attack=sub is_secondary=True secondary_kind=secondary_kind visible_side=my_side spectator=is_spectator %}
     {% if sub.reflect_damage %}
         {% reflect_effect_name sub as sub_reflect_effect %}
-        {% if sub_reflect_effect == '乾坤大挪移' %}
+        {% if sub_reflect_effect|is_boss_passive_reflect %}
         <div class="reflect-text">{% include "battle/partials/retaliation_damage_summary.html" with attack=sub action_side=sub.side|default:action_side effect=sub_reflect_effect damage=sub.reflect_damage kills=sub.reflect_kills defeated=sub.reflect_defeated visible_side=my_side spectator=is_spectator %}</div>
         {% else %}
         <div class="event-target-summary event-actor-settlement-summary reflect-text event-line">

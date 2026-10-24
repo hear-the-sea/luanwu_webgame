@@ -215,16 +215,22 @@ def test_default_arena_coop_special_skills_include_passive_configs() -> None:
     five_flags = skills["gl_top_five_flags_barrier"]
     guard_morale = skills["gl_top_guard_morale"]
 
-    assert mingjiao["passive_config"]["triggers"][0]["timing"] == "round_start"
-    assert any(effect["type"] == "set_softcap" for effect in mingjiao["passive_config"]["triggers"][0]["effects"])
-    assert any(effect["type"] == "emit_log" for effect in mingjiao["passive_config"]["triggers"][0]["effects"])
-    assert any(effect["type"] == "emit_log" for effect in qiankun["passive_config"]["triggers"][0]["effects"])
-    assert any(
-        effect["type"] == "modify_outgoing_damage" and effect["value"] == 1.848
-        for effect in holy_flame["passive_config"]["triggers"][0]["effects"]
+    mingjiao_triggers = mingjiao["passive_config"]["triggers"]
+    assert all(trigger["timing"] == "round_start" for trigger in mingjiao_triggers)
+    assert [trigger["effects"][-1]["value"] for trigger in mingjiao_triggers] == [1.32, 1.24, 1.16, 1.08]
+    assert all(trigger["effects"][-1]["scope"] == "round" for trigger in mingjiao_triggers)
+    assert all(
+        not any(effect["type"] == "set_softcap" for effect in trigger["effects"]) for trigger in mingjiao_triggers
     )
-    assert any(effect["type"] == "set_softcap" for effect in holy_flame["passive_config"]["triggers"][0]["effects"])
-    assert any(effect["type"] == "emit_log" for effect in holy_flame["passive_config"]["triggers"][0]["effects"])
+    assert all(any(effect["type"] == "emit_log" for effect in trigger["effects"]) for trigger in mingjiao_triggers)
+    assert any(effect["type"] == "emit_log" for effect in qiankun["passive_config"]["triggers"][0]["effects"])
+    holy_flame_triggers = holy_flame["passive_config"]["triggers"]
+    assert [trigger["effects"][-1]["value"] for trigger in holy_flame_triggers] == [1.2, 1.4]
+    assert all(trigger["effects"][-1]["scope"] == "round" for trigger in holy_flame_triggers)
+    assert all(
+        not any(effect["type"] == "set_softcap" for effect in trigger["effects"]) for trigger in holy_flame_triggers
+    )
+    assert all(any(effect["type"] == "emit_log" for effect in trigger["effects"]) for trigger in holy_flame_triggers)
     assert any(
         effect["type"] == "modify_incoming_damage" for effect in five_flags["passive_config"]["triggers"][0]["effects"]
     )

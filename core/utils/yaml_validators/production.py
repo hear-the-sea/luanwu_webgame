@@ -122,6 +122,7 @@ VALID_PASSIVE_TIMINGS = {
 VALID_PASSIVE_CONDITION_KEYS = {
     "hp_ratio_lt",
     "hp_ratio_lte",
+    "hp_ratio_gt",
     "hp_ratio_gte",
     "self_is_boss",
     "self_template_in",

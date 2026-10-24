@@ -35,3 +35,15 @@ def test_draw_enemy_blades_uses_tenfold_weight_without_stacking_between_rounds()
 
     assert "10" not in skill["description"]
     assert "权重" not in skill["description"]
+
+
+def test_neutral_target_weights_preserve_choice_and_rng_sequence():
+    units = [make_unit(name=f"门客{index}") for index in range(4)]
+    expected_rng = random.Random(20261024)
+    actual_rng = random.Random(20261024)
+
+    expected = expected_rng.choice(units)
+    actual = _weighted_choice(units, actual_rng)
+
+    assert actual is expected
+    assert actual_rng.random() == expected_rng.random()

@@ -34,7 +34,13 @@ from .email_quota import (
     is_email_send_quota_exhausted,
     reserve_email_send_slot,
 )
-from .email_verification import build_email_verification_token, get_user_from_email_verification_token, verification_url
+from .email_verification import (
+    build_email_verification_resend_token,
+    build_email_verification_token,
+    get_user_from_email_verification_resend_token,
+    get_user_from_email_verification_token,
+    verification_url,
+)
 from .forms import EmailVerificationRecoveryForm, LoginForm, SignUpForm
 from .login_runtime import check_login_attempts as runtime_check_login_attempts
 from .login_runtime import clear_login_attempts as runtime_clear_login_attempts
@@ -346,7 +352,7 @@ def _email_verification_recovery_identifier(request) -> str:
 
 def _get_pending_email_verification_user(request, *, token: str | None = None) -> User | None:
     if token:
-        token_user = get_user_from_email_verification_token(token, allow_expired=True)
+        token_user = get_user_from_email_verification_resend_token(token)
         if token_user is not None and not token_user.is_active and not token_user.email_verified:
             return token_user
 
@@ -532,7 +538,7 @@ class RegisterView(CreateView):
         return render(
             self.request,
             "accounts/email_verification_pending.html",
-            _email_verification_pending_context(self.object, resend_token=token),
+            _email_verification_pending_context(self.object, resend_token=build_email_verification_resend_token(user)),
         )
 
 
@@ -756,7 +762,7 @@ class ResendEmailVerificationView(View):
             _email_verification_pending_context(
                 pending_user,
                 resend_success=True,
-                resend_token=verification_token,
+                resend_token=build_email_verification_resend_token(pending_user),
             ),
         )
 
@@ -819,6 +825,14 @@ class VerifyEmailView(View):
         try:
             with transaction.atomic():
                 verified_user = User.objects.select_for_update().get(pk=user.pk)
+                # 邮箱可能在凭据解析后被管理员修改；只激活令牌实际绑定的邮箱。
+                if verified_user.email != user.email:
+                    return render(
+                        request,
+                        "accounts/email_verification_result.html",
+                        {"verified": False},
+                        status=400,
+                    )
                 if verified_user.email_verified:
                     return render(
                         request,

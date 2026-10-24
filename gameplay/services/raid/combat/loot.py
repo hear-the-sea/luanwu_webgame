@@ -437,6 +437,8 @@ def _format_capture_description(capture_payload: Any) -> str:
     name = (capture_payload.get("guest_name") or "").strip()
     if not name:
         return ""
+    if capture_payload.get("source") == "enemy_jail":
+        return f"{name}（从战败方监牢夺取，已转移至胜利方监牢）"
     return f"{name}（已押入监牢，装备尽失）"
 
 

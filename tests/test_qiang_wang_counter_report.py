@@ -128,5 +128,5 @@ def test_debugger_counter_line_does_not_inherit_original_actor_prefix():
     command.print_combat_log([{"round": 1, "events": [event]}])
     line = next(line.strip() for line in output.getvalue().splitlines() if "反戈一击" in line)
 
-    assert line.startswith("→防守方枪王爆发反戈一击")
+    assert line.startswith("←防守方枪王爆发反戈一击")
     assert "对李利贞造成伤害" in line

@@ -74,10 +74,14 @@ def recruit_cavalry(request):
 @rate_limit_redirect("guild_exchange_item", limit=20, window_seconds=60)
 def exchange_item(request, item_key):
     """兑换物品"""
+    page = safe_int(request.POST.get("page"), default=1, min_val=1)
+    return_url = reverse("guilds:warehouse")
+    if page > 1:
+        return_url = f"{return_url}?page={page}"
     # 验证 item_key 格式（防止注入攻击）
     if not item_key or not ITEM_KEY_PATTERN.match(item_key):
         messages.error(request, "无效的物品标识")
-        return redirect("guilds:warehouse")
+        return redirect(return_url)
 
     member = request.guild_member
     max_quantity = 100_000_000 if warehouse_service.is_resource_exchange_item(item_key) else 100
@@ -94,7 +98,7 @@ def exchange_item(request, item_key):
         error_message_formatter=sanitize_error_message,
     )
 
-    return redirect("guilds:warehouse")
+    return redirect(return_url)
 
 
 @login_required
