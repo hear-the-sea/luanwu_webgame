@@ -22,7 +22,7 @@ def collect_active_deployment_guest_ids(candidate_ids: list[int]) -> set[int]:
     if not candidate_ids:
         return set()
 
-    from gameplay.models import ArenaEntry, ArenaEntryGuest, ArenaTournament, MissionRun, RaidRun
+    from gameplay.models import ArenaEntry, ArenaEntryGuest, ArenaTournament, MissionRun, RaidRun, SeasonExpedition
 
     active_ids = set(
         MissionRun.objects.filter(status=MissionRun.Status.ACTIVE, guests__id__in=candidate_ids).values_list(
@@ -49,6 +49,12 @@ def collect_active_deployment_guest_ids(candidate_ids: list[int]) -> set[int]:
                 ArenaTournament.Status.RUNNING,
             ],
         ).values_list("guest_id", flat=True)
+    )
+    # 赛季队伍的返程和异常待处理阶段仍占用真实门客，不能按孤儿恢复。
+    active_ids.update(
+        SeasonExpedition.objects.exclude(status="completed")
+        .filter(guests__id__in=candidate_ids)
+        .values_list("guests__id", flat=True)
     )
     return active_ids
 

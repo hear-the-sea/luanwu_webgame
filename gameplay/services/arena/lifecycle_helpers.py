@@ -33,6 +33,7 @@ from . import helpers as _arena_helpers
 from .match_store import create_scheduled_match
 from .replay import initialize_replay_metadata_locked, replay_context
 from .rules import load_arena_rules
+from .state_helpers import exclude_active_arena_guests
 
 logger = logging.getLogger(__name__)
 
@@ -189,12 +190,12 @@ def finalize_tournament_locked(
     )
     if participating_guest_ids:
         guests = list(
-            Guest.objects.select_for_update()
-            .filter(
-                id__in=participating_guest_ids,
-                status__in=[GuestStatus.ARENA, GuestStatus.DEPLOYED],
-            )
-            .order_by("id")
+            exclude_active_arena_guests(
+                Guest.objects.select_for_update().filter(
+                    id__in=participating_guest_ids,
+                    status=GuestStatus.ARENA,
+                )
+            ).order_by("id")
         )
         persist_guest_status_transitions(
             guests,

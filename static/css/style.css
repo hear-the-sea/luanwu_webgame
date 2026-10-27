@@ -4758,7 +4758,8 @@ body:has(.tw-guild-frame),
 body:has([data-map-page]),
 body:has([data-work-page]),
 body:has([data-player-tasks-page]),
-body:has([data-jail-root]) {
+body:has([data-jail-root]),
+body:has([data-season-page]) {
   height: 100vh;
   height: 100dvh;
   min-height: 0;
@@ -4775,7 +4776,8 @@ body:has([data-jail-root]) {
 .game-container:has([data-map-page]),
 .game-container:has([data-work-page]),
 .game-container:has([data-player-tasks-page]),
-.game-container:has([data-jail-root]) {
+.game-container:has([data-jail-root]),
+.game-container:has([data-season-page]) {
   height: 100vh;
   height: 100dvh;
   min-height: 0;
@@ -4791,7 +4793,8 @@ body:has([data-jail-root]) {
 .full-layout:has([data-map-page]),
 .full-layout:has([data-work-page]),
 .full-layout:has([data-player-tasks-page]),
-.full-layout:has([data-jail-root]) {
+.full-layout:has([data-jail-root]),
+.full-layout:has([data-season-page]) {
   flex: 1 1 0%;
   min-height: 0;
   overflow: hidden;
@@ -4812,7 +4815,8 @@ body:has([data-jail-root]) {
   .full-layout:has([data-map-page]) > .content-area,
   .full-layout:has([data-work-page]) > .content-area,
   .full-layout:has([data-player-tasks-page]) > .content-area,
-  .full-layout:has([data-jail-root]) > .content-area
+  .full-layout:has([data-jail-root]) > .content-area,
+  .full-layout:has([data-season-page]) > .content-area
 ) {
   --page-scrollbar-thumb: var(--border-primary);
   --page-scrollbar-track: rgba(139, 69, 19, 0.1);
@@ -4838,7 +4842,8 @@ body:has([data-jail-root]) {
   .full-layout:has([data-map-page]) > .content-area,
   .full-layout:has([data-work-page]) > .content-area,
   .full-layout:has([data-player-tasks-page]) > .content-area,
-  .full-layout:has([data-jail-root]) > .content-area
+  .full-layout:has([data-jail-root]) > .content-area,
+  .full-layout:has([data-season-page]) > .content-area
 )::-webkit-scrollbar {
   width: 9px;
 }
@@ -4854,7 +4859,8 @@ body:has([data-jail-root]) {
   .full-layout:has([data-map-page]) > .content-area,
   .full-layout:has([data-work-page]) > .content-area,
   .full-layout:has([data-player-tasks-page]) > .content-area,
-  .full-layout:has([data-jail-root]) > .content-area
+  .full-layout:has([data-jail-root]) > .content-area,
+  .full-layout:has([data-season-page]) > .content-area
 )::-webkit-scrollbar-track {
   background: var(--page-scrollbar-track);
 }
@@ -4870,7 +4876,8 @@ body:has([data-jail-root]) {
   .full-layout:has([data-map-page]) > .content-area,
   .full-layout:has([data-work-page]) > .content-area,
   .full-layout:has([data-player-tasks-page]) > .content-area,
-  .full-layout:has([data-jail-root]) > .content-area
+  .full-layout:has([data-jail-root]) > .content-area,
+  .full-layout:has([data-season-page]) > .content-area
 )::-webkit-scrollbar-thumb {
   border: 2px solid transparent;
   border-radius: 999px;
@@ -4889,7 +4896,8 @@ body:has([data-jail-root]) {
   .game-container:has([data-map-page]),
   .game-container:has([data-work-page]),
   .game-container:has([data-player-tasks-page]),
-  .game-container:has([data-jail-root]) {
+  .game-container:has([data-jail-root]),
+  .game-container:has([data-season-page]) {
     height: calc(100vh - 16px);
     height: calc(100dvh - 16px);
     margin-bottom: 16px;
@@ -4907,7 +4915,8 @@ body:has([data-jail-root]) {
   .game-container:has([data-map-page]),
   .game-container:has([data-work-page]),
   .game-container:has([data-player-tasks-page]),
-  .game-container:has([data-jail-root]) {
+  .game-container:has([data-jail-root]),
+  .game-container:has([data-season-page]) {
     height: 100vh;
     height: 100dvh;
     margin: 0;

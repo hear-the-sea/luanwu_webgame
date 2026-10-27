@@ -17,6 +17,10 @@ function createHarness({
   fetchError = "",
   deferredErrorDialog = false,
   confirmError = "",
+  storage = new Map(),
+  contentTop = 0,
+  windowTop = 0,
+  storageDisabled = false,
 } = {}) {
   const listeners = {};
   const confirmCalls = [];
@@ -53,7 +57,28 @@ function createHarness({
       listeners[type] = handler;
     },
   };
+  const content = { scrollTop: contentTop, scrollLeft: 0 };
   const windowObject = {
+    scrollY: windowTop,
+    scrollX: 0,
+    sessionStorage: {
+      getItem(key) {
+        if (storageDisabled) throw new Error("Storage disabled");
+        return storage.get(key) ?? null;
+      },
+      setItem(key, value) {
+        if (storageDisabled) throw new Error("Storage disabled");
+        storage.set(key, value);
+      },
+      removeItem(key) {
+        storage.delete(key);
+      },
+    },
+    scrollTo(position) {
+      windowObject.scrollY = position.top;
+      windowObject.scrollX = position.left;
+    },
+    requestAnimationFrame(callback) { callback(); },
     JailPageCore: {
       buildInteractionPayload(method) {
         return { method };
@@ -76,6 +101,7 @@ function createHarness({
       return confirmed;
     },
     location: {
+      pathname: "/jail/",
       reload() {
         reloadCalls += 1;
       },
@@ -106,6 +132,7 @@ function createHarness({
   }
   const documentObject = {
     querySelector(selector) {
+      if (selector === ".content-area") return content;
       return selector === '[data-jail-root="1"]' ? root : null;
     },
   };
@@ -136,6 +163,9 @@ function createHarness({
     resolveConfirmation,
     resolveFetch,
     resolveErrorDialog,
+    content,
+    storage,
+    windowObject,
   };
 }
 
@@ -512,4 +542,52 @@ test("release confirmation error clears its locks and restores submit focus", as
   assert.equal(submission.form.dataset.releaseConfirmPending, undefined);
   assert.equal(submission.dossier.dataset.jailActionPending, undefined);
   assert.equal(submission.focusCalls(), 1);
+});
+
+test("successful JSON action restores both scroll areas once after reload", async () => {
+  const harness = createHarness({
+    fetchPayload: { success: true }, contentTop: 920, windowTop: 180,
+  });
+  const click = createActionClick({ action: "observe" });
+  harness.listeners.click(click.event);
+  await flushPromises();
+  await flushPromises();
+
+  assert.equal(harness.reloadCalls(), 1);
+  const nextPage = createHarness({ storage: harness.storage });
+  assert.equal(nextPage.content.scrollTop, 920);
+  assert.equal(nextPage.windowObject.scrollY, 180);
+  assert.equal(nextPage.storage.size, 0);
+  const laterVisit = createHarness({ storage: harness.storage });
+  assert.equal(laterVisit.content.scrollTop, 0);
+});
+
+test("release saves scroll only after confirmation", async () => {
+  const accepted = createHarness({ confirmed: true, contentTop: 820 });
+  accepted.listeners.submit(createReleaseSubmission().event);
+  await flushPromises();
+  assert.equal(createHarness({ storage: accepted.storage }).content.scrollTop, 820);
+
+  const cancelled = createHarness({ confirmed: false, contentTop: 820 });
+  cancelled.listeners.submit(createReleaseSubmission().event);
+  await flushPromises();
+  assert.equal(cancelled.storage.size, 0);
+});
+
+test("storage restrictions do not prevent actions or reload", async () => {
+  const harness = createHarness({ storageDisabled: true, fetchPayload: { success: true } });
+  harness.listeners.click(createActionClick({ action: "observe" }).event);
+  await flushPromises();
+  await flushPromises();
+  assert.equal(harness.reloadCalls(), 1);
+  assert.equal(harness.errorCalls.length, 0);
+});
+
+test("request failures do not leave a scroll record for a later visit", async () => {
+  const harness = createHarness({ fetchError: "请求失败", contentTop: 820 });
+  harness.listeners.click(createActionClick({ action: "observe" }).event);
+  await flushPromises();
+  await flushPromises();
+  assert.equal(harness.reloadCalls(), 0);
+  assert.equal(harness.storage.size, 0);
 });

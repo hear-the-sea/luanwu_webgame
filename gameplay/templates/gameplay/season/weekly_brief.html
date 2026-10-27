@@ -1,0 +1,5 @@
+{% if weekly_campaign.enabled and member.faction %}
+<div class="season-personal-progress" aria-label="本周参与进度"><span>第{{ weekly_campaign.current_week }}周军务{% if weekly_claimable_count %} · {{ weekly_claimable_count }}周奖励可领{% endif %}</span>
+{% if weekly_campaign.reward_only %}<small>已进入归队领奖阶段，可领取已达标奖励。</small>{% else %}<small>个人 {{ weekly_current.merit|default:0 }} / {{ playability.weekly.participation_merit }} 贡献 · 共同 {{ weekly_current.team_merit|default:0 }} / {{ weekly_current.target|default:playability.weekly.goal_minimum }}</small>{% endif %}
+<button type="button" class="season-button" data-guild-modal-open="season-rewards">查看本周军务与奖励</button></div>
+{% endif %}

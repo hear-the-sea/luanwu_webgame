@@ -114,6 +114,7 @@ from .views.recruitment import (
     start_troop_recruitment_view,
     withdraw_troop_from_bank_view,
 )
+from .views.season import season_action_view, season_view
 from .views.technology import (
     TechnologyView,
     cancel_technology_upgrade_view,
@@ -132,6 +133,8 @@ from .views.xiaoyao import XiaoyaoShanzhuangView, move_guest_to_xiaoyao_view, re
 app_name = "gameplay"
 
 urlpatterns = [
+    path("season/", season_view, name="season"),
+    path("season/action/", season_action_view, name="season_action"),
     path("", DashboardView.as_view(), name="dashboard"),
     path("xiaoyao-shanzhuang/", XiaoyaoShanzhuangView.as_view(), name="xiaoyao_shanzhuang"),
     path("xiaoyao-shanzhuang/<int:pk>/move/", move_guest_to_xiaoyao_view, name="move_guest_to_xiaoyao"),

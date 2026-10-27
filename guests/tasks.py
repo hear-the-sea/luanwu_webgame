@@ -583,7 +583,7 @@ def _build_defection_message_payload(guest) -> dict:
 
 
 def _process_defection_batch(guest_ids: list[int], *, create_message: Callable) -> int:
-    from gameplay.models import Manor
+    from gameplay.models import Manor, SeasonExpedition
     from guests.models import Guest, GuestDefection
 
     defection_count = 0
@@ -609,6 +609,9 @@ def _process_defection_batch(guest_ids: list[int], *, create_message: Callable) 
                 if guest is None:
                     continue
                 if is_custom_guest(guest):
+                    continue
+                # 已派出的赛季队伍保持门客实体至归队；归队后恢复正常叛逃规则。
+                if SeasonExpedition.objects.filter(guests=guest).exclude(status="completed").exists():
                     continue
                 guest.manor = locked_manor
                 if is_world_unique_guest(guest):

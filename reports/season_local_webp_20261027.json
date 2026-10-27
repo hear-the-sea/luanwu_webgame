@@ -1,0 +1,127 @@
+{
+  "images": [
+    {
+      "path": "data/images/pvp/layers-v1/mountain/background.png",
+      "source_bytes": 1636210,
+      "status": "converted",
+      "webp_bytes": 84558
+    },
+    {
+      "path": "data/images/pvp/layers-v1/mountain/inn.png",
+      "source_bytes": 1448082,
+      "status": "converted",
+      "webp_bytes": 116638
+    },
+    {
+      "path": "data/images/pvp/layers-v1/mountain/gate.png",
+      "source_bytes": 904149,
+      "status": "converted",
+      "webp_bytes": 136614
+    },
+    {
+      "path": "data/images/pvp/layers-v1/mountain/ruins.png",
+      "source_bytes": 734225,
+      "status": "converted",
+      "webp_bytes": 110578
+    },
+    {
+      "path": "data/images/pvp/layers-v1/river/background.png",
+      "source_bytes": 1862591,
+      "status": "converted",
+      "webp_bytes": 141740
+    },
+    {
+      "path": "data/images/pvp/layers-v1/river/town.png",
+      "source_bytes": 1327048,
+      "status": "converted",
+      "webp_bytes": 169638
+    },
+    {
+      "path": "data/images/pvp/layers-v1/river/market.png",
+      "source_bytes": 969307,
+      "status": "converted",
+      "webp_bytes": 150064
+    },
+    {
+      "path": "data/images/pvp/layers-v1/river/warehouse.png",
+      "source_bytes": 1032569,
+      "status": "converted",
+      "webp_bytes": 136586
+    },
+    {
+      "path": "data/images/pvp/layers-v1/river/docks.png",
+      "source_bytes": 750485,
+      "status": "converted",
+      "webp_bytes": 132002
+    },
+    {
+      "path": "data/images/pvp/layers-v1/forest/background.png",
+      "source_bytes": 1845983,
+      "status": "converted",
+      "webp_bytes": 145206
+    },
+    {
+      "path": "data/images/pvp/layers-v1/forest/camp.png",
+      "source_bytes": 1697939,
+      "status": "converted",
+      "webp_bytes": 161890
+    },
+    {
+      "path": "data/images/pvp/layers-v1/forest/granary.png",
+      "source_bytes": 1780397,
+      "status": "converted",
+      "webp_bytes": 175382
+    },
+    {
+      "path": "data/images/pvp/layers-v1/forest/lodge.png",
+      "source_bytes": 1595397,
+      "status": "converted",
+      "webp_bytes": 124396
+    },
+    {
+      "path": "data/images/troops/daosheng.png",
+      "source_bytes": 1328208,
+      "status": "converted",
+      "webp_bytes": 29486
+    },
+    {
+      "path": "data/images/troops/qiangwang.png",
+      "source_bytes": 5543162,
+      "status": "converted",
+      "webp_bytes": 191260
+    },
+    {
+      "path": "data/images/troops/jiansheng.png",
+      "source_bytes": 5371093,
+      "status": "converted",
+      "webp_bytes": 153166
+    },
+    {
+      "path": "data/images/troops/quansheng.png",
+      "source_bytes": 5636005,
+      "status": "converted",
+      "webp_bytes": 198444
+    },
+    {
+      "path": "data/images/troops/jianshen.png",
+      "source_bytes": 5575444,
+      "status": "converted",
+      "webp_bytes": 135634
+    },
+    {
+      "path": "data/images/troops/shixuetieqi.png",
+      "source_bytes": 5537056,
+      "status": "converted",
+      "webp_bytes": 195050
+    }
+  ],
+  "status": "optimized_and_verified",
+  "delivery": "explicit_webp_static_urls",
+  "asset_count": 19,
+  "source_bytes": 46575350,
+  "webp_bytes": 2688332,
+  "original_dimensions_and_transparency_preserved": true,
+  "static_response_tests_passed": 3,
+  "related_backend_tests_passed": 70,
+  "season_browser_tests_passed": 26
+}

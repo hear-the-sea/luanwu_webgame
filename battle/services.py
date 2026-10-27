@@ -297,10 +297,10 @@ def simulate_report(
             or drop_handler is not None
             or defender_manor is not None
             or not attacker_guests
-            or not defender_guests
+            or (not defender_guests and not (prepared_teams and prepared_teams.defender_city_defenses))
             or any(
                 is_live_guest_model(guest) or not getattr(guest, "is_battle_snapshot_proxy", False)
-                for guest in [*attacker_guests, *defender_guests]
+                for guest in [*(attacker_guests or []), *(defender_guests or [])]
             )
         ):
             raise ValueError("unsaved battle reports require side-effect-free snapshot combat")

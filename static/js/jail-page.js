@@ -8,6 +8,51 @@
   }
   root.dataset.bound = "1";
 
+  const scrollStorageKey = `jail:scroll:${window.location.pathname}`;
+  const readScrollPosition = () => {
+    const content = document.querySelector(".content-area");
+    return {
+      contentTop: content?.scrollTop || 0,
+      contentLeft: content?.scrollLeft || 0,
+      windowTop: window.scrollY || 0,
+      windowLeft: window.scrollX || 0,
+    };
+  };
+  const saveScrollPosition = (position) => {
+    try {
+      window.sessionStorage.setItem(scrollStorageKey, JSON.stringify(position));
+    } catch (error) {
+      // 浏览器禁用存储时，仍允许正常提交操作。
+    }
+  };
+  const restoreScrollPosition = () => {
+    try {
+      const stored = window.sessionStorage.getItem(scrollStorageKey);
+      window.sessionStorage.removeItem(scrollStorageKey);
+      if (!stored) {
+        return;
+      }
+      const position = JSON.parse(stored);
+      const applyPosition = () => {
+        const content = document.querySelector(".content-area");
+        if (content) {
+          content.scrollTop = Number(position.contentTop) || 0;
+          content.scrollLeft = Number(position.contentLeft) || 0;
+        }
+        window.scrollTo({
+          top: Number(position.windowTop) || 0,
+          left: Number(position.windowLeft) || 0,
+          behavior: "instant",
+        });
+      };
+      applyPosition();
+      window.requestAnimationFrame(applyPosition);
+    } catch (error) {
+      // 无可用记录时保持浏览器默认的滚动行为。
+    }
+  };
+  restoreScrollPosition();
+
   const browserErrorMessage = (error, fallback = "操作失败，请稍后重试") =>
     window.PlayerFacingCopy?.browserErrorMessage(error, fallback) || fallback;
 
@@ -46,6 +91,7 @@
   };
 
   const confirmRelease = async (form) => {
+    const scrollPosition = readScrollPosition();
     const dossier = form.closest("[data-prisoner-id]");
     const submitButton = form.querySelector('button[type="submit"]');
     if (form.dataset.releaseConfirmPending === "1" || dossier?.dataset.jailActionPending === "1") {
@@ -68,6 +114,7 @@
         return;
       }
 
+      saveScrollPosition(scrollPosition);
       form.submit();
       submitted = true;
     } catch (error) {
@@ -78,7 +125,7 @@
         if (dossier) {
           delete dossier.dataset.jailActionPending;
         }
-        submitButton?.focus();
+        submitButton?.focus({ preventScroll: true });
       }
     }
   };
@@ -100,7 +147,7 @@
     return data;
   };
 
-  const finishAndReload = async (payload, speakerName = "") => {
+  const finishAndReload = async (payload, speakerName, scrollPosition) => {
     const result = payload?.result;
     const story = result?.text || payload?.text || payload?.message || "操作已完成";
     const summary = result
@@ -114,6 +161,7 @@
           ? "归附未成"
           : "招降结果";
     await showSuccess(summary ? `${story}\n${summary}` : story, title);
+    saveScrollPosition(scrollPosition);
     window.location.reload();
   };
 
@@ -160,6 +208,7 @@
   };
 
   const runAction = async (button) => {
+    const scrollPosition = readScrollPosition();
     const action = button.dataset.jailAction;
     const dossier = button.closest("[data-prisoner-id]");
     if (!action || !dossier || !button.dataset.actionUrl || dossier.dataset.jailActionPending === "1") {
@@ -196,7 +245,7 @@
 
       restoreControls = setDossierPending(dossier);
       const result = await postJson(button.dataset.actionUrl, payload);
-      await finishAndReload(result, speakerName);
+      await finishAndReload(result, speakerName, scrollPosition);
       completed = true;
     } catch (error) {
       await showError(browserErrorMessage(error));
@@ -204,7 +253,7 @@
       if (!completed) {
         restoreControls?.();
         delete dossier.dataset.jailActionPending;
-        button.focus();
+        button.focus({ preventScroll: true });
       }
     }
   };
@@ -232,6 +281,7 @@
   root.addEventListener("submit", (event) => {
     const form = event.target.closest("form[data-jail-release-form]");
     if (!form) {
+      saveScrollPosition(readScrollPosition());
       return;
     }
     event.preventDefault();

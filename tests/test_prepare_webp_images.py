@@ -1,4 +1,4 @@
-"""WebP 副本保留尺寸、动画及原图，并把透明区域合成浅暖黄色底色。"""
+"""WebP 副本保留尺寸、动画、透明通道及原图。"""
 
 from PIL import Image
 
@@ -13,7 +13,7 @@ def test_dry_run_does_not_write_files(tmp_path):
     assert not source.with_name("asset.png.webp").exists()
 
 
-def test_conversion_flattens_alpha_dimensions_and_source_and_is_repeatable(tmp_path):
+def test_conversion_preserves_alpha_dimensions_and_source_and_is_repeatable(tmp_path):
     source = tmp_path / "asset.png"
     image = Image.new("RGBA", (12, 10), (20, 30, 40, 0))
     image.putpixel((0, 0), (200, 100, 50, 128))
@@ -25,9 +25,9 @@ def test_conversion_flattens_alpha_dimensions_and_source_and_is_repeatable(tmp_p
     with Image.open(target) as result:
         assert result.format == "WEBP"
         assert result.size == (12, 10)
-        assert result.mode == "RGB"
-        background_pixel = result.getpixel((1, 1))
-        assert all(abs(actual - expected) <= 8 for actual, expected in zip(background_pixel, (248, 248, 232)))
+        assert result.mode == "RGBA"
+        assert result.getpixel((1, 1))[3] == 0
+        assert abs(result.getpixel((0, 0))[3] - 128) <= 1
     modified = target.stat().st_mtime_ns
     assert prepare_image(source, apply=True)["status"] == "current"
     assert target.stat().st_mtime_ns == modified

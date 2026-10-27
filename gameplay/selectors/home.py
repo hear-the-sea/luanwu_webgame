@@ -25,6 +25,7 @@ from ..services.technology import get_technology_template
 from ..services.utils.cache import CacheKeys
 from ..services.utils.cache_exceptions import CACHE_INFRASTRUCTURE_EXCEPTIONS
 from ..services.utils.query_optimization import optimize_guest_queryset
+from .home_season import get_home_season_events
 
 logger = logging.getLogger(__name__)
 
@@ -205,6 +206,7 @@ def get_home_context(manor, *, production_basis: ResourceProductionBasis | None 
         "guests": guests,
         "guest_count": len(guests),
         "active_runs": runs,
+        "active_season_events": get_home_season_events(manor, now=now),
         "upgrading_buildings": upgrading_buildings,
         "upgrading_technologies": upgrading_techs,
         "total_guest_salary": total_guest_salary,

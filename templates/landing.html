@@ -11,6 +11,13 @@
 {% if user.is_authenticated %}
 <section class="dashboard landing-dashboard">
 
+    {% if previous_season_reward %}
+    <a class="season-home-archive" href="{{ previous_season_reward.url }}">
+        <svg width="26" height="26" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="{% static 'images/season-icons.svg' %}#scroll"></use></svg>
+        <span>{{ previous_season_reward.season_name }} · {{ previous_season_reward.kind }}{% if previous_season_reward.kind == '人物卷轴' %}待使用{% else %}待领取{% endif %}</span><strong>查看 ›</strong>
+    </a>
+    {% endif %}
+
     <!-- 事件 -->
     <section class="panel">
         <div class="panel-header">=事件=</div>
@@ -23,7 +30,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% if active_runs or upgrading_buildings or upgrading_technologies or active_scouts or active_raids or incoming_raids or active_guild_mission or active_guild_pvp_run or incoming_guild_pvp_runs %}
+                {% if active_runs or active_season_events or upgrading_buildings or upgrading_technologies or active_scouts or active_raids or incoming_raids or active_guild_mission or active_guild_pvp_run or incoming_guild_pvp_runs %}
 
                 {# 敌袭警报 #}
                 {% for raid in incoming_raids %}
@@ -202,6 +209,46 @@
                     </td>
                 </tr>
                 {% endif %}
+
+                {# 赛季队伍与驻军；首页只读展示，结算由后台推进。 #}
+                {% for event in active_season_events %}
+                <tr data-season-home-event="{{ event.id }}">
+                    <td>
+                        <strong class="season-home-event-title"><svg width="22" height="22" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="{% static 'images/season-icons.svg' %}#{{ event.icon }}"></use></svg>{{ event.title }}：{{ event.node_name }}</strong>
+                        <div class="muted-text">{{ event.status_label }}{% if event.guest_names %} · {{ event.guest_names }}{% endif %}{% if event.troop_count %} · 护院 {{ event.troop_count }}{% endif %}{% if event.is_stationed_garrison %} · <span title="最终按实际补给与每日上限结算">预计驻守贡献 {{ event.garrison_merit_preview }}</span>{% endif %}{% if event.collection %} · 采集已胜 {{ event.collection.wins }} / {{ event.collection.maximum }} 场{% if event.status_label == '采集中' %} · 等待第 {{ event.collection.next_wave }} 场{% endif %}{% endif %}</div>
+                    </td>
+                    <td>
+                        {% if event.deadline %}
+                        <small class="muted-text">{{ event.deadline_label }}</small>
+                        {% if event.awaiting_settlement %}
+                        <span class="muted-text">等待结算</span>
+                        {% else %}
+                        <span class="countdown"
+                              data-countdown="{{ event.deadline|date:'c' }}"
+                              data-format="clock"
+                              data-complete-text="等待结算"
+                              title="{{ event.deadline_label }} {{ event.deadline|date:'Y-m-d H:i:s' }}">计算中</span>
+                        {% endif %}
+                        {% else %}
+                        <span class="muted-text">等待处理</span>
+                        {% endif %}
+                    </td>
+                    <td class="season-home-actions">
+                        {% if event.can_recall %}
+                        <form method="post" action="{% url 'gameplay:season_action' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="season_id" value="{{ event.season_id }}">
+                            <input type="hidden" name="action" value="recall">
+                            <input type="hidden" name="action_token" value="{{ event.action_token }}">
+                            <input type="hidden" name="run_id" value="{{ event.id }}">
+                            <input type="hidden" name="next" value="{% url 'home' %}">
+                            <button type="submit" class="btn-secondary btn-sm">{{ event.recall_label }}</button>
+                        </form>
+                        {% endif %}
+                        <a href="{{ event.details_url }}" class="btn-secondary btn-sm" aria-label="查看赛季队伍">查看</a>
+                    </td>
+                </tr>
+                {% endfor %}
 
                 {# 门客出征事件 #}
                 {% for run in active_runs %}

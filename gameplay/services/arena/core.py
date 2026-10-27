@@ -43,6 +43,7 @@ from .replay import ensure_tournament_replay_metadata
 from .round_helpers import finalize_round_state_locked, load_round_entries_for_matches, resolve_pending_round_matches
 from .rules import load_arena_rules
 from .snapshots import build_entry_guest_snapshot
+from .state_helpers import exclude_active_arena_guests
 from .state_helpers import sync_daily_participation_counter_locked as _sync_daily_participation_counter_locked
 from .state_helpers import update_daily_participation_counter_locked as _update_daily_participation_counter_locked
 from .virtual_fill_service import observe_fill_service_locked
@@ -251,12 +252,12 @@ def cancel_arena_entry(manor: Manor) -> int:
     ArenaEntry.objects.filter(id__in=entry_ids).delete()
     if participant_guest_ids:
         guests = list(
-            Guest.objects.select_for_update()
-            .filter(
-                id__in=participant_guest_ids,
-                status__in=[GuestStatus.ARENA, GuestStatus.DEPLOYED],
-            )
-            .order_by("id")
+            exclude_active_arena_guests(
+                Guest.objects.select_for_update().filter(
+                    id__in=participant_guest_ids,
+                    status=GuestStatus.ARENA,
+                )
+            ).order_by("id")
         )
         persist_guest_status_transitions(
             guests,
@@ -438,19 +439,12 @@ def _collect_due_arena_tournament_ids_for_manor(
 
 @transaction.atomic
 def _release_orphaned_arena_guests(manor: Manor) -> int:
-    active_guest_ids = ArenaEntryGuest.objects.filter(
-        guest__manor=manor,
-        entry__status=ArenaEntry.Status.REGISTERED,
-        entry__tournament__status__in=[
-            ArenaTournament.Status.RECRUITING,
-            ArenaTournament.Status.RUNNING,
-        ],
-    ).values_list("guest_id", flat=True)
+    # 与报名共用庄园锁，避免状态清理和新报名交错。
+    Manor.objects.select_for_update().get(pk=manor.pk)
     guests = list(
-        Guest.objects.select_for_update()
-        .filter(manor=manor, status=GuestStatus.ARENA)
-        .exclude(id__in=active_guest_ids)
-        .order_by("id")
+        exclude_active_arena_guests(
+            Guest.objects.select_for_update().filter(manor=manor, status=GuestStatus.ARENA)
+        ).order_by("id")
     )
     return persist_guest_status_transitions(
         guests,

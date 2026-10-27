@@ -96,6 +96,9 @@ class HomeView(TemplateView):
                 context.update(get_home_context(manor))
             else:
                 context.update(get_home_context(manor, production_basis=production_basis))
+            from gameplay.selectors.season_archive import previous_season_reward
+
+            context["previous_season_reward"] = previous_season_reward(manor)
 
         return context
 

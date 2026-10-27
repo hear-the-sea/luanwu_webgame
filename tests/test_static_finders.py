@@ -16,12 +16,33 @@ def test_catalog_image_finder_exposes_only_explicit_template_assets():
     )
 
     listed_paths = {path for path, _storage in finder.list([])}
-    assert listed_paths == {
-        "buildings/guild-residence.webp",
-        "items/chunqiu_coin.png",
-        "items/guild_silver_boost_card.png",
-        "items/large.png",
+    expected_paths = (
+        {
+            "buildings/guild-residence.webp",
+            "items/chunqiu_coin.png",
+            "items/guild_silver_boost_card.png",
+            "items/large.png",
+        }
+        | {
+            f"season-assets/{region}/{name}.png"
+            for region, names in {
+                "mountain": ("background", "inn", "gate", "ruins"),
+                "river": ("background", "town", "market", "warehouse", "docks"),
+                "forest": ("background", "camp", "granary", "lodge"),
+            }.items()
+            for name in names
+        }
+        | {
+            f"season-troops/{name}.png"
+            for name in ("daosheng", "qiangwang", "jiansheng", "quansheng", "jianshen", "shixuetieqi")
+        }
+    )
+    expected_paths |= {
+        path.removesuffix(".png") + ".webp"
+        for path in expected_paths
+        if path.startswith(("season-assets/", "season-troops/"))
     }
+    assert listed_paths == expected_paths
 
 
 def test_catalog_image_finder_does_not_expose_raw_catalog_files():

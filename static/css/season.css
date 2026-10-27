@@ -1,0 +1,385 @@
+.season-page{--season-ink:#443629;--season-muted:#86735a;--season-line:#cdb98e;--season-paper:#f7efd9;--season-red:#8b4931;--season-green:#536b4c;color:var(--season-ink);font-family:"Noto Serif SC","Songti SC",SimSun,serif;max-width:1240px;margin:0 auto;padding:4px 0 28px}.season-page [hidden],.season-modal [hidden]{display:none!important}.season-page h1,.season-page h2,.season-page h3,.season-page p{margin:0}.season-heading{display:flex;justify-content:space-between;gap:24px;padding:18px 4px 22px;border-bottom:2px solid var(--season-line)}.season-eyebrow{font-size:12px;letter-spacing:.17em;color:var(--season-muted)}.season-heading h1{font-size:28px;line-height:1.6;letter-spacing:.07em;font-weight:700}.season-heading p{font-size:13px;line-height:1.8;color:var(--season-muted)}.season-calendar{text-align:right;display:flex;flex-direction:column;gap:7px;justify-content:center;white-space:nowrap}.season-calendar strong{font-size:23px;color:var(--season-red)}.season-calendar small,.season-status small{font-size:13px;font-weight:400}.season-calendar span{font-size:12px;color:var(--season-muted)}.season-status{display:grid;grid-template-columns:1.35fr repeat(4,1fr);margin:16px 0;background:var(--season-paper);border:1px solid var(--season-line);border-radius:5px;padding:14px 8px}.season-status>div{display:flex;flex-direction:column;gap:5px;padding:0 16px;border-right:1px solid #d9c9aa}.season-status>div:last-child{border:0}.season-status span{font-size:12px;color:var(--season-muted)}.season-status strong{font-size:22px}.season-status>div:first-child strong{font-size:18px;line-height:1.65}.season-enlist{display:flex;align-items:center;justify-content:space-between;gap:20px;background:#eee4cd;border:1px solid var(--season-line);padding:16px 20px;margin:16px 0;border-radius:5px}.season-enlist h2{font-size:17px}.season-enlist p{font-size:12px;line-height:1.8;color:var(--season-muted);margin-top:5px}.season-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:16px 0}.season-button{display:inline-flex;align-items:center;justify-content:center;min-height:38px;border:1px solid #ad956c;background:#f8efd8;color:var(--season-ink);padding:8px 16px;border-radius:4px;cursor:pointer;font:inherit;font-size:13px;line-height:1.4;white-space:nowrap}.season-button:hover:not(:disabled){background:#eee0bd}.season-button--primary{background:var(--season-red);border-color:var(--season-red);color:#fff3d7}.season-button--primary:hover:not(:disabled){background:#713a28}.season-button:disabled{opacity:.5;cursor:not-allowed}.season-text-link{margin-left:auto;color:var(--season-muted);font-size:12px}.season-balance{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}.season-faction{display:flex;align-items:center;gap:16px;border-left:3px solid var(--season-red);background:linear-gradient(90deg,#f0e1ce,#f6efdf);padding:12px 16px;border-radius:3px}.season-faction--history{border-left-color:var(--season-green);background:linear-gradient(90deg,#e1e7d5,#f6efdf)}.season-faction>span:first-child{font-size:14px;font-weight:700}.season-faction strong{font-size:18px}.season-faction small{font-size:11px;font-weight:400;color:var(--season-muted)}.season-faction>span:last-child{margin-left:auto;font-size:12px;color:var(--season-muted)}.season-map-panel{border:1px solid #ac946a;border-radius:5px;overflow:hidden;background:var(--season-paper);box-shadow:0 5px 18px #69533412}.season-map-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 14px;background:#eee2c8;border-bottom:1px solid #c6b287}.season-map-tabs{display:flex;gap:4px}.season-map-tabs button{font:inherit;font-size:14px;color:var(--season-muted);background:transparent;border:0;border-bottom:2px solid transparent;padding:9px 15px;cursor:pointer;white-space:nowrap}.season-map-tabs button[aria-selected=true]{color:var(--season-red);border-bottom-color:var(--season-red);font-weight:700}.season-map-tip{font-size:11px;color:var(--season-muted)}.season-map-scroll{overflow-x:auto;overscroll-behavior-x:contain}.season-map{position:relative;aspect-ratio:1448/1086;width:100%;isolation:isolate;background:#b0ca64;touch-action:pan-x pan-y}.season-map.is-pointing{cursor:pointer}.season-terrain{display:block;width:100%;height:100%;object-fit:fill;user-select:none;pointer-events:none}.season-building{position:absolute;display:block;border:0;padding:0;background:none;pointer-events:none;visibility:hidden;z-index:2;transition:transform 180ms ease,filter 180ms ease;outline:none;cursor:pointer}.season-building.is-positioned{visibility:visible}.season-building img{width:100%;height:100%;display:block;user-select:none;pointer-events:none}.season-building.is-hovered,.season-building:focus-visible{transform:translateY(-2px) scale(1.05);filter:drop-shadow(0 3px 2px #4333243b);z-index:5}.season-building:focus-visible::after{content:"";position:absolute;inset:15%;border:2px dashed #fff2cf;border-radius:8px;box-shadow:0 0 0 1px #594128}.season-building--locked img{filter:saturate(.45);opacity:.82}.season-node-list{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;border-top:1px solid var(--season-line);padding:12px}.season-node-entry{display:flex;flex-direction:column;gap:4px;text-align:left;border:1px solid #d8c59f;background:#fbf4e4;color:var(--season-ink);border-radius:3px;padding:9px 12px;font:inherit;cursor:pointer}.season-node-entry:hover{border-color:#9a754b;background:#efe3c7}.season-node-entry span{font-size:13px;font-weight:700}.season-node-entry small{font-size:11px;color:var(--season-muted)}.season-map-help{font-size:11px;color:var(--season-muted);padding:0 14px 12px!important;line-height:1.6}.season-bottom-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:16px;margin-top:18px}.season-card{border:1px solid var(--season-line);background:var(--season-paper);border-radius:4px;padding:20px}.season-card h2{font-size:18px;line-height:1.6;margin:6px 0 12px}.season-card p{font-size:12px;line-height:1.8}.season-front{display:flex;justify-content:space-between;gap:16px;border-top:1px solid #ddcfb1;border-bottom:1px solid #ddcfb1;padding:12px 0;margin:12px 0}.season-front span{display:flex;flex-direction:column;gap:5px;font-size:12px}.season-front b{font-size:25px;color:var(--season-red)}.season-front span:last-child{text-align:right}.season-front span:last-child b{color:var(--season-green)}.season-muted{color:var(--season-muted)}.season-journal{list-style:none;margin:0;padding:0;max-height:290px;overflow:auto}.season-journal li{border-bottom:1px solid #dfd2b7;padding:10px 0}.season-journal li:first-child{padding-top:0}.season-journal li:last-child{border:0}.season-journal li>div{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px}.season-journal time{font-size:11px;color:var(--season-muted)}.season-journal a{font-size:12px;color:var(--season-red)}.season-rules{margin-top:16px}.season-rules summary{cursor:pointer;font-size:14px;font-weight:700}.season-rules>div{display:grid;gap:8px;margin-top:14px}.season-overlay{position:fixed;inset:0;background:#211b16a6;z-index:1200;align-items:center;justify-content:center;padding:22px}.season-modal{--season-ink:#443629;--season-muted:#86735a;--season-line:#cdb98e;--season-red:#8b4931;--season-green:#536b4c;position:relative;width:min(650px,100%);max-height:88vh;overflow:auto;background:#f8f0df;border:1px solid #af9163;border-radius:6px;box-shadow:0 20px 80px #0005;color:var(--season-ink);font-family:"Noto Serif SC","Songti SC",SimSun,serif}.season-modal .tw-modal-header{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 22px;border-bottom:1px solid #d4c2a1;background:#eee1c6}.season-modal h2{font-size:20px;margin:0}.season-modal .tw-modal-close{border:0;background:none;color:#725638;font-size:28px;cursor:pointer;padding:0 4px}.season-modal-body{padding:20px 22px}.season-modal-body>p{font-size:13px;line-height:1.9;margin:0 0 16px}.season-modal-body .season-button{margin-top:12px}.season-notice{background:#eee4d0;border-left:3px solid #ad8e5c;padding:10px 13px;margin:14px 0!important;font-size:13px;line-height:1.8}.season-mission-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0;padding:14px;background:#eee5d0;border-radius:4px}.season-mission-facts div{display:flex;flex-direction:column;gap:6px;font-size:13px}.season-mission-facts span{font-size:11px;color:var(--season-muted)}.season-field{display:flex;flex-direction:column;gap:7px;font-size:13px;margin:14px 0}.season-field input{border:1px solid #c7b18a;background:#fff9ed;padding:9px 11px;border-radius:3px;color:#443629;font:inherit;max-width:100%}.season-field input[type=number]{width:120px}.season-preferences{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}.season-preferences label{border:1px solid #c7b18a;border-radius:3px;padding:12px 8px;font-size:13px;cursor:pointer;background:#fff8e9}.season-preferences input{margin-right:5px;accent-color:#8b4931}.season-guest-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;max-height:310px;overflow:auto;padding:3px 2px}.season-guest-list label{display:flex;align-items:center;gap:8px;border:1px solid #d6c4a5;border-radius:3px;padding:10px;background:#fff8e9;cursor:pointer;min-width:0}.season-guest-list input{accent-color:#8b4931;flex-shrink:0}.season-guest-list span{display:flex;flex-direction:column;gap:4px;font-size:13px;overflow-wrap:anywhere}.season-guest-list small{font-size:11px;color:var(--season-muted)}.season-guest-list label:has(input:checked){background:#ecdfbf;border-color:#a48350}.season-form-feedback{font-size:12px;line-height:1.7;color:var(--season-muted);margin:12px 0 0}.season-form-feedback.is-error{color:#9d3027}.season-reward-list{display:grid;gap:10px;margin:16px 0}.season-reward-list article{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:14px;background:#fff8e9;border:1px solid #d6c4a5;border-radius:4px}.season-reward-threshold{font-size:11px;color:var(--season-muted)}.season-reward-list h3{font-size:15px;margin:5px 0}.season-reward-list p{font-size:12px;line-height:1.7;color:var(--season-muted);margin:0}.season-reward-list .season-button{margin:0}.season-page button:focus-visible,.season-modal button:focus-visible,.season-modal input:focus-visible{outline:2px solid #9b643c;outline-offset:3px}.season-page .season-building:focus-visible{outline:none}
+@media(max-width:850px){.season-heading h1{font-size:24px}.season-status>div{padding:0 10px}.season-status strong{font-size:19px}.season-status>div:first-child strong{font-size:15px}.season-faction{gap:8px;padding:10px}.season-faction strong{font-size:16px}.season-map-tip{display:none}.season-bottom-grid{grid-template-columns:1fr 1fr}.season-node-list{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.season-heading{display:block;padding:12px 2px 16px}.season-heading h1{font-size:23px}.season-heading p{font-size:12px}.season-calendar{flex-direction:row;justify-content:space-between;align-items:center;text-align:left;margin-top:12px;gap:10px}.season-calendar strong{font-size:18px}.season-calendar span{font-size:11px}.season-status{grid-template-columns:repeat(3,1fr);gap:14px 0;padding:12px 0}.season-status>div{padding:0 11px}.season-status>div:nth-child(3){border-right:0}.season-status>div:first-child strong{font-size:14px}.season-status span{font-size:10px}.season-status strong{font-size:19px}.season-enlist{display:block;padding:15px}.season-enlist h2{font-size:15px}.season-enlist .season-button{margin-top:12px}.season-actions{gap:6px}.season-actions .season-button{font-size:12px;padding:8px 11px}.season-text-link{margin-left:0}.season-balance{gap:8px}.season-faction{align-items:flex-start;flex-direction:column;gap:4px}.season-faction>span:last-child{margin:0}.season-faction strong{font-size:19px}.season-faction small{font-size:10px}.season-map-top{padding:6px}.season-map-tabs{width:100%}.season-map-tabs button{flex:1;font-size:12px;padding:9px 8px}.season-map{min-width:580px}.season-node-list{padding:8px;gap:6px}.season-node-entry{padding:8px}.season-node-entry span{font-size:12px}.season-node-entry small{font-size:10px}.season-bottom-grid{grid-template-columns:1fr;gap:12px}.season-card{padding:16px}.season-overlay{padding:12px}.season-modal{max-height:90vh}.season-modal .tw-modal-header{padding:15px 16px}.season-modal h2{font-size:18px}.season-modal-body{padding:16px}.season-preferences{grid-template-columns:1fr;gap:6px}.season-preferences label{padding:9px}.season-mission-facts{gap:7px;padding:10px}.season-mission-facts strong{font-size:12px}.season-reward-list article{gap:10px;padding:11px}.season-reward-list .season-button{padding:7px 12px}.season-guest-list{max-height:270px}}
+@media(prefers-reduced-motion:reduce){.season-building{transition:none}}
+
+.season-archive{display:flex;align-items:center;gap:9px;justify-content:flex-end;margin:12px 0;font-size:12px;color:var(--season-muted)}.season-archive select{font:inherit;background:var(--season-paper);color:var(--season-ink);border:1px solid var(--season-line);border-radius:3px;padding:7px 9px;max-width:65%}.season-archive .season-button{font-size:12px;min-height:32px;padding:6px 12px}
+
+/* 以透明建筑轮廓提示交互，保持地图原有的留白与点击范围。 */
+.season-building{--building-outline:#efc65f;--building-glow:#c78f2955;--building-saturation:1}
+.season-building img{
+    filter:saturate(var(--building-saturation))
+        drop-shadow(1.5px 0 0 var(--building-outline))
+        drop-shadow(-1.5px 0 0 var(--building-outline))
+        drop-shadow(0 1.5px 0 var(--building-outline))
+        drop-shadow(0 -1.5px 0 var(--building-outline))
+        drop-shadow(0 0 3px var(--building-glow));
+    transition:filter 180ms ease;
+}
+.season-building.is-hovered,.season-building:focus-visible{--building-outline:#ffe5a0;--building-glow:#ffd37399}
+.season-building--locked{--building-outline:#b8b3a0;--building-glow:#655f4e26}
+.season-building--locked img{opacity:1}
+.season-building--locked.is-hovered,.season-building--locked:focus-visible{--building-outline:#e1dccb;--building-glow:#d8d2bc66}
+.season-building:focus-visible::after{content:none}
+@media(prefers-reduced-motion:reduce){.season-building img{transition:none}}
+.season-page{width:100%;min-width:0}
+
+/* 战役面板沿用纸本与木牌配色，公共兵力和个人队伍分区展示。 */
+.season-section-title{font-size:15px;margin:20px 0 10px!important}
+.season-section-title small{font-size:11px;color:var(--season-muted);font-weight:400}
+.season-field select{font:inherit;color:var(--season-ink);background:#fff8e9;border:1px solid #c7b18a;border-radius:3px;padding:9px 11px;width:100%}
+.season-troop-grid,.season-economy-resources{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
+.season-troop-grid .season-field{margin:0}.season-troop-grid .season-field input{width:100%;min-width:0}.season-troop-grid small{display:block;font-size:11px;color:var(--season-muted);margin-top:4px}
+.season-economy-resources>div{display:flex;flex-direction:column;gap:5px;background:#fff8e9;border:1px solid #d5c19c;padding:12px;border-radius:4px}
+.season-economy-resources span{font-size:12px;color:var(--season-muted)}.season-economy-resources strong{font-size:24px}.season-economy-resources small{font-size:10px;line-height:1.6;color:var(--season-muted)}
+.season-upgrade-list,.season-expedition-list{display:grid;gap:10px;margin:12px 0}
+.season-upgrade-list article,.season-expedition-list article{display:flex;justify-content:space-between;gap:16px;align-items:center;border:1px solid #d5c19c;background:#fff8e9;border-radius:4px;padding:13px}
+.season-upgrade-list h3,.season-expedition-list h3{font-size:15px;margin:0 0 6px}.season-upgrade-list h3 small{font-weight:400;color:var(--season-muted);font-size:11px}.season-upgrade-list p,.season-expedition-list p{font-size:12px;line-height:1.7;margin:0}
+.season-expeditions,.season-journal-card{margin-top:18px}.season-expeditions>.season-text-link{display:inline-block;margin-top:8px}.season-chip{font-size:11px;background:#e6dac0;color:#715437;border:1px solid #cbb58b;border-radius:3px;padding:2px 6px;font-weight:400;white-space:nowrap}
+.season-site-list,.season-rank-table{display:grid;gap:10px;margin:12px 0}.season-site-list>div{display:grid;grid-template-columns:1fr auto;gap:6px;border-bottom:1px solid #dfcfb0;padding-bottom:10px}.season-site-list strong,.season-site-list span{font-size:13px}.season-site-list small{grid-column:1/-1;font-size:11px;color:var(--season-muted)}
+.season-rank-table>div{display:grid;grid-template-columns:24px 1fr auto;gap:5px 9px;border-bottom:1px solid #dfcfb0;padding-bottom:9px;align-items:center}.season-rank-table b{font-size:16px;color:var(--season-red)}.season-rank-table span{font-size:12px;overflow-wrap:anywhere}.season-rank-table strong{font-size:14px}.season-rank-table small{grid-column:2/-1;font-size:10px;color:var(--season-muted)}
+.season-field-error{color:#a13227!important}
+.season-technology-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:10px 0 18px}.season-technology-grid span{font-size:11px;background:#eee3cb;border:1px solid #d7c6a2;border-radius:3px;padding:7px;line-height:1.5}.season-technology-grid b{white-space:nowrap;color:#7d482c}
+@media(max-width:600px){.season-troop-grid,.season-economy-resources{gap:7px}.season-economy-resources>div{padding:8px}.season-economy-resources strong{font-size:20px}.season-upgrade-list article,.season-expedition-list article{gap:8px;padding:10px}.season-upgrade-list h3,.season-expedition-list h3{font-size:13px}.season-chip{display:inline-block;margin-top:4px}.season-troop-grid .season-field{font-size:11px}}
+
+.season-auto-development{padding:14px;border:1px solid #c9b286;background:#f0e5cb;border-radius:4px;margin:14px 0}.season-auto-development p{font-size:12px;line-height:1.8;margin:8px 0}.season-auto-development .season-section-title{margin:8px 0!important}.season-auto-development strong{color:#84522e}.season-upgrade-list article>div{width:100%}.season-development-progress{display:block;width:100%;height:9px;margin-top:10px;accent-color:#7f6841}
+
+.season-rallies{margin-top:18px}.season-rally-list{display:grid;gap:10px;margin:12px 0}.season-rally{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid #cfbc95;background:#fbf3df;border-radius:4px}.season-rally h3{font-size:14px;margin:0 0 6px}.season-rally p,.season-garrison p{font-size:12px;line-height:1.8;margin:4px 0}.season-rally-actions{display:flex;gap:8px;flex-wrap:wrap}.season-garrison{border-top:1px solid #d7c6a2;padding-top:12px;margin:14px 0}@media(max-width:600px){.season-rally{align-items:stretch;flex-direction:column}.season-rally-actions .season-button{min-height:36px}}
+
+/* 军务簿：沿用纸卷与木牌色系，明确五类行动的职责。 */
+.season-brief-heading {display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
+.season-brief-heading p {color:#897353;font-size:.82rem}
+.season-duty-board {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.75rem;margin:1rem 0}
+.season-duty-board article {border:1px solid #cbb18a;border-top:3px solid #95733e;background:#fbf3df;padding:1rem;border-radius:8px;box-shadow:0 2px 5px #593f2010}
+.season-duty-board article>span {display:inline-grid;place-items:center;width:2rem;height:2rem;background:#765b35;color:#fff2cf;border-radius:50%;font-family:serif;font-size:1.1rem}
+.season-duty-board h3 {font-size:.95rem;margin:.6rem 0}.season-duty-board p {font-size:.82rem;line-height:1.65;color:#6d5a40}.season-duty-board small{display:block;color:#927c5c;font-size:.73rem;margin-top:.6rem}
+.season-intelligence article {display:grid;gap:.35rem;border-top:1px dashed #d4bea0;padding:.8rem 0}.season-intelligence small{color:#8c744f}
+@media(max-width:960px){.season-duty-board{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.season-duty-board{grid-template-columns:1fr}.season-duty-board article{padding:.75rem}.season-duty-board article>span{float:left;margin-right:.6rem}.season-duty-board h3{margin-top:.2rem}}
+
+.season-duty-guide > summary { cursor: pointer; color: #6b4922; font-weight: 700; padding: .2rem 0; }
+.season-duty-guide[open] > summary { margin-bottom: .8rem; }
+.season-duty-guide .season-duty-board { margin-bottom: 0; }
+
+/* 占领状态随建筑木牌展示，文字与阵营颜色同时区分。 */
+.season-building .map-wooden-sign:has(.season-site-owner) {
+    flex-direction: column;
+    gap: 4px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+.season-site-owner {
+    display: block;
+    width: 100%;
+    padding: 3px 6px;
+    border: 1px solid #7c6646;
+    border-radius: 3px;
+    background: #f1dfba;
+    color: #5b452d;
+    font-size: 10px;
+    line-height: 1.3;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-shadow: none;
+}
+.season-site-owner--fiction { background: #8a382b; border-color: #63261f; color: #fff3d7; }
+.season-site-owner--history { background: #3e6242; border-color: #2d4a31; color: #f5f3d5; }
+
+/* 地图主界面：比分与军令常驻，详细军务分屏查看。 */
+.season-command-page .season-command-heading { padding: 12px 2px 16px; align-items: center; border-bottom: 0; }
+.season-command-page .season-heading h1 { font-size: 25px; line-height: 1.45; margin-top: 5px; }
+.season-command-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 5px 12px; font-size: 13px; max-width: 240px; }
+.season-command-meta small { width: 100%; color: #86735a; text-align: right; order: 2; font-size: 11px; }
+.season-plain-button { border: 0; background: none; padding: 4px 0; color: #8b4931; font: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 4px; }
+.season-war-strip { display: grid; grid-template-columns: 1fr 38px 1fr; align-items: center; border: 1px solid #b59a6a; border-radius: 5px; background: linear-gradient(90deg,#edd8c7,#f7efd9 47%,#e0e5ce); padding: 9px 18px; box-shadow: inset 0 1px #fff8e9; }
+.season-war-side { display: flex; align-items: center; gap: 12px; min-width: 0; color: #873e30; }
+.season-war-side--history { color: #466347; flex-direction: row-reverse; text-align: right; }
+.season-war-side > div { display: flex; flex-direction: column; gap: 2px; font-size: 13px; font-weight: 700; }
+.season-war-side small { font-size: 10px; font-weight: 400; color: #877158; }
+.season-war-side > strong { margin-left: auto; font-size: 26px; line-height: 1.1; }
+.season-war-side > strong small { display: block; margin-top: 3px; }
+.season-war-side--history > strong { margin-left: 0; margin-right: auto; }
+.season-war-seal { display: grid; place-items: center; width: 35px; height: 41px; flex-shrink: 0; color: #fff0d4; background: #8b4931; clip-path: polygon(0 0,100% 0,100% 88%,50% 100%,0 88%); font-size: 19px; }
+.season-war-side--history .season-war-seal { background: #536b4c; }
+.season-war-versus { text-align: center; color: #b39a70; font-size: 15px; }
+.season-view-tabs { display: flex; border-bottom: 1px solid #cdb98e; margin: 16px 0; gap: 18px; }
+.season-view-tabs > button { position: relative; border: 0; background: none; padding: 12px 5px; font: inherit; font-size: 14px; color: #8a7659; cursor: pointer; white-space: nowrap; }
+.season-view-tabs > button[aria-selected=true] { color: #813e2c; font-weight: 700; }
+.season-view-tabs > button[aria-selected=true]::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 3px; background: #8b4931; }
+.season-view-tabs small { font-size: 10px; padding: 1px 5px; border-radius: 3px; background: #e4d6b7; margin-left: 2px; }
+.season-command-layout { display: grid; grid-template-columns: minmax(0,1fr) 200px; gap: 16px; align-items: stretch; }
+.season-command-layout > .season-map-panel { min-width: 0; align-self: start; }
+.season-command-page .season-map-top { padding: 6px 12px; }
+.season-command-page .season-map-tabs button { padding: 9px 12px; font-size: 13px; }
+.season-command-page .season-map-tip { display: none; }
+.season-command-rail { display: flex; flex-direction: column; gap: 12px; padding: 17px; border: 1px solid #c9b48a; background: linear-gradient(#f8f0dc,#efe2c3); border-radius: 5px; }
+.season-player-brief h2 { font-size: 17px; margin: 5px 0 16px; }
+.season-player-merit { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; border-top: 1px solid #dac8a6; padding-top: 12px; }
+.season-player-merit span { font-size: 11px; color: #86735a; }
+.season-player-merit strong { font-size: 25px; color: #80502e; }
+.season-player-brief p { color: #9a8464; text-align: right; font-size: 10px; margin-top: 3px; }
+.season-command-shortcuts { display: grid; gap: 7px; }
+.season-command-shortcuts > button { display: grid; grid-template-columns: 29px 1fr; gap: 3px 9px; text-align: left; align-items: center; border: 1px solid #c6ac7d; border-radius: 4px; padding: 10px; background: #fff8e8; color: #674a2f; font: inherit; cursor: pointer; box-shadow: 0 2px 0 #bc9b6633; }
+.season-command-shortcuts > button:hover { background: #f0dfb9; border-color: #a27d49; }
+.season-command-shortcuts > button > span { display: grid; place-items: center; grid-row: span 2; width: 29px; height: 29px; border: 1px solid #af8d55; color: #96703d; border-radius: 50%; font-size: 15px; }
+.season-command-shortcuts strong { font-size: 13px; font-weight: 700; }
+.season-command-shortcuts small { color: #a18a66; font-size: 10px; }
+.season-orders-brief { display: grid; gap: 7px; margin-top: auto; padding-top: 10px; border-top: 1px dashed #d0b98e; }
+.season-orders-brief span { display: flex; justify-content: space-between; font-size: 11px; color: #96805d; }
+.season-orders-brief b { color: #6b7454; font-weight: 400; }
+.season-command-page .season-command-hint { font-size: 10px; color: #9b8768; line-height: 1.7; }
+.season-map-caption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 18px; margin-top: 10px; font-size: 11px; color: #9a8361; }
+.season-map-caption > span:first-child { display: flex; align-items: center; gap: 7px; }
+.season-map-caption i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-left: 8px; }
+.season-legend-neutral { background: #b09664; }.season-legend-fiction { background: #8a382b; }.season-legend-history { background: #3e6242; }
+.season-command-page [data-season-view] > .season-card:first-child { margin-top: 0; }
+.season-inline-help { margin: 10px 0; border-bottom: 1px dashed #d8c5a1; padding-bottom: 10px; color: #8b7658; }
+.season-inline-help > summary { font-size: 12px; cursor: pointer; padding: 4px 0; }
+.season-inline-help[open] > summary { color: #704b2b; margin-bottom: 8px; }
+.season-additional-action { margin: 12px 0; border: 1px solid #c9b28b; border-radius: 4px; padding: 12px; background: #f1e5cd; }
+.season-additional-action > summary { color: #7a4d2c; font-weight: 700; font-size: 13px; cursor: pointer; }
+.season-modal .season-duty-board { grid-template-columns: 1fr; }
+.season-modal .season-duty-board article { padding: 10px 12px; }
+.season-modal .season-duty-board article > span { float: left; margin-right: 10px; }
+.season-modal .season-duty-board h3 { margin-top: 3px; }
+.season-modal .season-campaign-brief { margin-bottom: 12px; }
+.season-modal .season-duty-guide { margin-bottom: 12px; }
+.season-modal .season-archive { margin-top: 18px; }
+@media (max-width: 760px) {
+    .season-command-layout { grid-template-columns: minmax(0,1fr); gap: 10px; }
+    .season-command-rail { display: grid; grid-template-columns: 1fr; gap: 9px; padding: 12px; }
+    .season-player-brief { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 9px; }
+    .season-player-brief .season-eyebrow { display: none; }
+    .season-player-brief h2 { font-size: 13px; margin: 0 auto 0 0; }
+    .season-player-merit { border: 0; padding: 0; gap: 6px; }
+    .season-player-merit strong { font-size: 19px; }
+    .season-player-brief p { margin: 0; }
+    .season-command-shortcuts { grid-template-columns: repeat(4,minmax(0,1fr)); gap: 6px; }
+    .season-command-shortcuts > button { display: flex; flex-direction: column; text-align: center; gap: 6px; padding: 9px 3px; }
+    .season-command-shortcuts > button > span { width: 25px; height: 25px; font-size: 13px; }
+    .season-command-shortcuts strong { font-size: 11px; }
+    .season-command-shortcuts small { display: none; }
+    .season-orders-brief { display: flex; justify-content: space-around; gap: 12px; margin: 0; padding-top: 7px; }
+    .season-orders-brief span { gap: 9px; font-size: 10px; }
+    .season-command-page .season-command-hint { display: none; }
+    .season-command-page .season-command-heading { gap: 10px; padding: 10px 0 12px; }
+    .season-command-page .season-heading h1 { font-size: 19px; }
+    .season-command-page .season-eyebrow { font-size: 9px; letter-spacing: .09em; }
+    .season-command-meta { font-size: 11px; gap: 4px 8px; max-width: 140px; }
+    .season-command-meta small { font-size: 9px; }
+    .season-war-strip { padding: 8px 10px; grid-template-columns: 1fr 22px 1fr; }
+    .season-war-side { gap: 7px; }.season-war-side > div { font-size: 11px; }
+    .season-war-side > strong { font-size: 22px; }
+    .season-war-seal { width: 25px; height: 31px; font-size: 15px; }
+    .season-war-versus { font-size: 11px; }
+    .season-view-tabs { justify-content: space-between; gap: 4px; margin: 10px 0; }
+    .season-view-tabs > button { font-size: 12px; padding: 11px 3px; }
+    .season-view-tabs small { display: none; }
+    .season-command-page .season-map-top { padding: 4px 6px; }
+    .season-command-page .season-map-tabs { width: 100%; justify-content: space-around; }
+    .season-command-page .season-map-tabs button { padding: 9px 8px; font-size: 12px; }
+    .season-map-caption { font-size: 10px; }
+}
+@media (max-width: 760px) {
+    .season-command-page .season-command-heading { flex-direction: column; align-items: stretch; gap: 8px; }
+    .season-command-meta { max-width: none; justify-content: flex-start; gap: 4px 10px; }
+    .season-command-meta small { width: auto; order: 0; margin-left: auto; text-align: left; }
+    .season-command-meta .season-plain-button { order: 3; }
+}
+
+/* 古城木牌靠右上移，避开前方港口仓库，建筑坐标与缩放锚点保持原位。 */
+.season-building[data-season-building="river:town"] .map-wooden-sign {
+    left: 82%;
+    top: calc(70% + 6px);
+}
+
+/* 集市木牌放在左侧空地，避开前方渡口建筑，给占领状态留出空间。 */
+.season-building[data-season-building="river:market"] .map-wooden-sign {
+    left: -20%;
+    top: calc(60% + 6px);
+}
+
+/* 军令与奖励延续纸笺配色，让少人阵营一眼找到下一步。 */
+.season-command-guidance{padding:14px;border:1px solid var(--season-line);border-left:3px solid var(--season-red);background:var(--season-paper);border-radius:4px}
+.season-command-guidance h3{font-size:15px;line-height:1.7;margin-top:5px}
+.season-command-guidance p{font-size:12px;line-height:1.8;margin:6px 0 10px;color:var(--season-muted)}
+.season-command-guidance .season-button{min-height:32px;padding:5px 12px}
+.season-support-order{margin-top:12px;padding-top:12px;border-top:1px dashed var(--season-line)}
+.season-support-order strong{font-size:13px}
+.season-personal-progress{display:flex;flex-direction:column;gap:7px;padding:12px 0;font-size:12px}
+.season-personal-progress small{color:var(--season-muted);line-height:1.6}
+.season-personal-progress .season-button{align-self:flex-start;min-height:30px;padding:4px 10px}
+.season-personal-progress progress,.season-siege-progress progress{display:block;width:100%;height:8px;accent-color:var(--season-green)}
+.season-siege-progress{display:grid;gap:10px;margin:12px 0;padding:12px;border:1px solid #cdb98e;border-radius:4px;background:#f7efd9;font-size:12px}
+.season-siege-progress progress{margin-top:6px}
+
+/* 集市占领货摊沿用纸笺与木色，普通兑换和战场操作分段呈现。 */
+.season-market-stock{margin:16px 0;padding:14px;border:1px solid #cdb98e;border-top:3px solid #8b6938;border-radius:4px;background:#f7efd9}
+.season-market-stock>p{margin:8px 0;line-height:1.8}
+.season-market-heading{display:flex;gap:12px;align-items:center;justify-content:space-between}
+.season-market-heading h3{font-size:18px;line-height:1.7}
+.season-market-stock .season-reward-list article{background:#fbf5e7}
+
+/* 周目标与预约用同一纸笺容器，主要操作继续围绕地图和军务。 */
+.season-weekly-row{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px dashed var(--season-line)}
+.season-weekly-row p{font-size:13px;line-height:1.8;margin:7px 0}
+.season-weekly-row small{display:block;font-size:12px;line-height:1.8;color:var(--season-muted)}
+.season-weekly-row progress{width:100%;height:8px;accent-color:var(--season-green);margin-bottom:8px}
+@media(max-width:600px){.season-weekly-row{align-items:flex-start;flex-direction:column}.season-weekly-row .season-chip{white-space:normal}}
+
+/* 地图军务盘：主屏只留地图、一条军令和轻量操作栏。 */
+.season-command-layout{display:block}
+.season-command-layout>.season-map-panel{width:100%}
+.season-map-panel>.season-war-strip{border:0;border-bottom:1px solid #cdb98e;border-radius:0;padding:8px 16px;box-shadow:none}
+.season-map-panel .season-war-side>strong{font-size:23px}
+.season-map-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;background:#f7efd9}
+.season-map-player{display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px;font-size:12px;color:#86735a}
+.season-map-player strong{color:#67462a;font-size:16px}
+.season-map-faction{font-weight:700;color:#70492e}
+.season-map-tools{display:flex;gap:6px;flex-wrap:wrap}
+.season-map-tools .season-button{font-size:12px;padding:6px 11px;min-height:34px}
+.season-reward-dot{font-size:10px;margin-left:5px;padding:1px 4px;border-radius:3px;background:#8b4931;color:#fff5dc}
+.season-map-personal{display:flex;gap:8px 18px;align-items:center;flex-wrap:wrap;padding:0 14px 9px;font-size:11px;color:#8a7557;background:#f7efd9}
+.season-map-personal b{font-weight:400;color:#765332}
+.season-map-personal .season-plain-button{font-size:11px;margin-left:auto}
+.season-building .map-wooden-sign{flex-direction:column;gap:3px}
+.season-map-hint{display:block;font-size:10px;font-weight:400;line-height:1.5;letter-spacing:0;text-shadow:none;color:#684623}
+.season-map-hint--target,.season-map-hint--rally,.season-map-hint--supply{padding:1px 5px;border-radius:3px;font-weight:700}
+.season-map-hint--target{background:#754f29;color:#fff0bf}
+.season-map-hint--rally{background:#466348;color:#f4f1d9}
+.season-map-hint--supply{background:#8c4431;color:#fff0d7}
+.season-map-hint--own{color:#37583b;font-weight:700}
+.season-map-hint--muted{color:#7c6a54}
+.season-map-orders{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #bca276;background:#eee2c8}
+.season-map-order{display:flex;align-items:center;gap:10px;min-width:0;padding:11px 14px;border:0;background:none;text-align:left;color:#735133;font:inherit;cursor:pointer}
+.season-map-order+ .season-map-order{border-left:1px solid #ceb98f}
+.season-map-order:hover{background:#e5d4af}
+.season-order-seal{display:grid;place-items:center;flex-shrink:0;width:28px;height:32px;background:#d6bf91;border:1px solid #b29662;color:#70512f;border-radius:3px;font-size:15px}
+.season-map-order--main .season-order-seal{background:#8b4931;color:#fff1d4;border-color:#743922}
+.season-map-order>span:nth-child(2){min-width:0;flex:1}
+.season-map-order strong{display:block;font-size:13px}
+.season-map-order small{display:block;font-size:11px;line-height:1.7;color:#8d7756;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:760px){
+ .season-map-controls{padding:9px 10px;align-items:stretch;flex-direction:column;gap:8px}
+ .season-map-player{gap:8px 12px;font-size:11px}
+ .season-map-player strong{font-size:14px}
+ .season-map-tools{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+ .season-map-tools .season-button{font-size:11px;padding:6px 4px;white-space:normal}
+ .season-reward-dot{display:none}
+ .season-map-personal{padding:0 10px 8px;gap:4px 10px;font-size:10px}
+ .season-map-orders{grid-template-columns:1fr}
+ .season-map-order{padding:9px 10px;gap:8px}
+ .season-map-order+ .season-map-order{border-left:0;border-top:1px dashed #c9b38c}
+ .season-map-order strong{font-size:12px}
+ .season-map-order small{font-size:10px}
+ .season-order-seal{width:23px;height:27px;font-size:12px}
+ .season-map-hint{font-size:10px}
+}
+
+/* 建筑弹窗：操作优先，功能分屏，配兵和规则按需展开。 */
+.season-node-modal{width:min(640px,100%)}
+.season-node-modal .tw-modal-header{position:sticky;top:0;z-index:3;padding:13px 18px}
+.season-node-modal .tw-modal-header .season-eyebrow{font-size:10px;letter-spacing:.04em}
+.season-node-modal .tw-modal-header h2{font-size:20px;margin-top:3px}
+.season-node-modal .season-modal-body{padding:14px 18px}
+.season-node-status{display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;padding:9px 11px;background:#eee4cf;border:1px solid #d8c7a6;border-radius:4px;font-size:11px;color:#8a7354}
+.season-node-status strong{color:#684b2d;font-size:12px}
+.season-node-tabs{display:flex;gap:4px;margin:12px 0 16px;padding:4px;background:#eee3cb;border-radius:5px}
+.season-node-tabs button{flex:1;min-width:0;padding:8px 6px;border:1px solid transparent;border-radius:4px;color:#8a7352;font:inherit;font-size:13px;background:none;cursor:pointer}
+.season-node-tabs button[aria-selected=true]{background:#fff7e6;color:#78442d;border-color:#c9b186;box-shadow:0 1px 3px #70542c15;font-weight:700}
+.season-node-tabs button:focus-visible{outline:2px solid #8b4931;outline-offset:1px}
+.season-action-intro{font-size:12px;color:#8a7658;line-height:1.7;margin:8px 0 12px!important}
+.season-node-modal .season-section-title{margin-top:14px;margin-bottom:8px;font-size:14px}
+.season-node-modal .season-field{margin:9px 0;font-size:12px;gap:5px}
+.season-node-modal .season-notice{font-size:12px;line-height:1.7;padding:8px 10px;margin:9px 0!important}
+.season-node-modal .season-guest-list{max-height:230px}
+.season-node-modal .season-guest-list label{padding:8px}
+.season-node-modal .season-guest-list small{font-size:10px}
+.season-troop-config{margin:11px 0;border:1px solid #cdb891;border-radius:4px;background:#f2e8d2;padding:9px 11px}
+.season-troop-config>summary{display:flex;justify-content:space-between;align-items:center;gap:10px;color:#765031;font-size:12px;cursor:pointer;list-style:revert}
+.season-troop-config>summary small{font-size:11px;color:#89704c}
+.season-troop-config[open]>summary{padding-bottom:7px;border-bottom:1px dashed #d1bc98}
+
+.season-dispatch-budget{display:flex;flex-wrap:wrap;gap:4px 14px;padding:7px 0;font-size:10px;color:#9a8563}
+.season-node-modal [data-season-dispatch]>button[type=submit]{width:100%;min-height:40px;margin-top:7px}
+.season-node-modal .season-map-stock{margin-top:8px}
+.season-node-modal .season-economy-resources{margin:10px 0}
+.season-node-modal .season-market-stock{border:0;padding:0;margin:12px 0;background:none}
+@media(max-width:600px){.season-node-modal .tw-modal-header{padding:12px 14px}.season-node-modal .season-modal-body{padding:12px 14px}.season-node-tabs{margin:10px 0 12px}.season-node-tabs button{font-size:12px;padding:8px 4px}.season-node-status{gap:5px 10px;font-size:10px}.season-node-modal .season-guest-list{max-height:200px}}
+.season-troop-config>summary::before{content:'▸';color:#9a7b4e;flex-shrink:0}
+.season-troop-config[open]>summary::before{content:'▾'}
+.season-troop-config>summary small{margin-left:auto}
+.season-warehouse-balance{display:flex;flex-wrap:wrap;justify-content:space-between;gap:7px;padding:10px 11px;background:#eee4cf;border-radius:4px;color:#8a7354;font-size:11px}
+.season-warehouse-balance strong{font-size:14px;color:#70492e;margin-left:3px}
+.season-node-modal .season-market-stock .season-reward-list{gap:8px;margin:10px 0}
+.season-node-modal .season-market-stock .season-reward-list article{padding:10px 11px}
+
+/* 建筑操作面板：宣纸、木色与朱砂，保留行动所需信息。 */
+.season-node-modal{--season-ink:#493b2e;--season-muted:#84735f;--season-red:#963f30;width:min(660px,100%);background:#fbf5e8;border:1px solid #ae8c5b;border-radius:10px;font-family:"Microsoft YaHei","PingFang SC",sans-serif;max-height:calc(100dvh - 40px)}
+.season-node-modal .tw-modal-header{padding:14px 22px;background:#eee0c5;border-bottom:1px solid #d5bf98;box-shadow:inset 0 3px #c5a271;gap:12px}
+.season-node-heading{display:flex;align-items:center;gap:16px;min-width:0}
+.season-node-portrait{width:72px;height:72px;object-fit:contain;filter:drop-shadow(0 3px 2px #5c422320)}
+.season-node-modal .tw-modal-header .season-eyebrow{font-size:11px;letter-spacing:.12em;color:#8a7354}
+.season-node-modal .tw-modal-header h2{font-family:KaiTi,"STKaiti",serif;font-size:28px;line-height:1.3;margin:3px 0 5px;color:#513821}
+.season-owner-tag{display:inline-block;font-size:11px;color:#766348}
+.season-owner-tag--novel{color:#476a72}.season-owner-tag--history{color:#964634}
+.season-node-modal .tw-modal-close{width:44px;height:44px;flex-shrink:0;border:1px solid #ccb58d;border-radius:50%;font-size:26px;background:#fff8ea80}
+.season-node-modal .season-modal-body{padding:18px 22px 8px}
+.season-node-modal .season-node-tabs{margin:0 0 18px;padding:0;background:none;border-bottom:1px solid #dac8a7;border-radius:0;gap:20px}
+.season-node-modal .season-node-tabs button{border:0;border-bottom:3px solid transparent;border-radius:0;padding:12px 6px;min-height:44px;background:none;box-shadow:none;font-size:14px}
+.season-node-modal .season-node-tabs button[aria-selected=true]{border-bottom-color:#963f30;color:#963f30}
+.season-node-modal .season-site-brief{padding:0 0 15px;margin-bottom:16px;border-bottom:1px solid #e2d3b9}
+.season-health-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.season-health-grid label{min-width:0}.season-health-grid label>span{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#87715b}
+.season-health-grid b{font-size:19px;color:#554532;font-weight:600;font-variant-numeric:tabular-nums}.season-health-grid b small{font-size:11px;font-weight:400;color:#8c7c66}
+.season-health-grid progress{display:block;width:100%;height:7px;margin:8px 0;border:0;border-radius:8px;overflow:hidden;background:#e3d7bf;accent-color:#75805a}
+.season-health-grid progress::-webkit-progress-bar{background:#e3d7bf}.season-health-grid progress::-webkit-progress-value{background:#75805a;border-radius:8px}
+.season-guard-note{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;font-size:11px;color:#8c785d}
+.season-rest-tag{color:#8c6836;font-size:12px;margin:0 0 12px}
+.season-node-modal .season-dispatch-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0 14px}
+.season-node-modal .season-field{font-size:13px;margin:0 0 14px;gap:7px}
+.season-node-modal .season-field select,.season-node-modal .season-field input{min-height:42px;background:#fffbf2;border-color:#cfbc9a;border-radius:5px}
+.season-yield-heading,.season-form-section-heading{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 10px;font-size:13px}
+.season-yield-heading small,.season-form-section-heading small{font-size:11px;color:#8a765c;font-weight:400}
+.season-form-section-heading h3{margin:0;font-size:14px;color:#57422d}.season-form-section-heading h3 small{margin-left:6px}
+.season-yield-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:#f0e5cf;border-radius:6px;padding:12px 0;margin-bottom:7px}
+.season-yield-strip>div{text-align:center;border-right:1px solid #d9c6a2}.season-yield-strip>div:last-child{border:0}.season-yield-strip span{display:block;font-size:11px;color:#8c7655}.season-yield-strip strong{display:block;margin-top:4px;font-size:23px;color:#78532f;font-family:Georgia,serif;font-weight:400}
+.season-node-modal .season-form-caption{font-size:12px;color:#88765f;line-height:1.7;margin:7px 0 17px}
+.season-node-modal .season-form-feedback{margin:0;font-size:12px}
+.season-node-modal .season-guest-list{max-height:228px;gap:8px;padding:2px;margin:0}
+.season-node-modal .season-guest-list .season-guest-choice{padding:12px 10px;border-radius:6px;border-color:#dfcfb2;background:#fffbf2;gap:10px}
+.season-node-modal .season-guest-list .season-guest-choice:has(input:checked){background:#eee4cc;border-color:#9b7243;box-shadow:inset 0 0 0 1px #9b7243}
+.season-node-modal .season-guest-choice:has(input:disabled){opacity:.55;cursor:not-allowed}
+.season-node-modal .season-guest-choice input{width:17px;height:17px;margin:0;accent-color:#963f30}
+.season-node-modal .season-guest-list .season-guest-title{display:flex;flex-direction:row;align-items:baseline;flex-wrap:wrap;gap:3px 6px;line-height:1.5}
+.season-guest-title strong{font-size:13px}.season-node-modal .season-guest-list small{font-size:11px}.season-guest-title em{font-size:10px;font-style:normal;color:#8b704b}
+.season-node-modal .season-troop-config{background:none;margin:0;padding:0;border:0;border-top:1px solid #e2d4bb;border-bottom:1px solid #e2d4bb;border-radius:0}
+.season-node-modal .season-troop-config>summary{min-height:44px;font-size:13px;padding:10px 2px}
+.season-node-modal .season-troop-grid{padding-top:12px}.season-node-modal .season-troop-grid .season-field{margin:0}
+.season-node-modal .season-troop-summary{font-size:12px;color:#89735a;margin:10px 0}
+.season-node-modal .season-dispatch-footer{position:sticky;bottom:-8px;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbf5e8;padding:13px 0 15px;border-top:1px solid #ddccb0;margin-top:12px}
+.season-node-modal .season-dispatch-footer .season-button{margin:0;min-height:44px;min-width:150px;border-radius:5px;background:#963f30;color:#fff3dd;border-color:#823728;font-size:14px}
+.season-travel-note{font-size:12px;color:#66523a}
+.season-node-modal .season-notice{background:#f0e6d1;border-left:2px solid #b89967;padding:10px 12px;font-size:12px}
+.season-training-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px dashed #dfcfb2;font-size:13px}.season-training-row strong{font-size:19px;font-variant-numeric:tabular-nums}.season-training-row small{font-size:11px;color:#8c765b;font-weight:400}
+.season-stock-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:16px 0}.season-stock-grid>div{display:flex;flex-direction:column;gap:7px;padding:12px;background:#f1e7d2;border-radius:5px;font-size:12px}.season-stock-grid strong{font-size:19px}.season-stock-grid small{font-size:11px;color:#8a765c}
+.season-node-modal .season-upgrade-list article{background:none;border:0;border-bottom:1px solid #e2d4bb;border-radius:0;padding:13px 0}.season-node-modal .season-upgrade-list h3{font-size:14px}.season-node-modal .season-upgrade-list p{font-size:12px}
+.season-special-brief{padding:12px 0;font-size:13px}.season-special-brief p{font-size:12px;color:#88745b;margin-top:8px}.season-special-brief .season-chip{margin-left:8px}
+.season-garrison-list{list-style:none;padding:0;margin:0}.season-garrison-list li{padding:12px 0;border-bottom:1px solid #e1d0b1;font-size:13px}.season-garrison-list p{color:#8c765b;font-size:12px;margin:6px 0}
+.season-node-modal .season-reward-list article{background:#fffbf2;border-color:#deccb0;border-radius:6px;padding:14px}.season-node-modal .season-reward-list h3{font-size:15px}.season-node-modal .season-reward-list .season-button{min-height:42px;white-space:nowrap}
+.season-exchange form{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #e2d3ba;padding:12px 0;font-size:13px}.season-node-modal .season-exchange .season-button{margin:0;white-space:nowrap}
+.season-node-modal :is(button,input,select,summary):focus-visible{outline:2px solid #963f30;outline-offset:3px}
+@media(max-width:600px){.season-node-modal{max-height:calc(100dvh - 24px)}.season-node-modal .tw-modal-header{padding:12px 15px}.season-node-heading{gap:12px}.season-node-portrait{width:58px;height:58px}.season-node-modal .tw-modal-header h2{font-size:25px}.season-node-modal .season-modal-body{padding:15px 15px 8px}.season-node-modal .season-guest-list{grid-template-columns:1fr;max-height:218px}.season-node-modal .season-dispatch-footer .season-button{min-width:125px;padding:10px 13px}.season-node-modal .season-node-tabs{gap:10px}.season-health-grid{gap:12px}.season-health-grid b{font-size:17px}.season-health-grid b small{font-size:10px}.season-stock-grid{gap:6px}.season-stock-grid>div{padding:10px 8px}.season-exchange form{flex-wrap:wrap}.season-node-modal .season-reward-list article{gap:10px;padding:11px}.season-node-modal .season-reward-list p{font-size:11px}}
+.season-node-modal .season-garrison-player{display:grid;grid-template-columns:1fr auto;gap:6px 12px;padding:12px 0;border-bottom:1px solid #e1d0b1;font-size:13px}.season-garrison-player>div{grid-column:1/-1}.season-garrison-player p{font-size:12px;color:#8c765b;margin:0}.season-garrison-player>span,.season-garrison-player small{font-size:11px;color:#8c765b}.season-garrison-player small{margin-left:10px}.season-empty-note,.season-battle-note{font-size:12px;color:#8a765c;line-height:1.7;margin:12px 0}.season-node-modal .season-owner-tag--fiction{color:#476a72}
+/* 配兵以兵种头像识别，名称和库存作为辅助信息。 */
+.season-node-modal .season-troop-identity{display:flex;align-items:center;gap:9px;min-width:0}
+.season-troop-identity img{width:42px;height:42px;object-fit:contain;flex-shrink:0;border:1px solid #d5c09b;border-radius:6px;background:#f0e4cc}
+.season-troop-identity>span{min-width:0}.season-node-modal .season-dispatch-footer small{display:block;margin:5px 0 0;font-size:11px}
+/* 商店礼包逐项展示道具图片，复用仓库物品图标。 */
+.season-modal .season-item-visuals{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.season-item-visual{display:flex;flex-direction:column;align-items:center;gap:5px;max-width:90px;font-size:11px;text-align:center}
+.season-item-picture{display:grid;place-items:center;position:relative;width:54px;height:54px;border:1px solid #cfb991;border-radius:6px;background:#f1e5ce;overflow:hidden}
+.season-item-picture>img,.season-item-picture>.tw-item-technology-icon{width:48px;height:48px;object-fit:contain}
+.season-item-picture>b{position:absolute;right:2px;bottom:1px;z-index:1;padding:1px 3px;background:#60492dd9;color:#fff5dd;border-radius:3px;font-size:10px;line-height:1.4}
+.season-item-visual>small{font-size:11px;line-height:1.5;color:#816a4f;overflow-wrap:anywhere}
+/* 打开赛季弹窗时让出右下角，避免聊天悬浮球遮挡出征按钮。 */
+body:has(.season-overlay[aria-hidden="false"]) .chat-widget{visibility:hidden}

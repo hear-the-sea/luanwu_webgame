@@ -39,6 +39,7 @@ def prepare_launch_report_best_effort(
             loadout,
             normalize_guest_configs=normalize_guest_configs,
             normalize_mapping=normalize_mapping,
+            now=run.started_at,
         )
         report = dispatch_or_sync_launch_report(
             manor,

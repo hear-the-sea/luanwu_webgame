@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import math
+from datetime import datetime
 from typing import Any, Callable, Dict, List
+
+from django.utils import timezone
 
 from core.utils.imports import is_missing_target_import
 
@@ -43,11 +46,12 @@ def build_defender_setup_and_drop_table(
     *,
     normalize_guest_configs: Callable[[Any], List[Any]],
     normalize_mapping: Callable[[Any], Dict[str, object]],
+    now: datetime | None = None,
 ) -> tuple[dict, Dict[str, object]]:
     if mission.is_defense:
         return {"troop_loadout": loadout}, {}
 
-    return (
+    defender_setup, drop_table = (
         {
             "guest_keys": _require_guest_config_payload(
                 mission.enemy_guests,
@@ -71,6 +75,14 @@ def build_defender_setup_and_drop_table(
             normalize_mapping=normalize_mapping,
         ),
     )
+
+    if getattr(mission, "key", None) == "jingyanggang":
+        hour = timezone.localtime(now or timezone.now()).hour
+        if hour >= 22 or hour < 6:
+            # 出征时固定夜间加成，异步战报跨越昼夜边界时仍使用同一属性。
+            defender_setup["guest_stat_multipliers"] = {"task_jingyang_tiger": {"hp": 2, "attack": 1.5}}
+
+    return defender_setup, drop_table
 
 
 def sync_report_for_launch(

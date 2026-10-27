@@ -1,0 +1,433 @@
+{
+  "status": "proposal_not_applied",
+  "assumptions": {
+    "pve_4_per_player": {
+      "grain": 1360,
+      "wood": 580,
+      "iron": 460
+    },
+    "moderate_demand_per_player": {
+      "grain": 1543,
+      "wood": 750.0,
+      "iron": 580.0
+    },
+    "heavy_demand_per_player": {
+      "grain": 3200,
+      "wood": 1475.0,
+      "iron": 1165.0
+    },
+    "notes": [
+      "不含据点/探索加成；铁骑仅营寨拥有方可训练",
+      "战损是情景假设，不是从50%战斗损耗系数推定的固定阵亡率",
+      "重度情景为补回全部战损的需求，可能超过募训上限；不将未生产的兵力记作实际消耗"
+    ]
+  },
+  "old": [
+    {
+      "active": 1,
+      "level": 1,
+      "gross_production_before_caps": {
+        "grain": 3456,
+        "wood": 2304,
+        "iron": 1440
+      },
+      "normal_troop_capacity_before_caps": 1440,
+      "draw_quota": 1200
+    },
+    {
+      "active": 1,
+      "level": 6,
+      "gross_production_before_caps": {
+        "grain": 20736,
+        "wood": 13824,
+        "iron": 8640
+      },
+      "normal_troop_capacity_before_caps": 8640,
+      "draw_quota": 1200
+    },
+    {
+      "active": 10,
+      "level": 1,
+      "gross_production_before_caps": {
+        "grain": 34560,
+        "wood": 23040,
+        "iron": 14400
+      },
+      "normal_troop_capacity_before_caps": 14400,
+      "draw_quota": 12000
+    },
+    {
+      "active": 10,
+      "level": 6,
+      "gross_production_before_caps": {
+        "grain": 207360,
+        "wood": 138240,
+        "iron": 86400
+      },
+      "normal_troop_capacity_before_caps": 86400,
+      "draw_quota": 12000
+    },
+    {
+      "active": 100,
+      "level": 1,
+      "gross_production_before_caps": {
+        "grain": 138240,
+        "wood": 92160,
+        "iron": 57600
+      },
+      "normal_troop_capacity_before_caps": 57600,
+      "draw_quota": 120000
+    },
+    {
+      "active": 100,
+      "level": 6,
+      "gross_production_before_caps": {
+        "grain": 829440,
+        "wood": 552960,
+        "iron": 345600
+      },
+      "normal_troop_capacity_before_caps": 345600,
+      "draw_quota": 120000
+    }
+  ],
+  "proposed": [
+    {
+      "active": 1,
+      "level": 1,
+      "passive": {
+        "grain": 1100,
+        "wood": 650,
+        "iron": 450
+      },
+      "income_with_4_pve": {
+        "grain": 2460,
+        "wood": 1230,
+        "iron": 910
+      },
+      "moderate_daily_surplus": {
+        "grain": 917,
+        "wood": 480.0,
+        "iron": 330.0
+      },
+      "heavy_required_balance": {
+        "grain": -740,
+        "wood": -245.0,
+        "iron": -255.0
+      },
+      "normal_training_max_daily": 200,
+      "cavalry_training_max_daily": 10,
+      "resource_cap": {
+        "grain": 7380,
+        "wood": 3690,
+        "iron": 2730
+      },
+      "troop_target_including_deployed": 600
+    },
+    {
+      "active": 1,
+      "level": 3,
+      "passive": {
+        "grain": 1364.0,
+        "wood": 806.0,
+        "iron": 558.0
+      },
+      "income_with_4_pve": {
+        "grain": 2724.0,
+        "wood": 1386.0,
+        "iron": 1018.0
+      },
+      "moderate_daily_surplus": {
+        "grain": 1181.0,
+        "wood": 636.0,
+        "iron": 438.0
+      },
+      "heavy_required_balance": {
+        "grain": -476.0,
+        "wood": -89.0,
+        "iron": -147.0
+      },
+      "normal_training_max_daily": 260.0,
+      "cavalry_training_max_daily": 10,
+      "resource_cap": {
+        "grain": 8172.0,
+        "wood": 4158.0,
+        "iron": 3054.0
+      },
+      "troop_target_including_deployed": 600
+    },
+    {
+      "active": 1,
+      "level": 6,
+      "passive": {
+        "grain": 1760.0,
+        "wood": 1040.0,
+        "iron": 720.0
+      },
+      "income_with_4_pve": {
+        "grain": 3120.0,
+        "wood": 1620.0,
+        "iron": 1180.0
+      },
+      "moderate_daily_surplus": {
+        "grain": 1577.0,
+        "wood": 870.0,
+        "iron": 600.0
+      },
+      "heavy_required_balance": {
+        "grain": -80.0,
+        "wood": 145.0,
+        "iron": 15.0
+      },
+      "normal_training_max_daily": 350.0,
+      "cavalry_training_max_daily": 10,
+      "resource_cap": {
+        "grain": 9360.0,
+        "wood": 4860.0,
+        "iron": 3540.0
+      },
+      "troop_target_including_deployed": 600
+    },
+    {
+      "active": 10,
+      "level": 1,
+      "passive": {
+        "grain": 6500,
+        "wood": 3800,
+        "iron": 2700
+      },
+      "income_with_4_pve": {
+        "grain": 20100,
+        "wood": 9600,
+        "iron": 7300
+      },
+      "moderate_daily_surplus": {
+        "grain": 4670,
+        "wood": 2100.0,
+        "iron": 1500.0
+      },
+      "heavy_required_balance": {
+        "grain": -11900,
+        "wood": -5150.0,
+        "iron": -4350.0
+      },
+      "normal_training_max_daily": 2000,
+      "cavalry_training_max_daily": 100,
+      "resource_cap": {
+        "grain": 60300,
+        "wood": 28800,
+        "iron": 21900
+      },
+      "troop_target_including_deployed": 6000
+    },
+    {
+      "active": 10,
+      "level": 3,
+      "passive": {
+        "grain": 8060.0,
+        "wood": 4712.0,
+        "iron": 3348.0
+      },
+      "income_with_4_pve": {
+        "grain": 21660.0,
+        "wood": 10512.0,
+        "iron": 7948.0
+      },
+      "moderate_daily_surplus": {
+        "grain": 6230.0,
+        "wood": 3012.0,
+        "iron": 2148.0
+      },
+      "heavy_required_balance": {
+        "grain": -10340.0,
+        "wood": -4238.0,
+        "iron": -3702.0
+      },
+      "normal_training_max_daily": 2600.0,
+      "cavalry_training_max_daily": 100,
+      "resource_cap": {
+        "grain": 64980.0,
+        "wood": 31536.0,
+        "iron": 23844.0
+      },
+      "troop_target_including_deployed": 6000
+    },
+    {
+      "active": 10,
+      "level": 6,
+      "passive": {
+        "grain": 10400.0,
+        "wood": 6080.0,
+        "iron": 4320.0
+      },
+      "income_with_4_pve": {
+        "grain": 24000.0,
+        "wood": 11880.0,
+        "iron": 8920.0
+      },
+      "moderate_daily_surplus": {
+        "grain": 8570.0,
+        "wood": 4380.0,
+        "iron": 3120.0
+      },
+      "heavy_required_balance": {
+        "grain": -8000.0,
+        "wood": -2870.0,
+        "iron": -2730.0
+      },
+      "normal_training_max_daily": 3500.0,
+      "cavalry_training_max_daily": 100,
+      "resource_cap": {
+        "grain": 72000.0,
+        "wood": 35640.0,
+        "iron": 26760.0
+      },
+      "troop_target_including_deployed": 6000
+    },
+    {
+      "active": 100,
+      "level": 1,
+      "passive": {
+        "grain": 60500,
+        "wood": 35300,
+        "iron": 25200
+      },
+      "income_with_4_pve": {
+        "grain": 196500,
+        "wood": 93300,
+        "iron": 71200
+      },
+      "moderate_daily_surplus": {
+        "grain": 42200,
+        "wood": 18300.0,
+        "iron": 13200.0
+      },
+      "heavy_required_balance": {
+        "grain": -123500,
+        "wood": -54200.0,
+        "iron": -45300.0
+      },
+      "normal_training_max_daily": 20000,
+      "cavalry_training_max_daily": 1000,
+      "resource_cap": {
+        "grain": 589500,
+        "wood": 279900,
+        "iron": 213600
+      },
+      "troop_target_including_deployed": 60000
+    },
+    {
+      "active": 100,
+      "level": 3,
+      "passive": {
+        "grain": 75020.0,
+        "wood": 43772.0,
+        "iron": 31248.0
+      },
+      "income_with_4_pve": {
+        "grain": 211020.0,
+        "wood": 101772.0,
+        "iron": 77248.0
+      },
+      "moderate_daily_surplus": {
+        "grain": 56720.0,
+        "wood": 26772.0,
+        "iron": 19248.0
+      },
+      "heavy_required_balance": {
+        "grain": -108980.0,
+        "wood": -45728.0,
+        "iron": -39252.0
+      },
+      "normal_training_max_daily": 26000.0,
+      "cavalry_training_max_daily": 1000,
+      "resource_cap": {
+        "grain": 633060.0,
+        "wood": 305316.0,
+        "iron": 231744.0
+      },
+      "troop_target_including_deployed": 60000
+    },
+    {
+      "active": 100,
+      "level": 6,
+      "passive": {
+        "grain": 96800.0,
+        "wood": 56480.0,
+        "iron": 40320.0
+      },
+      "income_with_4_pve": {
+        "grain": 232800.0,
+        "wood": 114480.0,
+        "iron": 86320.0
+      },
+      "moderate_daily_surplus": {
+        "grain": 78500.0,
+        "wood": 39480.0,
+        "iron": 28320.0
+      },
+      "heavy_required_balance": {
+        "grain": -87200.0,
+        "wood": -33020.0,
+        "iron": -30180.0
+      },
+      "normal_training_max_daily": 35000.0,
+      "cavalry_training_max_daily": 1000,
+      "resource_cap": {
+        "grain": 698400.0,
+        "wood": 343440.0,
+        "iron": 258960.0
+      },
+      "troop_target_including_deployed": 60000
+    }
+  ],
+  "sensitivity": [
+    {
+      "active": 10,
+      "level": 3,
+      "pve_attempts_per_person": 2,
+      "full_reward_equivalents": 2,
+      "income": {
+        "grain": 14860.0,
+        "wood": 7612.0,
+        "iron": 5648.0
+      },
+      "moderate_balance": {
+        "grain": -570.0,
+        "wood": 112.0,
+        "iron": -152.0
+      }
+    },
+    {
+      "active": 10,
+      "level": 3,
+      "pve_attempts_per_person": 4,
+      "full_reward_equivalents": 4,
+      "income": {
+        "grain": 21660.0,
+        "wood": 10512.0,
+        "iron": 7948.0
+      },
+      "moderate_balance": {
+        "grain": 6230.0,
+        "wood": 3012.0,
+        "iron": 2148.0
+      }
+    },
+    {
+      "active": 10,
+      "level": 3,
+      "pve_attempts_per_person": 6,
+      "full_reward_equivalents": 5,
+      "income": {
+        "grain": 25060.0,
+        "wood": 11962.0,
+        "iron": 9098.0
+      },
+      "moderate_balance": {
+        "grain": 9630.0,
+        "wood": 4462.0,
+        "iron": 3298.0
+      }
+    }
+  ]
+}

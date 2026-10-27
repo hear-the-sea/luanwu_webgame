@@ -1,0 +1,83 @@
+# 资源经济设计草案，尚未接入运行配置；不修改当前测试季。
+status: proposal_not_applied
+resources: [grain, wood, iron]
+settlement_seconds: 300
+population:
+  # 首次分组使用已验证的有效人数；之后每日平滑，0人停止新增产出。
+  smoothing_previous_weight: 0.75
+  qualification: completed_effective_activity
+  empty_faction_production: false
+initial_grant:
+  once_per_faction: true
+  fixed: {grain: 800, wood: 500, iron: 300}
+  per_active: {grain: 1600, wood: 900, iron: 700}
+production:
+  # 日产 = (fixed + per_active * N) * logistics_multiplier。
+  daily_fixed: {grain: 500, wood: 300, iron: 200}
+  daily_per_active: {grain: 600, wood: 350, iron: 250}
+  logistics_multipliers: [1, 1.12, 1.24, 1.36, 1.48, 1.60]
+  # 小数累积后发整单位，不能每5分钟截断导致低人口没有产出。
+  carry_fractional_remainders: true
+pve:
+  # 讨伐/NPC辎重共用物资收益档，探索独立每日最多2次少量产出。
+  material_reward_multipliers: [1, 1, 1, 1, 0.5, 0.5]
+  reward_after_budget: 0
+  failure_resource_multiplier: 0.25
+  failure_consumes_reward_tier: true
+  grain_run: {grain: 600, wood: 60, iron: 30}
+  wood_run: {grain: 80, wood: 420, iron: 40}
+  iron_run: {grain: 80, wood: 40, iron: 360}
+  # 保留不同战斗难度和贡献，港口/NPC辎重可作为混合来源，但不得优于专精节点。
+  mixed_run: {grain: 240, wood: 130, iron: 110}
+  exploration_daily_limit: 2
+  exploration_uses_material_tier: false
+  exploration_resources: {grain: 50, wood: 30, iron: 20}
+  intelligence_bonus_percent: 20
+training:
+  normal_cost_per_10: {grain: 60, wood: 15, iron: 15}
+  cavalry_cost_per_10: {grain: 100, wood: 40, iron: 60}
+  normal_daily_capacity_per_active: 200
+  training_multipliers: [1, 1.15, 1.30, 1.45, 1.60, 1.75]
+  # 以下为总存量目标，包含兵库和已出征幸存者；达到目标暂停训练。
+  normal_target_per_active: 600
+  normal_initial_per_active: 400
+  cavalry_daily_capacity_per_active: 10
+  cavalry_target_per_active: 50
+  cavalry_initial: 0
+  cavalry_requires_site: forest:camp
+  cavalry_full_technology: true
+operations:
+  march_grain_per_100_per_10_minutes: 4
+  garrison_normal_grain_per_100_per_hour: 8
+  cavalry_garrison_cost_multiplier: 3
+  battle_normal_grain_per_100_per_wave: 3
+  cavalry_battle_cost_multiplier: 3
+  courier_grain_per_order: 5
+  guest_only_pve_and_explore_grain: 0
+  siege_cost_per_100_actual_wall: {wood: 80, iron: 50}
+  repair_cost_per_100_actual_wall: {wood: 120, iron: 60}
+  # 控制阶段无额外拆城费；无进度不扣拆城资源，未抽中守军不扣战粮。
+transport:
+  cargo_capacity: 1200
+  target_food_hours: 6
+  reserve_inflight_site_demand: true
+  reward_for_unneeded_delivery: false
+  pure_consumption_npc_orders: false
+  target_repair_demand_uses_actual_missing_wall: true
+capture:
+  created_resources: {grain: 0, wood: 0, iron: 0}
+  keep_existing_local_resources: true
+storage:
+  # 公共仓库容量 = 3 * (当天理论基础日产 + N * 标准4次PVE产出)。
+  reference_income_days: 3
+  reference_pve_daily: {grain: 1360, wood: 580, iron: 460}
+  # 据点容量按驻军粮耗及实际维修量计算，不能作为第二个无限公共仓库。
+  preserve_existing_overflow: true
+  reserve_existing_convoy_cargo: true
+site_effects:
+  forest:granary: {passive_grain_bonus_percent: 10}
+  river:docks: {cargo_capacity_bonus_percent: 20}
+  forest:camp: {enables_cavalry: true}
+  river:town: {resource_bonus_percent: 0}
+  mountain:gate: {resource_bonus_percent: 0}
+  total_resource_production_bonus_cap_percent: 15

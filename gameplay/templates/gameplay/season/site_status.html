@@ -1,0 +1,11 @@
+{% if node.site %}
+<section class="season-site-brief" aria-label="攻城接力进度">
+    {% if node.site.protected_until %}<p class="season-rest-tag">占领休整保护至 {{ node.site.protected_until|date:"m-d H:i" }} · 暂不可进攻</p>{% endif %}
+    {% if node.site.other_day_points_per_tick is not None %}<p class="season-muted">占领后：古城开放日每 {{ score_interval_minutes }} 分钟 {{ node.site.points_per_tick }} 战果，其余时间 {{ node.site.other_day_points_per_tick }} 战果；休整期间不计持有战果。</p>{% endif %}
+    <div class="season-health-grid">
+        <label class="season-fort-health">{% include "gameplay/season/icon.html" with name="shield" %}<span>{% if hitpoints.enabled %}城门血量{% else %}城防剩余{% endif %}<b>{{ node.site.durability }}<small> / {{ node.site.max_durability }}</small></b></span><progress value="{{ node.site.durability }}" max="{{ node.site.max_durability }}" aria-label="{% if hitpoints.enabled %}城门血量{% else %}城防剩余{% endif %}"></progress></label>
+        {% if node.site.tower.max_hp %}<label class="season-fort-health">{% include "gameplay/season/icon.html" with name="tower" %}<span>箭塔血量<b>{{ node.site.tower.hp }}<small> / {{ node.site.tower.max_hp }}</small></b></span><progress value="{{ node.site.tower.hp }}" max="{{ node.site.tower.max_hp }}" aria-label="箭塔血量"></progress></label>{% endif %}
+    </div>
+    <div class="season-guard-note"><span>守军 {{ node.site.guards }} 队{% if node.garrison.hidden %} · 玩家驻防未知{% elif node.garrison.member_count %} · 玩家驻防 {{ node.garrison.member_count }} 人{% endif %}</span>{% if node.site.recovery.enabled and node.occupation_class == member.faction %}<span>{% if node.site.recovery.complete %}城防完好{% elif node.site.recovery.paused and node.site.recovery.budget_exhausted %}城门今日维修额度已用完{% elif node.site.recovery.paused %}缺少木铁 · 待补给{% elif node.site.recovery.budget_exhausted %}城门额度已用完 · 箭塔待修{% else %}下次修复 {{ node.site.recovery.next_at|date:"H:i" }}{% endif %}</span>{% endif %}</div>
+</section>
+{% endif %}

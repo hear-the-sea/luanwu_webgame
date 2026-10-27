@@ -1,0 +1,12 @@
+{% if market_stock.enabled %}
+{% if market_stock.is_owner %}
+<section class="season-market-stock" aria-label="占领货摊">
+    <div class="season-market-heading"><span class="season-eyebrow">军资兑换 · 物品绑定</span><span class="season-chip">己方经营</span></div>
+    <p class="season-muted">下次换货 {{ market_stock.refresh_at|date:'m-d H:i' }} · 军资 {{ member.coins }}</p>
+    {% if not market_stock.open %}<p class="season-notice">行动期已结束，货摊停止兑换。</p>{% endif %}
+    <div class="season-reward-list">{% for item in market_stock.offers %}<article><div><span class="season-reward-threshold">{{ item.cost }} 军资 · 本轮 {{ item.purchased }} / {{ item.limit }}</span><h3>{{ item.name }}</h3>{% include "gameplay/season/item_visuals.html" %}</div>
+    <form method="post" action="{% url 'gameplay:season_action' %}" data-season-form>{% include "gameplay/season/form_identity.html" with command="market_purchase" %}<input type="hidden" name="item_key" value="{{ item.key }}"><input type="hidden" name="market_period" value="{{ market_stock.period }}"><button type="submit" class="season-button" {% if not item.available %}disabled{% endif %}>{% if not market_stock.open %}已休市{% elif not item.remaining %}本轮已兑{% elif not item.items_loaded %}货品筹备中{% elif not item.available %}军资不足{% else %}兑换{% endif %}</button></form></article>{% endfor %}</div>
+
+</section>
+{% else %}<p class="season-notice">占领沿岸集市后可查看占领货摊并兑换。</p>{% endif %}
+{% endif %}

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>赛季地图 · 分层素材校样</title>
+<style>
+:root{color-scheme:light;--ink:#3e3527;--paper:#f3ecd9;--line:#c3b08b;--accent:#7f412c}
+*{box-sizing:border-box}body{margin:0;background:#e5dcc5;color:var(--ink);font-family:"Noto Serif SC","Songti SC",SimSun,serif}
+main{max-width:1180px;margin:auto;padding:26px 22px 50px}header{display:flex;gap:20px;align-items:end;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:18px}
+h1{font-size:25px;margin:6px 0 0;font-weight:600}small{letter-spacing:.15em;color:#796344}p{line-height:1.7;font-size:14px}
+nav,.controls{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}button{font:inherit;font-size:14px;background:var(--paper);color:var(--ink);border:1px solid var(--line);padding:9px 18px;cursor:pointer;border-radius:4px}
+button[aria-selected=true]{background:var(--accent);color:#fff4da;border-color:var(--accent)}button:focus-visible{outline:3px solid #9c632d;outline-offset:3px}
+.scene{position:relative;width:100%;aspect-ratio:1448/1086;overflow:hidden;border:1px solid #998561;border-radius:5px;background:#a9c75f;box-shadow:0 5px 18px #64513524}
+.terrain{display:block;width:100%;height:100%}.building{position:absolute;border:0;background:none;padding:0;border-radius:0;transition:transform 180ms ease,filter 180ms ease;z-index:2}
+.building img{width:100%;height:100%;display:block;pointer-events:none}.building:hover,.building:focus-visible{transform:translateY(-2px) scale(1.05);filter:drop-shadow(0 3px 2px #392b2533);z-index:5}
+.names .building::after{content:attr(aria-label);position:absolute;left:var(--anchor-x);top:var(--anchor-y);transform:translate(-50%,3px);white-space:nowrap;background:#fcf2d8ed;border:1px solid #aa8758;border-radius:3px;padding:3px 8px;font-size:12px;pointer-events:none}
+.base-only .building{display:none}.sprite-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-top:22px}
+figure{margin:0;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:var(--paper)}
+.checker{height:170px;display:flex;justify-content:center;align-items:center;background:repeating-conic-gradient(#e8e2d3 0% 25%,#f7f3e9 0% 50%) 0/20px 20px}
+.checker img{width:94%;height:94%;object-fit:contain}figcaption{font-size:13px;padding:10px 12px;border-top:1px solid var(--line)}.note{font-size:12px;color:#7a6a52}#selection{min-height:24px;margin:10px 0;color:var(--accent)}a{color:var(--accent)}
+@media(max-width:650px){main{padding:18px 10px}header{display:block}h1{font-size:21px}.sprite-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.checker{height:120px}nav button{padding:8px 12px}}
+@media(prefers-reduced-motion:reduce){.building{transition:none}}
+</style>
+<main>
+<header><div><small>赛季地图 / 素材校样 01</small><h1>山川 · 城港 · 林野</h1></div><p>三张底图 · 十组透明建筑<br>Q 版手绘 / 古代武侠</p></header>
+<nav aria-label="地图选择" id="tabs"></nav>
+<div class="controls"><button id="base" aria-pressed="false">仅看底图</button><button id="names" aria-pressed="false">显示建筑名称</button><a href="manifest.json">坐标清单</a></div>
+<div class="scene" id="scene" aria-label="建筑分层预览"></div>
+<p id="selection" aria-live="polite">鼠标移入建筑查看轻微放大效果；点击可查看素材名称。</p>
+<p class="note">此页仅供素材审核，未接入账号、战斗、奖励或正式导航。下方棋盘格用于检查透明边缘。坐标为叠放初稿。</p>
+<div class="sprite-grid" id="sprites"></div>
+<p class="note">生成方式：内置 imagegen。<a href="generation-prompts.json">完整提示词</a></p>
+</main>
+<script>
+const manifest={"version":1,"coordinate_space":"pixels on 1448x1086 reference canvas; scale whole scene uniformly","placement_status":"asset-preview positions; gameplay hotspots require silhouette hit-testing during integration","hover_scale":1.05,"maps":[{"key":"mountain","name":"山地关隘","source":"season-mountain-pass-v3.png","nodes":[{"id":"inn","name":"山脚驿站","image":"mountain/inn.png","image_size":[1536,1024],"content_bounds_alpha_gt_200":[124,130,1482,875],"frame":{"x":18.498,"y":693.706,"width":390.221,"height":260.147},"anchor":{"x":0.522786,"y":0.854492},"target_bounds":[50,725,395,916],"bytes":1448082},{"id":"gate","name":"青石关","image":"mountain/gate.png","image_size":[1619,971],"content_bounds_alpha_gt_200":[78,198,1549,824],"frame":{"x":452.98,"y":288.246,"width":498.577,"height":299.023},"anchor":{"x":0.502471,"y":0.84861},"target_bounds":[477,340,930,542],"bytes":904149},{"id":"ruins","name":"古代遗迹","image":"mountain/ruins.png","image_size":[1448,1086],"content_bounds_alpha_gt_200":[134,208,1352,903],"frame":{"x":1081.173,"y":20.918,"width":341.686,"height":256.265},"anchor":{"x":0.513122,"y":0.831492},"target_bounds":[1110,70,1403,234],"bytes":734225}],"canvas":{"width":1448,"height":1086},"background":"mountain/background.png"},{"key":"river","name":"河口古城","source":"season-river-town-v2.png","nodes":[{"id":"town","name":"河口古城","image":"river/town.png","image_size":[1448,1086],"content_bounds_alpha_gt_200":[30,159,1418,919],"frame":{"x":723.605,"y":73.868,"width":647.789,"height":485.842},"anchor":{"x":0.5,"y":0.846225},"target_bounds":[690,145,1405,485],"bytes":1327048},{"id":"market","name":"沿岸集市","image":"river/market.png","image_size":[1774,887],"content_bounds_alpha_gt_200":[252,113,1563,795],"frame":{"x":529.839,"y":439.123,"width":327.748,"height":163.874},"anchor":{"x":0.511556,"y":0.89628},"target_bounds":[570,460,825,586],"bytes":969307},{"id":"warehouse","name":"港口仓库","image":"river/warehouse.png","image_size":[1774,887],"content_bounds_alpha_gt_200":[172,102,1668,824],"frame":{"x":881.524,"y":484.452,"width":479.127,"height":239.564},"anchor":{"x":0.518602,"y":0.928974},"target_bounds":[885,512,1375,707],"bytes":1032569},{"id":"docks","name":"渡口码头","image":"river/docks.png","image_size":[1774,887],"content_bounds_alpha_gt_200":[158,126,1651,787],"frame":{"x":416.721,"y":565.439,"width":697.791,"height":348.896},"anchor":{"x":0.509865,"y":0.88726},"target_bounds":[430,615,1115,875],"bytes":750485}],"canvas":{"width":1448,"height":1086},"background":"river/background.png"},{"key":"forest","name":"森林补给区","source":"season-forest-supply-v1.png","nodes":[{"id":"camp","name":"林间营寨","image":"forest/camp.png","image_size":[1536,1024],"content_bounds_alpha_gt_200":[61,150,1491,869],"frame":{"x":538.87,"y":30.974,"width":502.031,"height":334.687},"anchor":{"x":0.505208,"y":0.848633},"target_bounds":[540,80,1045,315],"bytes":1697939},{"id":"granary","name":"粮仓与农田","image":"forest/granary.png","image_size":[1536,1024],"content_bounds_alpha_gt_200":[65,123,1503,948],"frame":{"x":907.987,"y":480.946,"width":520.189,"height":346.793},"anchor":{"x":0.510417,"y":0.925781},"target_bounds":[930,521,1417,802],"bytes":1780397},{"id":"lodge","name":"林间驿舍","image":"forest/lodge.png","image_size":[1536,1024],"content_bounds_alpha_gt_200":[109,122,1445,862],"frame":{"x":125.05,"y":502.084,"width":288.519,"height":192.346},"anchor":{"x":0.505859,"y":0.841797},"target_bounds":[145,525,397,664],"bytes":1595397}],"canvas":{"width":1448,"height":1086},"background":"forest/background.png"}]};
+const scene=document.getElementById('scene'),tabs=document.getElementById('tabs'),grid=document.getElementById('sprites');
+function show(index){
+const map=manifest.maps[index];tabs.querySelectorAll('button').forEach((b,i)=>b.setAttribute('aria-selected',String(i===index)));
+scene.replaceChildren();grid.replaceChildren();
+const bg=document.createElement('img');bg.src=map.background;bg.alt=map.name+'地形底图';bg.className='terrain';scene.append(bg);
+map.nodes.forEach(node=>{
+const b=document.createElement('button');b.className='building';b.setAttribute('aria-label',node.name);b.title=node.name;
+const f=node.frame;b.style.left=f.x/14.48+'%';b.style.top=f.y/10.86+'%';b.style.width=f.width/14.48+'%';b.style.height=f.height/10.86+'%';
+b.style.transformOrigin=node.anchor.x*100+'% '+node.anchor.y*100+'%';b.style.setProperty('--anchor-x',node.anchor.x*100+'%');b.style.setProperty('--anchor-y',node.anchor.y*100+'%');
+const im=document.createElement('img');im.src=node.image;im.alt='';b.append(im);b.addEventListener('click',()=>document.getElementById('selection').textContent=node.name+' · '+node.image);scene.append(b);
+const fig=document.createElement('figure'),check=document.createElement('div'),preview=im.cloneNode(),caption=document.createElement('figcaption');
+check.className='checker';check.append(preview);caption.textContent=node.name+' · 透明 PNG';fig.append(check,caption);grid.append(fig);
+});
+document.getElementById('selection').textContent=map.name+' · '+map.nodes.length+' 组独立建筑，可悬停检查。';
+}
+manifest.maps.forEach((m,i)=>{const b=document.createElement('button');b.textContent=m.name;b.setAttribute('aria-selected',String(i===0));b.addEventListener('click',()=>show(i));tabs.append(b)});
+document.getElementById('base').addEventListener('click',e=>{scene.classList.toggle('base-only');e.currentTarget.setAttribute('aria-pressed',String(scene.classList.contains('base-only')))});
+document.getElementById('names').addEventListener('click',e=>{scene.classList.toggle('names');e.currentTarget.setAttribute('aria-pressed',String(scene.classList.contains('names')))});
+show(0);
+</script>
+</html>

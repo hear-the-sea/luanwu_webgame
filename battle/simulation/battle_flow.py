@@ -437,7 +437,13 @@ def simulate_battle(
         )
     rounds.extend(priority_rounds)
     round_no = next_round_start
-    remaining_rounds = max(0, max_rounds - len(priority_rounds))
+    # 可独立限制普通回合；远程与先锋阶段不占用此额度。
+    normal_limit = config.get("normal_round_limit")
+    remaining_rounds = (
+        max(1, min(int(normal_limit), MAX_ROUNDS * 2))
+        if normal_limit is not None
+        else max(0, max_rounds - len(priority_rounds))
+    )
     while remaining_rounds > 0 and alive(attacker_units) and alive(defender_units):
         if battle_engine_version == CURRENT_BATTLE_ENGINE_VERSION:
             rounds.append(_resolve_standard_round(attacker_units, defender_units, rng, round_no))

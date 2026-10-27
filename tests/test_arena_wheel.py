@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from uuid import uuid4
 
 import pytest
+from django.core.cache import cache
 from django.db import transaction
 from django.test import Client
 from django.urls import reverse
@@ -167,6 +169,69 @@ def test_wheel_bouts_wait_five_minutes_and_advance_one_at_a_time(manor_factory, 
     assert active_survivor.debuff_stacks == 2
 
 
+@pytest.mark.parametrize("winning_team", [ArenaWheelEvent.Team.A, ArenaWheelEvent.Team.B, None])
+def test_wheel_elimination_releases_guests_and_settlement_preserves_new_registration(
+    manor_factory, monkeypatch, winning_team
+):
+    now = timezone.now()
+    event = ArenaWheelEvent.objects.create(
+        status=ArenaWheelEvent.Status.PREPARING,
+        prepare_ends_at=now,
+        **wheel_core.current_replay_metadata(),
+    )
+    template = create_guest_template("wheel_release_guest")
+    guests_by_entry = {}
+    for team in (ArenaWheelEvent.Team.A, ArenaWheelEvent.Team.B):
+        for order in range(1, 4):
+            manor, _user = manor_factory(username=f"wheel_release_{team}_{order}")
+            entry = ArenaWheelEntry.objects.create(event=event, manor=manor, team=team, team_order=order)
+            guest = create_guest(manor, template, f"{team}_{order}")
+            guest.status = GuestStatus.ARENA
+            guest.save(update_fields=["status"])
+            ArenaWheelEntryGuest.objects.create(entry=entry, guest=guest, slot_index=0)
+            guests_by_entry[entry.pk] = guest
+
+    def resolve_bout(*, event, team_a_entry, team_b_entry, bout_number, context):
+        winner = {ArenaWheelEvent.Team.A: team_a_entry, ArenaWheelEvent.Team.B: team_b_entry}.get(winning_team)
+        ArenaWheelBout.objects.create(
+            event=event,
+            bout_number=bout_number,
+            team_a_entry=team_a_entry,
+            team_b_entry=team_b_entry,
+            winner_entry=winner,
+        )
+        return winner, ""
+
+    monkeypatch.setattr(wheel_core, "_run_bout", resolve_bout)
+    assert wheel_core.run_due_arena_wheel_events(now=now) == 1
+    event.refresh_from_db()
+    assert event.status == ArenaWheelEvent.Status.RUNNING
+    for entry in event.entries.all():
+        guest = guests_by_entry[entry.pk]
+        guest.refresh_from_db()
+        expected = GuestStatus.IDLE if entry.status == ArenaWheelEntry.Status.ELIMINATED else GuestStatus.ARENA
+        assert guest.status == expected
+
+    eliminated = event.entries.filter(status=ArenaWheelEntry.Status.ELIMINATED).first()
+    reused_guest = guests_by_entry[eliminated.pk]
+    # 淘汰门客参加新场后，旧场最终结算不能解除新场占用。
+    new_event = ArenaWheelEvent.objects.create(status=ArenaWheelEvent.Status.RECRUITING)
+    new_entry = ArenaWheelEntry.objects.create(event=new_event, manor=eliminated.manor)
+    ArenaWheelEntryGuest.objects.create(entry=new_entry, guest=reused_guest, slot_index=0)
+    reused_guest.status = GuestStatus.ARENA
+    reused_guest.save(update_fields=["status"])
+
+    for _ in range(2):
+        latest_bout = event.bouts.latest("bout_number")
+        due_at = latest_bout.created_at + timedelta(seconds=wheel_core.ARENA_WHEEL_BOUT_INTERVAL_SECONDS)
+        assert wheel_core.run_due_arena_wheel_events(now=due_at) == 1
+    event.refresh_from_db()
+    assert event.status == ArenaWheelEvent.Status.COMPLETED
+    for guest in guests_by_entry.values():
+        guest.refresh_from_db()
+        assert guest.status == (GuestStatus.ARENA if guest.pk == reused_guest.pk else GuestStatus.IDLE)
+
+
 def test_recruiting_event_lock_is_released_after_outer_transaction_commit(
     monkeypatch,
     django_capture_on_commit_callbacks,
@@ -189,6 +254,110 @@ def test_recruiting_event_lock_is_released_after_outer_transaction_commit(
     assert len(callbacks) == 1
     callbacks[0]()
     assert len(released) == 1
+
+
+@pytest.fixture
+def wheel_registration_roster(manor_factory, monkeypatch):
+    manor, _user = manor_factory(username="wheel_creation_lock")
+    manor.silver = wheel_core.ARENA_REGISTRATION_SILVER_COST * 2
+    manor.save(update_fields=["silver"])
+    template = create_guest_template("wheel_creation_lock_guest")
+    guests = [create_guest(manor, template, str(index)) for index in range(10)]
+    monkeypatch.setattr(wheel_core, "ARENA_WHEEL_REGISTRATION_LOCK_KEY", f"arena:wheel:test:{uuid4().hex}")
+    return manor, guests
+
+
+@pytest.mark.parametrize(
+    "failure_stage", ["build_entry_guest_snapshot", "persist_guest_status_transitions", "_move_to_preparing_locked"]
+)
+def test_registration_late_failure_rolls_back_before_releasing_creation_lock(
+    wheel_registration_roster, monkeypatch, django_capture_on_commit_callbacks, failure_stage
+):
+    manor, guests = wheel_registration_roster
+    lock_key = wheel_core.ARENA_WHEEL_REGISTRATION_LOCK_KEY
+    release = wheel_core.release_best_effort_lock
+    released_tokens = []
+
+    def fail_registration(*_args, **_kwargs):
+        assert cache.get(lock_key)
+        raise RuntimeError("late registration failure")
+
+    def release_after_rollback(key, **kwargs):
+        assert not ArenaWheelEvent.objects.exists()
+        assert not ArenaWheelEntry.objects.exists()
+        assert Manor.objects.get(pk=manor.pk).silver == wheel_core.ARENA_REGISTRATION_SILVER_COST * 2
+        assert not manor.guests.exclude(status=GuestStatus.IDLE).exists()
+        released_tokens.append(kwargs["lock_token"])
+        release(key, **kwargs)
+
+    monkeypatch.setattr(wheel_core, failure_stage, fail_registration)
+    monkeypatch.setattr(wheel_core, "release_best_effort_lock", release_after_rollback)
+    with django_capture_on_commit_callbacks(execute=True) as callbacks:
+        with pytest.raises(RuntimeError, match="late registration failure"):
+            wheel_core.register_arena_wheel_entry(manor, [guest.pk for guest in guests])
+
+    assert callbacks == []
+    assert len(released_tokens) == 1
+    assert released_tokens[0]
+    assert cache.get(lock_key) is None
+
+
+def test_successful_registration_keeps_creation_lock_until_outer_commit(
+    wheel_registration_roster, django_capture_on_commit_callbacks
+):
+    manor, guests = wheel_registration_roster
+    lock_key = wheel_core.ARENA_WHEEL_REGISTRATION_LOCK_KEY
+    with django_capture_on_commit_callbacks(execute=False) as callbacks:
+        with transaction.atomic():
+            result = wheel_core.register_arena_wheel_entry(manor, [guest.pk for guest in guests])
+            assert result.entry.entry_guests.count() == 10
+            token = cache.get(lock_key)
+            assert token
+        assert cache.get(lock_key) == token
+
+    assert len(callbacks) == 1
+    callbacks[0]()
+    assert cache.get(lock_key) is None
+
+
+def test_registration_failure_reusing_event_does_not_release_another_creation_lock(
+    wheel_registration_roster, monkeypatch
+):
+    manor, guests = wheel_registration_roster
+    event = ArenaWheelEvent.objects.create(status=ArenaWheelEvent.Status.RECRUITING)
+    lock_key = wheel_core.ARENA_WHEEL_REGISTRATION_LOCK_KEY
+    cache.set(lock_key, "another-owner", timeout=30)
+    released = []
+
+    def fail_snapshot(_guest):
+        raise RuntimeError("late registration failure")
+
+    monkeypatch.setattr(wheel_core, "build_entry_guest_snapshot", fail_snapshot)
+    monkeypatch.setattr(wheel_core, "release_best_effort_lock", lambda *args, **kwargs: released.append(kwargs))
+    with pytest.raises(RuntimeError, match="late registration failure"):
+        wheel_core.register_arena_wheel_entry(manor, [guest.pk for guest in guests])
+
+    assert ArenaWheelEvent.objects.filter(pk=event.pk).exists()
+    assert not event.entries.exists()
+    assert released == []
+    assert cache.get(lock_key) == "another-owner"
+
+
+def test_registration_failure_does_not_release_replaced_creation_lock(wheel_registration_roster, monkeypatch):
+    manor, guests = wheel_registration_roster
+    lock_key = wheel_core.ARENA_WHEEL_REGISTRATION_LOCK_KEY
+
+    def fail_after_lock_replacement(_guest):
+        assert cache.get(lock_key)
+        cache.set(lock_key, "replacement-owner", timeout=30)
+        raise RuntimeError("late registration failure")
+
+    monkeypatch.setattr(wheel_core, "build_entry_guest_snapshot", fail_after_lock_replacement)
+    with pytest.raises(RuntimeError, match="late registration failure"):
+        wheel_core.register_arena_wheel_entry(manor, [guest.pk for guest in guests])
+
+    assert not ArenaWheelEvent.objects.exists()
+    assert cache.get(lock_key) == "replacement-owner"
 
 
 def test_wheel_defense_debuff_reduces_max_hp_from_defense_loss():

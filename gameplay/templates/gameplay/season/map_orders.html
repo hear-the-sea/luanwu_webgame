@@ -1,0 +1,4 @@
+{% if command_guidance %}<section class="season-map-orders" aria-label="当前阵营目标">
+    {% with order=command_guidance.main %}<button type="button" class="season-map-order season-map-order--main" {% if order.modal %}data-guild-modal-open="{{ order.modal }}"{% else %}data-season-view-open="{{ order.view }}"{% endif %}><span class="season-order-seal" aria-hidden="true">令</span><span><strong>{{ order.title }}</strong><small>{{ order.detail }}</small></span><span aria-hidden="true">›</span></button>{% endwith %}
+    {% with order=command_guidance.support %}{% if order %}<button type="button" class="season-map-order" data-guild-modal-open="{{ order.modal }}"><span class="season-order-seal" aria-hidden="true">援</span><span><strong>{{ order.title }}</strong><small>{{ order.detail }}</small></span><span aria-hidden="true">›</span></button>{% endif %}{% endwith %}
+</section>{% endif %}

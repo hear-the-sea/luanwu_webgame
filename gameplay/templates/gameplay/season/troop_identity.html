@@ -1,0 +1,1 @@
+{% load static %}<span class="season-troop-identity">{% if troop.avatar %}<img src="{% if troop.avatar|slice:":1" == '/' or '://' in troop.avatar %}{{ troop.avatar }}{% else %}{% static troop.avatar %}{% endif %}" alt="" width="42" height="42">{% endif %}<span>{{ troop.name }}{% if show_available %}<small>可用 {{ troop.available }}</small>{% endif %}</span></span>

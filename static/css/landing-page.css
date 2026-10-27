@@ -4,6 +4,38 @@
   max-width: 100%;
 }
 
+.landing-dashboard .season-home-event-title {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.landing-dashboard .season-home-event-title svg {
+  flex: 0 0 22px;
+}
+
+.landing-dashboard .season-home-archive {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.8rem;
+  margin-bottom: 0.65rem;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.landing-dashboard .season-home-archive svg {
+  flex: 0 0 26px;
+}
+
+.landing-dashboard .season-home-archive span {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .landing-dashboard .manor-status-table {
   width: 100%;
   border-collapse: collapse;
@@ -219,6 +251,47 @@
   font-size: 0.85rem;
   padding: 0;
   white-space: nowrap;
+}
+
+.landing-dashboard .events-table tbody tr[data-season-home-event] td:first-child {
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+}
+
+.landing-dashboard .events-table tbody tr[data-season-home-event] td:first-child strong,
+.landing-dashboard .events-table tbody tr[data-season-home-event] td:first-child .muted-text {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.landing-dashboard .events-table tbody tr[data-season-home-event] td:nth-child(2) {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  flex-shrink: 0;
+}
+
+.landing-dashboard .events-table tbody tr[data-season-home-event] .countdown {
+  white-space: nowrap;
+}
+
+.landing-dashboard .events-table tbody tr[data-season-home-event] .season-home-actions {
+  flex-direction: column;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+
+.landing-dashboard .season-home-actions form {
+  margin: 0;
+}
+
+.landing-dashboard .season-home-actions .btn-sm {
+  white-space: nowrap;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
 }
 
 @media (max-width: 768px) {

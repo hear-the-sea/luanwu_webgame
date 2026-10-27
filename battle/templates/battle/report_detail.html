@@ -31,6 +31,14 @@
         </div>
     </div>
 
+    {% if report.battle_type == "season" and report.losses.season_effects %}
+    <details class="tw-card"><summary>本场疲敝与箭塔状态</summary>
+        {% for row in report.losses.season_effects.attacker %}<p>进攻方 {{ row.name }}：{{ row.label }}</p>{% endfor %}
+        {% for row in report.losses.season_effects.defender %}<p>防守方 {{ row.name }}：{{ row.label }}</p>{% endfor %}
+        {% with tower=report.losses.season_effects.tower %}{% if tower %}<p>守城箭塔：本场齐射一次，剩余耐久 {{ tower.remaining_hp }} / {{ tower.max_hp }}。</p>{% endif %}{% endwith %}
+        {% with gate=report.losses.season_effects.gate %}{% if gate %}<p>城门：本场造成 {{ gate.combat_damage }} 伤害，剩余血量 {{ gate.remaining_hp }} / {{ gate.max_hp }}，下场继承。{% if gate.normal_round_limit %}普通阶段最多 {{ gate.normal_round_limit }} 回合，远程、先锋另计。{% endif %}</p>{% endif %}{% endwith %}
+    </details>
+    {% endif %}
     <div class="battle-overview-table-wrap">
         <section class="battle-overview-table" aria-label="双方装备属性加成">
             <div class="battle-overview-side attacker"><strong>{{ equipment_left_title }}</strong></div>
@@ -236,6 +244,8 @@
                             <span>{% for loss in loss_items %}{{ loss.label }}{% if loss.amount %} -{{ loss.amount }}{% endif %}{% if not forloop.last %}、{% endif %}{% endfor %}</span>
                         {% elif is_spectator %}
                             <span>本场无额外掉落记录。</span>
+                        {% elif season_guard_wave_cleared %}
+                            <span>本波守军已被击退；贡献与损失按本场记录结算。</span>
                         {% elif report.winner == 'draw' or not report.winner %}
                             <span>本次交手不分胜负，无额外掉落记录。</span>
                         {% elif player_won %}
@@ -250,7 +260,9 @@
     </section>
     <section class="tw-card">
         <h2>战斗结果</h2>
-        {% if is_spectator %}
+        {% if season_guard_wave_cleared %}
+            <p class="battle-result">本波守军已击退，箭塔仍在；后续以集结状态为准。</p>
+        {% elif is_spectator %}
             <p class="battle-result">{{ spectator_result }}</p>
         {% elif player_won %}
             <p class="battle-result victory">战斗胜利！</p>

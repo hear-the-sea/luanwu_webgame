@@ -16,6 +16,7 @@ from guests.models import Guest, GuestStatus
 from guests.services.status import persist_guest_status_transitions
 
 from .snapshots import build_entry_guest_snapshot
+from .state_helpers import exclude_active_arena_guests
 
 logger = logging.getLogger(__name__)
 
@@ -260,12 +261,12 @@ def release_entry_guest_statuses(entry: ArenaCoopEntry) -> None:
     if not guest_ids:
         return
     guests = list(
-        Guest.objects.select_for_update()
-        .filter(
-            id__in=guest_ids,
-            status__in=[GuestStatus.ARENA, GuestStatus.DEPLOYED],
-        )
-        .order_by("id")
+        exclude_active_arena_guests(
+            Guest.objects.select_for_update().filter(
+                id__in=guest_ids,
+                status=GuestStatus.ARENA,
+            )
+        ).order_by("id")
     )
     persist_guest_status_transitions(
         guests,

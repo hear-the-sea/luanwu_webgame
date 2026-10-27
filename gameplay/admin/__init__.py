@@ -119,8 +119,17 @@ from .messages import (  # noqa: E402, F401
 )
 from .missions import MissionRunAdmin, MissionTemplateAdmin  # noqa: E402, F401
 from .raids import RaidRunAdmin, ScoutCooldownAdmin, ScoutRecordAdmin  # noqa: E402, F401
+from .season import (  # noqa: E402, F401
+    SeasonActionAdmin,
+    SeasonAdmin,
+    SeasonClaimAdmin,
+    SeasonMemberAdmin,
+    SeasonRallyAdmin,
+    SeasonWeekAdmin,
+)
 
 __all__ = [
+    "SeasonRallyAdmin",
     # core
     "ManorAdmin",
     "ResourceEventAdmin",

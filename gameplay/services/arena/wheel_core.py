@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import cast
@@ -34,6 +34,7 @@ from gameplay.services.arena.registration_helpers import (
 from gameplay.services.arena.replay import replay_context
 from gameplay.services.arena.ring_rewards import credit_coins
 from gameplay.services.arena.snapshots import ArenaGuestSnapshotProxy, build_entry_guest_snapshot
+from gameplay.services.arena.state_helpers import exclude_active_arena_guests
 from gameplay.services.utils.messages import bulk_create_messages
 from guests.guest_rules import compute_guest_attack_attribute_component
 from guests.models import Guest, GuestStatus
@@ -90,7 +91,9 @@ def _normalize_guest_ids(guest_ids: Iterable[int]) -> list[int]:
     return selected
 
 
-def _get_or_create_recruiting_event_locked() -> ArenaWheelEvent:
+def _get_or_create_recruiting_event_locked(
+    *, error_cleanup_callbacks: list[Callable[[], None]] | None = None
+) -> ArenaWheelEvent:
     event = (
         ArenaWheelEvent.objects.select_for_update()
         .filter(status=ArenaWheelEvent.Status.RECRUITING)
@@ -150,6 +153,8 @@ def _get_or_create_recruiting_event_locked() -> ArenaWheelEvent:
     # Releasing it before commit lets a concurrent request create a second event
     # while this event is still invisible to other transactions.
     transaction.on_commit(release_lock, robust=True)
+    if error_cleanup_callbacks is not None:
+        error_cleanup_callbacks.append(release_lock)
     return event
 
 
@@ -169,8 +174,28 @@ def _move_to_preparing_locked(event: ArenaWheelEvent, *, now: datetime) -> bool:
     return True
 
 
-@transaction.atomic
 def register_arena_wheel_entry(manor: Manor, guest_ids: Iterable[int]) -> ArenaWheelRegistrationResult:
+    """成功后持锁至外层提交；本次调用异常时在回滚后释放。
+
+    调用成功返回后若外层事务自行回滚，Django 无回滚回调，仍由锁的 TTL 兜底。
+    """
+    error_cleanup_callbacks: list[Callable[[], None]] = []
+    try:
+        with transaction.atomic():
+            return _register_arena_wheel_entry_locked(manor, guest_ids, error_cleanup_callbacks=error_cleanup_callbacks)
+    except Exception:
+        # 先完成本次报名事务回滚，再按获取时的 token 释放创建锁。
+        for cleanup in error_cleanup_callbacks:
+            cleanup()
+        raise
+
+
+def _register_arena_wheel_entry_locked(
+    manor: Manor,
+    guest_ids: Iterable[int],
+    *,
+    error_cleanup_callbacks: list[Callable[[], None]],
+) -> ArenaWheelRegistrationResult:
     selected_guest_ids = _normalize_guest_ids(guest_ids)
     locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
     today_start, today_end = arena_helpers.today_bounds()
@@ -199,7 +224,7 @@ def register_arena_wheel_entry(manor: Manor, guest_ids: Iterable[int]) -> ArenaW
 
     selected_guests = load_selected_registration_guests_locked(locked_manor, selected_guest_ids)
     deduct_registration_silver_locked(locked_manor, silver_cost=ARENA_REGISTRATION_SILVER_COST)
-    event = _get_or_create_recruiting_event_locked()
+    event = _get_or_create_recruiting_event_locked(error_cleanup_callbacks=error_cleanup_callbacks)
     entry = (
         ArenaWheelEntry.objects.select_for_update()
         .filter(event=event, manor=locked_manor, status=ArenaWheelEntry.Status.CANCELLED)
@@ -236,22 +261,30 @@ def register_arena_wheel_entry(manor: Manor, guest_ids: Iterable[int]) -> ArenaW
 @transaction.atomic
 def cancel_arena_wheel_entry(manor: Manor) -> int:
     locked_manor = Manor.objects.select_for_update().get(pk=manor.pk)
-    entry = (
-        ArenaWheelEntry.objects.select_for_update()
-        .select_related("event")
-        .filter(
+    identity = (
+        ArenaWheelEntry.objects.filter(
             manor=locked_manor,
             status=ArenaWheelEntry.Status.REGISTERED,
             event__status=ArenaWheelEvent.Status.RECRUITING,
         )
         .order_by("-joined_at", "-id")
+        .values_list("id", "event_id")
         .first()
     )
-    if not entry:
+    if identity is None:
         raise ArenaCancellationError("当前没有可撤销的三对三车轮战报名")
-    event = ArenaWheelEvent.objects.select_for_update().get(pk=entry.event_id)
+    entry_id, event_id = identity
+    # 与报名满员分队保持先锁赛事、再锁报名的顺序。
+    event = ArenaWheelEvent.objects.select_for_update().get(pk=event_id)
     if event.status != ArenaWheelEvent.Status.RECRUITING:
         raise ArenaCancellationError("车轮战已进入准备期，当前不可撤销报名")
+    entry = (
+        ArenaWheelEntry.objects.select_for_update()
+        .filter(pk=entry_id, manor=locked_manor, status=ArenaWheelEntry.Status.REGISTERED)
+        .first()
+    )
+    if entry is None:
+        raise ArenaCancellationError("当前没有可撤销的三对三车轮战报名")
     entry.status = ArenaWheelEntry.Status.CANCELLED
     entry.cancelled_at = timezone.now()
     entry.save(update_fields=["status", "cancelled_at"])
@@ -264,9 +297,9 @@ def _release_entry_guest_statuses(entry: ArenaWheelEntry) -> None:
     if not guest_ids:
         return
     guests = list(
-        Guest.objects.select_for_update()
-        .filter(id__in=guest_ids, status__in=[GuestStatus.ARENA, GuestStatus.DEPLOYED])
-        .order_by("id")
+        exclude_active_arena_guests(
+            Guest.objects.select_for_update().filter(id__in=guest_ids, status=GuestStatus.ARENA)
+        ).order_by("id")
     )
     persist_guest_status_transitions(guests, GuestStatus.IDLE, source="arena_wheel_release")
 
@@ -597,6 +630,7 @@ def _process_wheel_event_locked(event: ArenaWheelEvent, *, entries: list[ArenaWh
     if winner is active_a:
         active_b.status = ArenaWheelEntry.Status.ELIMINATED
         ArenaWheelEntry.objects.filter(pk=active_b.pk).update(status=active_b.status)
+        _release_entry_guest_statuses(active_b)
         next_b = _next_entry(team_b, active_b)
         if next_b:
             active_a.debuff_stacks = min(active_a.debuff_stacks + 1, ARENA_WHEEL_MAX_DEBUFF_STACKS)
@@ -607,6 +641,7 @@ def _process_wheel_event_locked(event: ArenaWheelEvent, *, entries: list[ArenaWh
     elif winner is active_b:
         active_a.status = ArenaWheelEntry.Status.ELIMINATED
         ArenaWheelEntry.objects.filter(pk=active_a.pk).update(status=active_a.status)
+        _release_entry_guest_statuses(active_a)
         next_a = _next_entry(team_a, active_a)
         if next_a:
             active_b.debuff_stacks = min(active_b.debuff_stacks + 1, ARENA_WHEEL_MAX_DEBUFF_STACKS)
@@ -618,6 +653,8 @@ def _process_wheel_event_locked(event: ArenaWheelEvent, *, entries: list[ArenaWh
         active_a.status = ArenaWheelEntry.Status.ELIMINATED
         active_b.status = ArenaWheelEntry.Status.ELIMINATED
         ArenaWheelEntry.objects.bulk_update([active_a, active_b], ["status"])
+        _release_entry_guest_statuses(active_a)
+        _release_entry_guest_statuses(active_b)
         active_a = _next_entry(team_a, active_a)
         active_b = _next_entry(team_b, active_b)
         if active_a:

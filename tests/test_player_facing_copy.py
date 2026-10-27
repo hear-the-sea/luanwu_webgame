@@ -26,7 +26,14 @@ def test_player_copy_snapshots_match_current_yaml():
     for updates, current in ((rules.MISSION_UPDATES, missions), (rules.ITEM_UPDATES, items)):
         for key, fields in updates.items():
             assert set(fields) == {"description"}
-            assert fields["description"] == current[key]["description"]
+            description = fields["description"]
+            if key == "jingyanggang":
+                # 后续迁移在旧文案后追加夜间出行提醒。
+                description = description.rstrip() + "（注意别晚上出门哦）\n"
+            elif key == "mission_chest_v3_zhanlong_wuhu_shizhen":
+                # 后续宝箱配置已包含珍稀装备与图纸，现行文案不再罗列抽取概率。
+                description = "五虎齐聚，演武馈赠。开启可获得演武补给，并有机会额外收获珍稀装备、图纸及赵云招募卷轴。"
+            assert description == current[key]["description"]
             assert fields["description"].strip()
 
     # 核对玩家会据以决策的文案，与实际兵力、奖励数量及掉落概率相符。
@@ -39,14 +46,15 @@ def test_player_copy_snapshots_match_current_yaml():
     assert "河西走廊" not in missions["shanhaiguan"]["description"]
     wuhu_chest = items["mission_chest_v3_zhanlong_wuhu_shizhen"]
     groups = {group["label"]: group for group in wuhu_chest["effect_payload"]["random_item_groups"]}
-    assert "1%的机会" in wuhu_chest["description"]
+    assert "赵云招募卷轴" in wuhu_chest["description"]
     assert groups["zhaoyun_guest_scroll"]["chance"] == 0.01
-    assert "10%的机会" in wuhu_chest["description"]
     assert groups["赵云名器"]["chance"] == 0.1
     assert groups["赵云名器"]["choices"] == [
         {"item_key": "equip_shuduanbaijinpao", "weight": 1},
         {"item_key": "equip_longdanqiang", "weight": 1},
     ]
+    assert "图纸" in wuhu_chest["description"]
+    assert groups["blueprint_top_orange"]["choices"]
 
 
 @pytest.mark.django_db

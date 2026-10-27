@@ -1,0 +1,17 @@
+{% load static %}{% if rallies %}
+<div class="season-rally-list">
+    {% for rally in rallies %}
+    <article class="season-rally" data-season-rally="{{ rally.id }}">
+        <div class="season-rally-banner">{% if rally.image %}<img src="{% static rally.image %}" alt="" class="season-rally-target" loading="lazy">{% endif %}<div><span class="season-eyebrow">{{ rally.kind_label }}</span><h3>{{ rally.node_name }}</h3><p>发起人 {{ rally.leader_name }}</p></div><span class="season-chip">{{ rally.status_label }}</span></div>
+        <div class="season-rally-party" aria-label="集结成员席位">{% for slot in rally.slots %}<div class="season-party-slot{% if not slot.occupied %} season-party-slot--empty{% endif %}"{% if slot.occupied %} title="{{ slot.name }}{% if slot.is_leader %} · 发起人{% endif %}"{% endif %}>{% if slot.occupied %}{% include "gameplay/season/portrait.html" with avatar=slot.avatar name=slot.name %}{% if slot.is_leader %}<b class="season-leader-mark">队长</b>{% endif %}<small>{{ slot.name }}</small>{% else %}<span class="season-open-slot" aria-hidden="true">{% if rally.is_gathering %}＋{% else %}—{% endif %}</span><small>{% if rally.is_gathering %}待加入{% else %}未随队{% endif %}</small>{% endif %}</div>{% endfor %}</div>
+        <div class="season-rally-timing"><span>已加入 <b>{{ rally.member_count }}</b> / {{ rally.target_members }} 人 <small>· {{ rally.target_members }} 人出发{% if rally.wave %} · 已交战 {{ rally.wave }} 波{% endif %}</small></span>{% if rally.countdown_at %}<span>{{ rally.deadline_label }} <b data-season-countdown="{{ rally.countdown_at|date:'c' }}">{{ rally.remaining_seconds }} 秒</b></span>{% endif %}</div>
+        <div class="season-rally-actions">
+            {% if rally.joined %}<span class="season-joined-mark">已加入 · 可在“在外队伍”召回</span>{% endif %}
+            {% if rally.can_join %}<button type="button" class="season-button season-button--primary" data-guild-modal-open="season-rally-{{ rally.id }}">加入集结</button>{% endif %}
+            {% if rally.can_cancel %}<form method="post" action="{% url 'gameplay:season_action' %}" data-season-form>{% include "gameplay/season/form_identity.html" with command="rally_cancel" %}<input type="hidden" name="rally_id" value="{{ rally.id }}"><button type="submit" class="season-button">取消集结</button></form>{% endif %}
+        </div>
+        {% if rally.message and not compact %}<details class="season-inline-help"><summary>队伍动态</summary><p>{{ rally.message }}</p></details>{% endif %}
+    </article>
+    {% endfor %}
+</div>
+{% endif %}

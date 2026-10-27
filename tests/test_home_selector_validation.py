@@ -58,6 +58,7 @@ class _FakeQuerySet(list):
 
 
 def _patch_home_context_dependencies(monkeypatch) -> None:
+    monkeypatch.setattr("gameplay.selectors.home.get_home_season_events", lambda *_a, **_k: [])
     monkeypatch.setattr("gameplay.selectors.home.optimize_guest_queryset", lambda qs: qs)
     monkeypatch.setattr("gameplay.selectors.home.get_technology_template", lambda *_a, **_k: {})
     monkeypatch.setattr("gameplay.selectors.home.cache.get", lambda *_a, **_k: None)
@@ -73,6 +74,7 @@ def _patch_home_context_dependencies(monkeypatch) -> None:
 
 
 def test_get_home_context_tolerates_cache_backend_failure(monkeypatch):
+    monkeypatch.setattr("gameplay.selectors.home.get_home_season_events", lambda *_a, **_k: [])
     monkeypatch.setattr("gameplay.selectors.home.optimize_guest_queryset", lambda qs: qs)
     monkeypatch.setattr("gameplay.selectors.home.get_technology_template", lambda *_a, **_k: {})
     monkeypatch.setattr("gameplay.selectors.home.can_retreat", lambda *_a, **_k: False)

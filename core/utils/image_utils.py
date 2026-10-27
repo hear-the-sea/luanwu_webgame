@@ -26,13 +26,19 @@ def flatten_transparent_image(image: Image.Image) -> Image.Image:
     return Image.alpha_composite(background, rgba_image).convert("RGB")
 
 
+def prepare_webp_frame(image: Image.Image) -> Image.Image:
+    """转换为 WebP 支持的 RGB/RGBA 模式，并保留源图透明通道。"""
+    has_transparency = "A" in image.getbands() or "transparency" in image.info
+    return image.convert("RGBA" if has_transparency else "RGB")
+
+
 def convert_image_content_to_webp(
     image_file: SeekableBinaryFile,
     original_name: str,
     max_size: Tuple[int, int] | None = None,
     quality: int = 85,
 ) -> Tuple[ContentFile, str]:
-    """把上传图片统一转为 WebP，并保留动画帧及浅暖黄色透明底色。"""
+    """把上传图片统一转为 WebP，并保留透明通道及动画帧。"""
     try:
         image_file.seek(0)
     except (AttributeError, OSError):
@@ -53,9 +59,13 @@ def convert_image_content_to_webp(
         frames = []
         durations = []
         for frame in ImageSequence.Iterator(image):
-            prepared = flatten_transparent_image(frame)
+            prepared = prepare_webp_frame(frame)
             if max_size is not None:
+                if prepared.mode == "RGBA":
+                    prepared = prepared.convert("RGBa")
                 prepared.thumbnail(max_size, Image.Resampling.LANCZOS)
+                if prepared.mode == "RGBa":
+                    prepared = prepared.convert("RGBA")
             frames.append(prepared)
             durations.append(frame.info.get("duration", image.info.get("duration", 100)))
 

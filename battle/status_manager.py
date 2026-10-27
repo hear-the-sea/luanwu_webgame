@@ -96,6 +96,7 @@ def apply_battle_heal(
                     # HP 状态保持整数，单兵小数生命只用于换算恢复量。
                     healed_hp = int(heal_strength * per_unit_hp)
                     max_hp = getattr(unit, "max_hp", unit.hp)
+                    hp_before = unit.hp
                     unit.hp = min(max_hp, unit.hp + healed_hp)
 
                     heals.append(
@@ -103,6 +104,8 @@ def apply_battle_heal(
                             "unit": unit.name,
                             "side": unit.side,
                             "healed": healed_hp,
+                            "effective_healed": max(0, unit.hp - hp_before),
+                            "source_guest_id": getattr(unit, "guest_id", None),
                             "heal_strength": heal_strength,
                             "new_hp": unit.hp,
                             "new_strength": unit.troop_strength,
@@ -114,12 +117,15 @@ def apply_battle_heal(
             else:
                 healed = int(unit.hp * heal_amount_ratio)
                 max_hp = getattr(unit, "max_hp", unit.hp)
+                hp_before = unit.hp
                 unit.hp = min(max_hp, unit.hp + healed)
                 heals.append(
                     {
                         "unit": unit.name,
                         "side": unit.side,
                         "healed": healed,
+                        "effective_healed": max(0, unit.hp - hp_before),
+                        "source_guest_id": getattr(unit, "guest_id", None),
                         "new_hp": unit.hp,
                         "effect": "五气朝元",
                         "unit_state": snapshot_unit_state(unit),

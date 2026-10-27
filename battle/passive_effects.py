@@ -224,6 +224,9 @@ def apply_effect(effect: dict[str, Any], context: dict[str, Any]) -> None:
                         "unit": getattr(target_unit, "name", ""),
                         "effect": str(effect.get("log_name") or effect_type),
                         "healed": healed,
+                        "effective_healed": healed,
+                        "source_guest_id": getattr(actor, "guest_id", None),
+                        "source_side": getattr(actor, "side", ""),
                         "unit_state": snapshot_unit_state(target_unit),
                     },
                 )

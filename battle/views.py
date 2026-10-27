@@ -68,6 +68,7 @@ class BattleReportDetailView(LoginRequiredMixin, DetailView):
         # 1) 自己作为战报归属方（report.manor）
         # 2) 通过站内信收到的战报（Message.battle_report）
         # 3) 进行中或结束后保留期内的竞技场公开战报
+        # 4) 自己实际参与的赛季战报，以持久贡献流水保留历史访问权
         return (
             BattleReport.objects.select_related("manor")
             .filter(
@@ -83,6 +84,7 @@ class BattleReportDetailView(LoginRequiredMixin, DetailView):
                 | Q(arena_ring_matches__tenure__ended_at__isnull=True, arena_ring_matches__isnull=False)
                 | Q(arena_ring_matches__tenure__ended_at__gt=now - timedelta(hours=24))
                 | Q(arena_ring_matches__defender=manor)
+                | Q(seasonaction__member__manor=manor)
                 | Q(arena_coop_events__status__in=["preparing", "running"])
                 | Q(
                     arena_coop_events__status__in=["completed", "cancelled"],
@@ -154,6 +156,9 @@ class BattleReportDetailView(LoginRequiredMixin, DetailView):
         context["loss_right_casualties"] = serialize_casualty_rows(loss_right)
 
         side_context = build_side_labels(player_side=player_side, winner=report.winner)
+        from .season_outcome import season_guard_wave_cleared
+
+        context["season_guard_wave_cleared"] = season_guard_wave_cleared(report)
         is_spectator = bool(side_context["is_spectator"])
         player_won = bool(side_context["player_won"])
         context["report_title"] = build_report_title(report, player_side=player_side, viewer_manor_id=viewer_manor_id)

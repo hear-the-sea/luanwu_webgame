@@ -16,12 +16,21 @@ from django.conf import settings  # noqa: E402
 from django.contrib.staticfiles.handlers import ASGIStaticFilesHandler  # noqa: E402
 from django.core.asgi import get_asgi_application  # noqa: E402
 from django.core.exceptions import AppRegistryNotReady  # noqa: E402
+from django.db import connections  # noqa: E402
 
 from core.middleware.http_admission import HTTPAdmissionMiddleware  # noqa: E402
 from websocket.middleware.ip_capacity import WebSocketIPCapacityMiddleware  # noqa: E402
 from websocket.routing_status import set_websocket_routing_status  # noqa: E402
 
 logger = logging.getLogger(__name__)
+
+# ASGI creates a thread-sensitive context for each HTTP request. Persistent
+# connections cannot be reused by the next request's thread and may outlive
+# admission slots. Let Django's request-finished cleanup close them instead.
+# Apply this only in the ASGI process, including existing wrappers, so shared
+# environment files can still configure connection reuse for Celery and WSGI.
+for connection in connections.all():
+    connection.settings_dict["CONN_MAX_AGE"] = 0
 
 # Initialize Django ASGI application early to ensure app registry is ready
 django_asgi_app = get_asgi_application()

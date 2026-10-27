@@ -78,6 +78,7 @@ from gameplay.tasks.recruitment import complete_troop_recruitment, scan_troop_re
 
 # Resources
 from gameplay.tasks.resources import sync_resource_production_task
+from gameplay.tasks.season import advance_season_expedition_task, settle_seasons_task
 
 # Technology
 from gameplay.tasks.technology import complete_technology_upgrade, scan_technology_upgrades
@@ -110,6 +111,8 @@ from gameplay.tasks.world_chat import (
 )
 
 __all__ = [
+    "settle_seasons_task",
+    "advance_season_expedition_task",
     # Backward compatibility
     "timezone",
     "MissionRun",

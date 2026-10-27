@@ -1,0 +1,123 @@
+[
+  {
+    "key": "mountain",
+    "name": "山地关隘",
+    "source": "season-mountain-pass-v3.png",
+    "nodes": [
+      {
+        "id": "inn",
+        "name": "山脚驿站",
+        "box": [
+          50,
+          725,
+          395,
+          916
+        ]
+      },
+      {
+        "id": "gate",
+        "name": "青石关",
+        "box": [
+          477,
+          340,
+          930,
+          542
+        ]
+      },
+      {
+        "id": "ruins",
+        "name": "古代遗迹",
+        "box": [
+          1110,
+          70,
+          1403,
+          234
+        ]
+      }
+    ]
+  },
+  {
+    "key": "river",
+    "name": "河口古城",
+    "source": "season-river-town-v2.png",
+    "nodes": [
+      {
+        "id": "town",
+        "name": "河口古城",
+        "box": [
+          690,
+          145,
+          1405,
+          485
+        ]
+      },
+      {
+        "id": "market",
+        "name": "沿岸集市",
+        "box": [
+          570,
+          460,
+          825,
+          586
+        ]
+      },
+      {
+        "id": "warehouse",
+        "name": "港口仓库",
+        "box": [
+          885,
+          512,
+          1375,
+          707
+        ]
+      },
+      {
+        "id": "docks",
+        "name": "渡口码头",
+        "box": [
+          430,
+          615,
+          1115,
+          875
+        ]
+      }
+    ]
+  },
+  {
+    "key": "forest",
+    "name": "森林补给区",
+    "source": "season-forest-supply-v1.png",
+    "nodes": [
+      {
+        "id": "camp",
+        "name": "林间营寨",
+        "box": [
+          540,
+          80,
+          1045,
+          315
+        ]
+      },
+      {
+        "id": "granary",
+        "name": "粮仓与农田",
+        "box": [
+          930,
+          521,
+          1417,
+          802
+        ]
+      },
+      {
+        "id": "lodge",
+        "name": "林间驿舍",
+        "box": [
+          145,
+          525,
+          397,
+          664
+        ]
+      }
+    ]
+  }
+]

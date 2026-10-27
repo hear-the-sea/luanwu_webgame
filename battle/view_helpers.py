@@ -142,6 +142,22 @@ def _extract_raid_item_drops(raid_run: Any) -> dict[str, int]:
 
 
 def resolve_report_runtime_context(report: "BattleReport", *, manor_id: int) -> dict[str, Any]:
+    if getattr(report, "battle_type", "") == "season":
+        # 赛季流水保留参战身份，门客叛逃、归队或队伍后续换战报不改变历史视角。
+        if report.manor_id == manor_id:
+            return {"player_side": "attacker", "raid_run": None}
+        from gameplay.models import SeasonAction
+
+        action_results = list(
+            SeasonAction.objects.filter(report=report, member__manor_id=manor_id).values_list("result", flat=True)
+        )
+        for result in action_results:
+            combat_side = result.get("combat_side") if isinstance(result, dict) else None
+            if combat_side in ("attacker", "defender"):
+                return {"player_side": combat_side, "raid_run": None}
+        if action_results:
+            return {"player_side": "defender", "raid_run": None}
+
     mission_run = _load_mission_run_for_report(report)
     if mission_run and mission_run.mission.is_defense:
         return {"player_side": "defender", "raid_run": None}

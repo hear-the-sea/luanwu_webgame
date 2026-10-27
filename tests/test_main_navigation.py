@@ -34,6 +34,7 @@ class MainNavigationParser(HTMLParser):
         ("gameplay:warehouse", "gameplay:warehouse"),
         ("gameplay:technology", "gameplay:technology"),
         ("guests:roster", "guests:roster"),
+        ("gameplay:season", "gameplay:season"),
     ],
 )
 def test_main_navigation_highlights_only_the_current_application(page, active_navigation):

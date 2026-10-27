@@ -47,6 +47,21 @@ data/images/*
 !data/images/buildings/
 data/images/buildings/*
 !data/images/buildings/guild-residence.webp
+# Season maps use a small, explicit set of runtime layers and their placement manifest.
+!data/images/pvp/
+data/images/pvp/*
+!data/images/pvp/layers-v1/
+data/images/pvp/layers-v1/*
+!data/images/pvp/layers-v1/manifest.json
+!data/images/pvp/layers-v1/mountain/
+!data/images/pvp/layers-v1/mountain/*.png
+!data/images/pvp/layers-v1/mountain/*.png.webp
+!data/images/pvp/layers-v1/river/
+!data/images/pvp/layers-v1/river/*.png
+!data/images/pvp/layers-v1/river/*.png.webp
+!data/images/pvp/layers-v1/forest/
+!data/images/pvp/layers-v1/forest/*.png
+!data/images/pvp/layers-v1/forest/*.png.webp
 
 *.tar
 *.tar.gz

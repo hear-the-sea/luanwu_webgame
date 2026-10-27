@@ -153,6 +153,8 @@ CELERY_TIMER_SCAN_TASKS = frozenset(
         "gameplay.scan_arena_coop_events",
         "gameplay.scan_arena_wheel_events",
         "gameplay.scan_arena_rings",
+        "gameplay.settle_seasons",
+        "gameplay.advance_season_expedition",
         "gameplay.scan_raid_runs",
         "guilds.scan_due_raids",
         "guilds.scan_due_missions",
@@ -375,6 +377,10 @@ CELERY_BEAT_SCHEDULE = {
     },
     "scan-arena-rings": {
         "task": "gameplay.scan_arena_rings",
+        "schedule": crontab(minute="*/1"),
+    },
+    "settle-seasons": {
+        "task": "gameplay.settle_seasons",
         "schedule": crontab(minute="*/1"),
     },
     "scan-arena-virtual-reserves": {

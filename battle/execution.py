@@ -513,9 +513,11 @@ def execute_battle(
     )
 
 
-def prepare_snapshot_battle_teams(manor, guests: List[Guest], options: BattleOptions) -> PreparedBattleTeams:
+def prepare_snapshot_battle_teams(
+    manor, guests: List[Guest], options: BattleOptions, *, allow_empty_defenders: bool = False
+) -> PreparedBattleTeams:
     """只准备快照战斗，不进行模拟、持久化或真实门客状态变更。"""
-    _validate_snapshot_options(options, guests)
+    _validate_snapshot_options(options, guests, allow_empty_defenders=allow_empty_defenders)
     if options.attacker_manor is not None:
         raise ValueError("prepared snapshot combat requires explicit frozen technology")
     config = get_battle_config(options.battle_type)
@@ -546,7 +548,9 @@ def prepare_snapshot_battle_teams(manor, guests: List[Guest], options: BattleOpt
     )
 
 
-def _validate_snapshot_options(options: BattleOptions, guests: List[Guest]) -> None:
+def _validate_snapshot_options(
+    options: BattleOptions, guests: List[Guest], *, allow_empty_defenders: bool = False
+) -> None:
     if (
         options.persist_report
         or options.auto_reward
@@ -557,7 +561,7 @@ def _validate_snapshot_options(options: BattleOptions, guests: List[Guest]) -> N
         or options.drop_handler is not None
         or options.defender_manor is not None
         or not guests
-        or not options.defender_guests
+        or (not options.defender_guests and not allow_empty_defenders)
         or any(
             is_live_guest_model(guest) or not getattr(guest, "is_battle_snapshot_proxy", False)
             for guest in [*guests, *(options.defender_guests or [])]
@@ -568,7 +572,9 @@ def _validate_snapshot_options(options: BattleOptions, guests: List[Guest]) -> N
 
 def execute_prepared_snapshot_battle(manor, prepared: PreparedBattleTeams) -> BattleReport:
     """使用已固定的团队运行纯内存模拟；重复执行不会修改准备好的输入。"""
-    _validate_snapshot_options(prepared.options, prepared.guests)
+    _validate_snapshot_options(
+        prepared.options, prepared.guests, allow_empty_defenders=bool(prepared.defender_city_defenses)
+    )
     if manor.pk != prepared.manor_id:
         raise ValueError("prepared battle teams belong to another manor")
     battle = deepcopy(prepared)

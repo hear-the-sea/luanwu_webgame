@@ -24,9 +24,9 @@ def get_prepared_guest_roster_for_read(
     )
     guests = list(available_guests_fn(manor))
 
-    # 返程中的出征门客仍被踢馆记录占用。读取旧数据或状态同步延迟时，
-    # 以进行中的 RaidRun 作为展示边界，避免把他们误列为空闲门客。
-    from gameplay.models import RaidRun
+    # 返程中的门客仍被出征记录占用。读取旧数据或状态同步延迟时，
+    # 以未归队的踢馆、赛季派遣作为展示边界，避免把他们误列为空闲。
+    from gameplay.models import RaidRun, SeasonExpedition
     from guests.models import GuestStatus
 
     active_raid_guest_ids = set(
@@ -41,6 +41,11 @@ def get_prepared_guest_roster_for_read(
             guests__isnull=False,
             guests__in=[guest.pk for guest in guests],
         ).values_list("guests__pk", flat=True)
+    )
+    active_raid_guest_ids.update(
+        SeasonExpedition.objects.filter(member__manor=manor, guests__in=[guest.pk for guest in guests])
+        .exclude(status="completed")
+        .values_list("guests__pk", flat=True)
     )
     for guest in guests:
         if guest.pk in active_raid_guest_ids:

@@ -1,3 +1,4 @@
+import random
 from types import SimpleNamespace
 
 import pytest
@@ -29,6 +30,33 @@ def test_defeated_troop_loss_rate_is_80_percent_for_both_sides(monkeypatch):
     assert attacker_losses["troop_loss_rate"] == 0.8
     assert defender_losses["troop_loss_rate"] == 0.8
     assert observed_rates == [0.8, 0.8]
+
+
+def test_reclassifying_season_guard_win_does_not_change_actual_troop_losses():
+    """同一战斗状态及随机种子，守军被清空后的胜负修正不影响护院战损。"""
+    attacker = SimpleNamespace(
+        name="进攻护院",
+        template_key="attack_troop",
+        kind="troop",
+        max_hp=100,
+        hp=60,
+        initial_troop_strength=100,
+        troop_strength=60,
+    )
+    defender = SimpleNamespace(
+        name="防守护院",
+        template_key="defend_troop",
+        kind="troop",
+        max_hp=100,
+        hp=30,
+        initial_troop_strength=100,
+        troop_strength=30,
+    )
+    kwargs = {"attacker_troop_loss_rate": 0.5, "defender_troop_loss_rate": 0.5}
+    old = summarize_losses([attacker], [defender], "defender", random.Random(42), **kwargs)
+    corrected = summarize_losses([attacker], [defender], "attacker", random.Random(42), **kwargs)
+    assert old == corrected
+    assert old["attacker"]["troops_lost"] > 0 and old["defender"]["troops_lost"] > 0
 
 
 @pytest.mark.parametrize(

@@ -12,6 +12,17 @@ from django.core.checks import Error
 from django.core.files.storage import FileSystemStorage
 
 
+class _CatalogImageStorage(FileSystemStorage):
+    """collectstatic 使用公开名称读取时仍定位实际的目录文件。"""
+
+    def __init__(self, root, assets):
+        self.assets = assets
+        super().__init__(location=root)
+
+    def path(self, name):
+        return super().path(self.assets.get(name, name))
+
+
 class CatalogImageFinder(BaseFinder):
     """Expose only catalog images that are referenced directly by templates.
 
@@ -26,10 +37,39 @@ class CatalogImageFinder(BaseFinder):
         "items/guild_silver_boost_card.png": "items/guild_silver_boost_card.png",
         "items/large.png": "items/large.png",
     }
+    # 仅发布实际游戏图层，不发布素材校样、提示词与源文件。
+    ASSETS.update(
+        {
+            f"season-assets/{region}/{name}.png": f"pvp/layers-v1/{region}/{name}.png"
+            for region, names in {
+                "mountain": ("background", "inn", "gate", "ruins"),
+                "river": ("background", "town", "market", "warehouse", "docks"),
+                "forest": ("background", "camp", "granary", "lodge"),
+            }.items()
+            for name in names
+        }
+    )
+
+    ASSETS.update(
+        {
+            f"season-troops/{name}.png": f"troops/{name}.png"
+            for name in ("daosheng", "qiangwang", "jiansheng", "quansheng", "jianshen", "shixuetieqi")
+        }
+    )
+
+    # 页面直接引用 WebP，使本地 Django 静态服务也能加载压缩图。
+    # 保留 PNG 别名，兼容旧页面；副本由 prepare_webp_images 统一生成。
+    ASSETS.update(
+        {
+            public_path.removesuffix(".png") + ".webp": source_path + ".webp"
+            for public_path, source_path in list(ASSETS.items())
+            if public_path.startswith(("season-assets/", "season-troops/")) and public_path.endswith(".png")
+        }
+    )
 
     def __init__(self, *args, **kwargs):
         self.root = Path(settings.BASE_DIR) / "data" / "images"
-        self.storage = FileSystemStorage(location=self.root)
+        self.storage = _CatalogImageStorage(self.root, self.ASSETS)
         super().__init__(*args, **kwargs)
 
     def check(self, **kwargs):

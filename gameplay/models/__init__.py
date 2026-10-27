@@ -70,6 +70,18 @@ from .progression import (
 )
 from .pvp import JailInteractionLog, JailPrisoner, OathBond, RaidRun, ScoutCooldown, ScoutRecord
 from .safety_audit import BotSafetyDecisionAudit
+from .season import (
+    Season,
+    SeasonAction,
+    SeasonClaim,
+    SeasonExpedition,
+    SeasonFaction,
+    SeasonIntel,
+    SeasonMember,
+    SeasonRally,
+    SeasonSite,
+    SeasonWeek,
+)
 from .virtual_player_maintenance import (
     BotMaintenanceAttempt,
     BotMaintenanceCompletionEvent,
@@ -78,6 +90,16 @@ from .virtual_player_maintenance import (
 )
 
 __all__ = [
+    "Season",
+    "SeasonMember",
+    "SeasonAction",
+    "SeasonClaim",
+    "SeasonWeek",
+    "SeasonFaction",
+    "SeasonIntel",
+    "SeasonSite",
+    "SeasonExpedition",
+    "SeasonRally",
     "ArenaRing",
     "ArenaRingTenure",
     "ArenaRingMatch",

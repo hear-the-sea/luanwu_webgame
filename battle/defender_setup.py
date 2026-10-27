@@ -81,6 +81,21 @@ def build_defender_guest_and_loadout(
             stat_bonuses=defender_guest_bonuses,
             override_skill_keys=defender_guest_skills,
         )
+        multipliers_by_key = _normalize_optional_mapping(
+            normalized_setup.get("guest_stat_multipliers"),
+            contract_name="battle defender guest stat multipliers",
+        )
+        if multipliers_by_key:
+            for combatant in defender_guests_comb:
+                multipliers = _normalize_optional_mapping(
+                    multipliers_by_key.get(combatant.template_key),
+                    contract_name="battle defender guest stat multipliers entry",
+                )
+                hp_multiplier = multipliers.get("hp", 1)
+                combatant.max_hp = int(combatant.max_hp * hp_multiplier)
+                combatant.hp = int(combatant.hp * hp_multiplier)
+                combatant.initial_hp = int(combatant.initial_hp * hp_multiplier)
+                combatant.attack *= multipliers.get("attack", 1)
         defender_loadout = normalize_troop_loadout_fn(
             _normalize_troop_loadout_input(normalized_setup.get("troop_loadout")),
             default_if_empty=fill_default_troops,
