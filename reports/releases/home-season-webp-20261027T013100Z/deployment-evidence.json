@@ -1,0 +1,182 @@
+{
+  "phase.json": {
+    "phase": "deployed_pending_public_verification",
+    "image": "webgame:home-season-webp-20261027T013100Z",
+    "updated_at": "2026-10-27T01:38:49.717894+00:00",
+    "maintenance": false,
+    "player_assets_preserved": true,
+    "season": {
+      "id": 1,
+      "name": "山海争鸣·第一季",
+      "starts_at": "2026-10-26T15:43:20.803838+00:00",
+      "ends_at": "2027-01-24T15:43:20.803838+00:00",
+      "member_count": 19
+    }
+  },
+  "player-assets-before.json": {
+    "gameplay.Manor": {
+      "rows": 1282,
+      "sha256": "8d68cf4b2a70bbd4ec31eb199a3ba6bc4d6d6c991dc7e7c6f120704aa21afc1f"
+    },
+    "gameplay.InventoryItem": {
+      "rows": 72417,
+      "sha256": "f1478a32fd4b8e68a0145f2175fe1e07fb59f8a000448d47902e8ebea6906414"
+    },
+    "gameplay.PlayerTroop": {
+      "rows": 5696,
+      "sha256": "da8a14d7930ed750a95e30fc27d74371f9534663d697502828ee0f43c9723384"
+    },
+    "gameplay.TroopBankStorage": {
+      "rows": 294,
+      "sha256": "150843e0cca1ce18870e21a7445e5d1e19e9111d288329675637d831eb4e7598"
+    },
+    "guests.Guest": {
+      "rows": 12858,
+      "sha256": "84b95a3c9d9f056c4fdf239e1190ceddc5302bf6e64b80a5221bd16e3f8efb90"
+    },
+    "guests.GuestSkill": {
+      "rows": 8544,
+      "sha256": "ea7c624713b7addd23dd7fc8c07acd44e328d9a33b02bc35d41f3f6cd191d426"
+    },
+    "guests.GearItem": {
+      "rows": 114736,
+      "sha256": "54e8a4834d1ba452ee8e98f7a6709afec124910e37cf53d3ca0d3f013014598e"
+    }
+  },
+  "player-assets-after.json": {
+    "gameplay.Manor": {
+      "rows": 1282,
+      "sha256": "8d68cf4b2a70bbd4ec31eb199a3ba6bc4d6d6c991dc7e7c6f120704aa21afc1f"
+    },
+    "gameplay.InventoryItem": {
+      "rows": 72417,
+      "sha256": "f1478a32fd4b8e68a0145f2175fe1e07fb59f8a000448d47902e8ebea6906414"
+    },
+    "gameplay.PlayerTroop": {
+      "rows": 5696,
+      "sha256": "da8a14d7930ed750a95e30fc27d74371f9534663d697502828ee0f43c9723384"
+    },
+    "gameplay.TroopBankStorage": {
+      "rows": 294,
+      "sha256": "150843e0cca1ce18870e21a7445e5d1e19e9111d288329675637d831eb4e7598"
+    },
+    "guests.Guest": {
+      "rows": 12858,
+      "sha256": "84b95a3c9d9f056c4fdf239e1190ceddc5302bf6e64b80a5221bd16e3f8efb90"
+    },
+    "guests.GuestSkill": {
+      "rows": 8544,
+      "sha256": "ea7c624713b7addd23dd7fc8c07acd44e328d9a33b02bc35d41f3f6cd191d426"
+    },
+    "guests.GearItem": {
+      "rows": 114736,
+      "sha256": "54e8a4834d1ba452ee8e98f7a6709afec124910e37cf53d3ca0d3f013014598e"
+    }
+  },
+  "battle-smoke.json": {
+    "snapshot_battle": true,
+    "empty_guard_gate_battle": true,
+    "gate_normal_round_limit": 8,
+    "database_writes": 0,
+    "persisted_reports": 0
+  },
+  "services-after.json": {
+    "web": {
+      "image": "webgame:home-season-webp-20261027T013100Z",
+      "running": true
+    },
+    "worker": {
+      "image": "webgame:home-season-webp-20261027T013100Z",
+      "running": true
+    },
+    "worker_battle": {
+      "image": "webgame:home-season-webp-20261027T013100Z",
+      "running": true
+    },
+    "worker_timer": {
+      "image": "webgame:home-season-webp-20261027T013100Z",
+      "running": true
+    },
+    "worker_timer_scan": {
+      "image": "webgame:home-season-webp-20261027T013100Z",
+      "running": true
+    },
+    "worker_timer_safety": {
+      "image": "webgame:home-season-webp-20261027T013100Z",
+      "running": true
+    },
+    "worker_timer_maintenance": {
+      "image": "webgame:home-season-webp-20261027T013100Z",
+      "running": true
+    },
+    "beat": {
+      "image": "webgame:home-season-webp-20261027T013100Z",
+      "running": true
+    }
+  },
+  "season-start.json": {
+    "id": 1,
+    "name": "山海争鸣·第一季",
+    "starts_at": "2026-10-26T15:43:20.803838+00:00",
+    "ends_at": "2027-01-24T15:43:20.803838+00:00",
+    "member_count": 19
+  },
+  "catalog-preflight.json": {
+    "item_templates": 14,
+    "missing": [],
+    "recruitable_templates": {
+      "fiction": 793,
+      "history": 2786
+    }
+  },
+  "migration-plan.json": [],
+  "home-preflight.json": {
+    "home_render": true,
+    "active_teams": 0,
+    "recall_forms": 0,
+    "database_writes": 0,
+    "bytes": 18452
+  },
+  "post_deploy_logs": {
+    "web": {
+      "tracebacks": 0,
+      "season_received": 0,
+      "season_beat_due": 0
+    },
+    "worker": {
+      "tracebacks": 0,
+      "season_received": 0,
+      "season_beat_due": 0
+    },
+    "worker_battle": {
+      "tracebacks": 0,
+      "season_received": 0,
+      "season_beat_due": 0
+    },
+    "worker_timer": {
+      "tracebacks": 0,
+      "season_received": 0,
+      "season_beat_due": 0
+    },
+    "worker_timer_scan": {
+      "tracebacks": 0,
+      "season_received": 4,
+      "season_beat_due": 0
+    },
+    "worker_timer_safety": {
+      "tracebacks": 0,
+      "season_received": 0,
+      "season_beat_due": 0
+    },
+    "worker_timer_maintenance": {
+      "tracebacks": 0,
+      "season_received": 0,
+      "season_beat_due": 0
+    },
+    "beat": {
+      "tracebacks": 0,
+      "season_received": 0,
+      "season_beat_due": 2
+    }
+  }
+}

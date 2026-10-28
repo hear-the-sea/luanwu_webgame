@@ -1,0 +1,13 @@
+<section class="season-node-panes" data-season-pane-group>
+    {% if not node.personal_modes and not node.rally_modes and attack_busy and node.kind != 'logistics' %}<p class="season-notice">出征队伍尚未归队，请先等待或召回。</p>{% endif %}
+    {% if node.popup_panes|length > 1 %}<div class="season-node-tabs" role="tablist" aria-label="{{ node.name }}功能">{% for pane in node.popup_panes %}<button type="button" role="tab" id="node-tab-{{ node.key }}-{{ pane.key }}" aria-controls="node-pane-{{ node.key }}-{{ pane.key }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" tabindex="{% if forloop.first %}0{% else %}-1{% endif %}" data-season-pane-tab="{{ pane.key }}">{{ pane.name }}</button>{% endfor %}</div>{% endif %}
+    {% for pane in node.popup_panes %}<div id="node-pane-{{ node.key }}-{{ pane.key }}" {% if node.popup_panes|length > 1 %}role="tabpanel" aria-labelledby="node-tab-{{ node.key }}-{{ pane.key }}"{% endif %} data-season-pane="{{ pane.key }}" {% if not forloop.first %}hidden{% endif %}>
+        {% if pane.key == 'orders' %}{% include "gameplay/season/warehouse.html" %}
+        {% elif pane.key == 'stock' %}{% include "gameplay/season/training_summary.html" %}<div class="season-economy-resources season-stock-grid">{% for troop in troop_options %}<div>{% include "gameplay/season/troop_identity.html" with show_available=False %}<strong>{{ troop.available }}</strong>{% if troop.special %}<small>特殊护院</small>{% endif %}</div>{% endfor %}</div><p class="season-muted">今日还可领兵 {{ troops_remaining }} 人</p>
+        {% elif pane.key == 'development' %}{% include "gameplay/season/economy.html" with compact=True %}
+        {% elif pane.key == 'trade' %}{% include "gameplay/season/market_stock.html" %}<div class="season-secondary-shop"><span>其他绑定物品</span><button type="button" class="season-button" data-guild-modal-open="season-shop">阵营商店</button></div>
+        {% elif pane.key == 'exchange' %}{% include "gameplay/season/market.html" %}
+        {% elif pane.key == 'details' %}{% include "gameplay/season/node_details.html" %}
+        {% else %}{% include "gameplay/season/node_actions.html" with action_kind=pane.key %}{% endif %}
+    </div>{% endfor %}
+</section>

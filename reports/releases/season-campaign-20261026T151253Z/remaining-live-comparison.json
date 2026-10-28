@@ -1,0 +1,102 @@
+{
+  "battle/defender_setup.py": {
+    "same_as_live": false,
+    "live_equals_head": true,
+    "live_exists": true
+  },
+  "config/asgi.py": {
+    "same_as_live": false,
+    "live_equals_head": true,
+    "live_exists": true
+  },
+  "core/utils/image_utils.py": {
+    "same_as_live": false,
+    "live_equals_head": true,
+    "live_exists": true
+  },
+  "data/mission_templates.yaml": {
+    "same_as_live": false,
+    "live_equals_head": true,
+    "live_exists": true
+  },
+  "gameplay/services/arena/coop_lifecycle.py": {
+    "same_as_live": false,
+    "live_equals_head": true,
+    "live_exists": true
+  },
+  "gameplay/services/arena/core.py": {
+    "same_as_live": false,
+    "live_equals_head": true,
+    "live_exists": true
+  },
+  "gameplay/services/arena/lifecycle_helpers.py": {
+    "same_as_live": false,
+    "live_equals_head": true,
+    "live_exists": true
+  },
+  "gameplay/services/arena/state_helpers.py": {
+    "same_as_live": false,
+    "live_equals_head": true,
+    "live_exists": true
+  },
+  "gameplay/services/arena/wheel_core.py": {
+    "same_as_live": false,
+    "live_equals_head": true,
+    "live_exists": true
+  },
+  "gameplay/services/missions_impl/launch_post_actions.py": {
+    "same_as_live": false,
+    "live_equals_head": true,
+    "live_exists": true
+  },
+  "gameplay/services/missions_impl/launch_resilience.py": {
+    "same_as_live": false,
+    "live_equals_head": true,
+    "live_exists": true
+  },
+  "scripts/prepare_webp_images.py": {
+    "same_as_live": false,
+    "live_equals_head": true,
+    "live_exists": true
+  },
+  "static/js/jail-page.js": {
+    "same_as_live": false,
+    "live_equals_head": true,
+    "live_exists": true
+  },
+  "data/images/guests/33.png": {
+    "same_as_live": true,
+    "live_equals_head": null,
+    "live_exists": true
+  },
+  "data/images/guests/monkey/2b4a302e-832b-4fd3-b7b5-a6fbb836555d.png": {
+    "same_as_live": true,
+    "live_equals_head": null,
+    "live_exists": true
+  },
+  "data/images/guests/monkey/orange/1.png": {
+    "same_as_live": true,
+    "live_equals_head": null,
+    "live_exists": true
+  },
+  "data/images/guests/monkey/orange/111.png": {
+    "same_as_live": true,
+    "live_equals_head": null,
+    "live_exists": true
+  },
+  "data/images/guests/monkey/orange/1233.png": {
+    "same_as_live": true,
+    "live_equals_head": null,
+    "live_exists": true
+  },
+  "data/images/guests/monkey/orange/sima.png": {
+    "same_as_live": true,
+    "live_equals_head": null,
+    "live_exists": true
+  },
+  "data/images/guests/monkey/temp.png": {
+    "same_as_live": true,
+    "live_equals_head": null,
+    "live_exists": true
+  }
+}

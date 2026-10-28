@@ -1,0 +1,445 @@
+{
+  "status": "deployed_and_verified",
+  "site": "https://luanwu.top",
+  "release": "/root/code/releases/latest-code-portraits-20261024",
+  "verified_at_utc": "2026-10-24T06:06:10.093173+00:00",
+  "services": {
+    "web": {
+      "image": "webgame:latest-code-portraits-20261024",
+      "running": true,
+      "health": "healthy",
+      "restart_count": 0,
+      "memory": 805306368
+    },
+    "worker": {
+      "image": "webgame:latest-code-portraits-20261024",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "memory": 268435456
+    },
+    "worker_battle": {
+      "image": "webgame:latest-code-portraits-20261024",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "memory": 402653184
+    },
+    "worker_timer": {
+      "image": "webgame:latest-code-portraits-20261024",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "memory": 1073741824
+    },
+    "worker_timer_scan": {
+      "image": "webgame:latest-code-portraits-20261024",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "memory": 402653184
+    },
+    "worker_timer_safety": {
+      "image": "webgame:latest-code-portraits-20261024",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "memory": 536870912
+    },
+    "worker_timer_maintenance": {
+      "image": "webgame:latest-code-portraits-20261024",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "memory": 805306368
+    },
+    "beat": {
+      "image": "webgame:latest-code-portraits-20261024",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "memory": 201326592
+    }
+  },
+  "worker_responses": 6,
+  "public_http": {
+    "/health/live": {
+      "status": 200,
+      "bytes": 16,
+      "sha256": "08e2c358ce13cb67f94ebb35b0f67c8763190a857c0db68da6eb196dfe9da46a"
+    },
+    "/accounts/login/": {
+      "status": 200,
+      "bytes": 2706,
+      "sha256": "d07cb94755927cc4e4337c8c116e60e191207a615d74b001d13f8c4c672f9c43"
+    },
+    "/static/css/guide.0877b29c0aaa.css": {
+      "status": 200,
+      "bytes": 4994,
+      "sha256": "2fc765753d7ce742d610f6005dd29bb45ea56ae1c02770c811fa8626e166c14d"
+    },
+    "/static/js/guide-page.f86b693be360.js": {
+      "status": 200,
+      "bytes": 2331,
+      "sha256": "1a2b2a3f5eda2fe95a2dcc8606091730c6740c2561c11c1709203a97622540ed"
+    },
+    "/static/css/guest-detail.6a9ac8268073.css": {
+      "status": 200,
+      "bytes": 17054,
+      "sha256": "b68058a2a8a9fb4556908459b23650462f20ef23cef8a9444512d2e1a7b7e8f5"
+    },
+    "/static/css/style.a2bb3f537ad5.css": {
+      "status": 200,
+      "bytes": 97056,
+      "sha256": "770c16138cf321c66e76fc30e28f996f024354a2809c6b1aac70b103263877ff"
+    },
+    "/static/css/tailwind.bc89693b0cc3.css": {
+      "status": 200,
+      "bytes": 168223,
+      "sha256": "aef3b78c3787fafc294e8b7f4f4c3520aae5f3005fc3f2fc0f5a3498157526de"
+    },
+    "/static/js/trade.abee295a66b6.js": {
+      "status": 200,
+      "bytes": 25462,
+      "sha256": "a4444a8d4111ddfa460802d43be68dfc8f1b0239e378ad1aca798406f328f4cf"
+    },
+    "/media/guests/portrait_2dcaccecdaac6a3a93d37fe8c237097ba16b0a810a5ef75c4ebbc199f2462cf3.webp": {
+      "status": 200,
+      "bytes": 21956,
+      "sha256": "f306eef5d3e332f7bad23ad53e79732416adf46c899623484ea30a5ddb4432b1"
+    },
+    "/media/guests/portrait_a440dd75488c34bd525256afb6c7948350b8a2e442122f6d8b8f761e27f9f2e4.webp": {
+      "status": 200,
+      "bytes": 20812,
+      "sha256": "1020d3b0efee1d2642e375645c5eeadfd49b5bfce6913e0dae4d7fa2608fe394"
+    },
+    "/media/guests/portrait_dd312268561b38e58fccea5732d2084d423f1de607207fc50df77f4685977a68.webp": {
+      "status": 200,
+      "bytes": 21160,
+      "sha256": "e01f500c73a889af034b2aa608e485c5a0add8dfdc497d417b04ad8885457d7a"
+    },
+    "/media/guests/portrait_939d45ff2ef27d6d5401f15fa226000ae577f1896d72026a68c0ebdd66379f52.webp": {
+      "status": 200,
+      "bytes": 19480,
+      "sha256": "de2de1e83bb856769aaa1c2313c0af2c6f6acd9051dc1a08bfa60e6286e82b1a"
+    },
+    "/media/guests/portrait_e594fdd1faa61eb3d425d734cee2890dcb15f8942a69e9e1d07e7f5938108135.webp": {
+      "status": 200,
+      "bytes": 17730,
+      "sha256": "6fbf00e03e080678853245e78d1971f62db289e3fbfc53b7bab60be6828ce600"
+    },
+    "/media/guests/portrait_25cdf97a5860aeae48ebd9d827f209e327d26570f6d1c5d767fd7c068ce5aac0.webp": {
+      "status": 200,
+      "bytes": 17650,
+      "sha256": "011e03b189d059ecf261f91074eabb03c401ff84ea7858456fe9f097d60aafb3"
+    },
+    "/media/guests/portrait_8d594c606f180ddc897fbaf282da24ba7135a05bb684976fbbd879e4465a10ef.webp": {
+      "status": 200,
+      "bytes": 17130,
+      "sha256": "2a062db209905621fb82d34797d10fa5d465c550b753be3f02284e7b7b93ad5e"
+    },
+    "/media/guests/portrait_ef8d9eb48abc49deda590fa5eda5244b223786fc892fa19678ac95b774546fb9.webp": {
+      "status": 200,
+      "bytes": 18124,
+      "sha256": "ecd5310cfba0ac55760e763c97bc0d656b3844440595a1b1ed94666b0ec3f335"
+    },
+    "/media/guests/portrait_6c064dbb052182718f29ebef88118aa7042fa5689d80022666ee67f915651cb8.webp": {
+      "status": 200,
+      "bytes": 18018,
+      "sha256": "97fb9f2f34793aa3e357d5fb2fd177034c3fbdb8aeb29616f67f583382b667f7"
+    },
+    "/media/guests/portrait_eb693a84537fc2951bf6666f3527e5c82fcc9bc75e79b46d8cdc3e91de0c5e04.webp": {
+      "status": 200,
+      "bytes": 19348,
+      "sha256": "6eb3a2a6d10c64583399735d49a49c86f9c0a8c6cfe187d5f864b5fa213bf8fd"
+    },
+    "/media/guests/portrait_07f695f53da705d1001c5a9088ce99b64c162a5c908bb9b7e98631022215eddf.webp": {
+      "status": 200,
+      "bytes": 16764,
+      "sha256": "11a37c404cb94b9dfedc62ce0ec04bd1946a8d872376379611f2303b4c79b978"
+    },
+    "/media/guests/portrait_1bed190c9fa908906eee0f2a247d757507d9ff91d823683e795c6ab27a0ed318.webp": {
+      "status": 200,
+      "bytes": 20834,
+      "sha256": "a5b4b3ea331627b8986c01d9a0dc11ef3106c56060009d52da9780cddabb22c6"
+    },
+    "/media/guests/portrait_db089818ff454b94ec74f0c520832130de83370662fa18ec3cade157d65ac6bc.webp": {
+      "status": 200,
+      "bytes": 19170,
+      "sha256": "097f22c04dd0f9d39f069628aca9f1b11deef1ea5f13c6958b27263b6f240cfd"
+    },
+    "/media/guests/portrait_4fac07a54625fd9267014f8bcd1fa5ef9e3ba0be50d734a1a097d3eca3f64883.webp": {
+      "status": 200,
+      "bytes": 18540,
+      "sha256": "3ed48e5191bd24208f706370d603f04a310cc34b23cd488d4b47bf5582ddab6e"
+    },
+    "/media/guests/portrait_3685205dde1663e6336ad3886ab079223dd7fcc9a6de27c8d5fc6506b1424e2b.webp": {
+      "status": 200,
+      "bytes": 19004,
+      "sha256": "667896394ec931df47ffe725e6c829f54cb9061b75ac95fda4f26fde07bcba78"
+    },
+    "/media/guests/portrait_41b11bbe0d68a0bfbd8e44f8432530fd141dc8a9c1fae8d835f66cf5c0bfb4d9.webp": {
+      "status": 200,
+      "bytes": 18372,
+      "sha256": "9abadf8c5918f4d551c8ee1b87d2e40a929ff48ab74fe7ee13c528dfef5fab00"
+    },
+    "/media/guests/portrait_6cff7c41c2e84fcba3569f61357a1eda02d486fa20878cf90a4d5a0d0119827f.webp": {
+      "status": 200,
+      "bytes": 13390,
+      "sha256": "a575e0d6bdff7d34283eb742fd9e6ee230b23097772b6e93ac55d8c5167bc3f5"
+    },
+    "/media/guests/portrait_5ac47a54c8e949920131d08f1ecf62d20a54fe56de1a3c4afa1baca01c99cfc8.webp": {
+      "status": 200,
+      "bytes": 12994,
+      "sha256": "739ae5896b5c31a9970dd4a6b904e0d52dd0e138ef24b20bcf84dce41c65a9b9"
+    },
+    "/media/guests/portrait_ab451bbd3cbb31361f4ce66c1d1e99909c272a6a40c9cb881e1dfb31aef93351.webp": {
+      "status": 200,
+      "bytes": 20374,
+      "sha256": "b89fa62b2f95c00d5708d9c2641530fbda2ea2b15b651f8dd8b8d3b63d064ff3"
+    }
+  },
+  "verification": {
+    "vanguard_ratio": 0.2,
+    "growth_range": [
+      6,
+      13
+    ],
+    "guide_rendered": true,
+    "static_urls": [
+      "/static/css/guide.0877b29c0aaa.css",
+      "/static/js/guide-page.f86b693be360.js",
+      "/static/css/guest-detail.6a9ac8268073.css",
+      "/static/css/style.a2bb3f537ad5.css",
+      "/static/css/tailwind.bc89693b0cc3.css",
+      "/static/js/trade.abee295a66b6.js"
+    ],
+    "portrait_urls": [
+      "/media/guests/portrait_2dcaccecdaac6a3a93d37fe8c237097ba16b0a810a5ef75c4ebbc199f2462cf3.webp",
+      "/media/guests/portrait_a440dd75488c34bd525256afb6c7948350b8a2e442122f6d8b8f761e27f9f2e4.webp",
+      "/media/guests/portrait_dd312268561b38e58fccea5732d2084d423f1de607207fc50df77f4685977a68.webp",
+      "/media/guests/portrait_939d45ff2ef27d6d5401f15fa226000ae577f1896d72026a68c0ebdd66379f52.webp",
+      "/media/guests/portrait_e594fdd1faa61eb3d425d734cee2890dcb15f8942a69e9e1d07e7f5938108135.webp",
+      "/media/guests/portrait_25cdf97a5860aeae48ebd9d827f209e327d26570f6d1c5d767fd7c068ce5aac0.webp",
+      "/media/guests/portrait_8d594c606f180ddc897fbaf282da24ba7135a05bb684976fbbd879e4465a10ef.webp",
+      "/media/guests/portrait_8d594c606f180ddc897fbaf282da24ba7135a05bb684976fbbd879e4465a10ef.webp",
+      "/media/guests/portrait_ef8d9eb48abc49deda590fa5eda5244b223786fc892fa19678ac95b774546fb9.webp",
+      "/media/guests/portrait_6c064dbb052182718f29ebef88118aa7042fa5689d80022666ee67f915651cb8.webp",
+      "/media/guests/portrait_eb693a84537fc2951bf6666f3527e5c82fcc9bc75e79b46d8cdc3e91de0c5e04.webp",
+      "/media/guests/portrait_07f695f53da705d1001c5a9088ce99b64c162a5c908bb9b7e98631022215eddf.webp",
+      "/media/guests/portrait_1bed190c9fa908906eee0f2a247d757507d9ff91d823683e795c6ab27a0ed318.webp",
+      "/media/guests/portrait_db089818ff454b94ec74f0c520832130de83370662fa18ec3cade157d65ac6bc.webp",
+      "/media/guests/portrait_4fac07a54625fd9267014f8bcd1fa5ef9e3ba0be50d734a1a097d3eca3f64883.webp",
+      "/media/guests/portrait_3685205dde1663e6336ad3886ab079223dd7fcc9a6de27c8d5fc6506b1424e2b.webp",
+      "/media/guests/portrait_41b11bbe0d68a0bfbd8e44f8432530fd141dc8a9c1fae8d835f66cf5c0bfb4d9.webp",
+      "/media/guests/portrait_6cff7c41c2e84fcba3569f61357a1eda02d486fa20878cf90a4d5a0d0119827f.webp",
+      "/media/guests/portrait_5ac47a54c8e949920131d08f1ecf62d20a54fe56de1a3c4afa1baca01c99cfc8.webp",
+      "/media/guests/portrait_ab451bbd3cbb31361f4ce66c1d1e99909c272a6a40c9cb881e1dfb31aef93351.webp"
+    ],
+    "image": "webgame:latest-code-portraits-20261024",
+    "services": 8,
+    "runtime_files_verified_per_service": 48,
+    "pending_migrations": 0,
+    "player_records_preserved": true,
+    "template_other_fields_preserved": true,
+    "memory_limits_preserved": true,
+    "avatar_templates_updated": {
+      "growth_templates": 2,
+      "avatar_templates": 20,
+      "old_media_preserved": true
+    }
+  },
+  "changed_files": [
+    "battle/combatants_pkg/guest_builder.py",
+    "core/utils/rate_limit.py",
+    "data/guests/chiyou_exchange.yaml",
+    "gameplay/templates/gameplay/forge.html",
+    "gameplay/templates/gameplay/guide.html",
+    "gameplay/templates/gameplay/partials/guide_battle_basics.html",
+    "gameplay/templates/gameplay/partials/guide_guest_basics.html",
+    "gameplay/templates/gameplay/partials/guide_troops.html",
+    "gameplay/templates/gameplay/partials/guide_wealth.html",
+    "gameplay/templates/gameplay/partials/guide_work.html",
+    "gameplay/templates/gameplay/ranch.html",
+    "gameplay/templates/gameplay/smithy.html",
+    "gameplay/templates/gameplay/stable.html",
+    "gameplay/templates/gameplay/troop_recruitment.html",
+    "gameplay/views/buildings.py",
+    "gameplay/views/mission_action_handlers.py",
+    "gameplay/views/production.py",
+    "gameplay/views/recruitment.py",
+    "gameplay/views/technology.py",
+    "guests/templates/guests/partials/detail_equipment_card.html",
+    "guests/views/equipment.py",
+    "guilds/templates/guilds/warehouse.html",
+    "guilds/views/missions.py",
+    "guilds/views/pvp.py",
+    "guilds/views/warehouse.py",
+    "static/css/guest-detail.css",
+    "static/css/guide.css",
+    "static/js/guide-page.js",
+    "templates/landing.html"
+  ],
+  "avatar_changes": [
+    {
+      "key": "task_zhanlong_guanyu",
+      "name": "关羽",
+      "source": "data/images/guests/monkey/orange/关羽.png",
+      "previous": "guests/zhanlong/task_zhanlong_guanyu.png",
+      "target": "guests/portrait_2dcaccecdaac6a3a93d37fe8c237097ba16b0a810a5ef75c4ebbc199f2462cf3.webp"
+    },
+    {
+      "key": "task_zhanlong_machao",
+      "name": "马超",
+      "source": "data/images/guests/monkey/三国两晋与南北朝/马超.png",
+      "previous": "guests/zhanlong/task_zhanlong_machao.png",
+      "target": "guests/portrait_a440dd75488c34bd525256afb6c7948350b8a2e442122f6d8b8f761e27f9f2e4.webp"
+    },
+    {
+      "key": "task_zhanlong_huangzhong",
+      "name": "黄忠",
+      "source": "data/images/guests/monkey/三国两晋与南北朝/黄忠.png",
+      "previous": "guests/zhanlong/task_zhanlong_huangzhong.png",
+      "target": "guests/portrait_dd312268561b38e58fccea5732d2084d423f1de607207fc50df77f4685977a68.webp"
+    },
+    {
+      "key": "task_zhanlong_tiebeixiong",
+      "name": "燕山寨主·铁背熊",
+      "source": "data/images/guests/monkey/任务/华雄.png",
+      "previous": "guests/zhanlong/task_zhanlong_tiebeixiong.png",
+      "target": "guests/portrait_939d45ff2ef27d6d5401f15fa226000ae577f1896d72026a68c0ebdd66379f52.webp"
+    },
+    {
+      "key": "task_legend_shrimp_vanguard",
+      "name": "虾兵先锋",
+      "source": "data/images/guests/monkey/任务/守卫.png",
+      "previous": "",
+      "target": "guests/portrait_e594fdd1faa61eb3d425d734cee2890dcb15f8942a69e9e1d07e7f5938108135.webp"
+    },
+    {
+      "key": "task_legend_deer_attendant",
+      "name": "鹿童",
+      "source": "data/images/guests/monkey/任务/慈航.png",
+      "previous": "",
+      "target": "guests/portrait_25cdf97a5860aeae48ebd9d827f209e327d26570f6d1c5d767fd7c068ce5aac0.webp"
+    },
+    {
+      "key": "task_zhanlong_zhangfei_bridge",
+      "name": "张飞",
+      "source": "data/images/guests/monkey/任务/武047_男_张飞.png",
+      "previous": "guests/zhanlong/zhangfei_wu047_8e727f9b7db6eb2e88d42c9c.webp",
+      "target": "guests/portrait_8d594c606f180ddc897fbaf282da24ba7135a05bb684976fbbd879e4465a10ef.webp"
+    },
+    {
+      "key": "task_zhanlong_zhangfei",
+      "name": "张飞",
+      "source": "data/images/guests/monkey/任务/武047_男_张飞.png",
+      "previous": "guests/zhanlong/zhangfei_wu047_8e727f9b7db6eb2e88d42c9c.webp",
+      "target": "guests/portrait_8d594c606f180ddc897fbaf282da24ba7135a05bb684976fbbd879e4465a10ef.webp"
+    },
+    {
+      "key": "task_legend_celestial_hound",
+      "name": "哮天犬",
+      "source": "data/images/guests/monkey/任务/猛虎.png",
+      "previous": "",
+      "target": "guests/portrait_ef8d9eb48abc49deda590fa5eda5244b223786fc892fa19678ac95b774546fb9.webp"
+    },
+    {
+      "key": "task_legend_crane_attendant",
+      "name": "鹤童",
+      "source": "data/images/guests/monkey/任务/白鹤符使.png",
+      "previous": "",
+      "target": "guests/portrait_6c064dbb052182718f29ebef88118aa7042fa5689d80022666ee67f915651cb8.webp"
+    },
+    {
+      "key": "task_legend_crab_general",
+      "name": "蟹将",
+      "source": "data/images/guests/monkey/任务/金甲神兵.png",
+      "previous": "",
+      "target": "guests/portrait_eb693a84537fc2951bf6666f3527e5c82fcc9bc75e79b46d8cdc3e91de0c5e04.webp"
+    },
+    {
+      "key": "hero_di_qinglin",
+      "name": "狄青麟",
+      "source": "data/images/guests/monkey/任务/阴九幽.png",
+      "previous": "guests/chiyou/hero_di_qinglin_yinjiuyou.webp",
+      "target": "guests/portrait_07f695f53da705d1001c5a9088ce99b64c162a5c908bb9b7e98631022215eddf.webp"
+    },
+    {
+      "key": "task_legend_east_sea_dragon",
+      "name": "东海龙王",
+      "source": "data/images/guests/monkey/任务/雨师.png",
+      "previous": "",
+      "target": "guests/portrait_1bed190c9fa908906eee0f2a247d757507d9ff91d823683e795c6ab27a0ed318.webp"
+    },
+    {
+      "key": "task_legend_meishan_guard",
+      "name": "梅山守将",
+      "source": "data/images/guests/monkey/任务/高顺.png",
+      "previous": "",
+      "target": "guests/portrait_db089818ff454b94ec74f0c520832130de83370662fa18ec3cade157d65ac6bc.webp"
+    },
+    {
+      "key": "hero_yang_zheng_purple",
+      "name": "杨铮",
+      "source": "data/images/guests/monkey/其他随机角色/武080_男_青衣捕快.png",
+      "previous": "guests/chiyou/hero_yang_zheng_purple_qingyi.webp",
+      "target": "guests/portrait_4fac07a54625fd9267014f8bcd1fa5ef9e3ba0be50d734a1a097d3eca3f64883.webp"
+    },
+    {
+      "key": "task_zhanlong_caochun",
+      "name": "曹纯",
+      "source": "data/images/guests/pig/武046.png",
+      "previous": "guests/zhanlong/task_zhanlong_caochun.png",
+      "target": "guests/portrait_3685205dde1663e6336ad3886ab079223dd7fcc9a6de27c8d5fc6506b1424e2b.webp"
+    },
+    {
+      "key": "task_surname_li_elai",
+      "name": "恶来",
+      "source": "data/images/guests/surname_li/elai.webp",
+      "previous": "guests/surname_li/elai.webp",
+      "target": "guests/portrait_41b11bbe0d68a0bfbd8e44f8432530fd141dc8a9c1fae8d835f66cf5c0bfb4d9.webp"
+    },
+    {
+      "key": "hero_heishan_laoyao",
+      "name": "黑山老妖",
+      "source": "data/images/guests/surname_li/heishan_laoyao.webp",
+      "previous": "guests/surname_li/heishan_laoyao.webp",
+      "target": "guests/portrait_6cff7c41c2e84fcba3569f61357a1eda02d486fa20878cf90a4d5a0d0119827f.webp"
+    },
+    {
+      "key": "hero_li_lizhen",
+      "name": "李利贞",
+      "source": "data/images/guests/surname_li/li_lizhen.webp",
+      "previous": "guests/surname_li/li_lizhen.webp",
+      "target": "guests/portrait_5ac47a54c8e949920131d08f1ecf62d20a54fe56de1a3c4afa1baca01c99cfc8.webp"
+    },
+    {
+      "key": "task_zhanlong_zhaoyun",
+      "name": "赵云",
+      "source": "data/images/guests/zhaoyun.png",
+      "previous": "guests/zhanlong/task_zhanlong_zhaoyun.png",
+      "target": "guests/portrait_ab451bbd3cbb31361f4ce66c1d1e99909c272a6a40c9cb881e1dfb31aef93351.webp"
+    }
+  ],
+  "archive_sha256": "4a541aef4e9e57b55b0e29e5aa9009768cd0bbd664bdb6f26af03f76e8334b22",
+  "offline_validation": {
+    "status": "passed",
+    "system_check": "passed",
+    "yaml_configs_validated": 29,
+    "browser_tests": 10,
+    "javascript_test_files": 40,
+    "javascript_syntax": "passed",
+    "package_manifest_verified": true,
+    "server_authentication": "passed",
+    "python_tests": 116
+  },
+  "previous_image": "webgame:guest-rules-20261024",
+  "backups": {
+    "database": "database-before.sql.gz",
+    "templates_at_cutover": "database-at-cutover.sql.gz",
+    "media_static": "media-static-before.tar.gz",
+    "host_source": "host-source-before.tar.gz"
+  },
+  "git_commit_or_push_performed": false
+}

@@ -1,0 +1,246 @@
+{
+  "status": "deployed_and_verified",
+  "verified_at_utc": "2026-10-23T17:53:16.401891+00:00",
+  "site": "https://luanwu.top",
+  "release": "/root/code/releases/mingjiao-full-20261024",
+  "services": {
+    "web": {
+      "image": "webgame:mingjiao-full-20261024",
+      "running": true,
+      "health": "healthy",
+      "restart_count": 0,
+      "memory": 805306368
+    },
+    "worker": {
+      "image": "webgame:mingjiao-full-20261024",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "memory": 268435456
+    },
+    "worker_battle": {
+      "image": "webgame:mingjiao-full-20261024",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "memory": 402653184
+    },
+    "worker_timer": {
+      "image": "webgame:mingjiao-full-20261024",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "memory": 1073741824
+    },
+    "worker_timer_scan": {
+      "image": "webgame:mingjiao-full-20261024",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "memory": 402653184
+    },
+    "worker_timer_safety": {
+      "image": "webgame:mingjiao-full-20261024",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "memory": 536870912
+    },
+    "worker_timer_maintenance": {
+      "image": "webgame:mingjiao-full-20261024",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "memory": 805306368
+    },
+    "beat": {
+      "image": "webgame:mingjiao-full-20261024",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "memory": 201326592
+    }
+  },
+  "public_http": {
+    "/health/live": {
+      "status": 200,
+      "bytes": 16,
+      "sha256": "08e2c358ce13cb67f94ebb35b0f67c8763190a857c0db68da6eb196dfe9da46a"
+    },
+    "/accounts/login/": {
+      "status": 200,
+      "bytes": 2706,
+      "sha256": "82048f0067ff5d9558782e6a38813fb1d800e9d875a9fe76b1b459cc4ea6f938"
+    },
+    "/static/css/style.ad71fd52e9ad.css": {
+      "status": 200,
+      "bytes": 97162,
+      "sha256": "4a11e6e6319b8a9685d36b1ee569d184d41f3668c89e7d0de4d596153084cfef"
+    },
+    "/static/css/tailwind.bc89693b0cc3.css": {
+      "status": 200,
+      "bytes": 168223,
+      "sha256": "aef3b78c3787fafc294e8b7f4f4c3520aae5f3005fc3f2fc0f5a3498157526de"
+    },
+    "/static/js/trade.abee295a66b6.js": {
+      "status": 200,
+      "bytes": 25462,
+      "sha256": "a4444a8d4111ddfa460802d43be68dfc8f1b0239e378ad1aca798406f328f4cf"
+    },
+    "/media/items/mingjiao_holy_fire_token.webp": {
+      "status": 200,
+      "bytes": 4022,
+      "sha256": "bb34963d834501ae0b7a1ac70a97bb018e81e1c7183f4547b5b9bbaa81920c5b"
+    },
+    "/media/items/mingjiao_fire_seed.webp": {
+      "status": 200,
+      "bytes": 4450,
+      "sha256": "dd705fce4fc71b839d8dca93b029fbb4786ae5d790cd5094d7cbfc1e0ca2f8c7"
+    },
+    "/media/items/zhuyingtai_guest_scroll_TbJndrk.webp": {
+      "status": 200,
+      "bytes": 3758,
+      "sha256": "22193bac3f6c5da4d16f26a68e26c942fdfb4612cf2cf817e18b2a43a3a3045a"
+    },
+    "/media/guests/portrait_41a6d65bc1bc49685a848a745f6b4b4e6612ac6cc1df6154336db2ec9ed625f7.webp": {
+      "status": 200,
+      "bytes": 19400,
+      "sha256": "542ce24247d3eb1d9767d76fe757602e6910d68a49d12e5e5d4fd9739da685f9"
+    }
+  },
+  "verification": {
+    "engine": "8",
+    "burst_then_normal": true,
+    "troop_screening_chance": 0.75,
+    "skill_increment_vs_troop": 3.0,
+    "level_hp_preserved": true,
+    "bow_phase_name": true,
+    "targeted_items_verified": 9,
+    "xiaozhao_profile_verified": true,
+    "boss_hp": 200000,
+    "qiankun_round_start": true,
+    "scroll_price": 9000000,
+    "static_urls": [
+      "/static/css/style.ad71fd52e9ad.css",
+      "/static/css/tailwind.bc89693b0cc3.css",
+      "/static/js/trade.abee295a66b6.js"
+    ],
+    "media_urls": [
+      "/media/items/mingjiao_holy_fire_token.webp",
+      "/media/items/mingjiao_fire_seed.webp",
+      "/media/items/zhuyingtai_guest_scroll_TbJndrk.webp",
+      "/media/guests/portrait_41a6d65bc1bc49685a848a745f6b4b4e6612ac6cc1df6154336db2ec9ed625f7.webp"
+    ],
+    "image": "webgame:mingjiao-full-20261024",
+    "services": 8,
+    "runtime_files_verified_per_service": 1898,
+    "pending_migrations": 0,
+    "player_records_preserved": true,
+    "memory_limits_preserved": true
+  },
+  "backups": {
+    "database": "database-before.sql.gz",
+    "media_static": "media-static-before.tar.gz",
+    "source": "host-source-before.tar.gz",
+    "targeted_data": "targeted-data-before.json"
+  },
+  "previous_image": "webgame:equipment-zero-display-20261023t000952z",
+  "archive_sha256": "b708533d6632edc280d309bf698c889012b965c5390f1b78dd095bba2a477509",
+  "changed_files": [
+    "battle/arena_coop.py",
+    "battle/report_events.py",
+    "battle/simulation/turn_order.py",
+    "battle/templates/battle/partials/attack_action_details.html",
+    "battle/templates/battle/partials/attack_damage_summary.html",
+    "data/arena_coop_rules.yaml",
+    "data/arena_rewards.yaml",
+    "data/guests/jinyong.yaml",
+    "data/images/guests/monkey/orange/伏羲.png",
+    "data/images/guests/monkey/orange/刘备.png",
+    "data/images/guests/monkey/orange/刘彻.png",
+    "data/images/guests/monkey/orange/刘秀.png",
+    "data/images/guests/monkey/orange/刘裕.png",
+    "data/images/guests/monkey/orange/刘邦.png",
+    "data/images/guests/monkey/orange/吴明.png",
+    "data/images/guests/monkey/orange/女娲.png",
+    "data/images/guests/monkey/orange/姬发.png",
+    "data/images/guests/monkey/orange/姬昌.png",
+    "data/images/guests/monkey/orange/子履.png",
+    "data/images/guests/monkey/orange/孙武.png",
+    "data/images/guests/monkey/orange/忽必烈.png",
+    "data/images/guests/monkey/orange/曹操.png",
+    "data/images/guests/monkey/orange/李世民.png",
+    "data/images/guests/monkey/orange/杨坚.png",
+    "data/images/guests/monkey/orange/柴玉关.png",
+    "data/images/guests/monkey/orange/武曌.png",
+    "data/images/guests/monkey/orange/燕南天.png",
+    "data/images/guests/monkey/orange/石破天.png",
+    "data/images/guests/monkey/orange/神农.png",
+    "data/images/guests/monkey/orange/赵匡胤.png",
+    "data/images/guests/monkey/orange/轩辕.png",
+    "data/images/guests/monkey/orange/项羽.png",
+    "data/images/guests/monkey/xiaozhao.png",
+    "data/images/guests/monkey/风云/步惊云.png",
+    "data/images/guests/monkey/风云/聂风.png",
+    "data/images/guests/zhugeliang.png",
+    "data/images/items/mingjiao_fire_seed.png",
+    "data/images/items/mingjiao_holy_fire_token.png",
+    "data/images/items/xiaozhao_recruit_scroll.png",
+    "data/images/items/zhuyingtai_guest_scroll.png",
+    "data/item_templates.yaml",
+    "data/shop_items.yaml",
+    "gameplay/management/commands/sync_mingjiao_recruitment.py",
+    "gameplay/selectors/arena/details.py",
+    "gameplay/selectors/arena/registration.py",
+    "gameplay/services/arena/coop_battle.py",
+    "gameplay/services/arena/coop_rewards.py",
+    "gameplay/services/arena/coop_rules.py",
+    "gameplay/services/arena/coop_settlement.py",
+    "gameplay/templates/gameplay/arena/coop_detail.html",
+    "gameplay/templates/gameplay/arena/partials/sidebar_rules.html",
+    "guests/management/commands/sync_xiaozhao_template.py",
+    "guests/migrations/0093_guest_level_hp_gain.py",
+    "guilds/services/technology.py",
+    "guilds/technology_tree.py",
+    "scripts/analysis/evaluate_guest_troop_balance.py",
+    "src/input.css",
+    "static/css/tailwind.css",
+    "static/js/trade.js",
+    "trade/migrations/0012_market_partial_purchases.py",
+    "trade/templates/trade/partials/_market.html",
+    "trade/views.py"
+  ],
+  "offline_verification": {
+    "status": "passed",
+    "checks": {
+      "recruitment": 27,
+      "guild_market_boss": 167,
+      "extra_battle_report": 285,
+      "inventory_and_counter": 57,
+      "yaml_and_runtime_config": 23,
+      "javascript": 40
+    },
+    "system_check": "passed",
+    "css_rebuilt": true,
+    "js_syntax": "passed",
+    "diff_check": "passed_with_repository_crlf_setting",
+    "reviewed_scopes": [
+      "xiaozhao_recruitment",
+      "coop_rewards",
+      "boss_balance",
+      "battle_report",
+      "guild_technology",
+      "guild_box_rewards",
+      "market_mobile_ui"
+    ]
+  },
+  "included_features": [
+    "小昭招募与材料奖励、兑换",
+    "三道具最新简介及祝英台卷轴图片",
+    "光明顶首领平衡与乾坤大挪移回合开始触发",
+    "战报多目标与嗜血追加目标展示",
+    "商铺集市按钮与移动端布局",
+    "帮会科技定价与六种宝箱奖励"
+  ],
+  "git_commit_or_push_performed": false
+}

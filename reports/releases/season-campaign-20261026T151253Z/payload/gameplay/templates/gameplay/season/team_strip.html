@@ -1,0 +1,9 @@
+{% if member.faction %}
+<section class="season-team-strip" aria-label="我的队伍">
+    {% for slot in team_slots %}<button type="button" class="season-team-token{% if slot.busy %} is-busy{% endif %}" data-guild-modal-open="season-team-status" aria-label="{{ slot.label }}状态">
+        {% if slot.first_run.portraits %}{% with portrait=slot.first_run.portraits.0 %}{% include "gameplay/season/portrait.html" with avatar=portrait.avatar name=portrait.name %}{% endwith %}{% else %}{% if slot.kind == 'garrison' %}{% include "gameplay/season/icon.html" with name="shield" %}{% else %}{% include "gameplay/season/icon.html" with name="sword" %}{% endif %}{% endif %}
+        <span><strong>{{ slot.label }} <small>{% if slot.busy %}{{ slot.first_run.status_label }}{% else %}空闲{% endif %}</small></strong>{% if slot.busy %}<span>{{ slot.first_run.node_name }}{% if slot.count > 1 %} · {{ slot.count }} 支{% endif %}</span><small data-season-countdown="{{ slot.first_run.due_at|date:'c' }}">{{ slot.first_run.due_at|date:'H:i' }}</small>{% else %}<small>从地图建筑派遣队伍</small>{% endif %}</span><b aria-hidden="true">›</b>
+    </button>{% endfor %}
+    {% if reservation.status == 'pending' %}<button type="button" class="season-reservation-token" data-guild-modal-open="season-team-status">预约 {{ reservation.target_name }} · 等待集结 ›</button>{% endif %}
+</section>
+{% endif %}

@@ -1,0 +1,4 @@
+FROM webgame:all-updates-20261026T154300Z
+USER root
+COPY --chown=10001:10001 payload/ /app/
+USER appuser

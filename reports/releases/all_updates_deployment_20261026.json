@@ -1,0 +1,103 @@
+{
+  "status": "deployed_and_verified",
+  "site": "https://luanwu.top",
+  "verified_at_utc": "2026-10-26T15:53:01.485912+00:00",
+  "image": "webgame:all-updates-20261026T154300Z",
+  "scope": "全部运行修改：赛季完整玩法与界面，以及竞技占用、夜间任务、图片透明通道、数据库连接和监牢滚动修复",
+  "runtime_files": 171,
+  "migration_count": 21,
+  "pending_migrations": 0,
+  "season": {
+    "id": 1,
+    "name": "山海争鸣·第一季",
+    "starts_at": "2026-10-26T15:43:20.803838+00:00",
+    "ends_at": "2027-01-24T15:43:20.803838+00:00",
+    "sites": 6,
+    "factions": 2
+  },
+  "services": {
+    "web": {
+      "image": "webgame:all-updates-20261026T154300Z",
+      "running": true,
+      "health": "healthy",
+      "restart_count": 0,
+      "memory": 805306368
+    },
+    "worker": {
+      "image": "webgame:all-updates-20261026T154300Z",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "memory": 268435456
+    },
+    "worker_battle": {
+      "image": "webgame:all-updates-20261026T154300Z",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "memory": 402653184
+    },
+    "worker_timer": {
+      "image": "webgame:all-updates-20261026T154300Z",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "memory": 1073741824
+    },
+    "worker_timer_scan": {
+      "image": "webgame:all-updates-20261026T154300Z",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "memory": 402653184
+    },
+    "worker_timer_safety": {
+      "image": "webgame:all-updates-20261026T154300Z",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "memory": 536870912
+    },
+    "worker_timer_maintenance": {
+      "image": "webgame:all-updates-20261026T154300Z",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "memory": 805306368
+    },
+    "beat": {
+      "image": "webgame:all-updates-20261026T154300Z",
+      "running": true,
+      "health": null,
+      "restart_count": 0,
+      "memory": 201326592
+    }
+  },
+  "assets_preserved": true,
+  "backup_directory": "/root/code/releases/season-campaign-20261026T151253Z",
+  "database_backup_bytes": 912581976,
+  "checks": {
+    "season_backend": 550,
+    "additional_backend": 170,
+    "season_browser": 26,
+    "jail_browser": 12,
+    "jail_javascript": 15,
+    "public_urls": 49,
+    "public_urls_all_200": true,
+    "authenticated_season_readonly_render": 200,
+    "readonly_battle_smoke": true,
+    "worker_registry": {
+      "responding_workers": 6,
+      "workers_with_season_tasks": 6
+    },
+    "post_deploy_tracebacks": 0,
+    "season_beat_sent_and_worker_received": true,
+    "anonymous_public_browser_viewports": [
+      1280,
+      390
+    ]
+  },
+  "preserved_online_fix": "保留 battle/execution.py 原有优先级函数调用兼容修复",
+  "validation_limit": "自动审批拒绝为真实生产用户创建登录会话；未执行该操作。以只读模板渲染、公网资源和浏览器回归替代，不冒用真实用户。",
+  "omitted_nonruntime": "测试、审查报告、素材校样和环境示例不作为生产运行文件发布；线上头像已与本地一致。"
+}

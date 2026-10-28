@@ -1,0 +1,135 @@
+{
+  "status": "optimized_and_verified",
+  "verified_at": "2026-10-26T15:57:41.493198+00:00",
+  "image_count": 19,
+  "images": [
+    {
+      "name": "season-assets/mountain/background.png",
+      "status": 200,
+      "content_type": "image/webp",
+      "bytes": 84558
+    },
+    {
+      "name": "season-assets/mountain/inn.png",
+      "status": 200,
+      "content_type": "image/webp",
+      "bytes": 116638
+    },
+    {
+      "name": "season-assets/mountain/gate.png",
+      "status": 200,
+      "content_type": "image/webp",
+      "bytes": 136614
+    },
+    {
+      "name": "season-assets/mountain/ruins.png",
+      "status": 200,
+      "content_type": "image/webp",
+      "bytes": 110578
+    },
+    {
+      "name": "season-assets/river/background.png",
+      "status": 200,
+      "content_type": "image/webp",
+      "bytes": 141740
+    },
+    {
+      "name": "season-assets/river/town.png",
+      "status": 200,
+      "content_type": "image/webp",
+      "bytes": 169638
+    },
+    {
+      "name": "season-assets/river/market.png",
+      "status": 200,
+      "content_type": "image/webp",
+      "bytes": 150064
+    },
+    {
+      "name": "season-assets/river/warehouse.png",
+      "status": 200,
+      "content_type": "image/webp",
+      "bytes": 136586
+    },
+    {
+      "name": "season-assets/river/docks.png",
+      "status": 200,
+      "content_type": "image/webp",
+      "bytes": 132002
+    },
+    {
+      "name": "season-assets/forest/background.png",
+      "status": 200,
+      "content_type": "image/webp",
+      "bytes": 145206
+    },
+    {
+      "name": "season-assets/forest/camp.png",
+      "status": 200,
+      "content_type": "image/webp",
+      "bytes": 161890
+    },
+    {
+      "name": "season-assets/forest/granary.png",
+      "status": 200,
+      "content_type": "image/webp",
+      "bytes": 175382
+    },
+    {
+      "name": "season-assets/forest/lodge.png",
+      "status": 200,
+      "content_type": "image/webp",
+      "bytes": 124396
+    },
+    {
+      "name": "season-troops/daosheng.png",
+      "status": 200,
+      "content_type": "image/webp",
+      "bytes": 29486
+    },
+    {
+      "name": "season-troops/qiangwang.png",
+      "status": 200,
+      "content_type": "image/webp",
+      "bytes": 191260
+    },
+    {
+      "name": "season-troops/jiansheng.png",
+      "status": 200,
+      "content_type": "image/webp",
+      "bytes": 153166
+    },
+    {
+      "name": "season-troops/quansheng.png",
+      "status": 200,
+      "content_type": "image/webp",
+      "bytes": 198444
+    },
+    {
+      "name": "season-troops/jianshen.png",
+      "status": 200,
+      "content_type": "image/webp",
+      "bytes": 135634
+    },
+    {
+      "name": "season-troops/shixuetieqi.png",
+      "status": 200,
+      "content_type": "image/webp",
+      "bytes": 195050
+    }
+  ],
+  "source_bytes": 46575350,
+  "webp_bytes": 2688332,
+  "retained_dimensions_and_alpha": true,
+  "application_restarted": false,
+  "release_pipeline_fixed": true,
+  "webp_tool_tests_passed": 4,
+  "maps": {
+    "source_bytes": 17584382,
+    "webp_bytes": 1785292
+  },
+  "troops": {
+    "source_bytes": 28990968,
+    "webp_bytes": 903040
+  }
+}

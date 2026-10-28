@@ -1,0 +1,345 @@
+[
+  {
+    "path": "/accounts/login/",
+    "status": 200,
+    "bytes": 2706,
+    "content_type": "text/html; charset=utf-8",
+    "redirected": false
+  },
+  {
+    "path": "/health/live",
+    "status": 200,
+    "bytes": 16,
+    "content_type": "application/json",
+    "redirected": false
+  },
+  {
+    "path": "/manor/season/",
+    "status": 200,
+    "bytes": 2706,
+    "content_type": "text/html; charset=utf-8",
+    "redirected": true
+  },
+  {
+    "path": "/static/css/chat_widget.35b7b2d39ceb.css",
+    "status": 200,
+    "bytes": 6706,
+    "content_type": "text/css; charset=utf-8",
+    "redirected": false
+  },
+  {
+    "path": "/static/css/map-wooden-sign.e88874f5b7bf.css",
+    "status": 200,
+    "bytes": 1516,
+    "content_type": "text/css; charset=utf-8",
+    "redirected": false
+  },
+  {
+    "path": "/static/css/season-visual.34baa053b822.css",
+    "status": 200,
+    "bytes": 24606,
+    "content_type": "text/css; charset=utf-8",
+    "redirected": false
+  },
+  {
+    "path": "/static/css/season.0047d8bed4ea.css",
+    "status": 200,
+    "bytes": 51087,
+    "content_type": "text/css; charset=utf-8",
+    "redirected": false
+  },
+  {
+    "path": "/static/css/style.ad69c086ea44.css",
+    "status": 200,
+    "bytes": 97475,
+    "content_type": "text/css; charset=utf-8",
+    "redirected": false
+  },
+  {
+    "path": "/static/css/tailwind.bc89693b0cc3.css",
+    "status": 200,
+    "bytes": 168223,
+    "content_type": "text/css; charset=utf-8",
+    "redirected": false
+  },
+  {
+    "path": "/static/images/season-icons.3abb0a811186.svg",
+    "status": 200,
+    "bytes": 3014,
+    "content_type": "image/svg+xml",
+    "redirected": false
+  },
+  {
+    "path": "/static/images/season-icons.3abb0a811186.svg#shield",
+    "status": 200,
+    "bytes": 3014,
+    "content_type": "image/svg+xml",
+    "redirected": false
+  },
+  {
+    "path": "/static/images/season-icons.3abb0a811186.svg#sword",
+    "status": 200,
+    "bytes": 3014,
+    "content_type": "image/svg+xml",
+    "redirected": false
+  },
+  {
+    "path": "/static/images/season-icons.3abb0a811186.svg#tower",
+    "status": 200,
+    "bytes": 3014,
+    "content_type": "image/svg+xml",
+    "redirected": false
+  },
+  {
+    "path": "/static/images/season-item-parcel.484d547a2b00.svg",
+    "status": 200,
+    "bytes": 547,
+    "content_type": "image/svg+xml",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/chat_widget.8e165cad27e0.js",
+    "status": 200,
+    "bytes": 5734,
+    "content_type": "text/javascript; charset=utf-8",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/chat_widget_connection.877a68fac181.js",
+    "status": 200,
+    "bytes": 7984,
+    "content_type": "text/javascript; charset=utf-8",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/chat_widget_core.4af10b177463.js",
+    "status": 200,
+    "bytes": 6137,
+    "content_type": "text/javascript; charset=utf-8",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/chat_widget_layout.2cf6b9a91198.js",
+    "status": 200,
+    "bytes": 8318,
+    "content_type": "text/javascript; charset=utf-8",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/chat_widget_renderer.fd00a6a137b9.js",
+    "status": 200,
+    "bytes": 5889,
+    "content_type": "text/javascript; charset=utf-8",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/dialog.5ecca8fd8e55.js",
+    "status": 200,
+    "bytes": 13402,
+    "content_type": "text/javascript; charset=utf-8",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/global-announcement.c07735971de5.js",
+    "status": 200,
+    "bytes": 3613,
+    "content_type": "text/javascript; charset=utf-8",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/guild-modal.04e3006e732a.js",
+    "status": 200,
+    "bytes": 8601,
+    "content_type": "text/javascript; charset=utf-8",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/jail-page.7d0e7db7290f.js",
+    "status": 200,
+    "bytes": 9610,
+    "content_type": "text/javascript; charset=utf-8",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/nav_partial.1e6fb5e435c6.js",
+    "status": 200,
+    "bytes": 11157,
+    "content_type": "text/javascript; charset=utf-8",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/notifications.b24558118741.js",
+    "status": 200,
+    "bytes": 12682,
+    "content_type": "text/javascript; charset=utf-8",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/online_stats.d413421a3f78.js",
+    "status": 200,
+    "bytes": 5897,
+    "content_type": "text/javascript; charset=utf-8",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/partial_nav_core.0e7dde12ba18.js",
+    "status": 200,
+    "bytes": 3248,
+    "content_type": "text/javascript; charset=utf-8",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/player_facing_copy.921b2d3a95d8.js",
+    "status": 200,
+    "bytes": 1089,
+    "content_type": "text/javascript; charset=utf-8",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/season.cc4cbcccb194.js",
+    "status": 200,
+    "bytes": 19990,
+    "content_type": "text/javascript; charset=utf-8",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/websocket_reconnect.a09cf4e7d8e4.js",
+    "status": 200,
+    "bytes": 2898,
+    "content_type": "text/javascript; charset=utf-8",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/forest/background.dfb20c33f117.png",
+    "status": 200,
+    "bytes": 1845983,
+    "content_type": "image/png",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/forest/camp.40d8ae8629ff.png",
+    "status": 200,
+    "bytes": 1697939,
+    "content_type": "image/png",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/forest/granary.ae13d2455635.png",
+    "status": 200,
+    "bytes": 1780397,
+    "content_type": "image/png",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/forest/lodge.1e41aa03ce63.png",
+    "status": 200,
+    "bytes": 1595397,
+    "content_type": "image/png",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/mountain/background.f4f4015bbb0a.png",
+    "status": 200,
+    "bytes": 1636210,
+    "content_type": "image/png",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/mountain/gate.81e93a7281ac.png",
+    "status": 200,
+    "bytes": 904149,
+    "content_type": "image/png",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/mountain/inn.e70d577f8db6.png",
+    "status": 200,
+    "bytes": 1448082,
+    "content_type": "image/png",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/mountain/ruins.2a5af2043e89.png",
+    "status": 200,
+    "bytes": 734225,
+    "content_type": "image/png",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/river/background.ed6f40767725.png",
+    "status": 200,
+    "bytes": 1862591,
+    "content_type": "image/png",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/river/docks.cd689c19c673.png",
+    "status": 200,
+    "bytes": 750485,
+    "content_type": "image/png",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/river/market.768800effacc.png",
+    "status": 200,
+    "bytes": 969307,
+    "content_type": "image/png",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/river/town.2596501a0d1f.png",
+    "status": 200,
+    "bytes": 1327048,
+    "content_type": "image/png",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/river/warehouse.5361ccfe45d9.png",
+    "status": 200,
+    "bytes": 1032569,
+    "content_type": "image/png",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-troops/daosheng.a63a65dbfb95.png",
+    "status": 200,
+    "bytes": 1328208,
+    "content_type": "image/png",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-troops/jianshen.e08cc2b12bca.png",
+    "status": 200,
+    "bytes": 5575444,
+    "content_type": "image/png",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-troops/jiansheng.405ee46539de.png",
+    "status": 200,
+    "bytes": 5371093,
+    "content_type": "image/png",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-troops/qiangwang.8dd432114390.png",
+    "status": 200,
+    "bytes": 5543162,
+    "content_type": "image/png",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-troops/quansheng.8584e05847a8.png",
+    "status": 200,
+    "bytes": 5636005,
+    "content_type": "image/png",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-troops/shixuetieqi.7f02b01c6dea.png",
+    "status": 200,
+    "bytes": 5537056,
+    "content_type": "image/png",
+    "redirected": false
+  }
+]

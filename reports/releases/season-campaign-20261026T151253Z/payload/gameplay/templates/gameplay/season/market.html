@@ -1,0 +1,12 @@
+{% if simplification.enabled %}
+<section aria-label="军需调剂" class="season-exchange">
+    <h3 class="season-section-title">军需调剂</h3>
+    <p class="season-form-caption">用阵营富余物资补缺 · 损耗{{ market_loss_percent }}% · 今日剩{{ market.remaining }}笔{% if market_stock.is_owner %} · 已享占领优惠{% endif %}</p>
+    {% for offer in market.offers %}<form method="post" action="{% url 'gameplay:season_action' %}" data-season-form>
+        {% include "gameplay/season/form_identity.html" with command="market_exchange" %}
+        <input type="hidden" name="source_resource" value="{{ offer.source }}"><input type="hidden" name="target_resource" value="{{ offer.target }}">
+        <p class="season-exchange-pair"><span>{% include "gameplay/season/icon.html" with name=offer.source %}公共{{ offer.source_name }} <b>{{ offer.cost }}</b></span><span aria-hidden="true"> → </span><span>{% include "gameplay/season/icon.html" with name=offer.target %}公共{{ offer.target_name }} <b>{{ offer.received }}</b></span></p>
+        <button type="submit" class="season-button">调剂{{ offer.target_name }}</button>
+    </form>{% empty %}<p class="season-muted">{% if not season_state.combat_open %}当前赛季已停止军需调剂。{% elif not market.remaining %}今日阵营调剂额度已用完。{% else %}暂无可调剂物资，可通过讨伐补充。{% endif %}</p>{% endfor %}
+</section>
+{% endif %}

@@ -1,0 +1,552 @@
+# 战役规则在开季时写入 season.rules.campaign；当季使用自己的快照。
+version: 2
+# 关闭按赛季天数解锁：地图、建筑和商店开季可用，设施等级由建设值决定。
+day_gates_enabled: false
+fortifications:
+  enabled: true
+  capture_on_breach: true
+  hitpoints:
+    enabled: true
+    gate_hp: 1500000
+    tower_hp: 100000
+    hp_per_work: 1000
+    repair_amount: 100000
+    repair_interval_seconds: 1800
+    gate_normal_rounds: 8
+  sites:
+    mountain:gate: {wall_multiplier: 2, tower_hp: 300}
+    river:town: {wall_multiplier: 2, tower_hp: 600}
+  tower:
+    damage_percent: 3
+    max_damage_percent: 6
+    wear_per_battle: 25
+    repair_cost_per_100: {wood: 80, iron: 100}
+  fatigue: {per_stack_percent: 5, max_stacks: 2}
+occupation:
+  enabled: true
+  capture_hp: 1
+  capture_score_ticks: 2
+  capture_score_daily_limit: 1
+  automatic_repair: true
+  operating_grain_per_active: 100
+  repair_reserved_cycles: 1
+registration:
+  days: 3
+coalition:
+  enabled: true
+  # 满5名玩家提前出发，未满也在30分钟后按实际人数出发。
+  rally_seconds: 1800
+  min_members: 1
+  max_members: 5
+  # 保留旧前线配置；军团车轮战按每波玩家队伍出场。
+  frontline_capacity: 3000
+  # 每名玩家可派遣的门客数量上限，每波双方最多各15名门客。
+  commander_guest_limit: 3
+  # 旧前线补充参数保留兼容，军团后备按波进入，不自动补满。
+  reinforcement_interval_seconds: 60
+  reinforcement_per_tick: 300
+  wave_interval_seconds: 60
+  max_waves: 50
+economy:
+  tick_seconds: 300
+  initial_resources: {grain: 5000, wood: 3000, iron: 2000}
+  resource_caps: {grain: 100000, wood: 80000, iron: 60000}
+  resource_rates: {grain: 120, wood: 80, iron: 50}
+  initial_troops: {dao_sheng: 1000, qiang_wang: 1000, jian_sheng: 1000, quan_sheng: 1000, arrow_god: 1000, bloodthirsty_cavalry: 0}
+  troop_caps: {dao_sheng: 10000, qiang_wang: 10000, jian_sheng: 10000, quan_sheng: 10000, arrow_god: 10000, bloodthirsty_cavalry: 1000}
+  troop_rates: {dao_sheng: 10, qiang_wang: 10, jian_sheng: 10, quan_sheng: 10, arrow_god: 10, bloodthirsty_cavalry: 0}
+  special_troops:
+    bloodthirsty_cavalry:
+      site_key: forest:camp
+      rate: 5
+  grain_per_troop: 1
+  daily_troop_quota: 1500
+  # 阵营活动累计建设值，达到阈值自动提升三项设施，不扣公共资源。
+  auto_development:
+    # 列表索引对应1—6级，各设施仍受自身max_level限制。
+    level_thresholds: [0, 1000, 3000, 6000, 10000, 15000]
+    activity_points:
+      pve_win: 20
+      pve_loss: 5
+      transport: 30
+      attack_win: 30
+      attack_loss: 0
+      defense_win: 20
+      intercept_win: 30
+      intercept_loss: 0
+  buildings:
+    logistics:
+      name: 后勤工坊
+      max_level: 6
+    training:
+      name: 阵营募训营
+      max_level: 6
+    technology:
+      name: 阵营军略
+      max_level: 6
+  technology_keys: [dao_attack, dao_defense, dao_hp, qiang_attack, qiang_defense, qiang_hp, jian_attack, jian_defense, jian_hp, quan_attack, quan_defense, quan_hp, gong_attack, gong_defense, gong_hp]
+  pve:
+    mountain:inn:
+      resources: {grain: 400, wood: 40, iron: 20}
+      merit: 20
+      failure_merit: 10
+    mountain:ruins:
+      resources: {grain: 60, wood: 40, iron: 360}
+      merit: 25
+      failure_merit: 10
+    river:docks:
+      resources: {grain: 250, wood: 180, iron: 80}
+      merit: 25
+      failure_merit: 10
+    forest:granary:
+      resources: {grain: 600, wood: 50, iron: 50}
+      merit: 25
+      failure_merit: 10
+    forest:lodge:
+      resources: {grain: 60, wood: 350, iron: 40}
+      merit: 25
+      failure_merit: 10
+expeditions:
+  max_active: 2
+  combat_days: 83
+  daily_actions: 12
+  guest_daily_limit: 2
+  minimum_travel_seconds: 60
+  travel_seconds:
+    mountain:inn: 1800
+    mountain:gate: 1800
+    mountain:ruins: 1800
+    river:town: 1800
+    river:docks: 1800
+    river:market: 1800
+    river:warehouse: 1800
+    forest:camp: 1800
+    forest:granary: 1800
+    forest:lodge: 1800
+  station_seconds: 3600
+  garrison_merit_per_hour: 10
+  station_hours_options: [1, 2, 4, 8]
+  max_battles: 3
+  transport_seconds: 2700
+  mode_travel_seconds: {transport: 900, intercept: 900, escort: 900}
+  transport_reward_base: 30
+  transport_reward_threshold: 200
+  transport_reward_full_value: 1200
+  convoy_encounters_enabled: true
+  max_convoy_players: 5
+  cargo: {grain: 300, wood: 150, iron: 100}
+  city_weekdays: [5, 6]
+  attack_merit: 30
+  failure_merit: 10
+  defend_merit: 20
+  repair_amount: 100
+  repair_cost: {wood: 80, iron: 40}
+  demolition_amount: 100
+  control_amount: 25
+  timezone: Asia/Shanghai
+  score_interval_seconds: 3600
+  # 据点可待命队伍总数；每波最多双方各5名玩家参战。
+  garrison_capacity: 100
+  delivery_multiplier: 1.25
+  enemy_levels:
+    mountain:inn: 3
+    mountain:ruins: 10
+    mountain:gate: 15
+    river:town: 30
+    river:docks: 15
+    river:market: 15
+    forest:granary: 25
+    forest:lodge: 20
+    forest:camp: 20
+sites:
+  river:market:
+    name: 沿岸集市
+    unlock_day: 1
+    guards: 2
+    durability: 400
+    control_required: 100
+    score_per_tick: 1
+    protection_seconds: 14400
+  forest:camp:
+    name: 林间营寨
+    unlock_day: 1
+    guards: 3
+    durability: 600
+    control_required: 100
+    score_per_tick: 1
+    protection_seconds: 14400
+  mountain:gate:
+    name: 青石关
+    unlock_day: 1
+    guards: 3
+    durability: 600
+    control_required: 100
+    score_per_tick: 1
+    protection_seconds: 28800
+  river:town:
+    name: 河口古城
+    unlock_day: 15
+    guards: 5
+    durability: 1200
+    control_required: 100
+    score_per_tick: 3
+    protection_seconds: 28800
+  river:docks:
+    name: 渡口码头
+    unlock_day: 15
+    guards: 2
+    durability: 400
+    control_required: 100
+    score_per_tick: 1
+    protection_seconds: 14400
+  forest:granary:
+    name: 前线粮仓
+    unlock_day: 36
+    guards: 2
+    durability: 400
+    control_required: 100
+    score_per_tick: 1
+    protection_seconds: 14400
+rewards:
+  minimum_merit: 100
+  tiers:
+    - key: elite
+      name: 阵营前一成
+      percentile: 10
+      items: {experience_fruit: 40, xuan_tie_essence: 30}
+    - key: distinguished
+      name: 阵营前三成
+      percentile: 30
+      items: {experience_fruit: 25, xuan_tie_essence: 20}
+    - key: participant
+      name: 阵营参与奖
+      percentile: 100
+      items: {experience_fruit: 15, xuan_tie_essence: 10}
+  winner_items: {experience_fruit: 15, xuan_tie_essence: 10}
+
+# 人口档位、差异化活动与个人贡献统一配置。
+population:
+  enabled: true
+  active_days: 7
+  refresh_seconds: 86400
+  victory_min_days: 3
+  hotspot_multiplier: 2
+  tiers:
+  - key: solo
+    name: 单人开拓
+    maximum: 1
+    rate: 0.1
+    capacity: 0.25
+    threshold: 0.05
+  - key: small
+    name: 小队发展
+    maximum: 4
+    rate: 0.25
+    capacity: 0.5
+    threshold: 0.15
+  - key: medium
+    name: 协同发展
+    maximum: 19
+    rate: 1
+    capacity: 1
+    threshold: 0.5
+  - key: large
+    name: 军团发展
+    maximum: 99
+    rate: 2
+    capacity: 2
+    threshold: 2
+  - key: mass
+    name: 大规模发展
+    maximum: 1000000
+    rate: 4
+    capacity: 4
+    threshold: 5
+activities:
+  enabled: true
+  explore:
+    nodes:
+    - mountain:ruins
+    - forest:lodge
+    intel_seconds: 7200
+    bonus_percent: 20
+    daily_limit: 2
+    merit: 20
+    construction: 10
+    resources:
+      grain: 50
+      wood: 30
+      iron: 20
+  transport:
+    daily_npc_limit: 3
+    merit: 45
+    construction: 30
+    supply_capacity: 5000
+    capture_grain: 300
+    garrison_grain_per_100: 2
+    supply_tick_seconds: 300
+    battle_grain_per_100: 5
+    npc_resources:
+      grain: 300
+      wood: 150
+      iron: 100
+    frontline_merit_percent: 200
+    npc_reserve_percent: 50
+  intercept:
+    loot_percent: 30
+    npc_merit: 25
+    npc_failure_merit: 5
+    npc_construction: 20
+    npc_failure_construction: 5
+    daily_npc_limit: 3
+    merit: 30
+    npc_resources:
+      grain: 180
+      wood: 100
+      iron: 80
+contribution:
+  enabled: true
+  daily_cap: 300
+  battle_pool_per_player: 60
+  npc_pool_per_player: 25
+  participation_percent: 30
+  damage_weight: 50
+  tank_weight: 30
+  support_weight: 20
+  loss_percent: 35
+  demolition_daily_budget: 100
+  demolition_points_per_100: 10
+  capture_bonus_pool: 100
+  minimum_battle_value: 100
+
+# 三资源经济采用当季快照；旧季缺少该区块时保持旧结算。
+resource_economy:
+  resources:
+  - grain
+  - wood
+  - iron
+  settlement_seconds: 300
+  population:
+    smoothing_previous_weight: 0.75
+    qualification: completed_effective_activity
+    empty_faction_production: false
+  initial_grant:
+    once_per_faction: true
+    fixed:
+      grain: 800
+      wood: 500
+      iron: 300
+    per_active:
+      grain: 1600
+      wood: 900
+      iron: 700
+  production:
+    daily_fixed:
+      grain: 500
+      wood: 300
+      iron: 200
+    daily_per_active:
+      grain: 600
+      wood: 350
+      iron: 250
+    logistics_multipliers:
+    - 1
+    - 1.12
+    - 1.24
+    - 1.36
+    - 1.48
+    - 1.6
+    carry_fractional_remainders: true
+  pve:
+    material_reward_multipliers:
+    - 1
+    - 1
+    - 1
+    - 1
+    - 0.5
+    - 0.5
+    reward_after_budget: 0
+    failure_resource_multiplier: 0.25
+    failure_consumes_reward_tier: true
+    grain_run:
+      grain: 6000
+      wood: 600
+      iron: 300
+    wood_run:
+      grain: 1200
+      wood: 3000
+      iron: 600
+    iron_run:
+      grain: 1200
+      wood: 600
+      iron: 3000
+    mixed_run:
+      grain: 4000
+      wood: 1500
+      iron: 1500
+    action_merit: 30
+    effective_material_merit: true
+    exploration_daily_limit: 2
+    exploration_uses_material_tier: false
+    exploration_resources:
+      grain: 50
+      wood: 30
+      iron: 20
+    intelligence_bonus_percent: 20
+  training:
+    normal_cost_per_10:
+      grain: 60
+      wood: 15
+      iron: 15
+    cavalry_cost_per_10:
+      grain: 100
+      wood: 40
+      iron: 60
+    normal_daily_capacity_per_active: 1000
+    training_multipliers:
+    - 1
+    - 1.15
+    - 1.3
+    - 1.45
+    - 1.6
+    - 1.75
+    normal_target_per_active: 3000
+    normal_initial_per_active: 400
+    cavalry_daily_capacity_per_active: 100
+    cavalry_target_per_active: 500
+    cavalry_initial: 0
+    cavalry_requires_site: forest:camp
+    cavalry_full_technology: true
+  operations:
+    march_grain_per_100_per_10_minutes: 4
+    garrison_normal_grain_per_100_per_hour: 8
+    cavalry_garrison_cost_multiplier: 3
+    battle_normal_grain_per_100_per_wave: 3
+    cavalry_battle_cost_multiplier: 3
+    courier_grain_per_order: 5
+    guest_only_pve_and_explore_grain: 0
+    siege_cost_per_100_actual_wall:
+      wood: 80
+      iron: 50
+    repair_cost_per_100_actual_wall:
+      wood: 120
+      iron: 60
+  transport:
+    cargo_capacity: 15000
+    target_food_hours: 6
+    reserve_inflight_site_demand: true
+    reward_for_unneeded_delivery: false
+    pure_consumption_npc_orders: false
+    target_repair_demand_uses_actual_missing_wall: true
+    resource_value_weights:
+      grain: 1
+      wood: 2
+      iron: 3
+  capture:
+    created_resources:
+      grain: 0
+      wood: 0
+      iron: 0
+    keep_existing_local_resources: true
+  storage:
+    reference_income_days: 3
+    reference_pve_daily:
+      grain: 8000
+      wood: 3000
+      iron: 3000
+    preserve_existing_overflow: true
+    reserve_existing_convoy_cargo: true
+  site_effects:
+    forest:granary:
+      passive_grain_bonus_percent: 10
+    river:docks:
+      cargo_capacity_bonus_percent: 20
+    forest:camp:
+      enables_cavalry: true
+    river:town:
+      resource_bonus_percent: 0
+    mountain:gate:
+      resource_bonus_percent: 0
+    total_resource_production_bonus_cap_percent: 15
+  enabled: true
+
+# 军务精简：一个攻城目标自动推进清军/拆城/占领，仓库统一派补给。
+simplification:
+  enabled: true
+  garrison_carried_food_hours: 1
+  market:
+    daily_faction_orders: 5
+    order_value: 200
+    return_percent: 80
+    source_reserve_days: 2
+    target_shortage_days: 1
+
+# 占领特权：按开季时间锚定整日货单，易主不刷新，全部物品绑定。
+market_control:
+  enabled: true
+  refresh_hours: 24
+  offer_count: 3
+  owner_return_bonus_percent: 5
+  pool:
+    - {key: fruit_pack, name: 修习补给, cost: 80, limit: 1, items: {experience_fruit: 5}}
+    - {key: essence_pack, name: 玄铁精华, cost: 100, limit: 1, items: {xuan_tie_essence: 3}}
+    - {key: qingmang_sword, name: 青芒剑, cost: 120, limit: 1, items: {equip_qingmangjian: 1}}
+    - {key: duanma_sword, name: 断马剑, cost: 120, limit: 1, items: {equip_duanmajian: 1}}
+    - {key: feather_helmet, name: 飞羽盔, cost: 250, limit: 1, items: {equip_feiyukui: 1}}
+    - {key: officer_sword, name: 校尉长剑, cost: 250, limit: 1, items: {equip_xiaoweichangjian: 1}}
+
+# 少人协作：缺此快照的旧季继续原规则。
+playability:
+  enabled: true
+  balance:
+    active_days: 7
+    activity_weight: 45
+    power_weight: 35
+    prestige_weight: 20
+    playtime_options:
+    - any
+    - day
+    - evening
+    - late
+  npc:
+    level_percent_by_players:
+      '1': 70
+      '2': 85
+      '3': 100
+      '4': 100
+      '5': 100
+    max_guests_by_players:
+      '1': 1
+      '2': 2
+      '3': 3
+      '4': 3
+      '5': 3
+  reservation:
+    maximum_hours: 24
+    guest_limit: 3
+  weekly:
+    win_points: 10
+    draw_points: 5
+    minimum_contested_days: 1
+    goal_per_active: 100
+    goal_minimum: 200
+    goal_maximum: 1200
+    participation_merit: 50
+    personal_items:
+      experience_fruit: 3
+      xuan_tie_essence: 2
+    team_items:
+      experience_fruit: 2
+      xuan_tie_essence: 1
+    ranking_base_items:
+      experience_fruit: 25
+      xuan_tie_essence: 20
+    ranking_bonus_percent:
+      elite: 20
+      distinguished: 10
+      participant: 0
+  site_effects:
+    gate_march_reduction_percent: 10
+  recommended_battle_hours:
+  - 20
+  - 22

@@ -1,0 +1,12 @@
+[
+  {
+    "width": 1280,
+    "status": 200,
+    "login_required": true
+  },
+  {
+    "width": 390,
+    "status": 200,
+    "login_required": true
+  }
+]

@@ -1,0 +1,142 @@
+[
+  {
+    "key": "task_zhanlong_guanyu",
+    "name": "关羽",
+    "source": "data/images/guests/monkey/orange/关羽.png",
+    "previous": "guests/zhanlong/task_zhanlong_guanyu.png",
+    "target": "guests/portrait_2dcaccecdaac6a3a93d37fe8c237097ba16b0a810a5ef75c4ebbc199f2462cf3.webp"
+  },
+  {
+    "key": "task_zhanlong_machao",
+    "name": "马超",
+    "source": "data/images/guests/monkey/三国两晋与南北朝/马超.png",
+    "previous": "guests/zhanlong/task_zhanlong_machao.png",
+    "target": "guests/portrait_a440dd75488c34bd525256afb6c7948350b8a2e442122f6d8b8f761e27f9f2e4.webp"
+  },
+  {
+    "key": "task_zhanlong_huangzhong",
+    "name": "黄忠",
+    "source": "data/images/guests/monkey/三国两晋与南北朝/黄忠.png",
+    "previous": "guests/zhanlong/task_zhanlong_huangzhong.png",
+    "target": "guests/portrait_dd312268561b38e58fccea5732d2084d423f1de607207fc50df77f4685977a68.webp"
+  },
+  {
+    "key": "task_zhanlong_tiebeixiong",
+    "name": "燕山寨主·铁背熊",
+    "source": "data/images/guests/monkey/任务/华雄.png",
+    "previous": "guests/zhanlong/task_zhanlong_tiebeixiong.png",
+    "target": "guests/portrait_939d45ff2ef27d6d5401f15fa226000ae577f1896d72026a68c0ebdd66379f52.webp"
+  },
+  {
+    "key": "task_legend_shrimp_vanguard",
+    "name": "虾兵先锋",
+    "source": "data/images/guests/monkey/任务/守卫.png",
+    "previous": "",
+    "target": "guests/portrait_e594fdd1faa61eb3d425d734cee2890dcb15f8942a69e9e1d07e7f5938108135.webp"
+  },
+  {
+    "key": "task_legend_deer_attendant",
+    "name": "鹿童",
+    "source": "data/images/guests/monkey/任务/慈航.png",
+    "previous": "",
+    "target": "guests/portrait_25cdf97a5860aeae48ebd9d827f209e327d26570f6d1c5d767fd7c068ce5aac0.webp"
+  },
+  {
+    "key": "task_zhanlong_zhangfei_bridge",
+    "name": "张飞",
+    "source": "data/images/guests/monkey/任务/武047_男_张飞.png",
+    "previous": "guests/zhanlong/zhangfei_wu047_8e727f9b7db6eb2e88d42c9c.webp",
+    "target": "guests/portrait_8d594c606f180ddc897fbaf282da24ba7135a05bb684976fbbd879e4465a10ef.webp"
+  },
+  {
+    "key": "task_zhanlong_zhangfei",
+    "name": "张飞",
+    "source": "data/images/guests/monkey/任务/武047_男_张飞.png",
+    "previous": "guests/zhanlong/zhangfei_wu047_8e727f9b7db6eb2e88d42c9c.webp",
+    "target": "guests/portrait_8d594c606f180ddc897fbaf282da24ba7135a05bb684976fbbd879e4465a10ef.webp"
+  },
+  {
+    "key": "task_legend_celestial_hound",
+    "name": "哮天犬",
+    "source": "data/images/guests/monkey/任务/猛虎.png",
+    "previous": "",
+    "target": "guests/portrait_ef8d9eb48abc49deda590fa5eda5244b223786fc892fa19678ac95b774546fb9.webp"
+  },
+  {
+    "key": "task_legend_crane_attendant",
+    "name": "鹤童",
+    "source": "data/images/guests/monkey/任务/白鹤符使.png",
+    "previous": "",
+    "target": "guests/portrait_6c064dbb052182718f29ebef88118aa7042fa5689d80022666ee67f915651cb8.webp"
+  },
+  {
+    "key": "task_legend_crab_general",
+    "name": "蟹将",
+    "source": "data/images/guests/monkey/任务/金甲神兵.png",
+    "previous": "",
+    "target": "guests/portrait_eb693a84537fc2951bf6666f3527e5c82fcc9bc75e79b46d8cdc3e91de0c5e04.webp"
+  },
+  {
+    "key": "hero_di_qinglin",
+    "name": "狄青麟",
+    "source": "data/images/guests/monkey/任务/阴九幽.png",
+    "previous": "guests/chiyou/hero_di_qinglin_yinjiuyou.webp",
+    "target": "guests/portrait_07f695f53da705d1001c5a9088ce99b64c162a5c908bb9b7e98631022215eddf.webp"
+  },
+  {
+    "key": "task_legend_east_sea_dragon",
+    "name": "东海龙王",
+    "source": "data/images/guests/monkey/任务/雨师.png",
+    "previous": "",
+    "target": "guests/portrait_1bed190c9fa908906eee0f2a247d757507d9ff91d823683e795c6ab27a0ed318.webp"
+  },
+  {
+    "key": "task_legend_meishan_guard",
+    "name": "梅山守将",
+    "source": "data/images/guests/monkey/任务/高顺.png",
+    "previous": "",
+    "target": "guests/portrait_db089818ff454b94ec74f0c520832130de83370662fa18ec3cade157d65ac6bc.webp"
+  },
+  {
+    "key": "hero_yang_zheng_purple",
+    "name": "杨铮",
+    "source": "data/images/guests/monkey/其他随机角色/武080_男_青衣捕快.png",
+    "previous": "guests/chiyou/hero_yang_zheng_purple_qingyi.webp",
+    "target": "guests/portrait_4fac07a54625fd9267014f8bcd1fa5ef9e3ba0be50d734a1a097d3eca3f64883.webp"
+  },
+  {
+    "key": "task_zhanlong_caochun",
+    "name": "曹纯",
+    "source": "data/images/guests/pig/武046.png",
+    "previous": "guests/zhanlong/task_zhanlong_caochun.png",
+    "target": "guests/portrait_3685205dde1663e6336ad3886ab079223dd7fcc9a6de27c8d5fc6506b1424e2b.webp"
+  },
+  {
+    "key": "task_surname_li_elai",
+    "name": "恶来",
+    "source": "data/images/guests/surname_li/elai.webp",
+    "previous": "guests/surname_li/elai.webp",
+    "target": "guests/portrait_41b11bbe0d68a0bfbd8e44f8432530fd141dc8a9c1fae8d835f66cf5c0bfb4d9.webp"
+  },
+  {
+    "key": "hero_heishan_laoyao",
+    "name": "黑山老妖",
+    "source": "data/images/guests/surname_li/heishan_laoyao.webp",
+    "previous": "guests/surname_li/heishan_laoyao.webp",
+    "target": "guests/portrait_6cff7c41c2e84fcba3569f61357a1eda02d486fa20878cf90a4d5a0d0119827f.webp"
+  },
+  {
+    "key": "hero_li_lizhen",
+    "name": "李利贞",
+    "source": "data/images/guests/surname_li/li_lizhen.webp",
+    "previous": "guests/surname_li/li_lizhen.webp",
+    "target": "guests/portrait_5ac47a54c8e949920131d08f1ecf62d20a54fe56de1a3c4afa1baca01c99cfc8.webp"
+  },
+  {
+    "key": "task_zhanlong_zhaoyun",
+    "name": "赵云",
+    "source": "data/images/guests/zhaoyun.png",
+    "previous": "guests/zhanlong/task_zhanlong_zhaoyun.png",
+    "target": "guests/portrait_ab451bbd3cbb31361f4ce66c1d1e99909c272a6a40c9cb881e1dfb31aef93351.webp"
+  }
+]

@@ -1,0 +1,7 @@
+{% load static %}{% if resource_economy.enabled %}
+<section class="season-training-brief" aria-label="募训营产兵概况">
+    <div class="season-form-section-heading"><h3>募训营 <small>Lv.{{ training_summary.level }}</small></h3><span class="season-form-caption">物资充足时自动训练</span></div>
+    <div class="season-training-row"><img src="{% static 'season-troops/daosheng.png' %}" alt="" width="48" height="48"><span>普通护院<small>目标 {{ training_summary.normal_target }}</small></span><strong>{{ training_summary.normal_daily|floatformat:"-2" }}<small> / 日上限</small></strong></div>
+    <div class="season-training-row"><img src="{% static 'season-troops/shixuetieqi.png' %}" alt="" width="48" height="48"><span>嗜血铁骑<small>占领营寨后产出</small></span><strong>{{ training_summary.cavalry_daily|floatformat:"-2" }}<small> / 日上限</small></strong></div>
+</section>
+{% endif %}

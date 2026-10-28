@@ -1,0 +1,7 @@
+<section aria-label="仓库补给总管">
+    <h3 class="season-section-title">运输补给</h3>
+    <div class="season-warehouse-balance" aria-label="公共可用资源">{% for resource in resource_options %}<span>{% include "gameplay/season/icon.html" with name=resource.key %}<span>{{ resource.name }} <strong>{{ resource.amount }}</strong></span></span>{% endfor %}</div>
+    {% if node.transport_route_blocked %}<p class="season-notice">渡口被敌方控制，夺回后可运输。</p>
+    {% elif node.transport_targets %}{% if node.personal_modes %}{% include "gameplay/season/dispatch_form.html" with dispatch_modes=node.personal_modes dispatch_label="派遣补给队" %}{% else %}<p class="season-notice">出征队伍尚未归队。</p>{% endif %}
+    {% else %}<div class="season-empty-state season-illustrated-empty">{% include "gameplay/season/icon.html" with name="cart" %}<strong>暂无运输需求</strong><p class="season-form-caption">己方据点缺少驻军粮草或城防维修物资时，这里会出现运输目标。</p></div>{% endif %}
+</section>

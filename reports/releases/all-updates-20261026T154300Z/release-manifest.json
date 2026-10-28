@@ -1,0 +1,35 @@
+{
+  "status": "deployed_and_verified",
+  "server": "root@154.201.68.231",
+  "site": "https://luanwu.top",
+  "scope": "全部剩余运行修改：竞技门客状态、夜间任务、图片透明通道、ASGI连接回收、监牢滚动",
+  "image": "webgame:all-updates-20261026T154300Z",
+  "base_image": "webgame:season-campaign-20261026T151253Z",
+  "files": {
+    "battle/defender_setup.py": "b93f228b62a1c1fd912d29bafb5922fa3cfbfe398ad378dcc463fdcf7a05736d",
+    "config/asgi.py": "e2aef6eb9691e928a137d12bd4ffd38a9e9ad29d71f3157ae988fb782f8e5831",
+    "core/utils/image_utils.py": "b399d243cc8932cf0c2fa82689e54528307792e77a39089cad4f5704b19cc839",
+    "data/mission_templates.yaml": "1c8bd034d100c10c37369a52ec32c63f6ee5ae46ac57da3023cfca26d65f9835",
+    "gameplay/services/arena/coop_lifecycle.py": "a43f7616c5fa3cfc755f879d48aa128bc27e6f593218a83275d7d26b2f32706f",
+    "gameplay/services/arena/core.py": "f231364f6a8d43b3df9915ff12943ebcb0f12e96ecdf9ddd3401d2aab184cdfc",
+    "gameplay/services/arena/lifecycle_helpers.py": "20330e98efc355e226b76a7f514c80cffcb5b10437f34b642d9164a1e6d0b906",
+    "gameplay/services/arena/state_helpers.py": "b29800bd9ce148bd44e5248e3fa3aa00d45e797b7ee02c1ab3351f8b6fb70f26",
+    "gameplay/services/arena/wheel_core.py": "fe72ac2c0b0050477e9a57022b91a03d969432f154c5abbc6cc5f08631f619de",
+    "gameplay/services/missions_impl/launch_post_actions.py": "221fe180fd706fefdcef1137df0d800557c39b3bcd925be002cd55a8eb2322ab",
+    "gameplay/services/missions_impl/launch_resilience.py": "57d6ffa6aa5ff57cb8c355d68c98ededd7dfff3c4b4a4a1f90d1ff84763fe7a0",
+    "scripts/prepare_webp_images.py": "6c56d03752d4ae2778c7eb18207ad9e88cc918bc428903f96e03e036db545285",
+    "static/js/jail-page.js": "a2b6a11f64bb310c377eb4552b621b654c31e4f9d3fa7610b46044a173c1ba0e"
+  },
+  "archive_sha256": "3c29b7aa58d1f1014759215d68cffd8c105e20b190d08dd4822ab68c726f3907",
+  "database_backup_source": "/root/code/releases/season-campaign-20261026T151253Z/database-before.sql.gz",
+  "offline_verification": {
+    "backend": 170,
+    "jail_javascript": 15,
+    "jail_browser": 12
+  },
+  "not_deployed": false,
+  "requires_live_comparison": false,
+  "remaining": [],
+  "final_image": "webgame:all-updates-20261026T154300Z",
+  "verification_report": "reports/releases/all_updates_deployment_20261026.json"
+}

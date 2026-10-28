@@ -1,0 +1,410 @@
+[
+  {
+    "path": "/",
+    "status": 200,
+    "bytes": 1803,
+    "content_type": "text/html; charset=utf-8",
+    "cache_control": "",
+    "redirected": false
+  },
+  {
+    "path": "/accounts/login/",
+    "status": 200,
+    "bytes": 2706,
+    "content_type": "text/html; charset=utf-8",
+    "cache_control": "max-age=0, no-cache, no-store, must-revalidate, private",
+    "redirected": false
+  },
+  {
+    "path": "/health/live",
+    "status": 200,
+    "bytes": 16,
+    "content_type": "application/json",
+    "cache_control": "",
+    "redirected": false
+  },
+  {
+    "path": "/manor/season/",
+    "status": 200,
+    "bytes": 2706,
+    "content_type": "text/html; charset=utf-8",
+    "cache_control": "max-age=0, no-cache, no-store, must-revalidate, private",
+    "redirected": true
+  },
+  {
+    "path": "/static/css/chat_widget.35b7b2d39ceb.css",
+    "status": 200,
+    "bytes": 6706,
+    "content_type": "text/css; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/css/landing-page.26d4b4f85fdd.css",
+    "status": 200,
+    "bytes": 9829,
+    "content_type": "text/css; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/css/map-wooden-sign.e88874f5b7bf.css",
+    "status": 200,
+    "bytes": 1516,
+    "content_type": "text/css; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/css/season-visual.34baa053b822.css",
+    "status": 200,
+    "bytes": 24606,
+    "content_type": "text/css; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/css/season.0047d8bed4ea.css",
+    "status": 200,
+    "bytes": 51087,
+    "content_type": "text/css; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/css/style.ad69c086ea44.css",
+    "status": 200,
+    "bytes": 97475,
+    "content_type": "text/css; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/css/tailwind.bc89693b0cc3.css",
+    "status": 200,
+    "bytes": 168223,
+    "content_type": "text/css; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/images/season-icons.3abb0a811186.svg",
+    "status": 200,
+    "bytes": 3014,
+    "content_type": "image/svg+xml",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/images/season-item-parcel.484d547a2b00.svg",
+    "status": 200,
+    "bytes": 547,
+    "content_type": "image/svg+xml",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/chat_widget.8e165cad27e0.js",
+    "status": 200,
+    "bytes": 5734,
+    "content_type": "text/javascript; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/chat_widget_connection.877a68fac181.js",
+    "status": 200,
+    "bytes": 7984,
+    "content_type": "text/javascript; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/chat_widget_core.4af10b177463.js",
+    "status": 200,
+    "bytes": 6137,
+    "content_type": "text/javascript; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/chat_widget_layout.2cf6b9a91198.js",
+    "status": 200,
+    "bytes": 8318,
+    "content_type": "text/javascript; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/chat_widget_renderer.fd00a6a137b9.js",
+    "status": 200,
+    "bytes": 5889,
+    "content_type": "text/javascript; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/dashboard.32c46e485ef0.js",
+    "status": 200,
+    "bytes": 23812,
+    "content_type": "text/javascript; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/dialog.5ecca8fd8e55.js",
+    "status": 200,
+    "bytes": 13402,
+    "content_type": "text/javascript; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/global-announcement.c07735971de5.js",
+    "status": 200,
+    "bytes": 3613,
+    "content_type": "text/javascript; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/guild-modal.04e3006e732a.js",
+    "status": 200,
+    "bytes": 8601,
+    "content_type": "text/javascript; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/jail-page.7d0e7db7290f.js",
+    "status": 200,
+    "bytes": 9610,
+    "content_type": "text/javascript; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/landing-page.895e4bd529bb.js",
+    "status": 200,
+    "bytes": 4631,
+    "content_type": "text/javascript; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/nav_partial.1e6fb5e435c6.js",
+    "status": 200,
+    "bytes": 11157,
+    "content_type": "text/javascript; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/notifications.b24558118741.js",
+    "status": 200,
+    "bytes": 12682,
+    "content_type": "text/javascript; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/online_stats.d413421a3f78.js",
+    "status": 200,
+    "bytes": 5897,
+    "content_type": "text/javascript; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/partial_nav_core.0e7dde12ba18.js",
+    "status": 200,
+    "bytes": 3248,
+    "content_type": "text/javascript; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/player_facing_copy.921b2d3a95d8.js",
+    "status": 200,
+    "bytes": 1089,
+    "content_type": "text/javascript; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/production-cancel.483885f9f333.js",
+    "status": 200,
+    "bytes": 1313,
+    "content_type": "text/javascript; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/season.cc4cbcccb194.js",
+    "status": 200,
+    "bytes": 19990,
+    "content_type": "text/javascript; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/js/websocket_reconnect.a09cf4e7d8e4.js",
+    "status": 200,
+    "bytes": 2898,
+    "content_type": "text/javascript; charset=utf-8",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/forest/background.96ffc4cd3f0e.webp",
+    "status": 200,
+    "bytes": 145206,
+    "content_type": "image/webp",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/forest/camp.a788d80479d5.webp",
+    "status": 200,
+    "bytes": 161890,
+    "content_type": "image/webp",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/forest/granary.1b3766f4938e.webp",
+    "status": 200,
+    "bytes": 175382,
+    "content_type": "image/webp",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/forest/lodge.b01ffb3f5b4e.webp",
+    "status": 200,
+    "bytes": 124396,
+    "content_type": "image/webp",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/mountain/background.b5ada1d40801.webp",
+    "status": 200,
+    "bytes": 84558,
+    "content_type": "image/webp",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/mountain/gate.9f14f2de1545.webp",
+    "status": 200,
+    "bytes": 136614,
+    "content_type": "image/webp",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/mountain/inn.2d02ac8734c9.webp",
+    "status": 200,
+    "bytes": 116638,
+    "content_type": "image/webp",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/mountain/ruins.f45eaa341a01.webp",
+    "status": 200,
+    "bytes": 110578,
+    "content_type": "image/webp",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/river/background.96658756ac3e.webp",
+    "status": 200,
+    "bytes": 141740,
+    "content_type": "image/webp",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/river/docks.a4f9e4dd31b4.webp",
+    "status": 200,
+    "bytes": 132002,
+    "content_type": "image/webp",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/river/market.8f8a448881b7.webp",
+    "status": 200,
+    "bytes": 150064,
+    "content_type": "image/webp",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/river/town.b54e8d024ecb.webp",
+    "status": 200,
+    "bytes": 169638,
+    "content_type": "image/webp",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-assets/river/warehouse.60e02402f9af.webp",
+    "status": 200,
+    "bytes": 136586,
+    "content_type": "image/webp",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-troops/daosheng.20492f1453d1.webp",
+    "status": 200,
+    "bytes": 29486,
+    "content_type": "image/webp",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-troops/jianshen.fa1c8d6c353f.webp",
+    "status": 200,
+    "bytes": 135634,
+    "content_type": "image/webp",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-troops/jiansheng.a733fa83f409.webp",
+    "status": 200,
+    "bytes": 153166,
+    "content_type": "image/webp",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-troops/qiangwang.b67c57be552b.webp",
+    "status": 200,
+    "bytes": 191260,
+    "content_type": "image/webp",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-troops/quansheng.49c2e442c4e8.webp",
+    "status": 200,
+    "bytes": 198444,
+    "content_type": "image/webp",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  },
+  {
+    "path": "/static/season-troops/shixuetieqi.7c1659e7d5b6.webp",
+    "status": 200,
+    "bytes": 195050,
+    "content_type": "image/webp",
+    "cache_control": "public, max-age=31536000, immutable",
+    "redirected": false
+  }
+]

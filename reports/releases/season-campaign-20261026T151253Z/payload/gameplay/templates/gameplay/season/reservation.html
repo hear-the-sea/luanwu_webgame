@@ -1,0 +1,16 @@
+{% if node.reservation_available or node.reservation %}
+<section class="season-card" aria-label="一次性预约参战">
+    <h3 class="season-section-title">预约一次参战</h3>
+    {% if node.reservation %}<p class="season-notice">最近预约 · {% if reservation.status == 'pending' %}等待匹配集结{% elif reservation.status == 'used' %}已执行{% elif reservation.status == 'failed' %}执行失败{% elif reservation.status == 'expired' %}已到期{% else %}已取消{% endif %}。{{ reservation.result.message }}</p>{% endif %}
+    {% if node.reservation.status == 'pending' %}<p>目标 {{ reservation.target_name }} · 有效至 {{ reservation.expires_at_display|date:"m-d H:i" }}。预约不预占门客或护院，实际加入时才校验和扣占。</p><form method="post" action="{% url 'gameplay:season_action' %}" data-season-form>{% include "gameplay/season/form_identity.html" with command="reservation_cancel" %}<button type="submit" class="season-button">取消预约</button></form>
+    {% elif reservation.status == 'pending' %}<p class="season-muted">已有其他目标的参战预约，请在“我的队伍”取消后再预约。</p><button type="button" class="season-button" data-guild-modal-open="season-team-status">管理预约</button>{% elif node.reservation_available %}
+    <details class="season-inline-help"><summary>无法在线？预约一次参战</summary><p class="season-muted">授权后自动加入下一场{{ node.name }}集结一次。成功、失败或到期后均不再代派；不会调用嗜血铁骑，实际加入时才校验门客与库存。</p>
+    <form method="post" action="{% url 'gameplay:season_action' %}" data-season-form data-season-select-count="3" data-season-select-min="1" data-season-select-name="guest_ids" data-season-dispatch>
+        {% include "gameplay/season/form_identity.html" with command="reservation_create" %}<input type="hidden" name="mode" value="siege">
+        <input type="hidden" name="node_key" value="{{ node.key }}"><p class="season-form-caption">预约目标：{{ node.name }}</p>
+        <label class="season-field">从现在起有效<select name="hours"><option value="1">1小时</option><option value="2">2小时</option><option value="4">4小时</option></select></label>
+        <h3 class="season-section-title">授权门客 · 最多3名</h3><div class="season-guest-list">{% for guest in guests %}<label><input type="checkbox" name="guest_ids" value="{{ guest.id }}" data-season-capacity="{{ guest.capacity }}" {% if guest_daily_limit and not guest.dispatches_remaining %}disabled{% endif %}><span>{{ guest.name }}<small>血量 {{ guest.hp }} / {{ guest.max_hp }} · 带兵 {{ guest.capacity }}{% if guest_daily_limit %} · 今日剩 {{ guest.dispatches_remaining }}/{{ guest_daily_limit }} 次{% endif %}</small></span></label>{% endfor %}</div><p class="season-form-feedback" data-season-feedback aria-live="polite"></p>
+        <h3 class="season-section-title">授权普通护院 · 按填写数量调用一次</h3><div class="season-troop-grid">{% for troop in troop_options %}{% if not troop.special %}<label class="season-field">{{ troop.name }}<input type="number" name="troop_{{ troop.key }}" min="0" max="{{ troop.max_draw }}" value="0" step="1" data-season-troops></label>{% endif %}{% endfor %}</div><p class="season-muted" data-season-troop-summary aria-live="polite">不预留兵库，实际加入时以可用库存为准。</p><p class="season-notice">确认后授权系统在上述时限内派遣所选门客与护院一次，门客会受伤、护院会损耗，出征后至返程仍占用队伍位置。</p><button type="submit" class="season-button" {% if not guests or not node.reservation_targets %}disabled{% endif %}>确认授权一次参战</button>
+    </form></details>{% endif %}
+</section>
+{% endif %}

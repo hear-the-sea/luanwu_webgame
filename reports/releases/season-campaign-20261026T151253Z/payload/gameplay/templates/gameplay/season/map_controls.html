@@ -1,0 +1,17 @@
+<div class="season-map-controls" aria-label="地图快捷操作">
+    <div class="season-map-player"><span class="season-map-faction">{{ faction_label }}</span><span>贡献 <strong>{{ member.merit|default:0 }}</strong></span>{% if member.faction %}<span>军资 {{ member.coins|default:0 }}</span>{% endif %}</div>
+    <div class="season-map-tools">
+        {% if member.faction %}
+        <button type="button" class="season-button" aria-label="{% if simplification.enabled %}运输补给 · 港口仓库{% else %}阵营后勤{% endif %}" data-guild-modal-open="{% if simplification.enabled %}season-node-river:warehouse{% else %}season-logistics{% endif %}">{% include "gameplay/season/icon.html" with name="cart" %}{% if simplification.enabled %}运输补给{% else %}阵营后勤{% endif %}</button>
+        <button type="button" class="season-button" aria-label="阵营商店" data-guild-modal-open="season-shop">{% include "gameplay/season/icon.html" with name="coin" %}集市</button>
+        <button type="button" class="season-button season-map-reward-button" aria-label="赛季奖励" data-guild-modal-open="season-rewards">{% include "gameplay/season/icon.html" with name="scroll" %}奖励{% if weekly_claimable_count or reward_progress.available %}<span class="season-reward-dot">可领取</span>{% endif %}</button>
+        {% endif %}
+        <button type="button" class="season-button" aria-label="在外队伍" data-guild-modal-open="season-team-status">{% include "gameplay/season/icon.html" with name="sword" %}队伍 {{ active_count }}/{{ max_expeditions }}</button>
+    </div>
+</div>
+{% if member.faction %}<div class="season-map-personal" aria-label="个人奖励进度">
+    {% if joinable_rallies %}<button type="button" class="season-joinable-shortcut" data-guild-modal-open="season-rallies">{% include "gameplay/season/icon.html" with name="flag" %}可加入集结 {{ joinable_rallies|length }} ›</button>{% endif %}
+    {% if reward_progress %}<button type="button" class="season-reward-track" data-guild-modal-open="season-rewards" aria-label="{{ reward_progress.name }}奖励进度">{% include "gameplay/season/icon.html" with name="scroll" %}<span>{{ reward_progress.name }} <b>{{ reward_progress.value }}/{{ reward_progress.threshold }} 贡献</b></span>{% if reward_progress.available %}<em>可领取 →</em>{% else %}<small>还差 {{ reward_progress.remaining }}</small>{% endif %}</button>{% endif %}
+    {% if weekly_campaign.enabled %}<span aria-label="本周参与进度">{% if weekly_campaign.reward_only %}归队领奖中{% else %}本周贡献 {{ weekly_current.merit|default:0 }}/{{ playability.weekly.participation_merit }}{% endif %}</span>{% endif %}
+    {% if member.scroll_available and not member.scroll_used %}<button type="button" class="season-plain-button" data-guild-modal-open="season-summon">使用人物召唤卷轴</button>{% endif %}
+</div>{% endif %}
