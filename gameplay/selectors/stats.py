@@ -171,7 +171,14 @@ def load_total_user_count() -> int:
         if local_fallback is not None:
             return local_fallback
 
-    total_count = User.objects.filter(is_staff=False, is_superuser=False, manor__bot_profile__isnull=True).count()
+    total_count = User.objects.filter(
+        is_staff=False,
+        is_superuser=False,
+        email_verified=True,
+        last_login__isnull=False,
+        manor__isnull=False,
+        manor__bot_profile__isnull=True,
+    ).count()
     _persist_stat_cache(TOTAL_USERS_CACHE_KEY, total_count, timeout=TOTAL_USERS_CACHE_TIMEOUT)
     return safe_non_negative_int(total_count)
 

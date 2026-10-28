@@ -122,7 +122,8 @@ def notifications(request):
     Provide unread message count and user statistics to every template.
 
     The notification badge in the navigation bar depends on this context value.
-    Also provides online_user_count and total_user_count (excluding staff, superusers, and virtual players).
+    Also provides online_user_count and total_user_count. The total includes only verified users
+    who have logged in and have a non-virtual manor; staff and superusers are excluded.
 
     Performance optimizations:
     - Total user count is cached for 30 seconds
