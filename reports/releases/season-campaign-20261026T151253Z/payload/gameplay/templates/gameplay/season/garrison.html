@@ -1,6 +1,0 @@
-{% if garrison and coalition.enabled %}
-<section class="season-garrison" aria-label="联合驻防战况">
-    <div class="season-form-section-heading"><h3>驻防队伍</h3><span class="season-form-caption">{{ garrison.member_count }} 位玩家 · {{ garrison.total_troops }} 护院</span></div>
-    {% for player in garrison.players %}<div class="season-garrison-player"><div><strong>{{ player.name }}</strong>{% if player.fatigue_stacks %}<small>疲敝 {{ player.fatigue_stacks }} 层</small>{% endif %}</div><p>{{ player.guest_names }}</p><span>护院 {{ player.troops }}</span></div>{% empty %}<p class="season-empty-note">{% if garrison.hidden %}敌军驻防尚未探明，可先侦察。{% else %}暂无玩家驻军{% endif %}</p>{% endfor %}
-</section>
-{% endif %}

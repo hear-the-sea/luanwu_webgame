@@ -1,8 +1,0 @@
-{% if reward_progress %}
-<div class="season-personal-progress" aria-label="个人奖励进度">
-    <span>下一奖励 · {{ reward_progress.name }}</span>
-    <progress value="{{ reward_progress.value }}" max="{{ reward_progress.threshold }}" aria-label="{{ reward_progress.name }}贡献进度"></progress>
-    <small>{{ reward_progress.value }} / {{ reward_progress.threshold }} 贡献 · {% if reward_progress.remaining %}还差 {{ reward_progress.remaining }}{% elif reward_progress.available %}可领取{% else %}贡献已达标，请查看奖励{% endif %}</small>
-    <button type="button" class="season-button" data-guild-modal-open="season-rewards">查看奖励</button>
-</div>
-{% endif %}

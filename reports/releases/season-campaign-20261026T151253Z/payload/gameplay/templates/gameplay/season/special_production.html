@@ -1,5 +1,0 @@
-{% if special_production_options %}
-<section class="season-special-production" aria-label="特殊护院产出">
-    {% for special in special_production_options %}<div class="season-special-brief" data-season-special-troop="{{ special.key }}"><div><strong>{{ special.name }}</strong><span class="season-chip">默认满科技</span></div><p>{{ special.owner_label }}{% if special.owner %}控制{% endif %}{% if special.producing and resource_economy.enabled %} · 日产上限 {{ special.daily_rate }}{% endif %}{% if member.faction %} · 本阵营库存 {{ special.available }}{% endif %}</p></div>{% endfor %}
-</section>
-{% endif %}

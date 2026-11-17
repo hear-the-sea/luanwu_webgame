@@ -1,8 +1,0 @@
-{% if command_guidance %}
-<section class="season-command-guidance" aria-label="当前阵营目标">
-    <span class="season-eyebrow">阵营军令</span>
-    {% with order=command_guidance.main %}<h3>{{ order.title }}</h3><p>{{ order.detail }}</p>
-    <button type="button" class="season-button" {% if order.modal %}data-guild-modal-open="{{ order.modal }}"{% else %}data-season-view-open="{{ order.view }}"{% endif %}>{{ order.label }}</button>{% endwith %}
-    {% with order=command_guidance.support %}{% if order %}<div class="season-support-order"><strong>{{ order.title }}</strong><p>{{ order.detail }}</p><button type="button" class="season-button" data-guild-modal-open="{{ order.modal }}">{{ order.label }}</button></div>{% endif %}{% endwith %}
-</section>
-{% endif %}

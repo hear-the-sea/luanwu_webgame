@@ -1,9 +1,0 @@
-{% if node.site %}
-    {% if node.occupation_class == member.faction %}
-    <div class="season-warehouse-balance" aria-label="城内补给"><span>{% include "gameplay/season/icon.html" with name="grain" %}粮草 <strong>{{ node.site_supplies.grain|default:0 }}</strong></span><span>{% include "gameplay/season/icon.html" with name="wood" %}木材 <strong>{{ node.site_supplies.wood|default:0 }}</strong></span><span>{% include "gameplay/season/icon.html" with name="iron" %}铁料 <strong>{{ node.site_supplies.iron|default:0 }}</strong></span></div>
-    {% if node.site.recovery.enabled and not node.site.recovery.complete %}<p class="season-muted">{% if node.site.recovery.paused %}运输木铁到此处后，城防会自动修复。{% else %}城防自动修复中，下次 {{ node.site.recovery.next_at|date:"H:i" }}。{% endif %}</p>{% endif %}
-    {% endif %}
-    {% include "gameplay/season/garrison.html" with garrison=node.garrison compact=True %}
-    {% if hitpoints.enabled %}<p class="season-battle-note">城门每队攻击一次，普通阶段最多 {{ hitpoints.gate_normal_rounds }} 回合。</p>{% endif %}
-{% endif %}
-{% include "gameplay/season/special_production.html" with special_production_options=node.special_production compact=True %}
