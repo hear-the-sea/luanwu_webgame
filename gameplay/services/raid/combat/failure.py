@@ -7,7 +7,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from guests.models import GuestStatus
-from guests.services.status import persist_guest_status_transitions
+from guests.services.status import guests_available_after_raid, persist_guest_status_transitions
 
 from ....models import Manor, RaidRun
 from .troop_ops import _return_troops_to_storage
@@ -76,7 +76,7 @@ def fail_raid_run_and_release_resources(
     returned_troops: dict[str, int] = {}
     if not locked_run.resources_released:
         guests = list(locked_run.guests.select_for_update())
-        guests_to_release = [guest for guest in guests if guest.status == GuestStatus.DEPLOYED]
+        guests_to_release = guests_available_after_raid(guests, run_id=locked_run.pk)
         returned_guests = persist_guest_status_transitions(
             guests_to_release,
             GuestStatus.IDLE,

@@ -8,7 +8,7 @@ from typing import Any, Callable
 from django.utils import timezone
 
 from guests.models import GuestStatus
-from guests.services.status import persist_guest_status_transitions
+from guests.services.status import guests_available_after_raid, persist_guest_status_transitions
 
 from ....models import Manor
 
@@ -24,7 +24,7 @@ def fail_raid_run_due_missing_manor(
 
     guests = list(locked_run.guests.select_for_update())
     persist_guest_status_transitions(
-        [guest for guest in guests if guest.status == GuestStatus.DEPLOYED],
+        guests_available_after_raid(guests, run_id=locked_run.pk),
         GuestStatus.IDLE,
         source="raid_battle_release",
     )

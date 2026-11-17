@@ -11,6 +11,8 @@ import yaml
 from django.apps import apps
 from django.db import connection
 
+from tests.test_player_facing_copy import WUHU_CHEST_DESCRIPTION
+
 rules = import_module("gameplay.migrations.0220_zhanlong_quest_chain")
 reward_rules = import_module("gameplay.migrations.0221_chiyou_rewards_and_unique_guests")
 equipment_rules = import_module("gameplay.migrations.0222_zhaoyun_equipment_rewards")
@@ -67,6 +69,8 @@ def test_frozen_migration_matches_current_chain_and_skill_configuration():
                 **armor_luck_rules.EQUIPMENT_PAYLOAD_OVERRIDES[key],
             }
         final_defaults.update(copy_rules.ITEM_UPDATES.get(key, {}))
+        if key == "mission_chest_v3_zhanlong_wuhu_shizhen":
+            final_defaults["description"] = WUHU_CHEST_DESCRIPTION
         assert expected == final_defaults
     for source in rules.IMAGE_SOURCES.values():
         assert (DATA / "images" / source).is_file()

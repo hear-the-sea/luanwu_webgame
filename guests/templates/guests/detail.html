@@ -59,6 +59,9 @@
                 <div class="stat-row"><span>等级</span><strong>等级 {{ guest.level }}</strong></div>
                 <div class="stat-row"><span>生命值</span><strong>{{ guest.current_hp }}/{{ guest.max_hp }}</strong></div>
                 <div class="stat-row"><span>忠诚度</span><strong>{{ guest.loyalty }}</strong></div>
+                {% if custom_guest and guest.loyalty < 60 %}
+                <p class="tw-muted">忠诚低于 60：战斗中智力、武力、敏捷和防御降低 30%，专属门客不会叛逃。使用阵容快照的战斗按出征或报名时的忠诚判定。</p>
+                {% endif %}
                 <div class="stat-row"><span>品性</span><strong>{{ guest.morality }}</strong></div>
             </div>
         </div>
@@ -89,7 +92,7 @@
                     <div>
                         <strong>技能位 {{ slot.index }}：</strong>
                         {% if slot.record %}
-                            <span>{{ slot.skill.name }} <span class="skill-kind-badge skill-kind-badge--{{ slot.skill.kind }}">{{ slot.skill.get_kind_display }}技能</span> — {{ slot.skill.description }}</span>
+                            <span><span class="rarity-text {{ slot.skill.rarity|rarity_class }}">{{ slot.skill.name }}</span> <span class="skill-kind-badge skill-kind-badge--{{ slot.skill.kind }}">{{ slot.skill.get_kind_display }}技能</span> — {{ slot.skill.description }}</span>
                         {% else %}
                             <span>空闲，可通过技能书学习。</span>
                         {% endif %}

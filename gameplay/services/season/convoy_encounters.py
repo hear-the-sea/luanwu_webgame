@@ -100,8 +100,11 @@ def _rank(runs: list[Any]) -> list[Any]:
         ]
         if not alive:
             continue
+        from .faction_bonus import battle_hp
+
         strength = sum(
-            row["attack"] + row["defense"] + min(row["current_hp"], guests[row["guest_id"]].current_hp) for row in alive
+            row["attack"] + row["defense"] + min(row["current_hp"], battle_hp(row, guests[row["guest_id"]].current_hp))
+            for row in alive
         )
         ranked.append((strength + 10 * sum(run.troops.values()), run))
     return [run for _, run in sorted(ranked, key=lambda row: (-row[0], row[1].pk))]

@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import copy
 import logging
+import math
 import secrets
 from datetime import datetime, timedelta
 from typing import Any
 from uuid import uuid4
 
 from django.db import transaction
+from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
 
@@ -38,6 +40,7 @@ from .economy import (
     return_troops_locked,
     technology_levels,
 )
+from .faction_bonus import apply_lineup_bonus, battle_hp, real_hp
 from .fatigue import award_fatigue_locked, fatigue_report_effects, fatigue_snapshot
 from .march import travel_time_seconds
 from .merit import battle_merit_shares, grant_merit_locked, progress_merit_locked
@@ -77,8 +80,8 @@ def _schedule(run: SeasonExpedition) -> None:
 
         safe_apply_async(
             advance_season_expedition_task,
-            args=[run_id],
-            countdown=max(0, int((due_at - timezone.now()).total_seconds())),
+            args=[run_id, due_at.isoformat()],
+            countdown=max(0, math.ceil((due_at - timezone.now()).total_seconds())),
             defer_long_eta=True,
             logger=logger,
             log_message="season expedition dispatch failed; periodic scan will retry",
@@ -89,7 +92,7 @@ def _schedule(run: SeasonExpedition) -> None:
 
 def _spend(state: Any, cost: dict[str, int]) -> None:
     if any(state.resources.get(key, 0) < value for key, value in cost.items()):
-        raise GameError("阵营资源不足，请先完成后勤 PVE")
+        raise GameError("阵营资源不足，请先完成后勤讨伐")
     state.resources = {key: amount - cost.get(key, 0) for key, amount in state.resources.items()}
     state.save(update_fields=["resources"])
 
@@ -173,6 +176,10 @@ def dispatch_locked(
     )
     if len(guests) != len(ids) or any(guest.status != GuestStatus.IDLE for guest in guests):
         raise GameError("门客已出征、重伤或不属于你的庄园")
+    from guests.services.status import active_raid_guest_ids
+
+    if active_raid_guest_ids(guest.pk for guest in guests):
+        raise GameError("所选门客仍在踢馆队伍中，请等待归队")
     enforce_guest_daily_limit(season, ids, now)
     for guest in guests:
         recover_guest_hp(guest, now=now)
@@ -259,7 +266,9 @@ def dispatch_locked(
     run_result["activities_version"] = 1 if activities_enabled else 0
     snapshots = build_guest_battle_snapshots(guests)
     for guest, snapshot in zip(guests, snapshots):
+        snapshot["archetype"] = guest.archetype
         snapshot["attack_attribute_component"] = compute_guest_attack_attribute_component(guest)
+    apply_lineup_bonus(member, guests, snapshots)
     opening = npc_opening_profile(season, snapshots, 1, run_result["npc_level"])
     if opening:
         run_result["npc_opening"] = opening
@@ -397,7 +406,9 @@ def _start_return(run: SeasonExpedition, now: datetime, message: str) -> None:
     _schedule(run)
 
 
-def _finish_collection_locked(run: SeasonExpedition, now: datetime, reason: str) -> None:
+def _finish_collection_locked(
+    run: SeasonExpedition, now: datetime, reason: str, *, merit_at: datetime | None = None
+) -> None:
     """将整趟已胜场一次入账；首场未胜不产生物资、贡献或建设值。"""
     waves = dict(run.result["collection_waves"])
     if waves.get("finalized"):
@@ -409,7 +420,13 @@ def _finish_collection_locked(run: SeasonExpedition, now: datetime, reason: str)
         material = copy.deepcopy(run.result.get("material_reward") or {})
         material["multiplier"] = float(material.get("multiplier", 1)) * wins * waves["win_percent"] / 100
         receipt = grant_pve_locked(
-            run.member, run.node_key, True, now, event_key=f"run:{run.pk}:pve", material_reward=material
+            run.member,
+            run.node_key,
+            True,
+            now,
+            event_key=f"run:{run.pk}:pve",
+            material_reward=material,
+            merit_at=merit_at,
         )
     waves.update(finalized=True, reward=receipt)
     run.result = {**run.result, "collection_waves": waves}
@@ -440,18 +457,22 @@ def _advance_collection_locked(run: SeasonExpedition, now: datetime) -> None:
     waves = dict(run.result["collection_waves"])
     planned = parse_datetime(waves.get("next_wave_at", "")) or run.due_at
     if not campaign_open(run.member.season, planned):
-        _finish_collection_locked(run, now, "赛季行动期结束")
+        last_wave = parse_datetime(waves.get("last_wave_at", ""))
+        if last_wave is None and waves.get("wins"):
+            last_wave = planned - timedelta(seconds=waves["interval_seconds"])
+        _finish_collection_locked(run, now, "赛季行动期结束", merit_at=last_wave)
         return
     won = _fight(run, None, now)
     waves["completed"] = int(waves.get("completed", 0)) + 1
     waves["wins"] = int(waves.get("wins", 0)) + int(won)
+    waves["last_wave_at"] = planned.isoformat()
     run.result = {**run.result, "collection_waves": waves}
     if (
         not won
         or waves["completed"] >= waves["max_waves"]
         or len(run.result.get("defeated_ids", [])) >= len(run.guest_ids)
     ):
-        _finish_collection_locked(run, now, "收集战败" if not won else "收集结束")
+        _finish_collection_locked(run, now, "收集战败" if not won else "收集结束", merit_at=planned)
         return
     from .report_mail import send_report_mail_locked
 
@@ -479,14 +500,101 @@ def _advance_due_collection_locked(run: SeasonExpedition, now: datetime) -> None
                 _advance_collection_locked(run, now)
         except GameError as exc:
             run.refresh_from_db()
-            _finish_collection_locked(run, now, f"收集提前结束：{exc}")
+            saved = run.result["collection_waves"]
+            last_wave = parse_datetime(saved.get("last_wave_at", ""))
+            if last_wave is None and saved.get("wins"):
+                last_wave = planned - timedelta(seconds=saved["interval_seconds"])
+            _finish_collection_locked(run, now, f"收集提前结束：{exc}", merit_at=last_wave or planned)
             return
+
+
+def _collection_snapshot_phase(run: SeasonExpedition) -> str:
+    """校验采集快照并识别阶段，不修改任务状态。"""
+    from django.utils.dateparse import parse_datetime
+
+    waves = run.result.get("collection_waves")
+    if run.kind != "pve" or not isinstance(waves, dict):
+        raise GameError("异常队伍不是可恢复的资源收集任务")
+    if any(
+        type(waves.get(key)) is not int
+        for key in ("max_waves", "interval_seconds", "level_step", "win_percent", "wins", "completed")
+    ):
+        raise GameError("异常收集任务快照不完整，无法安全恢复")
+    if (
+        waves["max_waves"] <= 0
+        or waves["interval_seconds"] <= 0
+        or waves["level_step"] < 0
+        or waves["win_percent"] <= 0
+        or not 0 <= waves["wins"] <= waves["completed"] <= waves["max_waves"]
+        or (not waves.get("finalized") and waves["completed"] == waves["max_waves"])
+        or (not waves.get("finalized") and waves["wins"] != waves["completed"])
+    ):
+        raise GameError("异常收集任务波次数据无效，无法安全恢复")
+    if run.battles != waves["completed"]:
+        raise GameError("异常收集任务战斗记录与波次不一致，无法安全恢复")
+    if waves.get("finalized"):
+        if not isinstance(waves.get("reward"), dict):
+            raise GameError("异常收集任务奖励快照不完整，无法安全恢复")
+        return "finalized"
+    next_wave = waves.get("next_wave_at")
+    if next_wave:
+        try:
+            parsed = parse_datetime(next_wave) if isinstance(next_wave, str) else None
+        except ValueError:
+            parsed = None
+        if parsed is None or timezone.is_naive(parsed):
+            raise GameError("异常收集任务缺少有效的波次时间，无法安全恢复")
+        return "stationed"
+    elif run.status == "stationed" and timezone.is_aware(run.due_at):
+        # 旧在途任务允许只保存 due_at，原有推进逻辑同样使用该字段兜底。
+        return "stationed"
+    elif not run.battles and not waves.get("completed") and not waves.get("wins") and not waves.get("finalized"):
+        return "outbound"
+    else:
+        raise GameError("异常收集任务缺少波次时间，无法安全恢复")
+
+
+def _prepare_collection_locked(run: SeasonExpedition) -> bool:
+    """恢复可辨认的失败队伍，拒绝与正常任务状态矛盾的快照。"""
+    phase = _collection_snapshot_phase(run)
+    if run.status == "failed":
+        run.status = "stationed" if phase == "finalized" else phase
+        run.save(update_fields=["status"])
+    elif phase != "finalized" and phase != run.status:
+        raise GameError("异常收集任务状态与波次不一致，无法安全恢复")
+    return phase == "finalized"
+
+
+def _return_corrupt_collection_locked(run: SeasonExpedition, now: datetime, reason: str) -> None:
+    """异常快照无法结算时保留原记录并立即归队，不推测未发放的收益。"""
+    Manor.objects.select_for_update().get(pk=run.member.manor_id)
+    run.result = {
+        **run.result,
+        "collection_recovery": {"reason": reason, "returned_at": now.isoformat()},
+        "message": "采集记录异常，队伍已安全撤回；无法核实的收集收益未结算",
+    }
+    start_return_costs_locked(run, now)
+    run.status = "returning"
+    run.stationed_until = None
+    run.error = reason
+    _finish_return(run, now)
+    run.save(update_fields=["stationed_until", "error"])
+    logger.warning("corrupt season collection returned: run=%s reason=%s", run.pk, reason)
 
 
 def recall_locked(member: SeasonMember, run_id: int, now: datetime) -> dict[str, Any]:
     run = member.expeditions.select_for_update().filter(pk=run_id).first()
     if run is None or run.status not in {"gathering", "outbound", "stationed", "transporting", "failed"}:
         raise GameError("该队伍不存在、正在返程或已经归队")
+    if run.status in {"failed", "outbound", "stationed"} and run.kind == "pve" and "collection_waves" in run.result:
+        try:
+            finalized = _prepare_collection_locked(run)
+        except GameError as exc:
+            _return_corrupt_collection_locked(run, now, str(exc))
+            return {"message": run.result["message"], "run_id": run.pk}
+        if finalized:
+            _finish_collection_locked(run, now, "已结算的异常收集任务返程")
+            return {"message": run.result["message"], "run_id": run.pk}
     if run.status == "gathering" and run.rally_id:
         from .rallies import _refund_unlaunched, cancel_rally_locked
 
@@ -508,7 +616,18 @@ def recall_locked(member: SeasonMember, run_id: int, now: datetime) -> dict[str,
         _advance_due_collection_locked(run, now)
         if run.status == "returning":
             return {"message": run.result["message"], "run_id": run.pk}
-        _finish_collection_locked(run, now, "主动撤回")
+        if not campaign_open(run.member.season, now):
+            from django.utils.dateparse import parse_datetime
+
+            waves = run.result["collection_waves"]
+            last_wave = parse_datetime(waves.get("last_wave_at", ""))
+            if last_wave is None and waves.get("wins"):
+                next_wave = parse_datetime(waves.get("next_wave_at", ""))
+                if next_wave is not None:
+                    last_wave = next_wave - timedelta(seconds=waves["interval_seconds"])
+        else:
+            last_wave = None
+        _finish_collection_locked(run, now, "主动撤回", merit_at=last_wave)
         return {"message": run.result["message"], "run_id": run.pk}
     if run.kind in {"intercept", "escort"} and not run.report_id:
         run.result = {**run.result, "refund_quota": True}
@@ -533,7 +652,7 @@ def _finish_return(run: SeasonExpedition, now: datetime) -> None:
         from .quotas import refund_unused_quota_locked
 
         refund_unused_quota_locked(run, now)
-    hp = {s["guest_id"]: s["current_hp"] for s in run.lineup.get("guests", []) if s.get("guest_id")}
+    hp = {s["guest_id"]: real_hp(s, s["current_hp"]) for s in run.lineup.get("guests", []) if s.get("guest_id")}
     defeated = set(run.result.get("defeated_ids", []))
     guests = [guest for guest in guests if guest.status == GuestStatus.DEPLOYED]
     updates, fields = prepare_guest_updates_for_finalize(
@@ -571,7 +690,8 @@ def _battle_state(run: SeasonExpedition) -> dict[str, Any]:
     living = []
     for snapshot in lineup["guests"]:
         guest = previous[snapshot["guest_id"]]
-        snapshot["current_hp"] = min(snapshot["current_hp"], guest.current_hp, snapshot["max_hp"])
+        snapshot.setdefault("archetype", guest.archetype)
+        snapshot["current_hp"] = min(snapshot["current_hp"], battle_hp(snapshot, guest.current_hp), snapshot["max_hp"])
         if snapshot["current_hp"] <= 0 or guest.pk in run.result.get("defeated_ids", []):
             if run.kind == "pve" and run.result.get("collection_waves"):
                 continue
@@ -603,7 +723,7 @@ def _apply_side(run: SeasonExpedition, report: Any, side: str, now: datetime) ->
             defeated.add(gid)
         snapshot["current_hp"] = max(1, min(snapshot["max_hp"], remaining))
         Guest.objects.filter(pk=gid, manor=run.member.manor).update(
-            current_hp=snapshot["current_hp"],
+            current_hp=real_hp(snapshot, snapshot["current_hp"]),
             last_hp_recovery_at=now,
         )
     casualties = report.losses.get(side, {}).get("casualties", [])
@@ -1118,7 +1238,18 @@ def process_expedition(run_id: int, now: datetime | None = None) -> bool:
 
         settle_auto_repairs_locked(season, now)
         run = SeasonExpedition.objects.select_for_update().get(pk=run_id)
-        if run.status in {"completed", "failed"} or run.due_at > now:
+        if run.status == "completed" or run.due_at > now:
+            return False
+        if run.status in {"failed", "outbound", "stationed"} and run.kind == "pve" and "collection_waves" in run.result:
+            try:
+                finalized = _prepare_collection_locked(run)
+            except GameError as exc:
+                _return_corrupt_collection_locked(run, now, str(exc))
+                return True
+            if finalized:
+                _finish_collection_locked(run, now, "已结算的异常收集任务返程")
+                return True
+        elif run.status == "failed":
             return False
         if run.rally_id and run.status in {"gathering", "outbound"}:
             from .rallies import advance_rally_locked
@@ -1317,7 +1448,7 @@ def advance_due_expeditions(now: datetime | None = None, limit: int = 100) -> di
     result = {"processed": 0, "errors": 0}
     ids = list(
         SeasonExpedition.objects.filter(status__in=ACTIVE_STATUSES, due_at__lte=now)
-        .exclude(status="failed")
+        .filter(~Q(status="failed") | Q(kind="pve", result__has_key="collection_waves"))
         .order_by("due_at", "pk")
         .values_list("pk", flat=True)[:limit]
     )

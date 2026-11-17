@@ -7,6 +7,8 @@ from typing import Any
 
 from django.db import transaction
 from django.db.models import Q
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 
 from gameplay.models import SeasonAction, SeasonExpedition, SeasonFaction
 
@@ -72,14 +74,23 @@ def refresh_population_locked(season: Any, now: datetime, *, force: bool = False
     if not config["enabled"]:
         return {}
     since = now - timedelta(days=config["active_days"])
-    active_ids = SeasonAction.objects.filter(
+    # 补账凭证的 created_at 是写入时间，实际活动时间保存在 occurred_at。
+    # 日期过滤缩小候选集，最终以带时区的事件时间精确比较。
+    actions = SeasonAction.objects.filter(
         effective_activity_filter(),
+        Q(date__gte=timezone.localdate(since), date__lte=timezone.localdate(now))
+        | Q(created_at__gte=since, created_at__lte=now),
         member__season=season,
-        created_at__gte=since,
-    ).values("member_id")
+    ).values_list("member_id", "result", "created_at")
+    active_ids = set()
+    for member_id, result, created_at in actions:
+        stamp = parse_datetime(result.get("occurred_at", "")) or created_at
+        if timezone.is_aware(stamp) and since <= stamp <= now:
+            active_ids.add(member_id)
     deployed_ids = SeasonExpedition.objects.filter(
         member__season=season,
         launched_at__gte=since,
+        launched_at__lte=now,
         status__in=("gathering", "outbound", "stationed", "transporting", "returning"),
     ).values("member_id")
     resource_config = resource_rules(season)

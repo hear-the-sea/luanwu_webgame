@@ -60,10 +60,13 @@ def get_troop_recruitment_context(manor: Any, *, selected_category: str) -> dict
     # 募兵时长除以速度倍率，界面展示相对基础时长减少的百分比。
     speed_bonus_percent = int((total_multiplier - 1) / total_multiplier * 100)
 
+    player_troops = get_player_troops(manor)
+    owned_counts = {troop["key"]: troop["count"] for troop in player_troops}
     recruitment_options = get_recruitment_options(manor)
     recruitment_options.sort(key=lambda row: troop_display_sort_key(str(row.get("key", ""))))
     available_classes: set[str] = set()
     for troop in recruitment_options:
+        troop["owned_count"] = owned_counts.get(troop["key"], 0)
         troop_class = get_troop_class_for_key(str(troop.get("key", ""))) or "other"
         troop["troop_class"] = troop_class
         available_classes.add(troop_class)
@@ -91,7 +94,7 @@ def get_troop_recruitment_context(manor: Any, *, selected_category: str) -> dict
         "recruitment_categories": recruitment_categories,
         "current_category": normalized_category,
         "active_recruitments": get_active_recruitments(manor),
-        "player_troops": get_player_troops(manor),
+        "player_troops": player_troops,
         "speed_bonus_percent": speed_bonus_percent,
         "training_multiplier": training_multiplier,
         "citang_multiplier": citang_multiplier,

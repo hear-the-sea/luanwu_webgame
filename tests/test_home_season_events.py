@@ -136,6 +136,8 @@ def test_home_page_displays_only_season_events_without_empty_placeholder(season_
     body = response.content.decode()
     assert response.status_code == 200
     assert f'data-season-home-event="{run.pk}"' in body
+    assert 'data-season-deadline="' in body
+    assert 'data-season-revision="' in body
     assert "赛季出征：青石关" in body
     assert "赵云、关羽" in body
     assert 'data-complete-text="等待结算"' in body

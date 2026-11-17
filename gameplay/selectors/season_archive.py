@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+import logging
+import time
 from datetime import timedelta
 from typing import Any
 
+from django.conf import settings
+from django.core.cache import cache
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -13,6 +17,51 @@ from gameplay.models import ItemTemplate, SeasonAction, SeasonMember
 from gameplay.services.season.catalog import has_summon_catalog, reward_catalog
 from gameplay.services.season.playability_rules import playability_rules
 from gameplay.services.season.weekly_campaign import week_bounds, week_number
+from gameplay.services.utils.cache import CacheKeys
+from gameplay.services.utils.cache_exceptions import CACHE_INFRASTRUCTURE_EXCEPTIONS
+
+logger = logging.getLogger(__name__)
+
+
+def _safe_cache_get(key: str) -> Any:
+    try:
+        return cache.get(key)
+    except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
+        logger.warning("Season archive cache.get failed: key=%s error=%s", key, exc, exc_info=True)
+        return None
+
+
+def _safe_cache_set(key: str, value: Any, timeout: int) -> None:
+    try:
+        cache.set(key, value, timeout=timeout)
+    except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
+        logger.warning("Season archive cache.set failed: key=%s error=%s", key, exc, exc_info=True)
+
+
+def _cache_ttl() -> int:
+    return max(0, int(getattr(settings, "PREVIOUS_SEASON_REWARD_CACHE_TTL_SECONDS", 60)))
+
+
+def _cache_version(manor_id: int) -> str:
+    """读取庄园级缓存版本；缺失时视为 0，旧版本条目会在 TTL 内过期。"""
+    value = _safe_cache_get(CacheKeys.previous_season_reward_version(manor_id))
+    return str(value) if isinstance(value, (str, int)) else "0"
+
+
+def _version_timeout() -> int:
+    # 版本号必须比条目活得久，避免版本号先过期后旧条目重新可达。
+    return max(_cache_ttl() * 10, 3600)
+
+
+def invalidate_previous_season_reward(manor_id: int) -> None:
+    """写入新版本号，一次失效首页与所有赛季页的往季奖励缓存。"""
+    if _cache_ttl() <= 0:
+        return
+    key = CacheKeys.previous_season_reward_version(manor_id)
+    try:
+        cache.set(key, str(time.time_ns()), timeout=_version_timeout())
+    except CACHE_INFRASTRUCTURE_EXCEPTIONS as exc:
+        logger.warning("Season archive cache.invalidate failed: key=%s error=%s", key, exc, exc_info=True)
 
 
 def _loaded(items: dict[str, int]) -> bool:
@@ -95,15 +144,7 @@ def _weekly_pending(member: Any, claims: set[str], now: Any) -> bool:
     return False
 
 
-def previous_season_reward(manor: Any, season: Any = None, now: Any = None) -> dict[str, Any]:
-    """返回最近一个已结束赛季的可领取/可使用奖励入口，无奖励时返回空字典。"""
-    now = now or timezone.now()
-    previous = SeasonMember.objects.filter(manor=manor, season__closed=True, faction__in=("fiction", "history"))
-    if season is not None:
-        previous = previous.filter(season__starts_at__lt=season.starts_at)
-    member = previous.select_related("season").order_by("-season__starts_at", "-season_id").first()
-    if not member:
-        return {}
+def _member_reward(member: Any, now: Any) -> dict[str, Any]:
     claims = set(member.claims.values_list("key", flat=True))
     destination = "season-rewards"
     kind = ""
@@ -137,3 +178,33 @@ def previous_season_reward(manor: Any, season: Any = None, now: Any = None) -> d
         "kind": kind,
         "url": f"{reverse('gameplay:season')}?season_id={member.season_id}#{destination}",
     }
+
+
+def _compute_previous_season_reward(manor: Any, season: Any, now: Any) -> dict[str, Any]:
+    previous = SeasonMember.objects.filter(manor=manor, season__closed=True, faction__in=("fiction", "history"))
+    if season is not None:
+        previous = previous.filter(season__starts_at__lt=season.starts_at)
+    for member in previous.select_related("season").order_by("-season__starts_at", "-season_id"):
+        reward = _member_reward(member, now)
+        if reward:
+            return reward
+    return {}
+
+
+def previous_season_reward(manor: Any, season: Any = None, now: Any = None) -> dict[str, Any]:
+    """返回最近一个有待处理奖励的已结束赛季入口。
+
+    首页和赛季页都会调用；结果按 (庄园, 当前赛季) 缓存短 TTL，领取奖励后由
+    ``perform_action`` 主动失效。缓存不可用时直接回退到实时计算。
+    """
+    now = now or timezone.now()
+    ttl = _cache_ttl()
+    if ttl <= 0:
+        return _compute_previous_season_reward(manor, season, now)
+    cache_key = CacheKeys.previous_season_reward(manor.pk, getattr(season, "pk", None), _cache_version(manor.pk))
+    cached = _safe_cache_get(cache_key)
+    if cached is not None:
+        return cached
+    reward = _compute_previous_season_reward(manor, season, now)
+    _safe_cache_set(cache_key, reward, ttl)
+    return reward

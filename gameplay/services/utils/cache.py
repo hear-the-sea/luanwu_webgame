@@ -50,6 +50,7 @@ class CacheKeys:
     # 科技加成
     TECH_BONUS_PREFIX = "tech_bonus"
     HOME_HOURLY_RATES_PREFIX = "manor_home_hourly_rates"
+    PREVIOUS_SEASON_REWARD_PREFIX = "previous_season_reward"
 
     # 门客模板相关
     GUEST_TEMPLATES_BY_RARITY = "guest_templates:by_rarity"
@@ -85,6 +86,16 @@ class CacheKeys:
     def home_hourly_rates(manor_id: int) -> str:
         """首页建筑产出缓存键"""
         return f"{CacheKeys.HOME_HOURLY_RATES_PREFIX}:{manor_id}"
+
+    @staticmethod
+    def previous_season_reward(manor_id: int, season_id: int | None = None, version: int | str = 0) -> str:
+        """往季奖励入口缓存键；版本号用于一次失效全部查看视角。"""
+        return f"{CacheKeys.PREVIOUS_SEASON_REWARD_PREFIX}:{manor_id}:{version}:{season_id or 0}"
+
+    @staticmethod
+    def previous_season_reward_version(manor_id: int) -> str:
+        """往季奖励缓存的庄园级版本号。"""
+        return f"{CacheKeys.PREVIOUS_SEASON_REWARD_PREFIX}:version:{manor_id}"
 
     @staticmethod
     def recruitment_hall_context(manor_id: int, *, version: int | None = None) -> str:

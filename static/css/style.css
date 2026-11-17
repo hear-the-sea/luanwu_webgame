@@ -4266,6 +4266,15 @@ a.rarity-text:hover {
   font-weight: 700;
 }
 
+.production-page .production-option-card__owned {
+  display: inline-block;
+  margin-left: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .production-page .production-option-card,
   .production-page .production-option-card:hover {

@@ -136,6 +136,11 @@ def settle_campaign_weeks_locked(season: Season, now: datetime) -> int:
             break
         if season.weeks.filter(number=number).exists():
             continue
+        from .settlement_pending import has_pending_contributions_locked
+
+        if has_pending_contributions_locked(season, end):
+            # 驻军与采集结束时会补记历史贡献；先等队伍结算，避免冻结不完整战果。
+            break
         participation = _participation(season, number, activated)
         contested = _contested_days(season, number, activated)
         qualified = all(participation.values()) and contested >= config["minimum_contested_days"]

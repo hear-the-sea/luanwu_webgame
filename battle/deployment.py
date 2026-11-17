@@ -18,7 +18,9 @@ logger = logging.getLogger(__name__)
 BATTLE_ORPHANED_DEPLOYED_RECOVERY_COUNTER = "battle_orphaned_deployed_recovery"
 
 
-def collect_active_deployment_guest_ids(candidate_ids: list[int]) -> set[int]:
+def collect_active_deployment_guest_ids(
+    candidate_ids: list[int], *, exclude_raid_run_id: int | None = None
+) -> set[int]:
     if not candidate_ids:
         return set()
 
@@ -29,17 +31,18 @@ def collect_active_deployment_guest_ids(candidate_ids: list[int]) -> set[int]:
             "guests__id", flat=True
         )
     )
-    active_ids.update(
-        RaidRun.objects.filter(
-            status__in=[
-                RaidRun.Status.MARCHING,
-                RaidRun.Status.BATTLING,
-                RaidRun.Status.RETURNING,
-                RaidRun.Status.RETREATED,
-            ],
-            guests__id__in=candidate_ids,
-        ).values_list("guests__id", flat=True)
+    raids = RaidRun.objects.filter(
+        status__in=[
+            RaidRun.Status.MARCHING,
+            RaidRun.Status.BATTLING,
+            RaidRun.Status.RETURNING,
+            RaidRun.Status.RETREATED,
+        ],
+        guests__id__in=candidate_ids,
     )
+    if exclude_raid_run_id is not None:
+        raids = raids.exclude(pk=exclude_raid_run_id)
+    active_ids.update(raids.values_list("guests__id", flat=True))
     active_ids.update(
         ArenaEntryGuest.objects.filter(
             guest_id__in=candidate_ids,

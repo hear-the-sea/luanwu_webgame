@@ -35,6 +35,7 @@ from .rules import (
     validate_trade_market_rules,
     validate_warehouse_production,
 )
+from .season import validate_season_campaign, validate_season_rules
 from .templates import (
     validate_building_templates,
     validate_guest_templates,
@@ -77,6 +78,8 @@ SUPPORTED_YAML_CONFIGS = (
     "guild_mission_templates.yaml",
     "virtual_players.yaml",
     "jail_persuasion_profiles.yaml",
+    "season_rules.yaml",
+    "season_campaign.yaml",
 )
 
 
@@ -162,6 +165,8 @@ def validate_all_configs(data_dir: str | Path) -> ValidationResult:
     guild_mission_data = _load("guild_mission_templates.yaml")
     virtual_players_data = _load("virtual_players.yaml")
     jail_persuasion_data = _load("jail_persuasion_profiles.yaml")
+    season_rules_data = _load("season_rules.yaml")
+    season_campaign_data = _load("season_campaign.yaml")
 
     # Build cross-reference key sets for referential integrity checks
     item_keys: set[str] | None = None
@@ -286,6 +291,12 @@ def validate_all_configs(data_dir: str | Path) -> ValidationResult:
 
     if jail_persuasion_data is not None:
         result.merge(validate_jail_persuasion_profiles(jail_persuasion_data))
+
+    if season_rules_data is not None:
+        result.merge(validate_season_rules(season_rules_data))
+
+    if season_campaign_data is not None:
+        result.merge(validate_season_campaign(season_campaign_data))
 
     return result
 

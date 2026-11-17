@@ -184,8 +184,8 @@
                 <input type="hidden" name="tab" value="market">
                 <input type="hidden" name="view" value="sell">
 
-                <label class="tw-filter-label">类别：</label>
-                <select name="category" class="tw-filter-select" data-trade-auto-submit>
+                <label for="market-sell-category" class="tw-filter-label">类别：</label>
+                <select id="market-sell-category" name="category" class="tw-filter-select" data-trade-auto-submit>
                     {% for cat in categories %}
                     <option value="{{ cat.key }}" {% if selected_category == cat.key %}selected{% endif %}>
                         {{ cat.label }}
@@ -228,8 +228,8 @@
                                 </span>
                             </div>
                         </td>
-                        <td>{{ item.quantity }}</td>
-                        <td class="tw-price">{{ item.template.price|floatformat:0 }}</td>
+                        <td data-label="拥有数量">{{ item.quantity }}</td>
+                        <td data-label="参考价" class="tw-price">{{ item.template.price|floatformat:0 }}</td>
                         <td>
                             <button type="button"
                                     class="tw-btn-trade js-open-listing-modal"
@@ -326,16 +326,16 @@
                                 </span>
                             </div>
                         </td>
-                        <td>{{ listing.quantity }}</td>
-                        <td class="tw-price">{{ listing.unit_price|floatformat:0 }}</td>
-                        <td class="tw-price">{{ listing.total_price|floatformat:0 }}</td>
-                        <td>
+                        <td data-label="数量">{{ listing.quantity }}</td>
+                        <td data-label="单价" class="tw-price">{{ listing.unit_price|floatformat:0 }}</td>
+                        <td data-label="总价" class="tw-price">{{ listing.total_price|floatformat:0 }}</td>
+                        <td data-label="状态">
                             <span class="tw-market-status-{{ listing.status }}">
                                 {{ listing.get_status_display }}
                             </span>
                         </td>
-                        <td>{{ listing.listed_at|date:"m-d H:i" }}</td>
-                        <td>
+                        <td data-label="上架时间">{{ listing.listed_at|date:"m-d H:i" }}</td>
+                        <td data-label="剩余时间">
                             {% if listing.status == 'active' %}
                             <span class="tw-market-countdown"
                                   data-expires="{{ listing.expires_at.isoformat }}">
@@ -434,10 +434,10 @@
 
 <!-- 上架弹窗 -->
 <div id="listingModal" class="tw-modal-overlay" style="display: none;">
-    <div class="tw-modal-content">
+    <div class="tw-modal-content tw-listing-dialog" role="dialog" aria-modal="true" aria-labelledby="listing-modal-title">
         <div class="tw-modal-header">
-            <h3>上架物品</h3>
-            <button type="button" class="tw-modal-close" data-trade-close-modal="listing">&times;</button>
+            <h3 id="listing-modal-title">上架物品</h3>
+            <button type="button" class="tw-modal-close" data-trade-close-modal="listing" aria-label="关闭上架弹窗">&times;</button>
         </div>
 
         <form method="post" action="{% url 'trade:market_create_listing' %}" class="tw-modal-form">

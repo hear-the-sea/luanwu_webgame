@@ -574,6 +574,7 @@ def test_dispatch_duration_migration_keeps_inflight_deadline_and_other_rules(war
     member, guest = player()
     run = dispatch(member, guest)
     before = (run.travel_seconds, run.launched_at, run.due_at)
+    season.refresh_from_db()
     expected = deepcopy(season.rules)
     expected["campaign"]["expeditions"]["travel_seconds"] = {
         key: 1800 for key in expected["campaign"]["expeditions"]["travel_seconds"]
@@ -648,7 +649,8 @@ def test_idle_garrison_merit_respects_daily_contribution_cap(war):
     noon = timezone.localtime().replace(hour=12, minute=0, second=0, microsecond=0)
     run.result = {**run.result, "stationed_at": noon.isoformat()}
     run.due_at = noon + timedelta(hours=1)
-    run.save(update_fields=["result", "due_at"])
+    run.stationed_until = run.due_at
+    run.save(update_fields=["result", "due_at", "stationed_until"])
     arrive(run)
     member.refresh_from_db()
     assert member.merit == 3

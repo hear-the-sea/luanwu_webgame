@@ -4,13 +4,64 @@ import threading
 from datetime import timedelta
 
 import pytest
-from django.db import connection
+from django.db import close_old_connections, connection
 from django.utils import timezone
 
 from gameplay.models import RaidRun
 from gameplay.services.raid.combat import runs as combat_runs
 from guests.models import Guest, GuestStatus, GuestTemplate
 from tests.raid_concurrency_integration.support import build_attacker_defender
+
+
+@pytest.mark.integration
+@pytest.mark.django_db(transaction=True)
+def test_overlapping_raids_return_concurrently_release_guest_after_both_finish(django_user_model):
+    if connection.vendor == "sqlite":
+        pytest.skip("SQLite does not provide row-level select_for_update semantics")
+
+    attacker, defender = build_attacker_defender(
+        django_user_model,
+        attacker_username="raid_overlap_return_attacker",
+        defender_username="raid_overlap_return_defender",
+    )
+    template = GuestTemplate.objects.create(key="raid_overlap_return_guest", name="返程门客")
+    guest = Guest.objects.create(manor=attacker, template=template, status=GuestStatus.DEPLOYED)
+    now = timezone.now()
+    runs = [
+        RaidRun.objects.create(
+            attacker=attacker,
+            defender=defender,
+            status=RaidRun.Status.RETURNING,
+            return_at=now - timedelta(seconds=1),
+        )
+        for _ in range(2)
+    ]
+    for run in runs:
+        run.guests.add(guest)
+    barrier = threading.Barrier(2)
+    errors = []
+
+    def finalize(run_id):
+        close_old_connections()
+        try:
+            run = RaidRun.objects.get(pk=run_id)
+            barrier.wait(timeout=10)
+            combat_runs.finalize_raid(run, now=timezone.now())
+        except Exception as exc:
+            errors.append(exc)
+        finally:
+            close_old_connections()
+
+    threads = [threading.Thread(target=finalize, args=(run.pk,)) for run in runs]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=30)
+    assert not any(thread.is_alive() for thread in threads)
+    assert errors == []
+    assert RaidRun.objects.filter(pk__in=[run.pk for run in runs], status=RaidRun.Status.COMPLETED).count() == 2
+    guest.refresh_from_db()
+    assert guest.status == GuestStatus.IDLE
 
 
 @pytest.mark.integration

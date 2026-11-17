@@ -365,7 +365,11 @@ class Guest(models.Model):
 
     def restore_full_hp(self) -> None:
         from .services.loyalty import apply_injury_loyalty_decay
-        from .services.status import GUEST_STATUS_UPDATE_FIELDS, prepare_guest_status_transition
+        from .services.status import (
+            GUEST_STATUS_UPDATE_FIELDS,
+            prepare_guest_status_transition,
+            status_after_injury_recovery,
+        )
 
         update_fields: list[str] = []
         now = timezone.now()
@@ -373,7 +377,7 @@ class Guest(models.Model):
         if apply_injury_loyalty_decay(self, now=now) > 0:
             update_fields.extend(["loyalty", "injury_loyalty_processed_at"])
         if self.status == GuestStatus.INJURED:
-            transition = prepare_guest_status_transition(self, GuestStatus.IDLE, now=now)
+            transition = prepare_guest_status_transition(self, status_after_injury_recovery(self), now=now)
         update_fields = (
             _guest_rules.restore_guest_full_hp(
                 self,

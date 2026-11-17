@@ -4,14 +4,17 @@ from datetime import timedelta
 from uuid import uuid4
 
 import pytest
+from django.core.cache import cache
 from django.db import transaction
+from django.test import override_settings
 from django.utils import timezone
 
 from battle.models import BattleReport
 from gameplay.models import ItemTemplate, Manor, Season, SeasonAction, SeasonMember
 from gameplay.models.season import SeasonClaim, SeasonWeek
 from gameplay.selectors.season import get_season_context
-from gameplay.selectors.season_archive import previous_season_reward
+from gameplay.selectors.season_archive import invalidate_previous_season_reward, previous_season_reward
+from gameplay.services.season.actions import perform_action
 from gameplay.services.season.campaign_rules import load_campaign_rules
 from gameplay.services.season.catalog import load_rules
 from gameplay.services.season.economy import ensure_factions_locked
@@ -140,6 +143,78 @@ def test_previous_final_prize_is_visible_only_if_real_and_unclaimed(archive, use
     assert not previous_season_reward(outsider, current, now)
     SeasonClaim.objects.create(member=member, key="campaign:final")
     assert not previous_season_reward(manor, current, now)
+
+
+@override_settings(PREVIOUS_SEASON_REWARD_CACHE_TTL_SECONDS=60)
+def test_previous_reward_is_cached_and_invalidated_after_reward_changes(archive, django_assert_num_queries):
+    old, current, manor, member, now = archive
+    member.final_rank = 1
+    member.final_reward = {"items": {"archive_cached_item": 1}}
+    member.save(update_fields=["final_rank", "final_reward"])
+    ItemTemplate.objects.create(key="archive_cached_item", name="奖励")
+    cache.clear()
+
+    first = previous_season_reward(manor, current, now)
+    assert first["kind"] == "排名奖励"
+    with django_assert_num_queries(0):
+        assert previous_season_reward(manor, current, now) == first
+
+    SeasonClaim.objects.create(member=member, key="campaign:final")
+    # TTL 内仍读取缓存，主动失效后必须立即反映最新状态。
+    assert previous_season_reward(manor, current, now) == first
+    invalidate_previous_season_reward(manor.pk)
+    assert previous_season_reward(manor, current, now) == {}
+
+
+@override_settings(PREVIOUS_SEASON_REWARD_CACHE_TTL_SECONDS=60)
+def test_claim_final_action_invalidates_previous_reward_cache(archive, django_capture_on_commit_callbacks):
+    old, current, manor, member, now = archive
+    member.final_rank = 1
+    member.final_reward = {"items": {"archive_action_item": 1}}
+    member.save(update_fields=["final_rank", "final_reward"])
+    ItemTemplate.objects.create(key="archive_action_item", name="奖励")
+    cache.clear()
+    assert previous_season_reward(manor, current, now)["kind"] == "排名奖励"
+
+    with django_capture_on_commit_callbacks(execute=True):
+        perform_action(manor, old.pk, "claim_final", str(uuid4()), {})
+
+    assert previous_season_reward(manor, current, now) == {}
+
+
+def test_older_unclaimed_reward_remains_discoverable_after_newer_season(archive):
+    old, current, manor, member, now = archive
+    member.final_rank = 1
+    member.final_reward = {"items": {"older_archive_reward": 1}}
+    member.save(update_fields=["final_rank", "final_reward"])
+    ItemTemplate.objects.create(key="older_archive_reward", name="奖励")
+    newer = Season.objects.create(
+        name="较新赛季",
+        starts_at=old.ends_at,
+        ends_at=current.starts_at + timedelta(days=1),
+        closed=True,
+        rules=old.rules,
+    )
+    SeasonMember.objects.create(season=newer, manor=manor, faction="fiction")
+    # 首页无当前赛季时也应跳过没有待领奖励的较新赛季。
+    assert previous_season_reward(manor, now=now)["season_id"] == old.pk
+    # 查看较新赛季时仍能发现更早的奖励。
+    assert previous_season_reward(manor, newer, now)["season_id"] == old.pk
+
+
+def test_history_selector_includes_seasons_beyond_twelve(archive):
+    old, current, manor, _, _ = archive
+    for number in range(13):
+        Season.objects.create(
+            name=f"历史赛季{number}",
+            starts_at=old.starts_at - timedelta(days=number + 1),
+            ends_at=old.ends_at - timedelta(days=number + 1),
+            closed=True,
+            rules=old.rules,
+        )
+    history = get_season_context(manor, current.pk)["season_history"]
+    assert len(history) == 15
+    assert history[-1]["name"] == "历史赛季12"
 
 
 def test_previous_milestones_and_existing_scroll_are_not_mislabelled(archive, monkeypatch):

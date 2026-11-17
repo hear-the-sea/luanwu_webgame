@@ -132,22 +132,22 @@
                             </div>
                         </div>
                     </td>
-                    <td>{{ slot.bid_info.winner_count }} 人</td>
-                    <td class="tw-price gold">{{ slot.bid_info.cutoff_price }} 金条</td>
-                    <td>
+                    <td data-label="中标名额">{{ slot.bid_info.winner_count }} 人</td>
+                    <td data-label="最低中标价" class="tw-price gold">{{ slot.bid_info.cutoff_price }} 金条</td>
+                    <td data-label="出价人数">
                         <span class="{% if slot.bid_info.is_full %}text-accent-gold{% endif %}">
                             {{ slot.bid_info.bidder_count }} / {{ slot.bid_info.winner_count }}
                         </span>
                         {% if slot.bid_info.is_full %}<span class="tw-full-badge">满</span>{% endif %}
                     </td>
-                    <td>
+                    <td data-label="我的出价">
                         {% if slot.bid_info.my_bid_amount %}
                         <span class="tw-price gold">{{ slot.bid_info.my_bid_amount }} 金条</span>
                         {% else %}
                         <span class="text-text-muted">-</span>
                         {% endif %}
                     </td>
-                    <td>
+                    <td data-label="状态">
                         {% if slot.bid_info.is_safe %}
                         <span class="tw-status-safe">安全</span>
                         {% elif slot.bid_info.my_bid_amount %}
@@ -252,10 +252,10 @@
                                     </span>
                                 </div>
                             </td>
-                            <td>{{ slot.bid_info.winner_count }} 人</td>
-                            <td class="tw-price gold">{{ slot.bid_info.cutoff_price }} 金条</td>
-                            <td class="tw-price gold">{{ slot.bid_info.my_bid_amount }} 金条</td>
-                            <td>
+                            <td data-label="中标名额">{{ slot.bid_info.winner_count }} 人</td>
+                            <td data-label="最低中标价" class="tw-price gold">{{ slot.bid_info.cutoff_price }} 金条</td>
+                            <td data-label="我的出价" class="tw-price gold">{{ slot.bid_info.my_bid_amount }} 金条</td>
+                            <td data-label="状态">
                                 <span class="tw-status-safe">安全</span>
                             </td>
                         </tr>
@@ -301,13 +301,13 @@
                                     </span>
                                 </div>
                             </td>
-                            <td class="tw-price gold">{{ bid.amount }} 金条</td>
-                            <td>
+                            <td data-label="出价金额" class="tw-price gold">{{ bid.amount }} 金条</td>
+                            <td data-label="状态">
                                 <span class="tw-bid-status tw-bid-status-{{ bid.status }}">
                                     {{ bid.get_status_display }}
                                 </span>
                             </td>
-                            <td>{{ bid.created_at|date:"m-d H:i" }}</td>
+                            <td data-label="出价时间">{{ bid.created_at|date:"m-d H:i" }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>

@@ -17,7 +17,18 @@ def settle_seasons_task() -> dict[str, int]:
 
 
 @shared_task(name="gameplay.advance_season_expedition")
-def advance_season_expedition_task(run_id: int) -> bool:
-    from gameplay.services.season.expeditions import process_expedition
+def advance_season_expedition_task(run_id: int, expected_due: str | None = None) -> bool:
+    from django.utils import timezone
+    from django.utils.dateparse import parse_datetime
 
-    return process_expedition(run_id)
+    from gameplay.models import SeasonExpedition
+    from gameplay.services.season.expeditions import _schedule, process_expedition
+    from gameplay.services.season.warfare import ACTIVE_STATUSES
+
+    processed = process_expedition(run_id)
+    if not processed and expected_due:
+        due = parse_datetime(expected_due)
+        run = SeasonExpedition.objects.filter(pk=run_id, status__in=ACTIVE_STATUSES).first()
+        if run and run.status != "failed" and due == run.due_at and run.due_at > timezone.now():
+            _schedule(run)
+    return processed

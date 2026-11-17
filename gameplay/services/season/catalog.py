@@ -72,6 +72,41 @@ def _entries(value: Any, field: str) -> list[dict[str, Any]]:
     return value
 
 
+def _frozen_roster_signature(frozen: Any) -> tuple[tuple[Any, ...], tuple[Any, ...]]:
+    """把冻结名单转成可哈希签名，结构错误时立即拒绝。"""
+    if not isinstance(frozen, dict) or set(frozen) != set(FACTIONS):
+        raise ImproperlyConfigured("赛季阵营人物快照无效")
+    fiction, history = frozen["fiction"], frozen["history"]
+    if not isinstance(fiction, list) or not isinstance(history, list):
+        raise ImproperlyConfigured("赛季阵营人物快照无效")
+    return tuple(fiction), tuple(history)
+
+
+@lru_cache(maxsize=8)
+def _parse_frozen_roster_keys(fiction: tuple[Any, ...], history: tuple[Any, ...]) -> dict[str, frozenset[str]]:
+    """校验并转换冻结名单；同一内容只做一次正则校验（相邻赛季通常共享快照）。"""
+    for keys in (fiction, history):
+        if (
+            not keys
+            or any(not isinstance(key, str) or not _KEY_PATTERN.fullmatch(key) for key in keys)
+            or len(set(keys)) != len(keys)
+        ):
+            raise ImproperlyConfigured("赛季阵营人物快照无效")
+    if set(fiction) & set(history):
+        raise ImproperlyConfigured("赛季阵营人物快照不能重叠")
+    return {"fiction": frozenset(fiction), "history": frozenset(history)}
+
+
+def _validated_frozen_roster_keys(frozen: Any) -> dict[str, frozenset[str]]:
+    """返回已校验的冻结名单；按内容缓存，避免每次查询重复校验数千个 key。"""
+    fiction, history = _frozen_roster_signature(frozen)
+    try:
+        return _parse_frozen_roster_keys(fiction, history)
+    except TypeError:
+        # 非字符串或不可哈希的 key 会在缓存键/正则校验阶段触发，统一转为配置错误。
+        raise ImproperlyConfigured("赛季阵营人物快照无效") from None
+
+
 def validate_rules(rules: Any) -> dict[str, Any]:
     """拒绝可能造成无限次数、负成本或错误奖励的配置。"""
     if not isinstance(rules, dict):
@@ -104,6 +139,9 @@ def validate_rules(rules: Any) -> dict[str, Any]:
             or name not in _FICTION_SOURCES
         ):
             raise ImproperlyConfigured("赛季小说人物来源包含不允许的文件")
+    frozen = rules.get("faction_roster_keys")
+    if frozen is not None:
+        _validated_frozen_roster_keys(frozen)
     previous = 0
     scroll_count = 0
     for entry in _entries(rules.get("rewards"), "rewards"):
@@ -175,29 +213,65 @@ def _read_roster_keys(paths: list[Path]) -> set[str]:
     return keys
 
 
+def _read_history_roster(root: Path, history_pattern: str) -> set[str]:
+    history_paths = sorted(root.glob(history_pattern))
+    if not history_paths:
+        raise ImproperlyConfigured("赛季历史人物来源为空")
+    return _read_roster_keys(history_paths)
+
+
+def _read_faction_rosters(
+    base_dir: str, history_pattern: str, fiction_files: tuple[str, ...]
+) -> dict[str, frozenset[str]]:
+    root = Path(base_dir) / "data" / "guests"
+    history = _read_history_roster(root, history_pattern)
+    fiction = _read_roster_keys([root / name for name in fiction_files])
+    return {"history": frozenset(history), "fiction": frozenset(fiction - history)}
+
+
 @lru_cache(maxsize=16)
 def _faction_keys_at(
     base_dir: str, faction: str, history_pattern: str, fiction_files: tuple[str, ...]
 ) -> frozenset[str]:
-    root = Path(base_dir) / "data" / "guests"
-    history_paths = sorted(root.glob(history_pattern))
-    if not history_paths:
-        raise ImproperlyConfigured("赛季历史人物来源为空")
-    history = _read_roster_keys(history_paths)
     if faction == "history":
-        return frozenset(history)
-    fiction = _read_roster_keys([root / name for name in fiction_files])
-    return frozenset(fiction - history)
+        return frozenset(_read_history_roster(Path(base_dir) / "data" / "guests", history_pattern))
+    return _read_faction_rosters(base_dir, history_pattern, fiction_files)[faction]
 
 
 def faction_template_keys(faction: str, rules: dict[str, Any] | None = None) -> frozenset[str]:
     """以已审核的来源文件划分阵营，同一 key 冲突时历史来源优先。"""
     _check_faction(faction)
     selected_rules = validate_rules(rules) if rules is not None else load_rules()
+    frozen = selected_rules.get("faction_roster_keys")
+    if frozen is not None:
+        return _validated_frozen_roster_keys(frozen)[faction]
     roster = selected_rules["roster"]
     return _faction_keys_at(
         str(settings.BASE_DIR), faction, roster["history_pattern"], tuple(sorted(roster["fiction_files"]))
     )
+
+
+def build_faction_roster_snapshot(rules: dict[str, Any]) -> dict[str, list[str]]:
+    """读取当前来源文件，生成可保存到赛季规则中的完整人物名单。"""
+    selected = validate_rules(rules)
+    roster = selected["roster"]
+    rosters = _read_faction_rosters(
+        str(settings.BASE_DIR), roster["history_pattern"], tuple(sorted(roster["fiction_files"]))
+    )
+    return {faction: sorted(rosters[faction]) for faction in FACTIONS}
+
+
+def ensure_faction_roster_snapshot_locked(season: Any) -> None:
+    """旧赛季在首次需要加成时固定名单；调用方必须持有赛季锁。"""
+    if season.rules.get("faction_roster_keys") is not None:
+        return
+    from gameplay.models.season import Season
+
+    locked = Season.objects.select_for_update().get(pk=season.pk)
+    if locked.rules.get("faction_roster_keys") is None:
+        locked.rules = {**locked.rules, "faction_roster_keys": build_faction_roster_snapshot(locked.rules)}
+        locked.save(update_fields=["rules"])
+    season.rules = locked.rules
 
 
 def _summon_catalog(faction: str, rules: dict[str, Any] | None) -> QuerySet[GuestTemplate]:

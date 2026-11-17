@@ -9,8 +9,10 @@ from django.urls import reverse
 from django.utils import timezone
 
 import guests.views.recruit as recruit_views
+from battle.models import TroopTemplate
 from core.exceptions import TroopRecruitmentError
-from gameplay.models import TroopRecruitment
+from gameplay.constants import BuildingKeys
+from gameplay.models import PlayerTroop, TroopBankStorage, TroopRecruitment
 
 
 @pytest.mark.django_db
@@ -33,6 +35,25 @@ class TestRecruitmentViews:
         options = response.context["recruitment_options"]
         assert options
         assert all(option.get("troop_class") == "jian" for option in options)
+
+    def test_troop_recruitment_shows_current_manor_count_by_type(self, game_data, manor_with_user):
+        manor, client = manor_with_user
+        manor.buildings.filter(building_type__key=BuildingKeys.LIANGGONG_CHANG).update(level=1)
+        archer = TroopTemplate.objects.get(key="archer")
+        fast_archer = TroopTemplate.objects.get(key="fast_archer")
+        PlayerTroop.objects.update_or_create(manor=manor, troop_template=archer, defaults={"count": 345})
+        PlayerTroop.objects.update_or_create(manor=manor, troop_template=fast_archer, defaults={"count": 0})
+        TroopBankStorage.objects.update_or_create(manor=manor, troop_template=archer, defaults={"count": 456})
+
+        response = client.get(reverse("gameplay:troop_recruitment") + "?category=gong")
+
+        assert response.status_code == 200
+        counts = {row["key"]: row["owned_count"] for row in response.context["recruitment_options"]}
+        assert counts["archer"] == 345
+        assert counts["fast_archer"] == 0
+        body = response.content.decode("utf-8")
+        assert '弓箭手 <span class="production-option-card__owned">庄园现有 345</span>' in body
+        assert '快箭手 <span class="production-option-card__owned">庄园现有 0</span>' in body
 
     def test_troop_recruitment_page_active_queue_has_refresh_endpoint(self, manor_with_user):
         manor, client = manor_with_user

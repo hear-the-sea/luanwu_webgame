@@ -11,12 +11,14 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.messages import SUCCESS, get_messages
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
-from django.db import transaction
+from django.db import connection, transaction
 from django.db.models.signals import pre_delete
 from django.test import RequestFactory
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone
 
+from battle.models import BattleReport
 from gameplay.admin.messages import MessageAdmin
 from gameplay.models import BotProfile, Message
 from gameplay.services.manor.core import ensure_manor
@@ -28,6 +30,30 @@ def _admin_request(user):
     request = RequestFactory().post("/admin/gameplay/message/")
     request.user = user
     return request
+
+
+@pytest.mark.django_db
+def test_message_admin_change_page_renders_without_loading_all_battle_reports(django_user_model, client):
+    user = django_user_model.objects.create_superuser(username="message_admin_change", password="pass123")
+    manor = ensure_manor(user)
+    now = timezone.now()
+    report = BattleReport.objects.create(
+        manor=manor, opponent_name="对手", winner="attacker", starts_at=now, completed_at=now
+    )
+    message = Message.objects.create(manor=manor, title="后台消息", battle_report=report)
+    client.force_login(user)
+
+    with CaptureQueriesContext(connection) as queries:
+        response = client.get(reverse("admin:gameplay_message_change", args=[message.pk]))
+
+    assert response.status_code == 200
+    assert response.context["adminform"].form["battle_report"].value() == report.pk
+    assert (
+        response.context["adminform"].form["battle_report"].field.widget.__class__.__name__ == "ForeignKeyRawIdWidget"
+    )
+    report_queries = [q["sql"] for q in queries if 'FROM "battle_battlereport"' in q["sql"]]
+    assert report_queries
+    assert all(" WHERE " in sql.upper() for sql in report_queries)
 
 
 @pytest.mark.django_db

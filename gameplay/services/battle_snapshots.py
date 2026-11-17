@@ -16,7 +16,7 @@ from battle.combatants_pkg.troop_device_bonuses import (
 from core.exceptions import InvalidBattleSnapshotError
 from guests.avatar import has_guest_avatar_override, resolve_guest_avatar_url
 from guests.constants import SUPER_GUEST_DISGUISE_AVATAR_KEY
-from guests.guest_combat_stats import resolve_guest_combat_stats
+from guests.guest_combat_stats import has_custom_guest_low_loyalty_penalty, resolve_guest_combat_stats
 from guests.guest_rules import compute_guest_troop_capacity
 from guests.models import Guest
 
@@ -295,6 +295,12 @@ class BattleGuestSnapshotProxy:
             key=_resolve_snapshot_template_key(snapshot),
             initial_skills=_EmptySkillSet(),
         )
+        penalty = snapshot.get("low_loyalty_penalty", False)
+        if not isinstance(penalty, bool):
+            raise _invalid_guest_snapshot("low_loyalty_penalty")
+        self.low_loyalty_penalty = penalty
+        if penalty:
+            self.archetype = _resolve_snapshot_text_field(snapshot.get("archetype"), field_name="archetype")
         self._display_name = _resolve_snapshot_text_field(snapshot.get("display_name"), field_name="display_name")
         self._rarity = _resolve_snapshot_text_field(snapshot.get("rarity"), field_name="rarity")
         self.level = _resolve_snapshot_stat_int(snapshot.get("level"), field_name="level", minimum=1)
@@ -392,6 +398,9 @@ def build_guest_battle_snapshot(
         "troop_device_bonus_sources": list(troop_device_bonus_sources),
         "skill_keys": _serialize_guest_skill_keys(guest),
     }
+    if has_custom_guest_low_loyalty_penalty(guest):
+        payload["low_loyalty_penalty"] = True
+        payload["archetype"] = _resolve_live_snapshot_text_field(guest, field_name="archetype")
     if has_guest_avatar_override(guest):
         avatar_url = resolve_guest_avatar_url(guest)
     elif not isinstance(guest, Guest):

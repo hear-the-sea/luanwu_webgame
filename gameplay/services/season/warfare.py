@@ -84,7 +84,7 @@ def campaign_nodes(season: Season) -> dict[str, dict[str, Any]]:
         nodes["river:docks"]["description"] = (
             "将公共物资运至有实际需求的己方据点，保障驻军与维修；也可拦截敌方真实运输队。"
             if resource_rules(season)["enabled"]
-            else "护送真实补给至己方据点或驿站订单；可拦截已发现的敌方运输，或讨伐NPC辎重队。"
+            else "护送真实补给至己方据点或驿站订单；可拦截已发现的敌方运输，或讨伐中立辎重队。"
         )
     if simplification_rules(season)["enabled"]:
         for node in nodes.values():

@@ -112,6 +112,10 @@ def prepare_offense_launch_inputs(
         raise MissionGuestSelectionError("部分门客不可用或已离开庄园")
     if not guests:
         raise MissionGuestSelectionError("请选择至少一名门客")
+    from guests.services.status import active_raid_guest_ids
+
+    if active_raid_guest_ids(guest.pk for guest in guests):
+        raise MissionGuestSelectionError("所选门客仍在踢馆队伍中，请等待归队")
 
     max_squad_size = _resolve_max_squad_size(manor)
     if max_squad_size and len(guests) > max_squad_size:

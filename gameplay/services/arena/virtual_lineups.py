@@ -8,6 +8,7 @@ from itertools import combinations
 from math import comb
 
 from core.config import GUEST
+from guests.guest_combat_stats import snapshot_effective_combat_stats
 
 MIN_LINEUP_POWER_PERCENT = 80
 MAX_LINEUP_POWER_PERCENT = 120
@@ -74,14 +75,10 @@ def validate_full_health_virtual_lineup_snapshots(
 
 
 def snapshot_power(snapshot: dict) -> int:
-    normalized_agility = max(0, int(snapshot.get("agility") or 0))
+    attack, defense, agility = snapshot_effective_combat_stats(snapshot)
+    normalized_agility = max(0, int(agility))
     agility_power = int(normalized_agility * GUEST.AGILITY_TO_ARENA_POWER_WEIGHT)
-    return (
-        int(snapshot.get("attack") or 0)
-        + int(snapshot.get("defense") or 0)
-        + int(snapshot.get("max_hp") or 0) // 10
-        + max(0, agility_power)
-    )
+    return int(attack) + int(defense) + int(snapshot.get("max_hp") or 0) // 10 + max(0, agility_power)
 
 
 def lineup_power(snapshots: Sequence[dict]) -> int:

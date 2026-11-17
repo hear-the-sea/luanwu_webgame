@@ -17,7 +17,7 @@ from gameplay.models import Manor, Season, SeasonAction, SeasonExpedition, Seaso
 
 from .campaign_rules import campaign_rules, coalition_rules
 from .coalition_combat import fight_coalitions_locked
-from .combat import npc_opening_profile, pve_lineup
+from .combat import npc_opening_profile, pve_lineup, snapshot_guest_strength
 from .development_rules import feature_rules
 from .merit import award_capture_locked, battle_merit_shares, split_integer
 from .operation_costs import (
@@ -45,7 +45,7 @@ def alive_guests(run: SeasonExpedition, limit: int = 3) -> list[dict[str, Any]]:
     snapshots = [
         s for s in run.lineup.get("guests", []) if s.get("guest_id") not in defeated and s.get("current_hp", 0) > 0
     ]
-    return sorted(snapshots, key=lambda s: (-(s["attack"] + s["defense"] + s["current_hp"]), s["guest_id"]))[:limit]
+    return sorted(snapshots, key=lambda s: (-snapshot_guest_strength(s), s["guest_id"]))[:limit]
 
 
 def _defense_order_key(run: SeasonExpedition) -> tuple[int, datetime, datetime, int]:

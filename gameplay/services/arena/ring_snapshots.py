@@ -6,7 +6,7 @@ from battle.troops import load_troop_templates
 from core.exceptions import GameError
 from core.game_data.technology import load_technology_templates
 from gameplay.models import Manor
-from guests.guest_combat_stats import resolve_guest_combat_stats
+from guests.guest_combat_stats import resolve_guest_combat_stats, snapshot_effective_combat_stats
 from guests.models import Guest, GuestStatus
 
 from .ring_rules import load_ring_rules
@@ -83,7 +83,7 @@ def build_ring_lineup(
         "technology": build_ring_technology_payload(manor),
         "guest_count": len(snapshots),
         "troop_count": sum(troops.values()),
-        "power": sum(g["attack"] + g["defense"] + g["max_hp"] for g in snapshots),
+        "power": sum(sum(snapshot_effective_combat_stats(g)[:2]) + g["max_hp"] for g in snapshots),
     }
 
 

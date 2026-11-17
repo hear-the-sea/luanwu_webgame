@@ -69,6 +69,57 @@ def test_five_real_fights_raise_level_preserve_health_and_pay_once(world, monkey
     assert member.actions.filter(kind="merit_credit").count() == before
 
 
+def test_faction_bonus_survives_multiple_waves_without_healing_real_guest(world, monkeypatch):
+    from gameplay.services.season import faction_bonus
+
+    _, player, clock = world
+    member, guest = player()
+    monkeypatch.setattr(faction_bonus, "faction_template_keys", lambda faction, rules: {guest.template.key})
+    run = arrival(member, guest, clock)
+    snapshot = run.lineup["guests"][0]
+    assert snapshot["faction_bonus_percent"] == 10
+    assert snapshot["archetype"] == guest.archetype
+    assert snapshot["max_hp"] > snapshot["faction_bonus_base_hp"]
+    health = [snapshot["current_hp"]]
+    for _ in range(2):
+        advance_resource_run(run, clock)
+        health.append(run.lineup["guests"][0]["current_hp"])
+        guest.refresh_from_db()
+        assert guest.current_hp <= snapshot["faction_bonus_base_hp"]
+    assert health == sorted(health, reverse=True)
+
+
+def test_existing_expedition_restores_missing_guest_archetype(world):
+    _, player, clock = world
+    member, guest = player()
+    guest.template.archetype = "civil"
+    guest.template.save(update_fields=["archetype"])
+    run = issue(member, guest, clock)
+    assert run.lineup["guests"][0]["archetype"] == "civil"
+    run.lineup["guests"][0].pop("archetype")
+    with transaction.atomic():
+        snapshot = expeditions._battle_state(run)["guests"][0]
+    assert snapshot["archetype"] == "civil"
+
+
+def test_recall_before_combat_keeps_actual_health(world, monkeypatch):
+    from gameplay.services.season import faction_bonus
+
+    _, player, clock = world
+    member, guest = player()
+    monkeypatch.setattr(faction_bonus, "faction_template_keys", lambda faction, rules: {guest.template.key})
+    guest.current_hp = 1000
+    guest.last_hp_recovery_at = clock[0]
+    guest.save(update_fields=["current_hp", "last_hp_recovery_at"])
+    run = issue(member, guest, clock)
+    with transaction.atomic():
+        recall_locked(member, run.pk, clock[0] + timedelta(seconds=1))
+    advance_resource_run(run, clock)
+    guest.refresh_from_db()
+    assert run.status == "completed"
+    assert guest.current_hp == 1000
+
+
 def test_failure_after_two_wins_awards_two_only_and_stops(world, monkeypatch):
     _, player, clock = world
     member, guest = player()

@@ -17,6 +17,11 @@ from tests.test_season_rallies import rally_world as _rally_world  # noqa: F401
 pytestmark = pytest.mark.django_db
 
 
+@pytest.fixture
+def rally_world(request):
+    return request.getfixturevalue("_rally_world")
+
+
 def sunday_at(clock, hour, minute):
     local = timezone.localtime(clock[0], ZoneInfo("Asia/Shanghai"))
     sunday = local.date() + timedelta(days=(6 - local.weekday()) % 7)

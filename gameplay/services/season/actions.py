@@ -21,6 +21,9 @@ from guests.services.training import ensure_auto_training
 from .catalog import available_summon_templates, has_summon_catalog, reward_catalog, shop_catalog
 from .rules import FACTION_NAMES, season_state
 
+# 这些行动会改变往季奖励横幅（领取、使用卷轴），提交后立即失效缓存。
+_REWARD_CACHE_ACTIONS = frozenset({"claim", "claim_final", "claim_weekly", "summon", "summon_fallback"})
+
 
 def _identity(token: str, action: str, payload: dict[str, Any]) -> tuple[UUID, str]:
     try:
@@ -272,4 +275,9 @@ def perform_action(manor: Manor, season_id: int, action: str, token: str, payloa
             result = _summon(member, locked_manor, payload, action == "summon_fallback")
         else:
             raise GameError("赛季已改用真实派遣，请刷新页面选择行动")
+        if action in _REWARD_CACHE_ACTIONS:
+            from gameplay.selectors.season_archive import invalidate_previous_season_reward
+
+            manor_id = manor.pk
+            transaction.on_commit(lambda: invalidate_previous_season_reward(manor_id))
         return _record(member, parsed, digest, action, result, date=timezone.localdate(now))

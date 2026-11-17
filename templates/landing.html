@@ -212,7 +212,7 @@
 
                 {# 赛季队伍与驻军；首页只读展示，结算由后台推进。 #}
                 {% for event in active_season_events %}
-                <tr data-season-home-event="{{ event.id }}">
+                <tr data-season-home-event="{{ event.id }}" data-season-deadline="{{ event.deadline|date:'c' }}" data-season-revision="{{ event.status_label }}|{{ event.deadline|date:'c' }}|{{ event.collection.wins }}|{{ event.collection.next_wave }}">
                     <td>
                         <strong class="season-home-event-title"><svg width="22" height="22" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="{% static 'images/season-icons.svg' %}#{{ event.icon }}"></use></svg>{{ event.title }}：{{ event.node_name }}</strong>
                         <div class="muted-text">{{ event.status_label }}{% if event.guest_names %} · {{ event.guest_names }}{% endif %}{% if event.troop_count %} · 护院 {{ event.troop_count }}{% endif %}{% if event.is_stationed_garrison %} · <span title="最终按实际补给与每日上限结算">预计驻守贡献 {{ event.garrison_merit_preview }}</span>{% endif %}{% if event.collection %} · 采集已胜 {{ event.collection.wins }} / {{ event.collection.maximum }} 场{% if event.status_label == '采集中' %} · 等待第 {{ event.collection.next_wave }} 场{% endif %}{% endif %}</div>

@@ -21,7 +21,7 @@ WEEK_DAYS = 7
 
 def create_season(name: str, starts_at: datetime | None = None) -> Season:
     """开季命令使用单一入口，固定规则快照并拒绝时间重叠。"""
-    from .catalog import load_rules
+    from .catalog import build_faction_roster_snapshot, load_rules
 
     name = str(name).strip()
     if not name or len(name) > 64:
@@ -31,6 +31,7 @@ def create_season(name: str, starts_at: datetime | None = None) -> Season:
         raise GameError("赛季开始时间必须包含时区")
     ends_at = starts_at + timedelta(days=SEASON_DAYS)
     rules = deepcopy(load_rules())
+    rules["faction_roster_keys"] = build_faction_roster_snapshot(rules)
     from .campaign_rules import load_campaign_rules
 
     rules["campaign"] = load_campaign_rules()
@@ -111,17 +112,10 @@ def settle_season(season_id: int, now: datetime | None = None) -> dict[str, int]
                 freeze_current_targets_locked(season, now)
                 settled = settle_campaign_weeks_locked(season, now)
             if now >= season.ends_at:
-                # 停服或大量队伍积压时扫描器可能分批处理；先等尚未结算的采集
-                # 队伍完成或召回，避免排名冻结后再补发贡献。已返程队伍不阻塞。
-                from gameplay.models import SeasonExpedition
+                # 驻军和采集均可能在返程时补记历史贡献，排名冻结前必须完成入账。
+                from .settlement_pending import has_pending_contributions_locked
 
-                pending_collection = SeasonExpedition.objects.filter(
-                    member__season=season,
-                    kind="pve",
-                    status__in=("outbound", "stationed", "failed"),
-                    result__has_key="collection_waves",
-                ).exists()
-                if pending_collection:
+                if has_pending_contributions_locked(season, season.ends_at):
                     return {"weeks": settled, "closed": 0}
                 season.closed = True
                 season.winner = (

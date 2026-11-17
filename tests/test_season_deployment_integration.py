@@ -88,6 +88,19 @@ def test_campaign_guest_cannot_be_dismissed_or_healed_while_deployed(deployed_ca
     assert Guest.objects.filter(pk=guest.pk).exists()
 
 
+def test_healing_injured_campaign_guest_keeps_them_deployed(deployed_campaign_guest):
+    _manor, guest, _expedition = deployed_campaign_guest
+    guest.status = GuestStatus.INJURED
+    guest.current_hp = 1
+    guest.save(update_fields=["status", "current_hp"])
+
+    result = heal_guest(guest, guest.max_hp)
+
+    guest.refresh_from_db()
+    assert result["injury_cured"] is True
+    assert guest.status == GuestStatus.DEPLOYED
+
+
 @pytest.mark.parametrize("status", ["outbound", "returning", "failed"])
 def test_campaign_guest_defection_waits_until_return(deployed_campaign_guest, status):
     _manor, guest, expedition = deployed_campaign_guest

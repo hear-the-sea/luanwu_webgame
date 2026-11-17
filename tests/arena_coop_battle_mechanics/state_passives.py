@@ -33,18 +33,20 @@ def test_configure_arena_coop_enemy_guest_applies_fixed_final_hp():
     assert configure_arena_coop_enemy_guest(yang) is True
     assert configure_arena_coop_enemy_guest(wei) is True
 
-    assert boss.current_hp == 200000
-    assert boss.force == 1300
+    assert boss.current_hp == 220000
+    assert boss.force == 1339
     assert boss.intellect == 950
-    assert boss.defense_stat == 650
+    assert boss.defense_stat == 670
     assert boss.hp_bonus > 0
-    assert yang.current_hp == 150000
-    assert yang.force == 950
+    assert yang.current_hp == 165000
+    assert yang.force == 979
     assert yang.intellect == 720
+    assert yang.defense_stat == 536
     assert yang.hp_bonus > 0
-    assert wei.current_hp == 150000
-    assert wei.force == 880
+    assert wei.current_hp == 165000
+    assert wei.force == 906
     assert wei.intellect == 530
+    assert wei.defense_stat == 484
     assert wei.hp_bonus > 0
 
 
@@ -75,6 +77,18 @@ def test_sync_arena_coop_combat_state_updates_boss_phase_and_modifiers():
     assert boss.battle_state["arena_coop_phase"] == 3
     assert "三阶段" in events[0]["message"]
     assert boss.battle_modifiers == {}
+
+
+@pytest.mark.parametrize(
+    "hp,expected_phase",
+    [(225001, 1), (225000, 2), (135001, 2), (135000, 3)],
+)
+def test_sync_arena_coop_combat_state_uses_updated_phase_thresholds(hp, expected_phase):
+    boss = make_unit("arena_gl_top_zhang_wuji_boss", hp=hp, max_hp=300000, name="张无忌", is_boss=True)
+
+    sync_arena_coop_combat_state([], [boss], round_no=1)
+
+    assert boss.battle_state["arena_coop_phase"] == expected_phase
 
 
 def test_boss_round_start_passives_apply_phase_modifiers():

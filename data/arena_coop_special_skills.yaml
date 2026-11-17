@@ -17,7 +17,7 @@ skills:
             hp_ratio_lte: 0.7
           effects:
             - type: heal_ratio
-              value: 0.05
+              value: 0.07
               max_hp_based: true
               log: true
               log_name: 九阳护体
@@ -118,7 +118,7 @@ skills:
   - key: gl_top_holy_flame_rage
     name: 圣火狂势
     rarity: purple
-    description: 每回合开始时，若血量不高于70%，本回合自身伤害提高20%；不高于40%时改为提高40%。可与明教号令叠加，不提供卸力或反震。
+    description: 每回合开始时，若血量不高于75%，本回合自身伤害提高25%；不高于45%时改为提高50%。可与明教号令叠加，不提供卸力或反震。
     base_probability: 1.0
     kind: passive
     damage_formula:
@@ -131,27 +131,27 @@ skills:
           conditions:
             self_template_in:
               - arena_gl_top_zhang_wuji_boss
-            hp_ratio_lte: 0.7
-            hp_ratio_gt: 0.4
+            hp_ratio_lte: 0.75
+            hp_ratio_gt: 0.45
           effects:
             - type: emit_log
               log_name: 圣火狂势
-              message: 圣火暴涨，本回合自身伤害提高20%
+              message: 圣火暴涨，本回合自身伤害提高25%
             - type: modify_outgoing_damage
-              value: 1.2
+              value: 1.25
               scope: round
         - timing: round_start
           chance: 1.0
           conditions:
             self_template_in:
               - arena_gl_top_zhang_wuji_boss
-            hp_ratio_lte: 0.4
+            hp_ratio_lte: 0.45
           effects:
             - type: emit_log
               log_name: 圣火狂势
-              message: 圣火暴涨，本回合自身伤害提高40%
+              message: 圣火暴涨，本回合自身伤害提高50%
             - type: modify_outgoing_damage
-              value: 1.4
+              value: 1.5
               scope: round
 
   - key: gl_top_cold_blood_swoop

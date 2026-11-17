@@ -30,7 +30,12 @@ from ..constants import TimeConstants
 from ..models import Guest, GuestStatus
 from ..query_utils import guest_max_hp_expression
 from .loyalty import apply_injury_loyalty_decay, clear_injury_loyalty_decay
-from .status import GUEST_STATUS_UPDATE_FIELDS, prepare_guest_status_transition, schedule_resumed_guest_training
+from .status import (
+    GUEST_STATUS_UPDATE_FIELDS,
+    prepare_guest_status_transition,
+    schedule_resumed_guest_training,
+    status_after_injury_recovery,
+)
 
 if TYPE_CHECKING:
     from gameplay.models import InventoryItem, Manor
@@ -80,10 +85,13 @@ class MedicineUseQuote:
         ):
             raise ValueError("medicine quote has an invalid projected HP result")
         allowed_statuses = {str(GuestStatus.IDLE), str(GuestStatus.INJURED)}
-        if self.status_before not in allowed_statuses or self.status_after not in allowed_statuses:
+        if self.status_before not in allowed_statuses or self.status_after not in allowed_statuses | {
+            str(GuestStatus.DEPLOYED)
+        }:
             raise ValueError("medicine quote has an invalid guest status")
-        expected_status = str(GuestStatus.IDLE) if self.injury_cured else self.status_before
-        if self.status_after != expected_status:
+        if (self.injury_cured and self.status_after not in {str(GuestStatus.IDLE), str(GuestStatus.DEPLOYED)}) or (
+            not self.injury_cured and self.status_after != self.status_before
+        ):
             raise ValueError("medicine quote has an invalid projected guest status")
         if self.injury_cured and self.status_before != str(GuestStatus.INJURED):
             raise ValueError("only an injured guest can be cured")
@@ -207,7 +215,7 @@ def quote_medicine_item_for_guest(
         healed=new_hp - current_hp,
         new_hp=new_hp,
         injury_cured=injury_cured,
-        status_after=(str(GuestStatus.IDLE) if injury_cured else str(guest.status)),
+        status_after=(str(status_after_injury_recovery(guest)) if injury_cured else str(guest.status)),
     )
 
 
@@ -234,7 +242,7 @@ def recover_guest_hp(guest: Guest, now: datetime | None = None) -> None:
             update_fields.append("last_hp_recovery_at")
         # 修复：满血时不应继续显示重伤状态
         if guest.status == GuestStatus.INJURED:
-            transition = prepare_guest_status_transition(guest, GuestStatus.IDLE, now=now)
+            transition = prepare_guest_status_transition(guest, status_after_injury_recovery(guest), now=now)
             resumed_training = transition.resumed_training
             update_fields.extend(GUEST_STATUS_UPDATE_FIELDS)
             clear_injury_loyalty_decay(guest)
@@ -275,7 +283,7 @@ def recover_guest_hp(guest: Guest, now: datetime | None = None) -> None:
         current_hp=guest.current_hp,
         max_hp=guest.max_hp,
     ):
-        transition = prepare_guest_status_transition(guest, GuestStatus.IDLE, now=now)
+        transition = prepare_guest_status_transition(guest, status_after_injury_recovery(guest), now=now)
         resumed_training = transition.resumed_training
         update_fields.extend(GUEST_STATUS_UPDATE_FIELDS)
         clear_injury_loyalty_decay(guest)
@@ -370,7 +378,7 @@ def heal_guest(guest: Guest, heal_amount: int, *, now: datetime | None = None) -
     resumed_training = False
     if guest.status == GuestStatus.INJURED:
         if _guest_health_rules.should_clear_injured_status(current_hp=new_hp, max_hp=guest.max_hp):
-            transition = prepare_guest_status_transition(guest, GuestStatus.IDLE, now=now)
+            transition = prepare_guest_status_transition(guest, status_after_injury_recovery(guest), now=now)
             resumed_training = transition.resumed_training
             update_fields.extend(GUEST_STATUS_UPDATE_FIELDS)
             clear_injury_loyalty_decay(guest)
@@ -666,7 +674,7 @@ def _apply_batch_healing_plan(
         injury_cured = guest.status == GuestStatus.INJURED and _guest_health_rules.should_clear_injured_status(
             current_hp=new_hp, max_hp=int(guest.max_hp)
         )
-        expected_status = GuestStatus.IDLE if injury_cured else guest.status
+        expected_status = status_after_injury_recovery(guest) if injury_cured else guest.status
         if (
             healed != amount
             or int(attempted.current_hp) != new_hp
@@ -743,6 +751,10 @@ def _heal_locked_guests_one_dose_at_a_time(
                 stock.item.pk = None
             else:
                 stock.item.quantity = remaining_quantity
+            # 重伤解除后若仍在返程，不能再按空闲门客尝试下一剂；
+            # 不应因此把尚有库存的药品标记为不可用。
+            if guest.status == GuestStatus.DEPLOYED:
+                break
 
         if int(guest.current_hp) >= int(guest.max_hp):
             healed_count += 1

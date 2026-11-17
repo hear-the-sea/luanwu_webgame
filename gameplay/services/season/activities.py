@@ -133,7 +133,7 @@ def prepare_activity_locked(
     elif mode == "intercept":
         target = hostile_transports(member, node_key, now).filter(pk=payload.get("target_run_id", 0)).first()
         if target is None:
-            raise GameError("没有可拦截的敌方运输队，请选择现有目标或参加NPC劫运")
+            raise GameError("没有可拦截的敌方运输队，请选择现有目标或参加中立辎重截击")
         from .convoy_encounters import is_encounter, validate_join
 
         if is_encounter(target):
@@ -158,7 +158,7 @@ def prepare_activity_locked(
         activity["target_run_id"] = target_run.pk
     elif mode == "npc_intercept":
         if _used_orders(member, mode, now) >= config["intercept"]["daily_npc_limit"]:
-            raise GameError("今日NPC劫运次数已用完")
+            raise GameError("今日中立辎重截击次数已用完")
         activity["npc_order"] = True
     return {"cargo": cargo, "result": {"activity": activity}}
 
@@ -218,7 +218,7 @@ def settle_exploration_locked(run: Any, now: datetime) -> dict[str, Any]:
         ],
         "bonus_available": True,
         "bonus_percent": config["bonus_percent"],
-        "discovery": "NPC物资营地" if not target or not target.owner else "驻防情报",
+        "discovery": "中立物资营地" if not target or not target.owner else "驻防情报",
     }
     intel = SeasonIntel.objects.create(
         season=run.member.season,
@@ -326,7 +326,7 @@ def settle_npc_intercept_locked(run: Any, won: bool, now: datetime) -> dict[str,
         "merit": config["npc_merit"] if won else config["npc_failure_merit"],
         "construction": config["npc_construction"] if won else config["npc_failure_construction"],
         "resources": gains,
-        "message": "NPC辎重讨伐完成，不计玩家对抗战果",
+        "message": "中立辎重讨伐完成，不计玩家对抗战果",
     }
 
 
@@ -377,7 +377,7 @@ def _prepare_demand_transport(member: Any, node_key: str, payload: dict[str, Any
     settle_auto_repairs_locked(season, now)
     target_key = str(payload.get("target_site_key", ""))
     if not target_key:
-        raise GameError("已取消消耗型NPC订单，请选择有真实补给需求的己方据点")
+        raise GameError("已取消消耗型中立订单，请选择有真实补给需求的己方据点")
     target = SeasonSite.objects.filter(season=season, key=target_key, owner=member.faction).first()
     if target is None:
         raise GameError("运输目标必须是己方控制的据点")

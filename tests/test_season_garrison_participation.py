@@ -17,6 +17,11 @@ from tests.test_season_resource_integration import resource_campaign as _resourc
 pytestmark = pytest.mark.django_db
 
 
+@pytest.fixture
+def resource_campaign(request):
+    return request.getfixturevalue("_resource_campaign")
+
+
 def test_completed_quiet_garrison_is_economic_and_registration_activity(resource_campaign):
     season, player, clock = resource_campaign
     member, guest = player("fiction")

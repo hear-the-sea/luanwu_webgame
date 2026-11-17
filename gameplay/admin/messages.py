@@ -356,6 +356,7 @@ class MessageAdmin(admin.ModelAdmin):
     search_fields = ("title", "body", "manor__user__username")
     readonly_fields = ("created_at",)
     autocomplete_fields = ("manor",)
+    raw_id_fields = ("battle_report",)
 
     @admin.display(boolean=True, description="有附件")
     def has_attachments(self, obj):

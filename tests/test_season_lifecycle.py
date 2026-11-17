@@ -46,7 +46,8 @@ def participant(user_factory):
 def test_create_season_freezes_rules_and_rejects_overlap(monkeypatch):
     from gameplay.services.season import catalog
 
-    rules = {"daily_actions": 6, "nested": {"value": 1}}
+    rules = catalog.load_rules()
+    rules["nested"] = {"value": 1}
     monkeypatch.setattr(catalog, "load_rules", lambda: rules)
     season = create_season(" 初季 ", START)
     rules["nested"]["value"] = 9
@@ -54,6 +55,8 @@ def test_create_season_freezes_rules_and_rejects_overlap(monkeypatch):
     assert season.name == "初季"
     assert season.ends_at - season.starts_at == timedelta(days=90)
     assert season.rules["nested"]["value"] == 1
+    assert "hero_yin_zhiping" in season.rules["faction_roster_keys"]["fiction"]
+    assert "hist_qinhan_0001" in season.rules["faction_roster_keys"]["history"]
     with pytest.raises(GameError, match="已有赛季"):
         create_season("重叠", START + timedelta(days=89))
     second = create_season("下季", season.ends_at)

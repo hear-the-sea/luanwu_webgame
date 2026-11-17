@@ -51,7 +51,7 @@ for (const width of [320, 390, 768, 1280]) {
       const notice = page.locator(".round-action-cell.defender .event-passive-row");
       await expect(notice).toHaveCount(1);
       await expect(notice).toContainText("本回合获得卸力反震");
-      await expect(notice.locator(".event-unit-name")).toHaveText(`${sourceSide}张无忌`);
+      await expect(notice.locator(".event-unit-name")).toHaveText("张无忌");
       const reflections = page.locator(".event-qiankun-reflect");
       await expect(reflections).toHaveCount(2);
       for (let index = 0; index < 2; index++) {

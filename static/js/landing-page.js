@@ -149,7 +149,59 @@
     });
   }
 
+  function initSeasonEventUpdates() {
+    let inFlight = false;
+    async function updateDueEvents() {
+      if (inFlight || document.visibilityState === "hidden") return;
+      const dueRows = Array.from(document.querySelectorAll("[data-season-home-event]"))
+        .filter((row) => {
+          const deadline = Date.parse(row.dataset.seasonDeadline || "");
+          return Number.isFinite(deadline) && deadline <= Date.now();
+        });
+      if (!dueRows.length) return;
+      inFlight = true;
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 10000);
+      try {
+        const response = await fetch(window.location.href, {
+          credentials: "same-origin", cache: "no-store", signal: controller.signal,
+        });
+        if (!response.ok || response.redirected) return;
+        const page = new DOMParser().parseFromString(await response.text(), "text/html");
+        for (const row of dueRows) {
+          if (!row.isConnected || row.contains(document.activeElement) || row.querySelector("[data-action-pending='1']")) continue;
+          const id = row.dataset.seasonHomeEvent;
+          if (!/^\d+$/.test(id)) continue;
+          const updated = page.querySelector(`[data-season-home-event="${id}"]`);
+          if (!updated) {
+            const body = row.parentElement;
+            row.remove();
+            if (body && !body.querySelector("tr")) {
+              const empty = document.createElement("tr");
+              const cell = document.createElement("td");
+              cell.colSpan = 3;
+              cell.className = "muted-text events-empty-cell";
+              cell.textContent = "暂无进行中的事件";
+              empty.appendChild(cell);
+              body.appendChild(empty);
+            }
+          } else if (updated.dataset.seasonRevision !== row.dataset.seasonRevision) {
+            row.replaceWith(updated);
+          }
+        }
+      } catch (error) {
+        console.warn("更新赛季队伍状态失败:", error);
+      } finally {
+        window.clearTimeout(timeout);
+        inFlight = false;
+      }
+    }
+    window.setInterval(updateDueEvents, 5000);
+    updateDueEvents();
+  }
+
   initMobileCollapses();
   initScoutRetreatForms();
   initRaidRetreatButtons();
+  initSeasonEventUpdates();
 })();

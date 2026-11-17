@@ -290,6 +290,7 @@ def test_difficulty_migration_preserves_in_flight_and_other_progress(resource_ca
     member, guest = player()
     run = issue(member, guest, clock)
     frozen = deepcopy(run.result)
+    season.refresh_from_db()
     before = deepcopy(season.rules)
     with transaction.atomic():
         update.soften_collection(apps, SimpleNamespace(connection=connection))
@@ -401,5 +402,5 @@ def test_collection_preview_shows_configured_enemies(resource_campaign, npc_data
     member, _ = player()
     client.force_login(member.manor.user)
     html = client.get(reverse("gameplay:season"), {"season_id": season.pk}).content.decode()
-    assert "第1场 1名绿将 Lv.20" in html
-    assert "第5场 2名紫将 Lv.110" in html
+    assert "第1场 1名绿将 等级20" in html
+    assert "第5场 2名紫将 等级110" in html

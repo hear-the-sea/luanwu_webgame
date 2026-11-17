@@ -69,6 +69,11 @@ def _load_and_validate_attacker_guests(attacker: Manor, guest_ids: List[int]) ->
     for guest in guests:
         if guest.status != GuestStatus.IDLE:
             raise RaidStartError(f"门客 {guest.display_name} 当前不可出征")
+    from guests.services.status import active_raid_guest_ids
+
+    occupied = active_raid_guest_ids(guest.pk for guest in guests)
+    if occupied:
+        raise RaidStartError("所选门客仍在踢馆队伍中，请等待归队")
     return guests
 
 

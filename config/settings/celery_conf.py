@@ -154,7 +154,6 @@ CELERY_TIMER_SCAN_TASKS = frozenset(
         "gameplay.scan_arena_wheel_events",
         "gameplay.scan_arena_rings",
         "gameplay.settle_seasons",
-        "gameplay.advance_season_expedition",
         "gameplay.scan_raid_runs",
         "guilds.scan_due_raids",
         "guilds.scan_due_missions",
@@ -196,6 +195,7 @@ CELERY_TIMER_MAINTENANCE_TASKS = frozenset(
 CELERY_TIMER_DEFAULT_TASKS = frozenset(
     {
         "gameplay.complete_mission",
+        "gameplay.advance_season_expedition",
         "gameplay.complete_building_upgrade",
         "gameplay.complete_technology_upgrade",
         "gameplay.complete_troop_recruitment",

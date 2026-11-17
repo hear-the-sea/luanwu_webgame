@@ -74,7 +74,7 @@ def test_market_uses_war_pane_for_existing_rally_without_exposing_enemy_trade():
         "rallies": [{"can_join": False}],
     }
     decorate_map_nodes([{"nodes": [node]}], {}, [], [], "fiction")
-    assert [pane["key"] for pane in node["popup_panes"]] == ["war"]
+    assert [pane["key"] for pane in node["popup_panes"]] == ["war", "exchange"]
 
 
 def test_cross_region_badges_count_only_joinable_rallies():

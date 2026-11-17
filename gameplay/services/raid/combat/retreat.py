@@ -47,13 +47,13 @@ def finalize_raid_retreat(
     completed_status: Any,
 ) -> None:
     from guests.models import GuestStatus
-    from guests.services.status import persist_guest_status_transitions
+    from guests.services.status import guests_available_after_raid, persist_guest_status_transitions
 
     now = now or timezone.now()
 
     guests = list(run.guests.select_for_update())
     persist_guest_status_transitions(
-        [guest for guest in guests if guest.status == GuestStatus.DEPLOYED],
+        guests_available_after_raid(guests, run_id=run.pk),
         GuestStatus.IDLE,
         source="raid_retreat",
     )

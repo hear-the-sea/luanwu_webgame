@@ -334,14 +334,19 @@ def test_get_total_users_uses_cache(django_user_model, monkeypatch):
     consumer = OnlineStatsConsumer()
     monkeypatch.setattr(stats, "_LOCAL_STATS_CACHE", {})
 
-    django_user_model.objects.create_user(username="total_users_1", password="pass")
+    now = timezone.now()
+    django_user_model.objects.create_user(
+        username="total_users_1",
+        password="pass",
+        email_verified=True,
+        last_login=now,
+    )
     django_user_model.objects.create_user(username="staff", password="pass", is_staff=True)
     virtual_user = django_user_model.objects.create_user(
         username="bot_total_users_1",
         password="pass",
         is_active=False,
     )
-    now = timezone.now()
     BotProfile.objects.create(
         manor=virtual_user.manor,
         prestige_band="low",
@@ -365,12 +370,19 @@ def test_get_total_users_uses_cache(django_user_model, monkeypatch):
 
 @pytest.mark.django_db
 def test_get_total_users_tolerates_cache_backend_failure(django_user_model, monkeypatch):
+    from django.utils import timezone
+
     from gameplay.selectors import stats
 
     consumer = OnlineStatsConsumer()
     monkeypatch.setattr(stats, "_LOCAL_STATS_CACHE", {})
 
-    django_user_model.objects.create_user(username="total_users_cache_failure", password="pass")
+    django_user_model.objects.create_user(
+        username="total_users_cache_failure",
+        password="pass",
+        email_verified=True,
+        last_login=timezone.now(),
+    )
 
     original_get = cache.get
     original_set = cache.set

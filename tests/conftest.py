@@ -53,6 +53,23 @@ def _reset_stats_cache_circuit():
     stats._reset_stats_cache_circuit()
 
 
+@pytest.fixture(autouse=True)
+def _reset_guest_template_cache():
+    """门客模板缓存只保存 key 列表，事务回滚不会还原，必须逐测试隔离。"""
+    from battle.combatants_pkg.cache import clear_guest_template_cache
+
+    def _clear() -> None:
+        try:
+            clear_guest_template_cache()
+        except Exception:
+            # 个别用例故意让 cache.delete 抛错；下个测试的 setup 会再次清理。
+            pass
+
+    _clear()
+    yield
+    _clear()
+
+
 _REQUIRED_BUILDING_KEYS = (
     BuildingKeys.SILVER_VAULT,
     BuildingKeys.GRANARY,

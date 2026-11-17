@@ -5,7 +5,7 @@ from typing import Any
 
 from core.exceptions import InvalidBattleSnapshotError
 from guests.avatar import has_guest_avatar_override, resolve_guest_avatar_url
-from guests.guest_combat_stats import resolve_guest_combat_stats
+from guests.guest_combat_stats import has_custom_guest_low_loyalty_penalty, resolve_guest_combat_stats
 from guests.guest_rules import compute_guest_attack_attribute_component
 
 
@@ -97,6 +97,8 @@ def normalize_entry_guest_snapshot(snapshot: Any) -> dict[str, Any]:
     normalized["max_hp"] = _snapshot_int(snapshot, "max_hp", minimum=1)
     normalized["current_hp"] = _snapshot_int(snapshot, "current_hp", minimum=1, default=1)
     normalized["skill_keys"] = _snapshot_skill_keys(snapshot)
+    if "low_loyalty_penalty" in snapshot and not isinstance(snapshot["low_loyalty_penalty"], bool):
+        raise _invalid_snapshot("low_loyalty_penalty", snapshot["low_loyalty_penalty"])
     attack_attribute_component = snapshot.get("attack_attribute_component")
     normalized["attack_attribute_component"] = (
         _snapshot_int(snapshot, "attack_attribute_component", minimum=0)
@@ -125,6 +127,7 @@ class ArenaGuestSnapshotProxy:
             initial_skills=_EmptySkillSet(),
         )
         self.archetype = snapshot["archetype"]
+        self.low_loyalty_penalty = snapshot.get("low_loyalty_penalty", False)
         self._display_name = snapshot["display_name"]
         self._rarity = snapshot["rarity"]
         self.level = snapshot["level"]
@@ -188,6 +191,8 @@ def build_entry_guest_snapshot(guest) -> dict[str, Any]:
         "current_hp": current_hp,
         "skill_keys": serialize_guest_skill_keys(guest),
     }
+    if has_custom_guest_low_loyalty_penalty(guest):
+        payload["low_loyalty_penalty"] = True
     if has_guest_avatar_override(guest):
         avatar_url = resolve_guest_avatar_url(guest)
         if avatar_url:

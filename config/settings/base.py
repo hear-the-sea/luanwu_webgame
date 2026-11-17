@@ -364,6 +364,8 @@ VIRTUAL_PLAYER_HEALTH_RECOVERY_SUCCESS_THRESHOLD = max(
 
 # Cache TTL for home/dashboard stats
 HOME_STATS_CACHE_TTL_SECONDS = int(env("DJANGO_HOME_STATS_CACHE_TTL_SECONDS", "15"))
+# 往季奖励入口会遍历所有已结束赛季；短 TTL + 领取后主动失效即可兼顾新鲜度与查询量。
+PREVIOUS_SEASON_REWARD_CACHE_TTL_SECONDS = int(env("DJANGO_PREVIOUS_SEASON_REWARD_CACHE_TTL_SECONDS", "60"))
 # Bounded wait for another worker to fill the market stats cache. Keep this
 # independently tunable because increasing it trades duplicate queries for tail latency.
 MARKET_STATS_CACHE_LOCK_WAIT_SECONDS = max(

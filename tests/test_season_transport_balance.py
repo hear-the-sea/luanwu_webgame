@@ -10,6 +10,11 @@ from tests.test_season_resource_integration import advance_resource_run, issue
 from tests.test_season_resource_integration import resource_campaign as _resource_campaign  # noqa: F401
 
 
+@pytest.fixture
+def resource_campaign(request):
+    return request.getfixturevalue("_resource_campaign")
+
+
 @pytest.mark.parametrize("value,expected", [(0, 0), (1, 0), (100, 20), (200, 40), (600, 60), (1200, 90), (3600, 90)])
 def test_delivery_reward_is_useful_for_small_orders_and_capped_for_full_cargo(value, expected):
     assert delivery_merit(value, 1200, 90, 30, 200) == expected

@@ -7,7 +7,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from guests.models import GuestStatus
-from guests.services.status import persist_guest_status_transitions
+from guests.services.status import guests_available_after_raid, persist_guest_status_transitions
 
 logger = logging.getLogger(__name__)
 
@@ -33,10 +33,12 @@ def finalize_raid(
             locked_run.Status.RETREATED,
         }:
             return True
+        if locked_run.return_at is not None and locked_run.return_at > now:
+            return False
 
         guests = list(locked_run.guests.select_for_update())
         persist_guest_status_transitions(
-            [guest for guest in guests if guest.status == GuestStatus.DEPLOYED],
+            guests_available_after_raid(guests, run_id=locked_run.pk),
             GuestStatus.IDLE,
             source="raid_finalize",
         )

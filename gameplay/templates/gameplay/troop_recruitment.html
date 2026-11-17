@@ -87,7 +87,7 @@
                 <article class="production-option-card {% if not troop.is_unlocked %}is-locked{% elif is_recruiting %}is-disabled{% endif %}">
                     <header class="production-option-card__header">
                         <div>
-                            <h3>{{ troop.name }}</h3>
+                            <h3>{{ troop.name }} <span class="production-option-card__owned">庄园现有 {{ troop.owned_count|default:0 }}</span></h3>
                             {% if not troop.is_unlocked %}
                             <p class="production-card-lock">{{ troop.tech_name }} 等级{{ troop.tech_level_required }} · 当前 {{ troop.player_tech_level }}</p>
                             {% endif %}

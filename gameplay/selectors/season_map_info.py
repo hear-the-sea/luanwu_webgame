@@ -36,7 +36,7 @@ def decorate_map_nodes(
             elif key == "river:market" and node.get("site"):
                 panes = [("trade", "占领货摊"), ("war", "攻防"), ("exchange", "调剂")]
                 if not faction or node.get("occupation_class") != faction:
-                    panes = [("war", "攻防")]
+                    panes = [("war", "攻防"), ("exchange", "调剂")] if faction else [("war", "攻防")]
             else:
                 panes = []
                 if node.get("personal_modes"):

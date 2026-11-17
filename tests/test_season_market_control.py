@@ -108,12 +108,26 @@ def test_market_selector_is_read_only_and_ordinary_shop_remains_available(world)
         node for region in context["season_maps"] for node in region["nodes"] if node["key"] == "river:market"
     )
     assert market_node["occupation_label"] == "中立 · 未占领"
+    assert "exchange" in {pane["key"] for pane in market_node["popup_panes"]}
     assert context["market_stock"]["enabled"]
     assert context["market_stock"]["offers"] == []
     assert not context["market_stock"]["is_owner"]
     assert context["shop_items"]
     assert not member.claims.exists()
     assert list(season.sites.values()) == before
+
+
+def test_market_exchange_remains_visible_when_opponent_controls_market(world):
+    season, player, _ = world
+    member, _ = player()
+    site = season.sites.get(key="river:market")
+    site.owner = "history" if member.faction == "fiction" else "fiction"
+    site.save(update_fields=["owner"])
+    context = get_season_context(member.manor, season.pk)
+    node = next(node for region in context["season_maps"] for node in region["nodes"] if node["key"] == site.key)
+    panes = {pane["key"] for pane in node["popup_panes"]}
+    assert "exchange" in panes
+    assert "trade" not in panes
 
 
 def test_upgrade_adds_only_market_rules_and_preserves_existing_campaign_progress(world):

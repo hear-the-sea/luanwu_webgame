@@ -17,6 +17,11 @@ from tests.test_season_weekly_campaign import weekly as _weekly  # noqa: F401
 pytestmark = pytest.mark.django_db
 
 
+@pytest.fixture
+def weekly(request):
+    return request.getfixturevalue("_weekly")
+
+
 def prepare_week(weekly, result):
     season, members, start = weekly
     at = start + timedelta(days=1)

@@ -13,7 +13,7 @@ from core.exceptions import GameError
 from gameplay.services.arena.snapshots import ArenaGuestSnapshotProxy, build_entry_guest_snapshot
 from gameplay.services.battle_snapshots import BattleGuestSnapshotProxy
 from gameplay.services.missions_impl.constants import PLAYER_MISSION_TROOP_LOSS_RATE
-from guests.guest_combat_stats import resolve_guest_combat_stats
+from guests.guest_combat_stats import resolve_guest_combat_stats, snapshot_effective_combat_stats
 from guests.guest_rules import compute_guest_attack_attribute_component
 from guests.models import Guest, GuestStatus
 
@@ -21,6 +21,11 @@ from .playability_rules import playability_rules
 from .technology import season_technology_levels
 
 PVE_LEVELS = {"mountain:inn": 3, "mountain:ruins": 10, "river:docks": 15, "forest:granary": 25, "forest:lodge": 20}
+
+
+def snapshot_guest_strength(snapshot: dict[str, Any]) -> int:
+    attack, defense, _agility = snapshot_effective_combat_stats(snapshot)
+    return attack + defense + snapshot["current_hp"]
 
 
 def npc_opening_profile(
@@ -69,7 +74,7 @@ def build_lineup(manor: Any, guest_ids: list[int], maximum: int = 3) -> dict[str
         snapshot = build_entry_guest_snapshot(guest)
         snapshot.update(guest_id=guest.pk, current_hp=snapshot["max_hp"])
         snapshots.append(snapshot)
-    return {"guests": snapshots, "power": sum(s["attack"] + s["defense"] + s["max_hp"] for s in snapshots)}
+    return {"guests": snapshots, "power": sum(snapshot_guest_strength(s) for s in snapshots)}
 
 
 def proxies(lineup: dict[str, Any], *, preserve_state: bool = False) -> list[Any]:
@@ -138,10 +143,10 @@ def pve_lineup(
         available = get_all_guest_templates()
         pool = encounter["pools"][rarity]
         if any(key not in available or available[key].rarity != rarity for key in pool):
-            raise GameError("赛季 NPC 门客模板未加载或品质不匹配，请联系管理员")
+            raise GameError("赛季中立守军门客模板未加载或品质不匹配，请联系管理员")
         all_skills = {skill for group in (skill_sets if skill_sets is not None else [skills]) for skill in group}
         if all_skills != set(Skill.objects.filter(key__in=all_skills).values_list("key", flat=True)):
-            raise GameError("赛季 NPC 技能未加载，请联系管理员")
+            raise GameError("赛季中立守军技能未加载，请联系管理员")
         # 同一批优先使用不同人物；人数超过可用模板时再重新抽取。
         chosen: list[str] = []
         while len(chosen) < count:

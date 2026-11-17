@@ -14,6 +14,8 @@ from gameplay.models import InventoryItem, ItemTemplate, MissionRun, MissionTemp
 
 rules = import_module("gameplay.migrations.0242_player_facing_mission_item_copy")
 DATA = Path(__file__).resolve().parents[1] / "data"
+# 后续宝箱配置已包含珍稀装备与图纸，现行文案不再罗列抽取概率。
+WUHU_CHEST_DESCRIPTION = "五虎齐聚，演武馈赠。开启可获得演武补给，并有机会额外收获珍稀装备、图纸及赵云招募卷轴。"
 
 
 def test_player_copy_snapshots_match_current_yaml():
@@ -31,8 +33,7 @@ def test_player_copy_snapshots_match_current_yaml():
                 # 后续迁移在旧文案后追加夜间出行提醒。
                 description = description.rstrip() + "（注意别晚上出门哦）\n"
             elif key == "mission_chest_v3_zhanlong_wuhu_shizhen":
-                # 后续宝箱配置已包含珍稀装备与图纸，现行文案不再罗列抽取概率。
-                description = "五虎齐聚，演武馈赠。开启可获得演武补给，并有机会额外收获珍稀装备、图纸及赵云招募卷轴。"
+                description = WUHU_CHEST_DESCRIPTION
             assert description == current[key]["description"]
             assert fields["description"].strip()
 

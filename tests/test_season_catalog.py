@@ -122,6 +122,40 @@ def test_faction_source_selection_uses_rules_snapshot_instead_of_current_configu
 
 
 @pytest.mark.django_db
+def test_existing_season_freezes_roster_once_even_with_stale_instances(monkeypatch):
+    from datetime import timedelta
+
+    from django.db import transaction
+    from django.utils import timezone
+
+    from gameplay.models.season import Season
+
+    now = timezone.now()
+    season = Season.objects.create(
+        name="旧赛季", starts_at=now, ends_at=now + timedelta(days=90), rules=catalog.load_rules()
+    )
+    stale = Season.objects.get(pk=season.pk)
+    initial = {"fiction": ["hero_a"], "history": ["hist_a"]}
+    monkeypatch.setattr(catalog, "build_faction_roster_snapshot", lambda rules: initial)
+    with transaction.atomic():
+        catalog.ensure_faction_roster_snapshot_locked(season)
+    monkeypatch.setattr(
+        catalog, "build_faction_roster_snapshot", lambda rules: {"fiction": ["hero_b"], "history": ["hist_b"]}
+    )
+    with transaction.atomic():
+        catalog.ensure_faction_roster_snapshot_locked(stale)
+    season.refresh_from_db()
+    assert season.rules["faction_roster_keys"] == initial
+
+    def reject_source_read(*args):
+        raise AssertionError("冻结后不应读取当前人物来源")
+
+    monkeypatch.setattr(catalog, "_faction_keys_at", reject_source_read)
+    assert catalog.faction_template_keys("fiction", rules=stale.rules) == {"hero_a"}
+    assert catalog.faction_template_keys("history", rules=stale.rules) == {"hist_a"}
+
+
+@pytest.mark.django_db
 def test_catalog_presence_distinguishes_missing_imports_from_full_collection(django_user_model, monkeypatch):
     manor = django_user_model.objects.create_user(username="season_catalog_presence").manor
     rules = catalog.load_rules()

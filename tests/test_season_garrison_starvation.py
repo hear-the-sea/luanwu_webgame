@@ -7,7 +7,7 @@ import pytest
 from gameplay.services.season.expeditions import _start_return
 from gameplay.services.season.operation_costs import settle_garrison_cost_locked
 from tests.test_season_resource_integration import advance_resource_run, issue
-from tests.test_season_supply_horizon import resource_campaign as _resource_campaign  # noqa: F401
+from tests.test_season_resource_integration import resource_campaign as _resource_campaign  # noqa: F401
 from tests.test_season_supply_horizon import station
 
 pytestmark = pytest.mark.django_db

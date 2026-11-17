@@ -425,8 +425,10 @@ test("精简版攻城只留一个入口，仓库接订单、集市调剂公共�
   await page.locator('[data-season-building="river:market"]').press("Enter");
   const market = page.getByRole("dialog", { name: "沿岸集市", exact: true });
   await expect(market.locator('[data-season-pane="trade"]')).toHaveCount(0);
-  await expect(market.locator('[data-season-pane="exchange"]')).toHaveCount(0);
+  await expect(market.locator('[data-season-pane="exchange"]')).toHaveCount(1);
   await expect(market).toContainText('占领集市后可查看');
+  await market.locator('[data-season-pane-tab="exchange"]').click();
+  await expect(market.getByRole("region", { name: "军需调剂" })).toBeVisible();
   expect(await market.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
   await market.screenshot({ path: "/tmp/season-simple-market.png" });
   await page.keyboard.press("Escape");
@@ -480,7 +482,7 @@ test("精简版攻城只留一个入口，仓库接订单、集市调剂公共�
   await page.locator('[data-season-building="river:market"]').press("Enter");
   let market = page.getByRole("dialog", { name: "沿岸集市", exact: true });
   await expect(market.locator('[data-season-pane="trade"]')).toHaveCount(0);
-  await expect(market.locator('[data-season-pane="exchange"]')).toHaveCount(0);
+  await expect(market.locator('[data-season-pane="exchange"]')).toHaveCount(1);
   await expect(market.locator('input[name="action"][value="market_purchase"]')).toHaveCount(0);
   await expect(market.locator('input[name="action"][value="rally_create"]')).toHaveCount(1);
   await page.keyboard.press("Escape");

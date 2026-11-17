@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional
 
 from django.db import DatabaseError
 
-from guests.guest_combat_stats import resolve_guest_combat_stats
+from guests.guest_combat_stats import apply_custom_guest_low_loyalty_penalty, resolve_guest_combat_stats
 from guests.models import Guest, Skill, SkillKind
 
 from ..active_config import ACTIVE_OPTION_KEYS
@@ -208,6 +208,7 @@ def build_guest_combatants(
 
     for guest in guests[:use_limit]:
         stats = resolve_guest_combat_stats(guest)
+        attributes, battle_attack, battle_defense = apply_custom_guest_low_loyalty_penalty(guest, stats)
 
         bonuses = stat_bonuses or {}
         attack_mult = 1.0 + bonuses.get("attack", 0)
@@ -215,8 +216,8 @@ def build_guest_combatants(
         hp_mult = 1.0 + bonuses.get("hp", 0)
 
         # Keep combat attributes fractional until the damage formula consumes them.
-        attack = min(MAX_STAT_VALUE, stats.attack * attack_mult)
-        defense = min(MAX_STAT_VALUE, stats.defense * defense_mult)
+        attack = min(MAX_STAT_VALUE, battle_attack * attack_mult)
+        defense = min(MAX_STAT_VALUE, battle_defense * defense_mult)
         max_hp = min(MAX_STAT_VALUE, int(stats.max_hp * hp_mult))
 
         if stats.current_hp is not None:
@@ -225,7 +226,7 @@ def build_guest_combatants(
         else:
             hp = max_hp
 
-        agility = getattr(guest, "agility", DEFAULT_GUEST_AGILITY)
+        agility = attributes["agility"]
 
         priority = 0
         team.append(
@@ -249,9 +250,9 @@ def build_guest_combatants(
                 combatant_slot=getattr(guest, "_combatant_slot", None),
                 is_boss=bool(getattr(guest, "_is_boss", False)),
                 skills=serialize_skills(guest, override_skill_keys=override_skill_keys),
-                force_attr=getattr(guest, "force", 100),
-                intellect_attr=getattr(guest, "intellect", 100),
-                defense_attr=getattr(guest, "defense_stat", stats.defense),
+                force_attr=attributes["force"],
+                intellect_attr=attributes["intellect"],
+                defense_attr=attributes["defense_stat"],
                 level=getattr(guest, "level", 1),
                 avatar_url=_resolve_battle_avatar_url(guest),
             )

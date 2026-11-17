@@ -3053,7 +3053,9 @@
 
   /* 集市筛选独立布局，避免表单最小宽度撑开页面。 */
   .tw-market-content,
-  #market-buy-section {
+  .tw-market-content .tw-trade-card,
+  #auction-browse-section,
+  #auction-my-bids-section {
     @apply min-w-0 max-w-full;
   }
 
@@ -3071,11 +3073,14 @@
     min-height: 44px;
   }
 
-  #market-buy-section .tw-shop-table-wrapper {
+  .tw-market-content .tw-shop-table-wrapper,
+  #auction-browse-section .tw-shop-table-wrapper,
+  #auction-my-bids-section .tw-shop-table-wrapper {
     @apply min-w-0 max-w-full;
   }
 
-  #market-buy-section .tw-pagination {
+  .tw-market-content .tw-pagination,
+  #auction-browse-section .tw-pagination {
     @apply flex-wrap gap-2;
   }
 
@@ -3308,6 +3313,17 @@
 
   .tw-listing-item-info .tw-item-name {
     @apply text-base font-bold;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .tw-listing-item-card .tw-item-cell,
+  .tw-listing-item-info {
+    min-width: 0;
+  }
+
+  .tw-listing-item-card .tw-item-icon {
+    flex-shrink: 0;
   }
 
   .tw-listing-item-stock {
@@ -3369,6 +3385,11 @@
   .tw-listing-duration-card input:checked + .tw-listing-duration-content {
     border-color: var(--accent-gold);
     background: rgba(218, 165, 32, 0.1);
+  }
+
+  .tw-listing-duration-card input:focus-visible + .tw-listing-duration-content {
+    outline: 2px solid var(--accent-gold);
+    outline-offset: 2px;
   }
 
   .tw-listing-duration-card:hover .tw-listing-duration-content {
@@ -4346,6 +4367,68 @@
     width: auto;
     min-height: 36px;
     justify-self: start;
+  }
+
+  /* 集市和拍卖的字段各不相同，手机卡片使用表格对应的标签。 */
+  :is(#market-sell-section, #market-my-section, #auction-browse-section, #auction-my-bids-section) .tw-shop-table-wrapper {
+    min-height: 0;
+  }
+
+  :is(#market-sell-section, #market-my-section, #auction-browse-section, #auction-my-bids-section) tbody tr {
+    min-width: 0;
+  }
+
+  :is(#market-sell-section, #market-my-section, #auction-browse-section, #auction-my-bids-section) tbody td[data-label] {
+    display: grid;
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    gap: 0.5rem;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  :is(#market-sell-section, #market-my-section, #auction-browse-section, #auction-my-bids-section) tbody td[data-label]::before {
+    content: attr(data-label);
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  :is(#market-sell-section, #market-my-section, #auction-browse-section, #auction-my-bids-section) .tw-item-cell,
+  :is(#market-sell-section, #market-my-section, #auction-browse-section, #auction-my-bids-section) .tw-item-name {
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  #auction-browse-section .tw-filter-form {
+    flex-wrap: wrap;
+    max-width: 100%;
+    gap: 0.5rem;
+  }
+
+  #auction-browse-section .tw-filter-form label {
+    margin-left: 0;
+  }
+
+  #market-my-section .tw-mode-switch {
+    flex-wrap: wrap;
+  }
+
+  .tw-listing-dialog .tw-modal-close,
+  .tw-listing-dialog .tw-modal-footer button,
+  .tw-listing-dialog input[type="number"] {
+    min-height: 44px;
+  }
+
+  .tw-listing-dialog .tw-modal-close {
+    min-width: 44px;
+  }
+
+  .tw-listing-total-row,
+  .tw-listing-summary-row {
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    overflow-wrap: anywhere;
   }
 
   .tw-bid-kpi-grid {

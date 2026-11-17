@@ -13,6 +13,11 @@ from tests.test_season_resource_integration import resource_campaign as _resourc
 pytestmark = pytest.mark.django_db
 
 
+@pytest.fixture
+def resource_campaign(request):
+    return request.getfixturevalue("_resource_campaign")
+
+
 def station(world, *, seconds=3600, status="stationed", carried=0, local=0, cavalry=False):
     season, player, clock = world
     member, _ = player()

@@ -112,6 +112,11 @@ def battle_merit_shares(
     scores = {run.pk: {"damage": Fraction(0), "tank": Fraction(0), "support": Fraction(0)} for run in runs}
     guest_owner = {gid: run.pk for run in runs for gid in run.result.get("coalition_guest_ids", run.guest_ids)}
     fronts = {run.pk: sum(run.result.get("coalition_front_troops", run.troops).values()) for run in runs}
+    # 单队战报保存的是战斗开始时实际上场的兵力；run.troops 已扣除本场战损。
+    # 多队战斗仍使用各队的前线快照，不能将整边兵力重复分配给每队。
+    reported_front = getattr(report, f"{side}_troops", None)
+    if len(runs) == 1 and isinstance(reported_front, dict):
+        fronts[runs[0].pk] = sum(reported_front.values())
     total_front = sum(fronts.values())
 
     def add(metric: str, guest_id: Any, amount: int, *, troop: bool = False) -> None:

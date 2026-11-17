@@ -113,8 +113,8 @@ def snapshot_npc_encounter(season: Any, node_key: str, kind: str) -> dict[str, A
         for rarity in rarities
         for key in snapshot["pools"][rarity]
     ):
-        raise GameError("赛季 NPC 门客模板未加载或品质不匹配，请联系管理员")
+        raise GameError("赛季中立守军门客模板未加载或品质不匹配，请联系管理员")
     skills = {skill for row in rows for group in row.get("skill_sets", [row["skills"]]) for skill in group}
     if skills != set(Skill.objects.filter(key__in=skills).values_list("key", flat=True)):
-        raise GameError("赛季 NPC 技能未加载，请联系管理员")
+        raise GameError("赛季中立守军技能未加载，请联系管理员")
     return snapshot

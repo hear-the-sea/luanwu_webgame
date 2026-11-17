@@ -13,6 +13,7 @@ from core.exceptions import GuestAlreadyOwnedError, GuestCapacityFullError, Insu
 from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.inventory.use import use_inventory_item
 from guests.models import Guest, GuestTemplate, WorldUniqueGuest
+from tests.test_player_facing_copy import WUHU_CHEST_DESCRIPTION
 
 rules = import_module("gameplay.migrations.0221_chiyou_rewards_and_unique_guests")
 equipment_rules = import_module("gameplay.migrations.0222_zhaoyun_equipment_rewards")
@@ -51,6 +52,8 @@ def test_reward_migration_freezes_current_equipment_and_recipe():
                 **final_defaults["effect_payload"],
                 **armor_luck_rules.EQUIPMENT_PAYLOAD_OVERRIDES[key],
             }
+        if key == "mission_chest_v3_zhanlong_wuhu_shizhen":
+            final_defaults["description"] = WUHU_CHEST_DESCRIPTION
         assert final_defaults == expected
     recipes = yaml.safe_load((DATA / "forge_blueprints.yaml").read_text())["recipes"]
     assert rules.ARMOR_RECIPE == next(row for row in recipes if row["blueprint_key"] == "blueprint_chiyoujia")

@@ -13,7 +13,7 @@
         <div class="season-command-meta">{% if season %}<span>第 <b>{{ season_state.day }}</b> / {{ campaign.duration_days }} 天</span><small>{{ season_state.phase }} · 剩余 {{ season_state.days_left }} 天</small>{% else %}<span>赛季筹备中</span>{% endif %}<button type="button" class="season-plain-button" data-guild-modal-open="season-overview">战局详情</button></div>
     </header>
     {% if season_winner_label %}<p class="season-notice" data-season-winner>本季结局：{{ season_winner_label }}{% if season.winner %}获胜{% endif %}。历史奖励仍可领取。</p>{% endif %}
-    {% if previous_season_reward %}<p class="season-notice" data-previous-season-reward>上季「{{ previous_season_reward.season_name }}」有{{ previous_season_reward.kind }}{% if previous_season_reward.kind == '人物卷轴' %}待使用{% else %}待领取{% endif %}。 <a href="{{ previous_season_reward.url }}">查看上季奖励 ›</a></p>{% endif %}
+    {% if previous_season_reward %}<p class="season-notice" data-previous-season-reward>往季「{{ previous_season_reward.season_name }}」有{{ previous_season_reward.kind }}{% if previous_season_reward.kind == '人物卷轴' %}待使用{% else %}待领取{% endif %}。 <a href="{{ previous_season_reward.url }}">查看往季奖励 ›</a></p>{% endif %}
     {% if season and not member and season_state.combat_open %}
     <section class="season-enlist"><div><h2>声望分组，同赴阵营征途</h2><p>前 {{ campaign.registration.days }} 天集中报名并冻结报名声望，首批报名者中声望前两名分属双方。分组前可探索和收集，阵营攻守、驻军与运输在分组后开放；后续报名按综合实力补位。</p></div><button type="button" class="season-button season-button--primary" data-guild-modal-open="season-join" aria-haspopup="dialog">报名本赛季</button></section>
     {% elif member and not member.faction %}<p class="season-notice">已报名，声望快照 {{ member.prestige_snapshot }}。统一分组时间：{{ registration_ends_at|date:'m月d日 H:i' }}，分组前可先探索或讨伐，产出暂存，分组后转入阵营。</p>
@@ -52,7 +52,7 @@
         <p>每季 {{ campaign.duration_days }} 天，前 {{ campaign.registration.days }} 天集中报名，按声望、近期有效参与及可出战门客实力平衡分组，兼顾上线时段。已有门客不受阵营限制；每次出征重新选择空闲门客，无固定赛季阵容。{% if guest_daily_limit %}每名门客每天最多 {{ guest_daily_limit }} 次赛季出征，各行动共享额度；一轮车轮战只计一次。{% endif %}</p>
         <p>门客使用真实血量并受伤、重伤，按个人任务规则治疗与恢复。护院由阵营后勤生产，出征实际占用公共兵库，阵亡消耗、幸存者返程归还，不消耗庄园护院。</p>
         <p>每人最多同时派遣 {{ max_expeditions }} 支队伍，每日领兵额度 {{ daily_troop_quota }} 人；单队仍受所选门客的带兵能力限制。派遣包含行军、执行与返程，驻防队离线也会迎战，召回保留已发生战损。</p>
-        <p>PVE、运输、攻城及成功防守累积阵营建设值，达到门槛后自动提升后勤、募训及科技，不消耗公共资源，也不受赛季天数限制。青石关日常争夺，河口古城{{ siege_schedule_label }}；驻防、运输与拦截都使用实际派出队伍。{% if coalition.enabled %}{% if simplification.enabled %}集结攻城一次推进清军、拆城与占领，每波双方各最多{% else %}攻坚和破城需同阵营集结，每波双方各最多{% endif %} {{ coalition.max_members }} 位玩家，每人最多 {{ coalition.commander_guest_limit }} 名门客；守方按攻方人数抽选，未选驻军待命。攻方获胜后带剩余血量和兵力进入下一波，不自动补满。{% endif %}</p>
+        <p>讨伐、运输、攻城及成功防守累积阵营建设值，达到门槛后自动提升后勤、募训及科技，不消耗公共资源，也不受赛季天数限制。青石关日常争夺，河口古城{{ siege_schedule_label }}；驻防、运输与拦截都使用实际派出队伍。{% if coalition.enabled %}{% if simplification.enabled %}集结攻城一次推进清军、拆城与占领，每波双方各最多{% else %}攻坚和破城需同阵营集结，每波双方各最多{% endif %} {{ coalition.max_members }} 位玩家，每人最多 {{ coalition.commander_guest_limit }} 名门客；守方按攻方人数抽选，未选驻军待命。攻方获胜后带剩余血量和兵力进入下一波，不自动补满。{% endif %}</p>
         <p>个人贡献解锁里程碑并参与阵营内排名；{% if playability.enabled %}当周据点战果决定周胜点，赛季累计周胜点决定胜负；{% else %}据点战果决定阵营胜负，{% endif %}获胜阵营的达标成员额外获得奖励。赛季结束后排名奖励固化，历史奖励仍可领取。</p>
         <p>排名奖励参与门槛：{{ rank_minimum_merit }} 贡献。{% for tier in ranking_reward_options %}{{ tier.name }}：{{ tier.description }}；{% endfor %}胜方达标成员额外获得：{{ winner_reward_description }}。</p>
     </div></details>

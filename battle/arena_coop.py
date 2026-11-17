@@ -25,30 +25,30 @@ ARENA_COOP_GUARD_TEMPLATE_KEYS = {
 ARENA_COOP_ENEMY_FINAL_STATS: dict[str, dict[str, int]] = {
     ARENA_COOP_BOSS_TEMPLATE_KEY: {
         "level": 85,
-        "force": 1300,
+        "force": 1339,
         "intellect": 950,
-        "defense_stat": 650,
+        "defense_stat": 670,
         "agility": 300,
         "luck": 160,
-        "final_hp": 200000,
+        "final_hp": 220000,
     },
     ARENA_COOP_YANG_XIAO_TEMPLATE_KEY: {
         "level": 85,
-        "force": 950,
+        "force": 979,
         "intellect": 720,
-        "defense_stat": 520,
+        "defense_stat": 536,
         "agility": 240,
         "luck": 115,
-        "final_hp": 150000,
+        "final_hp": 165000,
     },
     ARENA_COOP_WEI_YIXIAO_TEMPLATE_KEY: {
         "level": 85,
-        "force": 880,
+        "force": 906,
         "intellect": 530,
-        "defense_stat": 470,
+        "defense_stat": 484,
         "agility": 310,
         "luck": 130,
-        "final_hp": 150000,
+        "final_hp": 165000,
     },
     ARENA_COOP_FIVE_FLAGS_FRONT_TEMPLATE_KEY: {
         "level": 85,
@@ -193,9 +193,9 @@ def _resolve_boss_phase(boss: Any) -> int:
     if getattr(boss, "max_hp", 0) <= 0:
         return 1
     ratio = float(getattr(boss, "hp", 0) or 0) / float(getattr(boss, "max_hp", 1) or 1)
-    if ratio <= 0.40:
+    if ratio <= 0.45:
         return 3
-    if ratio <= 0.70:
+    if ratio <= 0.75:
         return 2
     return 1
 

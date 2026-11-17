@@ -14,7 +14,8 @@ from core.exceptions import GameError
 from gameplay.models import Manor, SeasonExpedition
 from guests.models import Guest, GuestStatus
 
-from .combat import prepare_combat, simulate_combat
+from .combat import prepare_combat, simulate_combat, snapshot_guest_strength
+from .faction_bonus import battle_hp, real_hp
 from .fatigue import award_fatigue_locked, fatigue_report_effects, fatigue_snapshot
 from .fortifications import tower_state
 from .hitpoints import prepare_gate, settle_gate_locked
@@ -30,7 +31,7 @@ def choose_commander(runs: list[SeasonExpedition], limit: int) -> SeasonExpediti
         defeated = set(run.result.get("defeated_ids", []))
         strengths = sorted(
             (
-                row["attack"] + row["defense"] + row["current_hp"]
+                snapshot_guest_strength(row)
                 for row in run.lineup.get("guests", [])
                 if row.get("current_hp", 0) > 0 and row.get("guest_id") not in defeated
             ),
@@ -78,19 +79,20 @@ def _commander(
             seen.add(guest_id)
             if guest is None or guest.manor_id != run.member.manor_id or guest.status != GuestStatus.DEPLOYED:
                 raise GameError("集结门客归属或出征状态发生变化")
-            hp = min(original["current_hp"], guest.current_hp, original["max_hp"])
+            hp = min(original["current_hp"], battle_hp(original, guest.current_hp), original["max_hp"])
             if hp <= 0 or guest_id in run.result.get("defeated_ids", []):
                 continue
             snapshot = deepcopy(original)
+            snapshot.setdefault("archetype", guest.archetype)
             snapshot["current_hp"] = hp
             snapshots.append(snapshot)
         if seen != set(run.guest_ids):
             raise GameError("集结门客快照与派遣记录不一致")
-        snapshots.sort(key=lambda row: (-(row["attack"] + row["defense"] + row["current_hp"]), row["guest_id"]))
+        snapshots.sort(key=lambda row: (-snapshot_guest_strength(row), row["guest_id"]))
         selected = snapshots[:limit]
         if selected:
             selected_by_run[run.pk] = selected
-            strength = sum(row["attack"] + row["defense"] + row["current_hp"] for row in selected)
+            strength = sum(snapshot_guest_strength(row) for row in selected)
             candidates.append((strength, run, selected))
     if not candidates:
         raise GameError("集结军没有可出战的主将门客")
@@ -166,7 +168,7 @@ def _apply_coalition(
                 defeated.add(guest_id)
             snapshot["current_hp"] = max(1, min(snapshot["max_hp"], hp))
             Guest.objects.filter(pk=guest_id, manor_id=run.member.manor_id).update(
-                current_hp=snapshot["current_hp"], last_hp_recovery_at=now
+                current_hp=real_hp(snapshot, snapshot["current_hp"]), last_hp_recovery_at=now
             )
         own_losses = losses.get(run.pk, {})
         run.troops = {key: amount - own_losses.get(key, 0) for key, amount in run.troops.items()}

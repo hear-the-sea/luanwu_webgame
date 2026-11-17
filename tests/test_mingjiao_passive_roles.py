@@ -51,7 +51,10 @@ def begin_round(boss, team, attacker, round_no, roll):
 
 
 @pytest.mark.parametrize("guards", range(5))
-@pytest.mark.parametrize("hp,rage", [(100000, 1), (70001, 1), (70000, 1.2), (40001, 1.2), (40000, 1.4), (20000, 1.4)])
+@pytest.mark.parametrize(
+    "hp,rage",
+    [(100000, 1), (75001, 1), (75000, 1.25), (45001, 1.25), (45000, 1.5), (20000, 1.5)],
+)
 @pytest.mark.parametrize("roll,active", [(0.1, True), (0.99, False)])
 def test_actual_boss_skills_preserve_phase_damage_and_separate_defense(boss_skills, guards, hp, rage, roll, active):
     boss, team = make_team(boss_skills, hp, guards)
@@ -73,12 +76,12 @@ def test_guard_deaths_and_healing_recalculate_without_leaking_old_buffs(boss_ski
     boss, team = make_team(boss_skills, 40000, 4)
     attacker = _make_guest(name="攻击者", side="attacker", hp=200000)
     begin_round(boss, team, attacker, 1, 0.1)
-    assert adjust_arena_coop_damage(boss, attacker, 10000) == pytest.approx(18480)
+    assert adjust_arena_coop_damage(boss, attacker, 10000) == pytest.approx(19800)
     for guard in team[1:]:
         guard.hp = 0
     boss.hp = 70000
     begin_round(boss, team, attacker, 2, 0.99)
-    assert adjust_arena_coop_damage(boss, attacker, 10000) == pytest.approx(12000)
+    assert adjust_arena_coop_damage(boss, attacker, 10000) == pytest.approx(12500)
     assert adjust_arena_coop_damage(attacker, boss, 32000) == 32000
     assert "reflect_name" not in boss.battle_modifiers
     boss.hp = 100000

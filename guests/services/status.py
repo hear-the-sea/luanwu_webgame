@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from typing import Iterable
 
 from django.db import transaction
+from django.db.models import Exists, OuterRef, Q
 from django.utils import timezone
 
 from ..models import Guest, GuestStatus
@@ -50,6 +51,68 @@ def resolve_guest_activity_status(guest: Guest) -> str:
 class GuestStatusTransition:
     changed: bool
     resumed_training: bool
+
+
+def status_after_injury_recovery(guest: Guest) -> str:
+    """重伤治愈后，仍在出征队伍中的门客继续占用至归队。"""
+    if not guest.pk:
+        return GuestStatus.IDLE
+    from gameplay.models import MissionRun, RaidRun, SeasonExpedition
+
+    raids = RaidRun.objects.filter(
+        attacker_id=OuterRef("manor_id"),
+        guests__pk=OuterRef("pk"),
+        status__in=(
+            RaidRun.Status.MARCHING,
+            RaidRun.Status.BATTLING,
+            RaidRun.Status.RETURNING,
+            RaidRun.Status.RETREATED,
+        ),
+    )
+    missions = MissionRun.objects.filter(
+        manor_id=OuterRef("manor_id"), status=MissionRun.Status.ACTIVE, guests__pk=OuterRef("pk")
+    )
+    expeditions = SeasonExpedition.objects.exclude(status="completed").filter(
+        member__manor_id=OuterRef("manor_id"), guests__pk=OuterRef("pk")
+    )
+    occupied = (
+        Guest.objects.filter(pk=guest.pk)
+        .alias(_active_raid=Exists(raids), _active_mission=Exists(missions), _active_season=Exists(expeditions))
+        .filter(Q(_active_raid=True) | Q(_active_mission=True) | Q(_active_season=True))
+        .exists()
+    )
+    return GuestStatus.DEPLOYED if occupied else GuestStatus.IDLE
+
+
+def active_raid_guest_ids(guest_ids: Iterable[int], *, exclude_run_id: int | None = None) -> set[int]:
+    ids = list(guest_ids)
+    if not ids:
+        return set()
+    from gameplay.models import RaidRun
+
+    runs = RaidRun.objects.filter(
+        status__in=(
+            RaidRun.Status.MARCHING,
+            RaidRun.Status.BATTLING,
+            RaidRun.Status.RETURNING,
+            RaidRun.Status.RETREATED,
+        ),
+        guests__pk__in=ids,
+    )
+    if exclude_run_id is not None:
+        runs = runs.exclude(pk=exclude_run_id)
+    return set(runs.values_list("guests__pk", flat=True))
+
+
+def guests_available_after_raid(guests: Iterable[Guest], *, run_id: int) -> list[Guest]:
+    """旧队伍归队时，不释放仍被其他任务或队伍占用的门客。"""
+    deployed = [guest for guest in guests if guest.status == GuestStatus.DEPLOYED]
+    if not deployed:
+        return []
+    from battle.deployment import collect_active_deployment_guest_ids
+
+    occupied = collect_active_deployment_guest_ids([guest.pk for guest in deployed], exclude_raid_run_id=run_id)
+    return [guest for guest in deployed if guest.pk not in occupied]
 
 
 def _remaining_seconds(training_complete_at: datetime, *, now: datetime) -> int:

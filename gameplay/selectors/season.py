@@ -1221,7 +1221,7 @@ def get_season_context(manor: Any, season_id: int | None = None) -> dict[str, An
         "summon_pick_count": min(season.rules.get("summon_pick_count", 3), len(candidates)) if season else 0,
         "summon_fallback_description": _describe_items(fallback_items, item_names),
         "summon_catalog_ready": bool(season and assigned and has_summon_catalog(faction, rules=season.rules)),
-        "season_history": list(seasons.values("id", "name")[:12]),
+        "season_history": list(seasons.values("id", "name")),
         "season_winner_label": season_winner_label,
         "registration_open": registration_open,
         "registration_ends_at": registration_ends_at,

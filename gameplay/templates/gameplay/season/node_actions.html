@@ -6,7 +6,7 @@
     {% if node.rally_modes %}{% include "gameplay/season/dispatch_form.html" with dispatch_command="rally_create" dispatch_modes=node.rally_modes dispatch_label="发起集结" dispatch_max_guests=rally_guest_limit %}{% endif %}
     {% include "gameplay/season/reservation.html" %}
 {% elif action_kind == 'war' %}
-    {% if node.key == "river:market" and not market_stock.is_owner %}<p class="season-form-caption">占领集市后可查看货品、兑换与调剂。</p>{% endif %}
+    {% if node.key == "river:market" and not market_stock.is_owner %}<p class="season-form-caption">占领集市后可查看轮换货品并享调剂优惠；基础调剂双方均可使用。</p>{% endif %}
     {% include "gameplay/season/site_status.html" %}
     {% if node.rally_modes %}{% include "gameplay/season/node_actions.html" with action_kind='rally' %}
     {% elif node.rallies %}{% include "gameplay/season/node_actions.html" with action_kind='rally' %}

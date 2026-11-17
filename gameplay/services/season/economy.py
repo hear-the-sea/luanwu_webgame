@@ -262,6 +262,7 @@ def grant_pve_locked(
     activity_key: str | None = None,
     event_key: str | None = None,
     material_reward: dict[str, Any] | None = None,
+    merit_at: datetime | None = None,
 ) -> dict[str, Any]:
     from uuid import uuid4
 
@@ -270,7 +271,7 @@ def grant_pve_locked(
     _require_transaction()
     activity = campaign_rules(member.season)["economy"]["pve"].get(node_key)
     if activity is None:
-        raise GameError("该据点没有配置PVE产出")
+        raise GameError("该据点没有配置讨伐产出")
     frozen_merit = (material_reward or {}).get("merit_by_node", {}).get(node_key, {})
     merit = (
         frozen_merit.get("success", activity["merit"])
@@ -312,7 +313,12 @@ def grant_pve_locked(
             material_efficiency = Fraction(accepted, expected) if expected else Fraction(0)
             merit = int(Fraction(merit * accepted, expected)) if expected else 0
     receipt = grant_merit_locked(
-        member, merit, "logistics", now, event_key=event_key or str(uuid4()), reason="讨伐胜利" if won else "讨伐参与"
+        member,
+        merit,
+        "logistics",
+        merit_at or now,
+        event_key=event_key or str(uuid4()),
+        reason="讨伐胜利" if won else "讨伐参与",
     )
     if receipt["duplicate"]:
         return {**receipt, "resources": {}, "message": "该讨伐已结算"}

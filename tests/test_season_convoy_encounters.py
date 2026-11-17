@@ -18,6 +18,11 @@ from tests.test_season_resource_integration import resource_campaign as _resourc
 pytestmark = pytest.mark.django_db
 
 
+@pytest.fixture
+def resource_campaign(request):
+    return request.getfixturevalue("_resource_campaign")
+
+
 def player(world, faction, *, weak=False):
     _, make, _ = world
     member, guest = make(faction)
