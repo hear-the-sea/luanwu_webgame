@@ -13,7 +13,7 @@
 <section class="season-duty-board" aria-label="五类军务分工">
     <article><span>探</span><h3>探索情报</h3><p>发现限时情报与物资营地；有效期内阵营共享，下次本区讨伐有物资加成。</p><small>每日最多2次有效发现 · 重复不领奖</small></article>
     <article><span>剿</span><h3>资源收集</h3><p>按粮草、木材或铁矿需求清剿营地，为公共生产与战备提供资源。</p><small>单人可做 · 真实伤势与战损</small></article>
-    <article><span>夺</span><h3>{% if simplification.enabled %}集结攻城{% else %}攻坚与破城{% endif %}</h3><p>{% if simplification.enabled %}最多5人，等待最多30分钟，一次集结自动清军、拆城并占领；每人最多3门客。{% else %}5人集结、整波车轮战；清理驻军后拆城，参与者共享本轮占领奖励。{% endif %}</p><small>功勋按输出、承伤和有效治疗分配</small></article>
+    <article><span>夺</span><h3>{% if simplification.enabled %}集结攻城{% else %}攻坚与破城{% endif %}</h3><p>{% if simplification.enabled %}最多{{ coalition.max_members }}人，等待最多{{ rally_wait_label }}，一次集结自动清军、拆城并占领；每人最多{{ coalition.commander_guest_limit }}名门客。{% else %}{{ coalition.max_members }}人集结、整波车轮战；清理驻军后拆城，参与者共享本轮占领奖励。{% endif %}</p><small>功勋按输出、承伤和有效治疗分配</small></article>
     <article><span>运</span><h3>运输战备</h3><p>将已有物资送入己方城内，维持驻军与维修；{% if resource_economy.enabled %}按实际需求装载，无需求不消耗公共资源{% else %}无人战争时可接驿站订单{% endif %}。</p><small>按实际送达结算 · 不凭空倍增物资</small></article>
     <article><span>截</span><h3>截断粮道</h3><p>选择真实敌方运输队，获胜掠走部分货物；{% if simplification.enabled %}没有敌方运输时无需拦截，可先讨伐物资。{% else %}中立辎重明确作为讨伐任务。{% endif %}</p><small>{% if convoy_encounters_enabled %}窗口末双方最多各5人合并交战 · 全车最多损失30%{% else %}每趟运输最多被拦截一次{% endif %}</small></article>
 </section>

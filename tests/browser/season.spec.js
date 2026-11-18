@@ -125,7 +125,7 @@ test("三图直接开放与局部导航返回后仍可操作", async ({ page }) 
   await expect(dialog).not.toContainText("第 36 天开放");
   await expect(dialog).toContainText("嗜血铁骑");
   await expect(dialog).toContainText("尚无阵营占领");
-  await expect(dialog.locator('select[name="mode"] option')).toHaveText(["集结攻坚"]);
+  await expect(dialog.locator('form:has(input[name="action"][value="rally_create"]) select[name="mode"] option')).toHaveText(["集结攻坚"]);
   await expect(dialog.locator('form[action]')).not.toHaveCount(0);
   await page.keyboard.press("Escape");
   await page.evaluate(html => {
@@ -222,7 +222,7 @@ test("特殊营寨展示产出归属，失守后仍可领取已有铁骑", async
   await expect(camp).toContainText("默认满科技");
   await expect(camp).toContainText("默认满科技");
   await expect(camp.locator('input[name="troop_bloodthirsty_cavalry"]')).toHaveAttribute("max", "35");
-  await expect(camp.locator('select[name="mode"] option')).toHaveText(["集结攻坚"]);
+  await expect(camp.locator('form:has(input[name="action"][value="rally_create"]) select[name="mode"] option')).toHaveText(["集结攻坚"]);
   await page.keyboard.press("Escape");
   await page.locator('[data-season-building="forest:camp"]').scrollIntoViewIfNeeded();
   await expect(page.locator('[data-season-building="forest:camp"] .season-site-owner')).toBeVisible();
@@ -418,7 +418,7 @@ test("精简版攻城只留一个入口，仓库接订单、集市调剂公共�
   const docks = page.getByRole("dialog", { name: "渡口码头", exact: true });
   await expect(docks.locator('input[name="action"][value="rally_create"]')).toHaveCount(1);
   await docks.locator('[data-season-pane-tab="rally"]').click();
-  await expect(docks.locator('option[value="siege"]')).toHaveText("集结攻城");
+  await expect(docks.locator('form:has(input[name="action"][value="rally_create"]) option[value="siege"]')).toHaveText("集结攻城");
   await expect(docks.locator('option[value="attack"],option[value="npc_intercept"],option[value="transport"]')).toHaveCount(0);
   await expect(docks).toContainText("人满即出发");
   await page.keyboard.press("Escape");
@@ -688,7 +688,7 @@ test("战利品展示实际道具图，人物卡与资源图标可辨识", async
   await openSeason(page, "simple");
   await page.getByRole("button", { name: "赛季奖励", exact: true }).click();
   const rewards = page.getByRole("dialog", { name: "赛季奖励 · 功勋里程碑" });
-  await expect(rewards.locator(".season-loot-card")).toHaveCount(4);
+  await expect(rewards.locator(".season-loot-card")).toHaveCount(8);
   const item = rewards.locator(".season-item-picture img").first();
   await expect.poll(() => item.evaluate(image => image.naturalWidth)).toBeGreaterThan(0);
   await expect(rewards.locator(".season-loot-card").first().getByRole("button", { name: "领取", exact: true })).toBeEnabled();

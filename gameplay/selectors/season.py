@@ -12,6 +12,7 @@ from typing import Any
 from uuid import uuid4
 
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Count, Prefetch
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -24,12 +25,14 @@ from gameplay.models.season import SeasonExpedition, SeasonFaction
 from gameplay.services.season.campaign_rules import DEFAULT_AUTO_DEVELOPMENT, campaign_rules, coalition_rules
 from gameplay.services.season.catalog import (
     available_summon_templates,
+    faction_template_keys,
     has_summon_catalog,
     reward_catalog,
     shop_catalog,
 )
 from gameplay.services.season.contests import victory_contested_days
 from gameplay.services.season.development_rules import feature_rules
+from gameplay.services.season.faction_bonus import source_key
 from gameplay.services.season.fortifications import fortification_rules, needs_repair, tower_state
 from gameplay.services.season.garrison_merit import garrison_merit_preview
 from gameplay.services.season.market import market_offers, market_return_percent
@@ -580,7 +583,12 @@ def get_season_context(manor: Any, season_id: int | None = None) -> dict[str, An
                 if coalition["enabled"] and not attack_busy and mode in {"attack", "siege"}
             ]
             node["personal_modes"] = [
-                row for row in node["modes"] if not coalition["enabled"] or row["key"] not in {"attack", "siege"}
+                (
+                    {**row, "name": "单人攻坚" if row["key"] == "attack" else "单人破城"}
+                    if coalition["enabled"] and row["key"] in {"attack", "siege"}
+                    else row
+                )
+                for row in node["modes"]
             ]
             if coalition["enabled"]:
                 node["personal_modes"] = [
@@ -730,6 +738,13 @@ def get_season_context(manor: Any, season_id: int | None = None) -> dict[str, An
     ]
     guest_daily_limit = expedition_rules.get("guest_daily_limit", 0)
     guest_uses = guest_dispatch_counts(season, timezone.localdate(now)) if season and guest_daily_limit else {}
+    faction_keys: frozenset[str] = frozenset()
+    if season and member and member.faction:
+        try:
+            faction_keys = faction_template_keys(member.faction, rules=season.rules)
+        except (ImproperlyConfigured, ValueError):
+            # 旧赛季快照缺少 roster 时只是不显示加成标记，不应阻断赛季页。
+            faction_keys = frozenset()
     guests = []
     for guest in Guest.objects.filter(manor=manor, status=GuestStatus.IDLE).select_related("template").order_by("id"):
         stats = resolve_guest_combat_stats(guest)
@@ -744,6 +759,7 @@ def get_season_context(manor: Any, season_id: int | None = None) -> dict[str, An
                 "hp": guest.current_hp,
                 "max_hp": stats.max_hp,
                 "capacity": stats.troop_capacity,
+                "faction_bonus": bool(faction_keys and source_key(guest.template) in faction_keys),
                 "dispatches_remaining": (
                     max(0, guest_daily_limit - guest_uses.get(guest.pk, 0)) if guest_daily_limit else None
                 ),
@@ -1013,17 +1029,20 @@ def get_season_context(manor: Any, season_id: int | None = None) -> dict[str, An
     if season and victory_min_days:
         victory_days.update(victory_contested_days(season))
     victory_qualified = not victory_min_days or all(days >= victory_min_days for days in victory_days.values())
+    victory_dominance = False
     frozen_victory = season.population.get("victory_result") if season and season.closed else None
     if isinstance(frozen_victory, dict) and isinstance(frozen_victory.get("qualified"), bool):
         victory_qualified = frozen_victory["qualified"]
+        victory_dominance = bool(frozen_victory.get("dominance"))
         victory_days.update(frozen_victory.get("days", {}))
     season_winner_label = ""
     if season and season.closed:
-        season_winner_label = (
-            FACTION_NAMES.get(season.winner, "")
-            if season.winner
-            else "双方战平" if victory_qualified else "有效对抗不足，未产生胜方"
-        )
+        if season.winner:
+            season_winner_label = FACTION_NAMES.get(season.winner, "")
+            if victory_dominance:
+                season_winner_label += "（开拓）"
+        else:
+            season_winner_label = "双方战平" if victory_qualified else "有效对抗不足，未产生胜方"
     focus = recommended_focus(season, now) if season else {}
     guidance = campaign_guidance(
         [node for region in maps for node in region["nodes"]],
@@ -1096,7 +1115,7 @@ def get_season_context(manor: Any, season_id: int | None = None) -> dict[str, An
             book = faction_row.economy_state.get("weekly_campaign", {}) if faction_row else {}
             faction_entry["weekly_score"] = int(
                 book.get("weeks", {}).get(str(weekly_current_number), {}).get("score", 0)
-            )
+            ) + int(book.get("weeks", {}).get(str(weekly_current_number), {}).get("battle_score", 0))
     ranking_options = []
     for tier in campaign["rewards"]["tiers"]:
         amounts = dict(tier["items"])
@@ -1186,6 +1205,7 @@ def get_season_context(manor: Any, season_id: int | None = None) -> dict[str, An
         "recommended_focus": focus,
         "victory_min_days": victory_min_days,
         "victory_days": victory_days,
+        "victory_dominance": victory_dominance,
         "merit_summary": summary,
         "intel_records": intels,
         "manor": manor,
@@ -1199,6 +1219,7 @@ def get_season_context(manor: Any, season_id: int | None = None) -> dict[str, An
         # Django模板每次解析可调用变量都会调用它；各表单独立凭证，无需浏览器安全上下文。
         "action_token": uuid4,
         "guests": guests,
+        "faction_bonus_count": sum(1 for row in guests if row.get("faction_bonus")),
         "available_dispatch_guests": available_dispatch_guests,
         "guest_daily_limit": guest_daily_limit,
         "max_guests": (
@@ -1287,5 +1308,7 @@ def get_season_context(manor: Any, season_id: int | None = None) -> dict[str, An
         "final_tier_label": member.final_reward.get("tier_name", "") if member else "",
         "ranking_reward_options": ranking_options,
         "rank_minimum_merit": campaign["rewards"]["minimum_merit"],
-        "winner_reward_description": _describe_items(campaign["rewards"]["winner_items"], item_names),
+        "winner_reward_description": (
+            "" if victory_dominance else _describe_items(campaign["rewards"]["winner_items"], item_names)
+        ),
     }

@@ -229,7 +229,7 @@ def test_new_coalitions_are_enabled_and_old_snapshots_remain_disabled():
 def test_rally_defaults_allow_solo_timeout_and_cap_waves_at_five_players_per_side():
     rules = load_campaign_rules()
     coalition = coalition_rules()
-    assert coalition["rally_seconds"] == 1800
+    assert coalition["rally_seconds"] == 900
     assert coalition["min_members"] == 1
     assert coalition["max_members"] == 5
     assert coalition["commander_guest_limit"] == 3

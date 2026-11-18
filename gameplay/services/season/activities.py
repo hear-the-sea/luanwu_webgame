@@ -276,8 +276,11 @@ def settle_transport_locked(run: Any, now: datetime) -> dict[str, Any]:
     run.cargo = {}
     run.result = {**run.result, "delivered_resources": delivered}
     run.save(update_fields=["cargo", "result"])
+    merit = int(config["merit"] * fraction * (config["frontline_merit_percent"] / 100 if target_key else 1))
+    if delivered and sum(delivered.values()) > 0:
+        merit = max(1, merit)
     return {
-        "merit": int(config["merit"] * fraction * (config["frontline_merit_percent"] / 100 if target_key else 1)),
+        "merit": merit,
         "construction": int(config["construction"] * fraction),
         "resources": delivered,
         "message": "补给已实际送达"

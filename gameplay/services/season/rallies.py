@@ -311,6 +311,7 @@ def _record_participants(
     *,
     defending: bool,
     opponents: list[SeasonExpedition] | None = None,
+    wave: int = 1,
 ) -> None:
     from .expeditions import _record_combat
 
@@ -327,13 +328,14 @@ def _record_participants(
         merit = (
             exp["defend_merit"]
             if defending and won
-            else 0 if defending else exp["attack_merit" if won else "failure_merit"]
+            else exp["failure_merit"] if defending else exp["attack_merit" if won else "failure_merit"]
         )
-        activity = ("defense_win" if won else None) if defending else ("attack_win" if won else "attack_loss")
+        activity = ("defense_win" if won else "defense_loss") if defending else ("attack_win" if won else "attack_loss")
+        battle_key = ("defense_win" if won else "defense_loss") if defending else activity
+        effective = True
         if enhanced:
-            merit = shares[run.pk]["merit"]
-            if not shares[run.pk]["effective"]:
-                activity = None
+            merit = max(merit, shares[run.pk]["merit"])
+            effective = shares[run.pk]["effective"]
         _record_combat(
             run.member,
             run,
@@ -341,9 +343,12 @@ def _record_participants(
             merit,
             now,
             "联合驻防交战" if defending else "集结军车轮战",
-            activity_key=activity,
+            # 建设值与周战果每趟集结只记一次，避免单人车轮战按波重复刷取。
+            activity_key=activity if wave <= 1 else None,
+            battle_key=battle_key if wave <= 1 else None,
             opponent=opponents[0].member if opponents else None,
             metrics=shares[run.pk]["metrics"] if enhanced else {},
+            effective=effective,
         )
         if defending:
             # 只有实际交战成功提交的守军才更新轮换顺序。
@@ -493,9 +498,11 @@ def _wave_locked(rally: SeasonRally, now: datetime) -> None:
             site=site,
         )
         won = report.winner == "attacker"
-        _record_participants(active, report, won, now, defending=False, opponents=defending)
+        _record_participants(active, report, won, now, defending=False, opponents=defending, wave=wave)
         if defending:
-            _record_participants(defending, report, report.winner == "defender", now, defending=True, opponents=active)
+            _record_participants(
+                defending, report, report.winner == "defender", now, defending=True, opponents=active, wave=wave
+            )
             for run in defending:
                 if won or not alive_guests(run, config["commander_guest_limit"]):
                     _start_return(run, now, "本波守军败退，保留实际战损返程")

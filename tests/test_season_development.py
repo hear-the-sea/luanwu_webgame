@@ -205,7 +205,7 @@ def test_transport_moves_real_cargo_into_owned_site_without_multiplication(devel
     site.refresh_from_db()
     assert site.supplies == {"grain": 300, "wood": 150, "iron": 100}
     member.refresh_from_db()
-    assert member.merit == 90
+    assert member.merit == 50
     assert run.cargo == {} and run.status == "returning"
     before_stock = deepcopy(site.supplies)
     advance(run, clock)

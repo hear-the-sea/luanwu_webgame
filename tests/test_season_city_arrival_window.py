@@ -41,7 +41,7 @@ def create(member, guests, target_members):
 
 def test_sunday_late_rally_rejects_wait_that_crosses_closing_and_rolls_back(rally_world, monkeypatch):
     season, player, clock = rally_world
-    sunday_at(clock, 23, 20)
+    sunday_at(clock, 23, 40)
     monkeypatch.setattr("gameplay.services.season.expeditions.travel_time_seconds", lambda *args: 900)
     member, guests = player()
     stock = deepcopy(season.faction_states.get(faction=member.faction).troops)
@@ -77,7 +77,7 @@ def test_city_arrival_immediately_before_or_at_monday_boundary(rally_world, monk
 @pytest.mark.parametrize("target_members", [2, 3])
 def test_join_city_rally_uses_immediate_departure_only_if_join_fills_target(rally_world, monkeypatch, target_members):
     season, player, clock = rally_world
-    sunday_at(clock, 23, 20)
+    sunday_at(clock, 23, 25)
     monkeypatch.setattr("gameplay.services.season.expeditions.travel_time_seconds", lambda *args: 60)
     leader, guests = player()
     result = create(leader, guests, target_members)
@@ -184,6 +184,9 @@ def test_old_gathering_plan_that_would_arrive_monday_is_not_grandfathered(rally_
     member, guests = player()
     result = create(member, guests, target_members=5)
     run = SeasonExpedition.objects.get(pk=result["run_id"])
+    rally = SeasonRally.objects.get(pk=result["rally_id"])
+    rally.gathers_until = clock[0] + timedelta(minutes=30)  # 旧版 30 分钟集结窗口。
+    rally.save(update_fields=["gathers_until"])
     run.travel_seconds = 1200  # 模拟更新前曾允许加入慢队员的旧集结。
     run.save(update_fields=["travel_seconds"])
     clock[0] += timedelta(minutes=45)

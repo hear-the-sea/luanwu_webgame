@@ -134,3 +134,31 @@ def test_closed_result_freezes_qualification_and_display(scoreboard):
     context = get_season_context(members["fiction"].manor, season.pk)
     assert context["victory_days"] == {"fiction": 3, "history": 3}
     assert context["season_winner_label"] != "有效对抗不足，未产生胜方"
+
+
+def test_real_combat_records_weekly_battle_score(rally_world):
+    from gameplay.models import SeasonExpedition
+    from gameplay.services.season.expeditions import process_expedition
+    from gameplay.services.season.weekly_campaign import week_number
+
+    season, player, clock = rally_world
+    season.rules["campaign"]["playability"] = {
+        "enabled": True,
+        "weekly": {"battle_points": {"attack_win": 8, "attack_loss": 2}, "frontier_points": 3},
+    }
+    season.save(update_fields=["rules"])
+    site = season.sites.get(key="mountain:gate")
+    site.owner = "history"
+    site.save(update_fields=["owner"])
+    defender, guests = player("history", force=1000, agility=1000)
+    defense = command(defender, "dispatch", army_payload(guests, mode="garrison", troops=0))
+    guard = SeasonExpedition.objects.get(pk=defense["run_id"])
+    assert process_expedition(guard.pk, guard.due_at)
+    clock[0] = guard.due_at
+    attacker, guests = player(force=1, hp=1)
+    rally, run = create_rally(attacker, guests, troops=0)
+    launch(rally, run)
+    assert process_expedition(run.pk, rally.due_at)
+    state = season.faction_states.get(faction="fiction")
+    row = state.economy_state["weekly_campaign"]["weeks"][str(week_number(season, clock[0]))]
+    assert row["battle_score"] > 0

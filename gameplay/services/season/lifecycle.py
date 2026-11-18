@@ -123,16 +123,52 @@ def settle_season(season_id: int, now: datetime | None = None) -> dict[str, int]
                     if season.fiction_score > season.history_score
                     else "history" if season.history_score > season.fiction_score else ""
                 )
+                weekly_points: dict[str, int] = {}
                 if weekly:
-                    points = weekly_victory_scores(season)
-                    fiction, history = points.get("fiction", 0), points.get("history", 0)
+                    weekly_points = weekly_victory_scores(season)
+                    fiction, history = weekly_points.get("fiction", 0), weekly_points.get("history", 0)
                     season.winner = "fiction" if fiction > history else "history" if history > fiction else ""
+                victory_days = victory_contested_days(season)
                 qualified = victory_qualified(season)
+                dominance = False
+                campaign_config = season.rules.get("campaign")
+                playability_config = campaign_config.get("playability") if isinstance(campaign_config, dict) else None
+                raw_weekly = playability_config.get("weekly") if isinstance(playability_config, dict) else {}
+                dominance_allowed = isinstance(raw_weekly, dict) and (
+                    "frontier_points" in raw_weekly or "battle_points" in raw_weekly
+                )
+                if not qualified and dominance_allowed:
+                    counts = {
+                        faction: int(season.population.get("factions", {}).get(faction, {}).get("count", 0))
+                        for faction in ("fiction", "history")
+                    }
+                    active = [faction for faction, count in counts.items() if count > 0]
+                    inactive = [faction for faction, count in counts.items() if count == 0]
+                    if len(active) == 1 and len(inactive) == 1:
+                        active_faction = active[0]
+                        active_points = (
+                            weekly_points.get(active_faction, 0)
+                            if weekly
+                            else season.fiction_score if active_faction == "fiction" else season.history_score
+                        )
+                        opponent_points = (
+                            weekly_points.get(inactive[0], 0)
+                            if weekly
+                            else season.fiction_score if inactive[0] == "fiction" else season.history_score
+                        )
+                        if active_points > 0 and active_points >= opponent_points:
+                            # 对手长期无人时不再让整个赛季无人获胜；保留“有效对抗”语义但标记为开拓胜利。
+                            qualified = True
+                            dominance = True
+                            season.winner = active_faction
                 if not qualified:
                     season.winner = ""
+                victory_result = {"qualified": qualified, "days": victory_days}
+                if dominance:
+                    victory_result["dominance"] = True
                 season.population = {
                     **season.population,
-                    "victory_result": {"qualified": qualified, "days": victory_contested_days(season)},
+                    "victory_result": victory_result,
                 }
                 season.save(update_fields=["closed", "winner", "population"])
                 freeze_rankings_locked(season)

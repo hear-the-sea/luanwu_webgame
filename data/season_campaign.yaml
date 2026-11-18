@@ -58,8 +58,8 @@ registration:
   days: 3
 coalition:
   enabled: true
-  # 满5名玩家提前出发，未满也在30分钟后按实际人数出发。
-  rally_seconds: 1800
+  # 默认1人立即出发；选择多人时满员提前出发，未满也在15分钟后按实际人数出发。
+  rally_seconds: 900
   min_members: 1
   max_members: 5
   # 保留旧前线配置；军团车轮战按每波玩家队伍出场。
@@ -92,12 +92,13 @@ economy:
     activity_points:
       pve_win: 20
       pve_loss: 5
-      transport: 30
-      attack_win: 30
-      attack_loss: 0
-      defense_win: 20
-      intercept_win: 30
-      intercept_loss: 0
+      transport: 15
+      attack_win: 50
+      attack_loss: 12
+      defense_win: 40
+      defense_loss: 10
+      intercept_win: 45
+      intercept_loss: 10
   buildings:
     logistics:
       name: 后勤工坊
@@ -160,9 +161,9 @@ expeditions:
   max_convoy_players: 5
   cargo: {grain: 300, wood: 150, iron: 100}
   city_weekdays: [5, 6]
-  attack_merit: 30
-  failure_merit: 10
-  defend_merit: 20
+  attack_merit: 40
+  failure_merit: 15
+  defend_merit: 30
   repair_amount: 100
   repair_cost: {wood: 80, iron: 40}
   demolition_amount: 100
@@ -248,7 +249,7 @@ rewards:
       name: 阵营参与奖
       percentile: 100
       items: {experience_fruit: 15, xuan_tie_essence: 10}
-  winner_items: {experience_fruit: 15, xuan_tie_essence: 10}
+  winner_items: {experience_fruit: 30, xuan_tie_essence: 20}
 
 # 人口档位、差异化活动与个人贡献统一配置。
 population:
@@ -306,7 +307,7 @@ activities:
       iron: 20
   transport:
     daily_npc_limit: 3
-    merit: 45
+    merit: 25
     construction: 30
     supply_capacity: 5000
     capture_grain: 300
@@ -565,6 +566,14 @@ playability:
     goal_minimum: 200
     goal_maximum: 1200
     participation_merit: 50
+    battle_points:
+      attack_win: 8
+      attack_loss: 2
+      defense_win: 6
+      defense_loss: 2
+      intercept_win: 4
+      intercept_loss: 1
+    frontier_points: 3
     personal_items:
       experience_fruit: 3
       xuan_tie_essence: 2

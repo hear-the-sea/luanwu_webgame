@@ -94,7 +94,7 @@ def test_rally_selector_only_shows_allies_and_joint_front_is_read_only(coalition
     assert owner_rally["joined"] and owner_rally["can_cancel"]
     gate = next(node for region in context["season_maps"] for node in region["nodes"] if node["key"] == "mountain:gate")
     assert gate["rally_modes"] == [{"key": "attack", "name": "集结攻坚"}]
-    assert not gate["personal_modes"]
+    assert [row["key"] for row in gate["personal_modes"]] == ["attack"]
     docks = next(row for row in context["site_rows"] if row["name"] == "渡口码头")
     defense = docks["garrison"]
     assert (defense["total_troops"], defense["member_count"], defense["guest_count"]) == (4000, 2, 2)
@@ -232,3 +232,23 @@ def test_coalition_guest_selection_limit_is_three_even_for_larger_manor(coalitio
     context = get_season_context(viewer.manor, season.pk)
     assert context["max_guests"] == 3
     assert context["rally_guest_limit"] == 3
+
+
+def test_coalition_season_allows_solo_attack_without_rally(coalition_ui):
+    from gameplay.services.season.actions import perform_action
+
+    season, viewer, _, _, _, _ = coalition_ui
+    # 该用例只验证集结开关下的个人攻击入口；NPC 阵容由专项用例覆盖。
+    season.rules["campaign"].pop("npc_encounters", None)
+    season.save(update_fields=["rules"])
+    guest = Guest.objects.get(manor=viewer.manor, status="idle")
+    result = perform_action(
+        viewer.manor,
+        season.pk,
+        "dispatch",
+        str(uuid4()),
+        {"node_key": "mountain:gate", "mode": "attack", "guest_ids": [guest.pk], "troops": {}},
+    )
+    run = viewer.expeditions.get(kind="attack", rally__isnull=True)
+    assert run.status == "outbound"
+    assert result["run_id"] == run.pk

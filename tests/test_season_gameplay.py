@@ -470,3 +470,14 @@ def test_protected_enemy_site_removes_attack_modes_and_shows_deadline(world):
     client = Client()
     client.force_login(manor.user)
     assert "占领休整保护至" in client.get(reverse("gameplay:season")).content.decode()
+
+
+def test_join_dialog_exposes_faction_preference(world, django_user_model, client):
+    season, _ = world
+    user = django_user_model.objects.create_user(username="season_preference_viewer", password="pass123")
+    client.force_login(user)
+    html = client.get(reverse("gameplay:season")).content.decode()
+    assert 'name="preference"' in html
+    assert 'value="fiction"' in html
+    assert 'value="history"' in html
+    assert "阵营意向" in html and "不影响已有门客出战" in html

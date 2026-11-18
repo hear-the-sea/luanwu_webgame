@@ -160,16 +160,33 @@ def settle_locked(convoy: Any, now: datetime) -> None:
         loot_shares = split_integer(
             loot["merit"], weights if any(weights.values()) else {run.pk: 1 for run in attackers}
         )
+        from .campaign_rules import campaign_rules
+
+        exp = campaign_rules(convoy.member.season)["expeditions"]
         for side, shares, opposing in ((attackers, attack_shares, defenders), (defenders, defense_shares, attackers)):
             for run in side:
+                attacking = run in attackers
+                if attacking:
+                    base_merit = exp["attack_merit"] if won else exp["failure_merit"]
+                else:
+                    base_merit = exp["failure_merit"] if won else exp["defend_merit"]
+                merit = max(base_merit, shares[run.pk]["merit"])
+                activity = (
+                    ("intercept_win" if won else "intercept_loss")
+                    if attacking
+                    else ("defense_win" if not won else "defense_loss")
+                )
                 credit = _record_combat(
                     run.member,
                     run,
                     report,
-                    shares[run.pk]["merit"],
+                    merit,
                     now,
                     "运输多人遭遇战",
+                    activity_key=activity,
+                    battle_key=activity if attacking else ("defense_win" if not won else "defense_loss"),
                     metrics=shares[run.pk]["metrics"],
+                    effective=shares[run.pk]["effective"],
                     opponent=opposing[0].member,
                     send_mail=False,
                 )

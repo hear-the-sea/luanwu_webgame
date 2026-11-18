@@ -109,7 +109,7 @@ def test_single_player_leaves_after_30_minutes_and_background_scan_progresses(ra
     season, player, clock = rally_world
     member, guests = player()
     rally, run = create_rally(member, guests)
-    assert rally.gathers_until == clock[0] + timedelta(minutes=30)
+    assert rally.gathers_until == clock[0] + timedelta(seconds=900)
     assert run.status == "gathering"
     assert Guest.objects.get(pk=guests[0].pk).status == GuestStatus.DEPLOYED
     assert not process_expedition(run.pk, rally.gathers_until - timedelta(microseconds=1))
@@ -181,7 +181,7 @@ def test_chosen_target_keeps_timeout_fallback(rally_world):
     response = command(member, "rally_create", {**army_payload(guests), "rally_target_members": 3})
     rally = SeasonRally.objects.get(pk=response["rally_id"])
     run = SeasonExpedition.objects.get(pk=response["run_id"])
-    assert rally.gathers_until == clock[0] + timedelta(minutes=30)
+    assert rally.gathers_until == clock[0] + timedelta(seconds=900)
     launch(rally, run)
     assert rally.result["player_count"] == 1
 
@@ -190,7 +190,7 @@ def test_chosen_target_keeps_timeout_fallback(rally_world):
 def test_late_slow_teammate_can_arrive_only_when_join_completes_target(rally_world, monkeypatch, target_members):
     season, player, clock = rally_world
     cutoff = season.starts_at + timedelta(days=season.rules["campaign"]["expeditions"]["combat_days"])
-    clock[0] = cutoff - timedelta(minutes=40)
+    clock[0] = cutoff - timedelta(minutes=35)
     monkeypatch.setattr("gameplay.services.season.expeditions.travel_time_seconds", lambda *args: 60)
     leader, lead_guests = player()
     response = command(leader, "rally_create", {**army_payload(lead_guests), "rally_target_members": target_members})
@@ -291,8 +291,13 @@ def test_each_player_has_one_attack_and_one_garrison_slot_with_three_guests(rall
     own_site = season.sites.get(key="forest:granary")
     own_site.owner = "fiction"
     own_site.save(update_fields=["owner"])
-    with pytest.raises(GameError, match="集结"):
-        command(member, "dispatch", army_payload(guests[:3]))
+    attack_result = command(member, "dispatch", army_payload(guests[:3]))
+    direct_attack = SeasonExpedition.objects.get(pk=attack_result["run_id"])
+    assert direct_attack.kind == "attack" and direct_attack.rally_id is None
+    with pytest.raises(GameError, match="出征位"):
+        create_rally(member, guests[:3])
+    direct_attack.delete()
+    Guest.objects.filter(pk__in=[guest.pk for guest in guests[:3]]).update(status=GuestStatus.IDLE)
     with pytest.raises(GameError, match="1—3"):
         create_rally(member, guests[:4])
     assert not SeasonRally.objects.exists()
@@ -461,9 +466,9 @@ def test_siege_rally_completes_all_waves_and_capture_then_returns_once(rally_wor
     assert site.owner == "fiction" and site.control == 0
     assert rally.result["wave"] == 5
     assert run.status == "returning"
-    assert member.merit == 150
+    assert member.merit == 200
     assert member.actions.filter(kind="combat").count() == 5
-    assert season.faction_states.get(faction="fiction").construction_points == 150
+    assert season.faction_states.get(faction="fiction").construction_points == 50
     assert not BattleReport.objects.exists()
     assert advance_due_rallies(at)["rallies"] == 0
     assert process_expedition(run.pk, run.due_at)
@@ -473,7 +478,7 @@ def test_siege_rally_completes_all_waves_and_capture_then_returns_once(rally_wor
     assert Guest.objects.get(pk=guests[0].pk).status == GuestStatus.IDLE
     assert not process_expedition(run.pk, run.due_at + timedelta(hours=1))
     member.refresh_from_db()
-    assert member.merit == 150
+    assert member.merit == 200
 
 
 def test_rally_program_error_backs_off_every_member_and_retries_without_damage(rally_world, monkeypatch):
@@ -523,4 +528,4 @@ def test_rally_program_error_backs_off_every_member_and_retries_without_damage(r
     site.refresh_from_db()
     assert rally.result["wave"] == 1
     assert site.durability == 0
-    assert season.members.filter(merit=30).count() == 2
+    assert season.members.filter(merit=40).count() == 2

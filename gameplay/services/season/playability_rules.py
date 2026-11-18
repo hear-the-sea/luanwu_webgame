@@ -27,6 +27,15 @@ DEFAULT_PLAYABILITY: dict[str, Any] = {
         "goal_minimum": 200,
         "goal_maximum": 1200,
         "participation_merit": 50,
+        "battle_points": {
+            "attack_win": 8,
+            "attack_loss": 2,
+            "defense_win": 6,
+            "defense_loss": 2,
+            "intercept_win": 4,
+            "intercept_loss": 1,
+        },
+        "frontier_points": 3,
         "personal_items": {"experience_fruit": 3, "xuan_tie_essence": 2},
         "team_items": {"experience_fruit": 2, "xuan_tie_essence": 1},
         "ranking_base_items": {"experience_fruit": 25, "xuan_tie_essence": 20},
@@ -98,6 +107,30 @@ def validate_playability(config: Any) -> None:
             integer(weekly[key], "weekly." + key, low=0 if key == "draw_points" else 1)
         if weekly["draw_points"] > weekly["win_points"] or weekly["goal_minimum"] > weekly["goal_maximum"]:
             raise ImproperlyConfigured("周胜点或共同目标上下限无效")
+        battle_points = weekly.get("battle_points")
+        if not isinstance(battle_points, dict) or not battle_points:
+            raise ImproperlyConfigured("周战斗战果必须为非空映射")
+        for key, amount in battle_points.items():
+            if not isinstance(key, str) or not key:
+                raise ImproperlyConfigured("周战斗战果事件名无效")
+            integer(amount, "weekly.battle_points." + key, low=0, high=100)
+        integer(weekly.get("frontier_points"), "weekly.frontier_points", low=0, high=100)
+        raw_weekly = config.get("weekly")
+        if isinstance(raw_weekly, dict) and ("battle_points" in raw_weekly or "frontier_points" in raw_weekly):
+            # 新赛季快照必须同时声明两个字段；旧快照缺省时保持旧结算语意。
+            if "battle_points" not in raw_weekly or "frontier_points" not in raw_weekly:
+                raise ImproperlyConfigured("新赛季周战果配置必须同时包含 battle_points 与 frontier_points")
+            supported = {
+                "attack_win",
+                "attack_loss",
+                "defense_win",
+                "defense_loss",
+                "intercept_win",
+                "intercept_loss",
+            }
+            raw_points = raw_weekly["battle_points"]
+            if not isinstance(raw_points, dict) or not set(raw_points) <= supported:
+                raise ImproperlyConfigured("周战斗战果包含未知事件")
         for key in ("personal_items", "team_items", "ranking_base_items"):
             if not isinstance(weekly[key], dict) or not weekly[key]:
                 raise ImproperlyConfigured("周奖励必须为非空物品映射")

@@ -19,6 +19,8 @@ def freeze_rankings_locked(season: Season) -> None:
     if not transaction.get_connection().in_atomic_block:
         raise RuntimeError("排名结算须在持有赛季锁的事务内执行")
     config = campaign_rules(season)["rewards"]
+    victory_result = season.population.get("victory_result")
+    dominance = bool(victory_result.get("dominance")) if isinstance(victory_result, dict) else False
     for faction in ("fiction", "history"):
         eligible = list(
             season.members.filter(faction=faction, merit__gte=config["minimum_merit"]).order_by(
@@ -37,7 +39,7 @@ def freeze_rankings_locked(season: Season) -> None:
                 weekly = playability["weekly"]
                 bonus = weekly["ranking_bonus_percent"].get(tier["key"], 0)
                 items = {key: amount + amount * bonus // 100 for key, amount in weekly["ranking_base_items"].items()}
-            winner_bonus = faction == season.winner
+            winner_bonus = faction == season.winner and not dominance
             if winner_bonus:
                 for key, quantity in config["winner_items"].items():
                     items[key] = items.get(key, 0) + quantity

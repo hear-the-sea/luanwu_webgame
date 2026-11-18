@@ -45,7 +45,7 @@ def test_transport_freezes_fifteen_minute_base_and_scaled_forty_five_minute_wind
     assert policy == {
         "base_merit": 30,
         "base_value": 200,
-        "maximum_merit": 90,
+        "maximum_merit": 50,
         "full_value": 1200,
         "participation_full_value": 80,
         "participation_merit": 30,

@@ -56,6 +56,7 @@ from .operation_costs import (
     settle_garrison_cost_locked,
     start_return_costs_locked,
 )
+from .playability_rules import playability_rules
 from .quotas import daily_dispatches_used, enforce_guest_daily_limit
 from .rules import season_state
 from .warfare import (
@@ -144,8 +145,6 @@ def dispatch_locked(
     validate_destination(season, key, mode, now, legacy_modes=bool(rally and not rally.result.get("unified_siege")))
     coalition = coalition_rules(season)
     if coalition["enabled"]:
-        if mode in {"attack", "siege"} and rally is None:
-            raise GameError("攻城需要发起或加入集结，不能以个人队伍绕过集结")
         active = member.expeditions.filter(status__in=ACTIVE_STATUSES)
         occupied = (
             active.filter(kind__in=("garrison", "escort"))
@@ -747,26 +746,52 @@ def _record_combat(
     label: str,
     *,
     activity_key: str | None = None,
+    battle_key: str | None = None,
     opponent: SeasonMember | None = None,
     metrics: dict[str, Any] | None = None,
+    effective: bool | None = None,
     send_mail: bool = True,
 ) -> dict[str, Any]:
     from .report_mail import report_side, send_report_mail_locked
 
+    battle_effective = effective
     if feature_rules(member.season, "contribution")["enabled"] and metrics is None:
         side = "attacker" if any(row.get("guest_id") in run.guest_ids for row in report.attacker_team) else "defender"
         calculated = battle_merit_shares(
             [run], report, side, report.winner == side, npc=opponent is None and side == "attacker"
         )[run.pk]
-        merit, metrics = calculated["merit"], calculated["metrics"]
-        if not calculated["effective"]:
-            activity_key = None
+        # 基础贡献是参战保底；战功池只在表现更好时加成，避免“赢了但战功不足=0收益”。
+        merit = max(merit, calculated["merit"])
+        metrics = calculated["metrics"]
+        battle_effective = calculated["effective"]
+    if battle_effective is None:
+        if metrics:
+            contribution = feature_rules(member.season, "contribution")
+            battle_effective = sum(int(value) for value in metrics.values()) >= contribution.get(
+                "minimum_battle_value", 100
+            )
+        else:
+            battle_effective = True
     receipt = grant_merit_locked(
         member, merit, "combat", now, event_key=f"battle:{report.pk}:{member.pk}", reason=label
     )
+    reward_eligible = battle_effective and receipt["merit"] > 0
     construction = (
-        grant_construction_locked(member, activity_key, now) if activity_key and not receipt["duplicate"] else {}
+        grant_construction_locked(member, activity_key, now)
+        if activity_key and not receipt["duplicate"] and reward_eligible
+        else {}
     )
+    battle_event = battle_key or activity_key
+    pvp_opponent = opponent is not None and opponent.faction != member.faction
+    if battle_event and pvp_opponent and not receipt["duplicate"] and reward_eligible:
+        from .weekly_campaign import record_battle_event_locked
+
+        battle_points = (
+            playability_rules(member.season)["weekly"].get("battle_points", {}).get(battle_event, 0)
+            if member.faction in {"fiction", "history"}
+            else 0
+        )
+        record_battle_event_locked(member.season, member.faction, now, battle_points)
     SeasonAction.objects.create(
         member=member,
         token=uuid4(),
@@ -929,10 +954,11 @@ def _fight(
             defender.member,
             defender,
             report,
-            exp["defend_merit"] if defense_won else 0,
+            exp["defend_merit"] if defense_won else exp["failure_merit"],
             now,
             "驻军成功击退来敌" if defense_won else "驻军交战结束，请查看战损",
-            activity_key="defense_win" if defense_won else None,
+            activity_key="defense_win" if defense_won else "defense_loss",
+            battle_key="defense_win" if defense_won else "defense_loss",
             opponent=run.member,
         )
         if not defense_won or defender.battles >= exp["max_battles"] or defender.result.get("defeated_ids"):
@@ -1108,7 +1134,14 @@ def _site_action(run: SeasonExpedition, now: datetime) -> None:
     label = f"{'攻坚成功' if won else '攻坚失利'}，驻军余 {site.guards} 队，城防 {site.durability}"
     (
         _record_combat(
-            run.member, run, run.report, merit, now, label, activity_key="attack_win" if won else "attack_loss"
+            run.member,
+            run,
+            run.report,
+            merit,
+            now,
+            label,
+            activity_key="attack_win" if won else "attack_loss",
+            opponent=defender.member if defender else None,
         )
         if run.report
         else _record_progress(run, merit, now, label)
@@ -1121,7 +1154,14 @@ def _record_progress(run: SeasonExpedition, merit: int, now: datetime, label: st
     merit = progress_merit_locked(run, now, merit)
     event = f"site:{run.pk}:{run.result.get('progress_step', 0)}:{run.battles}"
     receipt = grant_merit_locked(member, merit, "combat", now, event_key=event, reason=label)
-    construction = grant_construction_locked(member, "attack_win", now) if merit and not receipt["duplicate"] else {}
+    construction = (
+        grant_construction_locked(member, "attack_win", now)
+        if merit
+        and not receipt["duplicate"]
+        and receipt["merit"] > 0
+        and int(run.result.get("progress_step", 0) or 0) <= 1
+        else {}
+    )
     return SeasonAction.objects.create(
         member=member,
         token=uuid4(),
@@ -1149,7 +1189,7 @@ def _settle_activity_reward(
     )
     construction = (
         grant_construction_amount_locked(run.member, reward.get("construction", 0), now)
-        if not receipt["duplicate"]
+        if not receipt["duplicate"] and receipt["merit"] > 0
         else {}
     )
     return {**reward, **receipt, **construction}
@@ -1223,6 +1263,7 @@ def _intercept(run: SeasonExpedition, now: datetime) -> None:
         now,
         "运输拦截战已结束",
         activity_key="intercept_win" if won else "intercept_loss",
+        opponent=target.member,
     )
     _start_return(run, now, "运输拦截战结束，队伍返程")
 

@@ -167,9 +167,13 @@ def technology_levels(faction: SeasonFaction) -> dict[str, int]:
 
 def grant_construction_locked(member: SeasonMember, activity_key: str, now: datetime) -> dict[str, Any]:
     automatic = campaign_rules(member.season)["economy"].get("auto_development", DEFAULT_AUTO_DEVELOPMENT)
-    if activity_key not in automatic["activity_points"]:
+    points = automatic["activity_points"]
+    if activity_key not in points and activity_key == "defense_loss" and "attack_loss" in points:
+        # 旧赛季快照没有 defense_loss 时沿用原攻击失败桶，避免旧配置报错。
+        activity_key = "attack_loss"
+    if activity_key not in points:
         raise GameError("未知的阵营建设活动")
-    return grant_construction_amount_locked(member, automatic["activity_points"][activity_key], now)
+    return grant_construction_amount_locked(member, points[activity_key], now)
 
 
 def grant_construction_amount_locked(member: SeasonMember, amount: int, now: datetime) -> dict[str, Any]:
@@ -332,11 +336,15 @@ def grant_pve_locked(
         construction_points = int(base_points * reward_multiplier * material_efficiency) if any(gains.values()) else 0
         construction = (
             grant_construction_amount_locked(member, construction_points, now)
-            if construction_points
+            if construction_points and receipt["merit"] > 0
             else {"construction_points": 0}
         )
     else:
-        construction = grant_construction_locked(member, activity_key or ("pve_win" if won else "pve_loss"), now)
+        construction = (
+            grant_construction_locked(member, activity_key or ("pve_win" if won else "pve_loss"), now)
+            if receipt["merit"] > 0
+            else {"construction_points": 0}
+        )
     potential = normal_training_potential(gains, resource_rules(member.season)["training"]["normal_cost_per_10"])
     return {
         **receipt,

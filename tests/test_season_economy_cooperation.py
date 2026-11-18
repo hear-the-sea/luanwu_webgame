@@ -76,7 +76,7 @@ def test_delivery_policy_is_frozen_and_legacy_orders_keep_original_curve(resourc
     assert estimate_delivery_merit(season, {"grain": 80}, 15000) == 50
     transport.pop("participation_full_value")
     transport.pop("participation_merit")
-    assert estimate_delivery_merit(season, {"grain": 80}, 15000) == 16
+    assert estimate_delivery_merit(season, {"grain": 80}, 15000) == 13
     assert delivery_merit(80, 1200, 90, 30, 200) == 16
     assert delivery_merit(80, 1200, 20, 30, 200, participation_full_value=80, participation_merit=30) == 20
 
@@ -103,7 +103,7 @@ def test_small_real_transport_settles_using_its_frozen_policy(resource_campaign,
     advance_resource_run(run, clock)
     assert run.result["delivered_resources"] == {"grain": 0, "wood": 24, "iron": 12}
     member.refresh_from_db()
-    assert member.merit == (16 if legacy else 30)
+    assert member.merit == (13 if legacy else 30)
 
 
 def credit(member, clock):

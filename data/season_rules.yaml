@@ -55,6 +55,38 @@ rewards:
     kind: scroll
     description: 从本阵营未拥有的可招募人物中自选三名，等概率结缘其中一名；不足三名时按剩余人数选择。
     items: {}
+  - key: veteran_4500
+    name: 久战不怠
+    threshold: 4500
+    kind: items
+    description: 经验果与玄铁精华，奖励绑定。
+    items:
+      fiction: {experience_fruit: 10, xuan_tie_essence: 8}
+      history: {experience_fruit: 10, xuan_tie_essence: 8}
+  - key: veteran_6000
+    name: 百炼成钢
+    threshold: 6000
+    kind: items
+    description: 经验果与玄铁精华，奖励绑定。
+    items:
+      fiction: {experience_fruit: 15, xuan_tie_essence: 10}
+      history: {experience_fruit: 15, xuan_tie_essence: 10}
+  - key: veteran_8000
+    name: 赛季骁将
+    threshold: 8000
+    kind: items
+    description: 经验果与玄铁精华，奖励绑定。
+    items:
+      fiction: {experience_fruit: 20, xuan_tie_essence: 15}
+      history: {experience_fruit: 20, xuan_tie_essence: 15}
+  - key: veteran_10000
+    name: 阵营柱石
+    threshold: 10000
+    kind: items
+    description: 经验果与玄铁精华，奖励绑定。
+    items:
+      fiction: {experience_fruit: 30, xuan_tie_essence: 20}
+      history: {experience_fruit: 30, xuan_tie_essence: 20}
 
 shop:
   fiction:
@@ -76,6 +108,18 @@ shop:
       limit: 2
       description: 紫色紫薇软剑一件，奖励绑定。
       items: {equip_ziweiruanjian: 1}
+    - key: fiction_season_fruit
+      name: 赛季果实
+      cost: 100
+      limit: 50
+      description: 经验果一枚，奖励绑定。
+      items: {experience_fruit: 1}
+    - key: fiction_season_essence
+      name: 赛季玄铁
+      cost: 150
+      limit: 30
+      description: 玄铁精华一份，奖励绑定。
+      items: {xuan_tie_essence: 1}
   history:
     - key: history_planning
       name: 静水筹谋
@@ -95,6 +139,18 @@ shop:
       limit: 2
       description: 紫色霸王盔一件，奖励绑定。
       items: {equip_bawangkui: 1}
+    - key: history_season_fruit
+      name: 赛季果实
+      cost: 100
+      limit: 50
+      description: 经验果一枚，奖励绑定。
+      items: {experience_fruit: 1}
+    - key: history_season_essence
+      name: 赛季玄铁
+      cost: 150
+      limit: 30
+      description: 玄铁精华一份，奖励绑定。
+      items: {xuan_tie_essence: 1}
 
 # 本阵营所有正常可招募人物均已拥有时，卷轴可兑换以下绑定材料。
 summon_fallback_items:

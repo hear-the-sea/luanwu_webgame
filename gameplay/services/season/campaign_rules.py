@@ -43,6 +43,7 @@ DEFAULT_AUTO_DEVELOPMENT: dict[str, Any] = {
         "attack_win": 30,
         "attack_loss": 0,
         "defense_win": 20,
+        "defense_loss": 10,
         "intercept_win": 30,
         "intercept_loss": 0,
     },
@@ -138,7 +139,10 @@ def validate_campaign_rules(value: Any) -> dict[str, Any]:
         if thresholds[0] != 0:
             raise ImproperlyConfigured("初始设施等级的建设值阈值必须为0")
         points = automatic["activity_points"]
-        if not isinstance(points, dict) or set(points) != set(DEFAULT_AUTO_DEVELOPMENT["activity_points"]):
+        required_points = set(DEFAULT_AUTO_DEVELOPMENT["activity_points"]) - {"defense_loss"}
+        if not isinstance(points, dict) or not required_points <= set(points) <= set(
+            DEFAULT_AUTO_DEVELOPMENT["activity_points"]
+        ):
             raise ImproperlyConfigured("活动建设值必须完整配置已支持的活动")
         for key, amount in points.items():
             _integer(amount, "auto_development.activity_points." + key, minimum=0)

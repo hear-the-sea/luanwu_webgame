@@ -81,9 +81,11 @@ def hitpoint_wave_locked(
     enemy_rows = report.defender_team
     cleared = not enemy_rows or all(row.get("remaining_hp", 0) <= 0 for row in enemy_rows)
     if guard_battle:
-        _record_participants(active, report, won, now, defending=False, opponents=defending)
+        _record_participants(active, report, won, now, defending=False, opponents=defending, wave=wave)
         if defending:
-            _record_participants(defending, report, report.winner == "defender", now, defending=True, opponents=active)
+            _record_participants(
+                defending, report, report.winner == "defender", now, defending=True, opponents=active, wave=wave
+            )
             for run in defending:
                 if won or not alive_guests(run, config["commander_guest_limit"]):
                     _start_return(run, now, "本波守军败退，保留实际战损返程")

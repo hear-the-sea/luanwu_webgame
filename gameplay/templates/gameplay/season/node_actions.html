@@ -8,8 +8,8 @@
 {% elif action_kind == 'war' %}
     {% if node.key == "river:market" and not market_stock.is_owner %}<p class="season-form-caption">占领集市后可查看轮换货品并享调剂优惠；基础调剂双方均可使用。</p>{% endif %}
     {% include "gameplay/season/site_status.html" %}
-    {% if node.rally_modes %}{% include "gameplay/season/node_actions.html" with action_kind='rally' %}
+    {% if node.personal_modes %}<div class="season-war-action-block"><h3 class="season-form-section-heading">单人出击 <small>无需等待，立即出发</small></h3><p class="season-form-caption">守军未清空时不会伤害城门；城门血量跨场保留。</p>{% include "gameplay/season/dispatch_form.html" with dispatch_modes=node.personal_modes dispatch_label="单人出击" %}</div>{% endif %}
+    {% if node.rally_modes %}<div class="season-war-action-block"><h3 class="season-form-section-heading">组队集结 <small>可带更多护院与队友</small></h3>{% include "gameplay/season/node_actions.html" with action_kind='rally' %}</div>
     {% elif node.rallies %}{% include "gameplay/season/node_actions.html" with action_kind='rally' %}
-    {% elif node.personal_modes %}{% include "gameplay/season/node_actions.html" with action_kind='personal' %}
-    {% else %}<p class="season-notice">{% if node.site.protected_until %}据点休整中，稍后再来。{% else %}当前无法派遣，请等待队伍归队。{% endif %}</p>{% endif %}
+    {% elif not node.personal_modes %}<p class="season-notice">{% if node.site.protected_until %}据点休整中，稍后再来。{% else %}当前无法派遣，请等待队伍归队。{% endif %}</p>{% endif %}
 {% endif %}

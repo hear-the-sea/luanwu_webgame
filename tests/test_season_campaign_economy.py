@@ -380,10 +380,10 @@ def test_transport_and_losses_use_their_own_construction_configuration(campaign,
     member = member_factory(campaign)
     with transaction.atomic():
         loss = grant_construction_locked(member, "attack_loss", campaign.starts_at)
-        assert loss["construction_points"] == 0
+        assert loss["construction_points"] == 12
         transport = grant_pve_locked(member, "river:docks", True, campaign.starts_at, activity_key="transport")
-        assert transport["construction_points"] == 30
-        assert transport["total_construction_points"] == 30
+        assert transport["construction_points"] == 15
+        assert transport["total_construction_points"] == 27
         with pytest.raises(GameError, match="未知"):
             grant_construction_locked(member, "unknown_activity", campaign.starts_at)
 
@@ -431,7 +431,7 @@ def test_rankings_are_within_faction_and_frozen_once(campaign, member_factory):
     first = members[-1]
     first.refresh_from_db()
     assert (first.final_rank, first.final_tier) == (1, "elite")
-    assert first.final_reward["items"] == {"experience_fruit": 55, "xuan_tie_essence": 40}
+    assert first.final_reward["items"] == {"experience_fruit": 70, "xuan_tie_essence": 50}
     assert season_tiers(campaign, "fiction") == {"elite": 1, "distinguished": 2, "participant": 7, "ineligible": 1}
     inactive.refresh_from_db()
     assert inactive.final_rank is None
@@ -465,7 +465,7 @@ def test_final_reward_claim_is_bound_and_once(campaign, member_factory):
         with pytest.raises(GameError, match="已经领取"):
             claim_final_locked(member, member.manor)
     stock = InventoryItem.objects.get(manor=member.manor, template__key="experience_fruit")
-    assert stock.quantity == stock.bound_quantity == 55
+    assert stock.quantity == stock.bound_quantity == 70
 
 
 def test_configuration_uses_existing_troop_and_technology_and_reward_keys():

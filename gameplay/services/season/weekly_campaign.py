@@ -33,6 +33,13 @@ def _book(state: SeasonFaction) -> dict[str, Any]:
     return state.economy_state.setdefault("weekly_campaign", {"weeks": {}})
 
 
+def _raw_weekly_config(season: Season) -> dict[str, Any]:
+    campaign = season.rules.get("campaign")
+    playability = campaign.get("playability") if isinstance(campaign, dict) else None
+    weekly = playability.get("weekly") if isinstance(playability, dict) else None
+    return weekly if isinstance(weekly, dict) else {}
+
+
 def activate_weekly_locked(season: Season, factions: dict[str, SeasonFaction], now: datetime) -> datetime:
     """独立账本记录启用时刻，保留旧的累计分且不追溯启用前战果。"""
     found = [parse_datetime(_book(state).get("activated_at", "")) for state in factions.values()]
@@ -144,6 +151,9 @@ def settle_campaign_weeks_locked(season: Season, now: datetime) -> int:
         participation = _participation(season, number, activated)
         contested = _contested_days(season, number, activated)
         qualified = all(participation.values()) and contested >= config["minimum_contested_days"]
+        active_factions = [faction for faction in factions if participation[faction]]
+        frontier_allowed = "frontier_points" in _raw_weekly_config(season)
+        frontier = not qualified and len(active_factions) == 1 and frontier_allowed
         scores = {}
         for faction, state in factions.items():
             row = _book(state)["weeks"].setdefault(str(number), {})
@@ -154,9 +164,10 @@ def settle_campaign_weeks_locked(season: Season, now: datetime) -> int:
                     "active_members": len(participation[faction]),
                     "contested_days": contested,
                     "qualified": qualified,
+                    "frontier": frontier and faction == active_factions[0],
                 }
             )
-            scores[faction] = int(row.get("score", 0))
+            scores[faction] = int(row.get("score", 0)) + int(row.get("battle_score", 0))
             state.save(update_fields=["economy_state"])
         winner = ""
         if qualified and scores["fiction"] != scores["history"]:
@@ -173,9 +184,14 @@ def settle_campaign_weeks_locked(season: Season, now: datetime) -> int:
         )
         for faction, state in factions.items():
             row = _book(state)["weeks"][str(number)]
-            row["victory_points"] = (
-                config["win_points"] if winner == faction else config["draw_points"] if qualified and not winner else 0
-            )
+            if frontier:
+                row["victory_points"] = config.get("frontier_points", 0) if faction == active_factions[0] else 0
+            else:
+                row["victory_points"] = (
+                    config["win_points"]
+                    if winner == faction
+                    else config["draw_points"] if qualified and not winner else 0
+                )
             state.save(update_fields=["economy_state"])
         season.settled_weeks = max(season.settled_weeks, number)
         settled += 1
@@ -251,7 +267,9 @@ def weekly_campaign_context(season: Season, member: SeasonMember | None, now: da
                 "team_claimable": complete and eligible and team_met and f"campaign:weekly:{number}:team" not in claims,
                 "personal_items": config["personal_items"],
                 "team_items": config["team_items"],
-                "score": saved.get("score", 0),
+                "score": saved.get("score", 0) + saved.get("battle_score", 0),
+                "battle_score": saved.get("battle_score", 0),
+                "frontier": bool(saved.get("frontier")),
                 "victory_points": saved.get("victory_points", 0),
             }
         )
@@ -307,3 +325,28 @@ def record_capture_points_locked(
     row = _book(state)["weeks"].setdefault(str(week_number(season, now)), {})
     row["score"] = row.get("score", 0) + points
     row["capture_points"] = row.get("capture_points", 0) + points
+
+
+def record_battle_event_locked(season: Season, faction: str, now: datetime, points: int) -> None:
+    """记录真实攻防/拦截产生的周战果，让主动战斗能影响周胜负。"""
+    if (
+        points <= 0
+        or faction not in FACTIONS
+        or not playability_rules(season)["enabled"]
+        or "battle_points" not in _raw_weekly_config(season)
+    ):
+        return
+    if now >= season.ends_at:
+        return
+    states = {
+        state.faction: state for state in SeasonFaction.objects.select_for_update().filter(season=season).order_by("pk")
+    }
+    if faction not in states:
+        return
+    activated = activate_weekly_locked(season, states, now)
+    if now < activated:
+        return
+    state = states[faction]
+    row = _book(state)["weeks"].setdefault(str(week_number(season, now)), {})
+    row["battle_score"] = int(row.get("battle_score", 0)) + points
+    state.save(update_fields=["economy_state"])

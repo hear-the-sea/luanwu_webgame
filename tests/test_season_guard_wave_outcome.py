@@ -82,7 +82,7 @@ def test_real_npc_guard_clear_with_surviving_tower_is_attack_win_and_continues(w
     assert site.guards == 2 and rally.status == "marching"
     assert run.result.get("fatigue_stacks") == 1
     action = member.actions.get(report=run.report, kind="combat")
-    assert action.result["requested_merit"] == 30
+    assert action.result["requested_merit"] == 40
     mail = Message.objects.get(manor=member.manor, battle_report=run.report)
     assert "本场结果：胜利" in mail.body
     assert "本波守军已击退，箭塔仍在；后续以集结状态为准" in mail.body
@@ -161,8 +161,8 @@ def test_real_player_guards_are_defeated_even_if_arrow_tower_survives(world, mon
     # 护院存活不再独立形成另一波；随已战败门客队伍带着实际剩余兵力返程。
     remaining = 100 - run.report.losses["defender"]["troops_lost"]
     assert remaining > 0 and guard.troops["dao_sheng"] == remaining
-    assert attacker.actions.get(report=run.report, kind="combat").result["requested_merit"] == 30
-    assert defender.actions.get(report=run.report, kind="combat").result["requested_merit"] == 0
+    assert attacker.actions.get(report=run.report, kind="combat").result["requested_merit"] == 40
+    assert defender.actions.get(report=run.report, kind="combat").result["requested_merit"] == 15
     assert "本场结果：失利" in Message.objects.get(manor=defender.manor, battle_report=run.report).body
 
 

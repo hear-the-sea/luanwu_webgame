@@ -352,12 +352,16 @@ def test_transport_completion_delivers_once_and_returns_troops(war):
     assert merit == season.rules["campaign"]["economy"]["pve"]["river:docks"]["merit"]
     assert member.actions.filter(kind="logistics").count() == 1
     state = season.faction_states.get(faction=member.faction)
-    assert state.construction_points == 30
+    assert state.construction_points == (
+        season.rules["campaign"]["economy"]["auto_development"]["activity_points"]["transport"]
+    )
     home(run)
     member.refresh_from_db()
     assert member.merit == merit
     state.refresh_from_db()
-    assert state.construction_points == 30
+    assert state.construction_points == (
+        season.rules["campaign"]["economy"]["auto_development"]["activity_points"]["transport"]
+    )
     assert not process_expedition(run.pk, run.due_at + timedelta(hours=1))
 
 

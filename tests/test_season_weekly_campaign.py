@@ -31,7 +31,20 @@ def weekly(user_factory):
     start = timezone.now() - timedelta(days=15)
     rules = load_rules()
     rules["campaign"] = load_campaign_rules()
-    rules["campaign"]["playability"] = {"enabled": True}
+    rules["campaign"]["playability"] = {
+        "enabled": True,
+        "weekly": {
+            "battle_points": {
+                "attack_win": 8,
+                "attack_loss": 2,
+                "defense_win": 6,
+                "defense_loss": 2,
+                "intercept_win": 4,
+                "intercept_loss": 1,
+            },
+            "frontier_points": 3,
+        },
+    }
     season = Season.objects.create(name="周战局", starts_at=start, ends_at=start + timedelta(days=90), rules=rules)
     members = {}
     for faction in ("fiction", "history"):
@@ -201,3 +214,74 @@ def test_final_ranking_changes_only_small_configured_bonus(weekly):
     member.refresh_from_db()
     assert member.final_reward["items"] == {"experience_fruit": 30, "xuan_tie_essence": 24}
     assert member.merit == 1000
+
+
+def test_battle_events_add_to_weekly_score_and_can_decide_the_week(weekly):
+    from gameplay.services.season.weekly_campaign import record_battle_event_locked
+
+    season, members, start = weekly
+    for member in members.values():
+        credit(member, start + timedelta(days=1))
+    contest(members, start + timedelta(days=1))
+    with transaction.atomic():
+        record_battle_event_locked(season, "fiction", start + timedelta(days=1), 8)
+        settle_campaign_weeks_locked(season, start + timedelta(days=7))
+    week = season.weeks.get(number=1)
+    assert (week.fiction_points, week.history_points, week.winner) == (8, 0, "fiction")
+    assert weekly_victory_scores(season) == {"fiction": 10, "history": 0}
+
+
+def test_uncontested_week_grants_frontier_points_to_the_active_faction(weekly):
+    season, members, start = weekly
+    credit(members["fiction"], start + timedelta(days=1))
+    with transaction.atomic():
+        settle_campaign_weeks_locked(season, start + timedelta(days=7))
+    week = season.weeks.get(number=1)
+    assert (week.fiction_points, week.history_points, week.winner) == (0, 0, "")
+    assert weekly_victory_scores(season) == {"fiction": 3, "history": 0}
+    state = season.faction_states.get(faction="fiction")
+    row = state.economy_state["weekly_campaign"]["weeks"]["1"]
+    assert row["frontier"] is True and row["victory_points"] == 3
+
+
+def test_absent_faction_allows_dominance_win_for_the_active_faction(weekly):
+    from gameplay.services.season.lifecycle import settle_season
+
+    season, members, _ = weekly
+    fiction = members["fiction"]
+    fiction.merit = 100
+    fiction.save(update_fields=["merit"])
+    credit(fiction, season.ends_at - timedelta(days=1))
+    with transaction.atomic():
+        settle_season(season.pk, season.ends_at)
+    season.refresh_from_db()
+    assert season.closed
+    assert season.winner == "fiction"
+    assert season.population["victory_result"]["dominance"] is True
+    assert season.population["victory_result"]["qualified"] is True
+    winner = season.members.get(faction="fiction")
+    winner.refresh_from_db()
+    assert winner.final_reward["winner_bonus"] is False
+
+
+def test_legacy_weekly_snapshot_does_not_get_new_battle_or_frontier_rules(weekly):
+    from gameplay.services.season.lifecycle import settle_season
+    from gameplay.services.season.weekly_campaign import record_battle_event_locked
+
+    season, members, start = weekly
+    playability = season.rules["campaign"]["playability"]
+    playability["weekly"].pop("battle_points")
+    playability["weekly"].pop("frontier_points")
+    season.save(update_fields=["rules"])
+    credit(members["fiction"], season.ends_at - timedelta(days=1))
+    with transaction.atomic():
+        record_battle_event_locked(season, "fiction", start + timedelta(days=1), 8)
+        settle_campaign_weeks_locked(season, start + timedelta(days=7))
+        state = season.faction_states.get(faction="fiction")
+        row = state.economy_state["weekly_campaign"]["weeks"].get("1", {})
+        assert row.get("battle_score", 0) == 0
+        assert row.get("frontier") is not True
+        assert weekly_victory_scores(season) == {"fiction": 0, "history": 0}
+        settle_season(season.pk, season.ends_at)
+    season.refresh_from_db()
+    assert season.winner == ""
