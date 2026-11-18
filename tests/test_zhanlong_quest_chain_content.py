@@ -40,12 +40,15 @@ def test_zhanlong_chain_guarantees_each_next_entry_and_allows_five_cards_per_mis
         assert mission["mission_card_daily_limit"] == 5
         assert mission["battle_type"] == "task1"
         chest_key = "mission_chest_v3_" + mission["key"]
-        assert mission["drop_table"] == {"silver": [90000, 110000, 130000, 180000][index], chest_key: 1}
+        expected_drops = {"silver": [90000, 110000, 130000, 180000][index], chest_key: 1}
+        token_key = TOKEN_KEYS[index] if index < len(TOKEN_KEYS) else None
+        if token_key:
+            expected_drops[token_key] = 1
+        assert mission["drop_table"] == expected_drops
         payload = items[chest_key]["effect_payload"]
         assert payload["mission_key"] == mission["key"]
-        if index < len(TOKEN_KEYS):
-            token_key = TOKEN_KEYS[index]
-            assert {"item_key": token_key, "min_quantity": 1, "max_quantity": 1} in payload["item_rewards"]
+        if token_key:
+            assert all(row["item_key"] != token_key for row in payload["item_rewards"])
             assert chain[index + 1]["entry_cost"] == {token_key: 1}
             assert items[token_key]["tradeable"] is False
             assert items[token_key]["is_usable"] is False

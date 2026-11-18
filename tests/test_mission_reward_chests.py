@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from importlib import import_module
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock
@@ -19,6 +20,7 @@ from gameplay.services.missions_impl.finalization_helpers import (
 from gameplay.views.mission_helpers import build_chest_reward_preview
 
 DATA = Path(__file__).resolve().parents[1] / "data"
+progression_token_rules = import_module("gameplay.migrations.0273_direct_mission_progression_tokens")
 ITEMS = {entry["key"]: entry for entry in yaml.safe_load((DATA / "item_templates.yaml").read_text())["items"]}
 MISSIONS = yaml.safe_load((DATA / "mission_templates.yaml").read_text())["missions"]
 MISSION_CHEST_MISSIONS = [mission for mission in MISSIONS if "mission_chest_v3_" + mission["key"] in ITEMS]
@@ -44,18 +46,24 @@ def _reward_keys(box):
     )
 
 
-def test_all_personal_missions_award_one_named_chest_without_scattered_items():
+def test_all_personal_missions_award_one_named_chest_and_only_progression_tokens_directly():
     assert len(MISSION_CHEST_MISSIONS) == len(BOXES) == 40
     assert len(HISTORICAL_BOXES) == 32
     assert len({box["key"] for box in ALL_BOXES}) == 72
     assert len({box["effect_payload"]["mission_key"] for box in BOXES}) == 40
     for mission in MISSION_CHEST_MISSIONS:
         drops = mission["drop_table"]
-        box_keys = set(drops) - {"silver"}
+        box_keys = {key for key in drops if key.startswith("mission_chest_")}
         assert len(box_keys) == 1
-        box_key = box_keys.pop()
+        box_key = next(iter(box_keys))
         box = ITEMS[box_key]
         assert drops[box_key] == 1
+        expected_direct = (
+            {progression_token_rules.CHEST_TOKENS[box_key]}
+            if box_key in progression_token_rules.CHEST_TOKENS
+            else set()
+        )
+        assert set(drops) - {"silver"} - box_keys == expected_direct
         assert box["effect_payload"]["mission_key"] == mission["key"]
         assert box["effect_payload"]["mission_reward_version"] == 1
         assert box["effect_payload"]["reward_balance_version"] == 3
@@ -109,12 +117,18 @@ def test_historical_boxes_keep_experience_fruit_and_the_same_remaining_reward_po
         fruit_rewards = [row for row in old_payload["item_rewards"] if row["item_key"] == "experience_fruit"]
         assert len(fruit_rewards) == 1
         assert 1 <= fruit_rewards[0]["min_quantity"] == fruit_rewards[0]["max_quantity"]
+        token_key = progression_token_rules.CHEST_TOKENS.get(box["key"])
         assert payload["item_rewards"] == [
-            row for row in old_payload["item_rewards"] if row["item_key"] != "experience_fruit"
+            row
+            for row in old_payload["item_rewards"]
+            if row["item_key"] != "experience_fruit" and row["item_key"] != token_key
         ]
         for field in ("random_item_groups", "blueprint_material_support", "blueprint_forging_requirements"):
             assert payload[field] == old_payload[field]
-        assert _reward_keys(historical) - _reward_keys(box) == {"experience_fruit"}
+        expected_diff = {"experience_fruit"}
+        if token_key:
+            expected_diff.add(token_key)
+        assert _reward_keys(historical) - _reward_keys(box) == expected_diff
 
 
 @pytest.mark.parametrize("box", ALL_BOXES, ids=lambda box: box["key"])

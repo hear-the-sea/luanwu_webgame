@@ -931,6 +931,7 @@ missions:
     drop_table:
       silver: 60000
       mission_chest_v3_biyou_candeng: 1
+      wanyin_flag_fragment: 1
     base_travel_time: 1800
     daily_limit: 3
 
@@ -969,6 +970,7 @@ missions:
     drop_table:
       silver: 80000
       mission_chest_v3_shier_xianyin: 1
+      yuxu_broken_seal: 1
     base_travel_time: 1800
     daily_limit: 2
 
@@ -1180,6 +1182,7 @@ missions:
     drop_table:
       silver: 90000
       mission_chest_v3_sishui_huaxiong_chengwei: 1
+      sishui_battle_report: 1
     base_travel_time: 2400
     daily_limit: 1
 
@@ -1219,6 +1222,7 @@ missions:
     drop_table:
       silver: 110000
       mission_chest_v3_hulao_qunying_zhan_lvbu: 1
+      hulao_war_banner: 1
     base_travel_time: 2400
     daily_limit: 1
 
@@ -1677,6 +1681,7 @@ missions:
     drop_table:
       silver: 90000
       mission_chest_v3_zhanlong_yanshan_shizi: 1
+      zhanlong_white_horse_token: 1
     available_weekdays: []
     base_travel_time: 2400
     daily_limit: 1
@@ -1713,6 +1718,7 @@ missions:
     drop_table:
       silver: 110000
       mission_chest_v3_zhanlong_changban_tuwei: 1
+      zhanlong_changban_guard_token: 1
     available_weekdays: []
     base_travel_time: 2400
     daily_limit: 1
@@ -1751,6 +1757,7 @@ missions:
     drop_table:
       silver: 130000
       mission_chest_v3_zhanlong_changban_duanqiao: 1
+      zhanlong_dangyang_valor_letter: 1
     available_weekdays: []
     base_travel_time: 2400
     daily_limit: 1

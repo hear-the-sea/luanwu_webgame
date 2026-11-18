@@ -129,10 +129,15 @@ def test_chiyou_exchange_guests_are_individually_world_unique_with_configured_pu
 
 def test_zhanlong_keeps_entry_tokens_mount_and_independent_zhaoyun_scroll():
     items = _items()
+    missions = {
+        entry["key"]: entry
+        for entry in yaml.safe_load((DATA / "mission_templates.yaml").read_text(encoding="utf-8"))["missions"]
+    }
     chain = [_payload(items, key) for key in CHAIN_KEYS]
     tokens = ("zhanlong_white_horse_token", "zhanlong_changban_guard_token", "zhanlong_dangyang_valor_letter")
-    for payload, token in zip(chain, tokens):
-        assert {"item_key": token, "min_quantity": 1, "max_quantity": 1} in payload["item_rewards"]
+    for mission_key, payload, token in zip(CHAIN_KEYS, chain, tokens):
+        assert missions[mission_key]["drop_table"].get(token) == 1
+        assert all(row["item_key"] != token for row in payload["item_rewards"])
     mount_group = next(group for group in chain[1]["random_item_groups"] if group["label"] == "equip_zhaoyeyushizi")
     assert mount_group["chance"] == 0.1
     scroll_group = next(group for group in chain[3]["random_item_groups"] if group["label"] == "zhaoyun_guest_scroll")

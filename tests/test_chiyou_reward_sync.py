@@ -21,6 +21,7 @@ growth_rules = import_module("gameplay.migrations.0223_chiyou_guest_growth")
 alignment_rules = import_module("gameplay.migrations.0229_personal_guild_guest_profile_alignment")
 armor_luck_rules = import_module("gameplay.migrations.0230_chiyou_armor_luck")
 copy_rules = import_module("gameplay.migrations.0242_player_facing_mission_item_copy")
+progression_token_rules = import_module("gameplay.migrations.0273_direct_mission_progression_tokens")
 DATA = Path(__file__).resolve().parents[1] / "data"
 
 
@@ -54,6 +55,19 @@ def test_reward_migration_freezes_current_equipment_and_recipe():
             }
         if key == "mission_chest_v3_zhanlong_wuhu_shizhen":
             final_defaults["description"] = WUHU_CHEST_DESCRIPTION
+        token_key = progression_token_rules.CHEST_TOKENS.get(key)
+        if token_key:
+            payload = {
+                **final_defaults["effect_payload"],
+                "item_rewards": [
+                    row for row in final_defaults["effect_payload"]["item_rewards"] if row["item_key"] != token_key
+                ],
+            }
+            text_update = progression_token_rules.CHEST_TEXT_UPDATES[key]
+            payload["reward_theme"] = text_update["reward_theme"]
+            final_defaults["effect_payload"] = payload
+            if "description" in text_update:
+                final_defaults["description"] = text_update["description"]
         assert final_defaults == expected
     recipes = yaml.safe_load((DATA / "forge_blueprints.yaml").read_text())["recipes"]
     assert rules.ARMOR_RECIPE == next(row for row in recipes if row["blueprint_key"] == "blueprint_chiyoujia")

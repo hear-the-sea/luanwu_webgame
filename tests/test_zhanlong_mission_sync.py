@@ -26,6 +26,7 @@ assault_rules = import_module("gameplay.migrations.0234_zhaoyun_dragon_assault")
 merged_rules = import_module("gameplay.migrations.0235_bridge_roar_without_dust_passive")
 progression_rules = import_module("gameplay.migrations.0240_zhanlong_progressive_difficulty")
 copy_rules = import_module("gameplay.migrations.0242_player_facing_mission_item_copy")
+progression_token_rules = import_module("gameplay.migrations.0273_direct_mission_progression_tokens")
 DATA = Path(__file__).resolve().parents[1] / "data"
 
 
@@ -48,6 +49,12 @@ def test_frozen_migration_matches_current_chain_and_skill_configuration():
                 final_defaults.update(assault_rules.MISSION_UPDATES.get(key, {}))
                 final_defaults.update(progression_rules.MISSION_UPDATES.get(key, {}))
                 final_defaults.update(copy_rules.MISSION_UPDATES.get(key, {}))
+                token_key = progression_token_rules.PROGRESSION_DROPS.get(key)
+                if token_key:
+                    final_defaults = {
+                        **final_defaults,
+                        "drop_table": {**final_defaults["drop_table"], token_key: 1},
+                    }
             elif filename == "guest_skills.yaml":
                 final_defaults.update(enrage_rules.SKILL_UPDATES.get(key, {}))
                 final_defaults.update(bridge_rules.SKILL_UPDATES.get(key, {}))
@@ -71,6 +78,19 @@ def test_frozen_migration_matches_current_chain_and_skill_configuration():
         final_defaults.update(copy_rules.ITEM_UPDATES.get(key, {}))
         if key == "mission_chest_v3_zhanlong_wuhu_shizhen":
             final_defaults["description"] = WUHU_CHEST_DESCRIPTION
+        token_key = progression_token_rules.CHEST_TOKENS.get(key)
+        if token_key:
+            payload = {
+                **final_defaults["effect_payload"],
+                "item_rewards": [
+                    row for row in final_defaults["effect_payload"]["item_rewards"] if row["item_key"] != token_key
+                ],
+            }
+            text_update = progression_token_rules.CHEST_TEXT_UPDATES[key]
+            payload["reward_theme"] = text_update["reward_theme"]
+            final_defaults["effect_payload"] = payload
+            if "description" in text_update:
+                final_defaults["description"] = text_update["description"]
         assert expected == final_defaults
     for source in rules.IMAGE_SOURCES.values():
         assert (DATA / "images" / source).is_file()
@@ -218,3 +238,25 @@ def test_synced_bosses_execute_in_formal_engine_with_only_real_troops(synced_cha
     if mission_key == "zhanlong_changban_duanqiao":
         dust = [event for row in result.rounds for event in row.get("events", []) if event.get("effect") == "疑兵扬尘"]
         assert dust == []
+
+
+@pytest.mark.django_db
+def test_direct_progression_token_migration_moves_tokens_out_of_chests(synced_chain):
+    from gameplay.models import ItemTemplate, MissionTemplate
+
+    progression_token_rules.apply_direct_progression_tokens(apps, SimpleNamespace(connection=connection))
+
+    pairs = {
+        "zhanlong_yanshan_shizi": "zhanlong_white_horse_token",
+        "zhanlong_changban_tuwei": "zhanlong_changban_guard_token",
+        "zhanlong_changban_duanqiao": "zhanlong_dangyang_valor_letter",
+    }
+    for mission_key, token_key in pairs.items():
+        mission = MissionTemplate.objects.get(key=mission_key)
+        assert mission.drop_table[token_key] == 1
+        chest = ItemTemplate.objects.get(key="mission_chest_v3_" + mission_key)
+        assert all(row["item_key"] != token_key for row in chest.effect_payload["item_rewards"])
+
+    chest = ItemTemplate.objects.get(key="mission_chest_v3_zhanlong_yanshan_shizi")
+    assert chest.effect_payload["reward_theme"] == "燕山识英雄：必得行军补给"
+    assert chest.description == "燕山护民之行的任务宝箱，内有行军补给。"

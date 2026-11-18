@@ -29,9 +29,16 @@ def test_v2_has_daily_fengshen_progression_and_bounded_collection_goals():
     assert len(HISTORICAL_BOXES) == 32
     assert all(x["effect_payload"]["reward_balance_version"] == 3 for x in BOXES)
     assert all(x["effect_payload"]["reward_balance_version"] == 2 for x in HISTORICAL_BOXES)
-    for prefix in ("mission_chest_", "mission_chest_v3_"):
-        assert_fixed_reward(ITEMS[prefix + "biyou_candeng"]["effect_payload"], "wanyin_flag_fragment", 1)
-        assert_fixed_reward(ITEMS[prefix + "shier_xianyin"]["effect_payload"], "yuxu_broken_seal", 1)
+    assert_fixed_reward(ITEMS["mission_chest_biyou_candeng"]["effect_payload"], "wanyin_flag_fragment", 1)
+    assert_fixed_reward(ITEMS["mission_chest_shier_xianyin"]["effect_payload"], "yuxu_broken_seal", 1)
+    for chest_key, token_key in (
+        ("mission_chest_v3_biyou_candeng", "wanyin_flag_fragment"),
+        ("mission_chest_v3_shier_xianyin", "yuxu_broken_seal"),
+    ):
+        assert all(row["item_key"] != token_key for row in ITEMS[chest_key]["effect_payload"]["item_rewards"])
+    missions = {mission["key"]: mission for mission in MISSIONS}
+    assert missions["biyou_candeng"]["drop_table"].get("wanyin_flag_fragment") == 1
+    assert missions["shier_xianyin"]["drop_table"].get("yuxu_broken_seal") == 1
     for token in TOKENS:
         p = token["effect_payload"]
         assert p["required_items"] == {token["key"]: p["collection_cost"] - 1}

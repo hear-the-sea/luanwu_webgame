@@ -15,7 +15,7 @@ def mission_reward_payload(mission, items=None) -> dict:
         payload = yaml.safe_load((DATA_DIR / "item_templates.yaml").read_text(encoding="utf-8"))
         items = {row["key"]: row for row in payload["items"]}
     drops = mission["drop_table"] if isinstance(mission, dict) else mission.drop_table
-    chest_keys = set(drops) - {"silver"}
+    chest_keys = {key for key in drops if key.startswith("mission_chest_")}
     assert len(chest_keys) == 1
     chest_key = next(iter(chest_keys))
     assert drops[chest_key] == 1

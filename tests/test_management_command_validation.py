@@ -459,7 +459,8 @@ def test_default_mission_templates_import_wanxian_niming_chain():
     assert biyou.daily_limit == 3
     assert biyou.entry_cost == {}
     biyou_payload = mission_reward_payload(biyou)
-    assert_fixed_reward(biyou_payload, "wanyin_flag_fragment", 1)
+    assert biyou.drop_table.get("wanyin_flag_fragment") == 1
+    assert "wanyin_flag_fragment" not in reward_item_keys(biyou_payload)
     assert_random_group(
         biyou_payload,
         0.35,
@@ -501,7 +502,8 @@ def test_default_mission_templates_import_wanxian_niming_chain():
     assert shier.name == "封神之战：十二仙印"
     assert shier.daily_limit == 2
     assert shier.entry_cost == {"wanyin_flag_fragment": 1}
-    assert_fixed_reward(mission_reward_payload(shier), "yuxu_broken_seal", 1)
+    assert shier.drop_table.get("yuxu_broken_seal") == 1
+    assert "yuxu_broken_seal" not in reward_item_keys(mission_reward_payload(shier))
 
     fengbang = MissionTemplate.objects.get(key="fengbang_tianmen")
     assert fengbang.name == "封神之战：封榜天门"

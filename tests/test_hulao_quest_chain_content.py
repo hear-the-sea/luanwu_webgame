@@ -27,9 +27,11 @@ def test_hulao_quest_chain_consumes_the_previous_stage_token():
 
     assert [stage["display_order"] for stage in stages] == [1001, 1002, 1003]
     assert stages[0].get("entry_cost", {}) == {}
-    assert_fixed_reward(mission_reward_payload(stages[0]), "sishui_battle_report", 1)
+    assert stages[0]["drop_table"].get("sishui_battle_report") == 1
+    assert "sishui_battle_report" not in reward_item_keys(mission_reward_payload(stages[0]))
     assert stages[1]["entry_cost"] == {"sishui_battle_report": 1}
-    assert_fixed_reward(mission_reward_payload(stages[1]), "hulao_war_banner", 1)
+    assert stages[1]["drop_table"].get("hulao_war_banner") == 1
+    assert "hulao_war_banner" not in reward_item_keys(mission_reward_payload(stages[1]))
     assert stages[2]["entry_cost"] == {"hulao_war_banner": 1}
     assert_random_group(mission_reward_payload(stages[2]), 0.01, 1, {"super_guest_disguise_card": 1})
 

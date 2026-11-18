@@ -13674,7 +13674,7 @@ items:
     effect_payload:
       mission_reward_version: 1
       mission_key: biyou_candeng
-      reward_theme: 封神入口：必得阵旗碎片，有机会获得校尉军备与狐仙图纸
+      reward_theme: 封神入口：必得仙家补给，有机会获得校尉军备与狐仙图纸
       item_rewards:
       - item_key: buxuedan
         min_quantity: 4
@@ -13688,9 +13688,6 @@ items:
       - item_key: tie
         min_quantity: 5
         max_quantity: 5
-      - item_key: wanyin_flag_fragment
-        min_quantity: 1
-        max_quantity: 1
       random_item_groups:
       - label: experience_pineapple
         chance: 0.65
@@ -13755,7 +13752,7 @@ items:
     effect_payload:
       mission_reward_version: 1
       mission_key: shier_xianyin
-      reward_theme: 封神中层：必得玉虚残印，有机会获得阵法秘术与太清玉册
+      reward_theme: 封神中层：必得仙家补给，有机会获得阵法秘术与太清玉册
       item_rewards:
       - item_key: buxuedan
         min_quantity: 4
@@ -13769,9 +13766,6 @@ items:
       - item_key: tie
         min_quantity: 5
         max_quantity: 5
-      - item_key: yuxu_broken_seal
-        min_quantity: 1
-        max_quantity: 1
       random_item_groups:
       - label: experience_pineapple
         chance: 0.7
@@ -14366,7 +14360,7 @@ items:
 
   - key: mission_chest_v3_zhanlong_yanshan_shizi
     name: 燕山识龙宝箱
-    description: 燕山护民之行的任务宝箱，内有继续前往长坂的信物与补给。
+    description: 燕山护民之行的任务宝箱，内有行军补给。
     effect_type: loot_box
     rarity: purple
     tradeable: false
@@ -14377,11 +14371,8 @@ items:
     effect_payload:
       mission_reward_version: 1
       mission_key: zhanlong_yanshan_shizi
-      reward_theme: 燕山识英雄：必得白马银枪令与行军补给
+      reward_theme: 燕山识英雄：必得行军补给
       item_rewards:
-      - item_key: zhanlong_white_horse_token
-        min_quantity: 1
-        max_quantity: 1
       - item_key: buxuedan
         min_quantity: 4
         max_quantity: 4
@@ -14422,7 +14413,7 @@ items:
 
   - key: mission_chest_v3_zhanlong_changban_tuwei
     name: 长坂突围宝箱
-    description: 长坂接应之行的任务宝箱，内有护主军令，并有机会获得照夜玉狮子。
+    description: 长坂接应之行的任务宝箱，有机会获得照夜玉狮子。
     effect_type: loot_box
     rarity: purple
     tradeable: false
@@ -14433,11 +14424,8 @@ items:
     effect_payload:
       mission_reward_version: 1
       mission_key: zhanlong_changban_tuwei
-      reward_theme: 长坂见忠勇：必得长坂护主令，有机会获得照夜玉狮子
+      reward_theme: 长坂见忠勇：必得行军补给，有机会获得照夜玉狮子
       item_rewards:
-      - item_key: zhanlong_changban_guard_token
-        min_quantity: 1
-        max_quantity: 1
       - item_key: buxuedan
         min_quantity: 4
         max_quantity: 4
@@ -14499,7 +14487,7 @@ items:
 
   - key: mission_chest_v3_zhanlong_changban_duanqiao
     name: 当阳试胆宝箱
-    description: 长坂桥头较量的任务宝箱，内有前往蜀营演武的当阳义勇书。
+    description: 长坂桥头较量的任务宝箱，内有行军补给。
     effect_type: loot_box
     rarity: purple
     tradeable: false
@@ -14510,11 +14498,8 @@ items:
     effect_payload:
       mission_reward_version: 1
       mission_key: zhanlong_changban_duanqiao
-      reward_theme: 桥头试胆：必得当阳义勇书与行军补给
+      reward_theme: 桥头试胆：必得行军补给
       item_rewards:
-      - item_key: zhanlong_dangyang_valor_letter
-        min_quantity: 1
-        max_quantity: 1
       - item_key: buxuedan
         min_quantity: 5
         max_quantity: 5
@@ -14788,11 +14773,8 @@ items:
     effect_payload:
       mission_reward_version: 1
       mission_key: sishui_huaxiong_chengwei
-      reward_theme: 飞将入口：必得汜水战报，有机会获得军阵兵器
+      reward_theme: 飞将入口：必得军阵补给，有机会获得军阵兵器
       item_rewards:
-      - item_key: sishui_battle_report
-        min_quantity: 1
-        max_quantity: 1
       - item_key: buxuedan
         min_quantity: 4
         max_quantity: 4
@@ -14849,11 +14831,8 @@ items:
     effect_payload:
       mission_reward_version: 1
       mission_key: hulao_qunying_zhan_lvbu
-      reward_theme: 飞将中层：必得虎牢战旗，有机会获得吕布专属名器
+      reward_theme: 飞将中层：必得军阵补给，有机会获得吕布专属名器
       item_rewards:
-      - item_key: hulao_war_banner
-        min_quantity: 1
-        max_quantity: 1
       - item_key: buxuedan
         min_quantity: 4
         max_quantity: 4
