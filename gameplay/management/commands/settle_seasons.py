@@ -6,6 +6,7 @@ from typing import Any
 from django.core.management.base import BaseCommand, CommandError
 from django.db import close_old_connections
 
+from gameplay.services.season.availability import season_gameplay_enabled
 from gameplay.services.season.expeditions import advance_due_expeditions
 from gameplay.services.season.lifecycle import advance_seasons
 
@@ -18,6 +19,8 @@ class Command(BaseCommand):
         parser.add_argument("--interval", type=int, default=5, help="本地持续扫描间隔秒数，默认5秒")
 
     def handle(self, *args: Any, **options: Any) -> None:
+        if not season_gameplay_enabled():
+            raise CommandError("赛季玩法已关闭（DJANGO_SEASON_GAMEPLAY_ENABLED=0），已跳过结算")
         if options["interval"] < 1:
             raise CommandError("扫描间隔至少1秒")
         while True:

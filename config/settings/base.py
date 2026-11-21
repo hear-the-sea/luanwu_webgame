@@ -384,6 +384,11 @@ VIRTUAL_PLAYER_HEALTH_RECOVERY_SUCCESS_THRESHOLD = max(
 HOME_STATS_CACHE_TTL_SECONDS = int(env("DJANGO_HOME_STATS_CACHE_TTL_SECONDS", "15"))
 # 往季奖励入口会遍历所有已结束赛季；短 TTL + 领取后主动失效即可兼顾新鲜度与查询量。
 PREVIOUS_SEASON_REWARD_CACHE_TTL_SECONDS = int(env("DJANGO_PREVIOUS_SEASON_REWARD_CACHE_TTL_SECONDS", "60"))
+# 赛季玩法总开关：关闭时普通玩家看不到入口、访问被重定向，后台结算任务冻结；管理员仍可访问。
+# 测试环境统一开放，关闭行为由专项用例 override_settings 验证。
+SEASON_GAMEPLAY_ENABLED = (
+    env("DJANGO_SEASON_GAMEPLAY_ENABLED", "0").strip().lower() in {"1", "true", "yes", "on"} or RUNNING_TESTS
+)
 # Bounded wait for another worker to fill the market stats cache. Keep this
 # independently tunable because increasing it trades duplicate queries for tail latency.
 MARKET_STATS_CACHE_LOCK_WAIT_SECONDS = max(

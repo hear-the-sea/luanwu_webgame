@@ -11,6 +11,7 @@ import gameplay.selectors.stats as stats_selector
 from gameplay.request_context import get_prepared_manor
 from gameplay.services.action_points import ACTION_POINTS_MAX
 from gameplay.services.global_announcement import get_active_global_announcement
+from gameplay.services.season.availability import season_gameplay_enabled
 from gameplay.services.utils.messages import unread_message_count
 
 logger = logging.getLogger(__name__)
@@ -28,6 +29,7 @@ def _build_default_context() -> dict[str, Any]:
         "sidebar_action_points_label": f"0/{ACTION_POINTS_MAX}",
         "sidebar_grain_quantity": 0,
         "global_announcement": None,
+        "season_gameplay_enabled": season_gameplay_enabled(),
     }
 
 

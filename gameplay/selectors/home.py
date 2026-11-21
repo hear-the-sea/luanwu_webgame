@@ -21,6 +21,7 @@ from ..models import MissionRun, ResourceType
 from ..services.inventory.core import get_warehouse_grain_quantity
 from ..services.missions import can_retreat
 from ..services.resources import ResourceProductionBasis
+from ..services.season.availability import season_gameplay_enabled
 from ..services.technology import get_technology_template
 from ..services.utils.cache import CacheKeys
 from ..services.utils.cache_exceptions import CACHE_INFRASTRUCTURE_EXCEPTIONS
@@ -198,6 +199,8 @@ def get_home_context(manor, *, production_basis: ResourceProductionBasis | None 
             troop_count=sum(int(getattr(troop, "count", 0) or 0) for troop in player_troops),
         )
 
+    show_season_events = season_gameplay_enabled() or bool(getattr(getattr(manor, "user", None), "is_staff", False))
+
     return {
         "manor": manor,
         "warehouse_grain_quantity": warehouse_grain_quantity,
@@ -206,7 +209,7 @@ def get_home_context(manor, *, production_basis: ResourceProductionBasis | None 
         "guests": guests,
         "guest_count": len(guests),
         "active_runs": runs,
-        "active_season_events": get_home_season_events(manor, now=now),
+        "active_season_events": get_home_season_events(manor, now=now) if show_season_events else [],
         "upgrading_buildings": upgrading_buildings,
         "upgrading_technologies": upgrading_techs,
         "total_guest_salary": total_guest_salary,

@@ -131,6 +131,15 @@ python manage.py settle_seasons
 
 本地未启动Celery时，可单独运行 `python manage.py settle_seasons --watch --interval 5`，每5秒推进赛季；无需启动其他玩法的定时任务。已有扫描进程时直接使用，避免重复启动。
 
+### 赛季玩法总开关
+
+`DJANGO_SEASON_GAMEPLAY_ENABLED`（默认 `0`）控制赛季玩法面向玩家的开放：
+
+- `0`：普通玩家看不到导航入口、首页赛季事件和往季奖励入口；访问赛季页只显示关闭说明，赛季操作接口重定向首页；`gameplay.settle_seasons`、`gameplay.advance_season_expedition`、`manage.py settle_seasons` 与 `manage.py start_season` 均跳过。管理员仍可只读查看赛季页，但不能执行赛季操作。
+- `1`：恢复正常玩家入口与后台结算。也可使用 `true` / `yes` / `on`。
+
+开关只冻结入口与结算，不删除或改动既有赛季数据；重新设为 `1` 并重启 Web、worker 与 Beat 后从冻结状态继续。切换开关时需确保 Celery worker 和 Beat 也已加载新配置。
+
 所有季内写入由赛季锁串行，复用请求凭证返回原结果；领兵、战损、贡献与战报在事务中结算。业务条件在途中改变时安全返程，程序或数据库异常回滚后由扫描器重试。管理员页面只读审计。
 
 自动验证覆盖报名与排名、生产和额度、真实出征往返、HP/重伤及护院战损、攻城易主、驻军、运输拦截、奖励防重、战报权限、跨系统门客占用，以及透明建筑命中、弹窗、地图切换、窄屏与局部导航。

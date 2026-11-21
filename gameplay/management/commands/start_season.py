@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
 from core.exceptions import GameError
+from gameplay.services.season.availability import season_gameplay_enabled
 from gameplay.services.season.lifecycle import create_season
 
 
@@ -18,6 +19,8 @@ class Command(BaseCommand):
         parser.add_argument("--starts-at", help="ISO开始时间；省略时立即开启，不含时区时按服务器时区解析")
 
     def handle(self, *args: Any, **options: Any) -> None:
+        if not season_gameplay_enabled():
+            raise CommandError("赛季玩法已关闭（DJANGO_SEASON_GAMEPLAY_ENABLED=0），不能创建新赛季")
         starts_at = timezone.now()
         if options["starts_at"]:
             try:

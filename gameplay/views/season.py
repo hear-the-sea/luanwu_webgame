@@ -17,12 +17,22 @@ from core.utils.rate_limit import rate_limit_redirect
 from gameplay.selectors.season import get_season_context
 from gameplay.services.manor.bootstrap import get_manor
 from gameplay.services.season.actions import perform_action
+from gameplay.services.season.availability import season_gameplay_enabled
 
 logger = logging.getLogger(__name__)
+
+SEASON_CLOSED_MESSAGE = "赛季玩法暂时关闭，敬请期待"
+
+
+def _season_closed_for(request: HttpRequest) -> bool:
+    """关闭时普通玩家只看到关闭说明；管理员保留只读访问以便检查数据。"""
+    return not season_gameplay_enabled() and not request.user.is_staff
 
 
 @login_required
 def season_view(request: HttpRequest) -> HttpResponse:
+    if _season_closed_for(request):
+        return render(request, "gameplay/season_closed.html")
     try:
         season_id = int(request.GET["season_id"]) if request.GET.get("season_id") else None
     except (ValueError, TypeError):
@@ -34,6 +44,10 @@ def season_view(request: HttpRequest) -> HttpResponse:
 @require_POST
 @rate_limit_redirect("season_action", limit=30, window_seconds=60)
 def season_action_view(request: HttpRequest) -> HttpResponse:
+    # 关闭期间管理员也只能查看，不能通过操作接口产生扣资源、发奖或出征。
+    if not season_gameplay_enabled():
+        messages.info(request, SEASON_CLOSED_MESSAGE)
+        return redirect("home")
     season_id = None
     try:
         season_id = int(request.POST.get("season_id", ""))

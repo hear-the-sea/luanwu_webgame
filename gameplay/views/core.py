@@ -97,8 +97,10 @@ class HomeView(TemplateView):
             else:
                 context.update(get_home_context(manor, production_basis=production_basis))
             from gameplay.selectors.season_archive import previous_season_reward
+            from gameplay.services.season.availability import season_gameplay_enabled
 
-            context["previous_season_reward"] = previous_season_reward(manor)
+            if season_gameplay_enabled() or self.request.user.is_staff:
+                context["previous_season_reward"] = previous_season_reward(manor)
 
         return context
 

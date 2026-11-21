@@ -42,7 +42,12 @@ def test_main_navigation_highlights_only_the_current_application(page, active_na
     request.resolver_match = resolve(request.path)
     html = render_to_string(
         "base.html",
-        {"request": request, "user": SimpleNamespace(is_authenticated=True, id=1), "csrf_token": "test-token"},
+        {
+            "request": request,
+            "user": SimpleNamespace(is_authenticated=True, id=1),
+            "csrf_token": "test-token",
+            "season_gameplay_enabled": True,
+        },
     )
     parser = MainNavigationParser()
     parser.feed(html)

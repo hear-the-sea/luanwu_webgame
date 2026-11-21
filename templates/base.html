@@ -40,7 +40,7 @@
             <a href="{% url 'gameplay:arena' %}" data-partial-nav="1" class="nav-tab {% if 'arena' in request.path %}active{% endif %}">竞技场</a>
             <a href="{% url 'gameplay:work' %}" data-partial-nav="1" class="nav-tab {% if 'work' in request.path %}active{% endif %}">打工</a>
             <a href="{% url 'gameplay:tasks' %}" data-partial-nav="1" class="nav-tab {% if 'tasks' in request.path %}active{% endif %}">任务</a>
-            <a href="{% url 'gameplay:season' %}" data-partial-nav="1" class="nav-tab {% if request.resolver_match.view_name == 'gameplay:season' %}active{% endif %}">赛季玩法</a>
+            {% if season_gameplay_enabled or user.is_staff %}<a href="{% url 'gameplay:season' %}" data-partial-nav="1" class="nav-tab {% if request.resolver_match.view_name == 'gameplay:season' %}active{% endif %}">赛季玩法</a>{% endif %}
             <a href="{% url 'gameplay:messages' %}" data-partial-nav="1" class="nav-tab nav-tab--messages {% if 'messages' in request.path %}active{% endif %}" id="nav-messages-link-top" data-unread="{{ message_unread_count|default:0 }}">
                 消息
                 {% if message_unread_count > 0 %}
