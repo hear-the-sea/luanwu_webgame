@@ -112,7 +112,7 @@ def test_dianwei_promotion_keeps_owned_guests_full_hp_and_updates_candidates(
 
 
 @pytest.mark.django_db
-def test_baiqi_promotion_scales_wounded_hp_and_updates_rarity(django_user_model):
+def test_baiqi_promotion_scales_wounded_hp_and_updates_rarity(django_user_model, guest_hp_before_level_growth):
     manor = ensure_manor(django_user_model.objects.create_user(username="baiqi_promotion", password="pass"))
     template = GuestTemplate.objects.create(
         key="hist_xianqin_0031",

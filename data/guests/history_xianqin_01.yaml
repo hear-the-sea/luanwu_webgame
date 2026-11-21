@@ -370,7 +370,7 @@ heroes:
     avatar: monkey/先秦与神话/田穰苴.png
     default_gender: male
     archetype: military
-    flavor: （生卒年不详）兵法大家，《司马法》作者。他本姓田，因战功被尊为司马。他严于治军，斩庄贾以正军法，威震三军。他著《司马法》论兵，与《孙子兵法》并称。齐景公时，他击退燕晋之兵，收复失地，功勋卓著。虽后遭谗害忧愤而死，但其兵法传世，影响深远。
+    flavor: （生卒年不详）春秋齐国将领，本姓田，名穰苴，因官至大司马，后世称司马穰苴。齐景公时晋、燕侵齐，他受晏婴推荐领兵，与监军庄贾约定会合，庄贾迟到，他依军法将其处死，三军震肃，随即击退敌军，收复失地。相传其用兵言行后来被整理为《司马法》，此书实成于战国齐人之手，非他亲著。后因谗言被景公疏远，发病而死。
     growth_range:
     - 7
     - 11
@@ -435,16 +435,15 @@ heroes:
       intellect: 20
       defense: 20
       agility: 16
-  blue:
   - key: hist_xianqin_0024
     name: 孔伋
     avatar: pig/文042.png
     default_gender: male
     archetype: civil
-    flavor: （前483年—前402年）孔子之孙，字子思，战国初期儒者。孔伋相传受学于曾子，讲学于鲁，后世将《中庸》归于其名下；其学说经孟子一脉传承，成为子思学派的重要来源。
+    flavor: （前483年—前402年）孔子之孙，名伋，字子思，战国初期儒者。相传他受学于曾子，讲学于鲁，曾为鲁穆公师。后世将《中庸》归于其名下，其学说经孟子一脉传承，形成"思孟学派"。《汉书·艺文志》著录《子思》二十三篇，多已散佚，残存部分见于《礼记》。
     growth_range:
-    - 5
-    - 9
+    - 7
+    - 11
     attribute_weights:
       force: 8
       intellect: 58
@@ -455,10 +454,10 @@ heroes:
     avatar: pig/文029.png
     default_gender: male
     archetype: civil
-    flavor: （前520年—前456年）孔子弟子，字子贡，卫国人。端木赐善于辞令，又长于经商，曾出使齐、吴、越等国；孔子去世后，他为老师服丧六年。
+    flavor: （前520年—前456年）孔子弟子，姓端木名赐，字子贡，卫国人。他善于辞令，曾出使齐、吴、越、晋，据《史记》所载，一出而存鲁、乱齐、破吴、强晋；他又长于经商，家累千金，是孔门弟子中最富者。孔子去世后，他在墓旁守丧六年才离去，后世称其为儒商始祖。
     growth_range:
-    - 5
-    - 9
+    - 7
+    - 11
     attribute_weights:
       force: 12
       intellect: 54
@@ -469,24 +468,10 @@ heroes:
     avatar: pig/文033.png
     default_gender: male
     archetype: civil
-    flavor: （约前725年—前621年）春秋秦国大夫，原为虞国大夫。虞国灭亡后，百里奚作为晋国陪嫁臣进入秦国，途中逃到楚国牧牛；秦穆公用五张黑羊皮将他赎回，任为大夫，后来与蹇叔共同辅政。
+    flavor: （约前725年—前621年）春秋秦国大夫。他原为虞国大夫，晋献公灭虞后，被作为陪嫁奴仆送往秦国，中途逃至楚国牧牛。秦穆公听说其贤，用五张黑公羊皮将他赎回，时人称"五羖大夫"。他向穆公推荐蹇叔，二人共掌国政，辅佐穆公修政强兵，称霸西戎。
     growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 10
-      intellect: 56
-      defense: 22
-      agility: 12
-  - key: hist_xianqin_0029
-    name: 蔿敖
-    avatar: pig/文042.png
-    default_gender: male
-    archetype: civil
-    flavor: （约前630年—前593年）春秋楚国令尹，姓蔿名敖，字孙叔。蔿敖曾主持修筑芍陂水利，辅佐楚庄王处理政务；他三次出任令尹、三次离任，去世时家中没有余财。
-    growth_range:
-    - 5
-    - 9
+    - 7
+    - 12
     attribute_weights:
       force: 10
       intellect: 56
@@ -497,10 +482,10 @@ heroes:
     avatar: pig_wen_male1.png
     default_gender: male
     archetype: civil
-    flavor: （约前407年—约前310年）战国医者，姓秦名越人，号扁鹊。传说他诊治赵简子、虢太子和齐桓侯，善于从脉象判断病情；《史记》记载，他后来被秦国医令李醯派人刺杀。
+    flavor: （约前407年—约前310年）战国医者，姓秦名越人，号扁鹊。相传他受术于长桑君，能望色、听声、写形，尤精切脉。《韩非子》中扁鹊见蔡桓公、《史记》中见齐桓侯的故事，后世概括为"讳疾忌医"。他后来遭秦国太医令李醯嫉妒，被派人刺杀。
     growth_range:
-    - 5
-    - 9
+    - 7
+    - 11
     attribute_weights:
       force: 8
       intellect: 60
@@ -513,8 +498,8 @@ heroes:
     archetype: civil
     flavor: （约前507年—约前444年）百工圣人，机关大师。他就是鲁班，木匠的祖师爷。锯子、刨子、曲尺、墨斗，都是他的发明；云梯、钩拒、连弩，也出自他的巧手。他曾为楚国造云梯攻宋，却被墨子以守城之术折服，遂息兵罢战。鲁班之巧，穷尽工艺之极致；而他与墨子的对决，更成为止战传奇。工匠精神的源头，在此。
     growth_range:
-    - 5
-    - 9
+    - 7
+    - 11
     attribute_weights:
       force: 14
       intellect: 54
@@ -525,10 +510,10 @@ heroes:
     avatar: pig_wu_male5.png
     default_gender: male
     archetype: military
-    flavor: （?—前484年）春秋吴国大夫，楚国伍奢之子。伍子胥逃到吴国后辅佐阖闾攻入楚都，掘楚平王墓泄愤；夫差即位后，他多次劝阻北上争霸，最终被夫差赐死。
+    flavor: （?—前484年）春秋吴国大夫，名员，字子胥，楚国伍奢之子。其父兄被楚平王杀害，他逃亡吴国，辅佐公子光夺取王位，即吴王阖闾；后与孙武率军攻入楚都郢，掘楚平王墓鞭尸复仇。夫差即位后，他力谏防备越国、反对北上争霸，触怒夫差，被赐属镂剑自尽。相传他临终遗言，要把双眼悬于东门，以观越军入吴。
     growth_range:
-    - 5
-    - 9
+    - 7
+    - 12
     attribute_weights:
       force: 44
       intellect: 18
@@ -539,10 +524,10 @@ heroes:
     avatar: monkey_wen_male5.png
     default_gender: male
     archetype: military
-    flavor: （约前520年—约前465年）春秋越王，名勾践。会稽战败后，勾践入吴为臣，获释回国后任用范蠡、文种，整顿越国军政；二十多年后攻灭吴国，晚年诛杀文种，范蠡则离越远行。
+    flavor: （约前520年—约前465年）春秋越国君主，名勾践，允常之子。槜李之战败吴，后于夫椒之战大败，退保会稽，入吴为臣三年。获释归国后，他任用范蠡、文种，卧薪尝胆，休养生息，二十余年后再度伐吴，围姑苏三年而灭吴。晚年听信谗言，赐死文种，范蠡则泛舟远走。
     growth_range:
-    - 5
-    - 9
+    - 7
+    - 11
     attribute_weights:
       force: 36
       intellect: 22
@@ -553,10 +538,10 @@ heroes:
     avatar: pig/文038.png
     default_gender: male
     archetype: civil
-    flavor: （约前1649年—前1550年）商汤名相，烹饪始祖。他出身卑微，本是有莘氏的陪嫁奴隶，却胸怀济世之志。他以精湛厨艺接近商汤，借烹饪之道阐述治国之理——"治大国若烹小鲜"，需掌握火候、调和五味。商汤慧眼识才，拜他为相，共同谋划灭夏大业。鸣条之战后，夏桀败亡，商朝建立，伊尹功居首位。他辅佐商朝五代君主，曾放逐不肖之君太甲于桐宫，待其悔过后复位。他是中国历史上第一位布衣卿相，开创了平民跃居高位的先河。伊尹之名，烹饪界与政界共尊，流芳百世。
+    flavor: （约前1649年—约前1550年）商汤时名相，名挚，又称伊尹。他出身有莘氏陪嫁之臣，相传以烹调之术进说商汤，以调和五味比喻治国，后世遂有"伊尹负鼎"之说。商汤任以为相，谋划灭夏，鸣条之战后商朝建立。他辅佐商汤及后代君主，曾放逐失政的太甲于桐宫，待其悔过而复立，被后世视为贤相典范。
     growth_range:
-    - 5
-    - 9
+    - 7
+    - 12
     attribute_weights:
       force: 10
       intellect: 58
@@ -567,10 +552,10 @@ heroes:
     avatar: monkey_wen_male2.png
     default_gender: male
     archetype: civil
-    flavor: （?—前243年）战国魏国公子，魏昭王少子，封信陵君。魏无忌礼贤下士，门客三千；秦围邯郸时，他用侯嬴之计窃取兵符，命朱亥击杀晋鄙，率魏军救赵。晚年失去魏王信任，沉溺酒色，病逝。
+    flavor: （?—前243年）战国魏国公子，魏昭王少子，魏安釐王之弟，封信陵君，为战国四公子之一。他礼贤下士，门客三千。秦围邯郸时，他采用侯嬴之计，请如姬盗取兵符，命朱亥击杀将军晋鄙，夺得魏军指挥权，解邯郸之围。后因秦人反间，被魏王猜忌，失去兵权，从此沉湎酒色，郁郁而终。
     growth_range:
-    - 5
-    - 9
+    - 7
+    - 11
     attribute_weights:
       force: 14
       intellect: 52
@@ -581,12 +566,27 @@ heroes:
     avatar: monkey_wen_female5.png
     default_gender: female
     archetype: civil
-    flavor: （生卒年不详）传说中的越国女子，苎萝村浣纱女。越王勾践谋划灭吴时，范蠡将西施送入吴宫；她受到夫差宠爱，越军灭吴后下落有泛舟五湖、沉江等不同传说。
+    flavor: （生卒年不详）相传为春秋末年越国苎萝村的浣纱女，姓施，居西村，故称西施。越王勾践败于吴后，范蠡将她献给吴王夫差，夫差宠爱有加，为她建馆娃宫。越国灭吴后，她的下落说法不一：《墨子》称其被沉于江，民间又有随范蠡泛舟五湖的传说。后世将她列为"四大美女"之首。
     growth_range:
-    - 5
-    - 9
+    - 7
+    - 11
     attribute_weights:
       force: 8
       intellect: 54
       defense: 18
       agility: 20
+  blue:
+  - key: hist_xianqin_0029
+    name: 蔿敖
+    avatar: pig/文042.png
+    default_gender: male
+    archetype: civil
+    flavor: （约前630年—前593年）春秋楚国令尹，姓蔿名敖，字孙叔。相传他主持修建芍陂，蓄水灌田，泽及后世；辅佐楚庄王整饬政事，楚国国力日盛，邲之战中助庄王败晋。孙叔敖三为令尹而不喜，三去而不悔，生活俭素，死后家无余财。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 56
+      defense: 22
+      agility: 12

@@ -62,6 +62,11 @@ heroes:
     - 8
     recruitable: false
     avatar: pubayi.png
+    attribute_weights:
+      force: 15
+      intellect: 45
+      defense: 15
+      agility: 25
   - key: orig_liang_shanbo
     name: 梁山伯
     avatar: pig/文039.png

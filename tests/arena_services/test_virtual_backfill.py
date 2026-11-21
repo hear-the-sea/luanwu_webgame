@@ -426,20 +426,20 @@ def test_bot_lineup_evaluation_distinguishes_ready_and_closest_below():
         mode="tournament",
         event_id=10,
         target_guest_count=1,
-        target_team_power=800,
+        target_team_power=700,
     )
     weak_result = evaluate_bot_lineup(
         weak,
         mode="tournament",
         event_id=10,
         target_guest_count=1,
-        target_team_power=800,
+        target_team_power=700,
     )
 
     assert ready_result.is_ready is True
-    assert ready_result.selected_power == 700
+    assert ready_result.selected_power == 600
     assert weak_result.is_ready is False
-    assert weak_result.selected_power == 600
+    assert weak_result.selected_power == 500
 
 
 @pytest.mark.django_db

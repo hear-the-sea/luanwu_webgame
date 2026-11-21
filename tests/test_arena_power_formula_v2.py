@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from core.game_data.equipment_value import POWER_POINTS_PER_HP, combat_power_points, guest_power
 from gameplay.services.arena.power_settings import current_arena_power_formula_version
 from gameplay.services.arena.virtual_lineups import (
     LineupSelectionContext,
@@ -52,10 +53,10 @@ def test_snapshot_power_v2_includes_luck_but_not_latent_troop_capacity():
 
 def test_snapshot_power_v2_does_not_double_count_defense_hp():
     snapshot = _snapshot()
-    # Defense already adds 50 HP per point to max_hp.  Raising both defense and
-    # max_hp by 50 must not be treated as two independent defense sources.
-    raised_hp_only = _snapshot(max_hp=12050)
-    raised_defense = _snapshot(defense=151, defense_stat=151, max_hp=12050)
+    # Defense already adds 30 HP per point to max_hp.  Raising both defense and
+    # max_hp by 30 must not be treated as two independent defense sources.
+    raised_hp_only = _snapshot(max_hp=12030)
+    raised_defense = _snapshot(defense=151, defense_stat=151, max_hp=12030)
     assert snapshot_power(raised_hp_only, formula_version=2) > snapshot_power(snapshot, formula_version=2)
     assert snapshot_power(raised_defense, formula_version=2) > snapshot_power(raised_hp_only, formula_version=2)
 
@@ -111,3 +112,38 @@ def test_compare_power_formulas_returns_both_versions():
         "v1": snapshot_power(snapshot, formula_version=1),
         "v2": snapshot_power(snapshot, formula_version=2),
     }
+
+
+def test_snapshot_power_v2_current_hp_only_scales_the_hp_component():
+    snapshot = _snapshot(max_hp=12000, current_hp=12000)
+    full = snapshot_power(snapshot, formula_version=2, hp=12000)
+    half = snapshot_power(snapshot, formula_version=2, hp=6000)
+    assert full - half == 600
+
+
+def test_combat_power_points_matches_guest_power_at_full_health():
+    max_hp = max(200, 1000 + 1500 + 150 * 30) + (40 - 1) * 60
+    guest_kwargs = dict(
+        force=200,
+        intellect=80,
+        defense=150,
+        defense_stat=150,
+        agility=100,
+        luck=80,
+        hp_bonus=1500,
+        base_hp=1000,
+        level=40,
+        archetype="military",
+    )
+    assert combat_power_points(
+        attack=164,
+        defense=150,
+        defense_stat=150,
+        force=200,
+        intellect=80,
+        level=40,
+        archetype="military",
+        max_hp=max_hp,
+        agility=100,
+        luck=80,
+    ) == round(guest_power(**guest_kwargs) / POWER_POINTS_PER_HP)

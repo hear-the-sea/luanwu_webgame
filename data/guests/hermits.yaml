@@ -321,7 +321,7 @@ heroes:
     - 14
     attribute_weights:
       force: 10
-      intellect: 45
+      intellect: 50
       defense: 15
       agility: 25
     avatar: buyi.png

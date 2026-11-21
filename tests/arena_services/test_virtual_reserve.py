@@ -1129,7 +1129,7 @@ def test_reserve_candidate_context_reuses_reference_entries(training_member):
 def test_reserve_reconciliation_preserves_growth_retry_state(training_member):
     # Keep the persisted strength summary aligned with the live guest snapshot;
     # this test is about retry preservation, not stale power repair.
-    training_member.current_lineup_power = 550
+    training_member.current_lineup_power = 500
     training_member.save(update_fields=["current_lineup_power"])
     retry_at = timezone.now() + timedelta(minutes=30)
     training_member.growth_retry_streak = 3
@@ -1678,7 +1678,7 @@ def test_changed_reference_reevaluates_member_without_resetting_growth_rounds():
     assert changed.version == demand.version + 1
     assert member.evaluated_version == changed.version
     assert member.state == ArenaVirtualReserveMember.State.READY
-    assert member.current_lineup_power == 550
+    assert member.current_lineup_power == 500
     assert member.growth_rounds_started == 4
 
 

@@ -1,362 +1,363 @@
 # 隋唐五代历史人物（第08批：唐代文化与学术、唐代诗人与文人补充）
 
-green:
-- key: hist_suitang_0247_bukong
-  name: 不空
-  default_gender: male
-  archetype: civil
-  flavor: 不空（705—774），唐代高僧、密教译师，曾受玄宗、肃宗、代宗礼遇，在长安译经传法，对唐密及东亚密教传播影响深远。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 10
-    intellect: 43
-    defense: 16
-    agility: 17
+heroes:
+  green:
+  - key: hist_suitang_0247_bukong
+    name: 不空
+    default_gender: male
+    archetype: civil
+    flavor: 不空（705—774），法名智藏，相传为北天竺人，唐代密宗高僧、译经家。幼年随金刚智来华，参与译场；天宝年间奉命出海，赴师子国从普贤阿阇梨受密法，携梵本归唐。历玄宗、肃宗、代宗三朝，深受礼遇，封肃国公，译出《金刚顶经》等密典七十余部，与善无畏、金刚智并称“开元三大士”。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 12
+      intellect: 49
+      defense: 19
+      agility: 20
 
-- key: hist_suitang_0248_linghudenfen
-  name: 令狐德棻
-  default_gender: male
-  archetype: civil
-  flavor: 令狐德棻（583—666），唐代史学家、官员，参与编修《周书》《隋书》《北齐书》等前代史书，是唐初国家修史的重要史臣。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 10
-    intellect: 44
-    defense: 16
-    agility: 16
+  - key: hist_suitang_0248_linghudenfen
+    name: 令狐德棻
+    default_gender: male
+    archetype: civil
+    flavor: 令狐德棻（583—666），宜州华原人，唐初史学家。武德年间首倡修撰梁、陈、北齐、北周、隋五代之史，并奏请购求天下遗书，使散佚典籍得以汇集。贞观年间主撰《周书》，又参与《晋书》《隋书》等修纂；高宗时官至国子祭酒、弘文馆学士，是唐初官修史书格局的主要推动者。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 12
+      intellect: 50
+      defense: 19
+      agility: 19
 
-- key: hist_suitang_0249_yuanjie
-  name: 元结
-  default_gender: male
-  archetype: civil
-  flavor: 元结（719—772），唐代诗人、散文家、官员，字次山，著有《元次山集》，诗文多反映安史之乱后的社会现实。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 13
-    intellect: 40
-    defense: 18
-    agility: 16
+  - key: hist_suitang_0249_yuanjie
+    name: 元结
+    default_gender: male
+    archetype: civil
+    flavor: 元结（719—772），字次山，号漫叟，河南鲁山人，唐代诗人、散文家。天宝十二载登进士第，安史之乱中曾率邻里避乱，后任道州刺史、容管经略使，在地方革除苛政、招抚流亡。杜甫读其《舂陵行》《贼退示官吏》后作诗称许。他为文质朴、诗多讽喻，著有《元次山集》。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 15
+      intellect: 46
+      defense: 21
+      agility: 18
 
-- key: hist_suitang_0250_liuchangqing
-  name: 刘长卿
-  default_gender: male
-  archetype: civil
-  flavor: 刘长卿（约709—约785），唐代诗人，字文房，擅长五言诗，后世称其为“五言长城”，曾任随州刺史等职。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 12
-    intellect: 39
-    defense: 17
-    agility: 16
+  - key: hist_suitang_0250_liuchangqing
+    name: 刘长卿
+    default_gender: male
+    archetype: civil
+    flavor: 刘长卿（约709—约785），字文房，郡望河间，唐代诗人。早年居嵩山读书，天宝年间入仕，曾任长洲尉、海盐令，两度遭贬，官终随州刺史，世称“刘随州”。他工于五言，自许“五言长城”，诗多写迁谪之慨与山水孤寂，名句“日暮苍山远，天寒白屋贫”即出其手，有《刘随州集》传世。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 14
+      intellect: 47
+      defense: 20
+      agility: 19
 
-- key: hist_suitang_0251_lulun
-  name: 卢纶
-  default_gender: male
-  archetype: civil
-  flavor: 卢纶（约739—约799），唐代诗人，字允言，河中蒲人，“大历十才子”之一，诗作多写边塞、军旅与送别。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 13
-    intellect: 38
-    defense: 17
-    agility: 16
+  - key: hist_suitang_0251_lulun
+    name: 卢纶
+    default_gender: male
+    archetype: civil
+    flavor: 卢纶（约739—约799），字允言，河中蒲人，唐代“大历十才子”之一。早年屡举进士不第，后经荐引入仕，曾赴河中浑瑊幕府任职，官终检校户部郎中。其诗兼写边塞军旅与送别酬赠，《塞下曲》“月黑雁飞高，单于夜遁逃”一组尤见雄健，为唐诗边塞名篇。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 15
+      intellect: 46
+      defense: 20
+      agility: 19
 
-- key: hist_suitang_0252_sikongtu
-  name: 司空图
-  default_gender: male
-  archetype: civil
-  flavor: 司空图（837—908），晚唐诗人、诗论家，字表圣，河中虞乡人，著有《二十四诗品》和《司空表圣文集》。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 11
-    intellect: 42
-    defense: 16
-    agility: 16
+  - key: hist_suitang_0252_sikongtu
+    name: 司空图
+    default_gender: male
+    archetype: civil
+    flavor: 司空图（837—908），字表圣，河中虞乡人，晚唐诗人、诗论家。咸通十年登进士第，官至中书舍人，后见朝政日乱，退隐中条山王官谷。朱温代唐后，他不食而死，以唐遗民终。传为所著的《二十四诗品》以雄浑、冲淡等二十四目品评诗境，对后世诗论影响深远。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 13
+      intellect: 49
+      defense: 19
+      agility: 19
 
-- key: hist_suitang_0253_sikongshu
-  name: 司空曙
-  default_gender: male
-  archetype: civil
-  flavor: 司空曙（生卒年不详），唐代诗人，字文明，广平人，“大历十才子”之一，诗作多写羁旅、送别与隐逸。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 12
-    intellect: 38
-    defense: 16
-    agility: 16
+  - key: hist_suitang_0253_sikongshu
+    name: 司空曙
+    default_gender: male
+    archetype: civil
+    flavor: 司空曙（生卒年不详），字文明，广平人，唐代“大历十才子”之一。代宗朝任左拾遗，后因事贬为长林县丞，官终水部郎中。他与卢纶为表亲，二人唱和颇多，名句“雨中黄叶树，灯下白头人”即出自《喜外弟卢纶见宿》。其诗多写羁旅、山林与送别，语淡而情真，《全唐诗》存其诗二卷。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 15
+      intellect: 45
+      defense: 20
+      agility: 20
 
-- key: hist_suitang_0254_simachengzhen
-  name: 司马承祯
-  default_gender: male
-  archetype: civil
-  flavor: 司马承祯（647—735），唐代道士、道教学者，字子微，河内温人，曾受睿宗、玄宗召见，著有《坐忘论》等。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 10
-    intellect: 42
-    defense: 16
-    agility: 16
+  - key: hist_suitang_0254_simachengzhen
+    name: 司马承祯
+    default_gender: male
+    archetype: civil
+    flavor: 司马承祯（647—735），字子微，河内温人，唐代道士。少年师从潘师正于嵩山，尽得其符箓及辟谷、导引之术，后隐居天台山。武则天、睿宗、玄宗皆曾召其入京问道，玄宗还亲受法箓，礼遇甚隆。所著《坐忘论》分七阶论修道次第，主张收心简事、与道冥一，卒谥“贞一先生”。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 12
+      intellect: 50
+      defense: 19
+      agility: 19
 
-- key: hist_suitang_0255_wuyun
-  name: 吴筠
-  default_gender: male
-  archetype: civil
-  flavor: 吴筠（生卒年不详），唐代道士、诗人，字贞节，华阴人，曾受唐玄宗召见，后隐居茅山，著有《玄纲论》。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 9
-    intellect: 40
-    defense: 15
-    agility: 16
+  - key: hist_suitang_0255_wuyun
+    name: 吴筠
+    default_gender: male
+    archetype: civil
+    flavor: 吴筠（？—约778），字贞节，华阴人，唐代上清派道士、诗人。少时通习经史，举进士不第，转而入嵩山修道，师承潘师正一门。天宝年间受玄宗征召入京，应对道法，后自请还山，隐居于茅山等地。相传他曾向玄宗荐举李白。著有《玄纲论》《神仙可学论》，主张神仙可学而至，诗作亦收入《全唐诗》。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 11
+      intellect: 50
+      defense: 19
+      agility: 20
 
-- key: hist_suitang_0256_shandao
-  name: 善导
-  default_gender: male
-  archetype: civil
-  flavor: 善导（613—681），唐代高僧，净土宗高祖，俗姓朱，临淄人，长期在长安弘扬念佛法门，著有《观无量寿佛经疏》等。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 10
-    intellect: 42
-    defense: 15
-    agility: 16
+  - key: hist_suitang_0256_shandao
+    name: 善导
+    default_gender: male
+    archetype: civil
+    flavor: 善导（613—681），俗姓朱，临淄人，唐代高僧，净土宗的奠基者。他初习《法华》《维摩》，后师从道绰，专修念佛法门，到长安后广弘称名往生之说。相传曾写《阿弥陀经》十万卷、绘净土变相三百余壁，所著《观无量寿佛经疏》确立净土教义，后世尊为莲宗二祖。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 12
+      intellect: 51
+      defense: 18
+      agility: 19
 
-- key: hist_suitang_0257_shanwuwei
-  name: 善无畏
-  default_gender: male
-  archetype: civil
-  flavor: 善无畏（637—735），唐代来华僧人，印度摩揭陀人，开元年间在长安译经传授密教，与金刚智、不空并称开元三大士。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 10
-    intellect: 42
-    defense: 16
-    agility: 16
+  - key: hist_suitang_0257_shanwuwei
+    name: 善无畏
+    default_gender: male
+    archetype: civil
+    flavor: 善无畏（637—735），中印度摩揭陀人，唐代来华译经僧。相传为释迦族后裔，曾让国出家，习密法后经中亚辗转抵达长安，玄宗礼为教主。开元年间译出《大毗卢遮那成佛神变加持经》，即《大日经》，由弟子一行笔受，为汉地密教奠定根本典籍；与金刚智、不空并称“开元三大士”。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 12
+      intellect: 50
+      defense: 19
+      agility: 19
 
-- key: hist_suitang_0258_yaohe
-  name: 姚合
-  default_gender: male
-  archetype: civil
-  flavor: 姚合（约775—约855），唐代诗人，字大凝，陕州硖石人，曾任秘书少监等职，诗风清峭，著有《姚少监诗集》。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 11
-    intellect: 39
-    defense: 17
-    agility: 16
+  - key: hist_suitang_0258_yaohe
+    name: 姚合
+    default_gender: male
+    archetype: civil
+    flavor: 姚合（约775—约855），字大凝，陕州硖石人，唐代诗人。元和十一年登进士第，曾任武功主簿，世称“姚武功”，后历杭州刺史，官终秘书少监。他与贾岛诗风相近，均以苦吟清峭见长，并称“姚贾”。曾选王维、祖咏等二十一家诗为《极玄集》，所著《姚少监诗集》存世。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 13
+      intellect: 48
+      defense: 20
+      agility: 19
 
-- key: hist_suitang_0259_kongyingda
-  name: 孔颖达
-  default_gender: male
-  archetype: civil
-  flavor: 孔颖达（574—648），唐代经学家、官员，字冲远，冀州衡水人，主持编纂《五经正义》，使其成为唐代官学经学注本。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 10
-    intellect: 46
-    defense: 16
-    agility: 16
+  - key: hist_suitang_0259_kongyingda
+    name: 孔颖达
+    default_gender: male
+    archetype: civil
+    flavor: 孔颖达（574—648），字冲远，冀州衡水人，唐代经学家。隋末举明经高第，入唐后为秦王府文学馆学士，历国子博士、国子祭酒，曾为太子讲经。贞观年间奉诏总纂《五经正义》，折衷南北经学，统一诸经注疏，成为唐代科举取士的官定读本，卒谥“宪”。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 11
+      intellect: 53
+      defense: 18
+      agility: 18
 
-- key: hist_suitang_0260_cuihu
-  name: 崔护
-  default_gender: male
-  archetype: civil
-  flavor: 崔护（生卒年不详），唐代诗人，博陵人，贞元十二年进士，官至岭南节度使，以《题都城南庄》最为知名。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 11
-    intellect: 38
-    defense: 16
-    agility: 16
+  - key: hist_suitang_0260_cuihu
+    name: 崔护
+    default_gender: male
+    archetype: civil
+    flavor: 崔护（生卒年不详），字殷功，博陵人，唐代诗人。贞元十二年登进士第，历官京兆尹、御史大夫，后出镇岭南，官终岭南节度使。其诗传世不多，七绝《题都城南庄》以“人面桃花”写物是人非之感，最为人传诵；《本事诗》所记他与城南女子相遇的故事，相传即由此诗附会而来。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 14
+      intellect: 46
+      defense: 20
+      agility: 20
 
-- key: hist_suitang_0261_zhangyanyuan
-  name: 张彦远
-  default_gender: male
-  archetype: civil
-  flavor: 张彦远（约815—约907），唐代画史家，字爱宾，河东猗氏人，著《历代名画记》，记述历代画家、画迹与绘画理论。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 10
-    intellect: 44
-    defense: 16
-    agility: 16
+  - key: hist_suitang_0261_zhangyanyuan
+    name: 张彦远
+    default_gender: male
+    archetype: civil
+    flavor: 张彦远（约815—约907），字爱宾，河东猗氏人，唐代画史家、书法理论家。出身自张嘉贞、张延赏、张弘靖三世为相的家族，官至大理卿，家富书画收藏。所撰《历代名画记》十卷综述历代画家、画迹与画论，又编《法书要录》辑存前人书论，二书皆为后世所重。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 12
+      intellect: 50
+      defense: 19
+      agility: 19
 
-- key: hist_suitang_0262_zhanghuaiguan
-  name: 张怀瓘
-  default_gender: male
-  archetype: civil
-  flavor: 张怀瓘（生卒年不详），唐代书法理论家，曾任翰林供奉，著《书断》《书议》等，系统品评历代书法家及书体。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 10
-    intellect: 43
-    defense: 15
-    agility: 16
+  - key: hist_suitang_0262_zhanghuaiguan
+    name: 张怀瓘
+    default_gender: male
+    archetype: civil
+    flavor: 张怀瓘（生卒年不详），海陵人，唐代书法理论家。开元年间入仕，曾任翰林供奉、右率府兵曹参军等职。所著《书断》三卷，将历代书家分为神、妙、能三品，逐人品评；另有《书议》《书估》《文字论》等，讨论书体源流与品第标准，其品评体系对后世书法批评影响颇大。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 12
+      intellect: 51
+      defense: 18
+      agility: 19
 
-- key: hist_suitang_0263_zhangzao
-  name: 张璪
-  default_gender: male
-  archetype: civil
-  flavor: 张璪（生卒年不详），唐代画家，字文通，吴郡人，擅画山水、松石，官至祠部员外郎、盐铁判官，著《绘境》已佚。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 10
-    intellect: 43
-    defense: 15
-    agility: 16
+  - key: hist_suitang_0263_zhangzao
+    name: 张璪
+    default_gender: male
+    archetype: civil
+    flavor: 张璪（生卒年不详），字文通，吴郡人，唐代画家。曾任检校祠部员外郎、盐铁判官，工画山水、松石，提出“外师造化，中得心源”，主张绘画须兼取自然与胸中生意。相传他画松能双管齐下，一笔生枝、一笔枯枝，同时挥写，观者称绝。所撰《绘境》已佚。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 12
+      intellect: 51
+      defense: 18
+      agility: 19
 
-- key: hist_suitang_0264_zhangzhu
-  name: 张祜
-  default_gender: male
-  archetype: civil
-  flavor: 张祜（约785—约854），唐代诗人，字承吉，清河人，诗作以宫词、七绝著称，著有《张处士诗集》。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 12
-    intellect: 38
-    defense: 17
-    agility: 16
+  - key: hist_suitang_0264_zhangzhu
+    name: 张祜
+    default_gender: male
+    archetype: civil
+    flavor: 张祜（约785—约854），字承吉，清河人，唐代诗人。元和、长庆间以诗名动一时，令狐楚曾上表荐举，相传因元稹阻抑而未能入选。其宫词最为人称道，《宫词》“故国三千里，深宫二十年”传诵极广。晚年卜居丹阳曲阿，与杜牧往还唱和，终身未仕，有《张承吉文集》传世。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 14
+      intellect: 47
+      defense: 20
+      agility: 19
 
-- key: hist_suitang_0265_zhangji
-  name: 张继
-  default_gender: male
-  archetype: civil
-  flavor: 张继（生卒年不详），唐代诗人，字懿孙，襄州人，天宝十二载进士，曾任盐铁判官，以《枫桥夜泊》最为知名。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 11
-    intellect: 39
-    defense: 16
-    agility: 16
+  - key: hist_suitang_0265_zhangji
+    name: 张继
+    default_gender: male
+    archetype: civil
+    flavor: 张继（生卒年不详），字懿孙，襄州人，唐代诗人。天宝十二载登进士第，安史之乱中曾流寓江南，后任检校祠部员外郎、洪州盐铁判官。其诗多写羁旅愁思，七绝《枫桥夜泊》以月落、乌啼、渔火、钟声织成寒夜客愁，千余年来传诵不衰，苏州寒山寺亦因此诗而闻名。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 13
+      intellect: 47
+      defense: 20
+      agility: 20
 
-- key: hist_suitang_0266_huiguo
-  name: 惠果
-  default_gender: male
-  archetype: civil
-  flavor: 惠果（746—805），唐代密教高僧，俗姓马，居长安青龙寺东塔院传法，受不空灌顶，曾为日本僧空海等传授密教。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 10
-    intellect: 43
-    defense: 16
-    agility: 17
+  - key: hist_suitang_0266_huiguo
+    name: 惠果
+    default_gender: male
+    archetype: civil
+    flavor: 惠果（746—805），俗姓马，京兆人，唐代密宗高僧。少年出家，师从不空，受两部密法灌顶，后住长安青龙寺东塔院弘传密教，历受代宗、德宗、顺宗礼遇。贞元末日本僧空海入唐，从他受胎藏、金刚两部大法，归国后创立真言宗，惠果因此被日本真言宗尊为祖师。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 12
+      intellect: 49
+      defense: 19
+      agility: 20
 
-- key: hist_suitang_0267_daisshuren
-  name: 戴叔伦
-  default_gender: male
-  archetype: civil
-  flavor: 戴叔伦（约732—约789），唐代诗人、官员，字幼公，金坛人，曾任抚州刺史、容管经略使，著有《戴叔伦诗集》。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 12
-    intellect: 39
-    defense: 17
-    agility: 16
+  - key: hist_suitang_0267_daisshuren
+    name: 戴叔伦
+    default_gender: male
+    archetype: civil
+    flavor: 戴叔伦（约732—约789），字幼公，润州金坛人，唐代诗人、官员。早年师从萧颖士，曾任新城令、东阳令，政声颇著，后历抚州刺史、容管经略使。其诗题材广涉田园、边塞与民生，名句“愿得此身长报国，何须生入玉门关”气象慷慨，有《戴叔伦诗集》传世。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 14
+      intellect: 47
+      defense: 20
+      agility: 19
 
-- key: hist_suitang_0268_fanggan
-  name: 方干
-  default_gender: male
-  archetype: civil
-  flavor: 方干（约809—约888），晚唐诗人，字雄飞，号玄英，睦州青溪人，屡试不第，长期以布衣身份居乡，著有《玄英先生诗集》。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 11
-    intellect: 38
-    defense: 16
-    agility: 16
+  - key: hist_suitang_0268_fanggan
+    name: 方干
+    default_gender: male
+    archetype: civil
+    flavor: 方干（约809—约888），字雄飞，号玄英，睦州青溪人，晚唐诗人。自幼有诗名，却屡试不第，相传因貌陋见黜于有司，遂绝意仕进，隐居镜湖一带以诗自娱。其诗多写江南山水与隐逸情怀，句法清苦，一时名士多与之交游；身后门人私谥“玄英先生”，有《玄英先生诗集》传世。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 14
+      intellect: 46
+      defense: 20
+      agility: 20
 
-- key: hist_suitang_0269_zhuqingyu
-  name: 朱庆馀
-  default_gender: male
-  archetype: civil
-  flavor: 朱庆馀（生卒年不详），唐代诗人，名可久，字庆馀，越州人，诗作收入《全唐诗》，《近试上张水部》最为传诵。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 11
-    intellect: 38
-    defense: 16
-    agility: 16
+  - key: hist_suitang_0269_zhuqingyu
+    name: 朱庆馀
+    default_gender: male
+    archetype: civil
+    flavor: 朱庆馀（生卒年不详），名可久，以字行，越州人，唐代诗人。宝历二年登进士第，曾任秘书省校书郎。他投诗张籍求荐，以《近试上张水部》借新妇拜见舅姑设喻，问“画眉深浅入时无”，张籍酬答称许，一时传为佳话。其诗清丽婉转，作品收入《全唐诗》。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 14
+      intellect: 46
+      defense: 20
+      agility: 20
 
-- key: hist_suitang_0270_ligongzuo
-  name: 李公佐
-  default_gender: male
-  archetype: civil
-  flavor: 李公佐（约770—约850），唐代传奇作家，字颛蒙，陇西人，作品有《南柯太守传》《谢小娥传》《庐江冯媪传》等。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 10
-    intellect: 41
-    defense: 15
-    agility: 16
+  - key: hist_suitang_0270_ligongzuo
+    name: 李公佐
+    default_gender: male
+    archetype: civil
+    flavor: 李公佐（约770—约850），字颛蒙，陇西人，唐代传奇作家。曾佐幕府，长期游历江淮。所作《南柯太守传》写淳于棼醉后入槐安国为驸马、历宦海沉浮，醒来方知是蚁穴一梦，“南柯一梦”即由此而来；《谢小娥传》记女子为父夫复仇事，亦为后世戏曲所取材。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 12
+      intellect: 50
+      defense: 18
+      agility: 20
 
-- key: hist_suitang_0272_lisi
-  name: 李思训
-  default_gender: male
-  archetype: civil
-  flavor: 李思训（651—716），唐代宗室、画家，字建，善画青绿山水，时称“大李将军”，被画史视为北宗山水画的重要先驱。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 10
-    intellect: 42
-    defense: 16
-    agility: 16
+  - key: hist_suitang_0272_lisi
+    name: 李思训
+    default_gender: male
+    archetype: civil
+    flavor: 李思训（651—716），字建，唐代宗室、画家。以门荫入仕，历官宗正卿、右武卫大将军，封彭国公，故世称“大李将军”。他工画山水树石，用笔工整、设色浓丽，自成一家；明代董其昌论画，将其推为“北宗”山水之祖，传为他的《江帆楼阁图》今存。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 12
+      intellect: 50
+      defense: 19
+      agility: 19
 
-- key: hist_suitang_0273_lizhaodao
-  name: 李昭道
-  default_gender: male
-  archetype: civil
-  flavor: 李昭道，唐代画家，字希俊，李思训之子，继承并发展青绿山水画法，时称“小李将军”，传世作品真伪多有争议。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 10
-    intellect: 41
-    defense: 15
-    agility: 16
+  - key: hist_suitang_0273_lizhaodao
+    name: 李昭道
+    default_gender: male
+    archetype: civil
+    flavor: 李昭道（生卒年不详），字希俊，唐代画家，李思训之子。曾任太原府仓曹、直集贤院、太子中舍人等职，因父号“大李将军”，世人遂称其为“小李将军”。他承家学而益趋精细，青绿山水设色浓丽、楼阁人物繁密，传为《明皇幸蜀图》即旧题其名下，与父并称“二李”。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 12
+      intellect: 50
+      defense: 18
+      agility: 20
 
-- key: hist_suitang_0274_libaiyao
-  name: 李百药
-  default_gender: male
-  archetype: civil
-  flavor: 李百药（565—648），隋唐官员、史学家，字重规，安平人，奉诏续修《齐书》，完成纪传体《北齐书》，并参与唐初修史。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 10
-    intellect: 43
-    defense: 16
-    agility: 16
+  - key: hist_suitang_0274_libaiyao
+    name: 李百药
+    default_gender: male
+    archetype: civil
+    flavor: 李百药（565—648），字重规，定州安平人，隋唐官员、史学家。父李德林为隋内史令，曾撰北齐史稿，他承父遗业，贞观年间奉诏撰成《北齐书》五十卷。历任中书舍人、礼部侍郎、太子右庶子等职，诗文亦为贞观朝所重，《全唐诗》存其诗一卷。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 12
+      intellect: 50
+      defense: 19
+      agility: 19
 
-- key: hist_suitang_0275_liyi
-  name: 李益
-  default_gender: male
-  archetype: civil
-  flavor: 李益（约746—约829），唐代诗人，字君虞，陇西姑臧人，曾任秘书少监、集贤殿学士，边塞诗《夜上受降城闻笛》广为传诵。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 13
-    intellect: 39
-    defense: 17
-    agility: 17
+  - key: hist_suitang_0275_liyi
+    name: 李益
+    default_gender: male
+    archetype: civil
+    flavor: 李益（约746—约829），字君虞，陇西姑臧人，唐代诗人。大历四年登进士第，久沉下僚，曾北游河朔、入幽州与邠宁幕府，亲历边地，官终礼部尚书。其边塞诗音节浏亮，《夜上受降城闻笛》“不知何处吹芦管，一夜征人尽望乡”传诵甚广；唐传奇《霍小玉传》即借其名敷演故事。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 15
+      intellect: 45
+      defense: 20
+      agility: 20
 
-- key: hist_suitang_0276_liduan
-  name: 李端
-  default_gender: male
-  archetype: civil
-  flavor: 李端（生卒年不详），唐代诗人，字正己，赵州人，与卢纶、钱起等唱和，列“大历十才子”，作品以五言、送别诗见长。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 12
-    intellect: 38
-    defense: 17
-    agility: 16
+  - key: hist_suitang_0276_liduan
+    name: 李端
+    default_gender: male
+    archetype: civil
+    flavor: 李端（生卒年不详），字正己，赵州人，唐代“大历十才子”之一。大历五年登进士第，曾任秘书省校书郎，后因病辞官，寓居江南，官终杭州司马。相传他赴驸马郭暧之宴，即席赋《听筝》“欲得周郎顾，时时误拂弦”，郭暧遂以歌妓相赠。其诗以五言与送别之作见长。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 14
+      intellect: 47
+      defense: 20
+      agility: 19
 
-- key: hist_suitang_0277_lizhao
-  name: 李肇
-  default_gender: male
-  archetype: civil
-  flavor: 李肇（生卒年不详），唐代史家、文人，赵州赞皇人，著《唐国史补》三卷，记载开元至长庆间朝野轶事、典章制度与社会风俗。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 10
-    intellect: 41
-    defense: 15
-    agility: 16
+  - key: hist_suitang_0277_lizhao
+    name: 李肇
+    default_gender: male
+    archetype: civil
+    flavor: 李肇（生卒年不详），赵州赞皇人，唐代史家、文人。元和年间曾任翰林学士，熟悉朝章典故，著有《翰林志》一卷，记翰林院建置与职掌。所撰《唐国史补》三卷，上起开元、下迄长庆，杂记朝野轶事、典章沿革与市井风俗，多存正史未载的细节，后世笔记多引其说。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 12
+      intellect: 50
+      defense: 18
+      agility: 20

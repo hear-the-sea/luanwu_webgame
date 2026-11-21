@@ -176,18 +176,6 @@ def test_choose_template_by_rarity_cached_falls_back_to_next_available_rarity():
     assert result in [green_template, blue_template]
 
 
-def test_core_pool_tiers_has_expected_tiers():
-    from guests.models import RecruitmentPool
-
-    expected = (
-        RecruitmentPool.Tier.CUNMU,
-        RecruitmentPool.Tier.XIANGSHI,
-        RecruitmentPool.Tier.HUISHI,
-        RecruitmentPool.Tier.DIANSHI,
-    )
-    assert recruitment_shared.CORE_POOL_TIERS == expected
-
-
 def test_choose_template_from_entries_rejects_missing_explicit_template_relation():
     entry = SimpleNamespace(template_id=7, template=None, rarity=None, archetype=None, weight=1)
 

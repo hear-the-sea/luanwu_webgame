@@ -48,7 +48,7 @@ heroes:
     avatar: monkey/宋辽金元/岳飞.png
     default_gender: male
     archetype: military
-    flavor: （1103年-1142年）精忠报国四字刻于背上，还我河山之志铭于心间。他率岳家军北伐，撼山易撼岳家军难，金人闻风丧胆。朱仙镇一战，直捣黄龙在望，却被十二道金牌召回。风波亭下，三十九岁英年就义，"莫须有"三字成为千古奇冤。他是民族英雄的化身，是忠义精神的象征。
+    flavor: （1103年—1142年）南宋名将。相传“尽忠报国”四字刺于背上，“精忠”则来自宋高宗所赐旗帜。他率岳家军北伐，军纪严明，金人叹“撼山易，撼岳家军难”。郾城、颍昌之战后进军朱仙镇，却被十二道金牌召回。1142年，他以“莫须有”罪名遇害，年仅三十九岁。孝宗时追复原官，谥武穆，后改谥忠武。
     growth_range:
     - 7
     - 13
@@ -146,7 +146,7 @@ heroes:
     avatar: monkey/宋辽金元/速不台.png
     default_gender: male
     archetype: military
-    flavor: （1175年-1248年）蒙古帝国最伟大的将领之一，铁木真麾下的战神。他一生征战六十余年，参与了蒙古帝国几乎所有的重大战役。他西征欧洲，在多瑙河畔击溃匈牙利联军；他南下灭金，攻克汴京。他的军事才能无人能及，被誉为"飞将军"，是蒙古铁骑的灵魂人物。
+    flavor: （1175年—1248年）蒙古帝国名将，兀良合部人，成吉思汗麾下“四獒”（一说“四狗”）之一。他一生征战六十余年，参与蒙古帝国诸多重大战役：随军灭金，攻克汴京；又率军西征，在匈牙利赛约河（绍约河）畔击溃联军。他善于长途奔袭与协同作战，是蒙古骑兵扩张时期的重要统帅。
     growth_range:
     - 7
     - 12
@@ -365,13 +365,55 @@ heroes:
       intellect: 58
       defense: 18
       agility: 12
+  - key: hist_songliaojinyuan_0032
+    name: 丘处机
+    avatar: pig/文036.png
+    default_gender: male
+    archetype: civil
+    flavor: （1148年—1227年）金末元初道士，全真道掌教，号长春子。成吉思汗西征时遣使召见，丘处机率弟子万里西行，在大雪山行宫进言，劝其减少杀戮、敬天爱民。回燕京后居长春宫，主持全真道事务，晚年葬于白云观。其西行见闻由弟子整理为《长春真人西游记》。
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 12
+      intellect: 58
+      defense: 18
+      agility: 12
+  - key: hist_songliaojinyuan_0034
+    name: 张择端
+    avatar: monkey/其他随机角色/文_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （约1085年—约1145年）北宋画家，字正道，东武人。他早年游学汴京，后习绘画，一说曾供职翰林图画院。所作《清明上河图》描绘北宋都城汴京的市井、桥梁、舟车与人物，工笔细致，是宋代风俗画的代表作。其生平记载很少，传世作品亦不多。
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 12
+      intellect: 58
+      defense: 18
+      agility: 12
+  - key: hist_songliaojinyuan_0035
+    name: 郭守敬
+    avatar: monkey/其他随机角色/文_男123.png
+    default_gender: male
+    archetype: civil
+    flavor: （1231年—1316年）元代天文学家、水利工程学家，字若思，顺德邢台人。他师从刘秉忠，参与修订历法，主持四海测验，至元十七年编成《授时历》，推算的回归年长度与今值相近。他又主持开凿通惠河等水利工程，便利大都漕运。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 12
+      intellect: 58
+      defense: 18
+      agility: 12
   blue:
   - key: hist_songliaojinyuan_0022
     name: 秦九韶
     avatar: monkey/其他随机角色/文_男123.png
     default_gender: male
     archetype: civil
-    flavor: （1208年—1268年）南宋数学家，字道古，普州安岳人。秦九韶历任县令、通判等职，著有《数书九章》，其中“大衍求一术”用于求解一次同余式，书中还讨论方程、面积和历法等问题。
+    flavor: （1208年—1268年）南宋数学家，字道古，普州安岳人。他历任州县官，见闻广博，淳祐七年（1247年）撰成《数书九章》十八卷，分九类讨论田亩、赋役、测望、军旅等实际问题。书中“大衍求一术”系统处理一次同余式，高次方程数值解法亦有创获，是中国古代数学的重要著作。
     growth_range:
     - 5
     - 9
@@ -385,7 +427,7 @@ heroes:
     avatar: monkey/其他随机角色/文_男123.png
     default_gender: male
     archetype: civil
-    flavor: （约1238年—约1298年）南宋数学家，字谦光。杨辉编写《详解九章算法》《日用算法》等书，记载二项式系数表和高次方程算法；他还整理贾宪、沈括等人的算学成果。
+    flavor: （约1238年—约1298年）南宋数学家，字谦光，钱塘人。他长期从事数学教育与著述，编有《详解九章算法》《日用算法》《杨辉算法》等，书中载有“开方作法本源”图（二项式系数表）和贾宪的增乘开方法，并整理沈括等人的成果，对普及算学颇有贡献。
     growth_range:
     - 5
     - 9
@@ -399,7 +441,7 @@ heroes:
     avatar: monkey/其他随机角色/文_男.png
     default_gender: male
     archetype: civil
-    flavor: （1301年—1374年）元代画家、诗人，字元镇，号云林，江苏无锡人。倪瓒家道中落后散财避乱，晚年漂泊太湖一带；传世《六君子图》《渔庄秋霁图》等山水画以疏淡取胜。
+    flavor: （1301年—1374年）元代画家、诗人，字元镇，号云林，无锡人。他出身富户，性洁癖，家道中落后散财避乱，晚年漂泊太湖一带，寄居佛寺。其山水多作疏林坡岸、枯木竹石，笔墨简淡，与黄公望、吴镇、王蒙并称“元四家”，有《六君子图》等传世。
     growth_range:
     - 5
     - 9
@@ -413,7 +455,7 @@ heroes:
     avatar: pig/文041.png
     default_gender: male
     archetype: civil
-    flavor: （1280年—1354年）元代画家，字仲圭，号梅花道人。吴镇长期居住嘉兴，以画山水、墨竹和梅花自娱；他的山水多用湿笔，传世作品有《渔父图》《双松图》等。
+    flavor: （1280年—1354年）元代画家，字仲圭，号梅花道人，嘉兴人。他一生不仕，隐居乡里，以卖卜和绘画为生，工山水、墨竹。其山水多用湿笔积墨，苍茫沉郁，与黄公望、倪瓒、王蒙并称“元四家”，传世有《渔父图》《双松图》等。
     growth_range:
     - 5
     - 9
@@ -427,21 +469,7 @@ heroes:
     avatar: monkey/其他随机角色/文_男123.png
     default_gender: male
     archetype: civil
-    flavor: （约1260年—约1320年）元代数学家，字汉卿，燕山人。朱世杰以授徒和游历讲学为生，著有《算学启蒙》《四元玉鉴》，书中讨论多元高次方程和消元法。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 12
-      intellect: 58
-      defense: 18
-      agility: 12
-  - key: hist_songliaojinyuan_0032
-    name: 丘处机
-    avatar: pig/文036.png
-    default_gender: male
-    archetype: civil
-    flavor: （1148年—1227年）金末元初道士，全真道士丘处机。成吉思汗西征时召见他，丘处机携弟子西行，在大雪山行宫劝成吉思汗减少杀戮、敬老恤民；回燕京后主持长春宫，晚年葬于白云观。
+    flavor: （约1260年—约1320年）元代数学家，字汉卿，燕山人。他长期游历讲学、以授徒为生，著有《算学启蒙》和《四元玉鉴》。《四元玉鉴》系统讨论天元、地元、人元、物元四元高次方程组及其消元方法，并载有高阶等差级数问题，是宋元数学的代表作。
     growth_range:
     - 5
     - 9
@@ -455,35 +483,7 @@ heroes:
     avatar: monkey/其他随机角色/文_男123.png
     default_gender: male
     archetype: civil
-    flavor: （1192年—1279年）金元之际数学家、诗人，字仁卿，号敬斋。李冶曾任钧州学正，金亡后隐居忻州，著有《测圆海镜》《益古演段》，以“天元术”解方程。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 12
-      intellect: 58
-      defense: 18
-      agility: 12
-  - key: hist_songliaojinyuan_0034
-    name: 张择端
-    avatar: monkey/其他随机角色/文_男.png
-    default_gender: male
-    archetype: civil
-    flavor: （约1085年-约1145年）北宋画家，《清明上河图》作者。他的传世名作展现了汴京的繁华，是中国艺术史上的瑰宝。其工笔细致入微，成为宋代风俗画的巅峰。其细节描绘之精，堪称画史罕见。画中市井百态成为研究北宋社会的重要图证。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 12
-      intellect: 58
-      defense: 18
-      agility: 12
-  - key: hist_songliaojinyuan_0035
-    name: 郭守敬
-    avatar: monkey/其他随机角色/文_男123.png
-    default_gender: male
-    archetype: civil
-    flavor: （1231年—1316年）元代天文学家、水利工程师，字若思。郭守敬参与修建通惠河等水利工程，主持四海测验；至元十七年编成《授时历》，后任太史令，负责历法修订。
+    flavor: （1192年—1279年）金元之际数学家、诗人，字仁卿，号敬斋，真定栾城人。他于金末中进士，曾任钧州知事；金亡后隐居元氏封龙山，著书讲学。所著《测圆海镜》《益古演段》系统运用“天元术”列方程，在中国古代代数学史上占有重要地位。
     growth_range:
     - 5
     - 9

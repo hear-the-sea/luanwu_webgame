@@ -15,6 +15,8 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any, Literal
 
+from core.config import GUEST
+
 Archetype = Literal["military", "civil", "neutral"]
 Stage = Literal["early", "mid", "late"]
 Scenario = Literal["pvp", "pve"]
@@ -39,14 +41,20 @@ class StatWeights:
 # Mid-game (lv40) PvP values, derived from the combat formulas:
 # - 1 force (military) = 0.7 attack = 42 HP
 # - 1 intellect (civil) = 0.5 attack = 25 HP
-# - 1 defense = 50 HP (max_hp) + 12 HP mitigation = 62 HP (PvP)
+# - 1 defense = 30 HP (max_hp) + ~15 HP mitigation = ~45 HP (PvP)
 # - 1 luck = 45/25 HP with one active skill
 # - 1 troop_capacity = 55 HP (team-level multiplier)
+#
+# Defense is the only stat whose marginal value grows with the guest's HP
+# pool: mitigation is worth ``max_hp / K`` per point (K=600 in PvP, K=200
+# versus troops).  The resting weights below use a mid-game HP pool; the
+# late-game stage multiplier is deliberately steeper for defense than for
+# the other stats so stacked defense is not underpriced at high levels.
 MILITARY_WEIGHTS = StatWeights(
     hp=1.0,
     force=42.0,
     intellect=15.0,
-    defense=62.0,
+    defense=45.0,
     agility=3.0,
     luck=45.0,
     troop_capacity=55.0,
@@ -56,7 +64,7 @@ CIVIL_WEIGHTS = StatWeights(
     hp=1.0,
     force=15.0,
     intellect=25.0,
-    defense=57.0,
+    defense=41.0,
     agility=2.0,
     luck=25.0,
     troop_capacity=55.0,
@@ -73,23 +81,24 @@ NEUTRAL_WEIGHTS = StatWeights(
     attack_bonus=(MILITARY_WEIGHTS.attack_bonus + CIVIL_WEIGHTS.attack_bonus) / 2,
 )
 
-# PvE values use the lower defense constant (K=50 for guest-vs-troop), which
-# makes defense much stronger at low defense totals.
+# PvE values use the troop-vs-guest defense constant (K=200), which makes a
+# point of defense worth roughly 1.5x its PvP value at the same HP pool.
 PVE_DEFENSE_WEIGHTS = {
-    "military": 85.0,
-    "civil": 83.0,
-    "neutral": (85.0 + 83.0) / 2,
+    "military": 75.0,
+    "civil": 70.0,
+    "neutral": (75.0 + 70.0) / 2,
 }
 
 # Stage multipliers are applied on top of the mid-game table.  Equipment
-# level is mostly an access gate, so these are deliberately mild except for
-# troop_capacity (which scales with the size of the army).
+# level is mostly an access gate, so most are deliberately mild.  Defense
+# scales faster because its mitigation value grows with the level HP pool,
+# and troop_capacity scales with the size of the army.
 STAGE_MULTIPLIERS: dict[Stage, dict[str, float]] = {
     "early": {
         "hp": 1.0,
         "force": 0.9,
         "intellect": 0.9,
-        "defense": 0.88,
+        "defense": 0.85,
         "agility": 0.8,
         "luck": 0.65,
         "troop_capacity": 0.64,
@@ -109,7 +118,7 @@ STAGE_MULTIPLIERS: dict[Stage, dict[str, float]] = {
         "hp": 1.0,
         "force": 1.1,
         "intellect": 1.1,
-        "defense": 1.1,
+        "defense": 1.35,
         "agility": 1.2,
         "luck": 1.2,
         "troop_capacity": 1.73,
@@ -236,9 +245,10 @@ def guest_power(
 ) -> float:
     """Return one guest's HP-equivalent combat power.
 
-    ``max_hp`` already includes ``defense * 50``; the defense weight is
-    therefore split into the 50 HP component (inside ``max_hp``) and the
-    mitigation component.  This keeps defense from being counted twice.
+    ``max_hp`` already includes ``defense * DEFENSE_TO_HP_MULTIPLIER``; the
+    defense weight is therefore split into that HP component (inside
+    ``max_hp``) and the mitigation component.  This keeps defense from being
+    counted twice.
     """
 
     normalized_force = max(0, int(force))
@@ -268,10 +278,11 @@ def guest_power(
     )
     # ``defense`` is the effective value used for mitigation.  Max HP only
     # receives the base ``defense_stat`` component (see guest_rules.py), so
-    # keep them separate to avoid granting 50 HP for defense_bonus gear.
+    # keep them separate to avoid granting extra HP for defense_bonus gear.
     defense_for_hp = max(0, int(defense if defense_stat is None else defense_stat))
-    max_hp = max(200, int(base_hp) + int(hp_bonus) + defense_for_hp * 50) + max(0, int(level) - 1) * 60
-    non_defense_hp = max(0, max_hp - defense_for_hp * 50)
+    defense_to_hp = int(GUEST.DEFENSE_TO_HP_MULTIPLIER)
+    max_hp = max(200, int(base_hp) + int(hp_bonus) + defense_for_hp * defense_to_hp) + max(0, int(level) - 1) * 60
+    non_defense_hp = max(0, max_hp - defense_for_hp * defense_to_hp)
     capacity_value = normalized_capacity * weights.troop_capacity if include_troop_capacity else 0.0
     return (
         attribute_attack * attack_weight
@@ -288,3 +299,74 @@ def guest_power_points(**kwargs: Any) -> int:
     """Return a guest's power in runtime points (1 point = 10 HP)."""
 
     return int(round(guest_power(**kwargs) / POWER_POINTS_PER_HP))
+
+
+def combat_power_points(
+    *,
+    attack: int,
+    defense: int,
+    defense_stat: int,
+    force: int,
+    intellect: int,
+    level: int,
+    archetype: str = "",
+    max_hp: int = 0,
+    hp: int | None = None,
+    attack_attribute_component: int | None = None,
+    agility: int = 0,
+    luck: int = 0,
+) -> int:
+    """Return canonical lineup power in runtime points (1 point = 10 HP).
+
+    This is the single shared formula behind arena power v2 and season
+    strength.  ``hp`` defaults to ``max_hp``; pass the current HP when the
+    caller needs a damaged lineup's strength.
+
+    ``defense`` is the effective mitigation value (``defense_stat`` plus gear
+    bonuses).  Only ``defense_stat`` is assumed to contribute HP to
+    ``max_hp``, so the HP component is split out before the remaining
+    mitigation value is weighted.
+    """
+
+    normalized_archetype: Archetype = (
+        "civil" if str(archetype) == "civil" else ("military" if str(archetype) == "military" else "neutral")
+    )
+    stage = stage_for_level(int(level or 1))
+    weights = weights_for(archetype=normalized_archetype, stage=stage)
+    attack_weight = 60.0 if normalized_archetype == "military" else (50.0 if normalized_archetype == "civil" else 55.0)
+    attack_weight *= STAGE_MULTIPLIERS[stage]["force"]
+    attack_bonus_weight = (
+        48.0 if normalized_archetype == "military" else (29.0 if normalized_archetype == "civil" else 38.5)
+    )
+    attack_bonus_weight *= STAGE_MULTIPLIERS[stage]["attack_bonus"]
+
+    normalized_attack = max(0, int(attack))
+    normalized_defense = max(0, int(defense))
+    normalized_defense_stat = max(0, int(defense_stat))
+    normalized_max_hp = max(0, int(max_hp))
+
+    if attack_attribute_component is None:
+        force_weight = 0.7 if normalized_archetype == "military" else 0.5
+        intellect_weight = 0.3 if normalized_archetype == "military" else 0.5
+        attribute_attack = int(max(0, int(force)) * force_weight + max(0, int(intellect)) * intellect_weight)
+    else:
+        attribute_attack = int(attack_attribute_component)
+    attribute_attack = max(0, min(normalized_attack, attribute_attack))
+    attack_bonus = max(0, normalized_attack - attribute_attack)
+
+    if hp is None:
+        resolved_hp = normalized_max_hp
+    else:
+        resolved_hp = max(0, min(normalized_max_hp, int(hp)))
+    defense_hp = normalized_defense_stat * int(GUEST.DEFENSE_TO_HP_MULTIPLIER)
+    mitigation_units = max(0.0, normalized_defense * weights.defense - defense_hp)
+
+    hp_units = (
+        attribute_attack * attack_weight
+        + attack_bonus * attack_bonus_weight
+        + resolved_hp
+        + mitigation_units
+        + max(0, int(agility)) * weights.agility
+        + max(0, int(luck)) * weights.luck
+    )
+    return max(0, int(round(hp_units / POWER_POINTS_PER_HP)))

@@ -4,6 +4,7 @@ from pathlib import Path
 
 import yaml
 
+from core.config import GUEST
 from core.game_data.equipment_value import item_power
 
 ITEM_TEMPLATES_PATH = Path(__file__).resolve().parent.parent / "data" / "item_templates.yaml"
@@ -285,7 +286,7 @@ def _top_effective_hp_total(items: dict[str, dict]) -> int:
             payload = item.get("effect_payload") or {}
             hp = int(payload.get("hp", 0) or 0)
             defense = int(payload.get("defense", 0) or 0)
-            slot_values.append(hp + defense * 50)
+            slot_values.append(hp + defense * int(GUEST.DEFENSE_TO_HP_MULTIPLIER))
         total += sum(sorted(slot_values, reverse=True)[:capacity])
     return total
 

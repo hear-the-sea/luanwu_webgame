@@ -594,22 +594,6 @@ heroes:
       intellect: 35
       defense: 15
       agility: 30
-  - key: hero_bai_tianyu
-    name: 白天羽
-    avatar: pig/武015.png
-    archetype: military
-    flavor: 神刀堂堂主，一代武林霸主。他武功盖世，刀法如神，曾威震天下，令黑白两道闻风丧胆。他性格狂傲不羁，独断专行，这种霸气成就了他的霸业，也为他招致了杀身之祸。他在梅花庵遭到结拜兄弟的背叛与围攻，最终力战而亡。虽然他已死去多年，但他的影子始终笼罩着整个江湖，他的死因成为了傅红雪和叶开一生命运的转折点，是整个复仇故事的起源。出自古龙小说《天涯明月刀》
-    default_gender: male
-    default_morality: 70
-    recruitable: true
-    growth_range:
-    - 6
-    - 7
-    attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
   - key: hero_baishui_gongzhu
     name: 白水宫主
     avatar: monkey_wu_female6.png
@@ -630,7 +614,7 @@ heroes:
     name: 高立
     avatar: pig/武070.png
     archetype: military
-    flavor: 曾是杀手组织“青龙会”的成员，因厌倦杀戮而归隐。为了帮助朋友，他借用了传说中的暗器“孔雀翎”。他重情重义，勇于担当，证明了真正的武器不是孔雀翎，而是使用者的信心与勇气。出自古龙小说《七种武器》。
+    flavor: 高立曾是杀手组织“青龙会”的成员，因厌倦杀戮而归隐，与孔雀山庄少主秋凤梧结为好友。为对付青龙会杀手麻锋，他借用传说中的暗器“孔雀翎”迎战。孔雀翎是孔雀山庄的镇庄之宝，江湖中人只闻其名。出自古龙小说《七种武器》。
     default_gender: male
     default_morality: 80
     recruitable: true
@@ -646,7 +630,7 @@ heroes:
     name: 段玉
     avatar: pig/武053.png
     archetype: military
-    flavor: 是个诚实、天真、单纯的少年。他带着碧玉刀去给岳父贺寿，却意外卷入了一场阴谋。凭借着诚实和运气，他不仅化解了危机，还赢得了美人心。他的故事告诉我们，诚实有时是最好的武器。出自古龙小说《七种武器》。
+    flavor: 段玉是个诚实、天真、单纯的少年。他带着家传碧玉刀去给岳父贺寿，却意外卷入一场阴谋，几番身陷险境。凭着赤诚心性与几分运气，他不但化解了危机，还赢得了美人心。出自古龙小说《七种武器》。
     default_gender: male
     default_morality: 80
     recruitable: true
@@ -662,7 +646,7 @@ heroes:
     name: 萧少英
     avatar: monkey/其他随机角色/武066_男_.png
     archetype: military
-    flavor: 曾是双环门的杰出弟子。他为了重振师门，不惜伪装成败类，深入仇家内部。他心机深沉，忍辱负重，用情义和计谋将敌人一步步推向毁灭。他的故事充满了反转与人性的拷问。出自古龙小说《七种武器》。
+    flavor: 曾是双环门的杰出弟子。他为了重振师门，不惜伪装成败类，深入仇家内部。他心机深沉，忍辱负重，用情义和计谋将敌人一步步推向毁灭。他的故事充满了反转与人性的拷问。最终以多情环与仇人葛停香了结恩怨。出自古龙《七种武器》中的《多情环》。
     default_gender: male
     default_morality: 65
     recruitable: true
@@ -675,6 +659,38 @@ heroes:
       defense: 15
       agility: 20
   blue:
+  - key: hero_bai_tianyu
+    name: 白天羽
+    avatar: pig/武015.png
+    archetype: military
+    flavor: 神刀堂堂主，一代武林霸主。他武功盖世，刀法如神，曾威震天下，令黑白两道闻风丧胆。他性格狂傲不羁，独断专行，这种霸气成就了他的霸业，也为他招致了杀身之祸。他在梅花庵遭到结拜兄弟的背叛与围攻，最终力战而亡。虽然他已死去多年，但他的影子始终笼罩着整个江湖，他的死因成为了傅红雪和叶开一生命运的转折点，是整个复仇故事的起源。出自古龙小说《天涯明月刀》
+    default_gender: male
+    default_morality: 70
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 15
+      defense: 25
+      agility: 20
+  - key: hero_hu_tiehua
+    name: 胡铁花
+    avatar: monkey/古龙/胡铁花.png
+    archetype: military
+    flavor: 楚留香一生中最信任的生死之交，外号"大疯狗"或"花蝴蝶"。他生性嗜酒如命，豪爽洒脱，说话做事从不拐弯抹角，行事全凭一腔热血和一腔义气。他虽然没有楚留香那种风流倜傥的儒雅气质，却有着一颗金子般纯粹的赤子之心。在闯荡江湖的过程中，他闹过无数笑话，也受过无数次伤，但每逢危急时刻，他总是那个冲在最前面、为兄弟挡刀的人。他的存在，为楚留香那充满了智谋与算计的江湖生涯增添了最真实的色彩和最坚实的依靠。出自古龙小说《楚留香系列》
+    default_gender: male
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 35
+      intellect: 15
+      defense: 30
+      agility: 20
   - key: hero_su_rongrong
     name: 苏蓉蓉
     avatar: monkey/其他随机角色/文059_女.png
@@ -695,7 +711,7 @@ heroes:
     name: 水灵光
     avatar: monkey/其他随机角色/文064_女.png
     archetype: civil
-    flavor: “夜帝”之女，铁中棠的挚爱。水灵光不通武功，却心地纯洁、待人善良；铁中棠遭遇误解、身陷绝境时，她始终陪在身边，并曾用自己的机智帮助他脱险。她与铁中棠的感情经历了多次磨难。出自古龙小说《大旗英雄传》
+    flavor: “夜帝”之女，铁中棠的挚爱。水灵光不通武功，却心地纯洁、待人善良，在铁中棠遭逢误解、身陷绝境时始终陪伴左右，并曾以机智助他脱险。她曾随铁中棠卷入大旗门与五福联盟的争斗，两人感情历经多次磨难，仍不改初心。出自古龙小说《大旗英雄传》
     default_gender: female
     default_morality: 80
     recruitable: true
@@ -871,7 +887,7 @@ heroes:
     name: 公子羽
     avatar: duck_wen_male2.png
     archetype: civil
-    flavor: 武林盟主，长期躲在幕后操纵江湖。公子羽拥有绝顶武功和巨额财富，却因恐惧衰老而戴着苍老面具，隐居宫殿；他以名利诱使燕南飞等人充当替身，最终在傅红雪面前暴露身份并败亡。出自古龙小说《天涯明月刀》
+    flavor: 武林盟主，长期隐于幕后操纵江湖。公子羽身负绝顶武功与巨额财富，却因恐惧衰老而戴着苍老面具，深居宫殿；他以名利诱使燕南飞等人充当替身。最终，他在傅红雪面前暴露真身，霸业随之瓦解，本人则假死退隐。出自古龙小说《天涯明月刀》
     default_gender: male
     default_morality: 25
     recruitable: true
@@ -919,7 +935,7 @@ heroes:
     name: 独孤一鹤
     avatar: pig/武008.png
     archetype: military
-    flavor: 峨眉派掌门人，原为金鹏王朝重臣，后来改名换姓投身峨眉。独孤一鹤创出“刀剑双杀七七四十九式”，性格刚毅正直；他在内力受损后与西门吹雪交手，最终死于西门吹雪剑下。出自古龙小说《陆小凤系列》
+    flavor: 峨眉派掌门人，原为金鹏王朝重臣，王朝覆灭后改名换姓投身峨眉。独孤一鹤创出“刀剑双杀七七四十九式”，性格刚毅正直，在派中威望极高，其刀剑并用之术在江湖中颇负盛名；后因内力受损，与西门吹雪交手时落败身死。出自古龙小说《陆小凤系列》
     default_gender: male
     default_morality: 70
     recruitable: true
@@ -1127,7 +1143,7 @@ heroes:
     name: 沙曼
     avatar: monkey_wen_female5.png
     archetype: civil
-    flavor: 宫九身边的神秘女子，美艳而冷峻，聪慧过人。沙曼在宫九的阴谋中始终保持警惕，也向往摆脱控制、追求真情；她与陆小凤在荒漠相遇后相互试探，最终未能走到一起。出自古龙小说《陆小凤系列》
+    flavor: 宫九身边的神秘女子，美艳冷峻，聪慧过人。沙曼身处宫九的阴谋漩涡，却始终保持警惕，也向往摆脱控制、追求真情；宫九实为太平王世子，沙曼长期受其掌控。她与陆小凤在海上孤岛相遇，彼此试探、渐生情愫，最终仍未能走到一起。出自古龙小说《陆小凤系列》
     default_gender: female
     default_morality: 65
     recruitable: true
@@ -1143,7 +1159,7 @@ heroes:
     name: 李坏
     avatar: pig/武007.png
     archetype: military
-    flavor: “小李飞刀”李寻欢之孙，继承家传飞刀。李坏因私生子的身份自幼流落江湖，行事亦正亦邪；他在江湖赌局和生死追杀中与月神蔡月相爱相杀，最终仍执着于查清真相、寻找自己的归宿。出自古龙小说《飞刀，又见飞刀》
+    flavor: “小李飞刀”李寻欢之孙，继承家传飞刀绝技。李坏因私生子的身份自幼流落江湖，行事亦正亦邪；他在江湖赌局与生死追杀中与月神（薛青碧后人）相爱相杀，最终仍执着于查清真相，寻找自己的归宿。出自古龙小说《飞刀，又见飞刀》
     default_gender: male
     default_morality: 70
     recruitable: true
@@ -1207,7 +1223,7 @@ heroes:
     name: 上官小仙
     avatar: monkey_wen_female5.png
     archetype: civil
-    flavor: 上官金虹与林仙儿之女。上官小仙为重振金钱帮，长期装疯卖傻，暗中积蓄力量；她在与叶开的交锋中多次设局，最终未能实现独霸江湖的野心。出自古龙小说《九月鹰飞》
+    flavor: 上官金虹与林仙儿之女。上官小仙聪慧而野心勃勃，为重振金钱帮，长期装疯卖傻、暗中积蓄力量；她外表柔弱，心思却深沉缜密，善于借他人之力布局，在与叶开的交锋中多次设局，最终败于叶开。出自古龙小说《九月鹰飞》
     default_gender: female
     default_morality: 25
     recruitable: true
@@ -1239,7 +1255,7 @@ heroes:
     name: 霍休
     avatar: pig_wen_male3.png
     archetype: civil
-    flavor: 秘密组织“青衣楼”的首领，江湖首富。霍休生活简朴，却把财富视为唯一信仰，为积累金钱利用大金鹏王等人，修建地下宝库；陆小凤查明真相后，他的阴谋败露。出自古龙小说《陆小凤系列》
+    flavor: 秘密组织“青衣楼”的首领，也是江湖首富。霍休生活简朴，却把财富视为唯一信仰，为聚敛金钱而利用大金鹏王等人，并修建地下宝库；他行踪隐秘，以青衣楼笼络杀手、暗控江湖，陆小凤查明真相后，他的阴谋败露。出自古龙小说《陆小凤系列》
     default_gender: male
     default_morality: 15
     recruitable: true
@@ -1255,7 +1271,7 @@ heroes:
     name: 孙玉伯
     avatar: pig/文033.png
     archetype: civil
-    flavor: 江湖人称“老伯”，快活林的主人。孙玉伯外表慈祥，实际杀伐果断，对下属既有长者般的照顾，也有严格的规矩；他与孟星魂、律香川等人相互利用，快活林最终因内部背叛而陷入危机。出自古龙小说《流星·蝴蝶·剑》
+    flavor: 江湖人称“老伯”，快活林的主人。孙玉伯外表慈祥，行事却杀伐果断，对下属既有长者般的照顾，也有不容违逆的规矩；他与孟星魂、律香川等人相互利用，快活林最终因内部背叛而陷入危机。出自古龙小说《流星·蝴蝶·剑》
     default_gender: male
     default_morality: 70
     recruitable: true
@@ -1511,7 +1527,7 @@ heroes:
     name: 林仙儿
     avatar: monkey_wen_female4.png
     archetype: civil
-    flavor: 江湖公认的“第一美人”，外表柔弱，内心贪婪狠毒。林仙儿利用美色和谎言控制阿飞及众多江湖人物，后来身份和丑行被揭穿，最终失势沦为娼妓。出自古龙小说《多情剑客无情剑》
+    flavor: 江湖公认的“第一美人”，外表柔弱，内心却贪婪狠毒。林仙儿善于利用美色与谎言周旋于各色人物之间，一度控制阿飞及众多江湖人物，使阿飞因她消沉多年；后来身份与丑行被揭穿，她终于失势，沦落风尘。出自古龙小说《多情剑客无情剑》
     default_gender: female
     default_morality: 15
     recruitable: true
@@ -1527,7 +1543,7 @@ heroes:
     name: 无花和尚
     avatar: pig/武066.png
     archetype: military
-    flavor: 少林寺“妙僧”，天枫十四郎与石观音之子，精通琴棋书画和武功。无花和尚与楚留香曾互相欣赏，却因策划一系列阴谋成为对手；阴谋败露后，他与楚留香交手，最终败退。出自古龙小说《楚留香系列》
+    flavor: 少林寺“妙僧”，天枫十四郎与石观音之子，精通琴棋书画与武功。无花和尚表面清雅出尘，行事却暗藏机心，与楚留香曾互相欣赏，却因暗中策划一系列阴谋而成为对手；阴谋败露后，他与楚留香交手，最终败退。出自古龙小说《楚留香系列》
     default_gender: male
     default_morality: 35
     recruitable: true
@@ -1591,7 +1607,7 @@ heroes:
     name: 伊风
     avatar: pig_wu_male7.png
     archetype: military
-    flavor: 飘香剑雨的主角，本名吕南人。他原是武林名门之后，却因妻子被邪教掠走而家破人亡。为了复仇，他隐姓埋名，手持飘香剑，只身闯荡险恶江湖。他从一个被仇恨蒙蔽双眼的狂人，在经历了一系列的磨难与奇遇后，逐渐领悟了侠义的真谛，成长为一代大侠。他的故事充满了早期的悲情与苍凉，展现了一个男人在绝境中的挣扎与救赎，是古龙笔下"浪子"形象的早期雏形。出自古龙小说《飘香剑雨》
+    flavor: 伊风本名吕南人，是《飘香剑雨》的主角，原为武林名门之后。妻子被邪教掠走后，他家破人亡，遂隐姓埋名，持飘香剑只身闯荡江湖，一心复仇。一路磨难与奇遇之后，他渐渐放下被仇恨蒙蔽的执念，领悟侠义真谛，成长为一代大侠。他身上有古龙早期浪子的悲情与苍凉。出自古龙小说《飘香剑雨》
     default_gender: male
     default_morality: 70
     recruitable: true
@@ -1623,7 +1639,7 @@ heroes:
     name: 小高
     avatar: pig/武011.png
     archetype: military
-    flavor: 初入江湖的普通少年，意外卷入“血鹦鹉”事件。小高没有显赫家世，只能凭勇气和机敏在追杀、骗局与生离死别中求生，后来逐步查清事件真相。出自古龙小说《血鹦鹉》
+    flavor: 初入江湖的普通少年，意外卷入“血鹦鹉”事件。小高没有显赫家世，只能凭勇气与机敏在追杀、骗局和生离死别中求存，最终查清了事件的真相。出自古龙小说《血鹦鹉》
     default_gender: male
     default_morality: 70
     recruitable: true
@@ -1639,7 +1655,7 @@ heroes:
     name: 马如龙
     avatar: pig/武009.png
     archetype: military
-    flavor: 《碧血洗银枪》的主角，年轻侠客。马如龙武功高强、性格刚烈，曾在身陷重围、背负不白之冤时追查真相；他凭银枪与敌人交战，最终洗清罪名。出自古龙小说《碧血洗银枪》
+    flavor: 年轻侠客，《碧血洗银枪》的主角。马如龙武功高强、性格刚烈，因一桩冤案被多方追杀，只得隐姓埋名追查真相，最终凭一杆银枪与强敌周旋，洗清了不白之冤。出自古龙小说《碧血洗银枪》
     default_gender: male
     default_morality: 75
     recruitable: true
@@ -1668,6 +1684,22 @@ heroes:
       defense: 20
       agility: 30
   purple:
+  - key: hero_wu_ming
+    name: 吴明
+    avatar: monkey/orange/吴明.png
+    archetype: civil
+    flavor: "出自古龙《陆小凤》系列《凤舞九天》，人称“小老头”，居于一座隐秘的海外孤岛。他外表和气平凡，常带笑容，言谈间却显露出广博见识与敏锐心机。岛上聚集着一批深藏不露的高手，在他的安排下隐匿身份、暗中行动，以难以追查的手段攫取财富。他深谙享乐，也善于观察人的欲望，往往在客气交谈之间便已衡量好对方的价值。陆小凤意外登岛后，他看中了对方的胆识与本领，试图将其纳入自己的计划。他不急于公开扬名，更喜欢藏在局势背后，静候旁人一步步走进自己铺好的道路。"
+    default_gender: male
+    default_morality: 30
+    recruitable: true
+    growth_range:
+    - 7
+    - 12
+    attribute_weights:
+      force: 20
+      intellect: 45
+      defense: 10
+      agility: 25
   - key: hero_ding_peng
     name: 丁鹏
     avatar: monkey/古龙/丁鹏.png
@@ -1732,22 +1764,6 @@ heroes:
       intellect: 15
       defense: 10
       agility: 50
-  - key: hero_hu_tiehua
-    name: 胡铁花
-    avatar: monkey/古龙/胡铁花.png
-    archetype: military
-    flavor: 楚留香一生中最信任的生死之交，外号"大疯狗"或"花蝴蝶"。他生性嗜酒如命，豪爽洒脱，说话做事从不拐弯抹角，行事全凭一腔热血和一腔义气。他虽然没有楚留香那种风流倜傥的儒雅气质，却有着一颗金子般纯粹的赤子之心。在闯荡江湖的过程中，他闹过无数笑话，也受过无数次伤，但每逢危急时刻，他总是那个冲在最前面、为兄弟挡刀的人。他的存在，为楚留香那充满了智谋与算计的江湖生涯增添了最真实的色彩和最坚实的依靠。出自古龙小说《楚留香系列》
-    default_gender: male
-    default_morality: 75
-    recruitable: true
-    growth_range:
-    - 7
-    - 11
-    attribute_weights:
-      force: 35
-      intellect: 15
-      defense: 30
-      agility: 20
   - key: hero_a_fei
     name: 阿飞
     avatar: monkey/古龙/阿飞.png
@@ -2117,22 +2133,6 @@ heroes:
       intellect: 15
       defense: 30
       agility: 15
-  - key: hero_wu_ming
-    name: 吴明
-    avatar: monkey/orange/吴明.png
-    archetype: civil
-    flavor: "出自古龙《陆小凤》系列《凤舞九天》，人称“小老头”，居于一座隐秘的海外孤岛。他外表和气平凡，常带笑容，言谈间却显露出广博见识与敏锐心机。岛上聚集着一批深藏不露的高手，在他的安排下隐匿身份、暗中行动，以难以追查的手段攫取财富。他深谙享乐，也善于观察人的欲望，往往在客气交谈之间便已衡量好对方的价值。陆小凤意外登岛后，他看中了对方的胆识与本领，试图将其纳入自己的计划。他不急于公开扬名，更喜欢藏在局势背后，静候旁人一步步走进自己铺好的道路。"
-    default_gender: male
-    default_morality: 30
-    recruitable: true
-    growth_range:
-    - 8
-    - 14
-    attribute_weights:
-      force: 20
-      intellect: 45
-      defense: 10
-      agility: 25
   - key: hero_kuai_huo_wang
     name: 柴玉关
     avatar: monkey/orange/柴玉关.png

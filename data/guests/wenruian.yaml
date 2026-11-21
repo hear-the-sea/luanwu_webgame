@@ -18,22 +18,6 @@ heroes:
       intellect: 40
       defense: 20
       agility: 25
-  - key: hero_liu_suifeng
-    name: 柳随风
-    avatar: pig/武054.png
-    archetype: military
-    flavor: 柳随风身法飘逸，行止如风。性情洒脱却心思细密，常在危急时刻化险为夷。行侠路上，他以轻功破阵，以笑意解忧，把江湖的险与美都踏在脚下。潇洒二字，于他并非口号，而是行事之道。他不恋名利，却总在关键处挺身而出。出自温瑞安小说《神州奇侠》
-    default_gender: male
-    default_morality: 70
-    recruitable: true
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 25
-      intellect: 15
-      defense: 15
-      agility: 45
   - key: hero_xi_honglei
     name: 息红泪
     avatar: monkey_wen_female10.png
@@ -66,22 +50,6 @@ heroes:
       intellect: 20
       defense: 20
       agility: 25
-  - key: hero_lei_sun
-    name: 雷损
-    avatar: pig/武054.png
-    archetype: military
-    flavor: 雷损胸怀豪气，出手如雷。身处江湖权力漩涡，他既能快意恩仇，也能统筹大局。与王小石等人交锋相知，展现硬骨与柔情并存的一面。风起云涌中，他的名字像雷鸣，震过大宋江湖。他敢担大任，也敢承担失败，气度不凡。出自温瑞安小说《说英雄谁是英雄》
-    default_gender: male
-    default_morality: 65
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 40
-      intellect: 20
-      defense: 25
-      agility: 15
   - key: hero_fang_xiezhen
     name: 方邪真
     avatar: pig/武013.png
@@ -143,9 +111,9 @@ heroes:
     - 7
     attribute_weights:
       force: 30
-      intellect: 20
-      defense: 5
-      agility: 45
+      intellect: 15
+      defense: 20
+      agility: 35
   - key: hero_chu_xiangyu
     name: 楚相玉
     avatar: monkey/其他随机角色/文037_男.png
@@ -162,22 +130,6 @@ heroes:
       intellect: 35
       defense: 20
       agility: 20
-  - key: hero_cai_jing
-    name: 蔡京
-    avatar: pig/文032.png
-    archetype: civil
-    flavor: 权臣蔡京，笑里藏刀，权谋深不可测。他在朝堂与江湖间织网，屡与四大名捕对峙。手握权势，他以谋略压人，却也让正义更显艰难。奸佞之名不虚，亦是乱世最阴冷的风。他擅长借势生风，把制度玩弄于股掌。出自温瑞安小说《四大名捕》
-    default_gender: male
-    default_morality: 15
-    recruitable: true
-    growth_range:
-    - 3
-    - 8
-    attribute_weights:
-      force: 10
-      intellect: 55
-      defense: 20
-      agility: 15
   - key: hero_han_qingzhi
     name: 韩庆之
     avatar: pig/武009.png
@@ -198,7 +150,7 @@ heroes:
     name: 米苍穹
     avatar: pig/文016.png
     archetype: civil
-    flavor: 米苍穹身为布衣神相，眼观天机，心明世局。相术精深，武功亦高，他常以一言断人祸福。行走江湖，他更像一位棋手，将纷争化作棋局。风云变幻时，他以智慧守护正道一线。他看似淡泊，其实心怀大义，常在暗处改局。出自温瑞安小说《布衣神相》
+    flavor: 米苍穹人称“米公公”，是温瑞安《说英雄谁是英雄》系列中的宫廷高手，与京师“有桥集团”关系密切，与权相蔡京互为奥援。他身为宦官而武功极高，心思深沉，善于借势布局，在朝野与江湖之间穿针引线。出自温瑞安小说《说英雄谁是英雄》
     default_gender: male
     default_morality: 75
     recruitable: true
@@ -213,7 +165,7 @@ heroes:
   - key: hero_li_buyi
     name: 李布衣
     avatar: pig/武011.png
-    archetype: military
+    archetype: civil
     flavor: 李布衣与米苍穹并肩，行事低调却侠义深藏。武功扎实，心性稳重，常在暗处破局解难。布衣之名，象征他不依权势，只信天理。风雨江湖中，他是最可靠的同路人。他少言寡语，却在关键处出手如雷。出自温瑞安小说《布衣神相》
     default_gender: male
     default_morality: 80
@@ -222,11 +174,59 @@ heroes:
     - 4
     - 7
     attribute_weights:
-      force: 30
-      intellect: 25
+      force: 20
+      intellect: 40
       defense: 25
-      agility: 20
+      agility: 15
   blue:
+  - key: hero_liu_suifeng
+    name: 柳随风
+    avatar: pig/武054.png
+    archetype: military
+    flavor: 柳随风身法飘逸，行止如风。性情洒脱却心思细密，常在危急时刻化险为夷。行侠路上，他以轻功破阵，以笑意解忧，把江湖的险与美都踏在脚下。潇洒二字，于他并非口号，而是行事之道。他不恋名利，却总在关键处挺身而出。出自温瑞安小说《神州奇侠》
+    default_gender: male
+    default_morality: 70
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 25
+      intellect: 15
+      defense: 15
+      agility: 45
+  - key: hero_lei_sun
+    name: 雷损
+    avatar: pig/武054.png
+    archetype: military
+    flavor: 雷损胸怀豪气，出手如雷。身处江湖权力漩涡，他既能快意恩仇，也能统筹大局。与王小石等人交锋相知，展现硬骨与柔情并存的一面。风起云涌中，他的名字像雷鸣，震过大宋江湖。他敢担大任，也敢承担失败，气度不凡。出自温瑞安小说《说英雄谁是英雄》
+    default_gender: male
+    default_morality: 65
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 20
+      defense: 25
+      agility: 15
+  - key: hero_cai_jing
+    name: 蔡京
+    avatar: pig/文032.png
+    archetype: civil
+    flavor: 权臣蔡京，笑里藏刀，权谋深不可测。他在朝堂与江湖间织网，屡与四大名捕对峙。手握权势，他以谋略压人，却也让正义更显艰难。奸佞之名不虚，亦是乱世最阴冷的风。他擅长借势生风，把制度玩弄于股掌。出自温瑞安小说《四大名捕》
+    default_gender: male
+    default_morality: 15
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 55
+      defense: 20
+      agility: 15
   - key: hero_wuqing
     name: 无情
     avatar: pig/文050.png
@@ -320,10 +320,10 @@ heroes:
     - 7
     - 11
     attribute_weights:
-      force: 15
-      intellect: 50
-      defense: 20
-      agility: 15
+      force: 35
+      intellect: 40
+      defense: 15
+      agility: 10
   - key: hero_xiao_qiushui
     name: 萧秋水
     avatar: monkey/温瑞安/萧秋水.png
@@ -400,7 +400,7 @@ heroes:
     - 7
     - 11
     attribute_weights:
-      force: 20
-      intellect: 50
+      force: 35
+      intellect: 40
       defense: 10
-      agility: 20
+      agility: 15

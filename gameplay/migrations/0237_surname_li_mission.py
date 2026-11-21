@@ -185,8 +185,8 @@ FALLBACK_SKILL_DEFAULTS = {
         "status_probability": 0.3,
         "status_duration": 1,
         "damage_formula": {
-            "base": 800,
-            "ally": {"force": 0.5, "intellect": 5, "agility": 0.2},
+            "base": 321,
+            "ally": {"force": 0.72, "intellect": 7.23, "agility": 0.2},
             "enemy": {"defense": 0.35, "intellect": 0.5},
         },
         "required_level": 50,
@@ -201,8 +201,8 @@ FALLBACK_SKILL_DEFAULTS = {
         "base_probability": 0.72,
         "kind": "active",
         "damage_formula": {
-            "base": 1000,
-            "ally": {"force": 0.6, "agility": 3.2, "luck": 0.6},
+            "base": 795,
+            "ally": {"force": 1.72, "agility": 3.2, "luck": 0.6},
             "enemy": {"defense": 0.5, "agility": 0.2},
         },
         "required_level": 65,

@@ -146,22 +146,6 @@ heroes:
       intellect: 20
       defense: 25
       agility: 20
-  - key: hero_shangguan_tianye
-    name: 上官天野
-    avatar: pig/武080.png
-    archetype: military
-    flavor: 上官天野亦正亦邪，行事难测。武功高强却不愿受门派约束，他与练霓裳的交集让人看见人性深处的矛盾。江湖风雨里，他像一柄游离的刀，随时可能改变局势。正邪之间的灰色，是他最真实的底色。他既渴望自由，又难免被情义牵绊。出自梁羽生小说《白发魔女传》
-    default_gender: male
-    default_morality: 50
-    recruitable: true
-    growth_range:
-    - 5
-    - 7
-    attribute_weights:
-      force: 35
-      intellect: 20
-      defense: 20
-      agility: 25
   - key: hero_murong_xuanji
     name: 慕容璇玑
     avatar: monkey_wen_female5.png
@@ -194,22 +178,6 @@ heroes:
       intellect: 20
       defense: 20
       agility: 30
-  - key: hero_qiuran_ke
-    name: 虬髯客
-    avatar: pig_wu_male2.png
-    archetype: military
-    flavor: 虬髯客豪迈不羁，侠肝义胆。风尘三侠之一的他，既有江湖浪子的洒脱，也有护国济民的担当。武功深厚，行事磊落，出手即是风雷。乱世里他如狂风，卷起一段英雄传说。他的豪迈与担当，让群雄心服口服。出自梁羽生小说《女帝奇英传》
-    default_gender: male
-    default_morality: 75
-    recruitable: true
-    growth_range:
-    - 5
-    - 7
-    attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
   - key: hero_hongxian_nv
     name: 红线女
     avatar: monkey_wen_female3.png
@@ -243,11 +211,43 @@ heroes:
       defense: 10
       agility: 45
   blue:
+  - key: hero_shangguan_tianye
+    name: 上官天野
+    avatar: pig/武080.png
+    archetype: military
+    flavor: 上官天野亦正亦邪，行事难测。武功高强却不愿受门派约束，他与练霓裳的交集让人看见人性深处的矛盾。江湖风雨里，他像一柄游离的刀，随时可能改变局势。正邪之间的灰色，是他最真实的底色。他既渴望自由，又难免被情义牵绊。出自梁羽生小说《白发魔女传》
+    default_gender: male
+    default_morality: 50
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 35
+      intellect: 20
+      defense: 20
+      agility: 25
+  - key: hero_qiuran_ke
+    name: 虬髯客
+    avatar: pig_wu_male2.png
+    archetype: military
+    flavor: 虬髯客豪迈不羁，侠肝义胆。风尘三侠之一的他，既有江湖浪子的洒脱，也有护国济民的担当。武功深厚，行事磊落，出手即是风雷。乱世里他如狂风，卷起一段英雄传说。他的豪迈与担当，让群雄心服口服。出自梁羽生小说《女帝奇英传》
+    default_gender: male
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 15
+      defense: 25
+      agility: 20
   - key: hero_gu_zhihua
     name: 谷之华
     avatar: monkey_wu_female.png
     archetype: military
-    flavor: 天山有女，冰雪为骨，却偏生一颗炽热真心。她出身名门却不拘礼教，与金世遗相遇于冰川绝谷，历经千难万险终成眷属。世人道她武功高强、容颜倾城，却不知她最动人处在于那份不问出身、只问真心的坦荡。雪峰之上，她以柔情化解世俗偏见；风雪之中，她与心上人并肩而立。梁羽生笔下最动人的女性角色之一。出自梁羽生小说《冰川天女传》
+    flavor: 谷之华是邙山派掌门吕四娘的关门弟子，性情温婉而坚韧。她在《云海玉弓缘》中与金世遗相识相知，两人情投意合，却因厉胜男的痴恋与江湖恩怨而屡生波折。她不以出身论人，始终以真心待金世遗，最终在《冰河洗剑录》中与他结为伴侣。她武功承邙山派一脉，后来接任掌门。出自梁羽生小说《云海玉弓缘》
     default_gender: female
     default_morality: 80
     recruitable: true
@@ -311,7 +311,7 @@ heroes:
     name: 凌未风
     avatar: pig_wu_male7.png
     archetype: military
-    flavor: 天山绝顶，他是执掌一派的宗师；江湖风雨，他是后辈仰望的高峰。执掌天山派数十载，他以深厚武功镇四方，以宽厚胸襟纳百川。金世遗这等桀骜弟子，也在他调教下成就一代宗师。他身居高位却从无架子，德高望重而不倚老卖老。一生行侠仗义，守护天山基业，堪称梁羽生笔下最可敬的长辈形象。出自梁羽生小说《冰川天女传》
+    flavor: 凌未风是晦明禅师的关门弟子，天山七剑之一。他因情伤与误会远走西域，投师天山，练成天山剑法；后与易兰珠、桂仲明等七剑并肩抗清，成为天山派承前启后的掌门人物。他性情沉毅，重情重义，与刘郁芳的一段旧情始终难圆。出自梁羽生小说《七剑下天山》
     default_gender: male
     default_morality: 90
     recruitable: true
@@ -359,7 +359,7 @@ heroes:
     name: 厉胜男
     avatar: monkey_wu_female5.png
     archetype: military
-    flavor: 爱到深处，便是不归路。她对金世遗一往情深，却终究求而不得。性格刚烈如她，不愿委曲求全，宁可玉碎也不瓦全。她武功高强，本可独步武林；她容颜出众，本可觅得良缘。偏偏一颗心只系一人，至死不渝。最终为所爱之人牺牲自己，留下的是梁羽生笔下最动人的爱情悲歌。出自梁羽生小说《冰川天女传》
+    flavor: 厉胜男是《云海玉弓缘》中的女主角，厉家后人，性情偏激而执拗。她为追寻乔北溟遗学、了结家族旧怨闯荡江湖，对金世遗一往情深，却始终得不到同等回应。她修炼修罗阴煞功，行事狠辣；与唐晓澜比试时施展天魔解体大法，身受重伤，最终在成婚当日死在金世遗怀中。出自梁羽生小说《云海玉弓缘》
     default_gender: female
     default_morality: 60
     recruitable: true
@@ -439,7 +439,7 @@ heroes:
     name: 金逐流
     avatar: pig/武032.png
     archetype: military
-    flavor: 金逐流豪迈不羁，剑法狂放如风。身陷与张丹枫、易兰珠的情感纠葛，他在爱与义之间屡屡挣扎。武学上他敢破旧成新，江湖上他敢爱敢恨。风云变幻里，他终以真性情写出一段侠客传奇。他的冲动与豪情并存，既耀眼也让人叹息。出自梁羽生小说《云海玉弓缘》
+    flavor: 金逐流是金世遗与谷之华之子，也是《侠骨丹心》的主角。他剑法得父亲真传，性情豪迈不羁，初入江湖便卷入帮派纷争，与史红英相识相恋，又与厉南星等青年侠士由疑忌走向并肩。他行事敢爱敢恨，剑法狂放如风。出自梁羽生小说《侠骨丹心》
     default_gender: male
     default_morality: 70
     recruitable: true

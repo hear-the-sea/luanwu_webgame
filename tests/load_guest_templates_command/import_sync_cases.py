@@ -556,8 +556,8 @@ def test_load_guest_templates_reimport_syncs_existing_guest_current_hp_for_base_
         current_hp=full_guest.max_hp // 2,
     )
 
-    assert full_guest.current_hp == 5740
-    assert half_guest.current_hp == 2870
+    assert full_guest.current_hp == 4140
+    assert half_guest.current_hp == 2070
 
     call_command(
         "load_guest_templates",
@@ -571,10 +571,10 @@ def test_load_guest_templates_reimport_syncs_existing_guest_current_hp_for_base_
     full_guest.refresh_from_db()
     half_guest.refresh_from_db()
 
-    assert full_guest.max_hp == 5540
-    assert half_guest.max_hp == 5540
-    assert full_guest.current_hp == 5540
-    assert half_guest.current_hp == 2770
+    assert full_guest.max_hp == 3940
+    assert half_guest.max_hp == 3940
+    assert full_guest.current_hp == 3940
+    assert half_guest.current_hp == 1970
 
 
 @pytest.mark.django_db
@@ -637,7 +637,7 @@ def test_load_guest_templates_reimport_clears_injured_status_when_hp_sync_reache
         force=100,
         intellect=80,
         defense_stat=80,
-        current_hp=5740,
+        current_hp=4140,
         status=GuestStatus.INJURED,
         injury_loyalty_processed_at=timezone.now(),
     )
@@ -653,7 +653,109 @@ def test_load_guest_templates_reimport_clears_injured_status_when_hp_sync_reache
 
     guest.refresh_from_db()
 
-    assert guest.max_hp == 5540
-    assert guest.current_hp == 5540
+    assert guest.max_hp == 3940
+    assert guest.current_hp == 3940
     assert guest.status == GuestStatus.IDLE
     assert guest.injury_loyalty_processed_at is None
+
+
+@pytest.mark.django_db
+def test_load_guest_templates_reimport_syncs_existing_candidate_snapshots(tmp_path, django_user_model):
+    import yaml
+
+    from guests.models import RecruitmentCandidate, RecruitmentPool
+
+    skills_file = tmp_path / "skills.yaml"
+    skills_file.write_text(yaml.safe_dump({"skills": [], "skill_books": []}, allow_unicode=True), encoding="utf-8")
+    heroes_dir = tmp_path / "heroes"
+    heroes_dir.mkdir()
+
+    def _payload(named_name: str, named_rarity: str, named_archetype: str, gray_name: str, gray_archetype: str) -> dict:
+        return {
+            "templates": [
+                {
+                    "key": "tpl_candidate_sync_named",
+                    "name": named_name,
+                    "archetype": named_archetype,
+                    "rarity": named_rarity,
+                    "base_hp": 600,
+                },
+                {
+                    "key": "tpl_candidate_sync_gray",
+                    "name": gray_name,
+                    "archetype": gray_archetype,
+                    "rarity": "gray",
+                    "base_hp": 300,
+                },
+            ],
+            "pools": [
+                {
+                    "key": "candidate_sync_pool",
+                    "name": "候选同步池",
+                    "tier": "cunmu",
+                    "entries": [],
+                }
+            ],
+        }
+
+    file_v1 = tmp_path / "templates_v1.yaml"
+    file_v2 = tmp_path / "templates_v2.yaml"
+    file_v1.write_text(
+        yaml.safe_dump(_payload("展获", "blue", "military", "布衣", "civil"), allow_unicode=True),
+        encoding="utf-8",
+    )
+    file_v2.write_text(
+        yaml.safe_dump(_payload("柳下惠", "purple", "civil", "布衣新名", "military"), allow_unicode=True),
+        encoding="utf-8",
+    )
+
+    call_command(
+        "load_guest_templates",
+        file=str(file_v1),
+        skills_file=str(skills_file),
+        heroes_dir=str(heroes_dir),
+        skip_images=True,
+        verbosity=0,
+    )
+
+    named_tpl = GuestTemplate.objects.get(key="tpl_candidate_sync_named")
+    gray_tpl = GuestTemplate.objects.get(key="tpl_candidate_sync_gray")
+    user = django_user_model.objects.create_user(username="load_guest_templates_candidate_sync", password="pass12345")
+    manor = ensure_manor(user)
+    pool = RecruitmentPool.objects.get(key="candidate_sync_pool")
+
+    named_candidate = RecruitmentCandidate.objects.create(
+        manor=manor,
+        pool=pool,
+        template=named_tpl,
+        display_name="展获",
+        rarity="blue",
+        archetype="military",
+    )
+    gray_candidate = RecruitmentCandidate.objects.create(
+        manor=manor,
+        pool=pool,
+        template=gray_tpl,
+        display_name="随机路人甲",
+        rarity="gray",
+        archetype="civil",
+    )
+
+    call_command(
+        "load_guest_templates",
+        file=str(file_v2),
+        skills_file=str(skills_file),
+        heroes_dir=str(heroes_dir),
+        skip_images=True,
+        verbosity=0,
+    )
+
+    named_candidate.refresh_from_db()
+    gray_candidate.refresh_from_db()
+
+    assert named_candidate.display_name == "柳下惠"
+    assert named_candidate.rarity == "purple"
+    assert named_candidate.archetype == "civil"
+    assert gray_candidate.display_name == "随机路人甲"
+    assert gray_candidate.rarity == "gray"
+    assert gray_candidate.archetype == "military"

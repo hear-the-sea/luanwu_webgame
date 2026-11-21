@@ -222,6 +222,56 @@ def test_apply_effect_can_buff_filtered_ally_templates_only():
     assert rear.battle_modifiers == {}
 
 
+def test_apply_effect_buffs_only_ally_guests_when_target_kind_filtered():
+    actor = make_unit(name="军师", side="defender", template_key="hero_strategist", battle_modifiers={})
+    guest_ally = make_unit(name="同袍", side="defender", template_key="hero_comrade", battle_modifiers={})
+    troop_ally = make_unit(name="护院", side="defender", kind="troop", template_key="dao_sheng", battle_modifiers={})
+
+    apply_effect(
+        {
+            "type": "modify_outgoing_damage",
+            "value": 1.15,
+            "target_scope": "allies",
+            "target_kind_is": "guest",
+        },
+        {
+            "actor": actor,
+            "target": None,
+            "attacker_team": [],
+            "defender_team": [actor, guest_ally, troop_ally],
+            "event_sink": [],
+        },
+    )
+
+    assert actor.battle_modifiers["outgoing_damage_multiplier"] == 1.15
+    assert guest_ally.battle_modifiers["outgoing_damage_multiplier"] == 1.15
+    assert troop_ally.battle_modifiers == {}
+
+
+def test_comrade_command_skill_config_targets_guests_only():
+    from pathlib import Path
+
+    import yaml
+    from django.conf import settings
+
+    data = yaml.safe_load((Path(settings.BASE_DIR) / "data" / "guest_skills.yaml").read_text(encoding="utf-8"))
+    skill = next(item for item in data["skills"] if item["key"] == "comrade_command")
+    effect = next(
+        item for item in skill["passive_config"]["triggers"][0]["effects"] if item["type"] == "modify_outgoing_damage"
+    )
+
+    assert effect == {
+        "type": "modify_outgoing_damage",
+        "value": 1.15,
+        "target_scope": "allies",
+        "target_kind_is": "guest",
+    }
+    messages = [
+        item.get("message") for item in skill["passive_config"]["triggers"][0]["effects"] if item["type"] == "emit_log"
+    ]
+    assert messages == ["全体门客伤害↑"]
+
+
 def test_apply_effect_deduplicates_same_skill_source_across_multiple_holders():
     general = make_unit(name="夜哨甲", side="defender", template_key="guild_wulinzhai_night_watch", battle_modifiers={})
     watcher = make_unit(name="夜哨乙", side="defender", template_key="guild_wulinzhai_junshi", battle_modifiers={})

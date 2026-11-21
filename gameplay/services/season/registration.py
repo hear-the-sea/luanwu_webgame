@@ -11,7 +11,8 @@ from django.db import transaction
 from core.exceptions import GameError
 from gameplay.models import Manor
 from gameplay.models.season import Season, SeasonAction, SeasonMember
-from guests.guest_combat_stats import apply_custom_guest_low_loyalty_penalty, resolve_guest_combat_stats
+from gameplay.services.arena.snapshots import build_entry_guest_snapshot
+from gameplay.services.arena.virtual_lineups import snapshot_power
 from guests.models import Guest, GuestStatus
 
 from .campaign_rules import campaign_rules
@@ -45,9 +46,9 @@ def _balance_profiles(members: list[SeasonMember], now: datetime, config: dict[s
         .select_related("template")
         .prefetch_related("skills")
     ):
-        stats = resolve_guest_combat_stats(guest)
-        _, attack, defense = apply_custom_guest_low_loyalty_penalty(guest, stats)
-        powers[guest.manor_id].append(attack + defense + stats.max_hp)
+        snapshot = build_entry_guest_snapshot(guest)
+        snapshot["current_hp"] = snapshot["max_hp"]
+        powers[guest.manor_id].append(snapshot_power(snapshot, formula_version=2))
     active: dict[int, set[Any]] = {key: set() for key in manor_ids}
     since = now - timedelta(days=config["active_days"])
     for manor_id, day in SeasonAction.objects.filter(

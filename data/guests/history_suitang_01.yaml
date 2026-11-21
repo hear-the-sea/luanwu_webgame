@@ -421,16 +421,15 @@ heroes:
       intellect: 48
       defense: 26
       agility: 10
-  blue:
   - key: hist_suitang_0030_zhangsunwujii
     name: 长孙无忌
     avatar: monkey_wen_male7.png
     default_gender: male
     archetype: civil
-    flavor: （594年—659年）唐太宗长孙皇后的兄长，贞观年间宰相。长孙无忌参与玄武门之变，长期辅佐李世民，唐高宗即位后仍主持朝政；他反对立武昭仪为后，后来被武后贬往黔州，最终被逼自尽。
+    flavor: （594年—659年）字辅机，河南洛阳人，唐太宗长孙皇后的兄长。他参与玄武门之变，贞观年间历任吏部尚书、尚书右仆射等职，长期辅佐李世民；又主持编成《律疏》，即后世所称《唐律疏议》。高宗即位后受遗诏辅政，因反对立武昭仪为后，遭许敬宗构陷谋反，流放黔州，被逼自尽。
     growth_range:
-    - 5
-    - 9
+    - 6
+    - 11
     attribute_weights:
       force: 14
       intellect: 50
@@ -441,10 +440,10 @@ heroes:
     avatar: pig_wen_male3.png
     default_gender: male
     archetype: civil
-    flavor: （737年—792年）唐代诗人、官员，年轻时曾任三卫郎，后来历任洛阳丞、滁州刺史、苏州刺史。韦应物在任上常写地方政务和民生，离任后寓居苏州，著有《韦苏州集》，《滁州西涧》是其名作。
+    flavor: （737年—792年）京兆长安人，唐代诗人、官员。少年时曾任玄宗的三卫郎，安史之乱后折节读书，历任洛阳丞、滁州刺史、江州刺史、苏州刺史，世称“韦苏州”。其诗多写地方政务、民生与山水，风格清淡简远，与王维、孟浩然、柳宗元并称“王孟韦柳”，《滁州西涧》为传诵名篇，著有《韦苏州集》。
     growth_range:
-    - 5
-    - 9
+    - 6
+    - 11
     attribute_weights:
       force: 12
       intellect: 52
@@ -455,21 +454,50 @@ heroes:
     avatar: duck_wen_male2.png
     default_gender: male
     archetype: civil
-    flavor: （733年—804年）唐代学者，字鸿渐，后世称“茶圣”。陆羽幼年被遗弃，长大后在竟陵龙盖寺生活，离寺后游历各地考察茶事；他著有《茶经》，记述茶叶产地、采制、器具和煮饮方法。
+    flavor: （733年—804年）字鸿渐，复州竟陵人，后世尊为“茶圣”。他幼年被遗弃，由龙盖寺僧人收养，少年离寺后曾做过伶人，得竟陵太守李齐物赏识而读书。安史之乱后，他遍历江南茶区，考察茶树产地、采制与煮饮之法，著成《茶经》三卷，系统总结唐代茶事，对后世茶文化影响深远。
     growth_range:
-    - 5
-    - 9
+    - 6
+    - 11
     attribute_weights:
       force: 10
       intellect: 54
       defense: 20
       agility: 16
+  - key: hist_suitang_0035_wangzhongsi
+    name: 王忠嗣
+    avatar: monkey_wu_male8.png
+    default_gender: male
+    archetype: military
+    flavor: （生年不详—747年）唐代名将。王忠嗣本名王训，父亲王海宾战死后被玄宗收养宫中，赐名忠嗣。他历任河西、陇右、朔方、河东节度使，长期镇守西北，击退吐蕃与突厥。天宝年间，他反对以巨大代价强攻石堡城，遭李林甫等人猜忌，被诬告贬官，不久去世。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 38
+      intellect: 26
+      defense: 28
+      agility: 8
+  - key: hist_suitang_0037_lisheng
+    name: 李晟
+    avatar: pig_wu_male1.png
+    default_gender: male
+    archetype: military
+    flavor: （727年—793年）字良器，洮州临潭人，唐代将领。他出身行伍，长期在西北抵御吐蕃，屡立战功。建中四年泾原兵变，朱泚占据长安，李晟率神策军讨伐，于兴元元年收复京城，因功封西平郡王，后官至太尉、中书令。其子李愬后来雪夜袭蔡州，平定淮西。贞元九年去世，谥忠武。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 38
+      intellect: 24
+      defense: 28
+      agility: 10
+  blue:
   - key: hist_suitang_0033_peixingjian
     name: 裴行俭
     avatar: monkey_wu_male2.png
     default_gender: male
     archetype: military
-    flavor: （619年—682年）唐代将领、官员，曾任洮州道行军总管、安西大都护。裴行俭平定西突厥阿史那都支，又以计擒突厥首领阿史那奉职；他还擅长识拔将才，曾推荐程务挺、王方翼等人，卒于任上。
+    flavor: （619年—682年）唐代将领、官员，字守约，绛州闻喜人。裴行俭曾任洮州道行军总管、安西大都护，平定西突厥阿史那都支，又以计擒获阿史那奉职；他擅长识拔将才，曾举荐程务挺、王方翼等人；后突厥复叛，他以反间计擒阿史那伏念，永淳元年卒于任上。
     growth_range:
     - 5
     - 9
@@ -483,7 +511,7 @@ heroes:
     avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
-    flavor: （667年—730年）唐代宰相、文学家，字道济。张说历任中书令、兵部尚书，曾主持朔方军务，开元年间三次入相；他参与修订律令、撰写诏诰，卒后陪葬桥陵，谥文贞。
+    flavor: （667年—730年）唐代宰相、文学家，字道济，洛阳人。张说历任中书令、兵部尚书，曾主持朔方军务，开元年间三次入相；他参与修订律令、撰写诏诰，文辞典重雅正，为开元前期朝廷大手笔，卒后陪葬桥陵，谥号文贞。
     growth_range:
     - 5
     - 9
@@ -492,26 +520,12 @@ heroes:
       intellect: 50
       defense: 24
       agility: 12
-  - key: hist_suitang_0035_wangzhongsi
-    name: 王忠嗣
-    avatar: monkey_wu_male8.png
-    default_gender: male
-    archetype: military
-    flavor: （生年不详—747年）唐代名将，曾任河东节度使、朔方节度使。王忠嗣长期镇守西北，曾击退吐蕃和突厥；天宝年间，因反对攻打石堡城得罪李林甫和杨国忠，被召回朝廷，不久病死。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 38
-      intellect: 26
-      defense: 28
-      agility: 8
   - key: hist_suitang_0036_shisiming
     name: 史思明
     avatar: monkey/其他随机角色/武047_男.png
     default_gender: male
     archetype: military
-    flavor: （生年不详—761年）安史之乱叛军首领，原为安禄山部将。安禄山死后，史思明杀安庆绪并在范阳称帝，后来攻占洛阳；他的儿子史朝义担心被废，联合部将将他杀死。
+    flavor: （生年不详—761年）安史之乱叛军首领，原为安禄山部将。安禄山死后，史思明杀安庆绪，在范阳称帝，随后攻占洛阳；其子史朝义担心被废，联合部将将他杀死。他骁勇善战而反复无常，其死后史朝义继位，叛乱又延续数年，至广德元年平定。
     growth_range:
     - 5
     - 9
@@ -520,26 +534,12 @@ heroes:
       intellect: 18
       defense: 28
       agility: 14
-  - key: hist_suitang_0037_lisheng
-    name: 李晟
-    avatar: pig_wu_male1.png
-    default_gender: male
-    archetype: military
-    flavor: （727年—793年）唐代将领，出身行伍，曾任凤翔节度使。唐德宗建中四年，李晟率军平定朱泚之乱，收复长安，因功封西平郡王；晚年入朝任太尉，贞元九年病逝。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 38
-      intellect: 24
-      defense: 28
-      agility: 10
   - key: hist_suitang_0038_niusengni
     name: 牛僧孺
     avatar: pig/文048.png
     default_gender: male
     archetype: civil
-    flavor: （779年—848年）唐代宰相，进士出身，牛李党争中与李德裕长期对立。牛僧孺历任户部侍郎、同州刺史、淮南节度使等职，多次入相；会昌年间被李德裕排挤，任东都留守，卒于任上。
+    flavor: （779年—848年）唐代宰相，字思黯，进士出身。牛僧孺在牛李党争中与李德裕长期对立，历任户部侍郎、同州刺史、淮南节度使等职，并多次入相；会昌年间遭李德裕排挤，改任东都留守，大中二年卒于洛阳，年七十。
     growth_range:
     - 5
     - 9
@@ -553,7 +553,7 @@ heroes:
     avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
-    flavor: （628年—683年）唐高宗，唐太宗第九子。李治即位后继续进攻高句丽、平定西突厥，显庆年间一度亲自处理政务；晚年因风疾由皇后武则天协助批阅奏章，弘道元年病逝。
+    flavor: （628年—683年）唐高宗，唐太宗第九子。李治即位后继续用兵高句丽，并平定西突厥，显庆年间一度亲理政务；晚年他因风疾缠身，由皇后武则天协助批阅奏章，弘道元年病逝。总章元年唐军攻灭高句丽，设安东都护府，唐朝疆域至此达到极盛。
     growth_range:
     - 5
     - 9
@@ -567,7 +567,7 @@ heroes:
     avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
-    flavor: （656年—710年）唐中宗，唐高宗与武则天之子，两度即位。李显第一次即位后被武则天废为庐陵王，神龙元年复位；复位后立韦氏为皇后、任用安乐公主，景龙四年被韦后和安乐公主毒杀。
+    flavor: （656年—710年）唐中宗，唐高宗与武则天之子，两度即位。李显第一次即位后不久被武则天废为庐陵王，神龙元年复位；复位后他立韦氏为皇后，又放任安乐公主干预朝政，景龙四年被韦后与安乐公主毒杀。其后李隆基发动政变诛灭韦氏，拥立其弟李旦复位。
     growth_range:
     - 5
     - 9
@@ -581,7 +581,7 @@ heroes:
     avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
-    flavor: （662年—716年）唐睿宗，唐高宗之子，两度即位。李旦第一次即位后被武则天废为相王，唐隆元年在诛灭韦氏后复位；景云三年，他将皇位传给太子李隆基，退为太上皇，开元四年病逝。
+    flavor: （662年—716年）唐睿宗，唐高宗之子，两度即位。李旦第一次即位后不久被武则天废为相王，唐隆元年在诛灭韦氏后复位；景云三年，他将皇位传给太子李隆基，退为太上皇，开元四年病逝。先天二年太平公主谋乱伏诛，此后李旦不问政事。
     growth_range:
     - 5
     - 9
@@ -595,7 +595,7 @@ heroes:
     avatar: monkey_wen_male5.png
     default_gender: male
     archetype: civil
-    flavor: （711年—762年）唐肃宗，唐玄宗之子。安史之乱中，李亨在灵武即位，任用郭子仪、李光弼等将领，借回鹘兵收复长安、洛阳；战乱期间他依赖宦官李辅国，宝应元年病逝于长安。
+    flavor: （711年—762年）唐肃宗，唐玄宗之子。安史之乱中，李亨在灵武即位，任用郭子仪、李光弼等将领，并借回鹘兵收复长安、洛阳，迎玄宗还京；战乱期间他倚重宦官李辅国，宝应元年病逝于长安，太子李豫继位，是为代宗。
     growth_range:
     - 5
     - 9
@@ -609,7 +609,7 @@ heroes:
     avatar: monkey/其他随机角色/文037_男.png
     default_gender: male
     archetype: civil
-    flavor: （726年—779年）唐代宗，唐肃宗之子。李豫即位后任用郭子仪等人平定安史余部，处理吐蕃入侵和藩镇叛乱；他还采纳刘晏建议整顿漕运，实行两税法，和大历十四年病逝。
+    flavor: （726年—779年）唐代宗，唐肃宗之子。安史之乱后期即位，任用郭子仪等平定安史余部。广德元年吐蕃攻入长安，他出奔陕州，后命郭子仪收复；在位期间又应对藩镇割据。他采纳刘晏建议整顿漕运，改善关中粮运。大历十四年病逝。
     growth_range:
     - 5
     - 9
@@ -623,7 +623,7 @@ heroes:
     avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
-    flavor: （778年—820年）唐宪宗，唐顺宗之子。李纯即位后任用裴度、李愬等人，先后平定淮西、成德等藩镇，元和年间收回部分州镇；元和十五年，他因宦官陈弘志等人进献丹药而中毒身亡。
+    flavor: （778年—820年）唐宪宗，唐顺宗之子。李纯即位后任用裴度、李愬等人，先后平定淮西、淄青等藩镇，元和年间收回部分州镇，史称“元和中兴”，其削藩之举一度重振中央权威；元和十五年暴崩，或云为宦官陈弘志等所弑，官方则称服食丹药中毒。
     growth_range:
     - 5
     - 9
@@ -637,7 +637,7 @@ heroes:
     avatar: monkey_wen_male3.png
     default_gender: male
     archetype: civil
-    flavor: （810年—859年）唐宣宗，唐宪宗之子。李忱即位后亲自处理奏章，裁抑宦官、整顿吏治，收复河湟部分地区；大中十三年，他服食丹药后病重去世，皇位由唐懿宗继承。
+    flavor: （810年—859年）唐宣宗，唐宪宗之子。李忱即位后亲自处理奏章，裁抑宦官、整顿吏治，又收复河湟部分地区，史称“大中之治”；他勤于政事，用法严明，晚年却迷信方术，大中十三年因服食丹药病重去世，皇位由唐懿宗继承。
     growth_range:
     - 5
     - 9

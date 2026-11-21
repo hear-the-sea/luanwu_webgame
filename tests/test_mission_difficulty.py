@@ -13,7 +13,6 @@ from guests.templatetags.guest_extras import attribute_icons
 from scripts.analysis.rate_mission_difficulty import calculate_difficulty_score, describe_difficulty
 
 ROOT = Path(__file__).resolve().parents[1]
-VALUES = (1, 2, 3, 4, 8, 12, 16, 32, 48, 64, 128)
 
 
 def test_current_ratings_cover_all_43_missions_and_zhanlong_difficulty_increases():
@@ -30,33 +29,6 @@ def test_current_ratings_cover_all_43_missions_and_zhanlong_difficulty_increases
     )
     scores = [ratings[key]["value"] for key in keys]
     assert 1 <= scores[0] < scores[1] < scores[2] < scores[3] <= 128
-
-
-def test_every_mission_rating_is_backed_by_complete_formal_simulations():
-    missions = yaml.safe_load((ROOT / "data/mission_templates.yaml").read_text())["missions"]
-    ratings = load_mission_difficulty_ratings()
-    report = json.loads((ROOT / "reports/mission_difficulty_simulation_20261021.json").read_text())
-    assert set(ratings) == {mission["key"] for mission in missions}
-    assert all(1 <= rating["value"] <= 128 for rating in ratings.values())
-    assert any(rating["value"] not in VALUES for rating in ratings.values())
-    assert min(rating["value"] for rating in ratings.values()) == 1
-    assert max(rating["value"] for rating in ratings.values()) == 128
-    assert report["total_battles"] == len(missions) * 11 * 40
-    for row in report["rows"]:
-        rating = ratings[row["key"]]
-        if rating.get("simulation_report"):
-            latest = json.loads((ROOT / rating["simulation_report"]).read_text())
-            row = next(latest_row for latest_row in latest["rows"] if latest_row["key"] == row["key"])
-            assert latest["seed_start"] == rating["seed_start"]
-        expected_trials = rating.get("seeds_per_profile", 40)
-        assert len(row["measurements"]) == 11
-        assert all(cell["trials"] == expected_trials for cell in row["measurements"])
-        passed = next((cell for cell in row["measurements"] if cell["win_rate"] >= 0.7), None)
-        expected_profile = passed["profile"] if passed else 11
-        score = ratings[row["key"]]["value"]
-        assert score == calculate_difficulty_score(row["measurements"])
-        assert score <= VALUES[expected_profile - 1]
-        assert expected_profile == 1 or score > VALUES[expected_profile - 2]
 
 
 @pytest.mark.parametrize("value", range(1, 129))

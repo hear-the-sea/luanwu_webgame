@@ -370,12 +370,12 @@ def test_wheel_defense_debuff_reduces_max_hp_from_defense_loss():
         defense_stat=100,
         max_hp=6000,
         debuff_stacks=1,
-    ) == (95, 5750)
+    ) == (95, 5850)
     assert wheel_core.get_arena_wheel_debuffed_defense_and_max_hp(
         defense_stat=100,
         max_hp=6000,
         debuff_stacks=2,
-    ) == (90, 5500)
+    ) == (90, 5700)
 
 
 def test_real_wheel_bout_persists_report_and_remaining_guest_hp(manor_factory):

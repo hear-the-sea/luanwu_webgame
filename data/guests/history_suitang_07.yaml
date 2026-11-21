@@ -1,530 +1,531 @@
 # 隋唐五代历史人物（唐代军政人物补充剩余部分、唐代文化与学术补充）
 
-green:
-- key: hist_suitang_0164_wangshuwen
-  name: 王叔文
-  default_gender: male
-  archetype: civil
-  flavor: 唐顺宗即位后任翰林待诏、度支使，与王伾等推动永贞革新，尝试减税、整顿财政并限制宦官权力；改革失败后被贬，806年赐死。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 14
-    intellect: 43
-    defense: 17
-    agility: 16
+heroes:
+  green:
+  - key: hist_suitang_0164_wangshuwen
+    name: 王叔文
+    default_gender: male
+    archetype: civil
+    flavor: 越州山阴人，德宗时以棋待诏入东宫，为太子李诵讲论政事与民间疾苦。顺宗即位后任翰林学士，与王伾、柳宗元、刘禹锡等推行永贞革新，罢宫市与五坊小儿，并谋以范希朝接管神策军、从宦官手中收回兵权。新政仅行百余日，顺宗内禅后他遭贬渝州司户，806年被赐死。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 16
+      intellect: 47
+      defense: 19
+      agility: 18
 
-- key: hist_suitang_0165_wangpei
-  name: 王伾
-  default_gender: male
-  archetype: civil
-  flavor: 唐代官员，顺宗在东宫时曾为翰林待诏，与王叔文共同推动永贞革新；顺宗内禅后被贬为开州司马，死于贬所。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 13
-    intellect: 41
-    defense: 16
-    agility: 15
+  - key: hist_suitang_0165_wangpei
+    name: 王伾
+    default_gender: male
+    archetype: civil
+    flavor: 杭州人，以书法待诏东宫，侍奉太子李诵。顺宗即位后任左散骑常侍、翰林待诏，与王叔文共同主持永贞革新，时称“二王”，并荐引柳宗元、刘禹锡等人。他掌权后收受贿赂、为人求官，顺宗内禅后贬为开州司马，不久病死于贬所。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 15
+      intellect: 48
+      defense: 19
+      agility: 18
 
-- key: hist_suitang_0166_lixun
-  name: 李训
-  default_gender: male
-  archetype: civil
-  flavor: 唐朝官员，字子垂；文宗朝任宰相，参与策划甘露之变，试图诛灭宦官，事败后逃往凤翔，835年被杀。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 15
-    intellect: 40
-    defense: 17
-    agility: 16
+  - key: hist_suitang_0166_lixun
+    name: 李训
+    default_gender: male
+    archetype: civil
+    flavor: 字子垂，进士出身。文宗不满宦官专权，擢他入相，与郑注、韩约合谋铲除宦官，借金吾仗院石榴树降甘露之名设伏。事泄后仇士良等率禁军反扑，朝臣死伤甚众；李训逃入终南山，辗转投奔凤翔，途中被擒，835年遇害。此后宦官气焰更盛，文宗亦受制于宦官。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 17
+      intellect: 46
+      defense: 19
+      agility: 18
 
-- key: hist_suitang_0167_zhengzhu
-  name: 郑注
-  default_gender: male
-  archetype: civil
-  flavor: 原名鱼注，唐朝官员，早年以医术行走，后获唐文宗信任并影响朝政；参与甘露之变，835年事败后被杀。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 14
-    intellect: 39
-    defense: 16
-    agility: 17
+  - key: hist_suitang_0167_zhengzhu
+    name: 郑注
+    default_gender: male
+    archetype: civil
+    flavor: 绛州翼城人，本姓鱼，冒姓郑氏。早年以医术游于长安权贵间，曾为襄阳节度使李愬幕中医官，后由李愬荐于宦官王守澄，善揣人意而渐得信用。文宗欲除宦官，颇倚重他，官至凤翔节度使，与李训约定内外呼应。甘露之变失败后，他闻讯欲还京，被凤翔监军张仲清诱入军府杀死，首级传送京师。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 16
+      intellect: 45
+      defense: 19
+      agility: 20
 
-- key: hist_suitang_0168_lifuguo
-  name: 李辅国
-  default_gender: male
-  archetype: civil
-  flavor: 唐肃宗、代宗时期宦官，安史之乱中随太子李亨北上，后参与诛张皇后、拥立代宗，曾长期掌握宫廷与禁军权力。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 16
-    intellect: 38
-    defense: 19
-    agility: 17
+  - key: hist_suitang_0168_lifuguo
+    name: 李辅国
+    default_gender: male
+    archetype: civil
+    flavor: 本名李静忠，宦官出身，早年掌闲厩马匹。安史之乱中随太子李亨北上灵武，劝进有功，肃宗赐名辅国。肃宗朝任元帅府行军司马，专掌禁兵，后封成国公。762年张皇后谋立越王，他与程元振拥立代宗，进封博陆郡王，加中书令，被尊为尚父。同年代宗罢其兵权，旋即派人将其暗杀，谥曰丑。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 18
+      intellect: 42
+      defense: 21
+      agility: 19
 
-- key: hist_suitang_0169_yuchaoen
-  name: 鱼朝恩
-  default_gender: male
-  archetype: civil
-  flavor: 唐代宦官，763年吐蕃入长安后率军迎接唐代宗，因功掌神策军并任观军容使；后与朝臣冲突，770年被赐死。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 17
-    intellect: 37
-    defense: 18
-    agility: 16
+  - key: hist_suitang_0169_yuchaoen
+    name: 鱼朝恩
+    default_gender: male
+    archetype: civil
+    flavor: 宦官出身，天宝末年入内侍省。肃宗时出任观军容宣慰处置使，监领九节度使讨安庆绪，开宦官监军之例，相州之战唐军溃败。代宗时统率神策军，763年吐蕃攻入长安，他率军迎驾陕州，由此恃功骄横，又领国子监事，干预朝政。770年与宰相元载争权失败，被代宗设计缢杀。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 19
+      intellect: 43
+      defense: 20
+      agility: 18
 
-- key: hist_suitang_0170_chengyuanzhen
-  name: 程元振
-  default_gender: male
-  archetype: civil
-  flavor: 唐肃宗、代宗时期宦官，参与拥立代宗并掌握禁军；763年吐蕃入长安后失势，后被贬，死于流放途中。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 15
-    intellect: 38
-    defense: 17
-    agility: 16
+  - key: hist_suitang_0170_chengyuanzhen
+    name: 程元振
+    default_gender: male
+    archetype: civil
+    flavor: 宦官出身，以拥立代宗之功任骠骑大将军、内侍监，统领禁军。得势后排挤功臣郭子仪、李光弼，又构陷来瑱致死。763年吐蕃进逼长安，他隐匿军情不报，代宗仓促出奔陕州，事后遭群臣交章弹劾，被削职流放溱州，途中死去。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 17
+      intellect: 44
+      defense: 20
+      agility: 19
 
-- key: hist_suitang_0171_hanjian
-  name: 韩建
-  default_gender: male
-  archetype: military
-  flavor: 唐末军阀，长期据有华州并控制潼关，曾挟持、逼迫唐昭宗；后梁建立后任宰相，官至太保。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 38
-    intellect: 20
-    defense: 22
-    agility: 18
+  - key: hist_suitang_0171_hanjian
+    name: 韩建
+    default_gender: male
+    archetype: military
+    flavor: 许州人，初隶忠武军，后据有华州，任华州节度使，控制潼关。他在华州招抚流亡、劝课农桑，使当地稍安。乾宁年间唐昭宗出奔华州，他迎驾后加以挟制，并杀害覃王等宗室诸王。后归附朱温，后梁建立后出任宰相，官至太保。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 40
+      intellect: 20
+      defense: 22
+      agility: 18
 
-- key: hist_suitang_0172_wangxingyu
-  name: 王行瑜
-  default_gender: male
-  archetype: military
-  flavor: 唐末邠宁节度使，曾与李茂贞、韩建干预朝政；因与朱玫反目而杀朱玫，后与朝廷及李克用交战，败亡。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 39
-    intellect: 18
-    defense: 21
-    agility: 17
+  - key: hist_suitang_0172_wangxingyu
+    name: 王行瑜
+    default_gender: male
+    archetype: military
+    flavor: 唐末邠宁节度使，初为朱玫部将，886年倒戈杀朱玫，因功授邠宁节度使。乾宁年间与李茂贞、韩建联兵入长安，诛杀宰相韦昭度、李磎，纵兵劫掠，并谋废昭宗、另立吉王李保，朝野震动。乾宁二年（895）李克用奉诏讨伐，他兵败逃往庆州，为部下所杀。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 41
+      intellect: 19
+      defense: 22
+      agility: 18
 
-- key: hist_suitang_0173_zhumei
-  name: 朱玫
-  default_gender: male
-  archetype: military
-  flavor: 唐末将领，曾参与勤王及讨黄巢；886年拥立襄王李煴为帝并自任侍中，后被部将王行瑜倒戈杀害。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 37
-    intellect: 17
-    defense: 20
-    agility: 18
+  - key: hist_suitang_0173_zhumei
+    name: 朱玫
+    default_gender: male
+    archetype: military
+    flavor: 唐末将领，以军功累迁邠宁节度使。黄巢之乱中率军勤王，僖宗出奔兴元后，他与李昌符等拥立襄王李煴为帝，改元建贞，自任侍中，挟之与唐廷对抗。其部将王行瑜因争权生隙，光启二年（886）倒戈攻入长安，朱玫被杀，襄王政权随之瓦解。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 40
+      intellect: 18
+      defense: 22
+      agility: 20
 
-- key: hist_suitang_0174_zhengtian
-  name: 郑畋
-  default_gender: male
-  archetype: civil
-  flavor: 唐末宰相，字台文；黄巢攻入长安后组织唐军抵抗，曾任凤翔节度使，后因政争多次外任。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 16
-    intellect: 41
-    defense: 19
-    agility: 17
+  - key: hist_suitang_0174_zhengtian
+    name: 郑畋
+    default_gender: male
+    archetype: civil
+    flavor: 字台文，荥阳人，进士及第。僖宗时拜相，因与权宦田令孜不和而出镇凤翔。880年黄巢攻入长安，他抱病草檄传告四方，藩镇相继响应，又设伏龙尾陂大败尚让所部。次年凤翔军乱，他被部将李昌言驱逐，后赴行在复任宰相，883年去世。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 17
+      intellect: 45
+      defense: 20
+      agility: 18
 
-- key: hist_suitang_0175_tianshengong
-  name: 田神功
-  default_gender: male
-  archetype: military
-  flavor: 唐朝将领，出身冀州，参与平定安史之乱及刘展之乱；763年吐蕃入长安时率军勤王，后任淮西等地军职。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 40
-    intellect: 19
-    defense: 23
-    agility: 18
+  - key: hist_suitang_0175_tianshengong
+    name: 田神功
+    default_gender: male
+    archetype: military
+    flavor: 冀州南宫人，早年在平卢军中任职，安史之乱中一度陷于叛军，后归唐廷，以勇锐闻名。上元年间率军南下平定刘展之乱，其军纪不严，扬州一带的商民多受劫掠。763年吐蕃攻入长安，他率兵勤王，后任汴宋节度使，镇守中原多年。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 40
+      intellect: 19
+      defense: 23
+      agility: 18
 
-- key: hist_suitang_0176_libaoyu
-  name: 李抱玉
-  default_gender: male
-  archetype: military
-  flavor: 唐朝将领，广德年间任凤翔节度使，平定关中乱军并长期镇守西部、抵御吐蕃；官至同中书门下平章事。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 41
-    intellect: 20
-    defense: 24
-    agility: 19
+  - key: hist_suitang_0176_libaoyu
+    name: 李抱玉
+    default_gender: male
+    archetype: military
+    flavor: 本姓安，河西人，为安兴贵之后。安史之乱中隶属李光弼麾下，守河阳南城有功，肃宗赐姓李氏，改名抱玉。曾任泽潞节度使，后由弟李抱真接任。广德年间出任凤翔节度使，镇守西部十余年，多次抵御吐蕃入侵，官至同中书门下平章事，封凉国公，777年去世。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 40
+      intellect: 19
+      defense: 23
+      agility: 18
 
-- key: hist_suitang_0177_weigao
-  name: 韦皋
-  default_gender: male
-  archetype: military
-  flavor: 唐朝官员、剑南西川节度使，长期经营西南并与吐蕃作战；曾收复维州，兼处理南诏等西南政务。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 42
-    intellect: 22
-    defense: 24
-    agility: 18
+  - key: hist_suitang_0177_weigao
+    name: 韦皋
+    default_gender: male
+    archetype: military
+    flavor: 字城武，京兆万年人。德宗时守陇州，朱泚叛乱中设计斩杀其使者，以功知名。贞元初年出任剑南西川节度使，镇蜀二十余年，屡次击退吐蕃，801年在维州擒吐蕃大相论莽热。他又招抚南诏，促成异牟寻归唐，官至检校司徒、同平章事，封南康郡王，805年去世。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 39
+      intellect: 21
+      defense: 23
+      agility: 17
 
-- key: hist_suitang_0178_zhangyanshang
-  name: 张延赏
-  default_gender: male
-  archetype: civil
-  flavor: 唐朝宰相，字延赏，本名宝符，历任地方节度及中枢官职；德宗时入相，其子张弘靖后来亦为宰相。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 14
-    intellect: 39
-    defense: 18
-    agility: 16
+  - key: hist_suitang_0178_zhangyanshang
+    name: 张延赏
+    default_gender: male
+    archetype: civil
+    flavor: 本名宝符，字延赏，蒲州猗氏人，名相张嘉贞之子。其父张嘉贞在玄宗朝官至中书令。代宗、德宗时历任剑南西川等镇节度使，后入朝拜相，因与名将李晟不和而受到非议。其子张弘靖在宪宗朝亦官至宰相，祖孙三代皆居相位。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 16
+      intellect: 45
+      defense: 21
+      agility: 18
 
-- key: hist_suitang_0179_zhanghongjing
-  name: 张弘靖
-  default_gender: male
-  archetype: civil
-  flavor: 唐宪宗时期宰相，814年由河中节度使入朝，后任卢龙节度使；任内触发河北军镇不满，821年被幽州军驱逐。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 15
-    intellect: 38
-    defense: 17
-    agility: 16
+  - key: hist_suitang_0179_zhanghongjing
+    name: 张弘靖
+    default_gender: male
+    archetype: civil
+    flavor: 字元理，蒲州猗氏人，宰相张延赏之子，与祖张嘉贞、父张延赏三代为相，时称“三相张家”。814年由河中节度使入朝拜相，元和末年出镇卢龙。到任后深居简出，轻视当地将士，又发掘安禄山墓、毁其棺柩，引起幽州军不满。821年军乱中被囚，后遭贬，824年去世。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 17
+      intellect: 44
+      defense: 20
+      agility: 19
 
-- key: hist_suitang_0180_hanhong
-  name: 韩弘
-  default_gender: male
-  archetype: military
-  flavor: 唐朝将领、宣武节度使，参与元和年间讨伐吴元济并率军攻淮西；后入朝任宰相，封许国公。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 40
-    intellect: 19
-    defense: 23
-    agility: 18
+  - key: hist_suitang_0180_hanhong
+    name: 韩弘
+    default_gender: male
+    archetype: military
+    flavor: 滑州匡城人，初为宣武军都知兵马使，因节度使刘全谅去世，被军中推为留后，贞元年间出任宣武节度使，镇守汴州二十余年。元和年间朝廷讨伐淮西吴元济，他任诸军都统却持兵观望，后遣子韩公武率军助攻。淮西平定后入朝，官至司徒、中书令，封许国公，823年去世。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 40
+      intellect: 19
+      defense: 23
+      agility: 18
 
-- key: hist_suitang_0181_duhuangshang
-  name: 杜黄裳
-  default_gender: male
-  archetype: civil
-  flavor: 唐朝宰相，宪宗时期主张削弱藩镇，推荐高崇文讨平西川节度使刘辟；其政策推动元和初年的中央集权。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 13
-    intellect: 40
-    defense: 18
-    agility: 17
+  - key: hist_suitang_0181_duhuangshang
+    name: 杜黄裳
+    default_gender: male
+    archetype: civil
+    flavor: 字遵素，京兆杜陵人，进士及第。永贞年间，他曾劝女婿、宰相韦执谊请太子监国，未获采纳。宪宗初年拜相，力主讨伐擅自继任西川节度使的刘辟，并荐举高崇文为将，很快平定蜀地。他主张抑制藩镇、强化中央，元和初年的削藩政策多出其谋，后出镇河中，808年去世。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 15
+      intellect: 46
+      defense: 20
+      agility: 19
 
-- key: hist_suitang_0182_peiji
-  name: 裴垍
-  default_gender: male
-  archetype: civil
-  flavor: 唐朝宰相，任翰林学士时参与考核选官，重视才实并整顿制度；任相期间荐举裴度、李绛、崔群等人。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 14
-    intellect: 41
-    defense: 19
-    agility: 16
+  - key: hist_suitang_0182_peiji
+    name: 裴垍
+    default_gender: male
+    archetype: civil
+    flavor: 字弘中，绛州闻喜人，进士出身。宪宗朝任翰林学士，主持选拔官员时注重才实，抑制请托之风，选用人才不避亲故。808年拜相后整顿吏治，罢免不称职者，先后荐举裴度、李绛、崔群、韦贯之等人，时论称其公允。810年因病去职，同年去世。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 16
+      intellect: 45
+      defense: 21
+      agility: 18
 
-- key: hist_suitang_0183_zhaozongru
-  name: 赵宗儒
-  default_gender: male
-  archetype: civil
-  flavor: 唐朝官员、宰相，字秉文，历任方镇并多次主持吏部选事；穆宗、文宗时仍居显要，官至司空。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 13
-    intellect: 38
-    defense: 17
-    agility: 16
+  - key: hist_suitang_0183_zhaozongru
+    name: 赵宗儒
+    default_gender: male
+    archetype: civil
+    flavor: 字秉文，邓州穰人，进士出身，其父赵骅以文辞知名于开元、天宝间。德宗末年拜相，此后历任地方节度使，并多次主持吏部铨选，以熟悉典章、处事公允著称。他历仕代宗至文宗六朝，穆宗、文宗时仍居高位，官至司空，832年以八十七岁高龄去世。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 15
+      intellect: 46
+      defense: 20
+      agility: 19
 
-- key: hist_suitang_0184_luxie
-  name: 卢携
-  default_gender: male
-  archetype: civil
-  flavor: 唐末官员，字子升，曾任宰相；黄巢起义及长安失守期间参与朝廷政务，后在唐末政局崩坏中失势并自尽。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 14
-    intellect: 37
-    defense: 17
-    agility: 16
+  - key: hist_suitang_0184_luxie
+    name: 卢携
+    default_gender: male
+    archetype: civil
+    flavor: 字子升，范阳人，出身范阳卢氏，进士及第。乾符年间拜相，与郑畋政见不合而互相攻讦，后倚重高骈主持讨伐黄巢，然高骈拥兵观望，师久无功。他依附权宦田令孜，一度独揽朝政，罢黜异己。880年黄巢攻破长安，僖宗仓皇出奔，他被罢相后服毒自尽。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 17
+      intellect: 44
+      defense: 20
+      agility: 19
 
-- key: hist_suitang_0185_cuiyin
-  name: 崔胤
-  default_gender: male
-  archetype: civil
-  flavor: 唐末宰相，901年联合禁军将领击败刘季述、迎唐昭宗复位；后借助朱温清除宦官，904年被朱温杀害。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 15
-    intellect: 40
-    defense: 18
-    agility: 17
+  - key: hist_suitang_0185_cuiyin
+    name: 崔胤
+    default_gender: male
+    archetype: civil
+    flavor: 字昌遐，清河人，宰相崔慎由之子。昭宗朝四度拜相，901年联合禁军将领孙德昭等诛杀宦官刘季述，迎昭宗复位。此后他引入朱温势力，903年与朱温合谋尽诛宦官，事成后反受其挟制。904年朱温逼昭宗迁都洛阳，崔胤被罢相后遭杀害。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 17
+      intellect: 44
+      defense: 20
+      agility: 19
 
-- key: hist_suitang_0186_weiyuanzhong
-  name: 魏元忠
-  default_gender: male
-  archetype: civil
-  flavor: 唐朝政治家，原名魏真宰，武则天时期多次任宰相；曾任灵武道行军大总管防备突厥，后因政争被贬，707年去世。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 15
-    intellect: 42
-    defense: 19
-    agility: 17
+  - key: hist_suitang_0186_weiyuanzhong
+    name: 魏元忠
+    default_gender: male
+    archetype: civil
+    flavor: 宋州宋城人，本名真宰，早年以太学生身份上书言事而步入仕途。武则天时以直言敢谏累官至宰相，曾遭酷吏诬陷下狱，后复起，又任灵武道行军大总管防备突厥。中宗复位后官至中书令，因反对武三思、宗楚客专权而遭排挤，被贬出朝，707年死于贬所。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 16
+      intellect: 46
+      defense: 20
+      agility: 18
 
-- key: hist_suitang_0187_huanyanfan
-  name: 桓彦范
-  default_gender: male
-  archetype: civil
-  flavor: 唐朝政治家，705年与张柬之等发动神龙政变，诛张易之、张昌宗并迎立唐中宗；后被武三思排挤，流放途中遇害。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 16
-    intellect: 40
-    defense: 18
-    agility: 17
+  - key: hist_suitang_0187_huanyanfan
+    name: 桓彦范
+    default_gender: male
+    archetype: civil
+    flavor: 字士则，润州曲阿人，以门荫入仕。705年与张柬之等发动神龙政变，诛杀张易之、张昌宗，逼武则天退位，迎立中宗，因功拜侍中，封谯郡王，与张柬之等并称“五王”。后遭武三思排挤，流放瀼州，706年在途中被杀害。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 18
+      intellect: 43
+      defense: 20
+      agility: 19
 
-- key: hist_suitang_0188_jinghui
-  name: 敬晖
-  default_gender: male
-  archetype: civil
-  flavor: 唐朝官员，705年参与神龙政变，诛张易之、张昌宗并拥立唐中宗，封平阳王；后遭武三思构陷，流放崖州后遇害。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 15
-    intellect: 39
-    defense: 17
-    agility: 16
+  - key: hist_suitang_0188_jinghui
+    name: 敬晖
+    default_gender: male
+    archetype: civil
+    flavor: 字仲晔，绛州太平人，以明经入仕，历仕武则天、中宗两朝。705年参与神龙政变，诛杀张易之、张昌宗，拥立中宗复位，因功拜侍中，封平阳郡王。他与张柬之、桓彦范等五人后世并称“五王”。后遭武三思构陷，流放崖州，706年被杀害。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 17
+      intellect: 45
+      defense: 20
+      agility: 18
 
-- key: hist_suitang_0189_cuixuanwei
-  name: 崔玄暐
-  default_gender: male
-  archetype: civil
-  flavor: 唐朝宰相，705年与张柬之等发动神龙政变，因功任中书令、封博陵王；后被排挤流放，706年去世。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 14
-    intellect: 40
-    defense: 18
-    agility: 16
+  - key: hist_suitang_0189_cuixuanwei
+    name: 崔玄暐
+    default_gender: male
+    archetype: civil
+    flavor: 博陵安平人，以明经入仕，为官清谨，其母卢氏常以清廉相诫。武则天时官至宰相，705年与张柬之等发动神龙政变，逼武则天退位、迎立中宗，因功任中书令，封博陵郡王。后遭武三思排挤，流放岭南，706年病卒于途中。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 16
+      intellect: 46
+      defense: 20
+      agility: 18
 
-- key: hist_suitang_0190_yuanshuji
-  name: 袁恕己
-  default_gender: male
-  archetype: civil
-  flavor: 唐朝官员，705年参与神龙政变，迎唐中宗复位并封南阳王；后被贬、流放，遭武三思指使者杀害。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 15
-    intellect: 39
-    defense: 17
-    agility: 17
+  - key: hist_suitang_0190_yuanshuji
+    name: 袁恕己
+    default_gender: male
+    archetype: civil
+    flavor: 沧州东光人，时任司刑少卿。705年与桓彦范、敬晖等密谋，联络禁军参与神龙政变，拥立中宗复位，因功官至中书侍郎、同平章事，封南阳郡王，与张柬之等并称“五王”。后遭武三思排挤，被流放环州，706年被酷吏周利贞杀害于贬所。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 17
+      intellect: 45
+      defense: 19
+      agility: 19
 
-- key: hist_suitang_0191_liduozuo
-  name: 李多祚
-  default_gender: male
-  archetype: military
-  flavor: 靺鞨族出身的唐朝将领，长期掌羽林禁军；705年参与神龙政变，后在707年李重俊兵变中失败被杀。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 41
-    intellect: 18
-    defense: 22
-    agility: 19
+  - key: hist_suitang_0191_liduozuo
+    name: 李多祚
+    default_gender: male
+    archetype: military
+    flavor: 靺鞨人，先祖为靺鞨酋长，归附唐朝。他骁勇善射，以军功累迁右羽林大将军，长期统领禁军，中宗时颇受信任。705年参与神龙政变，率羽林军入宫胁迫武则天退位。707年随太子李重俊起兵诛杀武三思，兵败玄武门，退走途中被部下所杀。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 41
+      intellect: 18
+      defense: 22
+      agility: 19
 
-- key: hist_suitang_0192_zhangyizhi
-  name: 张易之
-  default_gender: male
-  archetype: civil
-  flavor: 武则天时期官员及近臣，曾任控鹤府监、麟台监并封恒国公；705年神龙政变中与弟张昌宗一同被杀。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 12
-    intellect: 36
-    defense: 16
-    agility: 15
+  - key: hist_suitang_0192_zhangyizhi
+    name: 张易之
+    default_gender: male
+    archetype: civil
+    flavor: 定州义丰人，初为尚乘奉御，貌美而善音律，人称“五郎”。与弟张昌宗同为武则天晚年近臣，曾任控鹤府监、麟台监，封恒国公，并奉诏参与编修《三教珠英》。兄弟二人恃宠干预朝政，与朝臣多有冲突。705年神龙政变中，二人被张柬之等率羽林军诛杀。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 15
+      intellect: 46
+      defense: 20
+      agility: 19
 
-- key: hist_suitang_0193_zhangchangzong
-  name: 张昌宗
-  default_gender: male
-  archetype: civil
-  flavor: 张易之之弟，武则天时期近臣，曾任云麾将军等职；705年神龙政变中被羽林军杀害。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 11
-    intellect: 35
-    defense: 15
-    agility: 16
+  - key: hist_suitang_0193_zhangchangzong
+    name: 张昌宗
+    default_gender: male
+    archetype: civil
+    flavor: 定州义丰人，张易之之弟，容貌俊美，人称“六郎”，经太平公主引荐入侍武则天，官至云麾将军，封邺国公，与兄并称“二张”。武则天为兄弟二人置控鹤府，广招文士。兄弟恃宠专权，招致朝臣不满，705年神龙政变中被羽林军杀死。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 14
+      intellect: 46
+      defense: 19
+      agility: 21
 
-- key: hist_suitang_0194_weianshi
-  name: 韦安石
-  default_gender: male
-  archetype: civil
-  flavor: 唐朝宰相，历仕武则天、唐中宗、唐睿宗时期；曾参与中枢政务并与张易之等权臣发生冲突，后多次出贬。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 14
-    intellect: 39
-    defense: 18
-    agility: 16
+  - key: hist_suitang_0194_weianshi
+    name: 韦安石
+    default_gender: male
+    archetype: civil
+    flavor: 京兆万年人，以明经入仕，以刚直著称。武则天时拜相，曾奏逐张易之引入宫中的蜀商，因此得罪权幸。中宗、睿宗两朝仍居相位，官至中书令，封郇国公。他因不肯依附太平公主而被贬为地方官，714年去世，时人以其刚正为难得。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 16
+      intellect: 45
+      defense: 21
+      agility: 18
 
-- key: hist_suitang_0195_zongchuke
-  name: 宗楚客
-  default_gender: male
-  archetype: civil
-  flavor: 唐朝大臣、宰相，武则天及中宗时期三度任相；曾干预突骑施事务并卷入宫廷政争，唐隆政变后被杀。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 13
-    intellect: 37
-    defense: 17
-    agility: 15
+  - key: hist_suitang_0195_zongchuke
+    name: 宗楚客
+    default_gender: male
+    archetype: civil
+    flavor: 蒲州河东人，进士出身，与武则天有姻亲。武则天、中宗时三度拜相，官至中书令；中宗朝依附韦皇后与安乐公主，与纪处讷朋比用事，时称“宗纪”，把持朝政。他曾受突骑施使者阿史那忠节贿赂，插手可汗位之争。710年唐隆政变中，被李隆基一党诛杀。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 16
+      intellect: 45
+      defense: 21
+      agility: 18
 
-- key: hist_suitang_0196_weizhigu
-  name: 魏知古
-  default_gender: male
-  archetype: civil
-  flavor: 唐朝政治家、宰相，深州陆泽人，进士出身，曾参与修国史；历任中书要职，因直言与政争数度升降。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 14
-    intellect: 41
-    defense: 19
-    agility: 17
+  - key: hist_suitang_0196_weizhigu
+    name: 魏知古
+    default_gender: male
+    archetype: civil
+    flavor: 深州陆泽人，进士出身。睿宗时拜相，曾上疏谏止为金仙、玉真公主大兴道观，以直言著称。玄宗初年官至侍中，一度监修国史。他早年曾受姚崇举荐，后因政见不合而生嫌隙，被改任工部尚书，又出为地方官，历刺数州，715年去世。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 15
+      intellect: 45
+      defense: 21
+      agility: 19
 
-- key: hist_suitang_0197_wangfangyi
-  name: 王方翼
-  default_gender: male
-  archetype: military
-  flavor: 唐朝初年名将，出身祁县王氏；曾筑城守边并在伊犁河击败西突厥，后任安西都护等职。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 39
-    intellect: 18
-    defense: 23
-    agility: 18
+  - key: hist_suitang_0197_wangfangyi
+    name: 王方翼
+    default_gender: male
+    archetype: military
+    flavor: 并州祁人，出身太原王氏，为高宗王皇后同族。他文武兼资，曾随裴行俭西征，以战功封太原郡公；后任安西都护，在碎叶筑城设防，安置归附部众，又于伊丽水大破西突厥，安定西域。武则天当政后，他受王皇后牵连被流放崖州，卒于途中。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 41
+      intellect: 18
+      defense: 23
+      agility: 18
 
-- key: hist_suitang_0198_heichichangzhi
-  name: 黑齿常之
-  default_gender: male
-  archetype: military
-  flavor: 百济将领，归唐后成为唐朝名将，曾镇守洮河并击败突厥、吐蕃；后受诬陷下狱，自缢而死。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 43
-    intellect: 17
-    defense: 24
-    agility: 19
+  - key: hist_suitang_0198_heichichangzhi
+    name: 黑齿常之
+    default_gender: male
+    archetype: military
+    flavor: 百济西部人，原为百济将领，唐灭百济后归附。他身高七尺余，骁果有谋，长期镇守河源、洮河一带，任河源军经略大使，曾在良非川大破吐蕃军，又多次击败突厥，官至左武卫大将军，封燕国公。689年遭酷吏周兴诬陷下狱，自缢而死。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 42
+      intellect: 17
+      defense: 23
+      agility: 18
 
-- key: hist_suitang_0199_wangsiili
-  name: 王思礼
-  default_gender: male
-  archetype: military
-  flavor: 唐朝将领，高句丽移民后裔；安史之乱中随哥舒翰守潼关，后参与收复两京及相州战事，官至司空。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 40
-    intellect: 19
-    defense: 22
-    agility: 18
+  - key: hist_suitang_0199_wangsiili
+    name: 王思礼
+    default_gender: male
+    archetype: military
+    flavor: 高句丽人后裔，早年隶哥舒翰麾下，以战功累迁。安史之乱中随哥舒翰守潼关，曾劝其坚守关隘，未被采纳，兵败后西走灵武，投奔肃宗。此后参与收复两京，又率军参加相州之战，官至兵部尚书、河东节度使，镇守太原，封霍国公，761年去世。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 41
+      intellect: 19
+      defense: 22
+      agility: 18
 
-- key: hist_suitang_0200_wudaozi
-  name: 吴道子
-  default_gender: male
-  archetype: civil
-  flavor: 唐代画家，擅长佛道人物及寺观壁画，后世尊称“画圣”；传世真迹极少，现存作品多为摹本或传派作品。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 10
-    intellect: 44
-    defense: 15
-    agility: 16
+  - key: hist_suitang_0200_wudaozi
+    name: 吴道子
+    default_gender: male
+    archetype: civil
+    flavor: 阳翟人，早年曾学书法于张旭、贺知章，未成而改习绘画。唐玄宗时召入宫廷，任内教博士。他擅画佛道人物与寺观壁画，曾在长安、洛阳寺观留下大量作品，所绘衣纹被称为“吴带当风”。相传他于大同殿一日画成嘉陵江三百里山水。后世尊其为“画圣”，传世《送子天王图》一般视为宋人摹本。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 12
+      intellect: 51
+      defense: 18
+      agility: 19
 
-- key: hist_suitang_0201_zhoufang
-  name: 周昉
-  default_gender: male
-  archetype: civil
-  flavor: 唐代画家，官至宣州长史，擅画贵族仕女及佛道人物，形成“周家样”；传世作品多有摹本或后世归属争议。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 9
-    intellect: 42
-    defense: 15
-    agility: 16
+  - key: hist_suitang_0201_zhoufang
+    name: 周昉
+    default_gender: male
+    archetype: civil
+    flavor: 字仲朗，京兆人，出身官宦之家，活跃于大历、贞元年间，官至宣州长史。他擅画贵族仕女与佛道神像，所创“周家样”成为中晚唐人物画的典范，佛像中的“水月观音”也传为其所创。相传郭子仪婿赵纵曾请他与韩干各绘一像，众人以为周昉所画更得神采。传世《簪花仕女图》等作品，或为摹本，或存在归属争议。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 11
+      intellect: 51
+      defense: 18
+      agility: 20
 
-- key: hist_suitang_0202_zhangxuan
-  name: 张萱
-  default_gender: male
-  archetype: civil
-  flavor: 唐代宫廷画家，京兆人，善画宫廷仕女和人物活动；《捣练图》《虢国夫人游春图》等名作今多为摹本。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 10
-    intellect: 41
-    defense: 15
-    agility: 16
+  - key: hist_suitang_0202_zhangxuan
+    name: 张萱
+    default_gender: male
+    archetype: civil
+    flavor: 京兆人，开元年间任史馆画直，为宫廷画家。他善画仕女、婴儿与贵族游乐场景，笔下人物丰腴明丽，婴儿尤显天真，与周昉并称唐代仕女画代表。《宣和画谱》著录其作品四十余件，传世《虢国夫人游春图》《捣练图》则均为宋人摹本。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 12
+      intellect: 50
+      defense: 18
+      agility: 20
 
-- key: hist_suitang_0203_liguinian
-  name: 李龟年
-  default_gender: male
-  archetype: civil
-  flavor: 唐玄宗时期音乐家，出身音乐世家，与兄弟李鹏年、李鹤年齐名；以歌唱和乐艺闻名，常为宫廷及贵族演出。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 9
-    intellect: 40
-    defense: 14
-    agility: 17
+  - key: hist_suitang_0203_liguinian
+    name: 李龟年
+    default_gender: male
+    archetype: civil
+    flavor: 开元年间宫廷乐师，出身音乐世家，与兄弟李彭年、李鹤年皆以才艺知名。他擅长歌唱，也善吹筚篥，常在宫廷与权贵宴席上演出，杜甫诗中“岐王宅里寻常见，崔九堂前几度闻”即记其盛时。安史之乱后流落江南，以卖艺为生，杜甫《江南逢李龟年》所咏“落花时节又逢君”流传甚广。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 11
+      intellect: 50
+      defense: 18
+      agility: 21
 
-- key: hist_suitang_0204_xueji
-  name: 薛稷
-  default_gender: male
-  archetype: civil
-  flavor: 唐朝书画家，初唐四家之一，善书法、绘画及画鹤；曾任中书侍郎、礼部尚书，先天政变后被赐死。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 10
-    intellect: 43
-    defense: 16
-    agility: 16
+  - key: hist_suitang_0204_xueji
+    name: 薛稷
+    default_gender: male
+    archetype: civil
+    flavor: 字嗣通，蒲州汾阴人，魏征外孙，进士及第。他书法学褚遂良，时称“买褚得薛，不失其节”，与欧阳询、虞世南、褚遂良并称初唐四家，又擅画鹤。睿宗时以黄门侍郎参知机务，官至太子少保、礼部尚书。因依附太平公主，713年先天政变后被赐死。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 12
+      intellect: 50
+      defense: 19
+      agility: 19
 
-- key: hist_suitang_0205_lujianzhi
-  name: 陆柬之
-  default_gender: male
-  archetype: civil
-  flavor: 唐代书法家，虞世南外甥，工楷书、行书，传世书迹以《文赋》最为著名；曾任司议郎、崇文侍书学士。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 9
-    intellect: 42
-    defense: 15
-    agility: 16
+  - key: hist_suitang_0205_lujianzhi
+    name: 陆柬之
+    default_gender: male
+    archetype: civil
+    flavor: 吴郡人，虞世南外甥。他早年随舅父虞世南学书，后上溯二王，工于楷书与行书，笔法温润，太宗、高宗时以书名世。曾任太子司议郎、崇文侍书学士，其书风经其子陆彦远下传张旭，开唐代狂草一脉。传世墨迹《文赋》可见其取法二王。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 11
+      intellect: 51
+      defense: 18
+      agility: 20
 
-- key: hist_suitang_0206_liyong
-  name: 李邕
-  default_gender: male
-  archetype: civil
-  flavor: 唐代文学家、书法家，人称李北海，曾任北海太守；以行楷书及碑文著称，746年被诬陷后奉诏处死。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 11
-    intellect: 43
-    defense: 17
-    agility: 17
+  - key: hist_suitang_0206_liyong
+    name: 李邕
+    default_gender: male
+    archetype: civil
+    flavor: 字泰和，扬州江都人，学者李善之子，李善曾注《文选》。他少负才名，历任地方刺史，后为北海太守，人称“李北海”，以刚直敢言著称。其行楷碑书雄健，代表作有《麓山寺碑》《李思训碑》。天宝年间遭宰相李林甫构陷，被杖杀，杜甫《八哀诗》中有一篇悼之。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 12
+      intellect: 50
+      defense: 19
+      agility: 19
 
-- key: hist_suitang_0207_liuzhiji
-  name: 刘知几
-  default_gender: male
-  archetype: civil
-  flavor: 唐代官员、史学家，字子玄，兼修国史；所著《史通》系统评论史书体例和编纂方法，被视为中国古代史学理论名著。
-  growth_range: [3, 7]
-  attribute_weights:
-    force: 10
-    intellect: 45
-    defense: 16
-    agility: 16
+  - key: hist_suitang_0207_liuzhiji
+    name: 刘知几
+    default_gender: male
+    archetype: civil
+    flavor: 字子玄，彭城人，进士出身。他长期在史馆任职，参与修撰国史与《则天实录》，因不满权贵干预修史而辞职，私撰《史通》二十卷。书中评论史书体例与编纂方法，主张“不虚美、不隐恶”，提出史家应具才、学、识三长。此书成于景龙四年（710），是中国古代重要的史学理论著作。
+    growth_range: [3, 7]
+    attribute_weights:
+      force: 11
+      intellect: 53
+      defense: 18
+      agility: 18

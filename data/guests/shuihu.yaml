@@ -2,21 +2,21 @@
 
 heroes:
   green:
-  - key: hero_ilrock_04838
-    name: 穆弘
-    avatar: monkey_wu_male12.png
+  - key: hero_ilrock_04868
+    name: 郭盛
+    avatar: pig/武016.png
     default_gender: male
     archetype: military
-    flavor: 揭阳镇的富户好汉，绰号“没遮拦”，与弟弟穆春在当地颇有声势。起初因薛永受赏之事与宋江结怨，追赶到江边，得李俊说明原委才化敌为友。后来参与江州劫法场，随众上梁山，列马军八骠骑。骄横的乡间豪强从此把一身胆气带上战阵，与旧日兄弟共同冲锋。出自《水浒传》。
+    flavor: 嘉陵人，原做贩运水银的生意，船只失事后流落江湖，因善使画戟、喜作薛仁贵装束，绰号“赛仁贵”。到对影山与吕方比试时，双戟缠住，被花荣一箭分开，二人反而结成伙伴。后来一同上梁山，聚义后共同守护中军。原本争锋的画戟转为相互策应，护在帅阵左右，也护住一路患难结下的交情。出自《水浒传》。
     recruitable: true
     growth_range:
     - 3
     - 7
     attribute_weights:
-      force: 45
-      intellect: 15
-      defense: 20
-      agility: 20
+      force: 48
+      intellect: 12
+      defense: 25
+      agility: 15
   - key: hero_ilrock_04842
     name: 张横
     avatar: pig/文045.png
@@ -32,21 +32,6 @@ heroes:
       intellect: 12
       defense: 25
       agility: 15
-  - key: hero_ilrock_04844
-    name: 张顺
-    avatar: pig/武011.png
-    default_gender: male
-    archetype: military
-    flavor: 张横之弟，生得白净，练就一身惊人的水下本领，绰号“浪里白条”。在江州与李逵争执时，他将对方引入水中，轻易占了上风，后来却又成了共同救援宋江的伙伴。上梁山后担任水军头领，还曾远赴建康请来安道全。舟船受阻、陆路难行之处，往往正是他潜渡传信的用武之地。出自《水浒传》。
-    recruitable: true
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 40
-      intellect: 6
-      defense: 18
-      agility: 36
   - key: hero_ilrock_04846
     name: 杨雄
     avatar: pig/武053.png
@@ -60,21 +45,6 @@ heroes:
     attribute_weights:
       force: 46
       intellect: 14
-      defense: 25
-      agility: 15
-  - key: hero_ilrock_04847
-    name: 石秀
-    avatar: pig/武021.png
-    default_gender: male
-    archetype: military
-    flavor: 江南出身的好汉，因遇事敢拼、舍身不退，人称“拼命三郎”。流落蓟州时帮助杨雄，又察觉潘巧云与裴如海私通，几番追查才使真相大白。投奔梁山后，他在大名府见卢俊义即将被斩，独自从楼上跃入法场救人。胆量之外还有观察与应变的心思，危急时总肯先把自己的安危抛开。出自《水浒传》。
-    recruitable: true
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 48
-      intellect: 12
       defense: 25
       agility: 15
   - key: hero_ilrock_04848
@@ -377,21 +347,6 @@ heroes:
       intellect: 58
       defense: 22
       agility: 12
-  - key: hero_ilrock_04871
-    name: 扈三娘
-    avatar: monkey/其他随机角色/武083_女_.png
-    default_gender: female
-    archetype: military
-    flavor: 扈家庄的女将，绰号“一丈青”，使一对日月双刀，也善用绳索擒人。祝家庄战事中，她曾生擒王英，与梁山众将交锋，后来被林冲拿下。家庄破败后，她归入梁山，又奉宋江之命与王英成婚。聚义时专掌三军内探事，出阵仍以双刀与拿人本领见长，身世的骤变也未消去她临敌时的锋芒。出自《水浒传》。
-    recruitable: true
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 46
-      intellect: 6
-      defense: 20
-      agility: 28
   - key: hero_ilrock_04872
     name: 鲍旭
     avatar: pig/武091.png
@@ -753,21 +708,66 @@ heroes:
       defense: 25
       agility: 15
   blue:
-  - key: hero_ilrock_04817
-    name: 公孙胜
-    avatar: pig/文036.png
+  - key: hero_ilrock_04838
+    name: 穆弘
+    avatar: monkey_wu_male12.png
     default_gender: male
-    archetype: civil
-    flavor: 蓟州道士，绰号“入云龙”，道号一清，既习武艺，也精通道术。得知生辰纲消息后，他与晁盖、吴用等人结义夺纲，随后入梁山辅佐军机。曾离寨归山修行，又在高唐州之战中回援，以五雷天罡正法破去高廉妖术。征战之余，他仍遵奉罗真人的教诲，后来传艺樊瑞，最终回到山林继续修道。出自《水浒传》。
+    archetype: military
+    flavor: 揭阳镇的富户好汉，绰号“没遮拦”，与弟弟穆春在当地颇有声势。起初因薛永受赏之事与宋江结怨，追赶到江边，得李俊说明原委才化敌为友。后来参与江州劫法场，随众上梁山，列马军八骠骑。骄横的乡间豪强从此把一身胆气带上战阵，与旧日兄弟共同冲锋。出自《水浒传》。
     recruitable: true
     growth_range:
     - 5
     - 9
     attribute_weights:
-      force: 8
-      intellect: 58
-      defense: 16
-      agility: 18
+      force: 45
+      intellect: 15
+      defense: 20
+      agility: 20
+  - key: hero_ilrock_04844
+    name: 张顺
+    avatar: pig/武011.png
+    default_gender: male
+    archetype: military
+    flavor: 张横之弟，生得白净，练就一身惊人的水下本领，绰号“浪里白条”。在江州与李逵争执时，他将对方引入水中，轻易占了上风，后来却又成了共同救援宋江的伙伴。上梁山后担任水军头领，还曾远赴建康请来安道全。舟船受阻、陆路难行之处，往往正是他潜渡传信的用武之地。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 6
+      defense: 18
+      agility: 36
+  - key: hero_ilrock_04847
+    name: 石秀
+    avatar: pig/武021.png
+    default_gender: male
+    archetype: military
+    flavor: 江南出身的好汉，因遇事敢拼、舍身不退，人称“拼命三郎”。流落蓟州时帮助杨雄，又察觉潘巧云与裴如海私通，几番追查才使真相大白。投奔梁山后，他在大名府见卢俊义即将被斩，独自从楼上跃入法场救人。胆量之外还有观察与应变的心思，危急时总肯先把自己的安危抛开。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 48
+      intellect: 12
+      defense: 25
+      agility: 15
+  - key: hero_ilrock_04871
+    name: 扈三娘
+    avatar: monkey/其他随机角色/武083_女_.png
+    default_gender: female
+    archetype: military
+    flavor: 扈家庄的女将，绰号“一丈青”，使一对日月双刀，也善用绳索擒人。祝家庄战事中，她曾生擒王英，与梁山众将交锋，后来被林冲拿下。家庄破败后，她归入梁山，又奉宋江之命与王英成婚。聚义时专掌三军内探事，出阵仍以双刀与拿人本领见长，身世的骤变也未消去她临敌时的锋芒。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 46
+      intellect: 6
+      defense: 20
+      agility: 28
   - key: hero_ilrock_04850
     name: 燕青
     avatar: pig/武016.png
@@ -1068,22 +1068,22 @@ heroes:
       intellect: 6
       defense: 18
       agility: 32
-  - key: hero_ilrock_04868
-    name: 郭盛
-    avatar: pig/武016.png
+  purple:
+  - key: hero_ilrock_04817
+    name: 公孙胜
+    avatar: pig/文036.png
     default_gender: male
-    archetype: military
-    flavor: 嘉陵人，原做贩运水银的生意，船只失事后流落江湖，因善使画戟、喜作薛仁贵装束，绰号“赛仁贵”。到对影山与吕方比试时，双戟缠住，被花荣一箭分开，二人反而结成伙伴。后来一同上梁山，聚义后共同守护中军。原本争锋的画戟转为相互策应，护在帅阵左右，也护住一路患难结下的交情。出自《水浒传》。
+    archetype: civil
+    flavor: 蓟州道士，绰号“入云龙”，道号一清，既习武艺，也精通道术。得知生辰纲消息后，他与晁盖、吴用等人结义夺纲，随后入梁山辅佐军机。曾离寨归山修行，又在高唐州之战中回援，以五雷天罡正法破去高廉妖术。征战之余，他仍遵奉罗真人的教诲，后来传艺樊瑞，最终回到山林继续修道。出自《水浒传》。
     recruitable: true
     growth_range:
-    - 5
-    - 9
+    - 7
+    - 11
     attribute_weights:
-      force: 48
-      intellect: 12
-      defense: 25
-      agility: 15
-  purple:
+      force: 8
+      intellect: 58
+      defense: 16
+      agility: 18
   - key: hero_ilrock_04818
     name: 鲁达
     avatar: monkey/水浒/鲁达.png

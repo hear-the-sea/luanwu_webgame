@@ -22,7 +22,7 @@ heroes:
     name: 罗成
     avatar: monkey/隋唐演义/罗成.png
     archetype: military
-    flavor: 银枪白马，骁勇善战，身法迅捷如风，冲阵时如银电贯空。年少英气逼人，却又心思谨慎，擅长以奇招克敌。其名号在沙场上令人闻风，亦有侠义之名流传江湖。出自《隋唐演义》。罗成之所以动人，不只在勇武，更在少年将领对荣誉与情义的执拗守护。
+    flavor: 银枪白马，骁勇善战，身法迅捷如风，冲阵时如银电贯空。年少英气逼人，心思却谨慎，擅长以奇招克敌。演义中他是罗艺之子、秦琼的表弟，出身将门，曾与秦琼等人在瓦岗军中并肩作战，后归唐效力；淤泥河一战中计陷于河岸，被乱箭射死。出自《隋唐演义》。其短暂一生以少年意气与沙场锋芒留下鲜明形象。
     default_gender: male
     default_morality: 75
     recruitable: true
@@ -34,7 +34,6 @@ heroes:
       intellect: 15
       defense: 25
       agility: 15
-  blue:
   - key: hero_cheng_yaojin
     name: 程咬金
     avatar: monkey/任务/程咬金.png
@@ -44,8 +43,8 @@ heroes:
     default_morality: 70
     recruitable: true
     growth_range:
-    - 5
-    - 9
+    - 6
+    - 11
     attribute_weights:
       force: 45
       intellect: 15

@@ -6,10 +6,9 @@ from copy import deepcopy
 from dataclasses import dataclass
 from itertools import combinations
 from math import comb
-from typing import Literal
 
 from core.config import GUEST
-from core.game_data.equipment_value import POWER_POINTS_PER_HP, STAGE_MULTIPLIERS, stage_for_level, weights_for
+from core.game_data.equipment_value import combat_power_points
 from guests.guest_combat_stats import snapshot_effective_combat_stats
 
 MIN_LINEUP_POWER_PERCENT = 80
@@ -76,69 +75,57 @@ def validate_full_health_virtual_lineup_snapshots(
             raise InvalidVirtualLineupSnapshot("virtual lineup snapshot must be normalized to full health")
 
 
-def snapshot_power(snapshot: dict, *, formula_version: int = 1) -> int:
+def snapshot_power(snapshot: dict, *, formula_version: int = 1, hp: int | None = None) -> int:
     override = snapshot.get("power_override")
     if isinstance(override, int) and not isinstance(override, bool):
         return max(0, override)
     if int(formula_version) == 2:
-        return _snapshot_power_v2(snapshot)
+        return _snapshot_power_v2(snapshot, hp=hp)
     attack, defense, agility = snapshot_effective_combat_stats(snapshot)
     normalized_agility = max(0, int(agility))
     agility_power = int(normalized_agility * GUEST.AGILITY_TO_ARENA_POWER_WEIGHT)
     return int(attack) + int(defense) + int(snapshot.get("max_hp") or 0) // 10 + max(0, agility_power)
 
 
-def _snapshot_power_v2(snapshot: dict) -> int:
+def _snapshot_power_v2(snapshot: dict, *, hp: int | None = None) -> int:
     """Canonical power: attribute attack, flat attack, defense, HP, agility, luck.
 
-    ``max_hp`` already contains ``defense_stat * 50``; subtract that component
-    and add defense mitigation through the canonical weight so defense is not
-    counted twice.  Latent troop_capacity is intentionally excluded; it is
-    represented by ``troop_total`` in the composite strength score.
+    ``max_hp`` already contains ``defense_stat * DEFENSE_TO_HP_MULTIPLIER``;
+    :func:`combat_power_points` subtracts that component and adds defense
+    mitigation through the canonical weight so defense is not counted twice.
+    Latent troop_capacity is intentionally excluded; it is represented by
+    ``troop_total`` in the composite strength score.  Pass ``hp`` when the
+    caller needs current (possibly wounded) strength instead of full health.
     """
 
     attack, defense, agility = snapshot_effective_combat_stats(snapshot)
     normalized_attack = max(0, int(attack))
     normalized_defense = max(0, int(defense))
-    normalized_agility = max(0, int(agility))
     max_hp = max(0, int(snapshot.get("max_hp") or 0))
     defense_stat = int(snapshot.get("defense_stat") or normalized_defense)
-    non_defense_hp = max(0, max_hp - max(0, defense_stat) * 50)
     archetype = str(snapshot.get("archetype") or "")
-    resolved_archetype: Literal["military", "civil", "neutral"] = (
-        "civil" if archetype == "civil" else ("military" if archetype == "military" else "neutral")
-    )
     level = int(snapshot.get("level") or 1)
-    stage = stage_for_level(level)
-    weights = weights_for(archetype=resolved_archetype, stage=stage)
-    attack_weight = 60.0 if resolved_archetype == "military" else (50.0 if resolved_archetype == "civil" else 55.0)
-    attack_weight *= STAGE_MULTIPLIERS[stage]["force"]
-    attack_bonus_weight = (
-        48.0 if resolved_archetype == "military" else (29.0 if resolved_archetype == "civil" else 38.5)
-    )
-    attack_bonus_weight *= STAGE_MULTIPLIERS[stage]["attack_bonus"]
     attribute_attack = snapshot.get("attack_attribute_component")
     if not isinstance(attribute_attack, int) or isinstance(attribute_attack, bool):
         force = max(0, int(snapshot.get("force") or 0))
         intellect = max(0, int(snapshot.get("intellect") or 0))
         attribute_attack = int(
-            force * (0.7 if resolved_archetype == "military" else 0.5)
-            + intellect * (0.3 if resolved_archetype == "military" else 0.5)
+            force * (0.7 if archetype == "military" else 0.5) + intellect * (0.3 if archetype == "military" else 0.5)
         )
-    attribute_attack = max(0, min(normalized_attack, int(attribute_attack)))
-    attack_bonus = max(0, normalized_attack - attribute_attack)
-    luck = max(0, int(snapshot.get("luck") or 0))
-    # Arena lineups do not field troops.  troop_capacity is captured by the
-    # composite strength score as troop_total, not by lineup power.
-    hp_units = (
-        attribute_attack * attack_weight
-        + attack_bonus * attack_bonus_weight
-        + normalized_defense * weights.defense
-        + non_defense_hp * weights.hp
-        + normalized_agility * weights.agility
-        + luck * weights.luck
+    return combat_power_points(
+        attack=normalized_attack,
+        defense=normalized_defense,
+        defense_stat=max(0, defense_stat),
+        force=max(0, int(snapshot.get("force") or 0)),
+        intellect=max(0, int(snapshot.get("intellect") or 0)),
+        level=level,
+        archetype=archetype,
+        max_hp=max_hp,
+        hp=hp,
+        attack_attribute_component=attribute_attack,
+        agility=max(0, int(agility)),
+        luck=max(0, int(snapshot.get("luck") or 0)),
     )
-    return max(0, int(round(hp_units / POWER_POINTS_PER_HP)))
 
 
 def lineup_power(snapshots: Sequence[dict], *, formula_version: int = 1) -> int:

@@ -112,7 +112,12 @@ def test_mount_migration_updates_worn_stats_and_preserves_inventory(django_user_
     assert guest.allocated_force == 17
     for stat, field in previous.STAT_FIELDS.items():
         assert getattr(guest, field) == naked[field] + expected.get(stat, 0)
-    assert guest.current_hp == min(health, guest.max_hp)
+    # 0214 是历史迁移，按写入时的 50 HP/点上限夹取；新规则由后续 guests 迁移归一化。
+    historical_max_hp = max(
+        200,
+        int(guest.template.base_hp) + int(guest.hp_bonus) + 50 * int(guest.defense_stat),
+    )
+    assert guest.current_hp == min(health, historical_max_hp)
     assert counts == (ItemTemplate.objects.count(), InventoryItem.objects.count(), GearTemplate.objects.count())
     snapshot = {field: getattr(guest, field) for field in previous.STAT_FIELDS.values()}
     migration.upgrade_guild_mounts(apps, SimpleNamespace(connection=connection))

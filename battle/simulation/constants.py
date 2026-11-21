@@ -15,7 +15,10 @@ TROOP_SCREENING_CHANCE = 0.75
 
 # 同一种护院每满 1000 名，当前行动增加一次分队攻击。
 TROOP_EXTRA_ATTACK_INTERVAL = 1000
+# 历史分队伤害加成；战斗引擎版本 10 起不再使用，仅保留旧战报回放。
 TROOP_GROUP_DAMAGE_MULTIPLIER = 1.2
+# 弓系护院近战基础伤害倍率；战斗引擎版本 10 起生效，科技加成在此之上叠乘。
+GONG_MELEE_BASE_DAMAGE_RATIO = 0.5
 
 # ============ 五行相克配置 ============
 

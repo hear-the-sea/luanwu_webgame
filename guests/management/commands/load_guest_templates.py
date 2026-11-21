@@ -30,6 +30,7 @@ from guests.models import (
     GuestRarity,
     GuestStatus,
     GuestTemplate,
+    RecruitmentCandidate,
     RecruitmentPool,
     RecruitmentPoolEntry,
     Skill,
@@ -437,14 +438,25 @@ class Command(BaseCommand):
         synced_guest_hp_count = 0
 
         for data in template_data:
-            existing = GuestTemplate.objects.filter(key=data["key"]).only("id", "base_hp").first()
+            existing = (
+                GuestTemplate.objects.filter(key=data["key"])
+                .only("id", "name", "rarity", "archetype", "base_hp")
+                .first()
+            )
             previous_base_hp = int(existing.base_hp or 0) if existing is not None else None
+            previous_candidate_snapshot = (
+                (existing.name, existing.rarity, existing.archetype) if existing is not None else None
+            )
             obj, created = GuestTemplate.objects.update_or_create(
                 key=data["key"], defaults=self._template_defaults(data)
             )
             synced_guest_hp_count += self._sync_existing_guest_current_hp_for_template_base_hp(
                 template=obj,
                 previous_base_hp=previous_base_hp,
+            )
+            self._sync_existing_candidates_for_template(
+                template=obj,
+                previous_snapshot=previous_candidate_snapshot,
             )
             if not skip_images:
                 fallback_avatar_count += self._sync_template_avatar(
@@ -470,6 +482,26 @@ class Command(BaseCommand):
             self.stdout.write(f"Synchronized current_hp for {synced_guest_hp_count} guests after template HP updates")
 
         return template_keys, template_skill_keys, fallback_avatar_count
+
+    def _sync_existing_candidates_for_template(
+        self,
+        *,
+        template: GuestTemplate,
+        previous_snapshot: tuple[str, str, str] | None,
+    ) -> int:
+        if previous_snapshot is None:
+            return 0
+        current_snapshot = (template.name, template.rarity, template.archetype)
+        if previous_snapshot == current_snapshot:
+            return 0
+        updates: dict[str, str] = {
+            "rarity": template.rarity,
+            "archetype": template.archetype,
+        }
+        # 非隐士黑/灰门客的候选名是随机生成的，不应被模板通用名覆盖。
+        if not (template.rarity in (GuestRarity.BLACK, GuestRarity.GRAY) and not template.is_hermit):
+            updates["display_name"] = template.name
+        return RecruitmentCandidate.objects.filter(template=template).update(**updates)
 
     def _sync_existing_guest_current_hp_for_template_base_hp(
         self,

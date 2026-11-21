@@ -134,10 +134,10 @@ heroes:
     - 7
     - 12
     attribute_weights:
-      force: 48
-      intellect: 10
-      defense: 24
-      agility: 18
+      force: 38
+      intellect: 30
+      defense: 18
+      agility: 14
   - key: hero_ilrock_04231
     name: 公羊羽
     avatar: monkey/昆仑/公羊羽.png

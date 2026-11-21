@@ -398,9 +398,11 @@ def build_guest_battle_snapshot(
         "troop_device_bonus_sources": list(troop_device_bonus_sources),
         "skill_keys": _serialize_guest_skill_keys(guest),
     }
+    archetype = getattr(guest, "archetype", "")
+    if isinstance(archetype, str) and archetype.strip():
+        payload["archetype"] = archetype.strip()
     if has_custom_guest_low_loyalty_penalty(guest):
         payload["low_loyalty_penalty"] = True
-        payload["archetype"] = _resolve_live_snapshot_text_field(guest, field_name="archetype")
     if has_guest_avatar_override(guest):
         avatar_url = resolve_guest_avatar_url(guest)
     elif not isinstance(guest, Guest):

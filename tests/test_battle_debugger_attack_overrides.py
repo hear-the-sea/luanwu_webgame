@@ -25,14 +25,14 @@ class FixedRng(random.Random):
 
 def _combatants(count: int) -> tuple[Combatant, Combatant]:
     actor = Combatant(
-        name="箭神",
+        name="刀兵",
         attack=count * 10,
         defense=0,
         hp=count * 10,
         max_hp=count * 10,
         side="attacker",
         kind="troop",
-        troop_class="gong",
+        troop_class="dao",
         troop_strength=count,
         initial_troop_strength=count,
         unit_attack=10,
@@ -73,7 +73,7 @@ def test_debugger_attack_override_uses_requested_group_strength_and_target_divis
     assert combat_math.effective_attack_value is original_attack
 
 
-@pytest.mark.parametrize("count,expected_damage", [(999, [4995]), (1000, [3000, 3000]), (1501, [4506, 4500])])
+@pytest.mark.parametrize("count,expected_damage", [(999, [4995]), (1000, [2500, 2500]), (1501, [3755, 3750])])
 def test_debugger_attack_override_runs_real_split_attacks(count, expected_damage):
     actor, target = _combatants(count)
 

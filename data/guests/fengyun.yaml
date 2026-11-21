@@ -390,9 +390,9 @@ heroes:
     - 7
     - 12
     attribute_weights:
-      force: 52
-      intellect: 8
-      defense: 28
+      force: 45
+      intellect: 20
+      defense: 23
       agility: 12
   - key: hero_ilrock_04587
     name: 独孤剑
@@ -421,7 +421,7 @@ heroes:
     - 8
     - 14
     attribute_weights:
-      force: 52
-      intellect: 6
-      defense: 22
-      agility: 20
+      force: 48
+      intellect: 25
+      defense: 12
+      agility: 15

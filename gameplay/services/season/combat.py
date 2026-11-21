@@ -11,9 +11,10 @@ from battle.execution import BattleOptions, prepare_snapshot_battle_teams
 from battle.services import simulate_report
 from core.exceptions import GameError
 from gameplay.services.arena.snapshots import ArenaGuestSnapshotProxy, build_entry_guest_snapshot
+from gameplay.services.arena.virtual_lineups import snapshot_power
 from gameplay.services.battle_snapshots import BattleGuestSnapshotProxy
 from gameplay.services.missions_impl.constants import PLAYER_MISSION_TROOP_LOSS_RATE
-from guests.guest_combat_stats import resolve_guest_combat_stats, snapshot_effective_combat_stats
+from guests.guest_combat_stats import resolve_guest_combat_stats
 from guests.guest_rules import compute_guest_attack_attribute_component
 from guests.models import Guest, GuestStatus
 
@@ -24,8 +25,18 @@ PVE_LEVELS = {"mountain:inn": 3, "mountain:ruins": 10, "river:docks": 15, "fores
 
 
 def snapshot_guest_strength(snapshot: dict[str, Any]) -> int:
-    attack, defense, _agility = snapshot_effective_combat_stats(snapshot)
-    return attack + defense + snapshot["current_hp"]
+    """Return canonical lineup power for a season guest snapshot.
+
+    Uses current HP so wounded guests rank below healthy ones, while
+    attack, defense mitigation and the other stats stay at their full value.
+    """
+
+    current_hp = snapshot.get("current_hp")
+    return snapshot_power(
+        snapshot,
+        formula_version=2,
+        hp=int(current_hp) if current_hp is not None and not isinstance(current_hp, bool) else None,
+    )
 
 
 def npc_opening_profile(

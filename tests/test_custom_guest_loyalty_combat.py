@@ -144,7 +144,7 @@ def test_matchmaking_and_coalition_selection_use_effective_stats(guest):
     assert snapshot_power(snapshot) == (
         unit.attack + unit.defense + unit.max_hp // 10 + int(unit.agility * GUEST.AGILITY_TO_ARENA_POWER_WEIGHT)
     )
-    assert snapshot_guest_strength(snapshot) == unit.attack + unit.defense + unit.hp
+    assert snapshot_guest_strength(snapshot) == snapshot_power(snapshot, formula_version=2, hp=snapshot["current_hp"])
 
     normal = {**snapshot, "guest_id": guest.pk + 1}
     normal.pop("low_loyalty_penalty")

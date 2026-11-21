@@ -1362,22 +1362,6 @@ heroes:
       intellect: 10
       defense: 35
       agility: 20
-  - key: hero_duan_zhengchun
-    name: 段正淳
-    avatar: monkey_wen_male3.png
-    archetype: civil
-    flavor: 大理镇南王，生性风流，处处留情。他拥有众多情人，如秦红棉、甘宝宝、阮星竹、李青萝等，并生下多名私生女。虽看似滥情，但他对每一位情人都付出了真挚的感情，愿为她们赴汤蹈火。他武功不俗，一阳指造诣颇深。最终在曼陀山庄，因不忍目睹情人们被慕容复杀害，自杀殉情。段正淳是一个“不爱江山爱美人”的典型，他的多情既是他的魅力所在，也是他悲剧命运的根源。出自金庸小说《天龙八部》
-    default_gender: male
-    default_morality: 55
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 15
-      intellect: 40
-      defense: 20
-      agility: 25
   - key: hero_xianyu_tong
     name: 鲜于通
     avatar: monkey/其他随机角色/文037_男.png
@@ -1394,22 +1378,6 @@ heroes:
       intellect: 45
       defense: 20
       agility: 20
-  - key: hero_chen_xuanfeng
-    name: 陈玄风
-    avatar: pig/武085.png
-    archetype: military
-    flavor: 外号“铜尸”，桃花岛弃徒，“黑风双煞”之首。他盗走《九阴真经》下卷，与梅超风亡命天涯。他将经文刺在自己胸口的皮肤上，练就了一身横练功夫，刀枪不入。他在大漠中横行霸道，却在与江南七怪的激战中，因轻敌被年幼的郭靖无意中刺中罩门而死。陈玄风虽然作恶多端，但对妻子梅超风却有着深厚的感情，临死前仍不忘让梅超风剥下自己刻有经文的人皮。他的死是射雕故事的开端之一。出自金庸小说《射雕英雄传》
-    default_gender: male
-    default_morality: 20
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 35
-      intellect: 10
-      defense: 40
-      agility: 15
   - key: hero_ke_zhen_e
     name: 柯镇恶
     avatar: monkey/其他随机角色/武066_男_.png
@@ -1442,22 +1410,6 @@ heroes:
       intellect: 15
       defense: 35
       agility: 20
-  - key: hero_feng_xifan
-    name: 冯锡范
-    avatar: pig/武088.png
-    archetype: military
-    flavor: 昆仑派高手，外号“一剑无血”。他是郑克塽的师父，为人阴险狡诈，专以剑尖点人穴道，杀人不见血。他为了扶持郑克塽上位，不惜设计陷害陈近南，是害死陈近南的元凶之一。他依附权贵，贪图富贵，是一个典型的政治投机者。最终被韦小宝用计擒获，充当了茅十八的替死鬼，身首异处。冯锡范的下场大快人心，是对背信弃义小人的最好惩罚。出自金庸小说《鹿鼎记》
-    default_gender: male
-    default_morality: 20
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 30
-      intellect: 20
-      defense: 15
-      agility: 35
   - key: hero_ding_busan
     name: 丁不三
     avatar: pig/武070.png
@@ -2178,22 +2130,6 @@ heroes:
       intellect: 15
       defense: 30
       agility: 25
-  - key: hero_jinyong_0203
-    name: 拖雷
-    avatar: pig/武016.png
-    archetype: military
-    flavor: 蒙古成吉思汗的幼子，郭靖的安达（生死之交）。他豪爽直率，重情重义，是一位英勇善战的将领。在大漠的落日下，他与郭靖共同成长，建立了深厚的兄弟情谊。随着蒙宋战争的爆发，他夹在国家利益与私人友谊之间，经历了巨大的痛苦与抉择。他始终保持着对郭靖的敬重，曾在关键时刻放走郭靖母子，体现了草原男儿的坦荡与赤诚。拖雷的形象是战争阴影下一抹亮丽的人性光辉，他在权力的顶端依然坚守着年少时的纯真誓言。出自金庸小说《射雕英雄传》
-    default_gender: male
-    default_morality: 76
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 35
-      intellect: 10
-      defense: 25
-      agility: 30
   - key: hero_jinyong_0205
     name: 柯辟邪
     avatar: monkey/其他随机角色/武066_男_.png
@@ -3923,6 +3859,70 @@ heroes:
       defense: 25
       agility: 30
   blue:
+  - key: hero_duan_zhengchun
+    name: 段正淳
+    avatar: monkey_wen_male3.png
+    archetype: civil
+    flavor: 大理镇南王，生性风流，处处留情。他拥有众多情人，如秦红棉、甘宝宝、阮星竹、李青萝等，并生下多名私生女。虽看似滥情，但他对每一位情人都付出了真挚的感情，愿为她们赴汤蹈火。他武功不俗，一阳指造诣颇深。最终在曼陀山庄，因不忍目睹情人们被慕容复杀害，自杀殉情。段正淳是一个“不爱江山爱美人”的典型，他的多情既是他的魅力所在，也是他悲剧命运的根源。出自金庸小说《天龙八部》
+    default_gender: male
+    default_morality: 55
+    recruitable: true
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 15
+      intellect: 40
+      defense: 20
+      agility: 25
+  - key: hero_chen_xuanfeng
+    name: 陈玄风
+    avatar: pig/武085.png
+    archetype: military
+    flavor: 外号“铜尸”，桃花岛弃徒，“黑风双煞”之首。他盗走《九阴真经》下卷，与梅超风亡命天涯。他将经文刺在自己胸口的皮肤上，练就了一身横练功夫，刀枪不入。他在大漠中横行霸道，却在与江南七怪的激战中，因轻敌被年幼的郭靖无意中刺中罩门而死。陈玄风虽然作恶多端，但对妻子梅超风却有着深厚的感情，临死前仍不忘让梅超风剥下自己刻有经文的人皮。他的死是射雕故事的开端之一。出自金庸小说《射雕英雄传》
+    default_gender: male
+    default_morality: 20
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 35
+      intellect: 10
+      defense: 40
+      agility: 15
+  - key: hero_feng_xifan
+    name: 冯锡范
+    avatar: pig/武088.png
+    archetype: military
+    flavor: 昆仑派高手，外号“一剑无血”。他是郑克塽的师父，为人阴险狡诈，专以剑尖点人穴道，杀人不见血。他为了扶持郑克塽上位，不惜设计陷害陈近南，是害死陈近南的元凶之一。他依附权贵，贪图富贵，是一个典型的政治投机者。最终被韦小宝用计擒获，充当了茅十八的替死鬼，身首异处。冯锡范的下场大快人心，是对背信弃义小人的最好惩罚。出自金庸小说《鹿鼎记》
+    default_gender: male
+    default_morality: 20
+    recruitable: true
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 30
+      intellect: 20
+      defense: 15
+      agility: 35
+  - key: hero_jinyong_0203
+    name: 拖雷
+    avatar: pig/武016.png
+    archetype: military
+    flavor: 蒙古成吉思汗的幼子，郭靖的安达（生死之交）。他豪爽直率，重情重义，是一位英勇善战的将领。在大漠的落日下，他与郭靖共同成长，建立了深厚的兄弟情谊。随着蒙宋战争的爆发，他夹在国家利益与私人友谊之间，经历了巨大的痛苦与抉择。他始终保持着对郭靖的敬重，曾在关键时刻放走郭靖母子，体现了草原男儿的坦荡与赤诚。拖雷的形象是战争阴影下一抹亮丽的人性光辉，他在权力的顶端依然坚守着年少时的纯真誓言。出自金庸小说《射雕英雄传》
+    default_gender: male
+    default_morality: 76
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 35
+      intellect: 10
+      defense: 25
+      agility: 30
   - key: hero_jinyong_0176
     name: 阿朱
     avatar: monkey_wen_female2.png
@@ -3943,7 +3943,7 @@ heroes:
     name: 王语嫣
     avatar: monkey/其他随机角色/文084_女.png
     archetype: civil
-    flavor: 曼陀山庄的千金，慕容复的表妹。王语嫣熟读各派武学典籍，虽不会武功，却能指出招式出处和破绽；她一度痴恋慕容复，后来被段誉的真情打动，随他离开姑苏。出自金庸小说《天龙八部》
+    flavor: 曼陀山庄的千金，慕容复的表妹，母亲王夫人李青萝。王语嫣熟读各派武学典籍，虽不会武功，却能一眼道出招式出处与破绽，被江湖中人视为武学活字典。她一度痴恋表哥慕容复：三联版中看清其凉薄后接受段誉的情意，新修版则回到慕容复身边。出自金庸小说《天龙八部》
     default_gender: female
     default_morality: 60
     recruitable: true
@@ -4055,7 +4055,7 @@ heroes:
     name: 定闲
     avatar: monkey_wen_female9.png
     archetype: civil
-    flavor: 恒山派掌门，“恒山三定”之一。定闲师太在五岳并派争议中拒绝左冷禅的吞并要求，始终维护恒山派独立；她临终前把掌门之位传给令狐冲，随后被嵩山派安排的刺客暗算身亡。出自金庸小说《笑傲江湖》
+    flavor: 恒山派掌门，“恒山三定”之一。定闲师太外表慈和，实则颇有决断，在五岳并派之争中拒绝左冷禅的吞并，始终维护恒山派的独立地位。后来她在少林寺遭岳不群暗算，临终前将掌门之位传给令狐冲。出自金庸小说《笑傲江湖》
     default_gender: female
     default_morality: 76
     recruitable: true
@@ -4167,7 +4167,7 @@ heroes:
     name: 文泰来
     avatar: pig/武009.png
     archetype: military
-    flavor: 红花会四当家，绰号“奔雷手”。文泰来拳劲刚猛、性格急烈，被清廷捕获后受尽刑讯，仍不肯供出同伴和总舵主陈家洛；妻子骆冰后来参与营救，两人一同返回红花会。出自金庸小说《书剑恩仇录》
+    flavor: 红花会四当家，绰号“奔雷手”。文泰来拳劲刚猛、性格急烈，与妻子骆冰同为红花会中坚；他在铁胆庄被清廷高手擒获，受尽刑讯仍不肯供出同伴与总舵主陈家洛的下落，后来由红花会群雄合力救出。出自金庸小说《书剑恩仇录》
     default_gender: male
     default_morality: 68
     recruitable: true
@@ -4199,7 +4199,7 @@ heroes:
     name: 梅念笙
     avatar: pig/武008.png
     archetype: military
-    flavor: 湘中武林名宿，掌握《神照经》和连城诀宝藏秘密。梅念笙收万震山、言达平、戚长发为徒，却被三人联手重伤；逃亡江边时，他把武功和宝藏秘密传给丁典，随后伤重身亡。出自金庸小说《连城诀》
+    flavor: 湘中武林名宿，人称“铁骨墨萼”，掌握《神照经》与连城诀宝藏的两大秘密。梅念笙收万震山、言达平、戚长发为徒，却被三人联手重伤；逃亡江边时，他把内功与宝藏秘密传给丁典，随后伤重不治身亡。出自金庸小说《连城诀》
     default_gender: male
     default_morality: 58
     recruitable: true
@@ -4215,7 +4215,7 @@ heroes:
     name: 花铁干
     avatar: pig/武057.png
     archetype: military
-    flavor: “落花流水”四侠之一，鹰爪铁枪门掌门。花铁干在藏边雪谷被血刀老祖击败后，为求活命跪地求饶，并在饥饿中分食义弟尸体；回到江湖后，他试图用诋毁狄云等人掩饰雪谷丑行。出自金庸小说《连城诀》
+    flavor: “落花流水”四侠之一，鹰爪铁枪门掌门。花铁干在藏边雪谷先失手误杀义弟刘乘风，随后被血刀老祖击败，为求活命跪地求饶，并在饥饿中分食同伴尸体；回到江湖后，他又以诋毁狄云、水笙的办法掩饰丑行。出自金庸小说《连城诀》
     default_gender: male
     default_morality: 50
     recruitable: true
@@ -4263,7 +4263,7 @@ heroes:
     name: 赵半山
     avatar: pig_wu_male7.png
     archetype: military
-    flavor: 红花会三当家，绰号“千臂如来”。赵半山精通太极拳和暗器，是陈家洛信任的助手；他多次随红花会成员营救同伴、联络各地义士，并在冲突中以暗器制敌。出自金庸小说《书剑恩仇录》
+    flavor: 红花会三当家，绰号“千臂如来”。赵半山精擅太极拳与暗器，为人温和慈祥，是总舵主陈家洛十分信任的助手；他多次随红花会群雄营救文泰来、联络各地反清义士，并在与清廷高手的冲突中以暗器制敌。出自金庸小说《书剑恩仇录》
     default_gender: male
     default_morality: 68
     recruitable: true
@@ -4279,7 +4279,7 @@ heroes:
     name: 无尘道人
     avatar: pig/武079.png
     archetype: military
-    flavor: 红花会二当家，绰号“追魂夺命剑”。无尘道人原是望族子弟，因情伤自断左臂，出家后苦练剑术；他性情豪爽、急躁，对陈家洛极为忠诚，多次率红花会成员迎战清廷高手。出自金庸小说《书剑恩仇录》
+    flavor: 红花会二当家，绰号“追魂夺命剑”。无尘道人原是望族子弟，因情伤自断左臂，出家后以独臂苦练剑术，剑法之快独步江湖，令人称奇；他性情豪爽急躁，追随陈家洛，曾参与营救文泰来，多次率众迎战清廷高手。出自金庸小说《书剑恩仇录》
     default_gender: male
     default_morality: 68
     recruitable: true
@@ -4295,7 +4295,7 @@ heroes:
     name: 袁士霄
     avatar: pig/武056.png
     archetype: military
-    flavor: 绰号“天池怪侠”，红花会总舵主陈家洛的师父。袁士霄长年隐居天山，自创“百花错拳”；他性情古怪，却收陈家洛为徒，传授武功，并在红花会遇险时出手相助。出自金庸小说《书剑恩仇录》
+    flavor: 绰号“天池怪侠”，红花会总舵主陈家洛的师父。袁士霄长年隐居天山天池，武功博杂，自创专克各派招式的“百花错拳”；他性情古怪孤僻，与天山双鹰陈正德、关明梅有旧交，陈家洛的一身武功便出自他的传授。出自金庸小说《书剑恩仇录》
     default_gender: male
     default_morality: 68
     recruitable: true
@@ -4327,7 +4327,7 @@ heroes:
     name: 刘乘风
     avatar: pig/武015.png
     archetype: military
-    flavor: “落花流水”四侠之一，绰号“柔云剑”。刘乘风在藏边雪谷与血刀老祖交手时，为掩护水笙等人撤退而负伤；他坚持守住同伴，最终在风雪中战死。出自金庸小说《连城诀》
+    flavor: “落花流水”四侠之一，排行第三，绰号“柔云剑”。刘乘风剑法细腻圆润，处事沉稳冷静，在四侠中素有谦谦君子之名；水岱是他的义弟，二人同赴藏边雪谷追击血刀老祖，血刀老祖巧施诡计，使花铁干失手将他误杀。出自金庸小说《连城诀》
     default_gender: male
     default_morality: 70
     recruitable: true
@@ -4375,7 +4375,7 @@ heroes:
     name: 定逸
     avatar: monkey_wu_female.png
     archetype: military
-    flavor: 恒山派白云庵庵主，“恒山三定”之一。定逸师太性情刚烈，起初不满令狐冲行事放纵，后来认可他的人品；她在黑木崖途中遭到嵩山派伏击，因拒绝交出恒山弟子而被杀。出自金庸小说《笑傲江湖》
+    flavor: 恒山派白云庵庵主，“恒山三定”之一。定逸师太是仪琳的师父，性情刚烈如火，起初不满令狐冲行事放纵，后来认可他的人品；她门下弟子仪琳曾被田伯光掳走，令狐冲出手相救；她后来与定闲同赴少林寺，被岳不群以辟邪剑法暗害身亡。出自金庸小说《笑傲江湖》
     default_gender: female
     default_morality: 66
     recruitable: true
@@ -4391,7 +4391,7 @@ heroes:
     name: 定静
     avatar: monkey_wu_female.png
     archetype: military
-    flavor: 恒山派长老，“恒山三定”之一。定静师太原本有资格接任掌门，却主动让贤；嵩山派黑衣人围攻恒山弟子时，她留下断后，战死在突围途中。出自金庸小说《笑傲江湖》
+    flavor: 恒山派长老，“恒山三定”之首，辈分最为尊崇。定静师太为人温厚谦和，原本有资格接任掌门，却主动让贤；嵩山派伪装的黑衣人围攻恒山弟子时，她留下断后，力战至死，护得门下众弟子突围脱险。出自金庸小说《笑傲江湖》
     default_gender: female
     default_morality: 66
     recruitable: true
@@ -4407,7 +4407,7 @@ heroes:
     name: 天门
     avatar: pig/武016.png
     archetype: military
-    flavor: 泰山派掌门，性情刚烈、重门规。天门道长反对左冷禅主持五岳并派，坚持泰山派独立；他在嵩山大会上拒绝交出掌门信物，后来被左冷禅设计逼死。出自金庸小说《笑傲江湖》
+    flavor: 泰山派掌门，性情刚烈，极重门规。天门道长坚决反对左冷禅主持五岳并派，始终坚持泰山派独立；在嵩山五岳并派大会上，他被同门玉玑子等人逼宫羞辱、激怒，愤而冲断经脉，与当面敌人同归于尽。出自金庸小说《笑傲江湖》
     default_gender: male
     default_morality: 46
     recruitable: true
@@ -4423,7 +4423,7 @@ heroes:
     name: 柳大洪
     avatar: pig_wu_male8.png
     archetype: military
-    flavor: 绰号“铁背苍龙”，沐王府首席大将。柳大洪坚持反清复明，严厉训练沐剑屏等弟子，并多次参与营救沐王府成员、刺杀清廷官员；他在追捕与交战中始终不肯投降。出自金庸小说《鹿鼎记》
+    flavor: 绰号“铁背苍龙”，沐王府首席家将。柳大洪是沐剑屏的授业长辈，始终坚持以反清复明为志，严厉训练沐剑屏等弟子，并多次参与营救沐王府成员、刺杀清廷官员；沐王府与吴三桂势不两立，他始终追随沐氏，在追捕与交战中不肯投降。出自金庸小说《鹿鼎记》
     default_gender: male
     default_morality: 66
     recruitable: true
@@ -4471,7 +4471,7 @@ heroes:
     name: 玄苦
     avatar: pig/武066.png
     archetype: military
-    flavor: 少林派高僧，萧峰的武学启蒙老师。玄苦传授萧峰少林武功，也一直替他隐瞒身世；雁门关旧事揭开后，萧远山为报复带走萧峰而暗算玄苦，玄苦最终伤重身亡。出自金庸小说《天龙八部》
+    flavor: 少林派玄字辈高僧，萧峰的授业恩师。玄苦自幼传授萧峰少林武功；萧峰身世揭开后，萧远山为报复玄慈等人，夜入少林以重手暗算玄苦，玄苦伤重圆寂。玄苦之死使萧峰被少林误认为凶手，蒙受不白之冤。出自金庸小说《天龙八部》
     default_gender: male
     default_morality: 74
     recruitable: true
@@ -4503,7 +4503,7 @@ heroes:
     name: 本因
     avatar: pig/武072.png
     archetype: military
-    flavor: 大理天龙寺方丈，段氏皇族长辈。鸠摩智强闯天龙寺索取六脉神剑经时，本因与本观、本相等人合力抵挡；段誉带走剑谱后，他仍主持天龙寺，并协助大理段氏应对外敌。出自金庸小说《天龙八部》
+    flavor: 大理天龙寺方丈，段氏皇族中的武学长辈。鸠摩智强闯天龙寺索取六脉神剑经时，天龙寺众僧各修一脉，以六脉神剑剑阵迎敌，本因与本观、本相等合力抵挡；段誉当场默记剑谱，随后被鸠摩智掳往江南，本因则继续主持天龙寺。出自金庸小说《天龙八部》
     default_gender: male
     default_morality: 68
     recruitable: true
@@ -4567,7 +4567,7 @@ heroes:
     name: 陈永华
     avatar: pig/文016.png
     archetype: civil
-    flavor: 也就是天地会总舵主陈近南。陈永华文武兼备，收韦小宝为徒，长期辅佐延平郡王郑经；他因天地会与郑氏内部的权力冲突遭到猜忌，最终被冯锡范等人刺杀。出自金庸小说《鹿鼎记》
+    flavor: 本名陈永华，天地会的总舵主，江湖人称“陈近南”。他文武兼备，在天地会中威望极高，收韦小宝为徒，长期辅佐延平郡王郑经；因天地会与郑氏内部的权力冲突，他遭到猜忌，最终被郑克塽暗算身亡。出自金庸小说《鹿鼎记》
     default_gender: male
     default_morality: 75
     recruitable: true
@@ -4583,7 +4583,7 @@ heroes:
     name: 朱媺娖
     avatar: monkey_wen_female7.png
     archetype: military
-    flavor: 明朝长平公主，国破后出家为尼，法号九难。朱媺娖曾以独臂行走江湖，策划刺杀康熙，收阿珂和韦小宝为徒；她与袁承志旧日相识，却始终没有说出自己的感情。出自金庸小说《鹿鼎记》
+    flavor: 明朝长平公主，崇祯帝之女，国破后出家为尼，法号九难。朱媺娖在城破时被父亲砍断一臂，此后以独臂行走江湖，策划刺杀康熙，并收阿珂、韦小宝为徒；她与袁承志旧日相识，却始终没有说出自己的感情。出自金庸小说《鹿鼎记》
     default_gender: female
     default_morality: 80
     recruitable: true
@@ -4599,7 +4599,7 @@ heroes:
     name: 阳顶天
     avatar: pig/武009.png
     archetype: military
-    flavor: 明教第三十三代教主。阳顶天练成乾坤大挪移第四层，统率明教与六大门派抗衡；他在密室撞见夫人与成昆私情，走火入魔而死，留下遗书和明教内部争端，导致教众多年争斗。出自金庸小说《倚天屠龙记》
+    flavor: 明教第三十三代教主。阳顶天练成乾坤大挪移第四层，统率明教与六大门派抗衡；他在密室修炼时撞见夫人与成昆的私情，真气逆转、走火入魔而死，留下遗书与教主之争，明教群龙无首，内乱多年。出自金庸小说《倚天屠龙记》
     default_gender: male
     default_morality: 75
     recruitable: true
@@ -4615,44 +4615,12 @@ heroes:
     name: 苏星河
     avatar: pig/文038.png
     archetype: civil
-    flavor: 逍遥派掌门无崖子的大弟子，外号“聪辩先生”。苏星河为躲避叛徒丁春秋，长期装聋作哑，并摆下“珍珑棋局”寻找能继承无崖子武功的人；虚竹破解棋局后，他与丁春秋交手，力竭而死。出自金庸小说《天龙八部》
+    flavor: 逍遥派掌门无崖子的大弟子，外号“聪辩先生”。苏星河为躲避叛徒丁春秋，长期装聋作哑，把琴棋书画与医术传予函谷八友，并摆下“珍珑棋局”寻找能继承无崖子武功的人；虚竹破解棋局后，他与丁春秋交手，力竭而死。出自金庸小说《天龙八部》
     default_gender: male
     default_morality: 80
     recruitable: true
     growth_range:
     - 5
-    - 9
-    attribute_weights:
-      force: 20
-      intellect: 45
-      defense: 15
-      agility: 20
-  - key: hero_tianshan_tonglao
-    name: 天山童姥
-    avatar: monkey_wu_female6.png
-    archetype: military
-    flavor: 逍遥派大师姐，灵鹫宫宫主。因修炼八荒六合唯我独尊功，身形如女童，容貌却苍老。她性格乖戾，喜怒无常，用生死符控制三十六洞七十二岛的群豪。她与李秋水是死对头，两人积怨极深。虽然手段残忍，但她对虚竹却有着特殊的师徒情谊。在冰窖之中，她将毕生武学传授给虚竹。天山童姥的一生都在与衰老和情敌抗争，她的霸道与脆弱并存，是一个性格极其鲜明的人物。出自金庸小说《天龙八部》
-    default_gender: female
-    default_morality: 40
-    recruitable: true
-    growth_range:
-    - 7
-    - 9
-    attribute_weights:
-      force: 30
-      intellect: 20
-      defense: 25
-      agility: 25
-  - key: hero_wuya_zi
-    name: 无崖子
-    avatar: monkey_wen_male1.png
-    archetype: civil
-    flavor: 逍遥派掌门，一位风度翩翩、才学渊博的绝世奇人。他因被逆徒丁春秋暗算推下悬崖，虽侥幸不死却双腿残废，只能在山洞中苟延残喘三十年。他摆下珍珑棋局，只为寻找一位天资聪颖、相貌英俊的传人来清理门户。然而命运弄人，最终破局的竟是相貌丑陋的小和尚虚竹。无崖子将七十年功力倾囊相授后油尽灯枯。他的一生都在追求完美，无论是武功、艺术还是传人，却最终不得不向不完美的命运妥协。出自金庸小说《天龙八部》
-    default_gender: male
-    default_morality: 85
-    recruitable: true
-    growth_range:
-    - 7
     - 9
     attribute_weights:
       force: 20
@@ -4691,22 +4659,6 @@ heroes:
       intellect: 18
       defense: 20
       agility: 30
-  - key: hero_li_qiushui
-    name: 李秋水
-    avatar: monkey_wen_female7.png
-    archetype: military
-    flavor: 逍遥派三老之一，无崖子的师妹，西夏皇妃。她容貌极美，但心肠歹毒。因与天山童姥争夺无崖子的爱，两人争斗了一生，互相残杀。她武功极高，擅长小无相功与白虹掌力。她在西夏皇宫留下的剑痕，见证了当年的爱恨情仇。李秋水的一生都在追逐虚无缥缈的爱情，为了报复无崖子的移情别恋，她豢养面首，纵情声色。最终在无崖子的画卷前，她才明白自己输给的不是童姥，而是画中那个完美的幻影。出自金庸小说《天龙八部》
-    default_gender: female
-    default_morality: 35
-    recruitable: true
-    growth_range:
-    - 7
-    - 9
-    attribute_weights:
-      force: 32
-      intellect: 20
-      defense: 15
-      agility: 33
   - key: hero_miao_renfeng
     name: 苗人凤
     avatar: pig/武011.png
@@ -4791,7 +4743,7 @@ heroes:
     name: 裘千仞
     avatar: pig/武075.png
     archetype: military
-    flavor: 铁掌帮帮主，外号“铁掌水上漂”。裘千仞曾勾结金国、重伤黄蓉，并杀害瑛姑与周伯通的儿子；在一灯大师和瑛姑面前，他承认罪行，出家为僧，法号慈恩，后来死于襄阳战事。出自金庸小说《射雕英雄传》
+    flavor: 铁掌帮帮主，外号“铁掌水上漂”。裘千仞曾勾结金国，以铁掌重伤黄蓉，又重伤瑛姑与周伯通之子，致其不治；后来他在一灯大师与瑛姑面前悔罪，出家为僧，法号慈恩，最终在绝情谷被金轮法王重创，得瑛姑宽恕后去世。出自金庸小说《射雕英雄传》《神雕侠侣》
     default_gender: male
     default_morality: 20
     recruitable: true
@@ -4803,22 +4755,6 @@ heroes:
       intellect: 15
       defense: 25
       agility: 25
-  - key: hero_jin_lun
-    name: 金轮
-    avatar: pig/武015.png
-    archetype: military
-    flavor: 蒙古密宗国师，外号“金轮法王”。他武功深不可测，练就了震古烁今的“龙象般若功”。作为蒙古侵宋的急先锋，他屡次与郭靖、杨过等人为敌。虽然立场不同，但他为人极其自负且讲究宗师风度，对弟子郭襄更是疼爱有加，甚至想将衣钵传授于她。最终在绝情谷之战中，为了救郭襄而死（新修版结局）。金轮法王是一个有着复杂人性的反派，他的忠诚与师徒情谊，让他不再只是一个单纯的恶人。出自金庸小说《神雕侠侣》
-    default_gender: male
-    default_morality: 35
-    recruitable: true
-    growth_range:
-    - 7
-    - 9
-    attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 30
-      agility: 15
   - key: hero_ding_chunqiu
     name: 丁春秋
     avatar: duck_wu_male1.png
@@ -4903,7 +4839,7 @@ heroes:
     name: 李四
     avatar: pig/武088.png
     archetype: military
-    flavor: 侠客岛“赏善罚恶”二使之一，张三的义弟。李四身材瘦削、沉默寡言，与张三奉命邀请各派掌门赴侠客岛；他与石破天交手后欣赏其真诚，和张三一同与石破天结为金兰之交。出自金庸小说《侠客行》
+    flavor: 侠客岛“赏善罚恶”二使之一，人称“瘦尊者”，张三的义弟。李四身材瘦削、沉默寡言，与张三每十年赴中原一次，传令各派掌门赴侠客岛；他与石破天一见如故，欣赏其真诚，和张三一同与石破天结为金兰之交。出自金庸小说《侠客行》
     default_gender: male
     default_morality: 55
     recruitable: true
@@ -5015,7 +4951,7 @@ heroes:
     name: 潇湘子
     avatar: pig_wu_male4.png
     archetype: military
-    flavor: 湘西武林人物，使用藏有毒砂的哭丧棒。潇湘子投靠蒙古，和金轮法王等人共同追捕郭靖等人；他与尹克西合谋盗取《九阴真经》，因互相猜忌发生冲突，最终双双毙命。出自金庸小说《神雕侠侣》
+    flavor: 湘西武林人物，使用藏有毒砂的哭丧棒。潇湘子投靠蒙古，与金轮法王等人共同追捕郭靖、黄蓉；后来他与尹克西合谋盗取《九阳真经》，二人因互相猜忌而火并，最终双双毙命，经书则被藏入猿腹，随猿流落昆仑。出自金庸小说《神雕侠侣》《倚天屠龙记》
     default_gender: male
     default_morality: 15
     recruitable: true
@@ -5047,7 +4983,7 @@ heroes:
     name: 白阿绣
     avatar: monkey_wen_female9.png
     archetype: civil
-    flavor: 雪山派掌门白自在的孙女。白阿绣在雪山派内乱中与石破天相识，起初误以为救自己的人是石中玉；她后来发现真相，仍与质朴的石破天相爱，并在侠客岛事件后随他离开。出自金庸小说《侠客行》
+    flavor: 雪山派掌门白自在的孙女，白万剑之女。白阿绣性情温婉，在雪山派内乱中与石破天相识，虽因他酷似石中玉而心存疑虑，后来发现两人性情迥异；她逐渐爱上质朴的石破天，并在侠客岛风波后随他离开。出自金庸小说《侠客行》
     default_gender: female
     default_morality: 85
     recruitable: true
@@ -5207,7 +5143,7 @@ heroes:
     name: 血刀老祖
     avatar: pig/武088.png
     archetype: military
-    flavor: 西藏血刀门掌门，精通血刀经。血刀老祖在藏边雪谷劫持水笙，与“落花流水”四侠交战并杀死其中多人；他后来被狄云踢下山崖，坠落身亡。出自金庸小说《连城诀》
+    flavor: 西藏血刀门掌门，武功狠辣，精通血刀经。血刀老祖在藏边雪谷劫持水笙，与“落花流水”四侠连番交手，仗着雪谷地形杀死陆天抒、重创水岱，又设计令花铁干误杀刘乘风；他最终被狄云以神照功击毙。出自金庸小说《连城诀》
     default_gender: male
     default_morality: 5
     recruitable: true
@@ -5351,7 +5287,7 @@ heroes:
     name: 薛慕华
     avatar: pig_wen_male1.png
     archetype: civil
-    flavor: 号称“薛神医”，苏星河八大弟子之一。薛慕华精通医术，曾在聚贤庄参与围攻萧峰；萧峰离开后，他为阿朱等人诊治，也曾因丁春秋的威胁卷入逍遥派纷争。出自金庸小说《天龙八部》
+    flavor: 号称“薛神医”，苏星河八大弟子之一，函谷八友中人。薛慕华医术高明，萧峰携重伤的阿朱到聚贤庄求医时，群雄正欲围攻萧峰，他最终仍出手为阿朱疗伤；后来他又因丁春秋的威胁被卷入逍遥派纷争。出自金庸小说《天龙八部》
     default_gender: male
     default_morality: 66
     recruitable: true
@@ -5367,7 +5303,7 @@ heroes:
     name: 苗若兰
     avatar: monkey_wen_female10.png
     archetype: civil
-    flavor: 苗人凤的独生女，不会武功，性情清雅。苗若兰在玉笔峰上结识胡斐，起初面对父辈旧仇有所顾虑，后来仍选择与胡斐相守；她曾用琴声安抚雪山飞狐中的冲突。出自金庸小说《雪山飞狐》
+    flavor: 苗人凤的独生女，不会武功，性情清雅。苗若兰在玉笔峰上结识胡斐，起初因父辈旧仇有所顾虑，后来仍选择相信胡斐。出自金庸小说《雪山飞狐》
     default_gender: female
     default_morality: 68
     recruitable: true
@@ -5399,7 +5335,7 @@ heroes:
     name: 萧中慧
     avatar: monkey/其他随机角色/武083_女_.png
     archetype: military
-    flavor: 《鸳鸯刀》女主角，晋阳大侠萧半和之女。萧中慧在父亲寿宴遇变后携短刀逃亡，结识袁冠南；两人共同躲避追杀，练成夫妻刀法，最后结为夫妻。出自金庸小说《鸳鸯刀》
+    flavor: 《鸳鸯刀》女主角，晋阳大侠萧半和的养女，生父为杨伯冲。萧中慧性情爽朗、好打不平，在父亲寿宴遇变后，与袁冠南携鸳鸯刀逃亡；两人共同躲避卓天雄的追杀，练成夫妻刀法，最终结为夫妻，刀中秘密也随之揭晓。出自金庸小说《鸳鸯刀》
     default_gender: female
     default_morality: 75
     recruitable: true
@@ -5671,7 +5607,7 @@ heroes:
     name: 双儿
     avatar: monkey_wu_female6.png
     archetype: military
-    flavor: 湖州庄家的丫鬟，后来跟随韦小宝。双儿自幼习武，曾在庄家遇险时保护韦小宝；她一路陪他闯荡江湖、营救同伴，最后随韦小宝归隐云南。出自金庸小说《鹿鼎记》
+    flavor: 湖州庄家的丫鬟出身，庄家蒙难后，她被托付给韦小宝。双儿自幼习武，性情温柔体贴、善解人意，一路陪他闯荡江湖、营救同伴，多次在危难中护他周全；她是最早跟随韦小宝的女子，最终随他一同归隐。出自金庸小说《鹿鼎记》
     default_gender: female
     default_morality: 64
     recruitable: true
@@ -5751,7 +5687,7 @@ heroes:
     name: 水笙
     avatar: monkey_wu_female5.png
     archetype: military
-    flavor: “南四奇”水岱之女，与表哥汪啸风并称“铃剑双侠”。水笙起初误会狄云，后来在藏边雪谷共同求生，逐渐看清汪啸风的怯懦和狄云的善良；她与狄云离开雪谷后结伴远行。出自金庸小说《连城诀》
+    flavor: “南四奇”水岱之女，与表哥汪啸风并称“铃剑双侠”。水笙起初深深误会狄云，后来在藏边雪谷共同求生，逐渐看清表哥汪啸风的怯懦和狄云的善良；故事结尾，她留在雪谷等待狄云，两人最终在雪谷重逢。出自金庸小说《连城诀》
     default_gender: female
     default_morality: 76
     recruitable: true
@@ -5812,22 +5748,70 @@ heroes:
       defense: 25
       agility: 30
   purple:
-  - key: hero_jinyong_0215
-    name: 小昭
-    avatar: monkey/xiaozhao.png
-    archetype: civil
-    flavor: 黛绮丝之女，聪慧细腻，身手轻灵。她随侍张无忌，以通晓波斯文字之长助其参悟乾坤大挪移心法；后来为保护母亲与同伴远赴波斯，出任明教总教教主。她善于察言观色、临机应变，温柔之下自有坚定心志。出自金庸小说《倚天屠龙记》
+  - key: hero_tianshan_tonglao
+    name: 天山童姥
+    avatar: monkey_wu_female6.png
+    archetype: military
+    flavor: 逍遥派大师姐，灵鹫宫宫主。因修炼八荒六合唯我独尊功，身形如女童，容貌却苍老。她性格乖戾，喜怒无常，用生死符控制三十六洞七十二岛的群豪。她与李秋水是死对头，两人积怨极深。虽然手段残忍，但她对虚竹却有着特殊的师徒情谊。在冰窖之中，她将毕生武学传授给虚竹。天山童姥的一生都在与衰老和情敌抗争，她的霸道与脆弱并存，是一个性格极其鲜明的人物。出自金庸小说《天龙八部》
     default_gender: female
-    default_morality: 60
-    recruitable: false
+    default_morality: 40
+    recruitable: true
     growth_range:
-    - 6
-    - 12
+    - 7
+    - 11
     attribute_weights:
-      force: 10
+      force: 30
+      intellect: 20
+      defense: 25
+      agility: 25
+  - key: hero_wuya_zi
+    name: 无崖子
+    avatar: monkey_wen_male1.png
+    archetype: civil
+    flavor: 逍遥派掌门，一位风度翩翩、才学渊博的绝世奇人。他因被逆徒丁春秋暗算推下悬崖，虽侥幸不死却双腿残废，只能在山洞中苟延残喘三十年。他摆下珍珑棋局，只为寻找一位天资聪颖、相貌英俊的传人来清理门户。然而命运弄人，最终破局的竟是相貌丑陋的小和尚虚竹。无崖子将七十年功力倾囊相授后油尽灯枯。他的一生都在追求完美，无论是武功、艺术还是传人，却最终不得不向不完美的命运妥协。出自金庸小说《天龙八部》
+    default_gender: male
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 20
       intellect: 45
-      defense: 10
-      agility: 35
+      defense: 15
+      agility: 20
+  - key: hero_li_qiushui
+    name: 李秋水
+    avatar: monkey_wen_female7.png
+    archetype: military
+    flavor: 逍遥派三老之一，无崖子的师妹，西夏皇妃。她容貌极美，但心肠歹毒。因与天山童姥争夺无崖子的爱，两人争斗了一生，互相残杀。她武功极高，擅长小无相功与白虹掌力。她在西夏皇宫留下的剑痕，见证了当年的爱恨情仇。李秋水的一生都在追逐虚无缥缈的爱情，为了报复无崖子的移情别恋，她豢养面首，纵情声色。最终在无崖子的画卷前，她才明白自己输给的不是童姥，而是画中那个完美的幻影。出自金庸小说《天龙八部》
+    default_gender: female
+    default_morality: 35
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 32
+      intellect: 20
+      defense: 15
+      agility: 33
+  - key: hero_jin_lun
+    name: 金轮
+    avatar: pig/武015.png
+    archetype: military
+    flavor: 蒙古密宗国师，外号“金轮法王”。他武功深不可测，练就了震古烁今的“龙象般若功”。作为蒙古侵宋的急先锋，他屡次与郭靖、杨过等人为敌。虽然立场不同，但他为人极其自负且讲究宗师风度，对弟子郭襄更是疼爱有加，甚至想将衣钵传授于她。最终在绝情谷之战中，为了救郭襄而死（新修版结局）。金轮法王是一个有着复杂人性的反派，他的忠诚与师徒情谊，让他不再只是一个单纯的恶人。出自金庸小说《神雕侠侣》
+    default_gender: male
+    default_morality: 35
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 40
+      intellect: 15
+      defense: 30
+      agility: 15
   - key: hero_huang_rong
     name: 黄蓉
     avatar: monkey/金庸/黄蓉.png
@@ -5952,10 +5936,10 @@ heroes:
     - 6
     - 11
     attribute_weights:
-      force: 20
-      intellect: 45
-      defense: 20
-      agility: 15
+      force: 35
+      intellect: 40
+      defense: 15
+      agility: 10
   - key: hero_xiao_yuanshan
     name: 萧远山
     avatar: monkey/金庸/萧远山.png
@@ -5984,10 +5968,10 @@ heroes:
     - 7
     - 13
     attribute_weights:
-      force: 35
-      intellect: 20
-      defense: 15
-      agility: 30
+      force: 30
+      intellect: 15
+      defense: 10
+      agility: 45
   - key: hero_feng_qingyang
     name: 风清扬
     avatar: monkey/金庸/风清扬.png
@@ -6008,7 +5992,7 @@ heroes:
     name: 乔峰
     avatar: monkey/金庸/乔峰.png
     archetype: military
-    flavor: 本名乔峰，后称萧峰，曾任丐帮帮主，心系苍生，豪气干云。他身世坎坷，夹在宋辽两国仇恨的夹缝中，虽有盖世神功，却难敌命运的捉弄。聚贤庄一战，他虽万千人吾往矣；雁门关外，他折箭为誓，以自尽换取两国和平。乔峰（萧峰）的一生，是“侠之大者”的悲壮史诗，他用生命诠释了什么是真正的英雄气概——不为私欲，只为百姓安宁。他的降龙十八掌刚猛无俦，正如他的人格一般，宁折不弯。他与阿朱的塞上之约，成为了江湖中最令人扼腕的遗憾。出自金庸小说《天龙八部》
+    flavor: 契丹名萧峰，汉名乔峰，曾任丐帮帮主，心系苍生，豪气干云。他身世坎坷，夹在宋辽两国仇恨的夹缝中，虽有盖世神功，却难敌命运的捉弄。聚贤庄一战，他虽千万人吾往矣；雁门关外，他逼辽帝立誓不再南侵，随即以断箭自尽，换取两国和平。他与阿朱的塞上之约，成为江湖中最令人扼腕的遗憾。出自金庸小说《天龙八部》
     default_gender: male
     default_morality: 90
     recruitable: true
@@ -6016,9 +6000,9 @@ heroes:
     - 8
     - 12
     attribute_weights:
-      force: 40
-      intellect: 10
-      defense: 35
+      force: 35
+      intellect: 20
+      defense: 30
       agility: 15
   - key: hero_guo_jing
     name: 郭靖
@@ -6096,10 +6080,10 @@ heroes:
     - 7
     - 11
     attribute_weights:
-      force: 28
-      intellect: 17
-      defense: 35
-      agility: 20
+      force: 40
+      intellect: 15
+      defense: 30
+      agility: 15
   - key: hero_guo_xiang
     name: 郭襄
     avatar: monkey/金庸/郭襄.png
@@ -6152,7 +6136,7 @@ heroes:
     name: 黄药师
     avatar: monkey/金庸/黄药师.png
     archetype: civil
-    flavor: 桃花岛主，外号“东邪”。他文武双全，琴棋书画、医卜星相、奇门遁甲无一不精。他性格孤僻怪诞，离经叛道，厌恶礼教束缚，却对亡妻冯希微一往情深。他的武功自成一家，弹指神通与落英神剑掌独步江湖。黄药师对女儿黄蓉极其宠爱，对弟子虽然严厉却也护短。他的邪气背后，是一颗高傲而孤独的心。他在神雕末尾摆下二十八宿大阵抗击蒙元，展现了不输于人的家国情怀，是一位至情至性的宗师。出自金庸小说《射雕英雄传》
+    flavor: 桃花岛主，外号“东邪”。他文武双全，琴棋书画、医卜星相、奇门遁甲无一不精。他性格孤僻怪诞，离经叛道，厌恶礼教束缚，却对亡妻冯蘅一往情深。他的武功自成一家，弹指神通与落英神剑掌独步江湖。黄药师对女儿黄蓉极其宠爱，对弟子虽然严厉却也护短。他在神雕末尾摆下二十八宿大阵抗击蒙元。出自金庸小说《射雕英雄传》《神雕侠侣》
     default_gender: male
     default_morality: 60
     recruitable: true
@@ -6160,10 +6144,10 @@ heroes:
     - 7
     - 11
     attribute_weights:
-      force: 20
-      intellect: 45
-      defense: 15
-      agility: 20
+      force: 35
+      intellect: 40
+      defense: 10
+      agility: 15
   - key: hero_hong_qi
     name: 洪七
     avatar: monkey/金庸/洪七.png
@@ -6372,6 +6356,22 @@ heroes:
       intellect: 15
       defense: 30
       agility: 20
+  - key: hero_jinyong_0215
+    name: 小昭
+    avatar: monkey/xiaozhao.png
+    archetype: civil
+    flavor: 小昭是紫衫龙王黛绮丝之女，聪慧细腻，身手轻灵。她隐去身份随侍张无忌，凭借通晓波斯文字之长，在密道中助他参悟乾坤大挪移心法。后来为保护母亲与同伴，她远赴波斯出任明教总教教主，把一腔情意留在中原。她善于察言观色、临机应变，温柔之下自有坚定心志。出自金庸小说《倚天屠龙记》
+    default_gender: female
+    default_morality: 60
+    recruitable: false
+    growth_range:
+    - 6
+    - 12
+    attribute_weights:
+      force: 10
+      intellect: 45
+      defense: 10
+      agility: 35
   orange:
   - key: hero_a_qing
     name: 阿青

@@ -28,64 +28,6 @@ heroes:
       intellect: 18
       defense: 24
       agility: 16
-  blue:
-  - key: hist_mingqing_0005
-    name: 朱瞻基
-    avatar: monkey_wen_male3.png
-    default_gender: male
-    archetype: civil
-    flavor: （1399年—1435年）明宣宗，明仁宗朱高炽之子。朱瞻基即位后减轻赋役、整顿吏治，宣德元年亲自平定汉王朱高煦叛乱；他又喜爱书画，传世有《三鼠图》等作品。宣德十年，朱瞻基病逝，年仅三十六岁。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 12
-      intellect: 58
-      defense: 18
-      agility: 12
-  - key: hist_mingqing_0006
-    name: 朱佑樘
-    avatar: monkey_wen_male3.png
-    default_gender: male
-    archetype: civil
-    flavor: （1470年—1505年）明孝宗，明宪宗之子。朱祐樘幼年曾被万贵妃一党排斥，成化二十三年即位后勤于政务，重用刘健、李东阳、谢迁等大臣，减少宫中冗费。弘治十八年，朱祐樘病逝，年三十六岁。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 12
-      intellect: 58
-      defense: 18
-      agility: 12
-  - key: hist_mingqing_0007
-    name: 朱厚熜
-    avatar: monkey_wen_male3.png
-    default_gender: male
-    archetype: civil
-    flavor: （1507年—1567年）明世宗，兴献王朱祐杬之子，明武宗无子后被迎立为帝。朱厚熜即位后因“大礼议”与群臣争论生父名分，最终追尊父亲为皇帝；晚年长期居西苑修道，重用严嵩，嘉靖四十五年病逝。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 12
-      intellect: 58
-      defense: 18
-      agility: 12
-  - key: hist_mingqing_0008
-    name: 朱翊钧
-    avatar: monkey_wen_male3.png
-    default_gender: male
-    archetype: civil
-    flavor: （1563年—1620年）明神宗，明穆宗之子，十岁即位，由张居正辅政。朱翊钧亲政后先后处理宁夏、朝鲜和播州战事，即“万历三大征”；后来因立储问题与群臣争执，长期不上朝，晚年又面对辽东战事和财政困难，泰昌元年病逝。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 12
-      intellect: 58
-      defense: 18
-      agility: 12
-  purple:
   - key: hist_mingqing_0003
     name: 努尔哈赤
     avatar: monkey/明清/努尔哈赤.png
@@ -93,8 +35,8 @@ heroes:
     archetype: military
     flavor: （1559年—1626年）清朝奠基者，满洲枭雄。以十三副遗甲起兵，创八旗制，萨尔浒一战奠定后金霸权。他采取“凭尔几路来，我只一路去”的策略大败明军主力。虽然他在宁远之战中受红夷大炮重创后去世，但他建立的军事与行政体制，为大清定鼎中原打下了最坚实的基础。努尔哈赤的一生是满洲民族崛起的缩影，他不仅是一位杰出的军事家，更是满洲文明的塑造者，其推动的满文创制与八旗社会结构，深刻影响了此后三百年的中国历史。其建立的八旗制度，更是清朝统治力量的核心保障。
     growth_range:
-    - 7
-    - 12
+    - 8
+    - 14
     attribute_weights:
       force: 42
       intellect: 18
@@ -105,9 +47,66 @@ heroes:
     avatar: monkey/明清/玄烨.png
     default_gender: male
     archetype: civil
-    flavor: （1654年—1722年）康熙大帝，被誉为“千古一帝”。他八岁登基，十四岁便展现出非凡胆识智擒鳌拜，从此开启了亲政之路。此后数十年间，他平定三藩之乱、收复台湾、亲征噶尔丹、驱逐沙俄侵略者，文治武功冠绝清朝一代。他不仅是一位杰出的政治家，更博学多才，精通数学、天文、地理，主持编纂了《康熙字典》等宏篇巨制。他在位六十一年，是中国历史上在位时间最长的皇帝，开创了康乾盛世的辉煌基业，将中国古代封建统治推向了一个新的高度。他那种对文明传承的责任感与对疆域完整的守护，使其成为了中国历史上最具影响力和国际知名度的君主之一。
+    flavor: （1654年—1722年）康熙皇帝，名玄烨，八岁登基，十六岁（虚岁）智擒鳌拜，开始亲政。此后他平定三藩之乱、收复台湾、亲征噶尔丹，并通过雅克萨之战与《尼布楚条约》划定中俄东段边界。他主持编纂《康熙字典》等书，对数学、天文、地理亦有兴趣。他在位六十一年，为清朝前期的稳定奠定了基础。
+    growth_range:
+    - 8
+    - 14
+    attribute_weights:
+      force: 12
+      intellect: 58
+      defense: 18
+      agility: 12
+  purple:
+  - key: hist_mingqing_0005
+    name: 朱瞻基
+    avatar: monkey_wen_male3.png
+    default_gender: male
+    archetype: civil
+    flavor: （1399年—1435年）明宣宗，仁宗朱高炽之子。即位后减轻赋役、整顿吏治，宣德元年亲自平定汉王朱高煦叛乱。他重用“三杨”等大臣，延续仁宗以来的宽和政策，史称“仁宣之治”。朱瞻基雅好书画，传世有《三鼠图》等作品。宣德十年病逝，年仅三十六岁。
     growth_range:
     - 7
+    - 11
+    attribute_weights:
+      force: 12
+      intellect: 58
+      defense: 18
+      agility: 12
+  - key: hist_mingqing_0006
+    name: 朱佑樘
+    avatar: monkey_wen_male3.png
+    default_gender: male
+    archetype: civil
+    flavor: （1470年—1505年）明孝宗，宪宗之子。幼年因万贵妃一党排斥，久藏宫中，成化二十三年即位。他勤于政务，重用刘健、李东阳、谢迁等大臣，减少宫中冗费，罢黜佞幸，朝政较为清明，史称“弘治中兴”。弘治十八年病逝，年三十六岁。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 12
+      intellect: 58
+      defense: 18
+      agility: 12
+  - key: hist_mingqing_0007
+    name: 朱厚熜
+    avatar: monkey_wen_male3.png
+    default_gender: male
+    archetype: civil
+    flavor: （1507年—1567年）明世宗，兴献王朱祐杬之子。武宗无子，他以藩王入继大统。即位后因“大礼议”与群臣争论生父名分，最终追尊父亲为皇帝，皇权由此进一步加强。他前期整顿吏治、抑制宦官，后期长期居西苑修道，重用严嵩，朝政渐趋败坏。嘉靖四十五年病逝。
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 12
+      intellect: 58
+      defense: 18
+      agility: 12
+  - key: hist_mingqing_0008
+    name: 朱翊钧
+    avatar: monkey_wen_male3.png
+    default_gender: male
+    archetype: civil
+    flavor: （1563年—1620年）明神宗，穆宗之子，十岁即位，由张居正辅政。亲政后先后处理宁夏、朝鲜和播州战事，即“万历三大征”。他因立储问题与群臣争执，长期不上朝，朝政运转受到影响。晚年又面对辽东战事和财政困难，泰昌元年病逝。其在位四十八年，为明朝在位最久的皇帝。
+    growth_range:
+    - 6
     - 11
     attribute_weights:
       force: 12
@@ -118,16 +117,16 @@ heroes:
     name: 朱由检
     avatar: monkey/明清/朱由检.png
     default_gender: male
-    archetype: military
+    archetype: civil
     flavor: （1611年—1644年）崇祯皇帝，明朝的亡国之君。他十六岁即位，以雷霆万钧之势铲除阉党魏忠贤，试图重振纲纪。他一生勤政节俭，宵衣旰食，在位十七年从未懈怠，却面对着前朝积攒下来的千疮百孔：辽东战事糜烂、中原流寇横行、连年大旱饥荒。他性格多疑，频繁更换首辅，且错杀良将袁崇焕，导致边防形势进一步恶化。崇祯十七年，李自成大军压境，他在煤山自缢，留下了“朕凉德藐躬，上干天咎”的绝笔。他在崩坏局势中试图自救，有着守社稷、殉江山的决心，却终无回天之术，其勤勉与悲剧终局成为了中国历史上最令人感叹的篇章之一。
     growth_range:
     - 7
     - 11
     attribute_weights:
-      force: 42
-      intellect: 18
-      defense: 24
-      agility: 16
+      force: 18
+      intellect: 50
+      defense: 22
+      agility: 10
   - key: hist_mingqing_0010
     name: 姚广孝
     avatar: monkey/明清/姚广孝.png
@@ -152,10 +151,10 @@ heroes:
     - 7
     - 11
     attribute_weights:
-      force: 12
-      intellect: 58
-      defense: 18
-      agility: 12
+      force: 20
+      intellect: 52
+      defense: 20
+      agility: 8
   - key: hist_mingqing_0012
     name: 刘基
     avatar: monkey/明清/刘基.png
@@ -175,7 +174,7 @@ heroes:
     avatar: monkey/明清/张居正.png
     default_gender: male
     archetype: civil
-    flavor: （1525年—1582年）万历朝首辅，明代最重要的政治家与改革家之一。他在大明王朝由盛转衰的关键时期毅然拜相，以雷霆万钧之势推行“一条鞭法”与“考成法”，铁腕整顿吏治，清丈全国田亩，使濒临崩溃的大明财政重新充盈，国库积银达千万两之巨。他在任十年间，边境安宁，赋役均平，史称“万历中兴”。张居正独揽大权，刚愎任事，虽然在身后遭遇了残酷的清算，但其改革成果为大明强行续命数十年。若无居正，明室之亡恐提早半个世纪。他的一生是关于权臣在孤注一掷中拯救帝国的壮丽悲歌，被后世尊为“救时宰相”。
+    flavor: （1525年—1582年）万历朝首辅，明代重要政治家、改革家。他推行“一条鞭法”与“考成法”，整顿吏治，清丈全国田亩，使财政状况一度好转，国库积银达四百余万两。他在任十年间，边境相对安宁，赋役趋于均平，史称“万历中兴”。张居正独揽大权、刚愎任事，身后遭到清算，但其改革成果使明朝得以延续数十年，后世称其为“救时宰相”。
     growth_range:
     - 6
     - 12
@@ -189,7 +188,7 @@ heroes:
     avatar: monkey/明清/胤禛.png
     default_gender: male
     archetype: civil
-    flavor: （1678年—1735年）雍正皇帝，以勤政与铁腕改革著称。他在位期间针对康熙晚年的积弊，推行摊丁入亩、火耗归公、改土归流等改革，从根本上减轻了贫民负担并充实了国库。他设立军机处以极度强化皇权，推行密折制度广开言路。雍正帝每日处理政务达十余小时，留下的朱批奏折字数竟逾千万，堪称历史上最劳模的皇帝。他在位仅十三年，却成功扭转了官场腐败的颓势，为乾隆时期的巅峰繁荣奠定了坚实基础，是清代由乱转治的关键。其性格冷峻严苛，但其政绩利在千秋，被评价为“得国最正，社稷之臣”。
+    flavor: （1678年—1735年）雍正皇帝，以勤政与铁腕改革著称。他在位期间针对康熙晚年积弊，推行摊丁入亩、火耗归公、改土归流等改革，减轻贫民负担并充实国库。他设立军机处，强化皇权，推行密折制度。雍正帝每日处理政务十余小时，留下的朱批奏折字数逾千万，其勤勉在清代君主中颇为突出。他在位仅十三年，扭转了官场腐败的颓势，为乾隆时期的繁荣奠定了基础。
     growth_range:
     - 6
     - 12
@@ -217,7 +216,7 @@ heroes:
     avatar: monkey/明清/福临.png
     default_gender: male
     archetype: civil
-    flavor: （1638年—1661年）顺治皇帝，入关首帝。他在多尔衮死后亲政，极力缓和民族矛盾，重用汉臣，崇尚汉文化。顺治帝是一位情感细腻、富有人文情怀的君主，他在位期间致力于巩固清朝在中原的统治基础。然而，面对宫廷内部的权力斗争与皇后的离世，他逐渐产生厌世之心，致力于钻研佛学。顺治帝在位仅十八年，却为后来的康乾盛世奠定了初步的政治框架。关于其最后是因天花崩逝还是五台山出家的民间传说，更为这位年轻帝王增添了一抹神秘的悲剧色彩。他的一生是满洲统治者试图融入中原主流文化的艰难而动人的尝试。
+    flavor: （1638年—1661年）顺治皇帝，名福临，清军入关后的首位皇帝。他在多尔衮死后亲政，缓和民族矛盾，重用汉臣，崇尚汉文化。顺治帝情感细腻，董鄂妃的离世使他深受打击，一度沉心佛学。他在位十八年，为清朝在中原的统治奠定初步框架。官方记载其死因为天花，民间则有五台山出家的传说，为其增添了几分神秘色彩。
     growth_range:
     - 6
     - 12

@@ -15,6 +15,7 @@ from ..random_context import (
     GROUPED_ATTACK_ENGINE_VERSIONS,
     GUEST_ACTION_CONSISTENCY_ENGINE_VERSIONS,
     GUEST_BURST_ENGINE_VERSIONS,
+    TROOP_GROUP_DAMAGE_BONUS_ENGINE_VERSIONS,
 )
 from .constants import TROOP_EXTRA_ATTACK_INTERVAL, TROOP_GROUP_DAMAGE_MULTIPLIER
 from .damage_application import apply_damage_results, defer_qiang_wang_counters, resolve_deferred_qiang_wang_counters
@@ -708,7 +709,10 @@ def _perform_attack(
             round_priority,
             troop_attack_strength=current_group_size,
             troop_damage_multiplier=(
-                TROOP_GROUP_DAMAGE_MULTIPLIER if actor.troop_strength >= TROOP_EXTRA_ATTACK_INTERVAL else 1.0
+                TROOP_GROUP_DAMAGE_MULTIPLIER
+                if actor.troop_strength >= TROOP_EXTRA_ATTACK_INTERVAL
+                and battle_engine_version in TROOP_GROUP_DAMAGE_BONUS_ENGINE_VERSIONS
+                else 1.0
             ),
             battle_engine_version=battle_engine_version,
         )

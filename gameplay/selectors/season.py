@@ -90,6 +90,8 @@ def _describe_items(items: dict[str, int], names: dict[str, str]) -> str:
 
 
 def _garrison_context(runs: list[SeasonExpedition], player_guest_limit: int) -> dict[str, Any]:
+    from gameplay.services.season.combat import snapshot_guest_strength
+
     players = []
     for run in runs:
         defeated = set(run.result.get("defeated_ids", []))
@@ -99,7 +101,7 @@ def _garrison_context(runs: list[SeasonExpedition], player_guest_limit: int) -> 
                 for row in run.lineup.get("guests", [])
                 if row.get("current_hp", 0) > 0 and row.get("guest_id") not in defeated
             ),
-            key=lambda row: (-(row["attack"] + row["defense"] + row["current_hp"]), row["guest_id"]),
+            key=lambda row: (-snapshot_guest_strength(row), row["guest_id"]),
         )[:player_guest_limit]
         if guests:
             players.append(

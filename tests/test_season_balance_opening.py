@@ -10,6 +10,8 @@ from django.utils import timezone
 
 from core.exceptions import GameError
 from gameplay.models import Manor, Season, SeasonAction, SeasonExpedition, SeasonMember, SeasonRally
+from gameplay.services.arena.snapshots import build_entry_guest_snapshot
+from gameplay.services.arena.virtual_lineups import snapshot_power
 from gameplay.services.season.actions import perform_action
 from gameplay.services.season.campaign_rules import load_campaign_rules
 from gameplay.services.season.catalog import load_rules
@@ -17,7 +19,6 @@ from gameplay.services.season.combat import npc_opening_profile, pve_lineup
 from gameplay.services.season.expeditions import process_expedition
 from gameplay.services.season.playability_rules import DEFAULT_PLAYABILITY
 from gameplay.services.season.registration import assign_factions_locked, register_locked
-from guests.guest_combat_stats import resolve_guest_combat_stats
 from guests.models import Guest, GuestStatus, GuestTemplate
 
 pytestmark = pytest.mark.django_db
@@ -133,8 +134,9 @@ def test_balance_uses_three_best_noninjured_guests_and_counts_healthy_deployed_g
         guest.save(update_fields=["force", "defense_stat", "status"])
     expected = []
     for guest in guests[:4]:
-        stats = resolve_guest_combat_stats(guest)
-        expected.append(stats.attack + stats.defense + stats.max_hp)
+        snapshot = build_entry_guest_snapshot(guest)
+        snapshot["current_hp"] = snapshot["max_hp"]
+        expected.append(snapshot_power(snapshot, formula_version=2))
     with transaction.atomic():
         assign_factions_locked(season, clock[0])
     member.refresh_from_db()

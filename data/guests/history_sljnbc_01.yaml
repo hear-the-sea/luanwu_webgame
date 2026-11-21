@@ -75,7 +75,7 @@ heroes:
     avatar: monkey/三国两晋与南北朝/孙权.png
     default_gender: male
     archetype: military
-    flavor: （182年—252年5月21日）生子当如孙仲谋。他承父兄基业，坐断东南战未休。赤壁联刘抗曹，火烧连营定三分；石亭诱敌深入，大破曹休震中原。他知人善任，周瑜、陆逊皆其所拔；他隐忍持重，在魏蜀夹缝中求得东吴五十年基业。紫髯碧眼，雄姿英发，纵横捭阖间尽显帝王手腕。晚年立嗣之争亦为其治下阴影。
+    flavor: （182年—252年5月21日）吴大帝孙权，字仲谋，承父兄基业坐断东南。赤壁联刘抗曹，夷陵以陆逊火攻破蜀，石亭诱敌大破曹休。他知人善任，周瑜、鲁肃、陆逊皆得其重用；隐忍持重，在魏蜀夹缝中维持东吴基业。紫髯碧眼，雄姿英发。晚年立嗣之争反复，为治下阴影。
     growth_range:
     - 6
     - 12
@@ -271,7 +271,7 @@ heroes:
     avatar: monkey/三国两晋与南北朝/慕容垂.png
     default_gender: male
     archetype: military
-    flavor: （326年—396年6月2日）战神归来，后燕开国。他本是前燕名将，少年成名，与慕容恪并称"北方双璧"。因受兄长排挤，亡国后投奔苻坚，却受其猜忌不得重用。淝水之战后趁乱复国建立后燕，年过六旬仍能亲征沙场，击败来犯之敌。一生历经数十战未尝一败，被誉为"十六国第一战神"。晚年讨伐北魏，闻参合陂惨败消息呕血而亡。
+    flavor: （326年—396年6月2日）后燕开国君主，字道明，前燕名将，与慕容恪同为宗室柱石。因受慕容评排挤，前燕亡前投奔苻坚，却受猜忌未得重用。淝水之战后趁乱复国，建立后燕，年过六旬仍亲征沙场，击败来犯之敌。晚年讨伐北魏，途经参合陂，惭愤发病而卒。
     growth_range:
     - 6
     - 11
@@ -364,6 +364,118 @@ heroes:
       intellect: 54
       defense: 22
       agility: 10
+  - key: hist_sljnbc_0036
+    name: 法正
+    avatar: monkey/其他随机角色/文061_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （176年—220年）蜀汉第一谋主，刘备之郭嘉。他原是刘璋谋士，因不得志而暗迎刘备入川。助刘备取益州，献计定汉中，定军山之战由他运筹策划，调度黄忠斩杀夏侯渊。他深得刘备信任，是蜀汉群臣中唯一能令刘备言听计从者。诸葛亮曾叹若法正在，必能劝阻东征，夷陵之败或可避免。他为人睚眦必报，却也恩怨分明。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 14
+      intellect: 54
+      defense: 18
+      agility: 14
+  - key: hist_sljnbc_0040
+    name: 司马炎
+    avatar: monkey_wen_male3.png
+    default_gender: male
+    archetype: civil
+    flavor: （236年—290年5月16日）晋武帝，一统三国终结乱世。他承祖父父亲三代经营，受魏禅让建立西晋；王濬楼船下益州，一统天下结束百年分裂。太康之治开盛世之端，惜乎晚年骄奢，八王之乱伏笔已埋。他是三国的终结者，也是另一场乱世的开启者，功过皆在身后评说。
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 16
+      intellect: 46
+      defense: 22
+      agility: 16
+  - key: hist_sljnbc_0041
+    name: 苻坚
+    avatar: monkey_wu_male16.png
+    default_gender: male
+    archetype: military
+    flavor: （338年—385年10月16日）一统北方，淝水梦断。他任用王猛厉行改革，前秦一度问鼎天下霸主。投鞭断流、草木皆兵，淝水之战让他从巅峰跌入深渊。他并非无能，只是太过自信；他并非不善，只是过于宽仁。身死国灭之际，那个曾经的雄主只剩下无尽的悔恨与不甘。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 36
+      intellect: 22
+      defense: 24
+      agility: 18
+  - key: hist_sljnbc_0043
+    name: 拓跋宏
+    avatar: monkey_wen_male3.png
+    default_gender: male
+    archetype: civil
+    flavor: （467年10月13日—499年4月26日）北魏孝文帝，鲜卑族拓跋氏，北魏第七位皇帝。他五岁即位，初由祖母冯太后临朝听政，太和十四年（490年）亲政后全面推行汉化改革。太和十八年（494年）他力排众议迁都洛阳，以"南伐"为名骗过鲜卑贵族，成功完成迁都大业。此后他下令禁止胡语，改穿汉服，鲜卑姓氏皆改汉姓，皇室由拓跋改为元氏，并鼓励鲜卑贵族与汉族世家联姻。他亲自穿戴汉服，说汉语，以身作则推动改革。他精通儒学，亲自注解《孝经》，推崇儒家礼教，以华夏正统自居。太和二十三年（499年）他第三次南征时染病，回师途中病逝于谷塘原，年仅三十三岁。他的汉化改革加速了北方民族融合的进程，为后来隋唐大一统奠定了基础。他虽是鲜卑人，却比任何汉族皇帝都更努力地推行华夏文明。
+    growth_range:
+    - 7
+    - 12
+    attribute_weights:
+      force: 14
+      intellect: 52
+      defense: 24
+      agility: 10
+  - key: hist_sljnbc_0047
+    name: 高欢
+    avatar: monkey/其他随机角色/武044_男_.png
+    default_gender: male
+    archetype: military
+    flavor: （496年—547年2月13日）东魏实际建立者，字贺六浑，渤海蓨县人，北齐奠基者。他本是六镇鲜卑化的汉人，六镇起义后投奔尔朱荣，在讨伐葛荣、尔朱氏的战争中崭露头角。尔朱荣死后他趁乱崛起，拥立北魏宗室元修为帝，独揽朝政。元修不甘为傀儡出奔关中投靠宇文泰，他另立元善见为帝，迁都邺城，史称东魏，他以大丞相身份总揽军政。此后他与宇文泰争夺北方霸权，小关、沙苑二战失利，但玉璧、邙山之战互有胜负。沙苑之败后他怒极攻心，一病不起。武定五年（547年）他病逝于晋阳，时年五十二岁。临终前他嘱咐儿子高澄"勿犯宇文黑獭"。他虽未称帝，但北齐的建立全赖他奠定基业，其子高洋建齐后追尊他为神武帝。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 44
+      intellect: 14
+      defense: 26
+      agility: 16
+  - key: hist_sljnbc_0048
+    name: 宇文泰
+    avatar: pig/武049.png
+    default_gender: male
+    archetype: military
+    flavor: （507年—556年）宇文泰，字黑獭，武川镇人，西魏权臣、北周奠基者。贺拔岳遇害后，他接掌关陇军队，拥立元宝炬为帝，与高欢控制下的东魏对峙。沙苑之战中，他采纳李弼之策击败高欢。此后任用苏绰、卢辩等整顿军政，推行府兵制与六条诏书，奠定关陇集团基础。556年病逝于云阳宫，北周建立后追尊为文帝。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 36
+      intellect: 22
+      defense: 26
+      agility: 16
+  - key: hist_sljnbc_0049
+    name: 王导
+    avatar: pig/文049.png
+    default_gender: male
+    archetype: civil
+    flavor: （276年—339年）王导，字茂弘，琅琊临沂人，东晋开国元勋。西晋末年，他辅佐琅琊王司马睿南渡建康，联络江东士族，稳定政局，时称"王与马，共天下"。司马睿称帝后，他历任元帝、明帝、成帝三朝宰相，主持朝政，调和南北士族。咸康五年（339年）病逝，追赠太傅，谥文献。
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 14
+      intellect: 52
+      defense: 24
+      agility: 10
+  - key: hist_sljnbc_0050
+    name: 祖逖
+    avatar: monkey_wu_male7.png
+    default_gender: male
+    archetype: military
+    flavor: （266年—321年）祖逖，字士稚，范阳遒县人，东晋北伐名将。他少时与刘琨同寝，闻鸡鸣即起身舞剑，留下"闻鸡起舞"的典故。南渡后，他力主北伐，率部渡江，中流击楫发誓收复中原。此后招募流民，屡败后赵，收复黄河以南土地。朝廷却猜忌他，派人分其兵权，祖逖忧愤成疾，病逝于雍丘军中，所复之地随后得而复失。
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 40
+      intellect: 16
+      defense: 26
+      agility: 18
   blue:
   - key: hist_sljnbc_0034
     name: 高颎
@@ -384,7 +496,7 @@ heroes:
     avatar: monkey/其他随机角色/文049_男.png
     default_gender: male
     archetype: civil
-    flavor: （498年—546年）西魏官员、谋臣，字令绰，武功人。苏绰被宇文泰征入幕府，参与制定“六条诏书”、计账和户籍，后任度支尚书；大统十二年病逝，追赠骠骑大将军。
+    flavor: （498年—546年）西魏大臣、谋臣，字令绰，京兆武功人。苏绰入宇文泰幕府后，主持制定“六条诏书”，整顿吏治，又创立计帐、户籍制度，规范财政与赋役；官至大行台度支尚书，大统十二年病逝，追赠骠骑大将军。其改革为西魏、北周制度奠定基础。
     growth_range:
     - 5
     - 9
@@ -393,20 +505,6 @@ heroes:
       intellect: 54
       defense: 22
       agility: 10
-  - key: hist_sljnbc_0036
-    name: 法正
-    avatar: monkey/其他随机角色/文061_男.png
-    default_gender: male
-    archetype: civil
-    flavor: （176年—220年）蜀汉第一谋主，刘备之郭嘉。他原是刘璋谋士，因不得志而暗迎刘备入川。助刘备取益州，献计定汉中，定军山之战由他运筹策划，调度黄忠斩杀夏侯渊。他深得刘备信任，是蜀汉群臣中唯一能令刘备言听计从者。诸葛亮曾叹若法正在，必能劝阻东征，夷陵之败或可避免。他为人睚眦必报，却也恩怨分明。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 14
-      intellect: 54
-      defense: 18
-      agility: 14
   - key: hist_sljnbc_0037
     name: 钟会
     avatar: pig/武067.png
@@ -435,34 +533,6 @@ heroes:
       intellect: 44
       defense: 22
       agility: 16
-  - key: hist_sljnbc_0040
-    name: 司马炎
-    avatar: monkey_wen_male3.png
-    default_gender: male
-    archetype: civil
-    flavor: （236年—290年5月16日）晋武帝，一统三国终结乱世。他承祖父父亲三代经营，受魏禅让建立西晋；王濬楼船下益州，一统天下结束百年分裂。太康之治开盛世之端，惜乎晚年骄奢，八王之乱伏笔已埋。他是三国的终结者，也是另一场乱世的开启者，功过皆在身后评说。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 16
-      intellect: 46
-      defense: 22
-      agility: 16
-  - key: hist_sljnbc_0041
-    name: 苻坚
-    avatar: monkey_wu_male16.png
-    default_gender: male
-    archetype: military
-    flavor: （338年—385年10月16日）一统北方，淝水梦断。他任用王猛厉行改革，前秦一度问鼎天下霸主。投鞭断流、草木皆兵，淝水之战让他从巅峰跌入深渊。他并非无能，只是太过自信；他并非不善，只是过于宽仁。身死国灭之际，那个曾经的雄主只剩下无尽的悔恨与不甘。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 36
-      intellect: 22
-      defense: 24
-      agility: 18
   - key: hist_sljnbc_0042
     name: 石勒
     avatar: monkey_wen_male5.png
@@ -477,20 +547,6 @@ heroes:
       intellect: 14
       defense: 24
       agility: 18
-  - key: hist_sljnbc_0043
-    name: 拓跋宏
-    avatar: monkey_wen_male3.png
-    default_gender: male
-    archetype: civil
-    flavor: （467年10月13日—499年4月26日）北魏孝文帝，鲜卑族拓跋氏，北魏第七位皇帝。他五岁即位，初由祖母冯太后临朝听政，太和十四年（490年）亲政后全面推行汉化改革。太和十八年（494年）他力排众议迁都洛阳，以"南伐"为名骗过鲜卑贵族，成功完成迁都大业。此后他下令禁止胡语，改穿汉服，鲜卑姓氏皆改汉姓，皇室由拓跋改为元氏，并鼓励鲜卑贵族与汉族世家联姻。他亲自穿戴汉服，说汉语，以身作则推动改革。他精通儒学，亲自注解《孝经》，推崇儒家礼教，以华夏正统自居。太和二十三年（499年）他第三次南征时染病，回师途中病逝于谷塘原，年仅三十三岁。他的汉化改革加速了北方民族融合的进程，为后来隋唐大一统奠定了基础。他虽是鲜卑人，却比任何汉族皇帝都更努力地推行华夏文明。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 14
-      intellect: 52
-      defense: 24
-      agility: 10
   - key: hist_sljnbc_0044
     name: 萧道成
     avatar: monkey_wen_male5.png
@@ -533,62 +589,6 @@ heroes:
       intellect: 14
       defense: 28
       agility: 16
-  - key: hist_sljnbc_0047
-    name: 高欢
-    avatar: monkey/其他随机角色/武044_男_.png
-    default_gender: male
-    archetype: military
-    flavor: （496年—547年2月13日）东魏实际建立者，字贺六浑，渤海蓨县人，北齐奠基者。他本是六镇鲜卑化的汉人，六镇起义后投奔尔朱荣，在讨伐葛荣、尔朱氏的战争中崭露头角。尔朱荣死后他趁乱崛起，拥立北魏宗室元修为帝，独揽朝政。元修不甘为傀儡出奔关中投靠宇文泰，他另立元善见为帝，迁都邺城，史称东魏，他以大丞相身份总揽军政。此后他与宇文泰争夺北方霸权，小关、沙苑二战失利，但玉璧、邙山之战互有胜负。沙苑之败后他怒极攻心，一病不起。武定五年（547年）他病逝于晋阳，时年五十二岁。临终前他嘱咐儿子高澄"勿犯宇文黑獭"。他虽未称帝，但北齐的建立全赖他奠定基业，其子高洋建齐后追尊他为神武帝。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 44
-      intellect: 14
-      defense: 26
-      agility: 16
-  - key: hist_sljnbc_0048
-    name: 宇文泰
-    avatar: pig/武049.png
-    default_gender: male
-    archetype: military
-    flavor: （507年—556年）西魏权臣，字黑獭，武川人。贺拔岳死后，宇文泰接掌关陇军队，拥立元宝炬为帝；沙苑之战击败高欢后，他任用苏绰等人整顿军政，病逝于云阳宫。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 36
-      intellect: 22
-      defense: 26
-      agility: 16
-  - key: hist_sljnbc_0049
-    name: 王导
-    avatar: pig/文049.png
-    default_gender: male
-    archetype: civil
-    flavor: （276年—339年）东晋大臣，字茂弘，琅琊临沂人。王导辅佐司马睿南渡建康，联络江东士族拥立其称帝，历任元帝、明帝、成帝三朝宰相；咸康五年病逝，追赠太傅。
-    growth_range:
-    - 5
-    - 10
-    attribute_weights:
-      force: 14
-      intellect: 52
-      defense: 24
-      agility: 10
-  - key: hist_sljnbc_0050
-    name: 祖逖
-    avatar: monkey_wu_male7.png
-    default_gender: male
-    archetype: military
-    flavor: （266年—321年）东晋将领，字士稚，范阳遒县人。祖逖与刘琨年轻时同寝，闻鸡鸣便起身练剑；西晋南渡后，他率部渡江北伐，招募流民收复黄河以南土地。朝廷后来分其兵权，他忧愤成疾，病逝于雍丘军中；其所收复的土地随后被后赵夺回。
-    growth_range:
-    - 6
-    - 9
-    attribute_weights:
-      force: 40
-      intellect: 16
-      defense: 26
-      agility: 18
   orange:
   - key: hist_sljnbc_0012
     name: 赵云

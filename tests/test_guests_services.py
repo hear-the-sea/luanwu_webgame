@@ -250,7 +250,6 @@ def test_scan_passive_hp_recovery_clears_full_hp_injured_status():
         manor=manor,
         template=template,
         status=GuestStatus.INJURED,
-        current_hp=max(1, template.base_hp + 50 * 80),
         last_hp_recovery_at=last,
     )
 

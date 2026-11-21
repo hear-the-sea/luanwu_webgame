@@ -256,10 +256,10 @@ skills:
     status_probability: 0.3
     status_duration: 1
     damage_formula:
-      base: 800
+      base: 321
       ally:
-        force: 0.5
-        intellect: 5
+        force: 0.72
+        intellect: 7.23
         agility: 0.2
       enemy:
         defense: 0.35
@@ -285,10 +285,10 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 1000
+      base: 517
       ally:
-        force: 0.2
-        intellect: 1.8
+        force: 0.37
+        intellect: 3.35
       enemy:
         defense: 0.2
         intellect: 0.1
@@ -304,9 +304,9 @@ skills:
     kind: active
     damage_formula:
       ally:
-        force: 1.5
+        force: 1.9
         intellect: 0.15
-        agility: 0.3
+        agility: 0.2
       enemy:
         defense: 0.25
     required_level: 15
@@ -321,10 +321,10 @@ skills:
     base_probability: 0.7
     kind: active
     damage_formula:
-      base: 750
+      base: 379
       ally:
-        force: 0.1
-        intellect: 1.56
+        force: 0.18
+        intellect: 2.84
         luck: 0.2
       enemy:
         defense: 0.05
@@ -340,10 +340,10 @@ skills:
     base_probability: 0.8
     kind: active
     damage_formula:
-      base: 1200
+      base: 648
       ally:
-        force: 0.1
-        intellect: 1.9
+        force: 0.19
+        intellect: 3.7
         luck: 0.4
       enemy:
         defense: 0.15
@@ -359,10 +359,10 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 880
+      base: 397
       ally:
-        force: 0.3
-        intellect: 3.0
+        force: 0.49
+        intellect: 4.87
         agility: 0.5
       enemy:
         defense: 0.3
@@ -380,10 +380,10 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 770
+      base: 331
       ally:
-        force: 0.2
-        intellect: 3.5
+        force: 0.31
+        intellect: 5.41
         luck: 0.6
       enemy:
         defense: 0.25
@@ -399,10 +399,10 @@ skills:
     base_probability: 0.7
     kind: active
     damage_formula:
-      base: 990
+      base: 434
       ally:
-        force: 0.15
-        intellect: 4
+        force: 0.24
+        intellect: 6.31
         luck: 0.4
       enemy:
         defense: 0.1
@@ -418,10 +418,10 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 2500
+      base: 1307
       ally:
-        force: 0.3
-        intellect: 4.5
+        force: 0.56
+        intellect: 8.47
         agility: 0.4
       enemy:
         defense: 0.25
@@ -438,10 +438,10 @@ skills:
     base_probability: 0.8
     kind: active
     damage_formula:
-      base: 3000
+      base: 1567
       ally:
-        force: 0.5
-        intellect: 5.4
+        force: 0.94
+        intellect: 10.15
         agility: 0.8
       enemy:
         defense: 0.35
@@ -458,11 +458,11 @@ skills:
     base_probability: 0.8
     kind: active
     damage_formula:
-      base: 3000
+      base: 1604
       ally:
-        force: 0.2
-        intellect: 5.04
-        luck: 1.0
+        force: 0.38
+        intellect: 9.7
+        luck: 1
       enemy:
         defense: 0.2
         intellect: 0.25
@@ -478,10 +478,10 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 4500
+      base: 2576
       ally:
-        force: 0.4
-        intellect: 5.76
+        force: 0.82
+        intellect: 11.87
         luck: 0.8
       enemy:
         defense: 0.1
@@ -498,10 +498,10 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 5000
+      base: 2710
       ally:
-        force: 0.7
-        intellect: 7.8
+        force: 1.37
+        intellect: 15.22
         agility: 0.9
       enemy:
         defense: 0.35
@@ -518,10 +518,10 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 5000
+      base: 2333
       ally_min:
         stats: [force, intellect]
-        coefficient: 15
+        coefficient: 25.2
       enemy:
         defense: 0.3
     required_level: 80
@@ -653,9 +653,9 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 4500
+      base: 2596
       ally:
-        force: 5.76
+        force: 11.96
         agility: 0.8
         luck: 0.4
       enemy:
@@ -673,10 +673,10 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 4500
+      base: 2458
       ally:
-        force: 7.1
-        agility: 1.0
+        force: 13.96
+        agility: 1
         luck: 0.5
       enemy:
         defense: 0.35
@@ -694,9 +694,9 @@ skills:
     base_probability: 0.78
     kind: active
     damage_formula:
-      base: 2500
+      base: 2066
       ally:
-        force: 1.0
+        force: 2.97
         agility: 5.04
         luck: 0.6
       enemy:
@@ -714,9 +714,9 @@ skills:
     base_probability: 0.72
     kind: active
     damage_formula:
-      base: 1000
+      base: 795
       ally:
-        force: 0.6
+        force: 1.72
         agility: 3.2
         luck: 0.6
       enemy:
@@ -734,9 +734,9 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 2000
+      base: 1381
       ally:
-        force: 1.8
+        force: 4.47
         agility: 4.3
         luck: 0.4
       enemy:
@@ -754,10 +754,10 @@ skills:
     base_power: 260
     base_probability: 0.8
     damage_formula:
-      base: 1500
+      base: 743
       ally:
-        force: 3.3
-        intellect: 0.2
+        force: 5.89
+        intellect: 0.36
         agility: 0.2
         luck: 0.2
       enemy:
@@ -1193,7 +1193,7 @@ skills:
   - key: comrade_command
     name: 同袍号令
     rarity: purple
-    description: 借队伍完整之势统一号令，让同袍间的输出更像一个整体。
+    description: 借队伍完整之势统一号令，让同袍门客的输出更像一个整体（仅提升门客伤害，不影响护院）。
     kind: passive
     required_level: 55
     required_intellect: 285
@@ -1207,7 +1207,8 @@ skills:
           effects:
             - type: emit_log
               log_name: 同袍号令
-              message: 全体伤害↑
+              message: 全体门客伤害↑
             - type: modify_outgoing_damage
               value: 1.15
               target_scope: allies
+              target_kind_is: guest

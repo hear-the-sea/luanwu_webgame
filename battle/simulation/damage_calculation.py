@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Callable, List, Literal, overload
 
 from ..random_context import (
     CURRENT_BATTLE_ENGINE_VERSION,
+    GONG_MELEE_BASE_RATIO_ENGINE_VERSIONS,
     GUEST_ACTION_CONSISTENCY_ENGINE_VERSIONS,
     GUEST_TROOP_BALANCE_ENGINE_VERSIONS,
 )
@@ -22,6 +23,7 @@ from .constants import (
     DAMAGE_VARIANCE_MAX,
     DAMAGE_VARIANCE_MIN,
     DEFAULT_DEFENSE_CONSTANT,
+    GONG_MELEE_BASE_DAMAGE_RATIO,
     GUEST_SKILL_VS_GUEST_MULTIPLIER,
     GUEST_SKILL_VS_TROOP_MULTIPLIER,
     GUEST_VS_CITY_DEFENSE_DAMAGE_MULTIPLIER,
@@ -71,6 +73,8 @@ def _apply_attack_and_defense_tech_effects(
     round_priority: int,
     attack_value: float,
     defense_value: float,
+    *,
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
 ) -> tuple[float, float]:
     ranged_attack = is_ranged_attack(actor, round_priority)
 
@@ -80,6 +84,8 @@ def _apply_attack_and_defense_tech_effects(
             defense_value = defense_value * (1 + ranged_def)
 
     if actor.troop_class == "gong" and not ranged_attack:
+        if battle_engine_version in GONG_MELEE_BASE_RATIO_ENGINE_VERSIONS:
+            attack_value = attack_value * GONG_MELEE_BASE_DAMAGE_RATIO
         melee_bonus = actor.tech_effects.get("melee_attack_bonus", 0)
         if melee_bonus > 0:
             attack_value = attack_value * (1 + melee_bonus)
@@ -424,7 +430,12 @@ def calculate_attack_damage(
 
     defense_value = _calculate_defense_value(actor, target, effective_defense_value)
     attack_value, defense_value = _apply_attack_and_defense_tech_effects(
-        actor, target, round_priority, attack_value, defense_value
+        actor,
+        target,
+        round_priority,
+        attack_value,
+        defense_value,
+        battle_engine_version=battle_engine_version,
     )
     attack_value = _apply_troop_counter_bonus(actor, target, attack_value)
     damage_reduction = _calculate_damage_reduction(actor, target, defense_value)

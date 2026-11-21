@@ -23,7 +23,7 @@ from tests.test_bulk_guest_healing import _medicine
 @pytest.mark.parametrize("level,bonus", [(1, 0), (2, 60), (50, 2940), (100, 5940)])
 def test_every_rarity_receives_the_same_fixed_level_hp(rarity, level, bonus):
     guest = Guest(template=GuestTemplate(rarity=rarity, base_hp=1000), level=level, defense_stat=100, hp_bonus=125)
-    assert guest.max_hp == 6125 + bonus
+    assert guest.max_hp == 4125 + bonus
     assert guest.stat_block()["hp"] == guest.max_hp
     assert resolve_guest_combat_stats(guest).max_hp == guest.max_hp
 
@@ -44,7 +44,7 @@ def test_training_adds_fixed_hp_in_addition_to_existing_defense_growth(levels):
         allocate_level_up_attributes_func=lambda *_: {"force": 0, "intellect": 0, "defense": levels, "agility": 0},
     )
     assert guest.level == 1 + levels
-    assert guest.max_hp == old_max_hp + levels * (60 + 50)
+    assert guest.max_hp == old_max_hp + levels * (60 + 30)
     assert guest.hp_bonus == 125
     assert guest.current_hp == guest.max_hp
 
@@ -93,7 +93,7 @@ def test_existing_guest_level_hp_reaches_the_real_battle_builder(manor_with_user
     template = GuestTemplate.objects.create(key="level_hp_battle", name="等级战斗", base_hp=1000)
     guest = Guest.objects.create(manor=manor, template=template, level=100, defense_stat=100)
     fighter = build_guest_combatants([guest], "attacker")[0]
-    assert fighter.max_hp == fighter.hp == 11940
+    assert fighter.max_hp == fighter.hp == 9940
 
 
 @pytest.mark.django_db
@@ -107,12 +107,12 @@ def test_template_base_hp_sync_keeps_level_hp_and_existing_health_ratio(manor_wi
     Command()._sync_existing_guest_current_hp_for_template_base_hp(template=template, previous_base_hp=1200)
     full.refresh_from_db()
     half.refresh_from_db()
-    assert full.current_hp == full.max_hp == 7940
-    assert half.current_hp == 3970
+    assert full.current_hp == full.max_hp == 6340
+    assert half.current_hp == 3170
 
 
 @pytest.mark.django_db
-def test_level_hp_migration_preserves_full_wounded_and_zero_hp(manor_with_user):
+def test_level_hp_migration_preserves_full_wounded_and_zero_hp(manor_with_user, guest_hp_before_level_growth):
     manor, _ = manor_with_user
     template = GuestTemplate.objects.create(key="level_hp_migration", name="等级生命迁移", base_hp=1000)
     guests = [
@@ -134,5 +134,28 @@ def test_level_hp_migration_preserves_full_wounded_and_zero_hp(manor_with_user):
 
     migration.remove_level_hp(apps, editor)
     for guest, hp in zip(guests, (5000, 2500, 0)):
+        guest.refresh_from_db()
+        assert guest.current_hp == hp
+
+
+@pytest.mark.django_db
+def test_defense_hp_multiplier_migration_preserves_health_ratio(manor_with_user):
+    manor, _ = manor_with_user
+    template = GuestTemplate.objects.create(key="defense_hp_migration", name="防御生命迁移", base_hp=1000)
+    guests = [Guest.objects.create(manor=manor, template=template, level=50, defense_stat=80) for _ in range(3)]
+    Guest.objects.filter(pk=guests[0].pk).update(current_hp=7940)
+    Guest.objects.filter(pk=guests[1].pk).update(current_hp=3970)
+    Guest.objects.filter(pk=guests[2].pk).update(current_hp=0, status=GuestStatus.INJURED)
+    migration = importlib.import_module("guests.migrations.0098_reduce_defense_hp_multiplier")
+    editor = SimpleNamespace(connection=connection)
+
+    migration.reduce_defense_hp(apps, editor)
+    for guest, hp in zip(guests, (6340, 3170, 0)):
+        guest.refresh_from_db()
+        assert guest.current_hp == hp
+    assert guests[-1].status == GuestStatus.INJURED
+
+    migration.restore_defense_hp(apps, editor)
+    for guest, hp in zip(guests, (7940, 3970, 0)):
         guest.refresh_from_db()
         assert guest.current_hp == hp
