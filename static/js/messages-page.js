@@ -121,6 +121,9 @@
     };
 
     messageLinks.forEach((link) => {
+      // bfcache/back/partial-navigation can restore a DOM node while a previous
+      // click is still marked processing.  Always clear the stale flag first.
+      delete link.dataset.processing;
       if (link.dataset.clickBound === "1") {
         return;
       }
@@ -157,8 +160,11 @@
           })
           .finally(() => {
             window.clearTimeout(timeoutId);
+            delete link.dataset.processing;
             markMessageCardAsRead(link);
-            window.location.href = targetUrl;
+            if (targetUrl) {
+              window.location.href = targetUrl;
+            }
           });
       });
     });
@@ -166,4 +172,12 @@
 
   document.addEventListener("DOMContentLoaded", initMessagesPage);
   document.addEventListener("partial-nav:loaded", initMessagesPage);
+  window.addEventListener?.("pageshow", (event) => {
+    if (!event?.persisted) {
+      return;
+    }
+    document.querySelectorAll(".js-message-link").forEach((link) => {
+      delete link.dataset.processing;
+    });
+  });
 })();

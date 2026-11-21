@@ -51,7 +51,7 @@
 .research-subtab:hover { border-color: var(--border-primary); background: var(--bg-hover); }
 .research-subtab.is-selected { color: var(--text-light); border-color: var(--border-primary); background: var(--bg-dark); }
 
-.research-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 148px)); justify-content: center; gap: .75rem; padding: 1rem; }
+.research-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 148px)); justify-content: start; gap: .75rem; padding: 1rem; }
 .research-node { min-width: 0; scroll-margin-top: 2rem; }
 .research-node-button {
   display: flex;

@@ -92,6 +92,7 @@ def normalize_entry_guest_snapshot(snapshot: Any) -> dict[str, Any]:
     if "agility" not in snapshot:
         normalized["arena_power_snapshot_semantics"] = "legacy_missing_agility"
     normalized["luck"] = _snapshot_int(snapshot, "luck", minimum=0, default=0)
+    normalized["troop_capacity"] = _snapshot_int(snapshot, "troop_capacity", minimum=0, default=0)
     normalized["attack"] = _snapshot_int(snapshot, "attack", minimum=1)
     normalized["defense"] = _snapshot_int(snapshot, "defense", minimum=1)
     normalized["max_hp"] = _snapshot_int(snapshot, "max_hp", minimum=1)
@@ -184,6 +185,7 @@ def build_entry_guest_snapshot(guest) -> dict[str, Any]:
         "defense_stat": int(guest.defense_stat),
         "agility": int(guest.agility),
         "luck": int(guest.luck),
+        "troop_capacity": int(getattr(guest, "troop_capacity", 0) or 0),
         "attack": stats.attack,
         "attack_attribute_component": compute_guest_attack_attribute_component(guest),
         "defense": stats.defense,

@@ -29,7 +29,7 @@ class TestMarketPurchase:
         buyer_silver_before = buyer_manor.silver
         seller_silver_before = seller_manor.silver
 
-        with pytest.raises(TradeValidationError, match="声望达到 300"):
+        with pytest.raises(TradeValidationError, match=f"声望达到 {market_service.MARKET_MIN_PRESTIGE}"):
             market_service.purchase_listing(buyer_manor, listing.id)
 
         buyer_manor.refresh_from_db()

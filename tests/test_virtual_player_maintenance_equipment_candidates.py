@@ -9,6 +9,7 @@ from django.utils import timezone
 from gameplay.models import InventoryItem, ItemTemplate, Manor
 from gameplay.services.virtual_player_core.maintenance_action_specs import EquipmentEquipActionSpec
 from gameplay.services.virtual_player_core.maintenance_candidates import build_equipment_equip_candidates
+from gameplay.services.virtual_player_core.power_version import arena_power_formula_version
 from gameplay.services.virtual_player_core.projection import StrengthSummary, calculate_guest_arena_power
 from gameplay.services.virtual_player_core.strategy import BotDevelopmentPlan
 from guests.models import (
@@ -192,12 +193,17 @@ def _guest_power(guest: Guest) -> int:
     return calculate_guest_arena_power(
         force=int(guest.force),
         intellect=int(guest.intellect),
-        defense=int(guest.defense_stat),
+        defense=int(guest.defense_stat) + int(guest.defense_bonus),
+        defense_stat=int(guest.defense_stat),
         agility=int(guest.agility),
         hp_bonus=int(guest.hp_bonus),
         archetype=str(guest.template.archetype),
         base_hp=int(guest.template.base_hp),
         level=int(guest.level),
+        luck=int(guest.luck),
+        attack_bonus=int(guest.attack_bonus),
+        troop_capacity=int(guest.troop_capacity),
+        formula_version=arena_power_formula_version(),
     )
 
 
@@ -273,12 +279,17 @@ def test_empty_slot_builds_exact_spec_and_uses_snapshots_without_queries(
     expected_guest_power = calculate_guest_arena_power(
         force=int(guest_snapshot.force) + 40,
         intellect=int(guest_snapshot.intellect),
-        defense=int(guest_snapshot.defense_stat),
+        defense=int(guest_snapshot.defense_stat) + int(guest_snapshot.defense_bonus),
+        defense_stat=int(guest_snapshot.defense_stat),
         agility=int(guest_snapshot.agility),
         hp_bonus=int(guest_snapshot.hp_bonus),
         archetype=str(guest_snapshot.template.archetype),
         base_hp=int(guest_snapshot.template.base_hp),
         level=int(guest_snapshot.level),
+        formula_version=arena_power_formula_version(),
+        luck=int(guest_snapshot.luck),
+        attack_bonus=int(guest_snapshot.attack_bonus),
+        troop_capacity=int(guest_snapshot.troop_capacity),
     )
     expected_gain = expected_guest_power - _guest_power(guest_snapshot)
     assert intent.strength_after.components["arena_lineup_power"] == (
@@ -338,12 +349,17 @@ def test_single_capacity_replacement_removes_old_direct_stats_and_weakens_never(
     expected_power = calculate_guest_arena_power(
         force=200,
         intellect=int(guest_snapshot.intellect),
-        defense=int(guest_snapshot.defense_stat),
+        defense=int(guest_snapshot.defense_stat) + int(guest_snapshot.defense_bonus),
+        defense_stat=int(guest_snapshot.defense_stat),
         agility=int(guest_snapshot.agility),
         hp_bonus=int(guest_snapshot.hp_bonus),
         archetype=str(guest_snapshot.template.archetype),
         base_hp=int(guest_snapshot.template.base_hp),
         level=int(guest_snapshot.level),
+        formula_version=arena_power_formula_version(),
+        luck=int(guest_snapshot.luck),
+        attack_bonus=int(guest_snapshot.attack_bonus),
+        troop_capacity=int(guest_snapshot.troop_capacity),
     )
     assert candidates[0].strength_after.components["arena_lineup_power"] == (
         strength_before.components["arena_lineup_power"] - _guest_power(guest_snapshot) + expected_power
@@ -398,11 +414,16 @@ def test_set_activation_projects_exact_power_with_set_defense_as_defense_stat(
         force=130,
         intellect=int(guest_snapshot.intellect),
         defense=560,
+        defense_stat=560,
         agility=int(guest_snapshot.agility),
         hp_bonus=int(guest_snapshot.hp_bonus),
         archetype=str(guest_snapshot.template.archetype),
         base_hp=int(guest_snapshot.template.base_hp),
         level=int(guest_snapshot.level),
+        formula_version=arena_power_formula_version(),
+        luck=int(guest_snapshot.luck),
+        attack_bonus=int(guest_snapshot.attack_bonus),
+        troop_capacity=int(guest_snapshot.troop_capacity),
     )
     assert candidates[0].strength_after.components["arena_lineup_power"] == (
         strength_before.components["arena_lineup_power"] - _guest_power(guest_snapshot) + expected_power
@@ -459,12 +480,17 @@ def test_replacement_projects_set_loss_before_adding_new_direct_stats(
     expected_power = calculate_guest_arena_power(
         force=250,
         intellect=int(guest_snapshot.intellect),
-        defense=int(guest_snapshot.defense_stat),
+        defense=int(guest_snapshot.defense_stat) + int(guest_snapshot.defense_bonus),
+        defense_stat=int(guest_snapshot.defense_stat),
         agility=int(guest_snapshot.agility),
         hp_bonus=int(guest_snapshot.hp_bonus),
         archetype=str(guest_snapshot.template.archetype),
         base_hp=int(guest_snapshot.template.base_hp),
         level=int(guest_snapshot.level),
+        formula_version=arena_power_formula_version(),
+        luck=int(guest_snapshot.luck),
+        attack_bonus=int(guest_snapshot.attack_bonus),
+        troop_capacity=int(guest_snapshot.troop_capacity),
     )
     assert candidates[0].strength_after.components["arena_lineup_power"] == (
         strength_before.components["arena_lineup_power"] - _guest_power(guest_snapshot) + expected_power
@@ -606,12 +632,17 @@ def test_swap_inertia_uses_eight_to_fifteen_percent_threshold(manor_factory) -> 
             calculate_guest_arena_power(
                 force=int(guest_snapshot.force) + gain,
                 intellect=int(guest_snapshot.intellect),
-                defense=int(guest_snapshot.defense_stat),
+                defense=int(guest_snapshot.defense_stat) + int(guest_snapshot.defense_bonus),
+                defense_stat=int(guest_snapshot.defense_stat),
                 agility=int(guest_snapshot.agility),
                 hp_bonus=int(guest_snapshot.hp_bonus),
                 archetype=str(guest_snapshot.template.archetype),
                 base_hp=int(guest_snapshot.template.base_hp),
                 level=int(guest_snapshot.level),
+                formula_version=arena_power_formula_version(),
+                luck=int(guest_snapshot.luck),
+                attack_bonus=int(guest_snapshot.attack_bonus),
+                troop_capacity=int(guest_snapshot.troop_capacity),
             )
             - before_power
         )

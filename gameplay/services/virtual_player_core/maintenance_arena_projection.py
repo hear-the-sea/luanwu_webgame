@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from gameplay.services.arena.power_settings import current_arena_power_formula_version
 from gameplay.services.arena.virtual_lineups import LineupSelectionContext, evaluate_lineup_snapshots
 
 from .contracts import ArenaGrowthObjective
@@ -38,6 +39,7 @@ def _power_snapshot(*, guest_id: int, power: int) -> dict[str, int]:
         "max_hp": 10,
         "agility": 0,
         "current_hp": 10,
+        "power_override": power,
     }
 
 
@@ -60,6 +62,7 @@ def _selected_power(
         ),
         target_guest_count=objective.critical_guest_count,
         target_team_power=objective.target_team_power,
+        power_formula_version=current_arena_power_formula_version(),
         preferred_guest_count=objective.preferred_guest_count,
     )
     if evaluation.snapshots:

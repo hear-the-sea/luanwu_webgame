@@ -19,6 +19,7 @@ from gameplay.models import (
 )
 from gameplay.services.arena.snapshots import build_entry_guest_snapshot
 
+from .power_settings import current_arena_power_formula_version
 from .virtual_lineups import lineup_power
 from .virtual_reserve_growth_budget import (
     ArenaGrowthAttemptOutcome,
@@ -113,7 +114,12 @@ def reference_snapshots(entry: ArenaEntry | ArenaCoopEntry) -> list[dict]:
 
 
 def median_entry(entries: Sequence[ArenaEntry | ArenaCoopEntry]) -> ArenaEntry | ArenaCoopEntry:
-    return sorted(entries, key=lambda entry: lineup_power(reference_snapshots(entry)))[len(entries) // 2]
+    return sorted(
+        entries,
+        key=lambda entry: lineup_power(
+            reference_snapshots(entry), formula_version=current_arena_power_formula_version()
+        ),
+    )[len(entries) // 2]
 
 
 def reference_entries_for_demand(demand: ArenaVirtualDemand) -> tuple[ArenaEntry | ArenaCoopEntry, ...]:

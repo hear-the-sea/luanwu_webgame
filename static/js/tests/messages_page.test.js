@@ -89,11 +89,15 @@ function createMessagesPageEnv() {
     },
   };
 
+  const windowListeners = new Map();
   const windowStub = {
     setTimeout(callback) {
       return callback;
     },
     clearTimeout() {},
+    addEventListener(type, handler) {
+      windowListeners.set(type, handler);
+    },
     location: {
       set href(value) {
         calls.location.push(value);
@@ -152,6 +156,9 @@ function createMessagesPageEnv() {
     link,
     messageRow,
     newBadge,
+    pageshow(event) {
+      windowListeners.get("pageshow")?.(event);
+    },
     runScript,
     unreadCount,
   };
@@ -172,7 +179,31 @@ test("messages page marks unread message through explicit POST action before nav
   assert.deepEqual(env.calls.fetch[0].options.body.entries, [["message_ids", "42"]]);
   assert.equal(env.unreadCount.textContent, "1");
   assert.equal(env.link.dataset.isRead, "true");
+  assert.equal(env.link.dataset.processing, undefined);
   assert.deepEqual(env.messageRow.classList.removed, ["unread"]);
   assert.equal(env.newBadge.removed, true);
   assert.deepEqual(env.calls.location, ["/messages/view/42/"]);
+});
+
+
+test("bfcache pageshow clears a stale processing flag so a read message stays clickable", async () => {
+  const env = createMessagesPageEnv();
+
+  env.runScript();
+  await env.clickMessageLink();
+  assert.equal(env.calls.location.length, 1);
+
+  // Simulate a browser restoring the message list from bfcache while the
+  // previous click's processing flag was never cleared.
+  env.link.dataset.processing = "true";
+  env.pageshow({ persisted: true });
+  assert.equal(env.link.dataset.processing, undefined);
+
+  await env.clickMessageLink();
+
+  // The message is already read: the handler must let the browser follow the
+  // href, without preventing default or issuing another mark-read request.
+  assert.equal(env.calls.preventDefault, 1);
+  assert.equal(env.calls.fetch.length, 1);
+  assert.equal(env.calls.location.length, 1);
 });

@@ -21,6 +21,7 @@ from .asset_policy import (
 )
 from .bootstrap_catalog import BootstrapCatalog, GuestCatalogEntry, SkillCatalogEntry, TroopCatalogEntry
 from .contracts import BotProjectionConfig
+from .power_version import arena_power_formula_version
 from .projection import (
     BootstrapAssetTargets,
     BootstrapGuestTarget,
@@ -306,11 +307,14 @@ def _guest_arena_power(
         force=attributes.force,
         intellect=attributes.intellect,
         defense=attributes.defense,
+        defense_stat=attributes.defense,
         agility=attributes.agility,
         hp_bonus=0,
         archetype=str(template.archetype),
         base_hp=int(template.base_hp),
         level=level,
+        luck=int(attributes.luck),
+        formula_version=arena_power_formula_version(),
     )
 
 

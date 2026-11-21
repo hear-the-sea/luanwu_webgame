@@ -13,6 +13,7 @@ from django.db.models import Count, IntegerField, Max, OuterRef, Q, Subquery, Su
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
+from core.config import GUEST
 from gameplay.constants import BuildingKeys
 from gameplay.models import BotProfile, Building, Manor, PlayerTroop
 from guests.models import Guest
@@ -140,19 +141,52 @@ def starter_snapshot_int(
     return raw
 
 
+def arena_power_v2_scale(*, max_guest_level: int | None = None) -> float:
+    """Return the v1->v2 scale for static starter reference bands.
+
+    The ratio grows with guest level (more gear/attack-bonus weight in v2).
+    The linear ramp is calibrated from bootstrap materialization ratios and is
+    capped by ``ARENA_POWER_V2_SCALE``.
+    """
+
+    version = int(getattr(settings, "ARENA_POWER_FORMULA_VERSION", 1))
+    if version != 2:
+        return 1.0
+    try:
+        cap = float(getattr(settings, "ARENA_POWER_V2_SCALE", 2.0))
+    except (TypeError, ValueError):
+        cap = 2.0
+    if cap <= 0:
+        cap = 2.0
+    level = max(1, int(max_guest_level or 1))
+    return min(cap, 1.61 + 0.011 * (level - 1))
+
+
 def starter_snapshot_strength(snapshot: Mapping[str, Any]) -> StrengthSummary:
-    summary = build_strength_summary(
+    raw_lineup_power = starter_snapshot_int(snapshot, "arena_lineup_power")
+    troop_total = starter_snapshot_int(snapshot, "troop_total")
+    raw_summary = build_strength_summary(
         prestige=starter_snapshot_int(snapshot, "prestige"),
         core_building_level=starter_snapshot_int(snapshot, "core_building_level"),
         guest_count=starter_snapshot_int(snapshot, "guest_count"),
         max_guest_level=starter_snapshot_int(snapshot, "max_guest_level"),
-        arena_lineup_power=starter_snapshot_int(snapshot, "arena_lineup_power"),
-        troop_total=starter_snapshot_int(snapshot, "troop_total"),
+        arena_lineup_power=raw_lineup_power,
+        troop_total=troop_total,
     )
     declared_composite = starter_snapshot_int(snapshot, "composite_strength")
-    if summary.composite != float(declared_composite):
+    if raw_summary.composite != float(declared_composite):
         raise ReferenceSnapshotError("starter snapshot composite_strength does not match strength score version 1")
-    return summary
+    scale = arena_power_v2_scale(max_guest_level=starter_snapshot_int(snapshot, "max_guest_level"))
+    if scale == 1.0:
+        return raw_summary
+    return build_strength_summary(
+        prestige=starter_snapshot_int(snapshot, "prestige"),
+        core_building_level=starter_snapshot_int(snapshot, "core_building_level"),
+        guest_count=starter_snapshot_int(snapshot, "guest_count"),
+        max_guest_level=starter_snapshot_int(snapshot, "max_guest_level"),
+        arena_lineup_power=int(round(raw_lineup_power * scale)),
+        troop_total=troop_total,
+    )
 
 
 def policy_starter_snapshot(
@@ -207,15 +241,25 @@ def _human_reference_business_key(*, manor_id: int, snapshot_version: int) -> st
 
 
 def _guest_arena_power(row: Mapping[str, Any]) -> int:
+    level = int(row["level"] or 1)
+    capacity = int(GUEST.BASE_TROOP_CAPACITY)
+    if level >= int(GUEST.TROOP_CAPACITY_LEVEL_THRESHOLD):
+        capacity += int(GUEST.BONUS_TROOP_CAPACITY)
+    capacity += int(row.get("troop_capacity_bonus") or 0)
     return calculate_guest_arena_power(
         force=int(row["force"] or 0),
         intellect=int(row["intellect"] or 0),
-        defense=int(row["defense_stat"] or 0),
+        defense=int(row["defense_stat"] or 0) + int(row.get("defense_bonus") or 0),
+        defense_stat=int(row["defense_stat"] or 0),
         agility=int(row["agility"] or 0),
         hp_bonus=int(row["hp_bonus"] or 0),
         archetype=str(row["template__archetype"] or ""),
         base_hp=int(row["template__base_hp"] or 0),
-        level=int(row["level"] or 1),
+        level=level,
+        luck=int(row.get("luck") or 0),
+        attack_bonus=int(row.get("attack_bonus") or 0),
+        troop_capacity=capacity,
+        formula_version=int(getattr(settings, "ARENA_POWER_FORMULA_VERSION", 1)),
     )
 
 
@@ -266,8 +310,12 @@ def _load_human_reference_snapshots(
         "force",
         "intellect",
         "defense_stat",
+        "defense_bonus",
         "agility",
+        "luck",
         "hp_bonus",
+        "attack_bonus",
+        "troop_capacity_bonus",
         "template__archetype",
         "template__base_hp",
     ):
@@ -513,8 +561,12 @@ def load_manor_strength_summaries(
             "force",
             "intellect",
             "defense_stat",
+            "defense_bonus",
             "agility",
+            "luck",
             "hp_bonus",
+            "attack_bonus",
+            "troop_capacity_bonus",
             "template__archetype",
             "template__base_hp",
         ):
@@ -542,12 +594,17 @@ def load_manor_strength_summaries(
                 summary["arena_power"] += calculate_guest_arena_power(
                     force=int(guest.force or 0),
                     intellect=int(guest.intellect or 0),
-                    defense=int(guest.defense_stat or 0),
+                    defense=int(guest.defense_stat or 0) + int(guest.defense_bonus or 0),
+                    defense_stat=int(guest.defense_stat or 0),
                     agility=int(guest.agility or 0),
                     hp_bonus=int(guest.hp_bonus or 0),
                     archetype=str(guest.template.archetype or ""),
                     base_hp=int(guest.template.base_hp or 0),
                     level=int(guest.level or 1),
+                    luck=int(guest.luck or 0),
+                    attack_bonus=int(guest.attack_bonus or 0),
+                    troop_capacity=int(guest.troop_capacity),
+                    formula_version=int(getattr(settings, "ARENA_POWER_FORMULA_VERSION", 1)),
                 )
 
     return {

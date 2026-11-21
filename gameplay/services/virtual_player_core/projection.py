@@ -117,17 +117,49 @@ def calculate_guest_arena_power(
     force: int,
     intellect: int,
     defense: int,
+    defense_stat: int | None = None,
     agility: int,
     hp_bonus: int,
     archetype: str,
     base_hp: int,
     level: int = 1,
+    luck: int = 0,
+    troop_capacity: int = 0,
+    attack_bonus: int = 0,
+    formula_version: int = 1,
 ) -> int:
     """计算真人快照与 V2 发展预测共用的单门客竞技强度。
 
-    敏捷既影响真实战斗出手顺序，也属于竞技场阵容强度；这里按
-    ``GUEST.AGILITY_TO_ARENA_POWER_WEIGHT`` 纳入统一的 lineup power。
+    Version 1 is the historical ``attack + defense + max_hp/10 + agility``
+    proxy.  Version 2 uses the canonical ``equipment_value`` weights and
+    includes luck, troop capacity and attack bonuses.
     """
+    version = int(formula_version)
+    if version == 2:
+        from core.game_data.equipment_value import guest_power_points
+
+        return max(
+            1,
+            guest_power_points(
+                force=force,
+                intellect=intellect,
+                defense=defense,
+                defense_stat=defense_stat,
+                agility=agility,
+                hp_bonus=hp_bonus,
+                base_hp=base_hp,
+                level=level,
+                archetype=archetype,
+                luck=luck,
+                troop_capacity=troop_capacity,
+                attack_bonus=attack_bonus,
+                # Arena lineups do not field troops; capacity is a latent
+                # recruitment stat and is represented by troop_total in the
+                # composite strength score instead.
+                include_troop_capacity=False,
+            ),
+        )
+
     normalized_force = max(0, int(force))
     normalized_intellect = max(0, int(intellect))
     normalized_defense = max(0, int(defense))

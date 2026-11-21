@@ -215,3 +215,30 @@
  .season-march-party .season-portrait{width:38px;height:45px}.season-march-party>div{margin-left:3px}.season-march-party p{font-size:11px}.season-rally-banner>.season-chip{max-width:75px}
 }
 @media(prefers-reduced-motion:reduce){.season-page *,.season-modal *{scroll-behavior:auto;transition:none!important}}
+
+/* 出战门客：缩小头像与卡片间距；阵营加成改为头像左上角五角星 + 点击提示。 */
+.season-guest-list{gap:6px;padding:2px}
+.season-guest-list .season-guest-choice{padding:7px 8px;gap:7px;border-radius:5px}
+.season-guest-list .season-guest-avatar{position:relative;display:block;flex-shrink:0;font-size:0;line-height:0}
+.season-guest-list .season-guest-choice .season-portrait{width:46px;height:53px}
+.season-guest-list .season-guest-info{gap:3px}
+.season-modal .season-guest-list{gap:6px}
+.season-modal .season-guest-list .season-guest-choice{padding:8px 6px 7px;gap:6px;border-radius:6px}
+.season-modal .season-guest-list .season-guest-choice .season-portrait{width:52px;height:60px}
+.season-node-modal .season-guest-list{max-height:260px;gap:6px}
+.season-node-modal .season-guest-list .season-guest-choice{padding:7px 6px}
+.season-modal .season-guest-list .season-guest-info{gap:3px}
+.season-modal .season-guest-list .season-guest-title{gap:0 4px;line-height:1.35}
+.season-modal .season-guest-list .season-guest-info>small{font-size:9px;line-height:1.4}
+.season-modal .season-guest-list .season-guest-info>em{font-size:9.5px}
+.season-modal .season-guest-list .season-guest-health{height:4px}
+.season-faction-star{position:absolute;top:-5px;left:-5px;z-index:2;display:flex;align-items:center;justify-content:center;width:19px;height:19px;padding:0;border:1px solid #9d6a1f;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe08a,#e7ad2f 70%);color:#6b3f10;font:inherit;font-size:11px;line-height:1;cursor:pointer;box-shadow:0 1px 3px #3d261047;transition:transform 120ms ease}
+.season-faction-star:hover{transform:scale(1.1)}
+.season-faction-star:focus-visible{outline:2px solid #9b432d;outline-offset:2px}
+.season-faction-tip{position:fixed;z-index:1400;max-width:230px;padding:8px 10px;border:1px solid #c9a35c;border-radius:5px;background:#403326;color:#fff6e2;font-family:"Noto Serif SC","Songti SC",SimSun,serif;font-size:12px;line-height:1.65;box-shadow:0 8px 24px #2b1d1033;pointer-events:none}
+.season-faction-tip[hidden]{display:none}
+.season-faction-tip strong{display:block;margin-bottom:2px;color:#f0c96b;font-size:12px}
+.season-faction-tip span{display:block}
+.season-faction-tip small{display:block;margin-top:3px;color:#d7c4a4;font-size:10px}
+@media(max-width:700px){.season-modal .season-guest-list .season-guest-choice .season-portrait{width:48px;height:55px}}
+@media(prefers-reduced-motion:reduce){.season-faction-star{transition:none}}

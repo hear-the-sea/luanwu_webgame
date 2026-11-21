@@ -8,6 +8,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from gameplay.models import Manor
+from gameplay.services.virtual_player_core.power_version import arena_power_formula_version
 from gameplay.services.virtual_player_core.projection import (
     calculate_guest_arena_power,
     project_training_development_intent,
@@ -23,12 +24,17 @@ def _guest_arena_power(
     return calculate_guest_arena_power(
         force=force,
         intellect=intellect,
-        defense=defense,
+        defense=int(defense) + int(getattr(guest, "defense_bonus", 0) or 0),
+        defense_stat=int(defense),
         agility=agility,
         hp_bonus=int(guest.hp_bonus),
         archetype=str(guest.template.archetype),
         base_hp=int(guest.template.base_hp),
         level=int(guest.level if level is None else level),
+        luck=int(guest.luck),
+        attack_bonus=int(guest.attack_bonus),
+        troop_capacity=int(guest.troop_capacity),
+        formula_version=arena_power_formula_version(),
     )
 
 

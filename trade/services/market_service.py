@@ -112,6 +112,10 @@ def get_market_prestige(manor: Manor) -> int:
     return safe_int(getattr(manor, "prestige", 0), 0, min_val=0)
 
 
+def can_enter_market(manor: Manor) -> bool:
+    return get_market_prestige(manor) >= MARKET_MIN_PRESTIGE
+
+
 def can_buy_or_list_on_market(manor: Manor) -> bool:
     return get_market_prestige(manor) >= MARKET_MIN_PRESTIGE
 

@@ -16,6 +16,7 @@ from gameplay.services.virtual_player_core.population_runtime import merge_popul
 from gameplay.services.virtual_player_core.runtime_assessment import assess_virtual_player_runtime
 
 from .low_population_policy import low_population_enabled
+from .power_settings import current_arena_power_formula_version
 from .virtual_lineups import lineup_power
 from .virtual_reserve_policy import (
     BLOCKED_DEMAND_RETRY_COOLDOWN,
@@ -347,6 +348,7 @@ def _upsert_demand_state_locked(
         {"tournament": tournament} if tournament is not None else {"coop_event": coop_event}
     )
     demand = ArenaVirtualDemand.objects.select_for_update().filter(**lookup).first()
+    power_formula_version = current_arena_power_formula_version()
     target_plan = reserve_target_plan(missing_entry_count)
     reserve_target_count = target_plan.replacement_target_count
     warm_target_count = target_plan.warm_target_count
@@ -358,6 +360,7 @@ def _upsert_demand_state_locked(
                 status=ArenaVirtualDemand.Status.BLOCKED,
                 target_guest_count=target_guest_count,
                 target_team_power=target_team_power,
+                power_formula_version=power_formula_version,
                 missing_entry_count=missing_entry_count,
                 last_failure_reason=arena_training.reason,
                 last_progress_at=now,
@@ -372,6 +375,7 @@ def _upsert_demand_state_locked(
             status=ArenaVirtualDemand.Status.ACTIVE,
             target_guest_count=target_guest_count,
             target_team_power=target_team_power,
+            power_formula_version=power_formula_version,
             missing_entry_count=missing_entry_count,
             reserve_target_count=reserve_target_count,
             warm_target_count=warm_target_count,
@@ -392,6 +396,7 @@ def _upsert_demand_state_locked(
     changed = (
         demand.target_guest_count != target_guest_count
         or demand.target_team_power != target_team_power
+        or int(demand.power_formula_version) != power_formula_version
         or demand.missing_entry_count != missing_entry_count
         or _arena_training_snapshot_changed(demand, snapshot_fields=training_snapshot)
     )
@@ -431,6 +436,7 @@ def _upsert_demand_state_locked(
         demand.status = ArenaVirtualDemand.Status.BLOCKED
         demand.target_guest_count = target_guest_count
         demand.target_team_power = target_team_power
+        demand.power_formula_version = power_formula_version
         demand.missing_entry_count = missing_entry_count
         for field_name, value in training_snapshot.items():
             setattr(demand, field_name, value)
@@ -442,6 +448,7 @@ def _upsert_demand_state_locked(
                 "version",
                 "target_guest_count",
                 "target_team_power",
+                "power_formula_version",
                 "missing_entry_count",
                 *training_snapshot.keys(),
                 "last_input_change_at",
@@ -480,6 +487,7 @@ def _upsert_demand_state_locked(
     demand.status = ArenaVirtualDemand.Status.ACTIVE
     demand.target_guest_count = target_guest_count
     demand.target_team_power = target_team_power
+    demand.power_formula_version = power_formula_version
     demand.missing_entry_count = missing_entry_count
     demand.reserve_target_count = reserve_target_count
     demand.warm_target_count = warm_target_count
@@ -499,6 +507,7 @@ def _upsert_demand_state_locked(
         "version",
         "target_guest_count",
         "target_team_power",
+        "power_formula_version",
         "missing_entry_count",
         "reserve_target_count",
         "warm_target_count",
@@ -601,7 +610,7 @@ def reconcile_tournament_demand_state_locked(
 
     reference_entry = median_entry(real_entries)
     snapshots = reference_snapshots(reference_entry)
-    target_team_power = lineup_power(snapshots)
+    target_team_power = lineup_power(snapshots, formula_version=current_arena_power_formula_version())
     return _upsert_demand_state_locked(
         tournament=tournament,
         target_guest_count=len(snapshots),
@@ -634,7 +643,7 @@ def reconcile_coop_demand_state_locked(
 
     reference_entry = median_entry(real_entries)
     snapshots = reference_snapshots(reference_entry)[: int(event.guest_limit_per_entry)]
-    target_team_power = lineup_power(snapshots)
+    target_team_power = lineup_power(snapshots, formula_version=current_arena_power_formula_version())
     return _upsert_demand_state_locked(
         coop_event=event,
         target_guest_count=len(snapshots),

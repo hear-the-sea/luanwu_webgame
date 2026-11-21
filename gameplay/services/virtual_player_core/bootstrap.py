@@ -49,6 +49,7 @@ from .projection import (
 from .random_context import RandomContext
 from .reference_snapshots import (
     ReferenceSnapshotError,
+    arena_power_v2_scale,
     build_strength_summary,
     load_manor_strength_summary,
     select_policy_reference,
@@ -339,8 +340,10 @@ def _starter_snapshot_projection(
     if guest_count > 0 and guest_level < 1:
         raise V2BootstrapError("reference cap cannot produce a valid guest roster")
 
+    raw_arena_lineup_power = _starter_snapshot_int(snapshot, "arena_lineup_power")
+    scaled_arena_lineup_power = int(round(raw_arena_lineup_power * arena_power_v2_scale(max_guest_level=guest_level)))
     arena_lineup_power = min(
-        _starter_snapshot_int(snapshot, "arena_lineup_power"),
+        scaled_arena_lineup_power,
         max(0, int(strength_cap.components["arena_lineup_power"])),
     )
     troop_total = min(

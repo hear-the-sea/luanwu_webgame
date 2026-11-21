@@ -14,6 +14,7 @@ from gameplay.models import Manor
 from gameplay.services.manor.core import ensure_manor
 from trade.page_context import build_trade_page_context
 from trade.services.auction.access import AUCTION_MIN_PRESTIGE
+from trade.services.market_service import MARKET_MIN_PRESTIGE
 
 
 @pytest.mark.django_db
@@ -29,10 +30,11 @@ def test_trade_view_renders(monkeypatch, client, django_user_model):
 
 
 @pytest.mark.django_db
-def test_market_page_disables_listing_for_low_prestige_user(client, django_user_model):
-    user = django_user_model.objects.create_user(username="trade_market_low_prestige", password="pass12345")
+@pytest.mark.parametrize("prestige, unlocked", [(1999, False), (2000, True)])
+def test_market_page_requires_2000_prestige(client, django_user_model, prestige, unlocked):
+    user = django_user_model.objects.create_user(username=f"trade_market_prestige_{prestige}", password="pass12345")
     manor = ensure_manor(user)
-    manor.prestige = 299
+    manor.prestige = prestige
     manor.save(update_fields=["prestige"])
     client.force_login(user)
 
@@ -40,9 +42,13 @@ def test_market_page_disables_listing_for_low_prestige_user(client, django_user_
 
     assert resp.status_code == 200
     content = resp.content.decode("utf-8")
-    assert "购买与上架未解锁" in content
-    assert "当前声望 299，达到 300" in content
-    assert 'disabled title="声望达到 300 后可上架"' in content
+    if unlocked:
+        assert "集市未解锁" not in content
+        assert "浏览购买" in content
+    else:
+        assert "集市未解锁" in content
+        assert f"当前声望 {prestige}，达到 {MARKET_MIN_PRESTIGE}" in content
+        assert "浏览购买" not in content
 
 
 @pytest.mark.django_db
@@ -333,7 +339,7 @@ def test_market_and_auction_tooltips_render_device_troop_bonus_summary():
         {
             "market_view": "buy",
             "market_can_buy_or_list": True,
-            "market_min_prestige": 300,
+            "market_min_prestige": 2000,
             "manor": manor,
             "categories": [],
             "listings": [listing],

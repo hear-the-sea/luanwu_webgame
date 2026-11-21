@@ -601,10 +601,10 @@ heroes:
     - 8
     - 14
     attribute_weights:
-      force: 40
-      intellect: 16
-      defense: 24
-      agility: 20
+      force: 30
+      intellect: 15
+      defense: 25
+      agility: 30
   - key: hist_sljnbc_0001
     name: 曹操
     avatar: monkey/orange/曹操.png

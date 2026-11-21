@@ -24,7 +24,7 @@ class TestMarketListing:
         )
         quantity_before = inventory.quantity
 
-        with pytest.raises(TradeValidationError, match="声望达到 300"):
+        with pytest.raises(TradeValidationError, match=f"声望达到 {market_service.MARKET_MIN_PRESTIGE}"):
             market_service.create_listing(
                 manor=seller_manor,
                 item_key="test_tradeable_item",

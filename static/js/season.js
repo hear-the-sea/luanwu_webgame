@@ -46,6 +46,60 @@
       portrait.addEventListener("error", showSilhouette, { signal });
       if (portrait.complete && !portrait.naturalWidth) showSilhouette();
     }));
+    // 阵营人物五角星：提示框挂到 body 并使用 fixed 定位，避免被门客列表的滚动容器裁切。
+    const factionTip = document.createElement("div");
+    factionTip.className = "season-faction-tip";
+    factionTip.setAttribute("role", "tooltip");
+    factionTip.hidden = true;
+    document.body.appendChild(factionTip);
+    let activeFactionStar = null;
+    const closeFactionTip = () => {
+      if (!activeFactionStar) return;
+      activeFactionStar.setAttribute("aria-expanded", "false");
+      activeFactionStar = null;
+      factionTip.hidden = true;
+    };
+    const openFactionTip = (star) => {
+      closeFactionTip();
+      const heading = document.createElement("strong");
+      heading.textContent = "本阵营人物";
+      const body = document.createElement("span");
+      body.textContent = star.dataset.seasonFactionTip || "";
+      const note = document.createElement("small");
+      note.textContent = star.dataset.seasonFactionNote || "";
+      factionTip.replaceChildren(heading, body, note);
+      factionTip.hidden = false;
+      activeFactionStar = star;
+      star.setAttribute("aria-expanded", "true");
+      const starRect = star.getBoundingClientRect();
+      const tipRect = factionTip.getBoundingClientRect();
+      const left = Math.max(8, Math.min(
+        starRect.left + starRect.width / 2 - tipRect.width / 2,
+        window.innerWidth - tipRect.width - 8,
+      ));
+      let top = starRect.bottom + 7;
+      if (top + tipRect.height > window.innerHeight - 8) {
+        top = Math.max(8, starRect.top - tipRect.height - 7);
+      }
+      factionTip.style.left = `${left}px`;
+      factionTip.style.top = `${top}px`;
+    };
+    [root, ...overlays].forEach(scope => scope.querySelectorAll("[data-season-faction-star]").forEach((star) => {
+      star.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (activeFactionStar === star) closeFactionTip();
+        else openFactionTip(star);
+      }, { signal });
+    }));
+    document.addEventListener("click", (event) => {
+      if (!factionTip.contains(event.target)) closeFactionTip();
+    }, { signal });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeFactionTip();
+    }, { signal });
+    window.addEventListener("scroll", closeFactionTip, { capture: true, signal });
+    window.addEventListener("resize", closeFactionTip, { signal });
     window.GuildModal?.refresh();
     overlays.forEach(overlay => overlay.querySelectorAll("[data-season-pane-group]").forEach(group => {
       const tabs = Array.from(group.querySelectorAll("[data-season-pane-tab]"));
@@ -380,6 +434,8 @@
     });
 
     const cleanup = () => {
+      closeFactionTip();
+      factionTip.remove();
       controller.abort();
       if (countdownTimer !== null) window.clearInterval(countdownTimer);
       recordSets.forEach((records) => records.forEach((record) => { record.mask = null; }));

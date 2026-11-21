@@ -54,7 +54,14 @@
         {% elif current_tab == "bank" %}
         {% include "trade/partials/_bank.html" %}
         {% elif current_tab == "market" %}
+        {% if market_can_enter %}
         {% include "trade/partials/_market.html" %}
+        {% else %}
+        <div class="tw-alert-warning mb-4" role="status">
+            <strong>集市未解锁</strong>
+            <span>当前声望 {{ manor.prestige }}，达到 {{ market_min_prestige }} 后可进入集市。</span>
+        </div>
+        {% endif %}
         {% endif %}
     </div>
 </section>

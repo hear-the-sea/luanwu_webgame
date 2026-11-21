@@ -4176,6 +4176,14 @@ def test_v2_domain_failure_rolls_back_training_and_cycle_metadata(
         next_recruitment_at=FIXED_NOW + timedelta(days=1),
     )
     _set_large_resource_capacity(active_v2_profile)
+    # This scenario exercises the training rollback path.  Keep equipment
+    # candidates out of the deterministic plan so a higher-utility gear swap
+    # cannot change which action is under test.
+    monkeypatch.setattr(
+        maintenance,
+        "build_virtual_equipment_candidates",
+        lambda **kwargs: ((), {}),
+    )
     plan = _scheduled_plan(active_v2_profile)
     assert plan.action_kind == "training"
     assert plan.target_id is not None

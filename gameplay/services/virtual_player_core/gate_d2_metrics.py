@@ -147,6 +147,8 @@ def _guest_arena_power(profile: GateD2RawProfile) -> int:
             archetype=guest.archetype,
             base_hp=guest.base_hp,
             level=guest.level,
+            # Retired artifact: keep its historical v1 scale explicit.
+            formula_version=1,
         )
         for guest in profile.guests
     )

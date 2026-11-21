@@ -26,6 +26,7 @@ from guests.models import Guest, GuestStatus
 
 from .coop_rules import load_arena_coop_rules
 from .lifecycle_helpers import move_coop_event_to_preparing_locked, start_tournament_locked
+from .power_settings import current_arena_power_formula_version
 from .rules import load_arena_rules
 from .virtual_backfill import backfill_coop_event_locked, backfill_tournament_locked
 from .virtual_fill_service import observe_fill_service_locked
@@ -146,6 +147,7 @@ def _select_bot_lineup(
     target_guest_count: int,
     target_team_power: int,
     max_lineup_size: int | None = None,
+    power_formula_version: int | None = None,
 ) -> list[dict]:
     resolved_max_lineup_size = max_lineup_size
     if resolved_max_lineup_size is None:
@@ -169,6 +171,9 @@ def _select_bot_lineup(
         target_team_power=target_team_power,
         max_lineup_size=resolved_max_lineup_size,
         preferred_guest_count=preferred_guest_count,
+        power_formula_version=(
+            current_arena_power_formula_version() if power_formula_version is None else int(power_formula_version)
+        ),
     )
     return list(evaluation.snapshots) if evaluation.is_ready else []
 
@@ -182,6 +187,7 @@ def _eligible_bot_profile_ids(
     target_team_power: int,
     candidate_profile_ids: Sequence[int] | None = None,
     max_lineup_size: int | None = None,
+    power_formula_version: int | None = None,
     now=None,
 ) -> list[int]:
     current_time = now or timezone.now()
@@ -202,6 +208,7 @@ def _eligible_bot_profile_ids(
             target_guest_count=target_guest_count,
             target_team_power=target_team_power,
             max_lineup_size=max_lineup_size,
+            power_formula_version=power_formula_version,
         )
         if not lineup:
             continue
@@ -219,6 +226,7 @@ def _lock_eligible_bot_lineups(
     target_guest_count: int,
     target_team_power: int,
     max_lineup_size: int | None = None,
+    power_formula_version: int | None = None,
     now=None,
 ) -> list[tuple[BotProfile, list[dict]]]:
     current_time = now or timezone.now()
@@ -331,7 +339,7 @@ def prepare_tournament_backfill_locked(
         )
         return 0
     excluded_manor_ids = _tournament_excluded_manor_ids(tournament)
-    target_team_power = lineup_power(snapshots)
+    target_team_power = lineup_power(snapshots, formula_version=current_arena_power_formula_version())
     max_lineup_size = int(load_arena_rules()["registration"]["max_guests_per_entry"])
     eligible_profile_ids = _eligible_bot_profile_ids(
         excluded_manor_ids=excluded_manor_ids,
@@ -401,7 +409,7 @@ def prepare_coop_backfill_locked(
             available_bot_count=0,
         )
         return 0
-    target_team_power = lineup_power(snapshots)
+    target_team_power = lineup_power(snapshots, formula_version=current_arena_power_formula_version())
     max_lineup_size = max(1, int(event.guest_limit_per_entry))
     eligible_profile_ids = _eligible_bot_profile_ids(
         excluded_manor_ids=_coop_excluded_manor_ids(event),
@@ -540,6 +548,7 @@ def _lock_ready_member_lineups(
         target_team_power=int(demand.target_team_power),
         max_lineup_size=max_lineup_size,
         candidate_profile_ids=profile_ids,
+        power_formula_version=int(demand.power_formula_version),
         now=current_time,
     )
     if set(eligible_profile_ids) != set(profile_ids):
@@ -553,6 +562,7 @@ def _lock_ready_member_lineups(
         target_guest_count=int(demand.target_guest_count),
         target_team_power=int(demand.target_team_power),
         max_lineup_size=max_lineup_size,
+        power_formula_version=int(demand.power_formula_version),
         now=current_time,
     )
 

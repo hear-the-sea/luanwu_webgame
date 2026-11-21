@@ -7,6 +7,14 @@ from django.test import RequestFactory
 from tests.trade_selectors.support import create_manor
 from trade.page_context import build_trade_request_params
 from trade.selectors import get_trade_context
+from trade.services import market_service
+
+
+def _create_market_manor(django_user_model, *, username: str):
+    manor = create_manor(django_user_model, username=username)
+    manor.prestige = market_service.MARKET_MIN_PRESTIGE
+    manor.save(update_fields=["prestige"])
+    return manor
 
 
 @pytest.mark.django_db
@@ -16,7 +24,7 @@ def test_get_trade_context_includes_market_duration_options(monkeypatch, django_
         lambda: {"listing_fees": {28800: 12000, 7200: 5000, 86400: 20000}},
     )
 
-    manor = create_manor(django_user_model, username="trade_ctx_duration_options")
+    manor = _create_market_manor(django_user_model, username="trade_ctx_duration_options")
     request = RequestFactory().get("/trade", {"tab": "market"})
 
     context = get_trade_context(manor=manor, params=build_trade_request_params(request))
@@ -33,13 +41,15 @@ def test_get_trade_context_exposes_market_prestige_requirement(django_user_model
     manor = create_manor(django_user_model, username="trade_ctx_market_prestige")
     request = RequestFactory().get("/trade", {"tab": "market"})
 
-    manor.prestige = 299
+    manor.prestige = market_service.MARKET_MIN_PRESTIGE - 1
     context = get_trade_context(manor=manor, params=build_trade_request_params(request))
-    assert context["market_min_prestige"] == 300
+    assert context["market_min_prestige"] == market_service.MARKET_MIN_PRESTIGE
+    assert context["market_can_enter"] is False
     assert context["market_can_buy_or_list"] is False
 
-    manor.prestige = 300
+    manor.prestige = market_service.MARKET_MIN_PRESTIGE
     context = get_trade_context(manor=manor, params=build_trade_request_params(request))
+    assert context["market_can_enter"] is True
     assert context["market_can_buy_or_list"] is True
 
 
@@ -50,7 +60,7 @@ def test_get_trade_context_reads_latest_market_service_listing_fees(monkeypatch,
         lambda: {"listing_fees": {14400: 9000, 7200: 5000}},
     )
 
-    manor = create_manor(django_user_model, username="trade_ctx_runtime_listing_fees")
+    manor = _create_market_manor(django_user_model, username="trade_ctx_runtime_listing_fees")
     request = RequestFactory().get("/trade", {"tab": "market"})
 
     context = get_trade_context(manor=manor, params=build_trade_request_params(request))
@@ -69,7 +79,7 @@ def test_get_trade_context_reads_runtime_listing_fees_via_loader(monkeypatch, dj
         lambda: {"listing_fees": {14400: 9000, 7200: 5000}},
     )
 
-    manor = create_manor(django_user_model, username="trade_ctx_runtime_loader_listing_fees")
+    manor = _create_market_manor(django_user_model, username="trade_ctx_runtime_loader_listing_fees")
     request = RequestFactory().get("/trade", {"tab": "market"})
 
     context = get_trade_context(manor=manor, params=build_trade_request_params(request))
@@ -84,7 +94,7 @@ def test_get_trade_context_reads_runtime_listing_fees_via_loader(monkeypatch, dj
 def test_get_trade_context_market_buy_lists_page(monkeypatch, django_user_model):
     monkeypatch.setattr("trade.selectors.get_active_listings", lambda **_kwargs: ["l1", "l2", "l3"])
 
-    manor = create_manor(django_user_model, username="trade_ctx_market")
+    manor = _create_market_manor(django_user_model, username="trade_ctx_market")
     request = RequestFactory().get("/trade", {"tab": "market", "view": "buy"})
 
     context = get_trade_context(manor=manor, params=build_trade_request_params(request))
@@ -109,7 +119,7 @@ def test_get_trade_context_market_ordering_uses_real_listing_fields(
 
     monkeypatch.setattr("trade.selectors.get_active_listings", _get_active_listings)
 
-    manor = create_manor(django_user_model, username=f"trade_ctx_market_order_{requested_order}")
+    manor = _create_market_manor(django_user_model, username=f"trade_ctx_market_order_{requested_order}")
     request = RequestFactory().get(
         "/trade",
         {"tab": "market", "view": "buy", "order_by": requested_order},
@@ -124,7 +134,7 @@ def test_get_trade_context_market_ordering_uses_real_listing_fields(
 def test_get_trade_context_market_buy_negative_page_clamped(monkeypatch, django_user_model):
     monkeypatch.setattr("trade.selectors.get_active_listings", lambda **_kwargs: list(range(1, 22)))
 
-    manor = create_manor(django_user_model, username="trade_ctx_market_page_clamp")
+    manor = _create_market_manor(django_user_model, username="trade_ctx_market_page_clamp")
     request = RequestFactory().get("/trade", {"tab": "market", "view": "buy", "page": "-9"})
 
     context = get_trade_context(manor=manor, params=build_trade_request_params(request))
@@ -136,7 +146,7 @@ def test_get_trade_context_market_buy_negative_page_clamped(monkeypatch, django_
 def test_get_trade_context_market_my_listings_negative_page_clamped(monkeypatch, django_user_model):
     monkeypatch.setattr("trade.selectors.get_my_listings", lambda *_args, **_kwargs: list(range(1, 22)))
 
-    manor = create_manor(django_user_model, username="trade_ctx_market_my_page_clamp")
+    manor = _create_market_manor(django_user_model, username="trade_ctx_market_my_page_clamp")
     request = RequestFactory().get("/trade", {"tab": "market", "view": "my_listings", "page": "-3"})
 
     context = get_trade_context(manor=manor, params=build_trade_request_params(request))
@@ -148,7 +158,7 @@ def test_get_trade_context_market_my_listings_negative_page_clamped(monkeypatch,
 def test_get_trade_context_market_sell_paginates_to_twenty_items(monkeypatch, django_user_model):
     monkeypatch.setattr("trade.selectors.get_tradeable_inventory", lambda *_args, **_kwargs: list(range(1, 24)))
 
-    manor = create_manor(django_user_model, username="trade_ctx_market_sell_page")
+    manor = _create_market_manor(django_user_model, username="trade_ctx_market_sell_page")
     request = RequestFactory().get("/trade", {"tab": "market", "view": "sell", "page": "2"})
 
     context = get_trade_context(manor=manor, params=build_trade_request_params(request))
@@ -163,7 +173,7 @@ def test_get_trade_context_market_buy_tolerates_active_listings_error(monkeypatc
         lambda *_args, **_kwargs: (_ for _ in ()).throw(DatabaseError("listings failed")),
     )
 
-    manor = create_manor(django_user_model, username="trade_ctx_market_buy_err")
+    manor = _create_market_manor(django_user_model, username="trade_ctx_market_buy_err")
     request = RequestFactory().get("/trade", {"tab": "market", "view": "buy"})
 
     context = get_trade_context(manor=manor, params=build_trade_request_params(request))
@@ -181,7 +191,7 @@ def test_get_trade_context_market_sell_negative_page_clamped_and_tolerates_inven
         lambda *_args, **_kwargs: (_ for _ in ()).throw(DatabaseError("tradeable failed")),
     )
 
-    manor = create_manor(django_user_model, username="trade_ctx_market_sell_err")
+    manor = _create_market_manor(django_user_model, username="trade_ctx_market_sell_err")
     request = RequestFactory().get("/trade", {"tab": "market", "view": "sell", "page": "-10"})
 
     context = get_trade_context(manor=manor, params=build_trade_request_params(request))
@@ -198,7 +208,7 @@ def test_get_trade_context_market_my_listings_tolerates_loading_error(monkeypatc
         lambda *_args, **_kwargs: (_ for _ in ()).throw(DatabaseError("my listings failed")),
     )
 
-    manor = create_manor(django_user_model, username="trade_ctx_market_my_err")
+    manor = _create_market_manor(django_user_model, username="trade_ctx_market_my_err")
     request = RequestFactory().get("/trade", {"tab": "market", "view": "my_listings"})
 
     context = get_trade_context(manor=manor, params=build_trade_request_params(request))
@@ -214,7 +224,7 @@ def test_get_trade_context_market_programming_error_bubbles_up(monkeypatch, djan
         lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("market bug")),
     )
 
-    manor = create_manor(django_user_model, username="trade_ctx_market_bug")
+    manor = _create_market_manor(django_user_model, username="trade_ctx_market_bug")
     request = RequestFactory().get("/trade", {"tab": "market", "view": "buy"})
 
     with pytest.raises(RuntimeError, match="market bug"):

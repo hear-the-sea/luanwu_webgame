@@ -62,6 +62,7 @@ def _base_trade_context(tab: str, manor: Any) -> dict[str, Any]:
         "manor": manor,
         "auction_can_enter": can_enter_auction(manor),
         "auction_min_prestige": AUCTION_MIN_PRESTIGE,
+        "market_can_enter": market_service.can_enter_market(manor),
         "market_can_buy_or_list": market_service.can_buy_or_list_on_market(manor),
         # 旧进程加载新模板时仍显示整单入口，避免部分购买被旧逻辑按整单处理。
         "market_partial_purchase_enabled": True,
@@ -142,7 +143,11 @@ def get_trade_context(*, manor: Any, params: Mapping[str, str]) -> dict[str, Any
     context["trade_alerts"] = []
 
     builder = _TAB_CONTEXT_BUILDERS.get(tab)
-    if builder is not None and (tab != "auction" or context["auction_can_enter"]):
+    if (
+        builder is not None
+        and (tab != "auction" or context["auction_can_enter"])
+        and (tab != "market" or context["market_can_enter"])
+    ):
         builder(params, manor, context)
 
     return context

@@ -5,7 +5,9 @@ from collections.abc import Mapping
 from types import SimpleNamespace
 from typing import Any
 
+from core.config import GUEST
 from core.exceptions import GuestNotRequirementError
+from core.game_data.equipment_value import NEUTRAL_WEIGHTS
 from gameplay.models import InventoryItem, ItemTemplate
 from gameplay.services.inventory.core import GRAIN_ITEM_KEY
 from guests.models import GearItem, GearTemplate, Guest, GuestSkill, GuestStatus, Skill
@@ -34,6 +36,7 @@ from .maintenance_action_specs import (
     SkillLearningActionSpec,
     project_maintenance_action_intent,
 )
+from .power_version import arena_power_formula_version
 from .projection import DevelopmentIntent, StrengthSummary, calculate_guest_arena_power
 from .strategy import BotDevelopmentPlan
 
@@ -53,15 +56,20 @@ _PROJECTED_GUEST_FIELDS = (
     "hp_bonus",
     "troop_capacity_bonus",
 )
+# Canonical neutral weights normalised to the historical score scale
+# (the old formula divided HP by 54).  Keeping the same order of magnitude
+# lets the contextual coefficients below stay comparable while fixing the
+# relative value of agility/luck/troop_capacity.
+_LEGACY_SCORE_DIVISOR = 54.0
 _GEAR_STAT_UTILITY_WEIGHTS = {
-    "agility": 0.5,
-    "attack": 1.0,
-    "defense": 1.0,
-    "force": 1.0,
-    "hp": 0.01,
-    "intellect": 1.0,
-    "luck": 0.25,
-    "troop_capacity": 0.1,
+    "agility": NEUTRAL_WEIGHTS.agility / _LEGACY_SCORE_DIVISOR,
+    "attack": NEUTRAL_WEIGHTS.attack_bonus / _LEGACY_SCORE_DIVISOR,
+    "defense": NEUTRAL_WEIGHTS.defense / _LEGACY_SCORE_DIVISOR,
+    "force": NEUTRAL_WEIGHTS.force / _LEGACY_SCORE_DIVISOR,
+    "hp": NEUTRAL_WEIGHTS.hp / _LEGACY_SCORE_DIVISOR,
+    "intellect": NEUTRAL_WEIGHTS.intellect / _LEGACY_SCORE_DIVISOR,
+    "luck": NEUTRAL_WEIGHTS.luck / _LEGACY_SCORE_DIVISOR,
+    "troop_capacity": NEUTRAL_WEIGHTS.troop_capacity / _LEGACY_SCORE_DIVISOR,
 }
 
 
@@ -151,6 +159,14 @@ def _positive_set_completion_gain(
         max(0, int(after.get(stat, 0)) - int(before.get(stat, 0))) * _GEAR_STAT_UTILITY_WEIGHTS.get(stat, 0.0)
         for stat in sorted(set(before) | set(after))
     )
+
+
+def _projected_troop_capacity(guest: Guest, projected_state: Mapping[str, int]) -> int:
+    level = int(guest.level or 1)
+    capacity = int(GUEST.BASE_TROOP_CAPACITY)
+    if level >= int(GUEST.TROOP_CAPACITY_LEVEL_THRESHOLD):
+        capacity += int(GUEST.BONUS_TROOP_CAPACITY)
+    return capacity + int(projected_state.get("troop_capacity_bonus", 0) or 0)
 
 
 def _equipment_utility_score(
@@ -497,12 +513,17 @@ def build_equipment_equip_candidates(
         guest_power_before = calculate_guest_arena_power(
             force=int(guest.force),
             intellect=int(guest.intellect),
-            defense=int(guest.defense_stat),
+            defense=int(guest.defense_stat) + int(guest.defense_bonus),
+            defense_stat=int(guest.defense_stat),
             agility=int(guest.agility),
             hp_bonus=int(guest.hp_bonus),
             archetype=str(guest.template.archetype),
             base_hp=int(guest.template.base_hp),
             level=int(guest.level),
+            luck=int(guest.luck),
+            attack_bonus=int(guest.attack_bonus),
+            troop_capacity=int(guest.troop_capacity),
+            formula_version=arena_power_formula_version(),
         )
         persisted_state = {field: int(getattr(guest, field) or 0) for field in _PROJECTED_GUEST_FIELDS}
         current_set_bonus = normalize_active_set_bonus(guest.gear_set_bonus)
@@ -551,12 +572,17 @@ def build_equipment_equip_candidates(
             guest_power_after = calculate_guest_arena_power(
                 force=projected_state["force"],
                 intellect=projected_state["intellect"],
-                defense=projected_state["defense_stat"],
+                defense=projected_state["defense_stat"] + projected_state["defense_bonus"],
+                defense_stat=projected_state["defense_stat"],
                 agility=projected_state["agility"],
                 hp_bonus=projected_state["hp_bonus"],
                 archetype=str(guest.template.archetype),
                 base_hp=int(guest.template.base_hp),
                 level=int(guest.level),
+                luck=int(projected_state.get("luck", 0)),
+                attack_bonus=int(projected_state.get("attack_bonus", 0)),
+                troop_capacity=_projected_troop_capacity(guest, projected_state),
+                formula_version=arena_power_formula_version(),
             )
             power_gain = guest_power_after - guest_power_before
             if power_gain < 0:

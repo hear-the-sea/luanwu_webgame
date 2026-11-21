@@ -32,6 +32,7 @@ from .maintenance_action_specs import (
     SkillLearningActionSpec,
     project_maintenance_action_intent,
 )
+from .power_version import arena_power_formula_version
 from .projection import (
     DevelopmentIntent,
     StrengthSummary,
@@ -257,12 +258,17 @@ def _guest_power(
     return calculate_guest_arena_power(
         force=int(guest.force if force is None else force),
         intellect=int(guest.intellect if intellect is None else intellect),
-        defense=int(guest.defense_stat if defense is None else defense),
+        defense=int(guest.defense_stat if defense is None else defense) + int(getattr(guest, "defense_bonus", 0) or 0),
+        defense_stat=int(guest.defense_stat if defense is None else defense),
         agility=int(guest.agility if agility is None else agility),
         hp_bonus=int(guest.hp_bonus),
         archetype=str(guest.template.archetype),
         base_hp=int(guest.template.base_hp),
         level=int(guest.level),
+        luck=int(getattr(guest, "luck", 0) or 0),
+        attack_bonus=int(getattr(guest, "attack_bonus", 0) or 0),
+        troop_capacity=int(getattr(guest, "troop_capacity", 0) or 0),
+        formula_version=arena_power_formula_version(),
     )
 
 
@@ -475,12 +481,17 @@ def build_virtual_equipment_candidates(
             after_power = calculate_guest_arena_power(
                 force=int(projected_guest.force),
                 intellect=int(projected_guest.intellect),
-                defense=int(projected_guest.defense_stat),
+                defense=int(projected_guest.defense_stat) + int(getattr(projected_guest, "defense_bonus", 0) or 0),
+                defense_stat=int(projected_guest.defense_stat),
                 agility=int(projected_guest.agility),
                 hp_bonus=int(projected_guest.hp_bonus),
                 archetype=str(projected_guest.template.archetype),
                 base_hp=int(projected_guest.template.base_hp),
                 level=int(projected_guest.level),
+                luck=int(getattr(projected_guest, "luck", 0) or 0),
+                attack_bonus=int(getattr(projected_guest, "attack_bonus", 0) or 0),
+                troop_capacity=int(getattr(projected_guest, "troop_capacity", 0) or 0),
+                formula_version=arena_power_formula_version(),
             )
             power_gain = max(0, after_power - before_power)
             if power_gain <= 0:

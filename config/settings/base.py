@@ -277,6 +277,24 @@ VIRTUAL_PLAYER_ARENA_SAFETY_POLICY = env("VIRTUAL_PLAYER_ARENA_SAFETY_POLICY", "
 if VIRTUAL_PLAYER_ARENA_SAFETY_POLICY not in {"legacy", "shadow", "scoped"}:
     raise ValueError("VIRTUAL_PLAYER_ARENA_SAFETY_POLICY must be legacy, shadow, or scoped")
 
+# Arena power formula version.  Version 1 is the historical
+# attack + defense + max_hp/10 + agility proxy.  Version 2 uses the canonical
+# equipment_value weights (force/intellect/luck, attack-bonus split, effective
+# defense; latent troop_capacity is left to troop_total in the composite).
+# Version 2 is the default; v1 remains available for legacy fixtures/tests and
+# for the arena reserve lifecycle suite.
+ARENA_POWER_FORMULA_VERSION = int(env("ARENA_POWER_FORMULA_VERSION", "2"))
+if ARENA_POWER_FORMULA_VERSION not in {1, 2}:
+    raise ValueError("ARENA_POWER_FORMULA_VERSION must be 1 or 2")
+
+# Approximate v1 -> v2 scale for the static starter reference bands.  v2
+# (canonical weights, attack split, no latent troop capacity) is roughly
+# 1.6-1.8x v1 for typical military/civil rosters.  Replace with measured
+# shadow data before treating it as a permanent policy constant.
+ARENA_POWER_V2_SCALE = float(env("ARENA_POWER_V2_SCALE", "2.0"))
+if ARENA_POWER_V2_SCALE <= 0:
+    raise ValueError("ARENA_POWER_V2_SCALE must be positive")
+
 # Trusted reverse proxy addresses (exact IPs or CIDR), comma-separated.
 trusted_proxy_ips_str = env("DJANGO_TRUSTED_PROXY_IPS", "")
 TRUSTED_PROXY_IPS = [ip.strip() for ip in trusted_proxy_ips_str.split(",") if ip.strip()]

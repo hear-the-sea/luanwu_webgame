@@ -440,6 +440,7 @@ def evaluate_bot_lineup(
     target_team_power: int,
     max_lineup_size: int | None = None,
     preferred_guest_count: int | None = None,
+    power_formula_version: int = 1,
 ) -> BotLineupEvaluation:
     if max_lineup_size is None:
         if str(mode) == "tournament":
@@ -457,6 +458,7 @@ def evaluate_bot_lineup(
         target_guest_count=int(target_guest_count),
         target_team_power=int(target_team_power),
         preferred_guest_count=preferred_guest_count,
+        power_formula_version=int(power_formula_version),
     )
 
 
@@ -1598,6 +1600,7 @@ def _evaluate_profile_for_demand(
         target_team_power=demand.target_team_power,
         max_lineup_size=_max_lineup_size_for_demand(demand),
         preferred_guest_count=preferred_guest_count,
+        power_formula_version=int(getattr(demand, "power_formula_version", 1)),
     )
 
 

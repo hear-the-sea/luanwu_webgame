@@ -40,6 +40,7 @@ class ArenaVirtualDemand(models.Model):
     )
     status = models.CharField("协调状态", max_length=16, choices=Status.choices, default=Status.ACTIVE, db_index=True)
     version = models.PositiveIntegerField("需求版本", default=1)
+    power_formula_version = models.PositiveSmallIntegerField("阵容战力公式版本", default=1)
     target_guest_count = models.PositiveSmallIntegerField("目标门客数", default=0)
     target_team_power = models.PositiveBigIntegerField("目标队伍战力", default=0)
     arena_training_policy_version = models.PositiveSmallIntegerField("竞技场培养策略版本", default=0)

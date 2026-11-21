@@ -343,7 +343,7 @@ class TradeConfig:
     AUCTION_MIN_PRESTIGE: int = 2000  # 进入拍卖行的最低声望
 
     # 市场交易
-    MARKET_MIN_PRESTIGE: int = 300  # 集市购买和上架的最低声望
+    MARKET_MIN_PRESTIGE: int = 2000  # 进入集市、购买和上架的最低声望（与拍卖行一致）
     TRANSACTION_TAX_RATE: float = 0.10  # 交易税率 10%
     MIN_PRICE_MULTIPLIER: float = 1.0  # 最低价格为物品price的1倍
     MAX_PRICE: int = 10000000  # 最高1000万银两

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from django.conf import settings
+
 from gameplay.models import Building, Manor
 from gameplay.services.virtual_player_core.contracts import ArenaGrowthObjective
 from guests.models import Guest
@@ -24,12 +26,17 @@ def guest_arena_power(
     return calculate_guest_arena_power(
         force=force,
         intellect=intellect,
-        defense=defense,
+        defense=int(defense) + int(getattr(guest, "defense_bonus", 0) or 0),
+        defense_stat=int(defense),
         agility=agility,
         hp_bonus=int(guest.hp_bonus),
         archetype=str(guest.template.archetype),
         base_hp=int(guest.template.base_hp),
         level=int(guest.level if level is None else level),
+        luck=int(getattr(guest, "luck", 0) or 0),
+        troop_capacity=int(getattr(guest, "troop_capacity", 0) or 0),
+        attack_bonus=int(getattr(guest, "attack_bonus", 0) or 0),
+        formula_version=int(getattr(settings, "ARENA_POWER_FORMULA_VERSION", 1)),
     )
 
 

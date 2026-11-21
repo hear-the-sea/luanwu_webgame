@@ -76,6 +76,7 @@ from guests.utils.recruitment_utils import HERMIT_RARITY, get_recruitment_rarity
 
 from .archetype_pacing import ArchetypePacing, resolve_archetype_pacing
 from .config import load_virtual_player_config
+from .power_version import arena_power_formula_version
 from .projection import calculate_guest_arena_power
 from .runtime_assessment import assess_virtual_player_runtime
 from .safety_preflight import check_v2_development_write_preflight
@@ -860,12 +861,17 @@ def _guest_power(guest: Guest) -> int:
     return calculate_guest_arena_power(
         force=int(guest.force),
         intellect=int(guest.intellect),
-        defense=int(guest.defense_stat),
+        defense=int(guest.defense_stat) + int(getattr(guest, "defense_bonus", 0) or 0),
+        defense_stat=int(guest.defense_stat),
         agility=int(guest.agility),
         hp_bonus=int(guest.hp_bonus),
         archetype=str(guest.template.archetype),
         base_hp=int(guest.template.base_hp),
         level=int(guest.level),
+        luck=int(guest.luck),
+        attack_bonus=int(guest.attack_bonus),
+        troop_capacity=int(guest.troop_capacity),
+        formula_version=arena_power_formula_version(),
     )
 
 

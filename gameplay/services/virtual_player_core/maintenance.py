@@ -4544,6 +4544,21 @@ def _build_v2_maintenance_plan_from_profile(
         if virtual_asset_policy
         else (*training_candidates, *equipment_candidates)
     )
+    # A guest below the arena minimum level is not usable yet.  Keep training
+    # in its own priority group so equipment/skill utility cannot consume the
+    # slot before the eligibility requirement is met.
+    below_minimum_guest_level = bool(
+        minimum_guest_level is not None and any(int(guest.level) < int(minimum_guest_level) for guest in growth_guests)
+    )
+    arena_quality_groups = (
+        (
+            training_candidates,
+            building_candidates if arena_replenishment and not arena_capacity_expansion_required else (),
+            (*equipment_candidates, *skill_candidates),
+        )
+        if below_minimum_guest_level and training_candidates
+        else (arena_quality_candidates,)
+    )
     all_generated_candidates = (
         *healing_candidates,
         *recruitment_candidates,
@@ -4671,7 +4686,7 @@ def _build_v2_maintenance_plan_from_profile(
                     healing_candidates,
                     recruitment_candidates if quantity_target_pending else (),
                     building_candidates if arena_capacity_expansion_required else (),
-                    arena_quality_candidates,
+                    *arena_quality_groups,
                 )
                 if group
             )
