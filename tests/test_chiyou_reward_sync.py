@@ -23,6 +23,8 @@ armor_luck_rules = import_module("gameplay.migrations.0230_chiyou_armor_luck")
 copy_rules = import_module("gameplay.migrations.0242_player_facing_mission_item_copy")
 progression_token_rules = import_module("gameplay.migrations.0273_direct_mission_progression_tokens")
 calibration_275 = import_module("gameplay.migrations.0275_equipment_balance_calibration")
+luck_278 = import_module("gameplay.migrations.0278_equipment_luck_progression")
+callback_279 = import_module("gameplay.migrations.0279_equipment_callback_rebalance")
 DATA = Path(__file__).resolve().parents[1] / "data"
 
 
@@ -71,6 +73,13 @@ def test_reward_migration_freezes_current_equipment_and_recipe():
                 final_defaults["description"] = text_update["description"]
         if key in calibration_275.EQUIPMENT_PAYLOADS:
             final_defaults["effect_payload"] = dict(calibration_275.EQUIPMENT_PAYLOADS[key])
+        if key in luck_278.EQUIPMENT_PAYLOAD_OVERRIDES:
+            final_defaults["effect_payload"] = {
+                **final_defaults["effect_payload"],
+                **luck_278.EQUIPMENT_PAYLOAD_OVERRIDES[key],
+            }
+        if key in callback_279.EQUIPMENT_PAYLOADS:
+            final_defaults["effect_payload"] = dict(callback_279.EQUIPMENT_PAYLOADS[key])
         assert final_defaults == expected
     recipes = yaml.safe_load((DATA / "forge_blueprints.yaml").read_text())["recipes"]
     assert rules.ARMOR_RECIPE == next(row for row in recipes if row["blueprint_key"] == "blueprint_chiyoujia")

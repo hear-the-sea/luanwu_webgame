@@ -11,6 +11,7 @@ from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.db import connection
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils.html import strip_tags
 from PIL import Image
 
@@ -33,6 +34,7 @@ from guests.utils.equipment_utils import EQUIP_SLOT_MAP, compute_set_bonus, comp
 
 DATA = Path(__file__).resolve().parents[1] / "data"
 lvbu_276 = import_module("gameplay.migrations.0276_lvbu_equipment_set")
+lvbu_277 = import_module("gameplay.migrations.0277_lvbu_set_concise_effect_description")
 
 LVBU_SET_KEYS = (
     "equip_shufazijinkuan",
@@ -561,6 +563,8 @@ def test_0276_lvbu_equipment_set_migration_syncs_items_affixes_and_chests_idempo
 
     lvbu_276.apply_lvbu_equipment_set(apps, SimpleNamespace(connection=connection))
     lvbu_276.apply_lvbu_equipment_set(apps, SimpleNamespace(connection=connection))
+    lvbu_277.apply_concise_lvbu_effect_description(apps, SimpleNamespace(connection=connection))
+    lvbu_277.apply_concise_lvbu_effect_description(apps, SimpleNamespace(connection=connection))
 
     for key in LVBU_SET_KEYS:
         item = ItemTemplate.objects.get(key=key)
@@ -575,6 +579,7 @@ def test_0276_lvbu_equipment_set_migration_syncs_items_affixes_and_chests_idempo
 
     affix_halberd.refresh_from_db()
     assert affix_halberd.effect_payload["set_key"] == "lvbu_set"
+    assert affix_halberd.effect_payload["set_bonus"]["effect_description"] == "近战受击有40%概率以6.5倍武力反击"
     assert GearTemplate.objects.get(key=affix_halberd.key).set_key == "lvbu_set"
 
     for chest_key in (
@@ -585,3 +590,63 @@ def test_0276_lvbu_equipment_set_migration_syncs_items_affixes_and_chests_idempo
     ):
         chest = ItemTemplate.objects.get(key=chest_key)
         assert chest.effect_payload == yaml_items[chest_key]["effect_payload"]
+
+
+@pytest.mark.django_db
+def test_lvbu_set_warehouse_and_guild_hero_pool_render_effect_description(client):
+    yaml_items = _load_yaml_items()
+    _item_templates, gear_templates = _setup_lvbu_templates()
+    user = get_user_model().objects.create_user(username="lvbu_wh_viewer", password="pw")
+    manor = ensure_manor(user)
+    boots_tpl = ItemTemplate.objects.get(key="equip_lvbuzhanxue")
+    InventoryItem.objects.create(manor=manor, template=boots_tpl, quantity=1, bound_quantity=1)
+
+    qilin_row = yaml_items["equip_qilinxue"]
+    qilin_tpl = ItemTemplate.objects.create(
+        key="equip_qilinxue",
+        name=qilin_row["name"],
+        description=qilin_row["description"],
+        effect_type=qilin_row["effect_type"],
+        effect_payload=qilin_row["effect_payload"],
+        rarity=qilin_row["rarity"],
+        tradeable=qilin_row["tradeable"],
+        price=qilin_row["price"],
+        storage_space=qilin_row["storage_space"],
+    )
+    InventoryItem.objects.create(manor=manor, template=qilin_tpl, quantity=1)
+
+    client.force_login(user)
+    response = client.get(reverse("gameplay:warehouse"))
+    assert response.status_code == 200
+    body = response.content.decode("utf-8")
+    assert "套装：吕布套装" in body
+    assert "4件套效果：" in body
+    assert "近战受击有40%概率以6.5倍武力反击" in body
+    assert "（过防御减伤" not in body
+    assert "麒麟套装" in body
+
+    guild_detail_html = render_to_string(
+        "guilds/partials/hero_pool_guest_detail.html",
+        {
+            "guest": SimpleNamespace(
+                display_name="吕布",
+                rarity=GuestRarity.ORANGE,
+                level=80,
+                avatar_url="",
+            ),
+            "health_stat": {"current": 1000, "max": 1000},
+            "owner_name": "tester",
+            "basic_stats": [],
+            "equipment_panels": [
+                {
+                    "value": "shoes",
+                    "label": "鞋子",
+                    "items": [SimpleNamespace(id=1, template=gear_templates["equip_lvbuzhanxue"])],
+                }
+            ],
+            "skill_count": 0,
+            "skill_capacity": 4,
+            "skill_slots": [],
+        },
+    )
+    assert "4件套属性：近战受击有40%概率以6.5倍武力反击" in guild_detail_html

@@ -13,6 +13,7 @@ from ..random_context import (
     GONG_MELEE_BASE_RATIO_ENGINE_VERSIONS,
     GUEST_ACTION_CONSISTENCY_ENGINE_VERSIONS,
     GUEST_TROOP_BALANCE_ENGINE_VERSIONS,
+    STAT_BALANCE_V11_ENGINE_VERSIONS,
 )
 from .constants import (
     ARROW_TOWER_VS_GUEST_DAMAGE_MULTIPLIER,
@@ -31,12 +32,18 @@ from .constants import (
     GUEST_VS_GUEST_DEFENSE_CONSTANT,
     GUEST_VS_TROOP_DEFENSE_CONSTANT,
     HARDCAP,
+    INTELLECT_SKILL_DR_CONSTANT,
+    INTELLECT_SKILL_DR_HARDCAP,
+    INTELLECT_STATUS_RESIST_CONSTANT,
+    INTELLECT_STATUS_RESIST_HARDCAP,
     LEGACY_GUEST_SKILL_VS_TROOP_MULTIPLIER,
     PREEMPTIVE_DAMAGE_REDUCTION,
+    PREEMPTIVE_STATUS_CHANCE_MULTIPLIER,
     SOFTCAP_THRESHOLD,
     TROOP_COUNTERS,
     TROOP_VS_CITY_DEFENSE_DAMAGE_MULTIPLIER,
     TROOP_VS_GUEST_DEFENSE_CONSTANT,
+    V11_PREEMPTIVE_DAMAGE_REDUCTION,
 )
 from .target_selection import is_ranged_attack
 from .types import AttackSkill, _DamageCalculation
@@ -174,9 +181,50 @@ def _city_defense_damage_multiplier(
     return 1.0
 
 
-def _apply_round_and_tech_damage_modifiers(actor: "Combatant", round_priority: int, damage: float) -> float:
+def _target_intellect(target: "Combatant") -> float:
+    raw = getattr(target, "intellect_attr", None)
+    if raw is None:
+        raw = getattr(target, "intellect", 0)
+    return max(0.0, float(raw or 0))
+
+
+def _intellect_skill_damage_reduction(target: "Combatant", battle_engine_version: str) -> float:
+    if battle_engine_version not in STAT_BALANCE_V11_ENGINE_VERSIONS or target.kind != "guest":
+        return 0.0
+    intellect = _target_intellect(target)
+    if intellect <= 0:
+        return 0.0
+    return min(INTELLECT_SKILL_DR_HARDCAP, intellect / (intellect + INTELLECT_SKILL_DR_CONSTANT))
+
+
+def _status_chance_multiplier(actor: "Combatant", target: "Combatant", battle_engine_version: str) -> float:
+    if battle_engine_version not in STAT_BALANCE_V11_ENGINE_VERSIONS:
+        return 1.0
+    multiplier = 1.0
     if actor.kind == "guest" and actor.priority == -1:
-        damage = damage * PREEMPTIVE_DAMAGE_REDUCTION
+        multiplier *= PREEMPTIVE_STATUS_CHANCE_MULTIPLIER
+    if target.kind == "guest":
+        intellect = _target_intellect(target)
+        if intellect > 0:
+            resist = min(INTELLECT_STATUS_RESIST_HARDCAP, intellect / (intellect + INTELLECT_STATUS_RESIST_CONSTANT))
+            multiplier *= 1.0 - resist
+    return multiplier
+
+
+def _apply_round_and_tech_damage_modifiers(
+    actor: "Combatant",
+    round_priority: int,
+    damage: float,
+    *,
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
+) -> float:
+    if actor.kind == "guest" and actor.priority == -1:
+        preemptive_mult = (
+            V11_PREEMPTIVE_DAMAGE_REDUCTION
+            if battle_engine_version in STAT_BALANCE_V11_ENGINE_VERSIONS
+            else PREEMPTIVE_DAMAGE_REDUCTION
+        )
+        damage = damage * preemptive_mult
 
     if actor.troop_class == "jian" and round_priority == -1:
         preempt_mult = actor.tech_effects.get("preemptive_damage", 0)
@@ -207,8 +255,11 @@ def _apply_post_damage_modifiers(
     damage: float,
     is_double_strike: bool,
     rng: random.Random,
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
 ) -> float:
-    damage = _apply_round_and_tech_damage_modifiers(actor, round_priority, damage)
+    damage = _apply_round_and_tech_damage_modifiers(
+        actor, round_priority, damage, battle_engine_version=battle_engine_version
+    )
     if is_double_strike:
         damage *= 2
     return process_status_effects(actor, target, skills, rng, phase="damage_penalty", damage=damage)
@@ -250,9 +301,14 @@ def _apply_guest_vs_troop_split_scaling(
     return base_damage * slaughter_mult + skill_damage * skill_multiplier
 
 
-def _apply_guest_vs_guest_split_scaling(*, base_damage: float, total_damage: float) -> float:
+def _apply_guest_vs_guest_split_scaling(
+    *,
+    base_damage: float,
+    total_damage: float,
+    skill_damage_reduction: float = 0.0,
+) -> float:
     skill_damage = total_damage - base_damage
-    return base_damage + skill_damage * GUEST_SKILL_VS_GUEST_MULTIPLIER
+    return base_damage + skill_damage * GUEST_SKILL_VS_GUEST_MULTIPLIER * (1.0 - skill_damage_reduction)
 
 
 def calculate_passive_true_damage(
@@ -319,6 +375,7 @@ def process_status_effects(
     *,
     phase: Literal["inflict"],
     damage: None = None,
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
 ) -> List[str]: ...
 
 
@@ -330,6 +387,7 @@ def process_status_effects(
     *,
     phase: Literal["damage_penalty", "inflict"],
     damage: float | None = None,
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
 ) -> float | List[str]:
     """
     状态效果处理（保持战斗日志与 RNG 调用顺序向后兼容）。
@@ -352,7 +410,8 @@ def process_status_effects(
             damage = damage * (1 - damage_penalty)
         return damage
 
-    return apply_skill_statuses(skills, target, rng)
+    status_mult = _status_chance_multiplier(actor, target, battle_engine_version)
+    return apply_skill_statuses(skills, target, rng, status_chance_multiplier=status_mult)
 
 
 def _apply_final_damage_modifiers(
@@ -477,6 +536,7 @@ def calculate_attack_damage(
         damage=base_damage_value,
         is_double_strike=is_double_strike,
         rng=rng,
+        battle_engine_version=battle_engine_version,
     )
     total_damage_value = _apply_post_damage_modifiers(
         actor,
@@ -486,8 +546,10 @@ def calculate_attack_damage(
         damage=total_damage_value,
         is_double_strike=is_double_strike,
         rng=rng,
+        battle_engine_version=battle_engine_version,
     )
 
+    skill_dr = _intellect_skill_damage_reduction(target, battle_engine_version)
     noncritical_burst_damage = None
     if damage_component == "burst":
         # 倍率和斩杀造成的额外伤害也属于技能增量，不能把普攻基础重复计入。
@@ -495,7 +557,7 @@ def calculate_attack_damage(
         if target.kind == "troop":
             damage *= GUEST_SKILL_VS_TROOP_MULTIPLIER
         elif target.kind == "guest":
-            damage *= GUEST_SKILL_VS_GUEST_MULTIPLIER
+            damage *= GUEST_SKILL_VS_GUEST_MULTIPLIER * (1.0 - skill_dr)
         if battle_engine_version in GUEST_ACTION_CONSISTENCY_ENGINE_VERSIONS and is_crit:
             # 纯加法技能的基础暴击会在 total-base 中抵消；只给实际增加技能伤害的暴击标记。
             crit_increment = _apply_post_damage_modifiers(
@@ -506,12 +568,13 @@ def calculate_attack_damage(
                 damage=(base_damage - base_damage_without_crit) * (skill_base_multiplier - 1.0),
                 is_double_strike=is_double_strike,
                 rng=rng,
+                battle_engine_version=battle_engine_version,
             )
             noncritical_burst_damage = max(0.0, total_damage_value - base_damage_value - crit_increment)
             if target.kind == "troop":
                 noncritical_burst_damage *= GUEST_SKILL_VS_TROOP_MULTIPLIER
             elif target.kind == "guest":
-                noncritical_burst_damage *= GUEST_SKILL_VS_GUEST_MULTIPLIER
+                noncritical_burst_damage *= GUEST_SKILL_VS_GUEST_MULTIPLIER * (1.0 - skill_dr)
     elif actor.kind == "guest" and target.kind == "troop":
         damage = _apply_guest_vs_troop_split_scaling(
             actor,
@@ -525,6 +588,7 @@ def calculate_attack_damage(
         damage = _apply_guest_vs_guest_split_scaling(
             base_damage=base_damage_value,
             total_damage=total_damage_value,
+            skill_damage_reduction=skill_dr,
         )
     else:
         damage = _apply_slaughter_multiplier(actor, target, total_damage_value, versioned_slaughter_multiplier)

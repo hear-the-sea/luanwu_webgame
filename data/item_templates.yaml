@@ -4177,6 +4177,7 @@ items:
       hp: 300
       defense: 20
       force: 15
+      luck: 6
       troop_capacity: 15
       set_key: xiaowei_set
       set_description: 校尉套装
@@ -4201,6 +4202,7 @@ items:
       hp: 300
       defense: 25
       force: 18
+      luck: 8
       set_key: jiaodoushi_set
       set_description: 角斗士套装
       set_bonus:
@@ -4348,9 +4350,9 @@ items:
     storage_space: 150
     image: equip_fenglingguan.png
     effect_payload:
-      hp: 320
-      defense: 20
-      intellect: 32
+      hp: 360
+      defense: 22
+      intellect: 34
       luck: 12
       set_key: fengling_set
       set_description: 凤翎套装
@@ -4389,6 +4391,7 @@ items:
       hp: 480
       defense: 40
       intellect: 6
+      luck: 10
       set_key: xuanwu_set
       set_description: 玄武套装
       set_bonus:
@@ -4408,11 +4411,11 @@ items:
     storage_space: 150
     image: equip_pojunkui.png
     effect_payload:
-      hp: 300
-      defense: 22
-      force: 24
-      agility: 10
-      troop_capacity: 10
+      hp: 320
+      defense: 24
+      force: 26
+      agility: 11
+      troop_capacity: 14
       required_level: 55
 
   - key: equip_tianjiguan
@@ -4446,6 +4449,7 @@ items:
       defense: 22
       intellect: 34
       agility: 15
+      luck: 12
       troop_capacity: 40
       required_level: 65
 
@@ -4463,6 +4467,7 @@ items:
       defense: 36
       force: 44
       agility: 10
+      luck: 10
       troop_capacity: 20
       required_level: 80
 
@@ -4479,7 +4484,7 @@ items:
       hp: 400
       defense: 26
       intellect: 52
-      luck: 14
+      luck: 18
       required_level: 75
 
   - key: equip_shufazijinkuan
@@ -4510,7 +4515,7 @@ items:
             melee_only: true
             max_per_action: 1
             log_name: 无双反击
-        effect_description: 近战受击有40%概率以6.5倍武力反击（过防御减伤，每次敌方行动至多1次）
+        effect_description: 近战受击有40%概率以6.5倍武力反击
       required_level: 75
 
   # ══════════════════════════════════════════════════════════════════════════════
@@ -4886,9 +4891,9 @@ items:
     storage_space: 150
     image: equip_xuanwujia.png
     effect_payload:
-      hp: 540
-      defense: 36
-      intellect: 18
+      hp: 580
+      defense: 40
+      intellect: 22
       set_key: xuanwu_set
       set_description: 玄武套装
       set_bonus:
@@ -4957,9 +4962,10 @@ items:
     storage_space: 150
     image: equip_tianshukaijia.png
     effect_payload:
-      hp: 640
-      defense: 32
-      force: 12
+      hp: 680
+      defense: 36
+      force: 14
+      luck: 4
       required_level: 55
 
   - key: equip_tianxuankaijia
@@ -4972,9 +4978,10 @@ items:
     storage_space: 150
     image: equip_tianxuankaijia.png
     effect_payload:
-      hp: 360
-      defense: 20
-      force: 40
+      hp: 400
+      defense: 24
+      force: 44
+      agility: 4
       required_level: 55
 
   - key: equip_tianjikaijia
@@ -4987,9 +4994,10 @@ items:
     storage_space: 150
     image: equip_tianjikaijia.png
     effect_payload:
-      hp: 440
-      defense: 24
-      intellect: 34
+      hp: 480
+      defense: 26
+      intellect: 38
+      agility: 6
       required_level: 55
 
   - key: equip_yaoguangkaijia
@@ -5018,8 +5026,9 @@ items:
     storage_space: 150
     image: equip_tianquankaijia.png
     effect_payload:
-      hp: 420
-      defense: 44
+      hp: 680
+      defense: 48
+      luck: 6
       required_level: 55
 
   - key: equip_yuhengkaijia
@@ -5087,6 +5096,7 @@ items:
       defense: 20
       force: 28
       agility: 34
+      luck: 8
       troop_capacity: 22
       required_level: 75
 
@@ -5115,6 +5125,7 @@ items:
       defense: 22
       force: 24
       agility: 22
+      luck: 12
       required_level: 75
 
   - key: equip_longdanqiang
@@ -5163,7 +5174,7 @@ items:
             melee_only: true
             max_per_action: 1
             log_name: 无双反击
-        effect_description: 近战受击有40%概率以6.5倍武力反击（过防御减伤，每次敌方行动至多1次）
+        effect_description: 近战受击有40%概率以6.5倍武力反击
       required_level: 75
 
   - key: equip_jinsirujia
@@ -5179,7 +5190,7 @@ items:
       hp: 540
       defense: 24
       agility: 20
-      luck: 14
+      luck: 20
       required_level: 70
 
   - key: equip_hundunlongpao
@@ -5196,7 +5207,7 @@ items:
       defense: 24
       intellect: 54
       agility: 12
-      luck: 14
+      luck: 18
       required_level: 65
 
   - key: equip_ruanweijia
@@ -5573,7 +5584,7 @@ items:
       defense: 10
       intellect: 24
       agility: 22
-      luck: 6
+      luck: 10
       set_key: huxian_set
       set_description: 狐仙套装
       set_bonus:
@@ -5617,9 +5628,9 @@ items:
     storage_space: 150
     image: equip_xuanwuxue.png
     effect_payload:
-      hp: 380
-      defense: 30
-      agility: 18
+      hp: 400
+      defense: 32
+      agility: 20
       set_key: xuanwu_set
       set_description: 玄武套装
       set_bonus:
@@ -5675,7 +5686,7 @@ items:
       defense: 8
       force: 22
       agility: 24
-      luck: 6
+      luck: 10
       required_level: 45
 
   # ---------- 鞋子 - 橙色品质（巅峰期）----------
@@ -5693,7 +5704,7 @@ items:
       defense: 12
       force: 36
       agility: 30
-      luck: 6
+      luck: 12
       required_level: 70
 
   - key: equip_shenxingxue
@@ -5710,7 +5721,7 @@ items:
       defense: 14
       force: 10
       agility: 46
-      luck: 8
+      luck: 14
       required_level: 80
 
   - key: equip_wujixingxue
@@ -5727,6 +5738,7 @@ items:
       defense: 16
       intellect: 38
       agility: 30
+      luck: 10
       required_level: 75
 
   - key: equip_lvbuzhanxue
@@ -5757,7 +5769,7 @@ items:
             melee_only: true
             max_per_action: 1
             log_name: 无双反击
-        effect_description: 近战受击有40%概率以6.5倍武力反击（过防御减伤，每次敌方行动至多1次）
+        effect_description: 近战受击有40%概率以6.5倍武力反击
       required_level: 75
 
   # ══════════════════════════════════════════════════════════════════════════════
@@ -6275,6 +6287,7 @@ items:
       hp: 300
       force: 30
       intellect: 25
+      luck: 8
       set_key: sixiang_set
       set_description: 四象套装
       set_bonus:
@@ -6415,11 +6428,11 @@ items:
     storage_space: 150
     image: equip_huxianjian.png
     effect_payload:
-      hp: 200
-      defense: 6
+      hp: 240
+      defense: 8
       force: 36
-      intellect: 50
-      agility: 8
+      intellect: 54
+      agility: 10
       set_key: huxian_set
       set_description: 狐仙套装
       set_bonus:
@@ -6458,6 +6471,7 @@ items:
       hp: 320
       defense: 14
       force: 58
+      luck: 10
       set_key: qilin_set
       set_description: 麒麟套装
       set_bonus:
@@ -6478,9 +6492,9 @@ items:
     storage_space: 150
     image: equip_xuanwuchui.png
     effect_payload:
-      hp: 380
-      defense: 26
-      force: 42
+      hp: 420
+      defense: 30
+      force: 46
       set_key: xuanwu_set
       set_description: 玄武套装
       set_bonus:
@@ -6500,9 +6514,9 @@ items:
     storage_space: 150
     image: fenglingshan.png
     effect_payload:
-      hp: 160
-      defense: 8
-      intellect: 54
+      hp: 200
+      defense: 10
+      intellect: 58
       luck: 18
       set_key: fengling_set
       set_description: 凤翎套装
@@ -6522,10 +6536,11 @@ items:
     storage_space: 150
     image: equip_qixingjian.png
     effect_payload:
-      hp: 180
-      defense: 12
+      hp: 220
+      defense: 14
       force: 20
-      intellect: 44
+      intellect: 48
+      agility: 8
       luck: 10
       required_level: 45
 
@@ -6602,10 +6617,10 @@ items:
     storage_space: 150
     image: equip_shuanghuagong.png
     effect_payload:
-      hp: 80
+      hp: 100
       defense: 10
-      force: 36
-      agility: 18
+      force: 40
+      agility: 20
       required_level: 50
 
   - key: equip_jinshejian
@@ -6634,9 +6649,9 @@ items:
     storage_space: 150
     image: equip_duomingfeidao.png
     effect_payload:
-      hp: 60
-      force: 36
-      agility: 14
+      hp: 80
+      force: 40
+      agility: 18
       luck: 12
       required_level: 55
 
@@ -6650,10 +6665,10 @@ items:
     storage_space: 150
     image: equip_ziweiruanjian.png
     effect_payload:
-      hp: 80
-      force: 36
+      hp: 120
+      force: 40
       intellect: 16
-      agility: 18
+      agility: 22
       required_level: 55
 
   - key: equip_yuxiao
@@ -6666,10 +6681,10 @@ items:
     storage_space: 150
     image: equip_yuxiao.png
     effect_payload:
-      hp: 140
-      intellect: 48
-      agility: 12
-      luck: 8
+      hp: 180
+      intellect: 54
+      agility: 16
+      luck: 10
       required_level: 60
 
   - key: equip_jinlun
@@ -6682,10 +6697,11 @@ items:
     storage_space: 150
     image: equip_jinlun.png
     effect_payload:
-      hp: 240
-      defense: 10
-      force: 50
+      hp: 280
+      defense: 14
+      force: 54
       intellect: 24
+      agility: 8
       required_level: 60
 
   - key: equip_xuedao
@@ -6698,9 +6714,9 @@ items:
     storage_space: 150
     image: equip_xuedao.png
     effect_payload:
-      hp: 300
-      force: 56
-      agility: 10
+      hp: 320
+      force: 60
+      agility: 12
       required_level: 50
 
   - key: equip_yuanyangdao
@@ -6714,8 +6730,9 @@ items:
     image: equip_yuanyangdao.png
     effect_payload:
       hp: 260
-      force: 36
+      force: 40
       intellect: 24
+      agility: 8
       luck: 18
       required_level: 60
 
@@ -6729,10 +6746,10 @@ items:
     storage_space: 150
     image: equip_jinshezui.png
     effect_payload:
-      hp: 80
-      force: 18
+      hp: 100
+      force: 32
       intellect: 30
-      agility: 16
+      agility: 20
       luck: 8
       required_level: 55
 
@@ -6796,10 +6813,11 @@ items:
     storage_space: 150
     image: equip_duoqinghuan.png
     effect_payload:
-      hp: 200
-      defense: 14
-      force: 34
-      intellect: 34
+      hp: 240
+      defense: 16
+      force: 40
+      intellect: 36
+      agility: 6
       luck: 8
       required_level: 45
 
@@ -6813,10 +6831,10 @@ items:
     storage_space: 150
     image: equip_xiuhuazhen.png
     effect_payload:
-      hp: 40
-      force: 24
-      agility: 15
-      luck: 6
+      hp: 60
+      force: 26
+      agility: 24
+      luck: 12
       required_level: 55
 
   # ---------- 武器 - 橙色品质（巅峰期）----------
@@ -6886,7 +6904,7 @@ items:
             melee_only: true
             max_per_action: 1
             log_name: 无双反击
-        effect_description: 近战受击有40%概率以6.5倍武力反击（过防御减伤，每次敌方行动至多1次）
+        effect_description: 近战受击有40%概率以6.5倍武力反击
       required_level: 75
 
   - key: equip_xuanyuanjian
@@ -6904,6 +6922,7 @@ items:
       force: 22
       intellect: 56
       agility: 14
+      luck: 12
       troop_capacity: 36
       required_level: 80
 
@@ -6921,6 +6940,7 @@ items:
       defense: 28
       force: 68
       agility: 4
+      luck: 8
       troop_capacity: 34
       required_level: 65
 
@@ -6951,10 +6971,10 @@ items:
     storage_space: 200
     image: equip_qiankunshengong.png
     effect_payload:
-      hp: 120
-      defense: 6
-      force: 46
-      agility: 24
+      hp: 180
+      defense: 12
+      force: 58
+      agility: 26
       required_level: 75
 
   - key: equip_xuantiechongjian
@@ -6986,7 +7006,7 @@ items:
       defense: 24
       force: 46
       agility: 18
-      luck: 8
+      luck: 12
       required_level: 70
 
   - key: equip_xiaolifeidao
@@ -6999,10 +7019,10 @@ items:
     storage_space: 200
     image: equip_xiaolifeidao.png
     effect_payload:
-      hp: 60
-      force: 30
-      agility: 28
-      luck: 10
+      hp: 120
+      force: 38
+      agility: 34
+      luck: 16
       required_level: 75
 
   - key: equip_kongquelin
@@ -7015,11 +7035,11 @@ items:
     storage_space: 200
     image: equip_kongquelin.png
     effect_payload:
-      hp: 100
+      hp: 160
       force: 18
-      intellect: 44
-      agility: 18
-      luck: 14
+      intellect: 56
+      agility: 22
+      luck: 18
       required_level: 80
 
   - key: equip_tianyamingyuedao
@@ -7036,7 +7056,7 @@ items:
       defense: 14
       force: 60
       agility: 8
-      luck: 20
+      luck: 24
       required_level: 70
 
   - key: equip_yuanyuewandao
@@ -7052,7 +7072,7 @@ items:
       hp: 140
       force: 50
       agility: 20
-      luck: 14
+      luck: 18
       required_level: 80
 
   - key: equip_changshengjian
@@ -7377,9 +7397,9 @@ items:
     storage_space: 150
     image: equip_fenghuangyu.png
     effect_payload:
-      hp: 140
-      defense: 8
-      intellect: 36
+      hp: 180
+      defense: 10
+      intellect: 40
       luck: 18
       set_key: fengling_set
       set_description: 凤翎套装
@@ -7415,9 +7435,10 @@ items:
     storage_space: 150
     image: equip_xuanwuyufu.png
     effect_payload:
-      hp: 480
-      defense: 34
-      intellect: 12
+      hp: 500
+      defense: 36
+      intellect: 16
+      luck: 6
       required_level: 60
 
   - key: equip_tianjiyupei
@@ -7446,10 +7467,10 @@ items:
     storage_space: 150
     image: equip_pojunhufu.png
     effect_payload:
-      hp: 240
+      hp: 260
       force: 26
       agility: 12
-      troop_capacity: 44
+      troop_capacity: 58
       required_level: 55
 
   - key: equip_guiyuanzhu
@@ -7477,10 +7498,10 @@ items:
     storage_space: 150
     image: equip_shenghuoling.png
     effect_payload:
-      hp: 240
-      intellect: 26
+      hp: 260
+      intellect: 28
       luck: 16
-      troop_capacity: 44
+      troop_capacity: 58
       required_level: 50
 
   # ---------- 饰品 - 橙色品质 ----------
@@ -7494,10 +7515,10 @@ items:
     storage_space: 200
     image: equip_heshibi.png
     effect_payload:
-      hp: 420
-      defense: 26
-      intellect: 24
-      luck: 24
+      hp: 460
+      defense: 28
+      intellect: 30
+      luck: 28
       required_level: 65
 
   - key: equip_chuanguoyuxi
@@ -7514,7 +7535,7 @@ items:
       defense: 12
       force: 22
       intellect: 22
-      luck: 16
+      luck: 20
       troop_capacity: 92
       required_level: 80
 
@@ -7532,7 +7553,7 @@ items:
       defense: 24
       force: 34
       agility: 10
-      luck: 12
+      luck: 18
       required_level: 70
 
   - key: equip_businiaoyu
@@ -7582,7 +7603,7 @@ items:
       defense: 16
       force: 34
       agility: 10
-      luck: 14
+      luck: 18
       troop_capacity: 32
       required_level: 70
 
@@ -7824,7 +7845,7 @@ items:
     effect_payload:
       intellect: 25
       agility: 5
-      luck: 20
+      luck: 18
       required_level: 40
 
   - key: equip_lingwenyubi
@@ -7855,7 +7876,7 @@ items:
     effect_payload:
       hp: 120
       intellect: 14
-      luck: 24
+      luck: 18
       required_level: 35
 
   - key: equip_jixiemao
@@ -7959,9 +7980,10 @@ items:
     storage_space: 150
     image: equip_hunyuansan.png
     effect_payload:
-      hp: 400
-      defense: 20
-      force: 32
+      hp: 420
+      defense: 24
+      force: 36
+      agility: 4
       required_level: 60
 
   - key: equip_zijinhulu
@@ -7974,9 +7996,10 @@ items:
     storage_space: 150
     image: equip_zijinhulu.png
     effect_payload:
-      hp: 240
-      defense: 20
-      intellect: 40
+      hp: 280
+      defense: 22
+      intellect: 42
+      agility: 6
       required_level: 55
 
   - key: equip_tianyinguqin
@@ -8005,8 +8028,9 @@ items:
     storage_space: 150
     image: equip_xuanmingdeng.png
     effect_payload:
-      hp: 160
-      intellect: 48
+      hp: 200
+      intellect: 50
+      agility: 6
       luck: 12
       required_level: 55
 
@@ -8129,7 +8153,7 @@ items:
       hp: 350
       intellect: 34
       agility: 14
-      luck: 10
+      luck: 16
       troop_capacity: 56
       required_level: 75
 
@@ -8146,7 +8170,7 @@ items:
       hp: 200
       defense: 26
       agility: 14
-      luck: 24
+      luck: 32
       required_level: 75
 
   - key: equip_taiqingyuce
@@ -8162,7 +8186,7 @@ items:
       hp: 240
       intellect: 54
       agility: 14
-      luck: 12
+      luck: 18
       required_level: 65
 
   - key: equip_feiyuan
@@ -8178,7 +8202,7 @@ items:
       hp: 450
       intellect: 26
       agility: 12
-      luck: 8
+      luck: 12
       troop_stat_bonus:
         dao:
           attack_pct: 0.005
@@ -8207,7 +8231,7 @@ items:
       hp: 300
       force: 26
       agility: 12
-      luck: 8
+      luck: 12
       troop_stat_bonus:
         gong:
           attack_pct: 0.015
@@ -8228,7 +8252,7 @@ items:
       force: 25
       intellect: 25
       agility: 12
-      luck: 8
+      luck: 12
       troop_stat_bonus:
         dao:
           attack_pct: 0.005
@@ -8444,6 +8468,7 @@ items:
     effect_payload:
       defense: 5
       agility: 26
+      luck: 8
       required_level: 10
 
   - key: equip_qingzongma
@@ -8585,10 +8610,11 @@ items:
     storage_space: 250
     image: equip_zhuidian_centered.png
     effect_payload:
-      hp: 260
-      defense: 10
-      force: 24
-      agility: 32
+      hp: 300
+      defense: 12
+      force: 28
+      agility: 38
+      luck: 6
       required_level: 80
 
   - key: equip_jinjingbailongju
@@ -8619,10 +8645,10 @@ items:
     storage_space: 175
     image: equip_wuzhuima.png
     effect_payload:
-      hp: 300
-      defense: 16
-      force: 34
-      agility: 14
+      hp: 340
+      defense: 18
+      force: 38
+      agility: 16
       required_level: 45
 
   - key: equip_jueying
@@ -8635,10 +8661,11 @@ items:
     storage_space: 175
     image: equip_jueying.png
     effect_payload:
-      hp: 220
-      defense: 10
-      agility: 24
-      luck: 10
+      hp: 260
+      defense: 12
+      force: 8
+      agility: 26
+      luck: 12
       required_level: 45
 
   - key: equip_zhaohuangfeidian
@@ -8651,10 +8678,11 @@ items:
     storage_space: 175
     image: equip_zhaohuangfeidian.png
     effect_payload:
-      hp: 220
-      defense: 10
-      force: 16
-      agility: 26
+      hp: 260
+      defense: 12
+      force: 18
+      agility: 27
+      luck: 6
       required_level: 50
 
   - key: equip_dilu
@@ -8670,7 +8698,7 @@ items:
       hp: 400
       defense: 30
       agility: 16
-      luck: 10
+      luck: 14
       required_level: 60
 
   - key: equip_qingshuanglu
@@ -8687,7 +8715,7 @@ items:
       defense: 10
       intellect: 24
       agility: 20
-      luck: 10
+      luck: 14
       required_level: 55
 
   - key: equip_xuanjiazhanju
@@ -8737,7 +8765,7 @@ items:
             melee_only: true
             max_per_action: 1
             log_name: 无双反击
-        effect_description: 近战受击有40%概率以6.5倍武力反击（过防御减伤，每次敌方行动至多1次）
+        effect_description: 近战受击有40%概率以6.5倍武力反击
       required_level: 80
 
   - key: equip_hanxuebaoma
@@ -8804,7 +8832,7 @@ items:
       defense: 10
       force: 20
       agility: 28
-      luck: 12
+      luck: 16
       required_level: 80
   # ---------- 个人任务专属宝箱：银两之外的奖励统一在仓库开启 ----------
   - key: mission_chest_mid_autumn_moon_palace_trial

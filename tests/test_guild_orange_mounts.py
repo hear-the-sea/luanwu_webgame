@@ -18,13 +18,14 @@ from tests.test_equipment_template_sync import _create_guest
 migration = importlib.import_module("gameplay.migrations.0214_guild_orange_mounts")
 previous = importlib.import_module("gameplay.migrations.0211_equipment_specialization")
 calibration_275 = importlib.import_module("gameplay.migrations.0275_equipment_balance_calibration")
+callback_279 = importlib.import_module("gameplay.migrations.0279_equipment_callback_rebalance")
 
 
 def test_orange_mount_catalog_has_distinct_roles_and_matches_migration():
     catalog = yaml.safe_load((Path(__file__).resolve().parents[1] / "data/item_templates.yaml").read_text())
     items = {item["key"]: item for item in catalog["items"]}
     current_payloads = {
-        key: calibration_275.EQUIPMENT_PAYLOADS.get(key, payload)
+        key: callback_279.EQUIPMENT_PAYLOADS.get(key, calibration_275.EQUIPMENT_PAYLOADS.get(key, payload))
         for key, payload in migration.EQUIPMENT_PAYLOADS.items()
     }
     for key, payload in current_payloads.items():

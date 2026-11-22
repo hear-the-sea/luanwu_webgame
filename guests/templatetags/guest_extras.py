@@ -70,6 +70,7 @@ def set_bonus_display_entries(set_bonus) -> list[dict]:
                 "pieces": entry.get("pieces"),
                 "bonus": entry.get("bonus") or {},
                 "effect_description": entry.get("effect_description", ""),
+                "summary_text": " ".join(format_set_bonus_entry_texts(entry, stat_labels=_GEAR_STAT_LABELS)),
             }
         )
     return entries

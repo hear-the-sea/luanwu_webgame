@@ -22,6 +22,9 @@ def test_static_config_matches_immutable_approved_snapshot():
     armor_luck = importlib.import_module("gameplay.migrations.0230_chiyou_armor_luck")
     calibration_275 = importlib.import_module("gameplay.migrations.0275_equipment_balance_calibration")
     lvbu_276 = importlib.import_module("gameplay.migrations.0276_lvbu_equipment_set")
+    lvbu_277 = importlib.import_module("gameplay.migrations.0277_lvbu_set_concise_effect_description")
+    luck_278 = importlib.import_module("gameplay.migrations.0278_equipment_luck_progression")
+    callback_279 = importlib.import_module("gameplay.migrations.0279_equipment_callback_rebalance")
     feature_equipment = {
         key: item["effect_payload"]
         for migration in (chiyou, zhaoyun)
@@ -30,15 +33,20 @@ def test_static_config_matches_immutable_approved_snapshot():
     }
     for key, overrides in armor_luck.EQUIPMENT_PAYLOAD_OVERRIDES.items():
         feature_equipment[key] = {**feature_equipment[key], **overrides}
-    assert len(equipment) == 280
-    assert equipment == {
+    expected = {
         **migration.EQUIPMENT_PAYLOADS,
         **specialization.EQUIPMENT_PAYLOADS,
         **guild_mounts.EQUIPMENT_PAYLOADS,
         **feature_equipment,
         **calibration_275.EQUIPMENT_PAYLOADS,
         **lvbu_276.EQUIPMENT_PAYLOADS,
+        **lvbu_277.EQUIPMENT_PAYLOADS,
     }
+    for key, overrides in luck_278.EQUIPMENT_PAYLOAD_OVERRIDES.items():
+        expected[key] = {**expected[key], **overrides}
+    expected.update(callback_279.EQUIPMENT_PAYLOADS)
+    assert len(equipment) == 280
+    assert equipment == expected
 
 
 def test_any_mixed_loadout_with_set_bonuses_adds_at_most_500_troops():
@@ -607,3 +615,253 @@ def test_equipment_catalog_maintains_archetype_differentiation():
 
     assert duplicate_pairs == []
     assert orange_overlap_pairs == []
+
+
+def test_equipment_luck_rarity_ceilings_are_monotonic():
+    """各装备槽位的高阶运势上限不应低于低阶，避免蓝/紫压橙倒挂。"""
+    from tests.test_item_template_equipment_balance import RARITY_ORDER, _load_item_templates
+
+    items = _load_item_templates()
+    slot_rarity_max: dict[str, dict[str, int]] = {}
+    for row in items.values():
+        effect_type = str(row.get("effect_type") or "")
+        if not effect_type.startswith("equip_"):
+            continue
+        slot = effect_type.removeprefix("equip_")
+        rarity = str(row.get("rarity") or "")
+        luck = int((row.get("effect_payload") or {}).get("luck", 0) or 0)
+        slot_rarity_max.setdefault(slot, {})
+        slot_rarity_max[slot][rarity] = max(slot_rarity_max[slot].get(rarity, 0), luck)
+
+    inversions = []
+    for slot, rarity_map in slot_rarity_max.items():
+        prev_rarity = None
+        prev_max = -1
+        for rarity in RARITY_ORDER:
+            if rarity not in rarity_map:
+                continue
+            current_max = rarity_map[rarity]
+            if prev_rarity is not None and current_max < prev_max:
+                inversions.append((slot, prev_rarity, prev_max, rarity, current_max))
+            prev_rarity = rarity
+            prev_max = current_max
+
+    assert inversions == []
+
+
+@pytest.mark.django_db
+def test_luck_progression_migration_syncs_worn_affixes_and_preserves_naked_stats(django_user_model):
+    from django.apps import apps
+    from django.db import connection
+
+    from gameplay.models import ItemTemplate
+    from guests.models import GearItem, GearTemplate
+    from guests.services.equipment_stats import apply_template_stats_to_guest
+    from tests.test_equipment_template_sync import _create_guest
+
+    luck_278 = importlib.import_module("gameplay.migrations.0278_equipment_luck_progression")
+    manor, guest = _create_guest(django_user_model, "luck_progression_278")
+    naked_luck = guest.luck
+    naked_force = guest.force
+
+    base_item = ItemTemplate.objects.create(
+        key="equip_zhoutianxingpan",
+        name="周天星盘",
+        effect_type="equip_ornament",
+        rarity="orange",
+        effect_payload={"hp": 200, "defense": 26, "agility": 14, "luck": 24, "required_level": 75},
+    )
+    affix_key = luck_278._affix_key("equip_diwangkui", "force", 50)
+    affix_item = ItemTemplate.objects.create(
+        key=affix_key,
+        name="力量之帝王盔",
+        effect_type="equip_helmet",
+        rarity="orange",
+        effect_payload={
+            "hp": 420,
+            "force": 53,
+            "defense": 29,
+            "agility": 8,
+            "troop_capacity": 20,
+            "required_level": 80,
+            "equipment_base_key": "equip_diwangkui",
+            "equipment_base_name": "帝王盔",
+            "equipment_affix": "force",
+        },
+    )
+    down_item = ItemTemplate.objects.create(
+        key="equip_guanxingdeng",
+        name="观星灯",
+        effect_type="equip_ornament",
+        rarity="blue",
+        effect_payload={"hp": 120, "intellect": 14, "luck": 24, "required_level": 35},
+    )
+
+    for item, slot in (
+        (base_item, "ornament"),
+        (affix_item, "helmet"),
+        (down_item, "ornament"),
+    ):
+        extra = {
+            k: v
+            for k, v in item.effect_payload.items()
+            if k in {"hp", "force", "intellect", "defense", "agility", "luck", "troop_capacity"}
+        }
+        gear_tpl = GearTemplate.objects.create(
+            key=item.key,
+            name=item.name,
+            slot=slot,
+            rarity=item.rarity,
+            extra_stats=extra,
+        )
+        GearItem.objects.create(manor=manor, guest=guest, template=gear_tpl)
+        updates: set[str] = set()
+        apply_template_stats_to_guest(guest, gear_tpl, 1, updates)
+        guest.save(update_fields=list(updates))
+
+    # 执行迁移并验证幂等性
+    luck_278.sync_equipment_luck_progression(apps, SimpleNamespace(connection=connection))
+    luck_278.sync_equipment_luck_progression(apps, SimpleNamespace(connection=connection))
+
+    guest.refresh_from_db()
+    base_item.refresh_from_db()
+    affix_item.refresh_from_db()
+    down_item.refresh_from_db()
+
+    assert base_item.effect_payload["luck"] == 32
+    assert affix_item.effect_payload["luck"] == 10
+    assert down_item.effect_payload["luck"] == 18
+    assert guest.luck == naked_luck + 32 + 10 + 18
+    assert guest.force == naked_force + 53
+
+
+@pytest.mark.django_db
+def test_0279_callback_rebalance_syncs_worn_affixes_and_keeps_strict_rarity_bounds(django_user_model):
+    from django.apps import apps
+    from django.db import connection
+
+    from core.config import GUEST
+    from core.game_data.equipment_value import item_power
+    from gameplay.models import ItemTemplate
+    from guests.models import GearItem, GearTemplate
+    from guests.services.equipment_stats import apply_template_stats_to_guest
+    from tests.test_equipment_template_sync import _create_guest
+    from tests.test_item_template_equipment_balance import _load_item_templates
+
+    callback_279 = importlib.import_module("gameplay.migrations.0279_equipment_callback_rebalance")
+    cal_275 = importlib.import_module("gameplay.migrations.0275_equipment_balance_calibration")
+
+    manor, guest = _create_guest(django_user_model, "callback_279_user")
+    guest.level = 80
+    guest.current_hp = 99999
+    guest.save(update_fields=["level", "current_hp"])
+    naked = {field: getattr(guest, field) for field in set(callback_279.STAT_FIELDS.values())}
+
+    old_xiuhuazhen = {"hp": 40, "force": 24, "agility": 15, "luck": 6, "required_level": 55}
+    old_lightning = {"hp": 260, "defense": 10, "force": 24, "agility": 32, "required_level": 80}
+
+    xiu_base, _ = ItemTemplate.objects.update_or_create(
+        key="equip_xiuhuazhen",
+        defaults={
+            "name": "绣花针",
+            "effect_type": "equip_weapon",
+            "rarity": "purple",
+            "effect_payload": old_xiuhuazhen,
+        },
+    )
+    xiu_affix_key = cal_275._affix_key("equip_xiuhuazhen", "force", 50)
+    xiu_affix_old = cal_275._affix_payload(xiu_base, "force")
+    ItemTemplate.objects.update_or_create(
+        key=xiu_affix_key,
+        defaults={
+            "name": "力量之绣花针",
+            "effect_type": "equip_weapon",
+            "rarity": "purple",
+            "effect_payload": xiu_affix_old,
+        },
+    )
+    xiu_affix_tpl, _ = GearTemplate.objects.update_or_create(
+        key=xiu_affix_key,
+        defaults={
+            "name": "力量之绣花针",
+            "slot": "weapon",
+            "rarity": "purple",
+            "base_key": "equip_xiuhuazhen",
+            "base_name": "绣花针",
+            "extra_stats": {s: xiu_affix_old[s] for s in callback_279.STAT_FIELDS if s in xiu_affix_old},
+        },
+    )
+    ItemTemplate.objects.update_or_create(
+        key="equip_shandianqiulongju",
+        defaults={
+            "name": "闪电虬龙驹",
+            "effect_type": "equip_mount",
+            "rarity": "orange",
+            "effect_payload": old_lightning,
+        },
+    )
+    lightning_tpl, _ = GearTemplate.objects.update_or_create(
+        key="equip_shandianqiulongju",
+        defaults={
+            "name": "闪电虬龙驹",
+            "slot": "mount",
+            "rarity": "orange",
+            "base_key": "equip_shandianqiulongju",
+            "base_name": "闪电虬龙驹",
+            "extra_stats": {s: old_lightning[s] for s in callback_279.STAT_FIELDS if s in old_lightning},
+        },
+    )
+    for tpl in (xiu_affix_tpl, lightning_tpl):
+        GearItem.objects.create(manor=manor, guest=guest, template=tpl)
+        updates: set[str] = set()
+        apply_template_stats_to_guest(guest, tpl, 1, updates)
+        guest.save(update_fields=list(updates))
+
+    callback_279.apply_equipment_callback_rebalance(apps, SimpleNamespace(connection=connection))
+    callback_279.apply_equipment_callback_rebalance(apps, SimpleNamespace(connection=connection))
+
+    guest.refresh_from_db()
+    xiu_affix_tpl.refresh_from_db()
+    lightning_tpl.refresh_from_db()
+    assert (
+        ItemTemplate.objects.get(key="equip_xiuhuazhen").effect_payload
+        == callback_279.EQUIPMENT_PAYLOADS["equip_xiuhuazhen"]
+    )
+    assert lightning_tpl.extra_stats == {
+        s: int(callback_279.EQUIPMENT_PAYLOADS["equip_shandianqiulongju"][s])
+        for s in callback_279.STAT_FIELDS
+        if s in callback_279.EQUIPMENT_PAYLOADS["equip_shandianqiulongju"]
+    }
+    for field, bare in naked.items():
+        expected = bare
+        for tpl in (xiu_affix_tpl, lightning_tpl):
+            for stat, target in callback_279.STAT_FIELDS.items():
+                if target == field:
+                    expected += tpl.extra_stats.get(stat, 0)
+        assert getattr(guest, field) == expected, field
+    assert guest.max_hp >= int(GUEST.MIN_HP_FLOOR)
+
+    # 校验常规 6 大槽位均不存在“蓝装压紫装”或“非特殊紫装压橙装”的倒挂。
+    catalog = _load_item_templates()
+
+    def best_pw(payload):
+        return max(item_power(payload, archetype=a, stage="late") for a in ("military", "civil", "neutral"))
+
+    for slot in ("helmet", "armor", "shoes", "weapon", "mount", "ornament"):
+        blues = [
+            best_pw(r["effect_payload"])
+            for r in catalog.values()
+            if r["effect_type"] == f"equip_{slot}" and r["rarity"] == "blue"
+        ]
+        purples = [
+            best_pw(r["effect_payload"])
+            for r in catalog.values()
+            if r["effect_type"] == f"equip_{slot}" and r["rarity"] == "purple"
+        ]
+        oranges = [
+            best_pw(r["effect_payload"])
+            for r in catalog.values()
+            if r["effect_type"] == f"equip_{slot}" and r["rarity"] == "orange"
+        ]
+        assert min(purples) > max(blues), slot
+        assert min(oranges) >= max(purples), slot

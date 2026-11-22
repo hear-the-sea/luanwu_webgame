@@ -57,7 +57,9 @@ def skill_damage_bonus(skills: List[Dict], attacker, target) -> float:
     return sum((calculate_skill_bonus(skill, attacker, target) for skill in skills), 0.0)
 
 
-def apply_skill_statuses(skills: List[Dict], target, rng: random.Random) -> List[str]:
+def apply_skill_statuses(
+    skills: List[Dict], target, rng: random.Random, *, status_chance_multiplier: float = 1.0
+) -> List[str]:
     """
     对目标施加技能状态效果（如眩晕）。
 
@@ -66,6 +68,7 @@ def apply_skill_statuses(skills: List[Dict], target, rng: random.Random) -> List
     - 原因：小兵代表一群士兵，被震慑后士气下降但不会完全停止行动
     """
     is_troop = getattr(target, "kind", "") == "troop"
+    chance_mult = max(0.0, float(status_chance_multiplier))
 
     inflicted: List[str] = []
     for skill in skills:
@@ -74,7 +77,7 @@ def apply_skill_statuses(skills: List[Dict], target, rng: random.Random) -> List
         duration = int(skill.get("status_duration") or 0)
         if not status_effect or chance <= 0 or duration <= 0:
             continue
-        if rng.random() <= chance:
+        if rng.random() <= min(1.0, chance * chance_mult):
             already_acted = getattr(target, "has_acted_this_round", False)
 
             # 小兵单位：控制效果转换为削弱效果

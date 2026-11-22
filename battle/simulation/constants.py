@@ -80,8 +80,20 @@ BASE_CRIT_CHANCE = 0.05
 # 暴击伤害倍率
 CRIT_DAMAGE_MULTIPLIER = 1.5
 
-# 先手伤害衰减比例（门客先手时的伤害降低）
+# 先手伤害衰减比例（门客先手时的伤害降低；历史版本 0.8，版本 11 起 0.7）
 PREEMPTIVE_DAMAGE_REDUCTION = 0.8
+V11_PREEMPTIVE_DAMAGE_REDUCTION = 0.7
+
+# 版本 11：门客先攻回合的状态施加概率折减，防止高速控制队开局零互动锁死对手
+PREEMPTIVE_STATUS_CHANCE_MULTIPLIER = 0.7
+
+# 版本 11：智力「策防」——减免门客受到的主动技能额外伤害：min(0.45, intellect / (intellect + 860))（约 704 智封顶）
+INTELLECT_SKILL_DR_CONSTANT = 860.0
+INTELLECT_SKILL_DR_HARDCAP = 0.45
+
+# 版本 11：智力「抗控」——降低门客被技能施加负面状态的概率：min(0.30, intellect / (intellect + 1600))（约 686 智封顶）
+INTELLECT_STATUS_RESIST_CONSTANT = 1600.0
+INTELLECT_STATUS_RESIST_HARDCAP = 0.30
 
 # 伤害随机波动范围
 DAMAGE_VARIANCE_MIN = 0.9

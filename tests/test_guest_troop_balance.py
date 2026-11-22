@@ -235,5 +235,5 @@ def test_debugger_clear_override_still_works_with_versioned_damage(version):
 
 
 def test_new_battles_persist_current_version():
-    assert CURRENT_BATTLE_ENGINE_VERSION == "10"
-    assert current_replay_metadata(123)["battle_engine_version"] == "10"
+    assert CURRENT_BATTLE_ENGINE_VERSION == "11"
+    assert current_replay_metadata(123)["battle_engine_version"] == "11"

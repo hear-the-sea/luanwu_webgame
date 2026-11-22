@@ -82,6 +82,11 @@
                             {% if item.template.set_description %}
                             <div>套装：{{ item.template.set_description }}</div>
                             {% endif %}
+                            {% if item.template.set_bonus %}
+                                {% for set_entry in item.template.set_bonus|set_bonus_display_entries %}
+                                <div>{% if set_entry.pieces %}{{ set_entry.pieces }}件套属性：{% else %}套装属性：{% endif %}{{ set_entry.summary_text }}</div>
+                                {% endfor %}
+                            {% endif %}
                         </span>
                     </span>
                     {% empty %}

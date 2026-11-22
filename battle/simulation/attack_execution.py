@@ -478,7 +478,12 @@ def _perform_single_attack(
             entry["attack_phase"] = attack_phase
 
         entry["status_inflicted"] = process_status_effects(
-            actor, current_target, selection.skills, rng, phase="inflict"
+            actor,
+            current_target,
+            selection.skills,
+            rng,
+            phase="inflict",
+            battle_engine_version=battle_engine_version,
         )
         if run_actor_attack_passives:
             run_passives_for_timing(
