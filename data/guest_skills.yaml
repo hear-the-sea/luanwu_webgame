@@ -303,14 +303,14 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
+      base: 450
       ally:
-        force: 1.45
-        intellect: 0.15
-        agility: 0.2
+        force: 2.6
+        agility: 0.35
       enemy:
         defense: 0.25
     required_level: 15
-    required_intellect: 110
+    required_force: 110
     required_agility: 65
     targets: 1
 
