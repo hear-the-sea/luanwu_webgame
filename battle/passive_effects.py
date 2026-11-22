@@ -345,6 +345,11 @@ def apply_effect(effect: dict[str, Any], context: dict[str, Any]) -> None:
             sources[scoped_source_key] = {
                 "chance": float(effect.get("chance") or 0),
                 "damage_multiplier": float(effect.get("damage_multiplier") or 0),
+                "scale_stat": str(effect.get("scale_stat") or "attack").strip() or "attack",
+                "use_defense": bool(effect.get("use_defense", False)),
+                "melee_only": bool(effect.get("melee_only", False)),
+                "max_per_action": (int(effect["max_per_action"]) if effect.get("max_per_action") is not None else None),
+                "name": str(effect.get("log_name") or ""),
             }
             register_modifier_source(
                 target_unit, scope=str(modifier_scope), container_key="counter_sources", source_key=scoped_source_key

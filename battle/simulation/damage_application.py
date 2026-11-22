@@ -20,6 +20,46 @@ _SWORD_REFLECT_PRE_HIT_HP_CAP_RATIO = 1.20
 _SPEAR_COUNTER_MAX_STRENGTH = 1000
 _DEFERRED_QIANG_WANG_COUNTERS_KEY = "_deferred_qiang_wang_counters"
 _QIANG_WANG_COUNTER_ATTEMPTS_KEY = "_qiang_wang_counter_attempts"
+_ACTION_COUNTER_ATTEMPTS_KEY = "_action_counter_attempts"
+
+
+@contextmanager
+def action_counter_attempts(actor: "Combatant") -> Iterator[dict[tuple[int, str], int]]:
+    """限制单次主动行动内对同一目标同一被动反击来源的判定次数。"""
+    attempts: dict[tuple[int, str], int] = {}
+    state = actor.battle_state
+    existed = _ACTION_COUNTER_ATTEMPTS_KEY in state
+    previous = state.get(_ACTION_COUNTER_ATTEMPTS_KEY)
+    state[_ACTION_COUNTER_ATTEMPTS_KEY] = attempts
+    try:
+        yield attempts
+    finally:
+        if existed:
+            state[_ACTION_COUNTER_ATTEMPTS_KEY] = previous
+        else:
+            state.pop(_ACTION_COUNTER_ATTEMPTS_KEY, None)
+
+
+def _claim_action_counter_attempt(
+    actor: "Combatant",
+    target: "Combatant",
+    source_key: str,
+    max_per_action: int | None,
+) -> bool:
+    if max_per_action is None:
+        return True
+    state = getattr(actor, "battle_state", None)
+    if not isinstance(state, dict):
+        return True
+    tracker = state.get(_ACTION_COUNTER_ATTEMPTS_KEY)
+    if not isinstance(tracker, dict):
+        return True
+    attempt_key = (id(target), source_key)
+    used = int(tracker.get(attempt_key, 0) or 0)
+    if used >= max_per_action:
+        return False
+    tracker[attempt_key] = used + 1
+    return True
 
 
 @contextmanager
@@ -158,6 +198,115 @@ def _apply_reflect(
     return _apply_unit_damage(actor, reflect_damage, troop_unit_hp_fn)
 
 
+def _collect_counter_candidates(
+    target: "Combatant",
+    *,
+    ranged_attack: bool,
+) -> list[dict[str, Any]]:
+    candidates: list[dict[str, Any]] = []
+    tech_chance = float(target.tech_effects.get("counter_attack_chance", 0) or 0)
+    if tech_chance > 0 and not (ranged_attack and target.troop_class == "qiang"):
+        candidates.append(
+            {
+                "source_key": "__tech__",
+                "chance": tech_chance,
+                "damage_multiplier": float(target.tech_effects.get("counter_attack_damage", 0.30) or 0),
+                "scale_stat": "attack",
+                "use_defense": False,
+                "max_per_action": None,
+                "name": "",
+            }
+        )
+    for source_key, source in getattr(target, "battle_modifiers", {}).get("counter_sources", {}).items():
+        if not isinstance(source, dict):
+            continue
+        if ranged_attack and source.get("melee_only"):
+            continue
+        chance = float(source.get("chance") or 0)
+        if chance <= 0:
+            continue
+        candidates.append(
+            {
+                "source_key": str(source_key),
+                "chance": chance,
+                "damage_multiplier": float(source.get("damage_multiplier") or 0),
+                "scale_stat": str(source.get("scale_stat") or "attack"),
+                "use_defense": bool(source.get("use_defense", False)),
+                "max_per_action": source.get("max_per_action"),
+                "name": str(source.get("name") or ""),
+            }
+        )
+    candidates.sort(key=lambda item: float(item["chance"]), reverse=True)
+    return candidates
+
+
+def _apply_counter_with_effect(
+    actor: "Combatant",
+    target: "Combatant",
+    rng: random.Random,
+    effective_attack_value_fn,
+    troop_unit_hp_fn,
+    *,
+    ranged_attack: bool,
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
+) -> tuple[_UnitDamageApplication, str]:
+    """Apply counter secondary damage without normal-attack multipliers."""
+
+    if ranged_attack and target.troop_class == "qiang":
+        return _snapshot_zero_damage(actor, troop_unit_hp_fn), ""
+
+    limited_counter = (
+        battle_engine_version in DEFERRED_QIANG_WANG_COUNTER_ENGINE_VERSIONS
+        and target.kind == "troop"
+        and target.template_key == "qiang_wang"
+    )
+    if limited_counter:
+        if actor.hp <= 0 or target.hp <= 0:
+            return _snapshot_zero_damage(actor, troop_unit_hp_fn), ""
+        pending = actor.battle_state.get(_DEFERRED_QIANG_WANG_COUNTERS_KEY)
+        if isinstance(pending, list):
+            if not any(unit is target for unit in pending):
+                pending.append(target)
+            return _snapshot_zero_damage(actor, troop_unit_hp_fn), ""
+
+    if target.hp <= 0:
+        return _snapshot_zero_damage(actor, troop_unit_hp_fn), ""
+
+    candidates = _collect_counter_candidates(target, ranged_attack=ranged_attack)
+    chosen = None
+    for candidate in candidates:
+        if _claim_action_counter_attempt(actor, target, candidate["source_key"], candidate["max_per_action"]):
+            chosen = candidate
+            break
+    if chosen is None:
+        return _snapshot_zero_damage(actor, troop_unit_hp_fn), ""
+
+    if limited_counter and not _claim_qiang_wang_counter_attempt(actor, target):
+        return _snapshot_zero_damage(actor, troop_unit_hp_fn), ""
+    if rng.random() >= float(chosen["chance"]):
+        return _snapshot_zero_damage(actor, troop_unit_hp_fn), ""
+
+    counter_mult = float(chosen["damage_multiplier"])
+    if chosen["scale_stat"] == "force":
+        counter_attack_value = float(getattr(target, "force_attr", 0) or getattr(target, "force", 0) or 0)
+    elif target.kind == "troop" and target.troop_class == "qiang":
+        counter_strength = min(target.troop_strength, _SPEAR_COUNTER_MAX_STRENGTH)
+        counter_attack_value = effective_attack_value_fn(target, actor, troop_attack_strength=counter_strength)
+    else:
+        counter_attack_value = effective_attack_value_fn(target, actor)
+
+    counter_damage = counter_attack_value * counter_mult
+    if chosen["use_defense"]:
+        from ..combat_math import effective_defense_value
+        from .damage_calculation import _calculate_damage_reduction, _calculate_defense_value
+
+        defense_value = _calculate_defense_value(target, actor, effective_defense_value)
+        damage_reduction = _calculate_damage_reduction(target, actor, defense_value)
+        counter_damage *= 1.0 - damage_reduction
+
+    return _apply_unit_damage(actor, counter_damage, troop_unit_hp_fn), str(chosen["name"] or "")
+
+
 def _apply_counter(
     actor: "Combatant",
     target: "Combatant",
@@ -168,45 +317,16 @@ def _apply_counter(
     ranged_attack: bool,
     battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
 ) -> _UnitDamageApplication:
-    """Apply counter secondary damage without normal-attack multipliers."""
-
-    if ranged_attack and target.troop_class == "qiang":
-        return _snapshot_zero_damage(actor, troop_unit_hp_fn)
-
-    limited_counter = (
-        battle_engine_version in DEFERRED_QIANG_WANG_COUNTER_ENGINE_VERSIONS
-        and target.kind == "troop"
-        and target.template_key == "qiang_wang"
+    application, _effect_name = _apply_counter_with_effect(
+        actor,
+        target,
+        rng,
+        effective_attack_value_fn,
+        troop_unit_hp_fn,
+        ranged_attack=ranged_attack,
+        battle_engine_version=battle_engine_version,
     )
-    if limited_counter:
-        if actor.hp <= 0 or target.hp <= 0:
-            return _snapshot_zero_damage(actor, troop_unit_hp_fn)
-        pending = actor.battle_state.get(_DEFERRED_QIANG_WANG_COUNTERS_KEY)
-        if isinstance(pending, list):
-            if not any(unit is target for unit in pending):
-                pending.append(target)
-            return _snapshot_zero_damage(actor, troop_unit_hp_fn)
-
-    counter_chance = target.tech_effects.get("counter_attack_chance", 0)
-    counter_mult = target.tech_effects.get("counter_attack_damage", 0.30)
-    for source in getattr(target, "battle_modifiers", {}).get("counter_sources", {}).values():
-        if float(source["chance"]) > counter_chance:
-            counter_chance = float(source["chance"])
-            counter_mult = float(source["damage_multiplier"])
-    if counter_chance <= 0 or target.hp <= 0:
-        return _snapshot_zero_damage(actor, troop_unit_hp_fn)
-    if limited_counter and not _claim_qiang_wang_counter_attempt(actor, target):
-        return _snapshot_zero_damage(actor, troop_unit_hp_fn)
-    if rng.random() >= counter_chance:
-        return _snapshot_zero_damage(actor, troop_unit_hp_fn)
-
-    if target.kind == "troop" and target.troop_class == "qiang":
-        counter_strength = min(target.troop_strength, _SPEAR_COUNTER_MAX_STRENGTH)
-        counter_attack_value = effective_attack_value_fn(target, actor, troop_attack_strength=counter_strength)
-    else:
-        counter_attack_value = effective_attack_value_fn(target, actor)
-    counter_damage = counter_attack_value * counter_mult
-    return _apply_unit_damage(actor, counter_damage, troop_unit_hp_fn)
+    return application
 
 
 def resolve_deferred_qiang_wang_counters(
@@ -269,7 +389,7 @@ def apply_damage_results(
         target_hp_before=target_application.hp_before,
         troop_unit_hp_fn=troop_unit_hp,
     )
-    counter_application = _apply_counter(
+    counter_application, counter_effect_name = _apply_counter_with_effect(
         actor,
         target,
         rng,
@@ -294,4 +414,5 @@ def apply_damage_results(
             if reflect_application.raw_damage > 0
             else ""
         ),
+        counter_effect=counter_effect_name if counter_application.raw_damage > 0 else "",
     )

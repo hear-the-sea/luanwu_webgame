@@ -243,3 +243,9 @@ def reflect_effect_name(attack: Mapping[str, Any]) -> str:
     ):
         return "反震"
     return "护身剑罡"
+
+
+def counter_effect_name(attack: Mapping[str, Any]) -> str:
+    """优先显示结算时记录的反击来源；未指定时沿用通用反戈一击。"""
+    name = str(attack.get("counter_effect") or "").strip()
+    return name or "反戈一击"

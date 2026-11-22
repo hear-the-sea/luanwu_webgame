@@ -55,17 +55,18 @@
                                 <div class="tw-tooltip-set">
                                     <div class="tw-set-name">套装｜{{ item.effect_payload.set_description }}</div>
                                     {% if item.effect_payload.set_bonus %}
-                                        {% for pieces, bonus in item.effect_payload.set_bonus|set_bonus_entries %}
+                                        {% for entry in item.effect_payload.set_bonus|set_bonus_display_entries %}
                                         <div class="tw-set-bonus">
-                                            <span>{{ pieces }} 件套</span>
-                                            {% if bonus.hp %} 生命+{{ bonus.hp }} {% endif %}
-                                            {% if bonus.attack %} 攻击+{{ bonus.attack }} {% endif %}
-                                            {% if bonus.defense %} 防御+{{ bonus.defense }} {% endif %}
-                                            {% if bonus.force %} 武力+{{ bonus.force }} {% endif %}
-                                            {% if bonus.agility %} 敏捷+{{ bonus.agility }} {% endif %}
-                                            {% if bonus.luck %} 运势+{{ bonus.luck }} {% endif %}
-                                            {% if bonus.intellect %} 智力+{{ bonus.intellect }} {% endif %}
-                                            {% if bonus.troop_capacity %} 可携带护院人数+{{ bonus.troop_capacity }} {% endif %}
+                                            <span>{% if entry.pieces %}{{ entry.pieces }} 件套{% else %}套装{% endif %}</span>
+                                            {% if entry.bonus.hp %} 生命+{{ entry.bonus.hp }} {% endif %}
+                                            {% if entry.bonus.attack %} 攻击+{{ entry.bonus.attack }} {% endif %}
+                                            {% if entry.bonus.defense %} 防御+{{ entry.bonus.defense }} {% endif %}
+                                            {% if entry.bonus.force %} 武力+{{ entry.bonus.force }} {% endif %}
+                                            {% if entry.bonus.agility %} 敏捷+{{ entry.bonus.agility }} {% endif %}
+                                            {% if entry.bonus.luck %} 运势+{{ entry.bonus.luck }} {% endif %}
+                                            {% if entry.bonus.intellect %} 智力+{{ entry.bonus.intellect }} {% endif %}
+                                            {% if entry.bonus.troop_capacity %} 可携带护院人数+{{ entry.bonus.troop_capacity }} {% endif %}
+                                            {% if entry.effect_description %} {{ entry.effect_description }} {% endif %}
                                         </div>
                                         {% endfor %}
                                     {% endif %}
@@ -171,17 +172,18 @@
                                 <div class="tw-tooltip-set">
                                     <div class="tw-set-name">套装｜{{ payload.set_description }}</div>
                                     {% if payload.set_bonus %}
-                                        {% for pieces, bonus in payload.set_bonus|set_bonus_entries %}
+                                        {% for entry in payload.set_bonus|set_bonus_display_entries %}
                                         <div class="tw-set-bonus">
-                                            <span>{{ pieces }} 件套</span>
-                                            {% if bonus.hp %} 生命+{{ bonus.hp }} {% endif %}
-                                            {% if bonus.attack %} 攻击+{{ bonus.attack }} {% endif %}
-                                            {% if bonus.defense %} 防御+{{ bonus.defense }} {% endif %}
-                                            {% if bonus.force %} 武力+{{ bonus.force }} {% endif %}
-                                            {% if bonus.agility %} 敏捷+{{ bonus.agility }} {% endif %}
-                                            {% if bonus.luck %} 运势+{{ bonus.luck }} {% endif %}
-                                            {% if bonus.intellect %} 智力+{{ bonus.intellect }} {% endif %}
-                                            {% if bonus.troop_capacity %} 可携带护院人数+{{ bonus.troop_capacity }} {% endif %}
+                                            <span>{% if entry.pieces %}{{ entry.pieces }} 件套{% else %}套装{% endif %}</span>
+                                            {% if entry.bonus.hp %} 生命+{{ entry.bonus.hp }} {% endif %}
+                                            {% if entry.bonus.attack %} 攻击+{{ entry.bonus.attack }} {% endif %}
+                                            {% if entry.bonus.defense %} 防御+{{ entry.bonus.defense }} {% endif %}
+                                            {% if entry.bonus.force %} 武力+{{ entry.bonus.force }} {% endif %}
+                                            {% if entry.bonus.agility %} 敏捷+{{ entry.bonus.agility }} {% endif %}
+                                            {% if entry.bonus.luck %} 运势+{{ entry.bonus.luck }} {% endif %}
+                                            {% if entry.bonus.intellect %} 智力+{{ entry.bonus.intellect }} {% endif %}
+                                            {% if entry.bonus.troop_capacity %} 可携带护院人数+{{ entry.bonus.troop_capacity }} {% endif %}
+                                            {% if entry.effect_description %} {{ entry.effect_description }} {% endif %}
                                         </div>
                                         {% endfor %}
                                     {% endif %}

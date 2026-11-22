@@ -60,6 +60,7 @@ def test_baimenlou_has_the_requested_five_bosses_and_final_rewards():
     payload = mission_reward_payload(mission)
     assert_random_group(payload, 0.1, 1, {"equip_panlonggun": 1})
     assert_random_group(payload, 0.35, 1, {"equip_pojunzhanjia": 1, "equip_tianjiguan": 1})
+    assert_random_group(payload, 0.08, 1, {"equip_shufazijinkuan": 1, "equip_lvbuzhanxue": 1})
     assert_fixed_reward(payload, "baimenlou_dragon_fragment", 1)
 
 
@@ -72,6 +73,12 @@ def test_hulao_replaces_recruitment_scrolls_with_lvbu_equipment():
         1,
         {"equip_fangtianhuaji": 1, "equip_longlinzhanjia": 1, "equip_chituma": 1},
     )
+    assert_random_group(
+        payload,
+        0.06,
+        1,
+        {"equip_shufazijinkuan": 1, "equip_lvbuzhanxue": 1},
+    )
     assert_fixed_reward(payload, "hulao_halberd_fragment", 1)
     assert not {"lvbu_guest_scroll", "zhaoyun_guest_scroll", "diaochan_guest_scroll"} & reward_item_keys(payload)
 
@@ -79,5 +86,11 @@ def test_hulao_replaces_recruitment_scrolls_with_lvbu_equipment():
 def test_hulao_quest_item_images_are_present():
     items = {entry["key"]: entry for entry in _load_yaml("item_templates.yaml")["items"]}
 
-    for key in ("sishui_battle_report", "hulao_war_banner", "baimenlou_fate_seal"):
+    for key in (
+        "sishui_battle_report",
+        "hulao_war_banner",
+        "baimenlou_fate_seal",
+        "equip_shufazijinkuan",
+        "equip_lvbuzhanxue",
+    ):
         assert (DATA_DIR / "images" / "items" / items[key]["image"]).is_file()

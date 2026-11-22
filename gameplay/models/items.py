@@ -13,6 +13,11 @@ from django.dispatch import receiver
 
 from core.fields import WebPImageField
 from core.game_data.troop_device_bonus_display import format_raw_troop_device_bonus
+from guests.utils.set_bonus_parser import (
+    format_set_bonus_entry_texts,
+    iter_set_bonus_stat_pairs,
+    parse_set_bonus_entries,
+)
 
 from .manor import ResourceType
 
@@ -207,19 +212,7 @@ def _resource_pack_summary(payload: dict) -> str:
 
 
 def _iter_set_bonus_entries(set_bonus) -> list[tuple[int | None, dict]]:
-    if isinstance(set_bonus, list):
-        entries = []
-        for entry in set_bonus:
-            entries.extend(_iter_set_bonus_entries(entry))
-        return entries
-    if not isinstance(set_bonus, dict):
-        return []
-    bonus_map = set_bonus.get("bonus") if "bonus" in set_bonus else set_bonus.get("bonuses")
-    if bonus_map is None:
-        bonus_map = set_bonus
-    if not isinstance(bonus_map, dict):
-        return []
-    return [(set_bonus.get("pieces"), bonus_map)]
+    return iter_set_bonus_stat_pairs(set_bonus)
 
 
 def _equipment_set_summary(payload: dict) -> str:
@@ -230,14 +223,9 @@ def _equipment_set_summary(payload: dict) -> str:
 
     desc_text = set_desc or "套装"
     tier_summaries = []
-    for pieces, bonus_map in _iter_set_bonus_entries(set_bonus):
-        bonus_parts = []
-        for key, value in bonus_map.items():
-            if key in {"pieces", "bonus", "bonuses"}:
-                continue
-            if value is None or value == 0:
-                continue
-            bonus_parts.append(f"{_ITEM_EFFECT_STAT_LABELS.get(key, '未知属性')}+{value}")
+    for entry in parse_set_bonus_entries(set_bonus):
+        pieces = entry.get("pieces")
+        bonus_parts = format_set_bonus_entry_texts(entry, stat_labels=_ITEM_EFFECT_STAT_LABELS)
         piece_text = f"（{pieces}件）" if pieces else ""
         if bonus_parts:
             tier_summaries.append(f"{desc_text}{piece_text}：" + "、".join(bonus_parts))

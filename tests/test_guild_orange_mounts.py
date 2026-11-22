@@ -17,12 +17,17 @@ from tests.test_equipment_template_sync import _create_guest
 
 migration = importlib.import_module("gameplay.migrations.0214_guild_orange_mounts")
 previous = importlib.import_module("gameplay.migrations.0211_equipment_specialization")
+calibration_275 = importlib.import_module("gameplay.migrations.0275_equipment_balance_calibration")
 
 
 def test_orange_mount_catalog_has_distinct_roles_and_matches_migration():
     catalog = yaml.safe_load((Path(__file__).resolve().parents[1] / "data/item_templates.yaml").read_text())
     items = {item["key"]: item for item in catalog["items"]}
-    for key, payload in migration.EQUIPMENT_PAYLOADS.items():
+    current_payloads = {
+        key: calibration_275.EQUIPMENT_PAYLOADS.get(key, payload)
+        for key, payload in migration.EQUIPMENT_PAYLOADS.items()
+    }
+    for key, payload in current_payloads.items():
         item = items[key]
         assert item["effect_payload"] == payload
         assert item["name"] == migration.ITEM_METADATA[key]["name"]
@@ -34,14 +39,14 @@ def test_orange_mount_catalog_has_distinct_roles_and_matches_migration():
         base = SimpleNamespace(key=key, name=item["name"], effect_payload=payload)
         for affix in previous.AFFIXES:
             assert previous._affix_payload(base, affix) == build_equipment_affix_payload(base, affix)
-    white = migration.EQUIPMENT_PAYLOADS["equip_jinjingbailongju"]
-    lightning = migration.EQUIPMENT_PAYLOADS["equip_shandianqiulongju"]
-    assert white["defense"] > lightning["defense"]
-    assert white["luck"] > lightning["luck"]
+    white = current_payloads["equip_jinjingbailongju"]
+    lightning = current_payloads["equip_shandianqiulongju"]
+    assert white.get("defense", 0) > lightning.get("defense", 0)
+    assert white.get("luck", 0) > lightning.get("luck", 0)
     assert white["troop_capacity"] == 40
     assert lightning.get("troop_capacity", 0) == 0
-    assert lightning["agility"] > white["agility"]
-    assert lightning["force"] > white["force"]
+    assert lightning.get("agility", 0) > white.get("agility", 0)
+    assert lightning.get("force", 0) > white.get("force", 0)
 
 
 @pytest.mark.django_db

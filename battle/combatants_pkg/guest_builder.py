@@ -11,6 +11,7 @@ from django.db import DatabaseError
 
 from guests.guest_combat_stats import apply_custom_guest_low_loyalty_penalty, resolve_guest_combat_stats
 from guests.models import Guest, Skill, SkillKind
+from guests.utils.equipment_utils import compute_set_combat_effects
 
 from ..active_config import ACTIVE_OPTION_KEYS
 from ..random_context import CURRENT_BATTLE_ENGINE_VERSION, VANGUARD_20_PERCENT_ENGINE_VERSIONS
@@ -128,6 +129,18 @@ def _serialize_guest_template_skills(guest: Guest) -> list[dict]:
         return []
 
 
+def _resolve_guest_gear_items(guest: Guest) -> list[Any]:
+    override_gear_items = getattr(guest, "_override_gear_items", None)
+    if isinstance(override_gear_items, (list, tuple)):
+        return list(override_gear_items)
+    if not isinstance(guest, Guest) or getattr(guest, "pk", None) is None:
+        return []
+    prefetched = getattr(guest, "_prefetched_objects_cache", None) or {}
+    if "gear_items" in prefetched:
+        return list(guest.gear_items.all())
+    return list(guest.gear_items.select_related("template"))
+
+
 def serialize_skills(guest: Guest, override_skill_keys: Optional[List[str]] = None) -> List[dict]:
     """
     Serialize guest skills to battle system format.
@@ -144,11 +157,18 @@ def serialize_skills(guest: Guest, override_skill_keys: Optional[List[str]] = No
     normalized_override_keys = _normalize_override_keys(guest, effective_override)
     override_data = _serialize_override_skills(guest, normalized_override_keys)
     if override_data is not None:
-        return override_data
+        base_skills = override_data
+    elif getattr(guest, "pk", None) is not None:
+        base_skills = _serialize_guest_model_skills(guest)
+    else:
+        base_skills = _serialize_guest_template_skills(guest)
 
-    if getattr(guest, "pk", None) is not None:
-        return _serialize_guest_model_skills(guest)
-    return _serialize_guest_template_skills(guest)
+    gear_items = _resolve_guest_gear_items(guest)
+    if gear_items:
+        set_passives = compute_set_combat_effects(gear_items)
+        if set_passives:
+            return [*base_skills, *set_passives]
+    return base_skills
 
 
 def serialize_guest_for_report(combatant: Combatant) -> Dict[str, Any]:

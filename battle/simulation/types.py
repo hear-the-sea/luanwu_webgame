@@ -52,6 +52,7 @@ class AttackLogEntry(TypedDict):
     reflect_kills: NotRequired[int]
     reflect_defeated: NotRequired[bool]
     counter_damage: NotRequired[int]
+    counter_effect: NotRequired[str]
     counter_kills: NotRequired[int]
     counter_defeated: NotRequired[bool]
     attack_type: NotRequired[AttackType]
@@ -119,6 +120,7 @@ class _DamageApplication:
     reflect: _UnitDamageApplication
     counter: _UnitDamageApplication
     reflect_effect: str = ""
+    counter_effect: str = ""
 
     @property
     def display_damage(self) -> int:

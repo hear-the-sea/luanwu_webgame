@@ -6,9 +6,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict
+import copy
+from typing import TYPE_CHECKING, Any, Dict
 
 from ..models import GearSlot, GearTemplate
+from .set_bonus_parser import iter_set_bonus_stat_pairs, parse_set_bonus_entries
 
 if TYPE_CHECKING:
     pass
@@ -40,25 +42,7 @@ SET_STAT_FIELD_MAP = {
 
 
 def _normalize_set_bonus_definitions(raw_bonus) -> list[tuple[int | None, dict]]:
-    bonus_def = raw_bonus or {}
-    if isinstance(bonus_def, (list, tuple)):
-        definitions: list[tuple[int | None, dict]] = []
-        for entry in bonus_def:
-            definitions.extend(_normalize_set_bonus_definitions(entry))
-        return definitions
-    if not isinstance(bonus_def, dict):
-        return []
-
-    pieces = bonus_def.get("pieces")
-    bonuses = bonus_def.get("bonus") or bonus_def.get("bonuses") or bonus_def
-    if not isinstance(bonuses, (dict, list, tuple)):
-        if hasattr(bonuses, "get"):
-            bonuses = [bonuses]
-        else:
-            bonuses = {}
-    if not isinstance(bonuses, dict):
-        return []
-    return [(pieces, bonuses)]
+    return iter_set_bonus_stat_pairs(raw_bonus)
 
 
 def _collect_set_info(gear_items) -> Dict[str, Dict[str, object]]:
@@ -75,9 +59,9 @@ def _collect_set_info(gear_items) -> Dict[str, Dict[str, object]]:
             base_keys.add(base_key)
 
     base_set_info = {
-        key: (set_key, set_bonus)
-        for key, set_key, set_bonus in GearTemplate.objects.filter(key__in=base_keys).values_list(
-            "key", "set_key", "set_bonus"
+        key: (set_key, set_description, set_bonus)
+        for key, set_key, set_description, set_bonus in GearTemplate.objects.filter(key__in=base_keys).values_list(
+            "key", "set_key", "set_description", "set_bonus"
         )
     }
 
@@ -87,21 +71,34 @@ def _collect_set_info(gear_items) -> Dict[str, Dict[str, object]]:
         if not tpl:
             continue
         set_key = getattr(tpl, "set_key", "") or ""
+        set_description = getattr(tpl, "set_description", "") or ""
         raw_set_bonus = getattr(tpl, "set_bonus", None)
         base_key = getattr(tpl, "base_key", "") or ""
         inherited_set_info = base_set_info.get(base_key)
         if inherited_set_info:
             set_key = set_key or inherited_set_info[0]
-            raw_set_bonus = raw_set_bonus or inherited_set_info[1]
+            set_description = set_description or inherited_set_info[1]
+            raw_set_bonus = raw_set_bonus or inherited_set_info[2]
         if not set_key:
             continue
-        bonus_definitions = _normalize_set_bonus_definitions(raw_set_bonus)
+        parsed_entries = parse_set_bonus_entries(raw_set_bonus)
+        bonus_definitions = [(entry.get("pieces"), entry["bonus"]) for entry in parsed_entries]
         if not bonus_definitions:
             continue
 
-        info = sets.setdefault(set_key, {"count": 0, "definitions": bonus_definitions})
-        if info.get("definitions") != bonus_definitions:
+        info = sets.setdefault(
+            set_key,
+            {
+                "count": 0,
+                "description": set_description,
+                "definitions": bonus_definitions,
+                "entries": parsed_entries,
+            },
+        )
+        if info.get("entries") != parsed_entries:
             raise AssertionError(f"inconsistent equipment set bonus definition: {set_key!r}")
+        if not info.get("description") and set_description:
+            info["description"] = set_description
         info["count"] = int(info.get("count") or 0) + 1  # type: ignore[arg-type, call-overload]
     return sets
 
@@ -137,3 +134,42 @@ def compute_set_bonus(gear_items) -> Dict[str, int]:
     """
     sets = _collect_set_info(gear_items)
     return _accumulate_active_set_bonuses(sets)
+
+
+def compute_set_combat_effects(gear_items) -> list[dict[str, Any]]:
+    """Return synthetic battle passive definitions for active set combat_effects tiers."""
+    sets = _collect_set_info(gear_items)
+    passives: list[dict[str, Any]] = []
+    for set_key in sorted(sets):
+        info = sets[set_key]
+        count = int(info.get("count") or 0)  # type: ignore[arg-type, call-overload]
+        set_description = str(info.get("description") or "").strip()
+        entries = info.get("entries") or []
+        if not isinstance(entries, list):
+            continue
+        for index, entry in enumerate(entries):
+            if not isinstance(entry, dict):
+                continue
+            combat_effects = entry.get("combat_effects")
+            if not isinstance(combat_effects, list) or not combat_effects:
+                continue
+            pieces = entry.get("pieces")
+            required = int(pieces or count or 0)
+            if count < required:
+                continue
+            passives.append(
+                {
+                    "key": f"set_bonus:{set_key}:{pieces or index + 1}",
+                    "name": set_description or set_key,
+                    "kind": "passive",
+                    "passive_config": {
+                        "triggers": [
+                            {
+                                "timing": "battle_start",
+                                "effects": copy.deepcopy(combat_effects),
+                            }
+                        ]
+                    },
+                }
+            )
+    return passives

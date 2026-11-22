@@ -10,6 +10,7 @@ from core.game_data.troop_device_bonus_display import format_raw_troop_device_bo
 
 from ..models import GearTemplate, GuestRarity
 from ..utils.equipment_utils import EQUIP_SLOT_MAP, SET_STAT_FIELD_MAP
+from ..utils.set_bonus_parser import extract_raw_set_bonus_map
 
 GEAR_EXTRA_STAT_FIELDS = {
     "hp": "hp_bonus",
@@ -113,7 +114,7 @@ def normalize_template_set_bonus(raw: Any) -> dict[str, Any] | list[dict[str, An
         return normalized_entries
     payload = require_mapping(raw, field_name="set_bonus")
     pieces = payload.get("pieces")
-    bonuses = payload.get("bonus") or payload.get("bonuses") or payload
+    bonuses = extract_raw_set_bonus_map(payload)
 
     if pieces is not None:
         normalized_pieces = require_int(pieces, field_name="set_bonus[pieces]", minimum=1)
@@ -122,12 +123,37 @@ def normalize_template_set_bonus(raw: Any) -> dict[str, Any] | list[dict[str, An
 
     bonus_map = require_mapping(bonuses, field_name="set_bonus bonus")
     normalized_bonus = normalize_active_set_bonus(bonus_map)
-    if normalized_pieces is None:
+
+    raw_combat_effects = payload.get("combat_effects")
+    normalized_combat_effects: list[dict[str, Any]] | None = None
+    if "combat_effects" in payload:
+        if not isinstance(raw_combat_effects, list) or not raw_combat_effects:
+            raise AssertionError(f"invalid guest equipment set_bonus[combat_effects]: {raw_combat_effects!r}")
+        normalized_combat_effects = []
+        for effect in raw_combat_effects:
+            effect_map = require_mapping(effect, field_name="set_bonus[combat_effects] entry")
+            require_string(effect_map.get("type"), field_name="set_bonus[combat_effects].type")
+            normalized_combat_effects.append(dict(effect_map))
+
+    raw_effect_description = payload.get("effect_description")
+    normalized_effect_description: str | None = None
+    if "effect_description" in payload:
+        normalized_effect_description = require_string(
+            raw_effect_description, field_name="set_bonus[effect_description]"
+        )
+
+    if normalized_pieces is None and normalized_combat_effects is None and normalized_effect_description is None:
         return normalized_bonus
-    return {
-        "pieces": normalized_pieces,
+    result: dict[str, Any] = {
         "bonus": normalized_bonus,
     }
+    if normalized_pieces is not None:
+        result["pieces"] = normalized_pieces
+    if normalized_combat_effects is not None:
+        result["combat_effects"] = normalized_combat_effects
+    if normalized_effect_description is not None:
+        result["effect_description"] = normalized_effect_description
+    return result
 
 
 def build_gear_template_defaults(item_template: Any, *, slot: str) -> dict[str, Any]:

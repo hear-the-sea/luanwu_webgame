@@ -15,7 +15,7 @@
 {% endfor %}
 {% include "battle/partials/attack_damage_summary.html" with attack=attack visible_side=my_side spectator=is_spectator %}
 {% if attack.reflect_damage %}{% reflect_effect_name attack as reflect_effect %}<div class="reflect-text">{% include "battle/partials/retaliation_damage_summary.html" with attack=attack action_side=action_side effect=reflect_effect damage=attack.reflect_damage kills=attack.reflect_kills defeated=attack.reflect_defeated visible_side=my_side spectator=is_spectator %}</div>{% endif %}
-{% if attack.counter_damage %}<div class="counter-text">{% include "battle/partials/retaliation_damage_summary.html" with attack=attack action_side=action_side effect="反戈一击" damage=attack.counter_damage kills=attack.counter_kills defeated=attack.counter_defeated visible_side=my_side spectator=is_spectator %}</div>{% endif %}
+{% if attack.counter_damage %}{% counter_effect_name attack as counter_effect %}<div class="counter-text">{% include "battle/partials/retaliation_damage_summary.html" with attack=attack action_side=action_side effect=counter_effect damage=attack.counter_damage kills=attack.counter_kills defeated=attack.counter_defeated visible_side=my_side spectator=is_spectator %}</div>{% endif %}
 {% if attack.status_inflicted %}
     <div class="status-tag">对{{ attack.target }}造成状态：{{ attack.status_inflicted|join:"、" }}</div>
 {% endif %}
@@ -42,7 +42,7 @@
         </div>
         {% endif %}
     {% endif %}
-    {% if sub.counter_damage %}<div class="counter-text">{% include "battle/partials/retaliation_damage_summary.html" with attack=sub action_side=sub.side|default:action_side effect="反戈一击" damage=sub.counter_damage kills=sub.counter_kills defeated=sub.counter_defeated visible_side=my_side spectator=is_spectator %}</div>{% endif %}
+    {% if sub.counter_damage %}{% counter_effect_name sub as sub_counter_effect %}<div class="counter-text">{% include "battle/partials/retaliation_damage_summary.html" with attack=sub action_side=sub.side|default:action_side effect=sub_counter_effect damage=sub.counter_damage kills=sub.counter_kills defeated=sub.counter_defeated visible_side=my_side spectator=is_spectator %}</div>{% endif %}
     {% if sub.status_inflicted %}<div class="status-tag">对{{ sub.target }}造成状态：{{ sub.status_inflicted|join:"、" }}</div>{% endif %}
     {% for passive in sub.passive_events_after %}
         <div class="event-passive-entry">{% include "battle/partials/passive_event_summary.html" with passive_event=passive visible_side=my_side spectator=is_spectator %}</div>

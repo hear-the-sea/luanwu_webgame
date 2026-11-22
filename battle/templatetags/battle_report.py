@@ -2,12 +2,19 @@ from __future__ import annotations
 
 from django import template
 
-from battle.report_events import reflect_effect_name, report_event_side, secondary_attack_kind, troop_phase_skill
+from battle.report_events import (
+    counter_effect_name,
+    reflect_effect_name,
+    report_event_side,
+    secondary_attack_kind,
+    troop_phase_skill,
+)
 
 register = template.Library()
 register.simple_tag(troop_phase_skill)
 register.simple_tag(report_event_side)
 register.simple_tag(reflect_effect_name)
+register.simple_tag(counter_effect_name)
 register.simple_tag(secondary_attack_kind)
 
 

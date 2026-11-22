@@ -18,7 +18,12 @@ from ..random_context import (
     TROOP_GROUP_DAMAGE_BONUS_ENGINE_VERSIONS,
 )
 from .constants import TROOP_EXTRA_ATTACK_INTERVAL, TROOP_GROUP_DAMAGE_MULTIPLIER
-from .damage_application import apply_damage_results, defer_qiang_wang_counters, resolve_deferred_qiang_wang_counters
+from .damage_application import (
+    action_counter_attempts,
+    apply_damage_results,
+    defer_qiang_wang_counters,
+    resolve_deferred_qiang_wang_counters,
+)
 from .damage_calculation import calculate_attack_damage, calculate_passive_true_damage, process_status_effects
 from .report_state import snapshot_unit_state
 from .target_selection import is_ranged_attack, select_attack_targets
@@ -212,6 +217,7 @@ def _apply_extra_target_true_damage(
             "reflect_kills": application.reflect_kills,
             "reflect_defeated": application.reflect_defeated,
             "counter_damage": application.counter_damage,
+            "counter_effect": getattr(application, "counter_effect", ""),
             "counter_applied_damage": counter_applied_damage,
             "counter_overkill_damage": counter_overkill_damage,
             "counter_kills": application.counter_kills,
@@ -447,6 +453,7 @@ def _perform_single_attack(
             "reflect_kills": applied.reflect_kills,
             "reflect_defeated": applied.reflect_defeated,
             "counter_damage": applied.counter_damage,
+            "counter_effect": getattr(applied, "counter_effect", ""),
             "counter_applied_damage": counter_applied_damage,
             "counter_overkill_damage": counter_overkill_damage,
             "counter_kills": applied.counter_kills,
@@ -740,16 +747,17 @@ def perform_attack(
 ) -> dict[str, Any] | None:
     """完成全部攻击后结算枪王反击，旧版本仍按原有逐次命中规则处理。"""
     if battle_engine_version not in DEFERRED_QIANG_WANG_COUNTER_ENGINE_VERSIONS:
-        return _perform_attack(
-            actor,
-            attacker_team,
-            defender_team,
-            rng,
-            round_priority,
-            battle_engine_version=battle_engine_version,
-        )
+        with action_counter_attempts(actor):
+            return _perform_attack(
+                actor,
+                attacker_team,
+                defender_team,
+                rng,
+                round_priority,
+                battle_engine_version=battle_engine_version,
+            )
 
-    with defer_qiang_wang_counters(actor) as pending:
+    with action_counter_attempts(actor), defer_qiang_wang_counters(actor) as pending:
         event = _perform_attack(
             actor,
             attacker_team,

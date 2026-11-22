@@ -4,6 +4,11 @@ from django import template
 from django.utils.html import conditional_escape, format_html, format_html_join
 
 from guests.models import GuestRarity
+from guests.utils.set_bonus_parser import (
+    format_set_bonus_entry_texts,
+    iter_set_bonus_stat_pairs,
+    parse_set_bonus_entries,
+)
 
 register = template.Library()
 
@@ -48,19 +53,7 @@ def _iter_template_stat_parts(template) -> list[str]:
 
 
 def _iter_set_bonus_entries(set_bonus) -> list[tuple[int | None, dict]]:
-    if isinstance(set_bonus, list):
-        entries = []
-        for entry in set_bonus:
-            entries.extend(_iter_set_bonus_entries(entry))
-        return entries
-    if not isinstance(set_bonus, dict):
-        return []
-    bonus_map = set_bonus.get("bonus") if "bonus" in set_bonus else set_bonus.get("bonuses")
-    if bonus_map is None:
-        bonus_map = set_bonus
-    if not isinstance(bonus_map, dict):
-        return []
-    return [(set_bonus.get("pieces"), bonus_map)]
+    return iter_set_bonus_stat_pairs(set_bonus)
 
 
 @register.filter
@@ -68,16 +61,25 @@ def set_bonus_entries(set_bonus) -> list[tuple[int | None, dict]]:
     return _iter_set_bonus_entries(set_bonus)
 
 
+@register.filter
+def set_bonus_display_entries(set_bonus) -> list[dict]:
+    entries = []
+    for entry in parse_set_bonus_entries(set_bonus):
+        entries.append(
+            {
+                "pieces": entry.get("pieces"),
+                "bonus": entry.get("bonus") or {},
+                "effect_description": entry.get("effect_description", ""),
+            }
+        )
+    return entries
+
+
 def _build_set_bonus_summary(set_description: str, set_bonus) -> str:
     set_texts = []
-    for pieces, bonus_map in _iter_set_bonus_entries(set_bonus):
-        bonus_parts = []
-        for key, value in bonus_map.items():
-            if key in {"pieces", "bonus", "bonuses"}:
-                continue
-            if value is None or value == 0:
-                continue
-            bonus_parts.append(f"{_GEAR_STAT_LABELS.get(key, '未知属性')}+{value}")
+    for entry in parse_set_bonus_entries(set_bonus):
+        pieces = entry.get("pieces")
+        bonus_parts = format_set_bonus_entry_texts(entry, stat_labels=_GEAR_STAT_LABELS)
         piece_text = f"{pieces}件" if pieces else "套装"
         set_text = f"{set_description or '套装'}（{piece_text}）"
         if bonus_parts:
@@ -117,10 +119,12 @@ def _render_set_members(lines: list, members: list, set_desc: str, esc) -> None:
 
 
 def _render_set_bonus_lines(lines: list, bonus_map: dict, esc) -> None:
-    entries = _iter_set_bonus_entries(bonus_map)
+    entries = parse_set_bonus_entries(bonus_map)
     if not entries:
         return
-    for pieces, entry_bonus_map in entries:
+    for entry in entries:
+        pieces = entry.get("pieces")
+        entry_bonus_map = entry.get("bonus") or {}
         bonus_parts = []
         for key, value in entry_bonus_map.items():
             if key in {"pieces", "bonus", "bonuses"}:
@@ -129,6 +133,9 @@ def _render_set_bonus_lines(lines: list, bonus_map: dict, esc) -> None:
                 continue
             label = _GEAR_STAT_LABELS.get(key, "未知属性")
             bonus_parts.append(format_html("{}+{}", esc(label), value))
+        effect_description = entry.get("effect_description")
+        if isinstance(effect_description, str) and effect_description.strip():
+            bonus_parts.append(format_html("{}", esc(effect_description.strip())))
         if bonus_parts:
             lines.append(f"{pieces}件套属性：" if pieces else "套装属性：")
             lines.extend(bonus_parts)

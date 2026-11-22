@@ -6449,22 +6449,6 @@ heroes:
       intellect: 15
       defense: 30
       agility: 20
-  - key: hero_jinyong_0215
-    name: 小昭
-    avatar: monkey/xiaozhao.png
-    archetype: civil
-    flavor: 小昭是紫衫龙王黛绮丝之女，聪慧细腻，身手轻灵。她隐去身份随侍张无忌，凭借通晓波斯文字之长，在密道中助他参悟乾坤大挪移心法。后来为保护母亲与同伴，她远赴波斯出任明教总教教主，把一腔情意留在中原。她善于察言观色、临机应变，温柔之下自有坚定心志。出自金庸小说《倚天屠龙记》
-    default_gender: female
-    default_morality: 60
-    recruitable: false
-    growth_range:
-    - 6
-    - 9
-    attribute_weights:
-      force: 10
-      intellect: 45
-      defense: 10
-      agility: 35
   - key: hero_jinyong_0549
     name: 渡厄
     avatar: pig/武058.png
@@ -7154,6 +7138,22 @@ heroes:
       intellect: 15
       defense: 25
       agility: 20
+  - key: hero_jinyong_0215
+    name: 小昭
+    avatar: monkey/xiaozhao.png
+    archetype: civil
+    flavor: 小昭是紫衫龙王黛绮丝之女，聪慧细腻，身手轻灵。她隐去身份随侍张无忌，凭借通晓波斯文字之长，在密道中助他参悟乾坤大挪移心法。后来为保护母亲与同伴，她远赴波斯出任明教总教教主，把一腔情意留在中原。她善于察言观色、临机应变，温柔之下自有坚定心志。出自金庸小说《倚天屠龙记》
+    default_gender: female
+    default_morality: 60
+    recruitable: false
+    growth_range:
+    - 6
+    - 12
+    attribute_weights:
+      force: 10
+      intellect: 45
+      defense: 10
+      agility: 35
   orange:
   - key: hero_a_qing
     name: 阿青
