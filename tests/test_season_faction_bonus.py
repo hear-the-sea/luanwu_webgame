@@ -2,6 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from core.config import GUEST
 from gameplay.services.season.faction_bonus import apply_faction_bonus, battle_hp, real_hp, source_key
 from gameplay.services.season.fatigue import fatigue_snapshot
 from guests.guest_rules import compute_guest_attack_attribute_component, compute_guest_max_hp
@@ -20,6 +21,9 @@ def test_matching_guest_bonus_preserves_equipment_and_scales_health():
         archetype="military",
         level=1,
     )
+    base_max_hp = 400 + 80 * GUEST.DEFENSE_TO_HP_MULTIPLIER
+    boosted_max_hp = 400 + 88 * GUEST.DEFENSE_TO_HP_MULTIPLIER
+    expected_current_hp = (2200 * boosted_max_hp + base_max_hp - 1) // base_max_hp
     snapshot = {key: getattr(guest, key) for key in ("force", "intellect", "defense_stat", "agility", "luck")}
     snapshot.update(
         attack=100,
@@ -37,10 +41,10 @@ def test_matching_guest_bonus_preserves_equipment_and_scales_health():
         snapshot["luck"],
     ) == (110, 55, 88, 33, 22)
     assert snapshot["defense"] == 108
-    assert snapshot["max_hp"] == 4800
-    assert snapshot["current_hp"] == 2400
-    assert real_hp(snapshot, 2400) == 2200
-    assert battle_hp(snapshot, 4400) == 4800
+    assert snapshot["max_hp"] == boosted_max_hp
+    assert snapshot["current_hp"] == expected_current_hp
+    assert real_hp(snapshot, expected_current_hp) == 2200
+    assert battle_hp(snapshot, base_max_hp) == boosted_max_hp
     assert guest.defense_stat == 80
 
 
@@ -79,6 +83,7 @@ def test_fatigue_recomputes_civil_attack_from_boosted_civil_attributes():
         ),
         result={"fatigue_stacks": 1},
     )
+    base_component = int(110 * GUEST.CIVIL_FORCE_WEIGHT + 220 * GUEST.CIVIL_INTELLECT_WEIGHT)
     snapshot = {
         "archetype": "civil",
         "force": 110,
@@ -86,10 +91,11 @@ def test_fatigue_recomputes_civil_attack_from_boosted_civil_attributes():
         "agility": 110,
         "defense_stat": 110,
         "defense": 130,
-        "attack_attribute_component": 165,
-        "attack": 185,
+        "attack_attribute_component": base_component,
+        "attack": base_component + 20,
     }
     fatigued = fatigue_snapshot(run, snapshot)
-    assert fatigued["attack_attribute_component"] == (104 + 209) // 2
-    assert fatigued["attack"] == (104 + 209) // 2 + 20
-    assert snapshot["attack"] == 185
+    expected_component = int(104 * GUEST.CIVIL_FORCE_WEIGHT + 209 * GUEST.CIVIL_INTELLECT_WEIGHT)
+    assert fatigued["attack_attribute_component"] == expected_component
+    assert fatigued["attack"] == expected_component + 20
+    assert snapshot["attack"] == base_component + 20
