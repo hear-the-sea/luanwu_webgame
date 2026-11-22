@@ -224,20 +224,6 @@ heroes:
       intellect: 54
       defense: 22
       agility: 10
-  - key: hist_sljnbc_0102
-    name: 曹仁
-    avatar: pig/武059.png
-    default_gender: male
-    archetype: military
-    flavor: （168年—223年5月6日）曹魏名将，字子孝，沛国谯县人，曹操从弟。他少年时便好武事，从军后随曹操南征北战，攻陶谦、破吕布、平张绣，屡立战功。赤壁之战后他镇守江陵，周瑜率数万吴军围攻经年，他以数千守军死守不退，城中粮尽人困仍坚持到最后撤退。此战奠定了他"守城无双"的威名。
-    growth_range:
-    - 6
-    - 9
-    attribute_weights:
-      force: 34
-      intellect: 12
-      defense: 40
-      agility: 14
   - key: hist_sljnbc_0103
     name: 曹真
     avatar: monkey_wu_male16.png
@@ -406,7 +392,6 @@ heroes:
       intellect: 56
       defense: 24
       agility: 8
-  purple:
   - key: hist_sljnbc_0108
     name: 乐进
     avatar: monkey/三国两晋与南北朝/乐进.png
@@ -415,12 +400,111 @@ heroes:
     flavor: （？—218年）曹魏名将，字文谦，阳平卫国人，五子良将之一。他身材短小，却胆气过人，作战勇猛。他早年追随曹操，每战必争先，攻城野战无所不当。官渡之战他斩杀袁绍大将淳于琼，战功卓著。此后征乌桓、平青州、败袁谭，所向披靡，被封为右将军。建安二十年（215年）合肥之战，他与张辽、李典仅以七千守军面对孙权十万大军。
     growth_range:
     - 6
-    - 11
+    - 9
     attribute_weights:
       force: 42
       intellect: 8
       defense: 26
       agility: 24
+  - key: hist_sljnbc_0107
+    name: 于禁
+    avatar: monkey/三国两晋与南北朝/于禁.png
+    default_gender: male
+    archetype: military
+    flavor: （？—221年）曹魏名将，字文则，泰山钜平人。他以军纪严明著称，早年从军便受曹操赏识，常独领一军征战。官渡之战前青州兵哗变劫掠，他毫不留情斩杀乱军，曹操因此更加器重，赞其"虽古名将，何以加之"。此后三十余年他屡立战功，被封为左将军、假节钺，是曹操麾下五子良将中地位最高者，也是曹操最信任的外姓将领。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 36
+      intellect: 10
+      defense: 36
+      agility: 18
+  - key: hist_sljnbc_0109
+    name: 周泰
+    avatar: monkey/三国两晋与南北朝/周泰.png
+    default_gender: male
+    archetype: military
+    flavor: （？—？）东吴名将，字幼平，九江下蔡人。他早年与蒋钦一同投奔孙策，以勇猛著称。孙权年少时曾遭山贼袭击，他奋不顾身以身护主，身中十二处创伤几乎丧命，孙权因此对他感激终生。此后他随军征战，每战必身先士卒，累积伤疤数十处。濡须之战他再度护卫孙权突围，功勋卓著。孙权为表彰其功，特设酒宴，令他袒胸展示伤疤，每指一处便敬酒一杯，问其由来。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 6
+      defense: 44
+      agility: 10
+  - key: hist_sljnbc_0117
+    name: 丁奉
+    avatar: monkey/三国两晋与南北朝/丁奉.png
+    default_gender: male
+    archetype: military
+    flavor: （？—271年）东吴名将，字承渊，庐江安丰人。他早年从军，追随甘宁、陆逊等名将征战，从小兵一步步升至偏将军，历仕孙权、孙亮、孙休、孙皓四代君主，是东吴历史上任职时间最长的将领。建兴元年（252年）魏国趁孙权新丧大举南侵，双方会战于东兴。正值隆冬大雪，他率三千精兵冒着严寒雪中突进，脱去铠甲手持短兵轻装奋战，一举击破魏军前锋。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 10
+      defense: 24
+      agility: 26
+  - key: hist_sljnbc_0122
+    name: 韩擒虎
+    avatar: monkey/三国两晋与南北朝/韩擒虎.png
+    default_gender: male
+    archetype: military
+    flavor: （538年—592年）隋朝名将，字子通，河南东垣人。他出身将门，父亲韩雄为北周大将。他少年时便以胆略著称，容仪魁伟，有豪杰之表。北周时他从军征战，立有军功。入隋后他被任为庐州总管，驻守长江北岸，隔江与陈国对峙。开皇八年（589年）隋大举灭陈，他率五百精兵乘夜渡江，直取采石。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 12
+      defense: 24
+      agility: 24
+  - key: hist_sljnbc_0124
+    name: 史万岁
+    avatar: monkey/三国两晋与南北朝/史万岁.png
+    default_gender: male
+    archetype: military
+    flavor: （549年—600年）隋朝名将，京兆杜陵人。他父亲史静为北周将领，他少年从军，以骁勇著称。北周末年他随军讨伐北齐，单骑冲阵斩敌将首级而还，自此名震军中。入隋后他因连坐获罪流放敦煌，却在边塞立功自赎。开皇三年（583年）突厥入寇，他单骑挑战突厥勇士，一击刺落对方于马下 ，突厥军震恐退走。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 44
+      intellect: 8
+      defense: 18
+      agility: 30
+  - key: hist_sljnbc_0133
+    name: 毌丘俭
+    avatar: monkey/三国两晋与南北朝/毌丘俭.png
+    default_gender: male
+    archetype: military
+    flavor: （？—255年）才兼文武，寿春三叛第二人。河东闻喜人，出身名门。他曾远征高句丽，深入朝鲜半岛千余里，刻石纪功于丸都山上，此石碑至今留存，是中国古代对外征伐的重要史证。他镇守淮南多年，军政皆有建树。司马师废黜曹芳后，他愤而起兵勤王，与文钦联合对抗司马氏。可惜寡不敌众，兵败后逃亡被杀，家族惨遭灭门。他颇有文采，诗赋皆工，是文武兼备的将领。他的反叛虽败，却为曹魏宗室赢得了尊严，是三叛中最有军事才能者。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 36
+      intellect: 16
+      defense: 28
+      agility: 20
+  - key: hist_sljnbc_0134
+    name: 诸葛诞
+    avatar: monkey/三国两晋与南北朝/诸葛诞.png
+    default_gender: male
+    archetype: military
+    flavor: （？—258年）功狗之叹，寿春三叛第三人。琅琊阳都人，诸葛亮同族。他早年与夏侯玄、邓飏等交游，号称"浮华友"。后为扬州刺史镇守淮南，多次击退东吴进犯。司马昭篡位之心日渐明显，他不甘为司马氏功狗，遂据寿春起兵反叛。他向东吴称臣求援，死守寿春一年，城破时麾下数百死士皆不降而死，"宁为诸葛诞之死士"成为当时壮举。他兵败被杀后遭灭族，但他宁死不屈的气节令人敬佩。他是三叛中规模最大、持续最久的一次反抗。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 34
+      intellect: 18
+      defense: 30
+      agility: 18
+  purple:
   - key: hist_sljnbc_0106
     name: 夏侯渊
     avatar: monkey/三国两晋与南北朝/夏侯渊.png
@@ -435,34 +519,6 @@ heroes:
       intellect: 10
       defense: 20
       agility: 28
-  - key: hist_sljnbc_0107
-    name: 于禁
-    avatar: monkey/三国两晋与南北朝/于禁.png
-    default_gender: male
-    archetype: military
-    flavor: （？—221年）曹魏名将，字文则，泰山钜平人。他以军纪严明著称，早年从军便受曹操赏识，常独领一军征战。官渡之战前青州兵哗变劫掠，他毫不留情斩杀乱军，曹操因此更加器重，赞其"虽古名将，何以加之"。此后三十余年他屡立战功，被封为左将军、假节钺，是曹操麾下五子良将中地位最高者，也是曹操最信任的外姓将领。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 36
-      intellect: 10
-      defense: 36
-      agility: 18
-  - key: hist_sljnbc_0109
-    name: 周泰
-    avatar: monkey/三国两晋与南北朝/周泰.png
-    default_gender: male
-    archetype: military
-    flavor: （？—？）东吴名将，字幼平，九江下蔡人。他早年与蒋钦一同投奔孙策，以勇猛著称。孙权年少时曾遭山贼袭击，他奋不顾身以身护主，身中十二处创伤几乎丧命，孙权因此对他感激终生。此后他随军征战，每战必身先士卒，累积伤疤数十处。濡须之战他再度护卫孙权突围，功勋卓著。孙权为表彰其功，特设酒宴，令他袒胸展示伤疤，每指一处便敬酒一杯，问其由来。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 40
-      intellect: 6
-      defense: 44
-      agility: 10
   - key: hist_sljnbc_0110
     name: 黄盖
     avatar: monkey/三国两晋与南北朝/黄盖.png
@@ -477,20 +533,6 @@ heroes:
       intellect: 14
       defense: 34
       agility: 18
-  - key: hist_sljnbc_0117
-    name: 丁奉
-    avatar: monkey/三国两晋与南北朝/丁奉.png
-    default_gender: male
-    archetype: military
-    flavor: （？—271年）东吴名将，字承渊，庐江安丰人。他早年从军，追随甘宁、陆逊等名将征战，从小兵一步步升至偏将军，历仕孙权、孙亮、孙休、孙皓四代君主，是东吴历史上任职时间最长的将领。建兴元年（252年）魏国趁孙权新丧大举南侵，双方会战于东兴。正值隆冬大雪，他率三千精兵冒着严寒雪中突进，脱去铠甲手持短兵轻装奋战，一举击破魏军前锋。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 40
-      intellect: 10
-      defense: 24
-      agility: 26
   - key: hist_sljnbc_0119
     name: 刘琨
     avatar: monkey/三国两晋与南北朝/刘琨.png
@@ -533,20 +575,6 @@ heroes:
       intellect: 62
       defense: 20
       agility: 10
-  - key: hist_sljnbc_0122
-    name: 韩擒虎
-    avatar: monkey/三国两晋与南北朝/韩擒虎.png
-    default_gender: male
-    archetype: military
-    flavor: （538年—592年）隋朝名将，字子通，河南东垣人。他出身将门，父亲韩雄为北周大将。他少年时便以胆略著称，容仪魁伟，有豪杰之表。北周时他从军征战，立有军功。入隋后他被任为庐州总管，驻守长江北岸，隔江与陈国对峙。开皇八年（589年）隋大举灭陈，他率五百精兵乘夜渡江，直取采石。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 40
-      intellect: 12
-      defense: 24
-      agility: 24
   - key: hist_sljnbc_0123
     name: 贺若弼
     avatar: monkey/三国两晋与南北朝/贺若弼.png
@@ -561,20 +589,6 @@ heroes:
       intellect: 16
       defense: 26
       agility: 20
-  - key: hist_sljnbc_0124
-    name: 史万岁
-    avatar: monkey/三国两晋与南北朝/史万岁.png
-    default_gender: male
-    archetype: military
-    flavor: （549年—600年）隋朝名将，京兆杜陵人。他父亲史静为北周将领，他少年从军，以骁勇著称。北周末年他随军讨伐北齐，单骑冲阵斩敌将首级而还，自此名震军中。入隋后他因连坐获罪流放敦煌，却在边塞立功自赎。开皇三年（583年）突厥入寇，他单骑挑战突厥勇士，一击刺落对方于马下 ，突厥军震恐退走。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 44
-      intellect: 8
-      defense: 18
-      agility: 30
   - key: hist_sljnbc_0125
     name: 袁绍
     avatar: monkey/三国两晋与南北朝/袁绍.png
@@ -673,31 +687,17 @@ heroes:
       intellect: 62
       defense: 20
       agility: 10
-  - key: hist_sljnbc_0133
-    name: 毌丘俭
-    avatar: monkey/三国两晋与南北朝/毌丘俭.png
+  - key: hist_sljnbc_0102
+    name: 曹仁
+    avatar: pig/武059.png
     default_gender: male
     archetype: military
-    flavor: （？—255年）才兼文武，寿春三叛第二人。河东闻喜人，出身名门。他曾远征高句丽，深入朝鲜半岛千余里，刻石纪功于丸都山上，此石碑至今留存，是中国古代对外征伐的重要史证。他镇守淮南多年，军政皆有建树。司马师废黜曹芳后，他愤而起兵勤王，与文钦联合对抗司马氏。可惜寡不敌众，兵败后逃亡被杀，家族惨遭灭门。他颇有文采，诗赋皆工，是文武兼备的将领。他的反叛虽败，却为曹魏宗室赢得了尊严，是三叛中最有军事才能者。
+    flavor: （168年—223年5月6日）曹魏名将，字子孝，沛国谯县人，曹操从弟。他少年时便好武事，从军后随曹操南征北战，攻陶谦、破吕布、平张绣，屡立战功。赤壁之战后他镇守江陵，周瑜率数万吴军围攻经年，他以数千守军死守不退，城中粮尽人困仍坚持到最后撤退。此战奠定了他"守城无双"的威名。
     growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 36
-      intellect: 16
-      defense: 28
-      agility: 20
-  - key: hist_sljnbc_0134
-    name: 诸葛诞
-    avatar: monkey/三国两晋与南北朝/诸葛诞.png
-    default_gender: male
-    archetype: military
-    flavor: （？—258年）功狗之叹，寿春三叛第三人。琅琊阳都人，诸葛亮同族。他早年与夏侯玄、邓飏等交游，号称"浮华友"。后为扬州刺史镇守淮南，多次击退东吴进犯。司马昭篡位之心日渐明显，他不甘为司马氏功狗，遂据寿春起兵反叛。他向东吴称臣求援，死守寿春一年，城破时麾下数百死士皆不降而死，"宁为诸葛诞之死士"成为当时壮举。他兵败被杀后遭灭族，但他宁死不屈的气节令人敬佩。他是三叛中规模最大、持续最久的一次反抗。
-    growth_range:
-    - 6
+    - 7
     - 11
     attribute_weights:
       force: 34
-      intellect: 18
-      defense: 30
-      agility: 18
+      intellect: 12
+      defense: 40
+      agility: 14

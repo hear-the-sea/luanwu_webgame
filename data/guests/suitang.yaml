@@ -1,5 +1,3 @@
-# 隋唐演义门客
-
 heroes:
   purple:
   - key: hero_qin_shubao
@@ -50,3 +48,806 @@ heroes:
       intellect: 15
       defense: 25
       agility: 15
+  - key: hero_suitang_0102
+    name: 宇文成都
+    archetype: military
+    default_gender: male
+    default_morality: 35
+    recruitable: true
+    avatar: monkey_wu_male2.png
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 48
+      intellect: 12
+      defense: 25
+      agility: 15
+    flavor: 大隋天宝大将，宇文化及之子，位列隋唐第二条好汉。身长一丈、腰大十围，手使四百斤凤翅镏金镋，曾于南阳关外力战雄阔海、伍云召、伍天锡三大好汉而不落下风。虽出身奸臣之家，却傲骨铮铮、忠于职守，明知敌不过李元霸仍昂然迎战，战死沙场而不屈。出自《隋唐演义》。
+  - key: hero_suitang_0103
+    name: 裴元庆
+    archetype: military
+    default_gender: male
+    default_morality: 70
+    recruitable: true
+    avatar: monkey_wu_male3.png
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 48
+      intellect: 10
+      defense: 20
+      agility: 22
+    flavor: 隋唐第三条好汉，裴仁基第三子，年少成名、英气勃发，手使一对三百斤八棱梅花亮银锤。四明山一役硬接李元霸三锤不退，震动天下群雄；后因不满宇文化及陷害，随父归附瓦岗军，屡立奇功。虽少年性烈易激，最终误入庆坠山火雷阵陨落，却以银锤少年之姿名传千古。出自《隋唐演义》。
+  - key: hero_suitang_0104
+    name: 雄阔海
+    archetype: military
+    default_gender: male
+    default_morality: 75
+    recruitable: true
+    avatar: monkey_wu_male4.png
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 46
+      intellect: 10
+      defense: 30
+      agility: 14
+    flavor: 紫面天王雄阔海，太行山好汉，位列隋唐第四条好汉，手使一根一百六十斤熟铜棍，力大无穷且豪气干云。曾单人空手打虎，又与伍云召、伍天锡合战宇文成都，威震四方。扬州夺魁之战中，为救被困城门的反王群雄，双手死死托住千斤闸，力竭而亡，其忠义气概令天下豪杰动容。出自《隋唐演义》。
+  - key: hero_suitang_0105
+    name: 伍云召
+    archetype: military
+    default_gender: male
+    default_morality: 85
+    recruitable: true
+    avatar: monkey_wu_male5.png
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 44
+      intellect: 18
+      defense: 20
+      agility: 18
+    flavor: 南阳侯伍云召，忠孝王伍建章之子，位列隋唐第五条好汉，手使亮银枪，坐骑照夜玉狮子，文武兼备、仪表堂堂。其父遭宇文化及陷害满门抄斩后，他在南阳关起兵反隋，孤身杀透重围、怀抱幼子突围奔河北，忠孝节义冠绝当世，是隋唐群雄中罕见的儒雅名将。出自《隋唐演义》。
+  - key: hero_suitang_0107
+    name: 樊梨花
+    archetype: military
+    default_gender: female
+    default_morality: 85
+    recruitable: true
+    avatar: monkey_wu_female.png
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 38
+      intellect: 26
+      defense: 16
+      agility: 20
+    flavor: 西凉寒江关守将樊洪之女，师从梨山老母，精通兵法阵图与移山倒海奇术，善使绣绒刀与诛仙剑，是大唐征西大元帅。她胸怀大义，识破番邦局势后毅然归唐，历经三休三请的曲折仍不改忠贞，率军平定西凉、屡破奇阵，乃隋唐演义系列中最负盛名的巾帼统帅。出自《隋唐演义》。
+  - key: hero_suitang_0108
+    name: 伍天锡
+    archetype: military
+    default_gender: male
+    default_morality: 65
+    recruitable: true
+    avatar: monkey_wu_male7.png
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 46
+      intellect: 12
+      defense: 26
+      agility: 16
+    flavor: 沱罗寨寨主，伍云召族弟，位列隋唐第六条好汉。生得身高一丈、豹头环眼，手使一对二百斤半月混天镗，武艺刚猛无匹。早年啸聚山林，后因敬重族兄忠义而共赴反隋大业，四明山曾与雄阔海、伍云召联手力战宇文成都，扬州城外死于李元霸双锤之下，堪称一世枭雄。出自《隋唐演义》。
+  - key: hero_suitang_0109
+    name: 罗松
+    archetype: military
+    default_gender: male
+    default_morality: 80
+    recruitable: true
+    avatar: monkey_wu_male8.png
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 42
+      intellect: 18
+      defense: 18
+      agility: 22
+    flavor: 字永年，罗艺长子、罗成同父异母之兄，枪法集罗家枪与姜家枪之大成，深沉稳重、深藏不露。曾在一字长蛇阵外一枪挑开李元霸与罗士信的铁锤铁枪，技惊四座却不恋功名。他心胸宽广，毫无兄弟龃龉，将绝学精义倾囊相授，是隋唐江湖中公认的一代枪术宗师。出自《隋唐演义》。
+  - key: hero_suitang_0122
+    name: 薛丁山
+    archetype: military
+    default_gender: male
+    default_morality: 80
+    recruitable: true
+    avatar: pig_wu_male6.png
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 40
+      intellect: 22
+      defense: 20
+      agility: 18
+    flavor: 平辽王薛仁贵之子，自幼随王敖老祖习武学阵，手使方天画戟，兼通奇门兵法，乃大唐二路征西元帅。他临危受命率军救父，历经锁阳城、寒江关诸役，与樊梨花历经波折终成眷属，夫妻同心平定西凉。性格虽偶有执拗，然大节不亏，堪称唐代演义中承前启后的中兴名将。出自《隋唐演义》。
+  orange:
+  - key: hero_suitang_0101
+    name: 李元霸
+    archetype: military
+    default_gender: male
+    default_morality: 50
+    recruitable: true
+    avatar: monkey_wu_male1.png
+    growth_range:
+    - 8
+    - 13
+    attribute_weights:
+      force: 55
+      intellect: 5
+      defense: 25
+      agility: 15
+    flavor: 隋唐第一条好汉，李渊第四子，生得面如病鬼、骨瘦如柴，却天生神力，手使一对八百斤擂鼓瓮金锤，坐骑万里云。四明山一战单骑破十八路反王大军，紫金山锤震群雄，天下无人能接其三合。性情憨直暴烈，唯有对二哥李世民言听计从，最终举锤骂天而亡，留下千古神力传说。出自《隋唐演义》。
+  blue:
+  - key: hero_suitang_0110
+    name: 魏文通
+    archetype: military
+    default_gender: male
+    default_morality: 60
+    recruitable: true
+    avatar: monkey_wu_male9.png
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 45
+      intellect: 15
+      defense: 24
+      agility: 16
+    flavor: 潼关元帅魏文通，位列隋唐第九条好汉，因面貌酷似关公、手使一口青龙大刀，人称花刀大帅、赛关爷。他统兵严谨，受杨林调遣追击秦琼，九战瓦岗群雄而不怯，刀法沉雄凌厉。最终在战场被神箭手王伯当一箭射杀，虽忠于隋室，其武勇与气节仍令对手钦敬。出自《隋唐演义》。
+  - key: hero_suitang_0111
+    name: 尚师徒
+    archetype: military
+    default_gender: male
+    default_morality: 68
+    recruitable: true
+    avatar: monkey_wu_male10.png
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 20
+      defense: 25
+      agility: 15
+    flavor: 临潼关总兵，位列隋唐第十条好汉，身怀提炉枪、呼雷豹、夜明盔、唐猊铠四件稀世珍宝，人称四宝大将。他治军仁厚，深得军民爱戴，曾力拒瓦岗军数月。后因力战难支，不愿屈节降敌，将坐骑与兵刃赠予秦琼后自刎殉国，留下一段英雄惜英雄的悲壮佳话。出自《隋唐演义》。
+  - key: hero_suitang_0112
+    name: 新文礼
+    archetype: military
+    default_gender: male
+    default_morality: 50
+    recruitable: true
+    avatar: monkey_wu_male11.png
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 46
+      intellect: 14
+      defense: 26
+      agility: 14
+    flavor: 弘霓关总兵，位列隋唐第十一条好汉，手使二百斤铁方槊，身长丈二、膂力过人，人称八马将。他驻守关隘严密，曾以火雷阵诱杀猛将裴元庆，使瓦岗军元气大伤。虽为大隋效命而与群雄为敌，然其临阵死战不退、宁折不弯，终在群雄合围下重伤自尽，颇具悍将本色。出自《隋唐演义》。
+  - key: hero_suitang_0113
+    name: 定彦平
+    archetype: military
+    default_gender: male
+    default_morality: 78
+    recruitable: true
+    avatar: monkey_wu_male12.png
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 42
+      intellect: 20
+      defense: 20
+      agility: 18
+    flavor: 双枪老将定彦平，又称丁彦平，系北齐遗将，一手双枪神出鬼没，绿林与官军皆敬其威名。他曾受杨林之邀出山助阵，却收罗成为义子并倾囊传授破双枪之法。待阵前见义子反戈破阵，虽心痛却未怀恨，最终看破红尘归隐山林，尽显一代武学前辈的洒脱与胸襟。出自《隋唐演义》。
+  - key: hero_suitang_0114
+    name: 丘瑞
+    archetype: military
+    default_gender: male
+    default_morality: 82
+    recruitable: true
+    avatar: monkey_wu_male13.png
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 38
+      intellect: 24
+      defense: 24
+      agility: 14
+    flavor: 大隋昌平王，老成持重的开国宿将，与秦琼之父秦彝交情深厚。虽年迈仍能披挂上阵，手使一杆长枪威风不减当年。奉旨征讨瓦岗山时，见杨广昏庸、宇文化及专权，又感念秦琼忠义，遂毅然倒戈归顺瓦岗，后为救旧部不惜以身殉义，深得两军敬重。出自《隋唐演义》。
+  - key: hero_suitang_0115
+    name: 左天成
+    archetype: military
+    default_gender: male
+    default_morality: 55
+    recruitable: true
+    avatar: monkey_wu_male14.png
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 44
+      intellect: 16
+      defense: 24
+      agility: 16
+    flavor: 武安州总兵，手使一口金背砍山刀，坐骑黄骠马，武艺高强且颇懂阵法。曾奉命镇守四平山要隘，连败瓦岗数员战将，令义军一度束手无策。后在阵前与雄阔海、裴元庆等绝顶猛将激战，终因寡不敌众战死沙场，是隋末演义中极具分量的一方守关大将。出自《隋唐演义》。
+  - key: hero_suitang_0116
+    name: 谢映登
+    archetype: military
+    default_gender: male
+    default_morality: 80
+    recruitable: true
+    avatar: monkey_wu_male16.png
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 38
+      intellect: 22
+      defense: 12
+      agility: 28
+    flavor: 瓦岗寨贾家楼四十六友之一，出身名门，素以神射绝技闻名天下，百步穿杨、箭无虚发，兼通兵法与道家养生之术。起义初期屡以冷箭解救秦琼、程咬金于危难之中，立下汗马功劳。待大唐基业初定，他看淡荣华富贵，飘然辞官修道而去，成为瓦岗群雄中结局最超脱的一人。出自《隋唐演义》。
+  - key: hero_suitang_0117
+    name: 尤俊达
+    archetype: military
+    default_gender: male
+    default_morality: 72
+    recruitable: true
+    avatar: pig_wu_male1.png
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 38
+      intellect: 22
+      defense: 20
+      agility: 20
+    flavor: 铁面天王尤俊达，绿林响马出身，瓦岗寨五虎将之一，手使五股托天叉，胆大心细、机变百出。早年与程咬金合伙劫取靠山王皇纲，揭开瓦岗群雄聚义的序幕；入瓦岗后多次充当先锋与奇兵，后归唐南征北战，性格爽朗重义，极善周旋于江湖绿林之间。出自《隋唐演义》。
+  - key: hero_suitang_0118
+    name: 王君可
+    archetype: military
+    default_gender: male
+    default_morality: 82
+    recruitable: true
+    avatar: pig_wu_male2.png
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 43
+      intellect: 17
+      defense: 24
+      agility: 16
+    flavor: 瓦岗寨大刀王君可，生得绿袍金甲、长髯飘胸，手使一口青龙偃月大刀，人称美髯公、赛关羽。他为人忠厚仗义，在贾家楼结拜中位列前茅，瓦岗起兵后常为冲阵先锋，刀法大开大合、势不可挡。后随秦琼等人归唐，屡立战功，是瓦岗军中极受敬重的仁义猛将。出自《隋唐演义》。
+  - key: hero_suitang_0119
+    name: 东方伯
+    archetype: military
+    default_gender: male
+    default_morality: 58
+    recruitable: true
+    avatar: pig_wu_male3.png
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 44
+      intellect: 16
+      defense: 20
+      agility: 20
+    flavor: 新文礼之内兄，手使一对镔铁虎头戟，坐骑枣红马，武艺高强、性情刚烈。听闻妹夫新文礼兵败身亡，他孤身持戟杀奔瓦岗营前叫阵，连挑义军数将，枪戟并举如疾风骤雨，非寻常战将所能抵挡。最终在乱军中力战而死，其悍勇之名深印于隋唐演义之中。出自《隋唐演义》。
+  - key: hero_suitang_0120
+    name: 梁师泰
+    archetype: military
+    default_gender: male
+    default_morality: 65
+    recruitable: true
+    avatar: pig_wu_male4.png
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 45
+      intellect: 10
+      defense: 27
+      agility: 18
+    flavor: 挂锤庄庄主，四猛八大锤之一，手使一对一百六十斤镔铁轧油锤，天生神力、豪爽直率。因折服于李元霸的无双神勇，甘愿追随其左右充当开路先锋，随唐军转战四方、逢山开路。后在沙场与单雄信交锋时不幸中计阵亡，其憨勇忠直的形象令人难忘。出自《隋唐演义》。
+  - key: hero_suitang_0121
+    name: 罗通
+    archetype: military
+    default_gender: male
+    default_morality: 78
+    recruitable: true
+    avatar: pig_wu_male5.png
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 42
+      intellect: 18
+      defense: 16
+      agility: 24
+    flavor: 罗成之子，少年英雄，年仅十六岁便在演武场夺得扫北元帅印，继承祖传罗家枪法，英姿飒爽、锋芒毕露。率军北征突厥，连破敌阵救出被困的李世民，立下不世之功。他性情孤傲重承诺，晚年出征西凉时盘肠大战老将王不超，同归于尽，尽显罗家满门忠烈本色。出自《隋唐演义》。
+  - key: hero_suitang_0106
+    name: 秦用
+    avatar: monkey_wu_male9.png
+    archetype: military
+    flavor: 大明府黄脸汉将，秦琼义子，位列隋唐四猛之一，号称“铜锤将”。他手使一对八棱梅花亮银锤，勇猛绝伦，曾助瓦岗军大破铜旗阵，更在阵前一锤砸死突厥大将红海，少年英气令敌军闻风丧胆。出自《隋唐演义》。
+    default_gender: male
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 46
+      intellect: 14
+      defense: 24
+      agility: 16
+  - key: hero_suitang_0134
+    name: 红拂女
+    archetype: civil
+    default_gender: female
+    default_morality: 82
+    recruitable: true
+    avatar: monkey_wen_female1.png
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 22
+      intellect: 38
+      defense: 15
+      agility: 25
+    flavor: 本姓张，原为隋相杨素府中执红拂的侍妓，慧眼识英雄，于满堂宾客中独赏布衣李靖，遂夜奔相随，与李靖、虬髯客并称风尘三侠。她既具侠女胆魄，又兼过人机智与识人之明，辅佐李靖定策投唐，是隋末乱世中最具传奇色彩的奇女子。出自《隋唐演义》。
+  green:
+  - key: hero_suitang_0123
+    name: 秦怀玉
+    archetype: military
+    default_gender: male
+    default_morality: 85
+    recruitable: true
+    avatar: pig_wu_male7.png
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 18
+      defense: 24
+      agility: 16
+    flavor: 秦叔宝之子，尽得家传撒手锏与虎头枪绝艺，沉稳厚重、颇有乃父之风。扫北之役中屡次挺身而出，于危机时刻力挽狂澜，深受唐太宗倚重并招为驸马。他不骄不躁，与罗通、尉迟宝林等将门之后并肩作战，是大唐二代武将中的中流砥柱。出自《隋唐演义》。
+  - key: hero_suitang_0124
+    name: 尉迟宝林
+    archetype: military
+    default_gender: male
+    default_morality: 78
+    recruitable: true
+    avatar: pig_wu_male8.png
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 46
+      intellect: 12
+      defense: 26
+      agility: 16
+    flavor: 尉迟恭长子，生得面黑如炭、虎背熊腰，手使单鞭与丈八蛇矛，力大无穷且性情刚直。早年随母居于塞外，后父子阵前相认，毅然归唐效力。随军扫北征东，冲锋陷阵无所畏惧，深得乃父勇猛遗风，是唐军阵中极具冲击力的重装猛将。出自《隋唐演义》。
+  - key: hero_suitang_0125
+    name: 尉迟宝庆
+    archetype: military
+    default_gender: male
+    default_morality: 76
+    recruitable: true
+    avatar: pig_wu_male9.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 44
+      intellect: 14
+      defense: 26
+      agility: 16
+    flavor: 尉迟恭次子，与兄长尉迟宝林并称黑面双雄，善使熟铜鞭与长枪，身材魁梧、悍勇过人。自幼随父研习军阵搏杀，在扫北、征东诸战中常与兄长左右呼应，逢敌必先登，护主忠贞不二，是演义中唐军新一代的得力干将。出自《隋唐演义》。
+  - key: hero_suitang_0126
+    name: 程铁牛
+    archetype: military
+    default_gender: male
+    default_morality: 74
+    recruitable: true
+    avatar: duck_wu_male1.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 45
+      intellect: 12
+      defense: 28
+      agility: 15
+    flavor: 混世魔王程咬金之子，生得浓眉大眼、嗓音如雷，手使一柄宣花大斧，连性情与“三板斧”绝活都酷似其父。他为人憨厚乐观，从不计较个人得失，常在军中充当开心果，关键时刻却敢拼命死战，随罗通、薛丁山征战南北，屡立战功。出自《隋唐演义》。
+  - key: hero_suitang_0127
+    name: 屠炉公主
+    archetype: military
+    default_gender: female
+    default_morality: 68
+    recruitable: true
+    avatar: monkey_wu_female2.png
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 22
+      defense: 16
+      agility: 26
+    flavor: 北番狼主之女，容貌绝美且武艺超群，善使双刀与飞刀绝技，巾帼不让须眉。扫北之战中阵前擒获罗通，却因倾慕其英姿而主动归顺大唐，立下助唐平北之功。她敢爱敢恨、烈性刚直，后因罗通背誓而自刎明志，成为演义中令人扼腕的悲情女将。出自《隋唐演义》。
+  - key: hero_suitang_0128
+    name: 窦一虎
+    archetype: military
+    default_gender: male
+    default_morality: 65
+    recruitable: true
+    avatar: duck_wu_male2.png
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 34
+      intellect: 20
+      defense: 16
+      agility: 30
+    flavor: 棋盘山寨主，身材矮小却精明干练，曾得异人传授地行奇术，手使双锤，行动诡秘如鬼魅。初与薛丁山为敌，后感其大义而结为金兰兄弟，归唐效力。征西战场上他屡次潜入敌营探听军情、暗毁敌阵，奇兵之功往往胜过千军万马。出自《隋唐演义》。
+  - key: hero_suitang_0129
+    name: 窦仙童
+    archetype: military
+    default_gender: female
+    default_morality: 72
+    recruitable: true
+    avatar: monkey_wu_female3.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 35
+      intellect: 20
+      defense: 18
+      agility: 27
+    flavor: 棋盘山窦一虎之妹，自幼习武，善使双剑与捆仙绳，身法灵动飘逸，性格直爽泼辣。于棋盘山阵前与薛丁山交手，倾心于其少年英气，遂随兄长一同归唐效力，成为征西大军中一员骁勇女将，屡次在险战中助夫解围。出自《隋唐演义》。
+  - key: hero_suitang_0130
+    name: 陈金定
+    archetype: military
+    default_gender: female
+    default_morality: 78
+    recruitable: true
+    avatar: monkey_wu_female4.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 14
+      defense: 26
+      agility: 18
+    flavor: 金霞山女将，生得高大健硕、天生神力，手使一对八十斤铁锤，性格豪爽坦荡，毫无扭捏之态。曾于危急关头救出深陷重围的薛丁山，随后嫁入薛家随军征西，战场上每以重锤破敌重甲，令番邦猛将闻风丧胆，是大唐军中少见的力战女将。出自《隋唐演义》。
+  - key: hero_suitang_0131
+    name: 薛金莲
+    archetype: military
+    default_gender: female
+    default_morality: 80
+    recruitable: true
+    avatar: monkey_wu_female5.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 20
+      defense: 18
+      agility: 26
+    flavor: 薛仁贵之女、薛丁山之妹，将门虎女，自幼随父兄习得一手精妙枪法与弓箭之术，机智灵动、胆识过人。西凉战事吃紧时，她随军出征，不仅在阵前斩将夺旗，更数次替兄长出谋划策、调和家务，最终与窦一虎结为伉俪，传为军中佳话。出自《隋唐演义》。
+  - key: hero_suitang_0132
+    name: 裴翠云
+    archetype: military
+    default_gender: female
+    default_morality: 76
+    recruitable: true
+    avatar: monkey_wu_female6.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 22
+      defense: 22
+      agility: 20
+    flavor: 裴仁基之女、裴元庆之姐，出身将门，虽为女子却武艺不凡、气度大方，丝毫不逊男儿。瓦岗归附之际，经徐茂公作媒嫁与程咬金为妻，既能上阵杀敌，又能管束好这位混世魔王，夫妻一刚一柔相得益彰，是瓦岗群雄中极有威望的巾帼人物。出自《隋唐演义》。
+  - key: hero_suitang_0133
+    name: 花大脚
+    archetype: military
+    default_gender: female
+    default_morality: 72
+    recruitable: true
+    avatar: monkey/其他随机角色/武083_女_.png
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 40
+      intellect: 15
+      defense: 28
+      agility: 17
+    flavor: 程咬金发妻，出身市井豪门，生性泼辣爽直、膂力过人，一手朴刀舞得虎虎生风。当年程咬金落魄之时她不离不弃，及至封王拜将仍敢当面管教夫君，绝不纵容其胡作非为。她虽言辞犀利，实则古道热肠，深得瓦岗众兄弟敬畏。出自《隋唐演义》。
+  - key: hero_suitang_0135
+    name: 单冰冰
+    archetype: military
+    default_gender: female
+    default_morality: 75
+    recruitable: true
+    avatar: monkey_wu_female2.png
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 34
+      intellect: 22
+      defense: 20
+      agility: 24
+    flavor: 赤发灵官单雄信之妹，生长于二贤庄绿林豪门，自幼随兄习得一身好武艺，性情刚烈重义。她仰慕豪杰，后与瓦岗英豪结缘，在大义与兄妹情深之间屡经抉择，既能持剑护庄，亦能明辨是非，尽显绿林儿女的铮铮傲骨。出自《隋唐演义》。
+  - key: hero_suitang_0136
+    name: 东方玉梅
+    archetype: military
+    default_gender: female
+    default_morality: 70
+    recruitable: true
+    avatar: monkey_wu_female3.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 20
+      defense: 18
+      agility: 26
+    flavor: 虹霓关守将新文礼之妻、东方伯之妹，自幼习练飞刀与双刀绝技，容貌秀丽而胆略过人。夫君战死后，她披孝挂帅镇守关隘，连挫瓦岗数员大将，威震一时；后感念王伯当忠义风采而倾心归降，化干戈为玉帛，是演义中智勇兼备的女将。出自《隋唐演义》。
+  - key: hero_suitang_0137
+    name: 袁紫烟
+    archetype: civil
+    default_gender: female
+    default_morality: 74
+    recruitable: true
+    avatar: monkey_wen_female2.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 15
+      intellect: 45
+      defense: 15
+      agility: 25
+    flavor: 隋唐演义中才智过人的江南奇女子，出身书香门第，精通琴棋书画与医理奇门，心细如发、沉静温婉。乱世之中她辗转于群雄之间，常以柔克刚、妙计解围，既能替义军探查机密，又能安抚流民疾苦，为铁血沙场添上一抹清雅风华。出自《隋唐演义》。
+  - key: hero_suitang_0138
+    name: 朱贵儿
+    archetype: civil
+    default_gender: female
+    default_morality: 80
+    recruitable: true
+    avatar: monkey_wen_female3.png
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 12
+      intellect: 42
+      defense: 24
+      agility: 22
+    flavor: 隋炀帝宫中才人，性情刚烈而明辨忠奸，虽身处深宫却不慕荣华，常直言劝谏帝王收敛奢靡。江都兵变之夜，宇文化及率逆党闯宫逼迫，她毫不畏惧，当面痛斥奸贼无义，从容赴死殉节，其凛然气节令乱军为之骇然。出自《隋唐演义》。
+  - key: hero_suitang_0139
+    name: 贾闰甫
+    archetype: civil
+    default_gender: male
+    default_morality: 82
+    recruitable: true
+    avatar: monkey_wen_male1.png
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 18
+      intellect: 44
+      defense: 20
+      agility: 18
+    flavor: 贾家楼庄主，瓦岗聚义的核心筹划者之一，字闰甫，素有“小孟尝”之风。他广交天下豪杰，当年秦琼母寿，正是他在贾家楼设宴聚拢四十六友歃血为盟，奠定瓦岗起义根基。为人深谋远虑、善于调和众将矛盾，是瓦岗寨中不可多得的智囊人物。出自《隋唐演义》。
+  - key: hero_suitang_0140
+    name: 柳周臣
+    archetype: civil
+    default_gender: male
+    default_morality: 78
+    recruitable: true
+    avatar: monkey_wen_male2.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 14
+      intellect: 46
+      defense: 22
+      agility: 18
+    flavor: 瓦岗寨贾家楼结义兄弟之一，原为历城富户，精明干练、善于理财经商。入瓦岗后主理军粮辎重与钱谷调度，将义军后勤打理得井井有条，使前线将士无后顾之忧。他为人谦和谨慎，遇事条理分明，是瓦岗群雄中稳健可靠的后勤重臣。出自《隋唐演义》。
+  - key: hero_suitang_0141
+    name: 齐国远
+    archetype: military
+    default_gender: male
+    default_morality: 70
+    recruitable: true
+    avatar: monkey/其他随机角色/武037_男.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 14
+      defense: 28
+      agility: 18
+    flavor: 瓦岗寨好汉，手使一对纸糊金装瓜锤，装模作样却又胆大包天，常与好友李如圭形影不离。虽武艺平平，却极具江湖义气与喜剧色彩，曾在少华山劫道偶遇秦琼而结下生死之交。入瓦岗后虽常闹笑话，临阵却从不退缩，深受众兄弟喜爱。出自《隋唐演义》。
+  - key: hero_suitang_0142
+    name: 李如圭
+    archetype: military
+    default_gender: male
+    default_morality: 70
+    recruitable: true
+    avatar: monkey/其他随机角色/武038_男.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 16
+      defense: 26
+      agility: 18
+    flavor: 少华山头领，齐国远的生死搭档，手使一对铁锤，性格诙谐机灵、重情重义。早年落草为寇，因结识秦琼而投奔瓦岗大旗，成为贾家楼四十六友之一。他虽非绝顶猛将，却极善打探消息、鼓舞士气，在瓦岗群雄南征北战的岁月中留下诸多趣闻。出自《隋唐演义》。
+  - key: hero_suitang_0143
+    name: 伍建章
+    archetype: civil
+    default_gender: male
+    default_morality: 92
+    recruitable: true
+    avatar: monkey_wen_male3.png
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 16
+      intellect: 44
+      defense: 26
+      agility: 14
+    flavor: 大隋忠孝王、开国柱石，南阳侯伍云召之父，德高望重、刚正不阿。杨广弑父篡位后，朝中大臣慑于淫威皆噤若寒蝉，唯独他不顾满门安危，金殿之上痛斥杨广与宇文化及大逆不道，慷慨就义。其忠烈风骨震动朝野，成为点燃隋末天下反隋烽火的导火索。出自《隋唐演义》。
+  - key: hero_suitang_0144
+    name: 伍登
+    archetype: military
+    default_gender: male
+    default_morality: 84
+    recruitable: true
+    avatar: monkey/其他随机角色/武044_男_.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 18
+      defense: 22
+      agility: 18
+    flavor: 南阳侯伍云召之子，襁褓之中便随父杀出南阳关重围，后被托付给恩人抚养成人。他承袭伍家枪法绝学，英武挺拔、胸怀家仇国恨，长大后毅然投身反隋复仇大业，手刃宇文奸党余孽，终使忠孝王一脉昭雪沉冤，不负将门虎子之名。出自《隋唐演义》。
+  - key: hero_suitang_0145
+    name: 裴元福
+    archetype: military
+    default_gender: male
+    default_morality: 72
+    recruitable: true
+    avatar: monkey/其他随机角色/武047_男.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 16
+      defense: 24
+      agility: 18
+    flavor: 山马关总兵裴仁基次子、裴元庆二哥，出身将门，手使一杆长枪，弓马娴熟、沉稳干练。随父奉命征讨瓦岗山时，见监军张大宾屡进谗言陷害裴氏满门，遂协助父兄反隋归附瓦岗，此后在军中恪尽职守，辅佐义军攻城略地。出自《隋唐演义》。
+  - key: hero_suitang_0146
+    name: 麻叔谋
+    archetype: civil
+    default_gender: male
+    default_morality: 15
+    recruitable: true
+    avatar: monkey_wen_male4.png
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 22
+      intellect: 38
+      defense: 24
+      agility: 16
+    flavor: 隋炀帝宠臣，受命担任开河总管，督造汴河与大运河。其人虽有统筹巨额民夫、催办浩大工程的干练手腕，却生性残忍贪婪，沿途敲诈勒索、草菅人命，搞得沿岸百姓怨声载道。终因民怨沸腾、恶行败露而被杨广下令腰斩，成为隋末暴政的典型缩影。出自《隋唐演义》。
+  - key: hero_suitang_0147
+    name: 尚怀忠
+    archetype: military
+    default_gender: male
+    default_morality: 60
+    recruitable: true
+    avatar: monkey/其他随机角色/武052_男.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 16
+      defense: 24
+      agility: 18
+    flavor: 隋朝边关战将，素以忠勇刚烈著称，手使一柄长柄大刀，擅长守城与近身搏杀。隋末群雄并起之际，他坚守关隘、屡次击退义军试探，虽身处大厦将倾之局，仍竭力约束部众、不肯轻易降敌，是演义中忠于旧主的硬汉将领。出自《隋唐演义》。
+  - key: hero_suitang_0148
+    name: 宇文成龙
+    archetype: military
+    default_gender: male
+    default_morality: 25
+    recruitable: true
+    avatar: monkey/其他随机角色/武064_男_.png
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 40
+      intellect: 18
+      defense: 22
+      agility: 20
+    flavor: 奸相宇文化及之子、宇文成都族兄，仗着父兄权势横行朝野，手使长枪，略通武艺却狂妄自大。曾奉命领兵围剿义军，妄图抢夺首功，结果在阵前轻敌冒进，被瓦岗猛将一举击溃斩杀，是演义中典型的纨绔骄将。出自《隋唐演义》。
+  - key: hero_suitang_0149
+    name: 姜兴霸
+    archetype: military
+    default_gender: male
+    default_morality: 78
+    recruitable: true
+    avatar: monkey/其他随机角色/武066_男_.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 44
+      intellect: 12
+      defense: 26
+      agility: 18
+    flavor: 薛仁贵火头军时期的八拜之交，身材魁梧、力大如牛，手使一条熟铜棍，为人忠厚直爽。征东之役中随薛仁贵冲锋陷阵，多次在张士贵冒功打压之下力挺义兄，甘当绿叶而不计名利，最终得封大唐武将，堪称军中重义的铁汉。出自《隋唐演义》。
+  - key: hero_suitang_0150
+    name: 铁雷八宝
+    archetype: military
+    default_gender: male
+    default_morality: 45
+    recruitable: true
+    avatar: pig/武005.png
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 45
+      intellect: 13
+      defense: 26
+      agility: 16
+    flavor: 塞外番邦猛将，生得膀大腰圆、凶悍异常，手使一对沉重铁锤，力敌千钧。曾于北征战场上充当番军先锋，连伤唐军数员偏将，气焰嚣张一时，非唐军一流名将难以压制。虽为敌阵悍将，其临阵死战的蛮勇之气仍令唐军印象深刻。出自《隋唐演义》。

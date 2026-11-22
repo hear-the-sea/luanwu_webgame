@@ -126,34 +126,6 @@ heroes:
       intellect: 54
       defense: 22
       agility: 12
-  - key: hist_sljnbc_0057
-    name: 羊祜
-    avatar: pig/文038.png
-    default_gender: male
-    archetype: civil
-    flavor: （221年—278年12月27日）灭吴谋划者，仁者无敌。他出身名门，为人高洁。镇守荆州十年与陆抗对峙，以德服人而非穷兵黩武。他送药给陆抗、归还东吴猎物，令敌人亦敬佩其德行。他制定了灭吴的完整战略，修水利、积粮草、练士卒，为统一做好了万全准备。临终荐杜预继任，献灭吴之策，虽未亲见统一却是最大功臣。
-    growth_range:
-    - 6
-    - 9
-    attribute_weights:
-      force: 14
-      intellect: 54
-      defense: 22
-      agility: 10
-  - key: hist_sljnbc_0058
-    name: 陆抗
-    avatar: monkey/其他随机角色/武047_男.png
-    default_gender: male
-    archetype: military
-    flavor: （226年—274年）陆逊之子，东吴最后的名将。他继承父业镇守荆州，与晋将羊祜隔江对峙。二人惺惺相惜，互致酒食、彼此推重，被誉为"君子之交"。他深知东吴国力衰微，多次上疏请求加强西陵防务，却不被采纳。西陵之战他以果断用兵平定步阐叛乱，展现了卓越军事才能。他苦撑东吴危局，多次击退晋军进攻。
-    growth_range:
-    - 6
-    - 9
-    attribute_weights:
-      force: 38
-      intellect: 18
-      defense: 26
-      agility: 18
   - key: hist_sljnbc_0060
     name: 魏延
     avatar: monkey_wu_male3.png
@@ -168,34 +140,6 @@ heroes:
       intellect: 12
       defense: 24
       agility: 20
-  - key: hist_sljnbc_0061
-    name: 张郃
-    avatar: pig/武060.png
-    default_gender: male
-    archetype: military
-    flavor: （？—231年）巧变名将，蜀军劲敌。他本是袁绍部将，官渡之战后归曹操。征张鲁、定汉中，屡立战功；夏侯渊阵亡后代掌军权，稳定了军心。他善于利用地形，用兵巧变，诸葛亮、刘备皆对其忌惮三分。街亭之战他大破马谡，扭转北伐局势，令蜀汉首次北伐功亏一篑。诸葛亮第四次北伐退兵时，他奉命追击，于木门道中伏身亡。
-    growth_range:
-    - 6
-    - 9
-    attribute_weights:
-      force: 38
-      intellect: 16
-      defense: 28
-      agility: 18
-  - key: hist_sljnbc_0062
-    name: 徐晃
-    avatar: monkey/其他随机角色/武047_男.png
-    default_gender: male
-    archetype: military
-    flavor: （？—227年）周亚夫之风，樊城解围。他本是杨奉部将，归曹后以治军严整著称，令行禁止，赏罚分明。从征吕布、官渡奇袭乌巢、平定汉中，每战必先。樊城之战他亲率援军长驱直入，与关羽正面交锋，击破围城蜀军解了曹仁之围。曹操亲迎至阵前，盛赞其有周亚夫之风。他作战稳健，不求冒进但求必胜，是五子良将中最善于攻坚野战者。
-    growth_range:
-    - 6
-    - 9
-    attribute_weights:
-      force: 38
-      intellect: 14
-      defense: 30
-      agility: 18
   - key: hist_sljnbc_0063
     name: 甘宁
     avatar: pig/武059.png
@@ -392,6 +336,20 @@ heroes:
       intellect: 54
       defense: 22
       agility: 10
+  - key: hist_sljnbc_0073
+    name: 郝昭
+    avatar: monkey/三国两晋与南北朝/郝昭.png
+    default_gender: male
+    archetype: military
+    flavor: （？—229年）曹魏将领，字伯道，太原人。他少年从军，屡立战功，以善守城闻名。太和二年（228年）诸葛亮第二次北伐，出散关围攻陈仓，郝昭以千余人据守，修筑重墙、以火箭焚烧云梯，坚守二十余日，迫使蜀军粮尽退兵。此役成为古代守城战的著名战例，郝昭也因之留名。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 34
+      intellect: 14
+      defense: 40
+      agility: 12
   purple:
   - key: hist_sljnbc_0059
     name: 黄忠
@@ -421,20 +379,6 @@ heroes:
       intellect: 6
       defense: 32
       agility: 10
-  - key: hist_sljnbc_0073
-    name: 郝昭
-    avatar: monkey/三国两晋与南北朝/郝昭.png
-    default_gender: male
-    archetype: military
-    flavor: （？—229年）曹魏将领，字伯道，太原人。他少年从军，屡立战功，以善守城闻名。太和二年（228年）诸葛亮第二次北伐，出散关围攻陈仓，郝昭以千余人据守，修筑重墙、以火箭焚烧云梯，坚守二十余日，迫使蜀军粮尽退兵。此役成为古代守城战的著名战例，郝昭也因之留名。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 34
-      intellect: 14
-      defense: 40
-      agility: 12
   - key: hist_sljnbc_0065
     name: 韦睿
     avatar: monkey/三国两晋与南北朝/韦睿.png
@@ -700,4 +644,60 @@ heroes:
       force: 38
       intellect: 18
       defense: 26
+      agility: 18
+  - key: hist_sljnbc_0057
+    name: 羊祜
+    avatar: pig/文038.png
+    default_gender: male
+    archetype: civil
+    flavor: （221年—278年12月27日）灭吴谋划者，仁者无敌。他出身名门，为人高洁。镇守荆州十年与陆抗对峙，以德服人而非穷兵黩武。他送药给陆抗、归还东吴猎物，令敌人亦敬佩其德行。他制定了灭吴的完整战略，修水利、积粮草、练士卒，为统一做好了万全准备。临终荐杜预继任，献灭吴之策，虽未亲见统一却是最大功臣。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 14
+      intellect: 54
+      defense: 22
+      agility: 10
+  - key: hist_sljnbc_0058
+    name: 陆抗
+    avatar: monkey/其他随机角色/武047_男.png
+    default_gender: male
+    archetype: military
+    flavor: （226年—274年）陆逊之子，东吴最后的名将。他继承父业镇守荆州，与晋将羊祜隔江对峙。二人惺惺相惜，互致酒食、彼此推重，被誉为"君子之交"。他深知东吴国力衰微，多次上疏请求加强西陵防务，却不被采纳。西陵之战他以果断用兵平定步阐叛乱，展现了卓越军事才能。他苦撑东吴危局，多次击退晋军进攻。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 38
+      intellect: 18
+      defense: 26
+      agility: 18
+  - key: hist_sljnbc_0061
+    name: 张郃
+    avatar: pig/武060.png
+    default_gender: male
+    archetype: military
+    flavor: （？—231年）巧变名将，蜀军劲敌。他本是袁绍部将，官渡之战后归曹操。征张鲁、定汉中，屡立战功；夏侯渊阵亡后代掌军权，稳定了军心。他善于利用地形，用兵巧变，诸葛亮、刘备皆对其忌惮三分。街亭之战他大破马谡，扭转北伐局势，令蜀汉首次北伐功亏一篑。诸葛亮第四次北伐退兵时，他奉命追击，于木门道中伏身亡。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 38
+      intellect: 16
+      defense: 28
+      agility: 18
+  - key: hist_sljnbc_0062
+    name: 徐晃
+    avatar: monkey/其他随机角色/武047_男.png
+    default_gender: male
+    archetype: military
+    flavor: （？—227年）周亚夫之风，樊城解围。他本是杨奉部将，归曹后以治军严整著称，令行禁止，赏罚分明。从征吕布、官渡奇袭乌巢、平定汉中，每战必先。樊城之战他亲率援军长驱直入，与关羽正面交锋，击破围城蜀军解了曹仁之围。曹操亲迎至阵前，盛赞其有周亚夫之风。他作战稳健，不求冒进但求必胜，是五子良将中最善于攻坚野战者。
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 38
+      intellect: 14
+      defense: 30
       agility: 18

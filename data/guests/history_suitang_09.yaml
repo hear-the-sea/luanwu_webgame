@@ -1,495 +1,536 @@
-# 隋唐五代历史人物（第09批：唐代诗人与文人、科技宗教等补充）
-
 heroes:
   green:
-  - key: hist_suitang_0278_duyou
-    name: 杜佑
-    default_gender: male
-    archetype: civil
-    flavor: 杜佑（735—812），字君卿，京兆万年人，出身京兆杜氏，以门荫入仕。历任岭南、淮南节度使，贞元末入朝为相，历事德宗、顺宗、宪宗三朝。他用三十余年编成《通典》二百卷，分食货、选举、职官等九门，记述历代典章制度沿革，开典章体通史之先，杜牧即其孙。
-    growth_range: [3, 7]
-    attribute_weights:
-      force: 14
-      intellect: 47
-      defense: 21
-      agility: 18
-
   - key: hist_suitang_0279_duguangting
     name: 杜光庭
     default_gender: male
     archetype: civil
     flavor: 杜光庭（850—933），字宾圣，号东瀛子，处州缙云人。唐末应举不第，入天台山修道，后随僖宗入蜀，受前蜀王建礼遇，赐号“广成先生”，晚年隐于青城山。他整理道教经籍，编定斋醮科仪，著有《道德真经广圣义》《录异记》等，传奇《虬髯客传》亦相传出其手。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 13
       intellect: 48
       defense: 20
       agility: 19
-
   - key: hist_suitang_0280_duxunhe
     name: 杜荀鹤
     default_gender: male
     archetype: civil
     flavor: 杜荀鹤（846—904），字彦之，号九华山人，池州石埭人。出身寒微，屡试不第，至大顺二年方中进士，后依附朱温，任翰林学士，不久去世。其诗语言浅近，多写战乱中的民生疾苦，代表作有《山中寡妇》《春宫怨》，今存《唐风集》。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 14
       intellect: 47
       defense: 20
       agility: 19
-
   - key: hist_suitang_0281_duanchengshi
     name: 段成式
     default_gender: male
     archetype: civil
     flavor: 段成式（803—863），字柯古，临淄人，宰相段文昌之子，以门荫入仕，历任校书郎、州刺史，官至太常少卿。他博闻强记，所著《酉阳杂俎》三十卷，杂记仙佛鬼怪、民俗物产与异域见闻，保存了大量唐代社会资料；诗文与李商隐、温庭筠齐名，因三人皆行十六，时称“三十六体”。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 13
       intellect: 48
       defense: 20
       agility: 19
-
   - key: hist_suitang_0282_shenqianqi
     name: 沈佺期
     default_gender: male
     archetype: civil
     flavor: 沈佺期（约656—约715），字云卿，相州内黄人，上元年间进士。武后时官至给事中，因依附张易之被流放驩州，中宗时召回，终官太子少詹事。他与宋之问齐名，并称“沈宋”，在声律、对仗上加以规范，推动五言、七言律诗定型，代表作有《独不见》。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 14
       intellect: 47
       defense: 20
       agility: 19
-
   - key: hist_suitang_0283_shenjiji
     name: 沈既济
     default_gender: male
     archetype: civil
     flavor: 沈既济（约750—约797），吴兴人，唐代文学家、史学家。他受宰相杨炎举荐，任左拾遗、史馆修撰，参与国史编修，撰有《建中实录》。所作传奇《枕中记》写卢生在邯郸客店的一场黄粱梦，《任氏传》写狐女与人相恋，皆为唐传奇名篇。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 12
       intellect: 49
       defense: 19
       agility: 20
-
   - key: hist_suitang_0284_fazang
     name: 法藏
     default_gender: male
     archetype: civil
     flavor: 法藏（643—712），俗姓康，祖籍康居，生于长安，华严宗三祖，世称“贤首国师”。他师事智俨，参与实叉难陀译场，新译《华严经》，并为武则天讲解华严义理，以金狮子作喻，成《华严金师子章》。著有《华严经探玄记》《华严五教章》等。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 11
       intellect: 53
       defense: 18
       agility: 18
-
   - key: hist_suitang_0285_lingche
     name: 灵澈
     default_gender: male
     archetype: civil
     flavor: 灵澈（746—816），字源澄，会稽人，唐代诗僧。他早年从严维学诗，后与皎然等江东诗僧交游，刘长卿曾作《送灵澈上人》相赠。其诗清峻，多写山林禅意；相传因诗语忤权贵，一度被贬汀州，遇赦后声名不减，有诗集行世。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 12
       intellect: 49
       defense: 19
       agility: 20
-
   - key: hist_suitang_0286_wangbing
     name: 王冰
     default_gender: male
     archetype: civil
     flavor: 王冰（生卒年不详），唐代医家，号启玄子，曾任太仆令，世称“王太仆”。他潜心医学，以十二年时间重新编次、注释《黄帝内经素问》，成《次注黄帝内经素问》，补入论述五运六气的七篇大论，使这部医经得以较完整地流传。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 12
       intellect: 50
       defense: 19
       agility: 19
-
   - key: hist_suitang_0287_wangxiaotong
     name: 王孝通
     default_gender: male
     archetype: civil
     flavor: 王孝通（生卒年不详），初唐数学家，曾任算历博士、太史丞。所著《缉古算经》以应用题形式讨论土木工程中的土方计算与勾股测量，并列出若干三次方程，是现存较早系统处理三次方程的中算著作，唐代列为算学教材，后收入《算经十书》。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 12
       intellect: 51
       defense: 18
       agility: 19
-
   - key: hist_suitang_0288_wangwan
     name: 王湾
     default_gender: male
     archetype: civil
     flavor: 王湾（生卒年不详），唐代诗人，洛阳人，先天年间进士，曾任荥阳主簿、洛阳尉，并参与校理皇家藏书。他存诗不多，《次北固山下》中“海日生残夜，江春入旧年”一联最为人称道，相传宰相张说曾将其题于政事堂，作为文士楷式。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 13
       intellect: 47
       defense: 20
       agility: 20
-
   - key: hist_suitang_0289_wanghan
     name: 王翰
     default_gender: male
     archetype: civil
     flavor: 王翰（生卒年不详），字子羽，并州晋阳人，睿宗景云元年登进士第，历任秘书正字、通事舍人、驾部员外郎。他性情豪放，家蓄名马歌伎，后屡遭贬谪，卒于道州司马任上。其《凉州词》“葡萄美酒夜光杯”慷慨悲凉，为盛唐边塞诗名篇。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 15
       intellect: 44
       defense: 20
       agility: 21
-
   - key: hist_suitang_0290_huangfuran
     name: 皇甫冉
     default_gender: male
     archetype: civil
     flavor: 皇甫冉（约717—约770），字茂政，润州丹阳人。十岁能文，为张九龄所赏识，天宝年间进士，历任无锡尉、左金吾卫兵曹参军、右补阙。安史之乱后流寓江南，诗多写山水行旅与离乱之感，与弟皇甫曾并称“二皇甫”，作品收于《全唐诗》。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 14
       intellect: 46
       defense: 20
       agility: 20
-
   - key: hist_suitang_0291_jiaoran
     name: 皎然
     default_gender: male
     archetype: civil
     flavor: 皎然（约720—约803），俗姓谢，字清昼，吴兴人，自称谢灵运十世孙。他出家后住杼山妙喜寺，与颜真卿、陆羽、灵澈等交游，并参与《韵海镜源》的编纂。所著《诗式》品评诗格、讨论取境，是唐代重要的诗学著作，另有《杼山集》传世。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 12
       intellect: 50
       defense: 19
       agility: 19
-
   - key: hist_suitang_0292_pirixiu
     name: 皮日休
     default_gender: male
     archetype: civil
     flavor: 皮日休（约834—883），字袭美，号鹿门子，襄阳人，咸通八年进士。曾任太常博士、苏州从事，与陆龟蒙唱和，二人并称“皮陆”，唱和诗编为《松陵集》。他作文多讥切时弊，有《皮子文薮》；后入黄巢军中，任翰林学士，结局说法不一。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 14
       intellect: 47
       defense: 20
       agility: 19
-
   - key: hist_suitang_0293_shenxiu
     name: 神秀
     default_gender: male
     archetype: civil
     flavor: 神秀（606—706），俗姓李，汴州尉氏人，禅宗五祖弘忍的上座弟子。弘忍去世后，他在当阳玉泉寺传法，创北宗禅，主张渐修。武则天闻其名，迎入洛阳、长安，中宗、睿宗亦加礼敬，时称“两京法主，三帝国师”，卒谥大通禅师。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 12
       intellect: 48
       defense: 20
       agility: 20
-
   - key: hist_suitang_0294_jiada
     name: 贾耽
     default_gender: male
     archetype: civil
     flavor: 贾耽（730—805），字敦诗，沧州南皮人，贞元年间官至宰相。他久任地方官与鸿胪卿，留心边疆及域外地理，绘成《海内华夷图》，以朱墨分注古今地名，又撰《古今郡国县道四夷述》四十卷，是唐代地理学的代表成果。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 13
       intellect: 49
       defense: 20
       agility: 18
-
   - key: hist_suitang_0295_zhaoxu
     name: 赵嘏
     default_gender: male
     archetype: civil
     flavor: 赵嘏（约806—约853），字承祐，楚州山阳人，会昌年间进士，曾任渭南尉，世称“赵渭南”。其《长安晚秋》中“残星几点雁横塞，长笛一声人倚楼”一联为杜牧激赏，因得“赵倚楼”之名；诗风清丽，多写羁旅与秋景。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 14
       intellect: 47
       defense: 20
       agility: 19
-
   - key: hist_suitang_0296_daoda
     name: 道宣
     default_gender: male
     archetype: civil
     flavor: 道宣（596—667），俗姓钱，润州丹徒人，唐代律宗高僧。他长期居终南山研习律学，创立南山律宗，所撰《四分律删繁补阙行事钞》等“南山三大部”成为后世律学根本。他又著《续高僧传》《广弘明集》《大唐内典录》，保存了大量佛教史资料，并曾参与玄奘译场。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 12
       intellect: 50
       defense: 19
       agility: 19
-
   - key: hist_suitang_0297_langshiyuan
     name: 郎士元
     default_gender: male
     archetype: civil
     flavor: 郎士元（生卒年不详），字君胄，中山人，天宝末年进士，历任渭南尉、右拾遗、郢州刺史，为“大历十才子”之一。他与钱起齐名，当时有“前有沈宋，后有钱郎”之说。诗多写山水、送别，风格清雅，今存《郎士元集》辑本。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 14
       intellect: 46
       defense: 20
       agility: 20
-
   - key: hist_suitang_0298_zhenggu
     name: 郑谷
     default_gender: male
     archetype: civil
     flavor: 郑谷（生卒年不详），字守愚，袁州宜春人，光启年间进士，官至都官郎中，世称“郑都官”。诗多写羁旅、咏物与时事，曾以《鹧鸪》诗得名，人称“郑鹧鸪”。相传诗僧齐己作《早梅》，他改“数枝开”为“一枝开”，齐己遂拜为一字师。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 14
       intellect: 47
       defense: 20
       agility: 19
-
   - key: hist_suitang_0299_hanwo
     name: 韩偓
     default_gender: male
     archetype: civil
     flavor: 韩偓（844—923），字致尧，号玉山樵人，京兆万年人。昭宗时官至翰林学士、兵部侍郎，深受信任，因不肯依附朱温而遭贬，后流寓福建。其诗多感时伤乱，追怀唐室；《香奁集》写闺情，辞采绮丽，旧题其所作，亦有异说。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 15
       intellect: 46
       defense: 20
       agility: 19
-
   - key: hist_suitang_0300_jingangzhi
     name: 金刚智
     default_gender: male
     archetype: civil
     flavor: 金刚智（669—741），梵名跋日罗菩提，南印度人，唐代密宗僧人、译师。开元年间泛海抵广州，后入长安、洛阳，译出《金刚顶瑜伽中略出念诵经》等密教经典，弘传金刚界法门，与善无畏、不空并称“开元三大士”，其弟子不空继承法脉。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 12
       intellect: 50
       defense: 19
       agility: 19
-
   - key: hist_suitang_0301_qianqi
     name: 钱起
     default_gender: male
     archetype: civil
     flavor: 钱起（约710—约780），字仲文，吴兴人，天宝年间进士，官至考功郎中，世称“钱考功”，为“大历十才子”之一。其应试诗《省试湘灵鼓瑟》以“曲终人不见，江上数峰青”收束，传诵一时；诗风清空闲雅，与郎士元齐名，有《钱考功集》。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 14
       intellect: 47
       defense: 20
       agility: 19
-
   - key: hist_suitang_0302_yandelide
     name: 阎立德
     default_gender: male
     archetype: civil
     flavor: 阎立德（？—656），名让，字立德，雍州万年人，唐初建筑家、画家。他继承家学，擅长工艺与绘画，官至工部尚书，主持营建翠微宫、玉华宫以及高祖献陵、太宗昭陵，并参与厘定唐代车服制度。其弟阎立本亦以画名世，兄弟并称。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 14
       intellect: 47
       defense: 20
       agility: 19
-
   - key: hist_suitang_0303_ludeming
     name: 陆德明
     default_gender: male
     archetype: civil
     flavor: 陆德明（生卒年不详），名元朗，字德明，苏州吴县人，历仕陈、隋、唐三代。唐初任国子博士，为秦王府文学馆学士。所著《经典释文》三十卷，对《周易》《尚书》《诗经》及《老子》《庄子》等典籍逐条注音释义，是研究古音与经学的重要文献。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 11
       intellect: 53
       defense: 18
       agility: 18
-
   - key: hist_suitang_0304_luguimeng
     name: 陆龟蒙
     default_gender: male
     archetype: civil
     flavor: 陆龟蒙（？—881），字鲁望，号甫里先生、天随子，苏州吴县人。举进士不第，隐居松江甫里，以读书著述、躬耕垂钓自适。他与皮日休唱和，世称“皮陆”，所著《耒耜经》专记曲辕犁等农具形制，另有《笠泽丛书》《甫里集》传世。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 13
       intellect: 49
       defense: 19
       agility: 19
-
   - key: hist_suitang_0305_chencangqi
     name: 陈藏器
     default_gender: male
     archetype: civil
     flavor: 陈藏器（生卒年不详），四明人，唐代本草学家，曾任京兆府三原县尉。因见《新修本草》尚有遗漏，他广搜方书、地志与民间用药，撰成《本草拾遗》十卷，补录药物数百种，并归纳宣、通、补、泄等“十剂”，对后世方剂分类影响深远。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 12
       intellect: 50
       defense: 19
       agility: 19
-
   - key: hist_suitang_0306_chenhong
     name: 陈鸿
     default_gender: male
     archetype: civil
     flavor: 陈鸿（生卒年不详），字大亮，唐代史家、文人，贞元、元和年间在世，曾任尚书主客郎中，撰编年史《大统记》三十卷。他与白居易、王质夫同游仙游寺，作《长恨歌传》，与《长恨歌》相辅而行，叙述玄宗与杨贵妃故事，为唐传奇名篇。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 12
       intellect: 50
       defense: 18
       agility: 20
-
   - key: hist_suitang_0307_hangan
     name: 韩干
     default_gender: male
     archetype: civil
     flavor: 韩干（？—约780），京兆人，唐代画家。相传少时为酒肆佣工，得王维资助学画，后师从曹霸，天宝年间被召入宫廷，官太府寺丞。他以画马著称，注重写生，传世《牧马图》《照夜白图》线条雄健，为唐代鞍马画的代表。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 13
       intellect: 50
       defense: 18
       agility: 19
-
   - key: hist_suitang_0308_hanho
     name: 韩翃
     default_gender: male
     archetype: civil
     flavor: 韩翃（生卒年不详），字君平，南阳人，天宝末年进士，为“大历十才子”之一，官至中书舍人，世称“韩舍人”。其七绝《寒食》以“春城无处不飞花”写长安春景，含蓄讽喻，流传甚广；他与柳氏的离合故事，成为《柳氏传》与“章台柳”典故的由来。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 14
       intellect: 47
       defense: 20
       agility: 19
-
   - key: hist_suitang_0309_gukuang
     name: 顾况
     default_gender: male
     archetype: civil
     flavor: 顾况（约727—约815），字逋翁，苏州海盐人，至德年间进士，曾任著作郎，因诗语讥切权贵被贬饶州司户参军，晚年隐居茅山。其诗质朴通俗，多讽喻之作，有《华阳集》。相传少年白居易携诗谒见，他读到“野火烧不尽”后改口称许。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 14
       intellect: 47
       defense: 20
       agility: 19
-
   - key: hist_suitang_0310_yanshigu
     name: 颜师古
     default_gender: male
     archetype: civil
     flavor: 颜师古（581—645），字籀，京兆万年人，颜之推之孙，唐初经学家、史学家。太宗时官至秘书监、弘文馆学士，奉诏注释《汉书》，博采诸家、订正讹误，成为后世通行注本。他又参与编修《隋书》，撰《匡谬正俗》，并考定五经文字。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 11
       intellect: 53
       defense: 18
       agility: 18
-
   - key: hist_suitang_0311_qiji
     name: 齐己
     default_gender: male
     archetype: civil
     flavor: 齐己（863—937），俗姓胡，名得生，潭州益阳人，唐末五代诗僧。他出家后云游各地，与郑谷、贯休等诗人往还，因《早梅》诗得郑谷改字，遂有“一字师”之称。其诗多写山水行旅，语言清润，有《白莲集》十卷及诗论《风骚旨格》传世。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 12
       intellect: 48
       defense: 20
       agility: 20
-
   - key: hist_suitang_0312_changjian
     name: 常建
     default_gender: male
     archetype: civil
     flavor: 常建（生卒年不详），盛唐诗人，开元十五年进士，曾任盱眙尉，仕途失意，后隐居鄂州一带。其诗以五言见长，多写山水田园与隐逸情怀，语言清幽，《题破山寺后禅院》中“曲径通幽处，禅房花木深”一联尤为传诵，今存诗五十余首。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 14
       intellect: 46
       defense: 20
       agility: 20
-
   - key: hist_suitang_0313_liqiao
     name: 李峤
     default_gender: male
     archetype: civil
     flavor: 李峤（644—713），字巨山，赵州赞皇人，二十岁登进士第。历仕高宗至玄宗初年，官至中书令，封赵国公，与苏味道并称“苏李”，又与杜审言、崔融、苏味道合称“文章四友”。他长于五言咏物，所作《杂咏》百二十首，对唐代咏物诗影响较大。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 14
       intellect: 47
       defense: 20
       agility: 19
-
   - key: hist_suitang_0314_sudaozi
     name: 苏味道
     default_gender: male
     archetype: civil
     flavor: 苏味道（648—705），赵州栾城人，乾封年间进士，武则天时官至宰相。他处世圆滑，曾言处事不必决断明白，“模棱以持两端”即可，时人称为“苏模棱”，“模棱两可”一词语出于此。后因依附张易之被贬眉州刺史，卒于任所；宋代苏洵、苏轼父子自称其后裔。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 15
       intellect: 46
       defense: 20
       agility: 19
-
   - key: hist_suitang_0315_xueneng
     name: 薛能
     default_gender: male
     archetype: civil
     flavor: 薛能（约817—约880），字太拙，汾州人，会昌年间进士，累官至忠武军节度使。他自负诗才，好品评前人，对杜甫、白居易等均有讥评，当时即有争议。其诗以近体见长，数量颇丰，有《薛能诗集》；广明年间许州军乱，他遇害身亡。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 15
       intellect: 46
       defense: 20
       agility: 19
-
   - key: hist_suitang_0316_peixing
     name: 裴铏
     default_gender: male
     archetype: civil
     flavor: 裴铏（生卒年不详），唐末文人、官员，咸通年间曾为静海军节度使高骈掌书记，后官至成都节度副使。所著小说集《传奇》三卷，收《昆仑奴》《聂隐娘》《裴航》等篇，多写侠客、仙道与爱情，是晚唐传奇的代表，后世“传奇”之名亦与此书有关。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 13
       intellect: 49
       defense: 19
       agility: 19
-
   - key: hist_suitang_0317_xuhun
     name: 许浑
     default_gender: male
     archetype: civil
     flavor: 许浑（约791—约858），字用晦，润州丹阳人，太和年间进士，曾任监察御史，历睦州、郢州刺史，世称“许郢州”。其诗以律诗、绝句见长，多写登临怀古与水雨景物，《咸阳城东楼》“山雨欲来风满楼”一句尤为传诵，有《丁卯集》传世。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 14
       intellect: 47
       defense: 20
       agility: 19
-
   - key: hist_suitang_0318_guanxiu
     name: 贯休
     default_gender: male
     archetype: civil
     flavor: 贯休（832—912），俗姓姜，字德隐，婺州兰溪人，唐末五代诗僧、画家。他云游江南，曾以“满堂花醉三千客，一剑霜寒十四州”投赠钱镠，因不肯改易字句而离去；后入前蜀，王建赐号“禅月大师”。有《禅月集》，所画十六罗汉形貌奇古，世称“禅月样”。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 13
       intellect: 49
       defense: 19
       agility: 19
+  blue:
+  - key: hist_suitang_0278_duyou
+    name: 杜佑
+    default_gender: male
+    archetype: civil
+    flavor: 杜佑（735—812），字君卿，京兆万年人，出身京兆杜氏，以门荫入仕。历任岭南、淮南节度使，贞元末入朝为相，历事德宗、顺宗、宪宗三朝。他用三十余年编成《通典》二百卷，分食货、选举、职官等九门，记述历代典章制度沿革，开典章体通史之先，杜牧即其孙。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 14
+      intellect: 47
+      defense: 21
+      agility: 18

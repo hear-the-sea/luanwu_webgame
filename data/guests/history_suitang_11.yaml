@@ -1,0 +1,704 @@
+heroes:
+  purple:
+  - key: hist_suitang_0601
+    name: 程知节
+    avatar: monkey/隋唐与五代/程知节.png
+    default_gender: male
+    archetype: military
+    flavor: （589年—665年）唐初开国名将，原名咬金，后更名知节，字义贞，济州东阿人。隋末聚众保乡里，先后归附瓦岗李密与王世充，后携秦琼率众投唐，隶属秦王李世民帐下。他善使马槊，作战勇猛无匹，参与破宋金刚、窦建德、王世充诸役及玄武门之变，位列凌烟阁二十四功臣，封卢国公，历仕高祖、太宗、高宗三朝。
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 46
+      intellect: 14
+      defense: 24
+      agility: 16
+  blue:
+  - key: hist_suitang_0605
+    name: 娄师德
+    avatar: pig/文043.png
+    default_gender: male
+    archetype: civil
+    flavor: （630年—699年）唐代及武周时期名相、将领，字宗仁，郑州原武人。进士出身，出任河源军大使兼营田使期间，督军屯田积谷数百万石，大破吐蕃。他宽厚隐忍，曾以“唾面自干”诫弟，暗中举荐狄仁杰入相却终生不言，狄仁杰知情后叹服“娄公盛德，我为其所包容久矣”。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 22
+      intellect: 46
+      defense: 22
+      agility: 10
+  - key: hist_suitang_0606
+    name: 苏颋
+    avatar: monkey_wen_male1.png
+    default_gender: male
+    archetype: civil
+    flavor: （670年—727年）唐代开元名相、文学家，字廷硕，京兆武功人，宰相苏瓌之子，袭封许国公。少有才名，草拟诏书敏捷典雅、辞气宏富，与燕国公张说并称“燕许大手笔”。开元初年与宋璟同相，一守法度、一润文辞，相得益彰，助唐玄宗共创开元盛世。
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 12
+      intellect: 56
+      defense: 18
+      agility: 14
+  - key: hist_suitang_0607
+    name: 陆象先
+    avatar: pig/文045.png
+    default_gender: male
+    archetype: civil
+    flavor: （665年—736年）唐代名相，苏州吴县人，陆元方之子。清静寡欲，不徇私党，先天政变时太平公主失势，他不避嫌疑力谏唐玄宗宽宥胁从，保全甚众。出任地方官坚持宽简休养，常言“天下本无事，庸人扰之而烦耳”，执政清平，为开元初年贤相典范。
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 10
+      intellect: 54
+      defense: 24
+      agility: 12
+  - key: hist_suitang_0608
+    name: 契苾何力
+    avatar: pig/武048.png
+    default_gender: male
+    archetype: military
+    flavor: （611年—677年）唐初铁勒族名将，贞观六年率部归唐，深得太宗信任。他先后随军破吐谷浑、灭高昌、平龟兹、征高句丽，每战冲锋陷阵，骁勇绝伦。曾遭部众劫持献与薛延陀，他拔刀割左耳以明忠唐之志，宁死不屈，终获太宗遣使赎归，封凉国公，陪葬昭陵。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 48
+      intellect: 16
+      defense: 20
+      agility: 16
+  - key: hist_suitang_0609
+    name: 阿史那社尔
+    avatar: monkey_wu_male5.png
+    default_gender: male
+    archetype: military
+    flavor: （604年—655年）唐初东突厥族名将，处罗可汗次子。归唐后获授左骁卫大将军，尚衡阳长公主。他治军严明，清廉不受私贿，先后参与平定高昌、亲征高句丽，并以昆丘道行军大总管率军西征，一举平定龟兹、于阗诸国，威震西域，唐太宗崩时甚至愿以身殉葬。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 46
+      intellect: 20
+      defense: 18
+      agility: 16
+  - key: hist_suitang_0610
+    name: 颜杲卿
+    avatar: pig/文037.png
+    default_gender: male
+    archetype: civil
+    flavor: （692年—756年）唐代忠烈名臣，字昕，琅琊临沂人，颜真卿从兄。安史之乱爆发时任常山太守，他先假意归顺安禄山，旋即起兵斩杀叛将、打开土门，克复河北十七郡，断贼归路。后因孤城无援陷落，被押至洛阳，面对安禄山怒骂不绝，惨遭割舌凌迟而气节不屈，谥号忠节。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 26
+      intellect: 42
+      defense: 22
+      agility: 10
+  - key: hist_suitang_0611
+    name: 南霁云
+    avatar: pig_wu_male2.png
+    default_gender: male
+    archetype: military
+    flavor: （？—757年）唐代名将，魏州顿丘人。少时家贫操舟，后投张巡麾下守卫睢阳，善骑射，每战摧锋陷阵，令叛军胆寒。睢阳粮尽之际，他率三十骑突围往临淮向贺兰进明乞师，见其拥兵不救，拔刀断指、射矢留塔以明誓，复单骑冲阵回城共赴国难，城破慷慨就义。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 50
+      intellect: 14
+      defense: 20
+      agility: 16
+  - key: hist_suitang_0612
+    name: 吴兢
+    avatar: monkey_wen_male7.png
+    default_gender: male
+    archetype: civil
+    flavor: （670年—749年）唐代史学家，汴州浚仪人。历仕武周、中宗、睿宗、玄宗四朝，久任史馆修撰，以秉笔直书不畏权贵著称，张说屡欲其曲笔改史而终不可得。他系统辑录唐太宗与群臣论政纳谏之嘉言善行，撰成《贞观政要》十卷，成为后世历代帝王治国理政之经典镜鉴。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 56
+      defense: 22
+      agility: 12
+  - key: hist_suitang_0613
+    name: 高崇文
+    avatar: monkey/其他随机角色/武038_男.png
+    default_gender: male
+    archetype: military
+    flavor: （746年—809年）中唐名将，幽州人。以神策军将领起家，唐宪宗元和元年西川节度使刘辟叛乱，他奉命率军急袭入蜀，八战皆捷、迅速平定成都，入城后秋毫无犯，因功封南平郡王，开启元和中兴削藩之先声。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 42
+      intellect: 18
+      defense: 24
+      agility: 16
+  - key: hist_suitang_0614
+    name: 展子虔
+    avatar: monkey/其他随机角色/文061_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （约545年—618年）隋代大画家，渤海人，历仕北齐、北周入隋，官至朝散大夫。善画山水、人物、车马、佛道，笔法细密生动，打破魏晋以来“人大干山、水不容泛”之旧局。其传世《游春图》以青绿勾填描绘春日江山胜景，为中国现存最早卷轴山水画，被誉为“唐画之祖”。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 54
+      defense: 18
+      agility: 18
+  - key: hist_suitang_0615
+    name: 孙过庭
+    avatar: pig/文041.png
+    default_gender: male
+    archetype: civil
+    flavor: （646年—691年）唐代书法家、书法理论家，字虔礼，陈留人。工楷、行、草书，尤精草法，上承王羲之血脉而俊拔刚断。他撰并亲书《书谱》三千七百余言，精辟论述书法执笔、用墨、章法及书艺境界，兼具极高艺术价值与理论深度，被历代书家奉为圭臬。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 56
+      defense: 16
+      agility: 18
+  - key: hist_suitang_0616
+    name: 荆浩
+    avatar: duck_wen_male1.png
+    default_gender: male
+    archetype: civil
+    flavor: （约855年—915年）五代后梁大画家、画论家，字浩然，沁水人。避唐末战乱隐居太行山洪谷，自号洪谷子，躬耕自给而朝夕体察山川云岚。他融汇水墨渲染与勾勒皴擦，创北方全景大山大水之雄浑画风，代表作《匡庐图》气势磅礴，并著《笔法记》提出绘画“六要”，开五代北宋山水画先河。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 12
+      intellect: 54
+      defense: 20
+      agility: 14
+  - key: hist_suitang_0617
+    name: 顾闳中
+    avatar: pig/文046.png
+    default_gender: male
+    archetype: civil
+    flavor: （约910年—约980年）五代南唐宫廷画家，江南人，南唐后主李煜时期任画院待诏。工人物画，观察入微、刻画传神。奉李煜之命夜窥大臣韩熙载府邸宴饮，凭记忆默画成《韩熙载夜宴图》长卷，分五段细腻描绘听乐、观舞、暂歇、清吹、散宴诸景，人物神情毕现，为古代人物画巅峰之作。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 54
+      defense: 18
+      agility: 18
+  - key: hist_suitang_0618
+    name: 智顗
+    avatar: pig/文044.png
+    default_gender: male
+    archetype: civil
+    flavor: （538年—597年）隋代高僧，俗姓陈，字德安，荆州华容人，佛教天台宗实际创始人。早年师从慧思禅师，后居浙江天台山讲经说法，深得陈宣帝与隋晋王杨广尊崇，获赐号“智者大师”。他融通南北佛学，创立五时八教判教体系，口述《法华玄义》《法华文句》《摩诃止观》三大部，泽被东亚佛门。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 58
+      defense: 22
+      agility: 10
+  - key: hist_suitang_0619
+    name: 敬翔
+    avatar: monkey/其他随机角色/文男213.png
+    default_gender: male
+    archetype: civil
+    flavor: （？—923年）五代后梁名相，字子振，同州冯翊人。博通经史，善为文章，唐末投效朱温幕府三十余年，军政机务、战略筹划多出其手，朱温视如左右手。后梁建立后官至崇政院使、宰相，竭力辅政。末帝朱友贞时期屡谏不听，及后唐军破汴京，他自缢殉国，终始一节。
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 12
+      intellect: 56
+      defense: 20
+      agility: 12
+  - key: hist_suitang_0620
+    name: 张承业
+    avatar: pig/文038.png
+    default_gender: male
+    archetype: civil
+    flavor: （846年—922年）晚唐及五代晋国忠臣，字继元，同州人，唐末任河东监军。唐亡后拒不臣梁，留辅李克用与李存勖，主掌晋国后方财政、劝农积谷、严守法度，使前线征战粮饷不绝。李存勖欲称帝时，他泣血力谏以恢复唐室为念，终因劝阻无果绝食忧愤而死，欧阳修赞其“贤哉”。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 14
+      intellect: 52
+      defense: 22
+      agility: 12
+  - key: hist_suitang_0602
+    name: 权德舆
+    avatar: monkey/其他随机角色/文061_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （759年—818年）中唐名相、文学家，字载之，天水略阳人。历任中书舍人、礼部侍郎、同平章事，多次主持科举，选拔寒门俊才；其诗文雅正清丽，贞元、元和年间朝廷重要诏诰与碑志多出其手，时称一代文宗。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 12
+      intellect: 52
+      defense: 20
+      agility: 16
+  - key: hist_suitang_0603
+    name: 长孙晟
+    avatar: monkey_wu_male2.png
+    default_gender: male
+    archetype: military
+    flavor: （552年—609年）隋代杰出军事家、外交家，字季晟，河南洛阳人，长孙无忌之父。善骑射，出使突厥时以一箭双雕震慑塞北，尽悉突厥山川虚实与诸部矛盾。归朝后献“远交近攻、离强合弱”之策，成功分化东西突厥，不战而解北方大患，大破达头可汗，官至右骁卫将军，功烈显赫。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 38
+      intellect: 34
+      defense: 14
+      agility: 14
+  - key: hist_suitang_0604
+    name: 董源
+    avatar: monkey/其他随机角色/文_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （约934年—约962年）五代南唐大画家，字叔达，钟陵人，曾任南唐北苑副使，世称董北苑。他专写江南平淡天真之烟岚丘壑，独创披麻皴与点子皴技法，墨色苍润浑厚，一变唐代青绿山水之格局。其代表作《潇湘图》《夏景山口待渡图》影响深远，与荆浩、关仝、巨然并称“荆关董巨”，被尊为南宗山水画祖师。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 56
+      defense: 18
+      agility: 16
+  - key: hist_suitang_0643
+    name: 窥基
+    avatar: pig/文049.png
+    default_gender: male
+    archetype: civil
+    flavor: （632年—682年）唐代高僧，俗姓尉迟，字洪道，京兆长安人，名将尉迟恭之侄。年十七奉诏出家，拜玄奘为师，成为玄奘首席大弟子。他协助玄奘翻译《成唯识论》等大批瑜伽行派典籍，著述宏富，号称“百部疏主”，系统确立中国佛教法相唯识宗，世称慈恩大师。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 14
+      intellect: 56
+      defense: 18
+      agility: 12
+  - key: hist_suitang_0644
+    name: 怀海
+    avatar: monkey/其他随机角色/文101_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （749年—814年）中唐禅宗大师，俗姓王，福州长乐人，师承马祖道一，因住持洪州百丈山世称百丈怀海。他改革丛林制度，别立禅院，制定《百丈清规》，倡导农禅并重、“一日不作，一日不食”，奠定此后千余年中国汉传佛教禅宗寺院生活与管理之根本仪轨。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 12
+      intellect: 54
+      defense: 22
+      agility: 12
+  - key: hist_suitang_0645
+    name: 义玄
+    avatar: monkey/其他随机角色/文男.png
+    default_gender: male
+    archetype: civil
+    flavor: （？—867年）晚唐禅宗大师，俗姓邢，曹州南华人，嗣法黄檗希运，住持镇州临济院，创立禅宗临济宗。他机锋峻烈，善以“棒喝”截断学人妄念，直指自性本心，语录编为《临济录》。其法脉门庭鼎盛，后世“临济天下”影响遍及中日韩佛教界。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 16
+      intellect: 54
+      defense: 16
+      agility: 14
+  - key: hist_suitang_0646
+    name: 关仝
+    avatar: pig/文010.png
+    default_gender: male
+    archetype: civil
+    flavor: （约907年—960年）五代后梁山水画大家，长安人，师承荆浩而青出于蓝。专写关陕一带石质坚凝、秋山萧疏之景，笔法简练劲健，气息雄浑苍莽，画史称“笔愈简而气愈壮，景愈少而意愈长”，独创“关家山水”，代表作《关山行旅图》，名列“荆关董巨”。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 12
+      intellect: 54
+      defense: 20
+      agility: 14
+  green:
+  - key: hist_suitang_0621
+    name: 麦铁杖
+    avatar: monkey_wu_male4.png
+    default_gender: male
+    archetype: military
+    flavor: （？—612年）隋代猛将，始兴人。出身寒微，骁勇多力，日行五百里，走及奔马。早年落草为盗，后归南陈，隋灭陈后仕隋，以功拜仪同三司。大业八年随隋炀帝东征高句丽，他主动请为前锋，冒箭雨架浮桥抢渡辽水，桥未及岸即跃入敌阵血战，终因寡不敌众力战殉国，赠光禄大夫。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 48
+      intellect: 10
+      defense: 18
+      agility: 24
+  - key: hist_suitang_0622
+    name: 鱼俱罗
+    avatar: pig/武057.png
+    default_gender: male
+    archetype: military
+    flavor: （？—613年）隋代名将，冯翊下邽人。身长八尺，膂力绝伦，目生重瞳，声闻数百步。随杨素大破突厥，又镇守丰州威慑塞外，大业年间随征高句丽、讨平东海盗贼，屡立战功。然隋炀帝忌其重瞳之相与军中威望，终借口其在东都贱卖粮食，将其构陷斩杀。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 50
+      intellect: 14
+      defense: 22
+      agility: 14
+  - key: hist_suitang_0623
+    name: 杨义臣
+    avatar: monkey/其他随机角色/武052_男.png
+    default_gender: male
+    archetype: military
+    flavor: （？—617年）隋代名将，本姓尉迟，代人，因父尉迟崇战死赐姓杨氏。性情沉厚，颇具韬略，曾任朔州总管大破突厥。大业末年天下大乱，他奉命镇压河北，连破张金称、高士达等起义军，收降十余万人，威望骤增。隋炀帝与虞世基忌其兵权，召还夺职，不久郁郁而终。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 44
+      intellect: 22
+      defense: 20
+      agility: 14
+  - key: hist_suitang_0624
+    name: 丘行恭
+    avatar: pig_wu_male7.png
+    default_gender: male
+    archetype: military
+    flavor: （586年—665年）唐初名将，河南洛阳人。善骑射，勇猛敢战，隋末率乡兵归附李世民，屡从征伐。洛阳邙山之战中，李世民坐骑飒露紫中箭，他挺身退敌并亲为战马拔箭，护主突围，太宗深感其勇，特命将其拔箭英姿雕于昭陵六骏石刻之上，后封天水郡公。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 46
+      intellect: 14
+      defense: 22
+      agility: 18
+  - key: hist_suitang_0625
+    name: 李大亮
+    avatar: pig/武058.png
+    default_gender: male
+    archetype: military
+    flavor: （586年—644年）唐初文武兼备名臣，京兆泾阳人。早年归唐，镇守凉州与西北边疆多年，招抚突厥降众、随李靖破吐谷浑，屡立军功。他清廉节俭、公私分明，曾直谏太宗勿劳民远求珍禽异兽，深得嘉奖。太宗亲征高句丽时命其副房玄龄留守长安，以忠谨著称。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 38
+      intellect: 30
+      defense: 20
+      agility: 12
+  - key: hist_suitang_0626
+    name: 薛万均
+    avatar: monkey_wu_male13.png
+    default_gender: male
+    archetype: military
+    flavor: （？—641年）唐初名将，敦煌人，名将薛万彻之兄。随父薛世雄征战，归唐后初属太子李建成，玄武门之变后获太宗起用。贞观年间随柴绍破梁师都、随李靖大破吐谷浑，每战单骑冲阵如入无人之境；后随侯君集灭高昌，以功封潞国公，然性情刚烈，不久因获罪忧愤而卒。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 48
+      intellect: 14
+      defense: 20
+      agility: 18
+  - key: hist_suitang_0627
+    name: 执失思力
+    avatar: pig/武062.png
+    default_gender: male
+    archetype: military
+    flavor: （生卒年不详）唐初突厥族名将，原为东突厥颉利可汗酋长。贞观四年随部归唐，授左领军将军，尚唐高祖女九江公主。他先后从军征讨吐谷浑、诱破薛延陀精骑、随太宗东征高句丽，战功卓著。后因与房遗爱案有牵连遭流放巂州，仍获高宗追复官爵。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 46
+      intellect: 16
+      defense: 20
+      agility: 18
+  - key: hist_suitang_0628
+    name: 姚思廉
+    avatar: pig/文018.png
+    default_gender: male
+    archetype: civil
+    flavor: （557年—637年）唐初史学家，名简，以字行，吴兴武康人。隋末曾侍代王杨侑，李渊入长安时唯他不离左右，以忠节见重。入唐后任秦王府文学、弘文馆学士，承父姚察遗愿奉敕修成《梁书》《陈书》二史，叙事典雅严谨，列入二十四史，又常以史鉴直言劝谏唐太宗。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 10
+      intellect: 56
+      defense: 22
+      agility: 12
+  - key: hist_suitang_0629
+    name: 徐惠
+    avatar: monkey_wen_female6.png
+    default_gender: female
+    archetype: civil
+    flavor: （627年—650年）唐太宗贤妃、初唐才女，湖州长城人。生而早慧，八岁能属文，入宫后屡蒙太宗赏识，进封充容。贞观末年太宗连年征伐高句丽、大兴土木，她上疏痛陈疲民之弊，劝谏息兵罢役、节俭爱民，言辞恳切切中时弊，深得太宗嘉纳。太宗崩后哀毁成疾，年仅二十四岁而逝。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 8
+      intellect: 58
+      defense: 18
+      agility: 16
+  - key: hist_suitang_0630
+    name: 郝处俊
+    avatar: pig_wen_male2.png
+    default_gender: male
+    archetype: civil
+    flavor: （607年—681年）唐高宗时期名相，安州安陆人。沉厚笃实，少有操守，官至中书令、侍中。高宗晚年患风眩，欲下诏禅位武皇后摄政，朝臣莫敢言，唯他挺身力谏“天下者，高祖、太宗之天下，非陛下之有”，当殿劝止高宗，保全李唐社稷，其刚正风骨为史家盛赞。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 12
+      intellect: 52
+      defense: 24
+      agility: 12
+  - key: hist_suitang_0631
+    name: 戴至德
+    avatar: pig/文021.png
+    default_gender: male
+    archetype: civil
+    flavor: （？—679年）唐高宗时期名相，相州安阳人，贞观名臣戴胄之侄。以干练谨慎闻名，出任尚书右仆射十余年，与刘仁轨分掌左右省政事。刘仁轨常以温言慰人，而他务求实事，凡合理之请必密奏施行，绝不自矜卖恩，高宗深赞其务实端方。
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 12
+      intellect: 52
+      defense: 24
+      agility: 12
+  - key: hist_suitang_0632
+    name: 钟绍京
+    avatar: monkey_wen_male10.png
+    default_gender: male
+    archetype: civil
+    flavor: （659年—746年）唐代宰相、书法家，字可大，虔州赣县人，曹魏钟繇后裔。初任司农录事，景云元年倾力协助临淄王李隆基发动唐隆政变，诛灭韦后集团，论功拜中书令，封越国公。其小楷笔力遒劲古雅，传世《灵飞经》被誉为唐人小楷第一，世称“小钟”。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 14
+      intellect: 52
+      defense: 18
+      agility: 16
+  - key: hist_suitang_0633
+    name: 源乾曜
+    avatar: pig/文034.png
+    default_gender: male
+    archetype: civil
+    flavor: （？—731年）唐玄宗开元时期宰相，相州临漳人。明敏善断，初为京兆尹政绩显著，开元八年拜相，居相位凡十年。他主动建请大臣子弟外补京官以革除膏粱积弊，与张嘉贞、张说共理朝政，持重守法、慎于言行，虽无赫赫奇功，亦保开元朝局平稳。
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 12
+      intellect: 52
+      defense: 24
+      agility: 12
+  - key: hist_suitang_0634
+    name: 雷万春
+    avatar: pig/武064.png
+    default_gender: male
+    archetype: military
+    flavor: （？—757年）唐代猛将，涿郡人，张巡麾下大将。安史之乱中随张巡死守雍丘，与叛将令狐潮城头对话时遭伏弩齐发，面中六矢仍屹立不动如木雕，令令狐潮大惊，始信张巡军令森严。后转战睢阳，屡挫叛军锋芒，城陷后与张巡、南霁云同日慷慨殉国。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 46
+      intellect: 14
+      defense: 28
+      agility: 12
+  - key: hist_suitang_0635
+    name: 李抱真
+    avatar: monkey/其他随机角色/武064_男_.png
+    default_gender: male
+    archetype: military
+    flavor: （733年—794年）中唐名将，字太玄，凉州人，李抱玉从弟。出镇泽潞任昭义节度使期间，因地瘠兵乏，推行三丁抽一、农隙操练之法，不费朝廷粮饷而练成两万精锐步兵，威震河朔。建中、兴元年间解邢州之围，大破朱滔，又说服王武俊反戈归唐，功拜司空。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 24
+      defense: 20
+      agility: 14
+  - key: hist_suitang_0636
+    name: 乌重胤
+    avatar: pig/武065.png
+    default_gender: male
+    archetype: military
+    flavor: （761年—827年）中唐名将，字保君，张掖人。少为潞州牙将，后任河阳、横海、天平节度使，积极参与唐宪宗元和削藩，平定淮西吴元济与淄青李师道之乱皆立大功。他礼贤下士，幕府延揽温造、石洪等名士，曾建言废除藩镇专辟州刺史之弊，忠勇兼明大义。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 26
+      defense: 20
+      agility: 14
+  - key: hist_suitang_0637
+    name: 李颀
+    avatar: monkey/其他随机角色/文041_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （690年—751年）盛唐著名诗人，东川人，寓居颍阳，开元二十三年进士，曾任新乡县尉。他长于七言歌行，边塞诗苍凉雄浑、乐府诗声情并茂，《古从军行》揭露穷兵黩武之苦，《听安万善吹觱篥歌》摹写音乐出神入化，与王维、高适、王昌龄交游唱和，诗名冠绝盛唐。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 12
+      intellect: 54
+      defense: 16
+      agility: 18
+  - key: hist_suitang_0638
+    name: 张籍
+    avatar: pig/文039.png
+    default_gender: male
+    archetype: civil
+    flavor: （约766年—约830年）中唐诗人，字文昌，原籍吴郡，贞元十五年进士，官至国子司业，世称张司业。早年受韩愈赏识提拔，亦与白居易、王建友善，与王建并称“张王乐府”。其诗语言质朴平易而情思深挚，《节妇吟》《秋思》传诵千古，广映中唐民间疾苦。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 10
+      intellect: 56
+      defense: 18
+      agility: 16
+  - key: hist_suitang_0639
+    name: 李翱
+    avatar: duck_wen_male3.png
+    default_gender: male
+    archetype: civil
+    flavor: （772年—841年）中唐思想家、文学家，字习之，陇西成纪人，贞元十四年进士，官至山南东道节度使。他师从韩愈倡导古文运动，散文谨严畅达；更著《复性书》三篇，融摄儒道佛心性之学，提出“灭情复性”之说，上承孟子中庸，下开北宋理学先声。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 12
+      intellect: 56
+      defense: 20
+      agility: 12
+  - key: hist_suitang_0640
+    name: 徐浩
+    avatar: monkey/其他随机角色/文052_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （703年—782年）盛唐书法家、大臣，字季海，越州人。历仕玄宗、肃宗、代宗、德宗四朝，安史之乱中随肃宗灵武即位，草拟诏敕辞气雄壮，官至吏部侍郎、会稽郡公。其书法精于楷隶，笔势丰腴雄健、藏锋有力，时人赞为“怒猊抉石，渴骥奔泉”，代表作《不空和尚碑》流传后世。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 14
+      intellect: 52
+      defense: 18
+      agility: 16
+  - key: hist_suitang_0641
+    name: 戴嵩
+    avatar: pig/文042.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）中唐著名画家，官至太常寺卿，师从宰相韩滉。他专攻农村耕牧与水牛题材，所画牛骨法谨严、野性生动，笔墨浑厚沉着，有“韩马戴牛”之誉。其传世名作《斗牛图》刻画两牛角力之瞬间，神态逼真，曾引北宋苏轼题跋评议，闻名画史。
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 10
+      intellect: 54
+      defense: 20
+      agility: 16
+  - key: hist_suitang_0642
+    name: 宋若昭
+    avatar: monkey_wen_female8.png
+    default_gender: female
+    archetype: civil
+    flavor: （761年—828年）中唐才女、内廷尚宫，贝州清阳人，与姐妹并称“宋氏五才女”。自幼博通经史诗文，誓不嫁人以学自立，贞元年间应召入宫。她为长姐宋若莘所著《女论语》作注，历任宪宗、穆宗、敬宗三朝尚宫，掌管内廷礼仪教化，深得皇室敬重，受封梁国夫人。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 8
+      intellect: 56
+      defense: 20
+      agility: 16
+  - key: hist_suitang_0647
+    name: 桑维翰
+    avatar: pig/文016.png
+    default_gender: male
+    archetype: civil
+    flavor: （898年—947年）五代后晋名相，字国侨，河南洛阳人。相貌丑怪而志向高远，初考进士遭主考以姓氏忌讳排斥，仍铸铁砚明志终登第。后辅佐石敬瑭割燕云借契丹兵建后晋，任宰相期间力主务农休兵、维系北疆安稳。少帝石重贵违其议与契丹决裂，契丹入汴前夕他为权臣张彦泽所害。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 10
+      intellect: 56
+      defense: 20
+      agility: 14
+  - key: hist_suitang_0648
+    name: 林仁肇
+    avatar: pig/武068.png
+    default_gender: male
+    archetype: military
+    flavor: （？—972年）五代南唐名将，建阳人，出身闽国，体格魁梧、勇猛善战。后周世宗南征时，他死守淮南屡挫周军锋芒，威震南北，升任南都留守、镇海军节度使。他曾屡请奇袭收复淮南，宋太祖赵匡胤深忌其才，遂以重金画像施反间计，南唐后主李煜中计将其鸩杀，自毁长城。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 46
+      intellect: 18
+      defense: 22
+      agility: 14
+  - key: hist_suitang_0649
+    name: 孙晟
+    avatar: pig/文032.png
+    default_gender: male
+    archetype: civil
+    flavor: （？—956年）五代南唐宰相，字凤又，密州人。早年好学善辩，避乱南奔，历仕吴与南唐，官至司空、同平章事，刚直敢言不避权贵。后周南侵之际，他奉南唐元宗之命出使周营请和，面对柴荣严词逼问江南虚实，始终神色自若、拒不吐露机密，终从容整衣南向再拜就义。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 14
+      intellect: 52
+      defense: 22
+      agility: 12
+  - key: hist_suitang_0650
+    name: 刘崇
+    avatar: duck_wu_male1.png
+    default_gender: male
+    archetype: military
+    flavor: （895年—954年）五代十国北汉开国皇帝，后改名刘旻，沙陀族，后汉高祖刘知远之弟。后汉亡于郭威后，他在太原称帝建立北汉，据河东十二州与后周抗衡，甘称侄皇帝以结契丹为援。高平之战中遭周世宗柴荣亲征击溃，狼狈遁回晋阳，不久忧愤病逝。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 22
+      defense: 22
+      agility: 14

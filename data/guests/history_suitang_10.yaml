@@ -112,20 +112,6 @@ heroes:
       intellect: 54
       defense: 22
       agility: 13
-  - key: hist_suitang_0303
-    name: 裴虔通
-    avatar: monkey/其他随机角色/文049_男.png
-    default_gender: male
-    archetype: military
-    flavor: （生卒年不详）隋代将领，早年即为晋王杨广的亲信，官至监门直阁。大业末年天下大乱，禁军将士思归，裴虔通与司马德戡等乘势举事。大业十四年参与江都兵变，率兵进入宫城，共推宇文化及为主。归唐后以弑君之罪流放欢州，卒于岭南。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 44
-      intellect: 14
-      defense: 26
-      agility: 16
   - key: hist_suitang_0305
     name: 苏瓌
     avatar: pig/文028.png
@@ -182,20 +168,6 @@ heroes:
       intellect: 58
       defense: 21
       agility: 9
-  - key: hist_suitang_0320
-    name: 宇文智及
-    avatar: monkey_wen_male11.png
-    default_gender: male
-    archetype: military
-    flavor: （？—619年）隋末将领，宇文化及之弟。为人凶狡，兄弟专擅，为众所怨。大业十四年与司马德戡等合谋发动江都兵变，杀隋炀帝，推宇文化及为主。宇文化及称帝后封其为齐王；后裹挟百官北还，为窦建德所败，兄弟同被擒获处死。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 44
-      intellect: 14
-      defense: 26
-      agility: 16
   - key: hist_suitang_0239
     name: 杜楚客
     avatar: pig/文014.png
@@ -210,20 +182,6 @@ heroes:
       intellect: 56
       defense: 23
       agility: 8
-  - key: hist_suitang_0242
-    name: 侯白
-    avatar: pig/文039.png
-    default_gender: male
-    archetype: civil
-    flavor: （生卒年不详）隋代文士，字君素，魏郡临漳人，以博学机辩、诙谐善谈著称，言谈捷给，闻者绝倒。隋初举秀才，为儒林郎，后受隋文帝之召入秘书省修史。相传著有志怪小说《旌异记》十五卷，另传《启颜录》亦出其手，多记谐谑故事。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 16
-      intellect: 52
-      defense: 22
-      agility: 10
   - key: hist_suitang_0247
     name: 李士谦
     avatar: pig/文037.png
@@ -645,3 +603,45 @@ heroes:
       intellect: 56
       defense: 22
       agility: 7
+  - key: hist_suitang_0303
+    name: 裴虔通
+    avatar: monkey/其他随机角色/文049_男.png
+    default_gender: male
+    archetype: military
+    flavor: （生卒年不详）隋代将领，早年即为晋王杨广的亲信，官至监门直阁。大业末年天下大乱，禁军将士思归，裴虔通与司马德戡等乘势举事。大业十四年参与江都兵变，率兵进入宫城，共推宇文化及为主。归唐后以弑君之罪流放欢州，卒于岭南。
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 44
+      intellect: 14
+      defense: 26
+      agility: 16
+  - key: hist_suitang_0320
+    name: 宇文智及
+    avatar: monkey_wen_male11.png
+    default_gender: male
+    archetype: military
+    flavor: （？—619年）隋末将领，宇文化及之弟。为人凶狡，兄弟专擅，为众所怨。大业十四年与司马德戡等合谋发动江都兵变，杀隋炀帝，推宇文化及为主。宇文化及称帝后封其为齐王；后裹挟百官北还，为窦建德所败，兄弟同被擒获处死。
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 44
+      intellect: 14
+      defense: 26
+      agility: 16
+  - key: hist_suitang_0242
+    name: 侯白
+    avatar: pig/文039.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）隋代文士，字君素，魏郡临漳人，以博学机辩、诙谐善谈著称，言谈捷给，闻者绝倒。隋初举秀才，为儒林郎，后受隋文帝之召入秘书省修史。相传著有志怪小说《旌异记》十五卷，另传《启颜录》亦出其手，多记谐谑故事。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 16
+      intellect: 52
+      defense: 22
+      agility: 10

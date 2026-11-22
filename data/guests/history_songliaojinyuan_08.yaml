@@ -42,7 +42,6 @@ heroes:
       intellect: 18
       defense: 24
       agility: 16
-  blue:
   - key: hist_songliaojinyuan_0388
     name: 哲别
     avatar: monkey_wu_male1.png
@@ -50,8 +49,8 @@ heroes:
     archetype: military
     flavor: （？—约1224年）蒙古将领，别速惕部人（早年属泰赤乌阵营）。早年作战中曾射伤铁木真的战马，归降后坦诚相告，得到宽恕，获名“哲别”，意为箭。他随军攻金，又率部灭西辽、追击花剌子模沙摩诃末，西征途中病逝，是成吉思汗倚重的先锋将领。
     growth_range:
-    - 5
-    - 9
+    - 7
+    - 11
     attribute_weights:
       force: 42
       intellect: 18
@@ -64,8 +63,8 @@ heroes:
     archetype: military
     flavor: （1186年—1241年）成吉思汗第三子，1229年经忽里台推举继任大汗。他任用耶律楚材等，采纳中原制度，设税课、定赋役；1234年灭金，并营建哈拉和林为都城。他派拔都等率“长子西征”，又东征高丽。1241年去世后，皇后乃马真氏摄政，汗位继承一度纷争。
     growth_range:
-    - 5
-    - 9
+    - 7
+    - 11
     attribute_weights:
       force: 42
       intellect: 18
@@ -78,13 +77,14 @@ heroes:
     archetype: civil
     flavor: （约1245年—约1330年）元代棉纺织技术改良者，松江乌泥泾人。她早年流落海南崖州，向黎族学习纺织，晚年返乡，传授擀、弹、纺、织技艺，并改进去籽、弹花、纺纱等工具。松江一带棉织业由此兴盛，乡人立祠纪念，民间称其为“黄婆婆”。
     growth_range:
-    - 5
-    - 9
+    - 6
+    - 11
     attribute_weights:
       force: 12
       intellect: 58
       defense: 18
       agility: 12
+  blue:
   - key: hist_songliaojinyuan_0389
     name: 博尔术
     avatar: pig/武060.png

@@ -56,20 +56,6 @@ heroes:
       intellect: 18
       defense: 24
       agility: 16
-  - key: hist_songliaojinyuan_0198
-    name: 宗泽
-    avatar: monkey/其他随机角色/武037_男.png
-    default_gender: male
-    archetype: military
-    flavor: （1059年—1128年）北宋末将领，字汝霖，婺州义乌人。靖康之变后，宗泽以东京留守整修汴京城防、收编溃兵、招募义军，多次上书请高宗还都北伐，并任用岳飞等将领；建炎二年忧愤成疾，临终连呼“过河”而逝。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 42
-      intellect: 18
-      defense: 24
-      agility: 16
   - key: hist_songliaojinyuan_0208
     name: 周邦彦
     avatar: monkey/其他随机角色/文037_男.png
@@ -84,6 +70,48 @@ heroes:
       intellect: 58
       defense: 18
       agility: 12
+  - key: hist_songliaojinyuan_0176
+    name: 郭熙
+    avatar: monkey/其他随机角色/文_男.png
+    default_gender: male
+    archetype: civil
+    flavor: 郭熙（约1023—约1085），字淳夫，河阳温县人。熙宁年间以画艺入宫廷画院，善作山水寒林，师法李成而自出新意，代表作有《早春图》。其子郭思整理他的画论为《林泉高致》，书中提出高远、深远、平远的三远法。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 12
+      intellect: 58
+      defense: 18
+      agility: 12
+  - key: hist_songliaojinyuan_0177
+    name: 范宽
+    avatar: monkey/其他随机角色/文_男.png
+    default_gender: male
+    archetype: civil
+    flavor: 范宽（约950—约1032），名中正，字中立，华原人，因性情宽厚，时人以“范宽”相称。他初学李成，后长期隐居终南、太华，以真山真水为师，落笔雄浑厚重；代表作《溪山行旅图》《雪景寒林图》传世，与李成、关仝并称北宋初年山水三大家。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 12
+      intellect: 58
+      defense: 18
+      agility: 12
+  - key: hist_songliaojinyuan_0205
+    name: 余玠
+    avatar: pig/武046.png
+    default_gender: male
+    archetype: military
+    flavor: 余玠（约1199—1253），字义夫，蕲州人，南宋将领。淳祐二年出任四川制置使，采纳播州冉氏兄弟的建议，依山筑城，建成以钓鱼城为核心的山城防御体系，并任用王坚等将领抗击蒙古；后遭朝廷猜忌，被召还后卒。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 42
+      intellect: 18
+      defense: 24
+      agility: 16
   green:
   - key: hist_songliaojinyuan_0159
     name: 刘攽
@@ -315,34 +343,6 @@ heroes:
     default_gender: male
     archetype: civil
     flavor: 李公麟（1049—1106），字伯时，舒州人，号龙眠居士。熙宁三年进士，官至朝奉郎。他擅长人物、鞍马与佛道像，发展出以墨线勾勒、不施色彩的白描画法，代表作有《五马图》《临韦偃牧放图》；又精于古器物与金石鉴定。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 12
-      intellect: 58
-      defense: 18
-      agility: 12
-  - key: hist_songliaojinyuan_0176
-    name: 郭熙
-    avatar: monkey/其他随机角色/文_男.png
-    default_gender: male
-    archetype: civil
-    flavor: 郭熙（约1023—约1085），字淳夫，河阳温县人。熙宁年间以画艺入宫廷画院，善作山水寒林，师法李成而自出新意，代表作有《早春图》。其子郭思整理他的画论为《林泉高致》，书中提出高远、深远、平远的三远法。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 12
-      intellect: 58
-      defense: 18
-      agility: 12
-  - key: hist_songliaojinyuan_0177
-    name: 范宽
-    avatar: monkey/其他随机角色/文_男.png
-    default_gender: male
-    archetype: civil
-    flavor: 范宽（约950—约1032），名中正，字中立，华原人，因性情宽厚，时人以“范宽”相称。他初学李成，后长期隐居终南、太华，以真山真水为师，落笔雄浑厚重；代表作《溪山行旅图》《雪景寒林图》传世，与李成、关仝并称北宋初年山水三大家。
     growth_range:
     - 3
     - 7
@@ -659,20 +659,6 @@ heroes:
       intellect: 18
       defense: 24
       agility: 16
-  - key: hist_songliaojinyuan_0205
-    name: 余玠
-    avatar: pig/武046.png
-    default_gender: male
-    archetype: military
-    flavor: 余玠（约1199—1253），字义夫，蕲州人，南宋将领。淳祐二年出任四川制置使，采纳播州冉氏兄弟的建议，依山筑城，建成以钓鱼城为核心的山城防御体系，并任用王坚等将领抗击蒙古；后遭朝廷猜忌，被召还后卒。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 42
-      intellect: 18
-      defense: 24
-      agility: 16
   - key: hist_songliaojinyuan_0206
     name: 牛皋
     avatar: pig/武059.png
@@ -696,6 +682,21 @@ heroes:
     growth_range:
     - 3
     - 7
+    attribute_weights:
+      force: 42
+      intellect: 18
+      defense: 24
+      agility: 16
+  purple:
+  - key: hist_songliaojinyuan_0198
+    name: 宗泽
+    avatar: monkey/其他随机角色/武037_男.png
+    default_gender: male
+    archetype: military
+    flavor: （1059年—1128年）北宋末将领，字汝霖，婺州义乌人。靖康之变后，宗泽以东京留守整修汴京城防、收编溃兵、招募义军，多次上书请高宗还都北伐，并任用岳飞等将领；建炎二年忧愤成疾，临终连呼“过河”而逝。
+    growth_range:
+    - 7
+    - 11
     attribute_weights:
       force: 42
       intellect: 18

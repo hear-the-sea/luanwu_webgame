@@ -28,20 +28,6 @@ heroes:
       intellect: 48
       defense: 22
       agility: 16
-  - key: hist_qinhan_0318
-    name: 陈汤
-    avatar: pig_wu_male8.png
-    default_gender: male
-    archetype: military
-    flavor: （生年不详—前6年）西汉将领，字子公，山阳瑕丘人，曾任西域都护副校尉。他与甘延寿未经正式诏令发兵，远征康居，攻破郅支城、斩杀郅支单于，因功封关内侯。战后他因擅发诸国兵等事被免官，晚年一度被徙往敦煌，后返回长安。
-    growth_range:
-    - 6
-    - 9
-    attribute_weights:
-      force: 46
-      intellect: 14
-      defense: 28
-      agility: 12
   - key: hist_qinhan_0319
     name: 甘延寿
     avatar: monkey_wu_male16.png
@@ -701,3 +687,18 @@ heroes:
       intellect: 48
       defense: 22
       agility: 16
+  purple:
+  - key: hist_qinhan_0318
+    name: 陈汤
+    avatar: pig_wu_male8.png
+    default_gender: male
+    archetype: military
+    flavor: （生年不详—前6年）西汉将领，字子公，山阳瑕丘人，曾任西域都护副校尉。他与甘延寿未经正式诏令发兵，远征康居，攻破郅支城、斩杀郅支单于，因功封关内侯。战后他因擅发诸国兵等事被免官，晚年一度被徙往敦煌，后返回长安。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 46
+      intellect: 14
+      defense: 28
+      agility: 12

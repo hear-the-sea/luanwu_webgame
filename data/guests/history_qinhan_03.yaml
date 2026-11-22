@@ -98,20 +98,6 @@ heroes:
       intellect: 46
       defense: 22
       agility: 16
-  - key: hist_qinhan_0107
-    name: 司马相如
-    avatar: pig/文030.png
-    default_gender: male
-    archetype: civil
-    flavor: （约前179年—前118年）西汉辞赋家，著有《子虚赋》《上林赋》。司马相如早年客游梁地，后来与卓文君相识并结为夫妻；汉武帝读到他的文章后召入朝廷，曾派他出使西南夷。晚年他因病辞官，仍以辞赋和文章闻名。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 16
-      intellect: 46
-      defense: 22
-      agility: 16
   - key: hist_qinhan_0108
     name: 尉缭
     avatar: monkey/其他随机角色/文_男.png
@@ -687,3 +673,17 @@ heroes:
       intellect: 14
       defense: 26
       agility: 12
+  - key: hist_qinhan_0107
+    name: 司马相如
+    avatar: pig/文030.png
+    default_gender: male
+    archetype: civil
+    flavor: （约前179年—前118年）西汉辞赋家，著有《子虚赋》《上林赋》。司马相如早年客游梁地，后来与卓文君相识并结为夫妻；汉武帝读到他的文章后召入朝廷，曾派他出使西南夷。晚年他因病辞官，仍以辞赋和文章闻名。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 16
+      intellect: 46
+      defense: 22
+      agility: 16

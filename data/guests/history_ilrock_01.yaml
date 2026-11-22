@@ -1,5 +1,3 @@
-# ilrock 人物资料补充（2026-10-02）；身份对照见 reports/guest_expansion_ilrock_20261002.json
-
 heroes:
   blue:
   - key: hist_ilrock_27657
@@ -437,6 +435,96 @@ heroes:
       intellect: 58
       defense: 20
       agility: 12
+  - key: hist_ilrock_27660
+    name: 滑寿
+    avatar: monkey/其他历史人物/滑寿.png
+    default_gender: male
+    archetype: civil
+    flavor: （约1304年—1386年）元末明初医家，字伯仁，晚号撄宁生。兼研医理、诊法与针灸，著有《十四经发挥》《难经本义》《诊家枢要》等书。他系统整理经脉循行与穴位知识，也讨论诊脉及相关经典中的疑难问题。其著述把不同领域的医学知识相互联系，为后世学习针灸和诊察方法提供了较清晰的文献依据。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 58
+      defense: 20
+      agility: 12
+  - key: hist_ilrock_27669
+    name: 王惟一
+    avatar: monkey/其他历史人物/王惟一.png
+    default_gender: male
+    archetype: civil
+    flavor: 北宋医家，擅长针灸。奉诏考订经络与穴位，编成《铜人腧穴针灸图经》，并主持设计铸造针灸铜人。文字、图谱与人体模型配合，使学习者能够更直观地认识穴位，也能用于针刺操作的考核。铜人把原本依靠图画和讲授的知识化为立体器具，他的工作由此成为北宋针灸教学和医学制度中的重要创举。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 58
+      defense: 20
+      agility: 12
+  - key: hist_ilrock_27690
+    name: 唐慎微
+    avatar: monkey/其他历史人物/唐慎微.png
+    default_gender: male
+    archetype: civil
+    flavor: 北宋医家，字审元，蜀地人。广泛搜集历代本草、方书及其他文献中的药物资料，编成《经史证类备急本草》，记录药材来源、用途和实际用药经验。他将分散的记载汇集起来，保留了许多前代药物文献的内容。这部著作后来成为官修本草的重要基础，也让医者查考药材时能够参考更丰富的文字与方药记录。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 58
+      defense: 20
+      agility: 12
+  - key: hist_ilrock_27694
+    name: 成无己
+    avatar: monkey/其他历史人物/成无己.png
+    default_gender: male
+    archetype: civil
+    flavor: 宋金之际医家，长期钻研张仲景的《伤寒论》，著有《注解伤寒论》《伤寒明理论》。他以《黄帝内经》等经典解释疾病变化，联系症状、治疗方法与方药，逐条说明仲景医书中的含义。其注释帮助后人理解简练而难读的条文，使学习者能从文字进入治病思路，也为后世伤寒研究提供了影响深远的基础。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 58
+      defense: 20
+      agility: 12
+  - key: hist_ilrock_27702
+    name: 张元素
+    avatar: monkey/其他历史人物/张元素.png
+    default_gender: male
+    archetype: civil
+    flavor: 金代医家，字洁古，易水学派的重要开创者。诊治时关注不同脏腑的功能变化，强调根据寒热、虚实等病情选择药物，并研究药物主要作用于人体哪些部位。他的用药见解影响了学生李杲及后来的易水医家。围绕病情与药性的联系，这一学术传承逐渐形成鲜明的治疗思路，在金元医学的发展中占据重要位置。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 58
+      defense: 20
+      agility: 12
+  - key: hist_ilrock_11840
+    name: 郑樵
+    avatar: monkey/其他历史人物/郑樵.png
+    default_gender: male
+    archetype: civil
+    flavor: （1104年—1162年）南宋史学家，字渔仲，号夹漈。长期读书著述，编成《通志》，尝试贯通历代历史，系统整理人物与制度。书中的二十略涉及氏族、文字、礼制、艺文等领域，体现了他对知识分类和相互联系的重视。他认为理解历史应兼顾前后变化，将散见于各朝史书的材料汇合起来，从更长的脉络考察人事与制度。
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 58
+      defense: 20
+      agility: 12
   purple:
   - key: hist_ilrock_27653
     name: 刘完素
@@ -498,81 +586,6 @@ heroes:
       intellect: 58
       defense: 20
       agility: 12
-  - key: hist_ilrock_27660
-    name: 滑寿
-    avatar: monkey/其他历史人物/滑寿.png
-    default_gender: male
-    archetype: civil
-    flavor: （约1304年—1386年）元末明初医家，字伯仁，晚号撄宁生。兼研医理、诊法与针灸，著有《十四经发挥》《难经本义》《诊家枢要》等书。他系统整理经脉循行与穴位知识，也讨论诊脉及相关经典中的疑难问题。其著述把不同领域的医学知识相互联系，为后世学习针灸和诊察方法提供了较清晰的文献依据。
-    recruitable: true
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 10
-      intellect: 58
-      defense: 20
-      agility: 12
-  - key: hist_ilrock_27669
-    name: 王惟一
-    avatar: monkey/其他历史人物/王惟一.png
-    default_gender: male
-    archetype: civil
-    flavor: 北宋医家，擅长针灸。奉诏考订经络与穴位，编成《铜人腧穴针灸图经》，并主持设计铸造针灸铜人。文字、图谱与人体模型配合，使学习者能够更直观地认识穴位，也能用于针刺操作的考核。铜人把原本依靠图画和讲授的知识化为立体器具，他的工作由此成为北宋针灸教学和医学制度中的重要创举。
-    recruitable: true
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 10
-      intellect: 58
-      defense: 20
-      agility: 12
-  - key: hist_ilrock_27690
-    name: 唐慎微
-    avatar: monkey/其他历史人物/唐慎微.png
-    default_gender: male
-    archetype: civil
-    flavor: 北宋医家，字审元，蜀地人。广泛搜集历代本草、方书及其他文献中的药物资料，编成《经史证类备急本草》，记录药材来源、用途和实际用药经验。他将分散的记载汇集起来，保留了许多前代药物文献的内容。这部著作后来成为官修本草的重要基础，也让医者查考药材时能够参考更丰富的文字与方药记录。
-    recruitable: true
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 10
-      intellect: 58
-      defense: 20
-      agility: 12
-  - key: hist_ilrock_27694
-    name: 成无己
-    avatar: monkey/其他历史人物/成无己.png
-    default_gender: male
-    archetype: civil
-    flavor: 宋金之际医家，长期钻研张仲景的《伤寒论》，著有《注解伤寒论》《伤寒明理论》。他以《黄帝内经》等经典解释疾病变化，联系症状、治疗方法与方药，逐条说明仲景医书中的含义。其注释帮助后人理解简练而难读的条文，使学习者能从文字进入治病思路，也为后世伤寒研究提供了影响深远的基础。
-    recruitable: true
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 10
-      intellect: 58
-      defense: 20
-      agility: 12
-  - key: hist_ilrock_27702
-    name: 张元素
-    avatar: monkey/其他历史人物/张元素.png
-    default_gender: male
-    archetype: civil
-    flavor: 金代医家，字洁古，易水学派的重要开创者。诊治时关注不同脏腑的功能变化，强调根据寒热、虚实等病情选择药物，并研究药物主要作用于人体哪些部位。他的用药见解影响了学生李杲及后来的易水医家。围绕病情与药性的联系，这一学术传承逐渐形成鲜明的治疗思路，在金元医学的发展中占据重要位置。
-    recruitable: true
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 10
-      intellect: 58
-      defense: 20
-      agility: 12
   - key: hist_ilrock_01451
     name: 李冰
     avatar: monkey/其他历史人物/李冰.png
@@ -594,21 +607,6 @@ heroes:
     default_gender: male
     archetype: civil
     flavor: （约1065年—1110年）北宋官员，字明仲，主持编修《营造法式》。他整理木作、石作、瓦作等建筑工艺，记录构件尺度、用料和所需工时，使官府营造有较明确的技术与管理依据。书中配有图样，把工匠经验与制度规定结合起来。这部著作保存了宋代建筑的许多细节，后世研究古代木构建筑时仍常借助其中的记录。
-    recruitable: true
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 10
-      intellect: 58
-      defense: 20
-      agility: 12
-  - key: hist_ilrock_11840
-    name: 郑樵
-    avatar: monkey/其他历史人物/郑樵.png
-    default_gender: male
-    archetype: civil
-    flavor: （1104年—1162年）南宋史学家，字渔仲，号夹漈。长期读书著述，编成《通志》，尝试贯通历代历史，系统整理人物与制度。书中的二十略涉及氏族、文字、礼制、艺文等领域，体现了他对知识分类和相互联系的重视。他认为理解历史应兼顾前后变化，将散见于各朝史书的材料汇合起来，从更长的脉络考察人事与制度。
     recruitable: true
     growth_range:
     - 6

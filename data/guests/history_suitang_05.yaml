@@ -42,6 +42,20 @@ heroes:
       intellect: 22
       defense: 30
       agility: 14
+  - key: hist_suitang_0190_yangyuhuan
+    name: 杨玉环
+    avatar: monkey/隋唐与五代/杨玉环.png
+    default_gender: female
+    archetype: civil
+    flavor: （719年-756年）唐玄宗贵妃，真实历史身份是宫廷政治的一部分，后世却常被简化为"祸水"符号。她得宠于天宝时期，宫廷奢华与外戚扩张因之更受瞩目，但唐帝国走向危机的根源并不在一位女子。安史之乱后，军心与朝局需要替罪者，马嵬驿赐死使她成为盛唐崩塌的象征。杨玉环的悲剧在于：她无法决定国家大势，却要承担大势崩坏的道德指责；留在诗歌与传说中的她，既是爱情叙事，也是政治责任转移的产物。
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 10
+      intellect: 46
+      defense: 24
+      agility: 20
   blue:
   - key: hist_suitang_0181_mazhou
     name: 马周
@@ -379,20 +393,6 @@ heroes:
       intellect: 48
       defense: 26
       agility: 12
-  - key: hist_suitang_0190_yangyuhuan
-    name: 杨玉环
-    avatar: monkey/隋唐与五代/杨玉环.png
-    default_gender: female
-    archetype: civil
-    flavor: （719年-756年）唐玄宗贵妃，真实历史身份是宫廷政治的一部分，后世却常被简化为"祸水"符号。她得宠于天宝时期，宫廷奢华与外戚扩张因之更受瞩目，但唐帝国走向危机的根源并不在一位女子。安史之乱后，军心与朝局需要替罪者，马嵬驿赐死使她成为盛唐崩塌的象征。杨玉环的悲剧在于：她无法决定国家大势，却要承担大势崩坏的道德指责；留在诗歌与传说中的她，既是爱情叙事，也是政治责任转移的产物。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 10
-      intellect: 46
-      defense: 24
-      agility: 20
   - key: hist_suitang_0209_liuzhiyuan
     name: 刘知远
     avatar: monkey_wen_male5.png

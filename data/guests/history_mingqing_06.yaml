@@ -14,20 +14,6 @@ heroes:
       intellect: 58
       defense: 18
       agility: 12
-  - key: hist_mingqing_0234
-    name: 李定国
-    avatar: pig/武050.png
-    default_gender: male
-    archetype: military
-    flavor: （1621年—1662年）南明将领，字宁宇，号鸿远，陕西延安人。李定国早年随张献忠起兵，后归附永历帝，在桂林、衡阳两败清军，孔有德兵败自尽，尼堪战死；永历帝遇害后，他退守滇缅边境，仍坚持抗清，闻讯病逝。
-    growth_range:
-    - 6
-    - 9
-    attribute_weights:
-      force: 42
-      intellect: 18
-      defense: 24
-      agility: 16
   - key: hist_mingqing_0237
     name: 秦良玉
     avatar: monkey_wu_female5.png
@@ -701,3 +687,18 @@ heroes:
       intellect: 58
       defense: 18
       agility: 12
+  purple:
+  - key: hist_mingqing_0234
+    name: 李定国
+    avatar: pig/武050.png
+    default_gender: male
+    archetype: military
+    flavor: （1621年—1662年）南明将领，字宁宇，号鸿远，陕西延安人。李定国早年随张献忠起兵，后归附永历帝，在桂林、衡阳两败清军，孔有德兵败自尽，尼堪战死；永历帝遇害后，他退守滇缅边境，仍坚持抗清，闻讯病逝。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 42
+      intellect: 18
+      defense: 24
+      agility: 16

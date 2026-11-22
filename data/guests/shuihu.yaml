@@ -1,5 +1,3 @@
-# ilrock 人物资料补充（2026-10-02）；身份对照见 reports/guest_expansion_ilrock_20261002.json
-
 heroes:
   green:
   - key: hero_ilrock_04868
@@ -8,21 +6,6 @@ heroes:
     default_gender: male
     archetype: military
     flavor: 嘉陵人，原做贩运水银的生意，船只失事后流落江湖，因善使画戟、喜作薛仁贵装束，绰号“赛仁贵”。到对影山与吕方比试时，双戟缠住，被花荣一箭分开，二人反而结成伙伴。后来一同上梁山，聚义后共同守护中军。原本争锋的画戟转为相互策应，护在帅阵左右，也护住一路患难结下的交情。出自《水浒传》。
-    recruitable: true
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 48
-      intellect: 12
-      defense: 25
-      agility: 15
-  - key: hero_ilrock_04842
-    name: 张横
-    avatar: pig/文045.png
-    default_gender: male
-    archetype: military
-    flavor: 浔阳江上的船家，人称“船火儿”，是张顺的兄长。曾在江心威逼宋江交出财物，幸得李俊赶来相认，这场险遇才转成江湖交情。参与江州救援后，他随众投奔梁山，成为水军头领。撑船渡江、驾舟迎敌都是熟门熟路，江面上的风浪和暗流，也比陆上的规矩更合他的性子。出自《水浒传》。
     recruitable: true
     growth_range:
     - 3
@@ -77,21 +60,6 @@ heroes:
       intellect: 6
       defense: 18
       agility: 30
-  - key: hero_ilrock_04851
-    name: 朱武
-    avatar: monkey/其他随机角色/文041_男.png
-    default_gender: male
-    archetype: civil
-    flavor: 少华山三位寨主之一，绰号“神机军师”，虽不以蛮勇见长，却熟悉阵法与兵谋。陈达冒犯史家庄被擒时，他与杨春上门请罪，反与史进结成深交，后来随众上梁山。聚义后参赞军务，征战时又辅佐卢俊义，善于辨认敌阵、筹划进退。别人争一合枪刀之胜，他更关心整支军马如何脱困破局。出自《水浒传》。
-    recruitable: true
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 8
-      intellect: 60
-      defense: 18
-      agility: 14
   - key: hero_ilrock_04852
     name: 黄信
     avatar: pig/武016.png
@@ -106,21 +74,6 @@ heroes:
       force: 48
       intellect: 8
       defense: 28
-      agility: 16
-  - key: hero_ilrock_04853
-    name: 孙立
-    avatar: pig/武062.png
-    default_gender: male
-    archetype: military
-    flavor: 登州兵马提辖，绰号“病尉迟”，善用长枪与铁鞭，军官出身，临阵沉稳。为营救解珍、解宝，他与弟弟孙新等人劫牢出走，随后投奔梁山。在祝家庄战事中，他利用与栾廷玉的同门关系带人入庄，里应外合，助宋江攻破强敌。聚义后列马军小彪将，枪马功夫之外，也有敢入险地的胆识。出自《水浒传》。
-    recruitable: true
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 50
-      intellect: 8
-      defense: 26
       agility: 16
   - key: hero_ilrock_04854
     name: 宣赞
@@ -362,21 +315,6 @@ heroes:
       intellect: 14
       defense: 25
       agility: 15
-  - key: hero_ilrock_04873
-    name: 时迁
-    avatar: pig/武056.png
-    default_gender: male
-    archetype: military
-    flavor: 能飞檐走壁、潜入高处，人称“鼓上蚤”，早年在江湖间做过偷盗营生。随杨雄、石秀经过祝家庄时因偷鸡被拿，引出攻庄风波；后来潜入东京盗走徐宁的雁翎甲，为梁山引来钩镰枪教头。聚义后负责走报机密，也常深入敌营放火传信。正面大军尚难越过的墙垣，往往挡不住他轻巧的脚步。出自《水浒传》。
-    recruitable: true
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 38
-      intellect: 4
-      defense: 12
-      agility: 46
   - key: hero_ilrock_04874
     name: 樊瑞
     avatar: monkey_wu_male4.png
@@ -707,6 +645,582 @@ heroes:
       intellect: 10
       defense: 25
       agility: 15
+  - key: hero_shuihu_0101
+    name: 彭玘
+    avatar: pig/武060.png
+    default_gender: male
+    archetype: military
+    default_morality: 68
+    flavor: 原任颍州团练使，累代将门之子，善使一杆三尖两刃刀，武艺出众，绰号“天目将”。呼延灼领兵征讨梁山时，他担任副先锋与韩滔并肩作战，后被扈三娘以红锦套索生擒，感念宋江仁义而归附山寨。大聚义后列马军小彪将，常与韩滔搭档出阵，刀法沉稳刚健。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 48
+      intellect: 12
+      defense: 24
+      agility: 16
+  - key: hero_shuihu_0102
+    name: 杨林
+    avatar: pig/武061.png
+    default_gender: male
+    archetype: military
+    default_morality: 72
+    flavor: 彰德府出身的绿林好汉，惯使一杆笔管枪，胆大心细，绰号“锦豹子”。他在江湖漂泊时结识戴宗，受托引荐饮马川裴宣、邓飞、孟康一伙归附梁山，又随众参与三打祝家庄。聚义后列马军小彪将，既能跨马临阵厮杀，也常化装潜行、打探沿途军情。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 44
+      intellect: 14
+      defense: 18
+      agility: 24
+  - key: hero_shuihu_0103
+    name: 王英
+    avatar: pig/武062.png
+    default_gender: male
+    archetype: military
+    default_morality: 48
+    flavor: 原为车夫，因劫财入狱逃脱，与燕顺、郑天寿同据清风山，身材矮小却颇有狠劲，绰号“矮脚虎”。归入梁山后，三打祝家庄时出阵迎战扈三娘反被生擒，战后经宋江做主竟与扈三娘结为夫妻。大聚义时专掌三军内探事，常与妻子并肩出战。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 42
+      intellect: 12
+      defense: 20
+      agility: 26
+  - key: hero_shuihu_0104
+    name: 马麟
+    avatar: pig/武063.png
+    default_gender: male
+    archetype: military
+    default_morality: 68
+    flavor: 建康府出身，原是小番子闲汉，既能吹得一手好铁笛，又使一对大滚刀，武艺利落，绰号“铁笛仙”。早年在黄门山与欧鹏、蒋敬、陶宗旺落草，宋江江州脱险途经山下时率众迎接，一同归入梁山。聚义后列马军小彪将，双刀翻飞如风，常随骑军冲锋陷阵。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 46
+      intellect: 12
+      defense: 18
+      agility: 24
+  - key: hero_shuihu_0105
+    name: 薛永
+    avatar: pig/武064.png
+    default_gender: male
+    archetype: military
+    default_morality: 74
+    flavor: 祖上是老种经略相公帐前军官，因受同僚排挤流落江湖，靠打熬使枪棒卖药维生，绰号“病大虫”。在揭阳镇卖艺时因未先拜码头遭穆春寻衅，幸得宋江赏银相助，由此结下过命交情。后来参与劫法场救宋江并随众上梁山，大聚义时列为步军将校。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 48
+      intellect: 12
+      defense: 22
+      agility: 18
+  - key: hero_shuihu_0106
+    name: 施恩
+    avatar: pig/武065.png
+    default_gender: male
+    archetype: military
+    default_morality: 66
+    flavor: 孟州老管营之子，自幼习得一身拳棒，人称“金眼彪”。他在快活林经营酒店，被蒋门神仗势霸占，便以酒肉厚待刺配而来的武松，终借武松神威夺回基业。后来孟州生变、血溅鸳鸯楼，他流落江湖，先入二龙山，再随三山好汉共上梁山，列为步军将校。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 40
+      intellect: 18
+      defense: 22
+      agility: 20
+  - key: hero_shuihu_0107
+    name: 李忠
+    avatar: pig/武066.png
+    default_gender: male
+    archetype: military
+    default_morality: 62
+    flavor: 濠州人氏，早年在江湖使枪棒卖药为生，绰号“打虎将”，曾是史进的开蒙师父。在渭州与鲁达相识后，后来登上桃花山与周通共同落草，行事虽略显吝啬却也知恩重义。三山聚义打青州后随众归入梁山，大聚义时列为步军将校，随大军南征北战。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 44
+      intellect: 14
+      defense: 24
+      agility: 18
+  - key: hero_shuihu_0108
+    name: 周通
+    avatar: pig/武067.png
+    default_gender: male
+    archetype: military
+    default_morality: 52
+    flavor: 桃花山二寨主，面貌酷似项羽，惯使走水绿沉枪，绰号“小霸王”。曾欲强娶刘太公之女，在洞房中被假扮新娘的鲁智深一顿痛打，经李忠说和才罢手结交。后来随桃花山人马参与青州之战，一同归入梁山，大聚义后列马军小彪将，冲阵颇有悍勇之气。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 46
+      intellect: 10
+      defense: 22
+      agility: 22
+  - key: hero_shuihu_0109
+    name: 汤隆
+    avatar: pig/文021.png
+    default_gender: male
+    archetype: civil
+    default_morality: 72
+    flavor: 延安府铁匠出身，浑身生有斑点，绰号“金钱豹子”，不仅善使铁瓜锤，更精通打造各类兵刃铠甲。随李逵上梁山后，为破呼延灼连环马，他献计勾连时迁盗甲，将表兄徐宁赚上山寨，立下奇功。聚义后专管监造军器铁甲，令梁山兵马装备精良。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 22
+      intellect: 46
+      defense: 22
+      agility: 10
+  - key: hero_shuihu_0110
+    name: 杜兴
+    avatar: pig/文028.png
+    default_gender: male
+    archetype: civil
+    default_morality: 74
+    flavor: 中山府出身，因面阔腮厚、相貌奇特，人称“鬼脸儿”。早年在蓟州失手打死人，得杨雄搭救后流落独龙冈，成为李家庄大主管，深受李应信任。祝家庄之战时，他尽心周旋并随主家归附梁山，大聚义后与朱贵共同掌管南山酒店，专司打听江湖消息。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 16
+      intellect: 52
+      defense: 18
+      agility: 14
+  - key: hero_shuihu_0111
+    name: 邹渊
+    avatar: pig/武068.png
+    default_gender: male
+    archetype: military
+    default_morality: 66
+    flavor: 莱州出身的江湖豪客，性情直爽、爱打抱不平，绰号“出林龙”，与侄儿邹润同在登云山聚众。解珍、解宝在登州遭毛太公陷害入狱时，他毅然随孙立、顾大嫂等人劫牢反狱，随后一同投奔梁山，还在三打祝家庄时充当内应立功。聚义后列为步军将校。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 46
+      intellect: 12
+      defense: 24
+      agility: 18
+  - key: hero_shuihu_0112
+    name: 邹润
+    avatar: pig/武069.png
+    default_gender: male
+    archetype: military
+    default_morality: 66
+    flavor: 邹渊之侄，身材高大，脑后生有一个肉瘤，曾以头撞折松树，故绰号“独角龙”。他随叔父邹渊盘踞登云山，听说解珍、解宝蒙冤下狱，立即随登州群雄劫牢救人，又潜入祝家庄里应外合。归附梁山后列为步军将校，膂力过人，冲阵勇猛异常。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 50
+      intellect: 8
+      defense: 28
+      agility: 14
+  - key: hero_shuihu_0113
+    name: 朱贵
+    avatar: pig/文029.png
+    default_gender: male
+    archetype: civil
+    default_morality: 70
+    flavor: 沂水县人氏，绰号“旱地忽律”，乃王伦时期便在梁山泊外开设酒店的元老头领。他以酒店为耳目，专司迎候四方豪杰、打探官府动静，林冲、晁盖、戴宗等人都曾借其引路登寨。大聚义后仍守南山酒店，虽少在正阵搏杀，却是梁山最稳妥的耳目喉舌。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 16
+      intellect: 54
+      defense: 16
+      agility: 14
+  - key: hero_shuihu_0114
+    name: 朱富
+    avatar: pig/文030.png
+    default_gender: male
+    archetype: civil
+    default_morality: 72
+    flavor: 朱贵之弟，在沂水县西门外开设酒店，为人圆滑和气，绰号“笑面虎”，曾拜都头李云为师习练武艺。李逵回乡接母遭曹太公设计拿住后，他与兄长用蒙汗药麻倒押解官兵救出李逵，并劝说恩师李云同上梁山。聚义后专掌监造供应全军酒醋。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 14
+      intellect: 54
+      defense: 18
+      agility: 14
+  - key: hero_shuihu_0115
+    name: 蔡福
+    avatar: pig/武071.png
+    default_gender: male
+    archetype: military
+    default_morality: 65
+    flavor: 北京大名府两院押狱兼刽子手，手段高强，人称“铁臂膊”，是蔡庆之兄。卢俊义遭李固陷害身陷死牢时，他收下柴进重金并敬重梁山义气，暗中多方照应卢俊义性命，不肯听从李固毒计。大名府城破后随弟归入梁山，大聚义时专掌行刑斩杀。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 48
+      intellect: 12
+      defense: 24
+      agility: 16
+  - key: hero_shuihu_0116
+    name: 蔡庆
+    avatar: pig/武072.png
+    default_gender: male
+    archetype: military
+    default_morality: 65
+    flavor: 蔡福之弟，同在大名府充任押狱兼刽子手，平素爱在鬓边插一枝鲜花，因而得号“一枝花”。卢俊义入狱受难之际，他与兄长暗中保护，又在大名府被攻破时随众离开官府、投奔梁山。大聚义后与兄长同掌军中行刑之事，外表风流而手下干脆利落。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 46
+      intellect: 12
+      defense: 20
+      agility: 22
+  - key: hero_shuihu_0117
+    name: 李立
+    avatar: pig/文031.png
+    default_gender: male
+    archetype: civil
+    default_morality: 58
+    flavor: 揭阳岭上开设黑店的汉子，面貌凶悍、擅长调配蒙汗药，绰号“催命判官”。宋江发配江州途经岭上时曾被他麻倒，幸得李俊及时赶到相认，方化险为夷、结为兄弟。江州劫法场后随众上梁山，大聚义时与王定六同掌北山酒店，负责探听消息与接应来客。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 18
+      intellect: 48
+      defense: 20
+      agility: 14
+  - key: hero_shuihu_0118
+    name: 李云
+    avatar: pig/武073.png
+    default_gender: male
+    archetype: military
+    default_morality: 72
+    flavor: 原任沂水县都头，须发微赤、双目碧绿，人称“青眼虎”，枪棒功夫在当地颇负盛名，乃朱富的武艺师父。押解李逵途中被朱贵、朱富以蒙汗药放倒，醒来追赶时见徒弟以礼相待，深知回县难逃罪责，遂顺水推舟上梁山入伙。聚义后专管起造修缉山寨房舍。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 46
+      intellect: 14
+      defense: 24
+      agility: 16
+  - key: hero_shuihu_0119
+    name: 焦挺
+    avatar: pig/武074.png
+    default_gender: male
+    archetype: military
+    default_morality: 68
+    flavor: 中山府出身，祖传三代相扑绝技，因性情孤傲、难容于人，绰号“没面目”。流落江湖偶遇李逵时，他凭凌厉相扑功夫一跤将李逵摔翻，不打不相识，二人随即结伴投奔枯树山鲍旭，一同攻打凌州后归入梁山。聚义后列为步军将校，近身搏击鲜有敌手。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 50
+      intellect: 8
+      defense: 24
+      agility: 18
+  - key: hero_shuihu_0120
+    name: 石勇
+    avatar: pig/武075.png
+    default_gender: male
+    archetype: military
+    default_morality: 64
+    flavor: 大名府出身，早年好赌争胜，因打死人逃亡沧州投奔柴进，绰号“石将军”。曾受宋清所托给宋江送信，在酒店里口出狂言却恰遇宋江本人，由此结识并投奔梁山。大聚义时列为步军将校，虽武艺不算拔尖，但性格豪爽耿直，征战时始终冲杀在前。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 46
+      intellect: 10
+      defense: 24
+      agility: 20
+  - key: hero_shuihu_0121
+    name: 孙新
+    avatar: pig/武076.png
+    default_gender: male
+    archetype: military
+    default_morality: 72
+    flavor: 登州提辖孙立之弟，承袭兄长鞭枪本领，人称“小尉迟”，与妻子顾大嫂在登州城外开设酒店并兼营赌坊。表弟解珍、解宝遭毛太公诬陷下狱后，他与妻子联络兄长孙立及邹渊叔侄劫牢救人，又随众充当祝家庄内应，随后归入梁山，掌管东山酒店。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 46
+      intellect: 14
+      defense: 22
+      agility: 18
+  - key: hero_shuihu_0122
+    name: 顾大嫂
+    avatar: monkey_wu_female4.png
+    default_gender: female
+    archetype: military
+    default_morality: 70
+    flavor: 孙新之妻，身材健硕、胆气过人，武艺寻常汉子近身不得，绰号“母大虫”。表弟解珍、解宝被毛太公陷害入死牢时，正是她果断拍板串联亲友，力劝孙立反出登州、劫牢救人，随后一同投奔梁山并潜入祝家庄接应。聚义后与丈夫同掌东山酒店，飒爽豪迈。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 48
+      intellect: 14
+      defense: 22
+      agility: 16
+  - key: hero_shuihu_0123
+    name: 王定六
+    avatar: pig/武077.png
+    default_gender: male
+    archetype: military
+    default_morality: 72
+    flavor: 建康府扬子江边开设酒店的青年，生性好习枪棒，奔走如飞，绰号“活闪婆”。张顺南下建康请神医安道全搭救宋江时，遭截江鬼张旺谋害落水，正是他与父亲救起张顺，并协助请出安道全，随后追随上山。大聚义后与李立共掌北山酒店，走报机密极为快捷。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 38
+      intellect: 12
+      defense: 16
+      agility: 34
+  - key: hero_shuihu_0124
+    name: 郁保四
+    avatar: pig/武079.png
+    default_gender: male
+    archetype: military
+    default_morality: 58
+    flavor: 青州出身的巨汉，身长一丈、腰阔数围，人称“险道神”。早年曾伙同曾头市夺走段景住献给梁山的照夜玉狮子马，引出二打曾头市的风波；后被宋江遣人招降，反做内应助梁山攻破曾头市。大聚义时专管执掌捧扛帅字大旗，立于阵前威风凛凛。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 46
+      intellect: 8
+      defense: 36
+      agility: 10
+  - key: hero_shuihu_0125
+    name: 白胜
+    avatar: pig/武081.png
+    default_gender: male
+    archetype: military
+    default_morality: 56
+    flavor: 安乐村出身的闲汉，腿脚麻利、善于钻营，绰号“白日鼠”。黄泥冈智取生辰纲一役中，他扮作挑担卖酒的村汉，配合吴用下药麻倒杨志一行，立下头功。后来事发被捕虽曾受刑供出晁盖，仍得梁山好汉救出归寨，大聚义后专管走报军中机密。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 36
+      intellect: 14
+      defense: 14
+      agility: 36
+  - key: hero_shuihu_0126
+    name: 段景住
+    avatar: pig/武082.png
+    default_gender: male
+    archetype: military
+    default_morality: 64
+    flavor: 涿州人氏，赤发黄须，常年在北地盗马贩马，人称“金毛犬”。他一心仰慕梁山，盗得金国王子坐骑照夜玉狮子马欲献宋江，却在曾头市被夺，由此引出梁山征讨曾头市的大战。大聚义时坐第一百零八把交椅，专司走报机密与采买军马，脚程极为轻捷。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 38
+      intellect: 12
+      defense: 16
+      agility: 34
+  - key: hero_shuihu_0127
+    name: 祝彪
+    avatar: pig/武083.png
+    default_gender: male
+    archetype: military
+    default_morality: 40
+    flavor: 独龙冈祝家庄三公子，祝氏三杰中武艺最为出众者，与扈家庄扈三娘早有婚约。梁山三打祝家庄时，他手持丈八蛇矛连战杨雄、李应等将，勇悍非常，曾一箭射伤李应手臂。然其性情骄横少谋，终在祝家庄失陷逃亡扈家庄时，被扈成绑缚并死于李逵斧下。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 50
+      intellect: 10
+      defense: 20
+      agility: 20
+  - key: hero_shuihu_0128
+    name: 扈成
+    avatar: pig/武084.png
+    default_gender: male
+    archetype: military
+    default_morality: 62
+    flavor: 独龙冈扈家庄少庄主，扈三娘的兄长，武艺不俗，绰号“飞天虎”。梁山攻打祝家庄时，因妹妹扈三娘被林冲生擒，他牵牛担酒亲赴宋江军前请和，承诺两不相帮；岂料祝家庄破后，他本欲缚献祝彪表忠，却遭李逵杀入庄中灭门，只身远走延安府避祸。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 46
+      intellect: 14
+      defense: 22
+      agility: 18
+  - key: hero_shuihu_0129
+    name: 高廉
+    avatar: pig/文032.png
+    default_gender: male
+    archetype: civil
+    default_morality: 22
+    flavor: 殿帅府太尉高俅的叔伯兄弟，任高唐州知府，倚仗权势纵容妻弟殷天锡欺压柴进，酿成柴进蒙冤下狱之祸。他不仅统率精锐“神兵”，更精于邪门妖法，曾以黑风毒烟大败宋江、林冲等梁山众将，直至公孙胜下山以五雷天罡正法破其妖术，方被雷横劈死。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 14
+      intellect: 56
+      defense: 16
+      agility: 14
+  - key: hero_shuihu_0130
+    name: 潘金莲
+    avatar: monkey_wen_female6.png
+    default_gender: female
+    archetype: civil
+    default_morality: 18
+    flavor: 清河县大户丫鬟出身，容貌艳丽却心性狠毒，被主家负气嫁与老实卖炊饼的武大郎。迁居阳谷县后，她勾搭富户西门庆，听从王婆毒计亲手毒杀亲夫武大郎，妄图瞒天过海。最终武松归来查明冤情，在兄长灵前手刃此妇，成为水浒中最令人警醒的悲剧反派之一。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 10
+      intellect: 52
+      defense: 14
+      agility: 24
+  - key: hero_shuihu_0136
+    name: 司行方
+    avatar: pig/武090.png
+    default_gender: male
+    archetype: military
+    default_morality: 45
+    flavor: 方腊麾下护国大将军、四大元帅之一，统领杭州重兵，善使大刀，统兵作战沉稳勇猛。梁山兵伐德清县时，他率军迎击，三十合内斩杀插翅虎雷横于马下，威震两军阵前。虽最终在卢俊义大军围攻下堕水身亡，其凛凛战威仍令梁山众将难忘。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 50
+      intellect: 14
+      defense: 22
+      agility: 14
+  - key: hero_shuihu_0140
+    name: 杜壆
+    avatar: monkey_wu_male2.png
+    default_gender: male
+    archetype: military
+    default_morality: 46
+    flavor: 淮西王庆麾下西阵主帅、第一猛将，手持丈八蛇矛，武艺高绝、声势骇人。南丰城外一战，他单人独骑迎战梁山第一高手玉麒麟卢俊义，二人杀得难解难分、大战五十余合不分胜负；直至孙安从旁骤然杀出夹击，方被砍断右臂斩于马下。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 54
+      intellect: 10
+      defense: 22
+      agility: 14
+  - key: hero_shuihu_0142
+    name: 孙安
+    avatar: monkey_wu_male5.png
+    default_gender: male
+    archetype: military
+    default_morality: 72
+    flavor: 泾原人氏，身长九尺、膂力过人，善使镔铁双剑，原投河北田虎麾下担任殿帅。征战中曾与玉麒麟卢俊义激战五十余合不分胜负，后被卢俊义智擒并感念宋江仁义而归顺，在讨伐王庆一役中屡立奇功，斩杀猛将杜壆，是忠勇兼备的河北豪杰。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 52
+      intellect: 10
+      defense: 22
+      agility: 16
+  - key: hero_shuihu_0143
+    name: 卞祥
+    avatar: monkey_wu_male6.png
+    default_gender: male
+    archetype: military
+    default_morality: 46
+    flavor: 庄家出身，因天生神力、使一条开山大斧而受田虎重用，封为右丞相兼太师。壶关之战中，他单骑出阵力敌九纹龙史进三十余合不落下风，又在乱军中斩杀梁山降将酆泰，勇力冠绝河北群雄，终在征讨淮西时死于妖道寇烕之手。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 54
+      intellect: 8
+      defense: 26
+      agility: 12
+  - key: hero_shuihu_0144
+    name: 田虎
+    avatar: monkey_wu_male7.png
+    default_gender: male
+    archetype: military
+    default_morality: 30
+    flavor: 威胜州沁源县猎户出身，膂力绝伦、擅使枪棒，趁北宋末年朝政昏暗纠众起事，自号“晋王”，一度席卷河北五州五十六县。他广招孙安、卞祥、乔冽、马灵等奇人猛将，与朝廷分庭抗礼，终因内部生变及梁山大军合围而兵败被擒。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 48
+      intellect: 16
+      defense: 22
+      agility: 14
+  - key: hero_shuihu_0145
+    name: 王庆
+    avatar: monkey_wu_male7.png
+    default_gender: male
+    archetype: military
+    default_morality: 26
+    flavor: 原为东京副排军，因放荡招祸刺配陕州，流落江湖后纠合恶霸与草莽势力占据淮西，自立为“楚王”，盘踞南丰、宛州等八州八十六县。他虽贪图享乐、驭下苛暴，却颇擅拉拢杜壆、袁朗等猛将割据一方，终在宋江大军南征下土崩瓦解。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 28
+      defense: 20
+      agility: 16
   blue:
   - key: hero_ilrock_04838
     name: 穆弘
@@ -963,21 +1477,6 @@ heroes:
       intellect: 8
       defense: 26
       agility: 18
-  - key: hero_ilrock_04836
-    name: 李逵
-    avatar: pig/武047.png
-    default_gender: male
-    archetype: military
-    flavor: 沂州出身，原做江州牢子，绰号“黑旋风”，又唤铁牛，使两柄板斧。结识宋江后极为敬服，江州劫法场时拼命冲杀，随后归入梁山，列步军头领。他性情直率，重情义却少顾后果，既会为母亲痛哭，也常因鲁莽误伤无辜。斧头挥起无人愿近，真正难约束的，却是那股一旦发作便不肯收住的急烈。出自《水浒传》。
-    recruitable: true
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 55
-      intellect: 8
-      defense: 27
-      agility: 10
   - key: hero_ilrock_04837
     name: 史进
     avatar: monkey/其他随机角色/文101_男.png
@@ -1068,6 +1567,226 @@ heroes:
       intellect: 6
       defense: 18
       agility: 32
+  - key: hero_shuihu_0131
+    name: 秦明
+    avatar: pig/武085.png
+    default_gender: male
+    archetype: military
+    default_morality: 72
+    flavor: 原任青州指挥司统制，善使一条狼牙棒，性情如烈火般急躁暴烈，人称“霹雳火”。奉命征讨清风山时中计被擒，又遭宋江等人设局断绝回官之路、家破人亡，无奈归附梁山并迎娶花荣之妹。大聚义时高居天罡第七、列马军五虎将，冲锋陷阵势如雷霆。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 54
+      intellect: 8
+      defense: 22
+      agility: 16
+  - key: hero_shuihu_0132
+    name: 王进
+    avatar: pig/武086.png
+    default_gender: male
+    archetype: military
+    default_morality: 88
+    flavor: 东京八十万禁军教头，武艺登峰造极，为人忠厚孝顺。因昔日父亲曾一棒打翻高俅，高俅发迹后寻衅陷害，他遂携老母连夜出走延安府避祸。途经史家庄承蒙款待，倾囊传授史进十八般武艺，令“九纹龙”名震江湖。其身手气度堪称水浒中深藏不露的一代宗师。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 50
+      intellect: 16
+      defense: 20
+      agility: 14
+  - key: hero_shuihu_0133
+    name: 栾廷玉
+    avatar: pig/武087.png
+    default_gender: male
+    archetype: military
+    default_morality: 58
+    flavor: 独龙冈祝家庄武术教师，孙立的同门师兄，善使浑铁棒与飞锤，江湖人称“铁棒”，有万夫不当之勇。梁山攻打祝家庄时，他临阵沉着老辣，亲手生擒秦明、邓飞，令宋江大军屡屡受挫。若非师弟孙立诈降入庄充当内应，梁山极难攻破这位硬汉守护的庄院。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 50
+      intellect: 14
+      defense: 22
+      agility: 14
+  - key: hero_shuihu_0134
+    name: 邓元觉
+    avatar: pig/武088.png
+    default_gender: male
+    archetype: military
+    default_morality: 48
+    flavor: 江南圣公方腊麾下国师，法号“宝光如来”，使一条五十余斤的浑铁禅杖，膂力惊人、武艺超群。梁山兵临杭州城下时，他披挂出阵，与花和尚鲁智深大战五十余合不分胜负，令宋江暗暗称奇，直赞其武艺不逊武松、鲁达，终在睦州乌龙岭中花荣神箭身亡。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 54
+      intellect: 10
+      defense: 26
+      agility: 10
+  - key: hero_shuihu_0135
+    name: 厉天闰
+    avatar: pig/武089.png
+    default_gender: male
+    archetype: military
+    default_morality: 42
+    flavor: 方腊麾下镇国大将军、四大元帅之一，镇守独松关，枪法凌厉狠辣。梁山军攻关之际，他一刀劈死小霸王周通、伤李忠，又在乱战中刺杀董平、张清等名将，更与玉麒麟卢俊义酣战三十余合方才力竭而亡，是令梁山折损极重的劲敌之一。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 52
+      intellect: 10
+      defense: 20
+      agility: 18
+  - key: hero_shuihu_0137
+    name: 庞万春
+    avatar: pig/武091.png
+    default_gender: male
+    archetype: military
+    default_morality: 44
+    flavor: 方腊麾下猛将，善使连珠箭，百步穿杨、箭无虚发，江东人称“小养由基”。在昱岭关设伏阻击卢俊义大军时，他居高临下连发冷箭，一举射死九纹龙史进、拼命三郎石秀及陈达、杨春、李忠、薛永等六员梁山好汉，堪称水浒中最致命的神射手之一。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 44
+      intellect: 12
+      defense: 14
+      agility: 30
+  - key: hero_shuihu_0138
+    name: 方杰
+    avatar: monkey_wu_male1.png
+    default_gender: male
+    archetype: military
+    default_morality: 44
+    flavor: 江南圣公方腊之侄，青年俊杰，善使一杆方天画戟，勇冠江南。清溪洞外决战时，他挥戟与五虎将霹雳火秦明大战三十余合不分胜负，又借杜微飞刀相助一戟刺死秦明，随后独自力敌关胜、花荣两员上将围攻，直至柴进、燕青倒戈夹击方才战死。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 52
+      intellect: 10
+      defense: 20
+      agility: 18
+  - key: hero_shuihu_0139
+    name: 琼英
+    avatar: monkey_wu_female5.png
+    default_gender: female
+    archetype: military
+    default_morality: 76
+    flavor: 河北田虎麾下女将，容貌绝美，善使方天画戟，更得梦中神授飞石绝技，石子脱手百发百中，绰号“琼矢簇”。她实为邬梨义女，身负灭门血仇，后与易容潜入的没羽箭张清相知成婚，里应外合助梁山一举覆灭田虎势力，巾帼不让须眉。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 44
+      intellect: 14
+      defense: 16
+      agility: 26
+  - key: hero_shuihu_0141
+    name: 兀颜光
+    avatar: monkey_wu_male3.png
+    default_gender: male
+    archetype: military
+    default_morality: 48
+    flavor: 大辽国第一统军大将，身披三重坚甲，十八般武艺样样精熟，更深通兵法阵图，善摆奇绝的“太乙混天象阵”。宋江奉诏征辽时，他以铁甲兵阵屡挫梁山锋芒，直逼得吴用、公孙胜费尽心力方破其阵；最后孤军冲阵，力战关胜、花荣、张清三将方才陨落。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 46
+      intellect: 22
+      defense: 22
+      agility: 10
+  - key: hero_ilrock_04842
+    name: 张横
+    avatar: pig/文045.png
+    default_gender: male
+    archetype: military
+    flavor: 浔阳江上的船家，人称“船火儿”，是张顺的兄长。曾在江心威逼宋江交出财物，幸得李俊赶来相认，这场险遇才转成江湖交情。参与江州救援后，他随众投奔梁山，成为水军头领。撑船渡江、驾舟迎敌都是熟门熟路，江面上的风浪和暗流，也比陆上的规矩更合他的性子。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 48
+      intellect: 12
+      defense: 25
+      agility: 15
+  - key: hero_ilrock_04851
+    name: 朱武
+    avatar: monkey/其他随机角色/文041_男.png
+    default_gender: male
+    archetype: civil
+    flavor: 少华山三位寨主之一，绰号“神机军师”，虽不以蛮勇见长，却熟悉阵法与兵谋。陈达冒犯史家庄被擒时，他与杨春上门请罪，反与史进结成深交，后来随众上梁山。聚义后参赞军务，征战时又辅佐卢俊义，善于辨认敌阵、筹划进退。别人争一合枪刀之胜，他更关心整支军马如何脱困破局。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 8
+      intellect: 60
+      defense: 18
+      agility: 14
+  - key: hero_ilrock_04853
+    name: 孙立
+    avatar: pig/武062.png
+    default_gender: male
+    archetype: military
+    flavor: 登州兵马提辖，绰号“病尉迟”，善用长枪与铁鞭，军官出身，临阵沉稳。为营救解珍、解宝，他与弟弟孙新等人劫牢出走，随后投奔梁山。在祝家庄战事中，他利用与栾廷玉的同门关系带人入庄，里应外合，助宋江攻破强敌。聚义后列马军小彪将，枪马功夫之外，也有敢入险地的胆识。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 50
+      intellect: 8
+      defense: 26
+      agility: 16
+  - key: hero_ilrock_04873
+    name: 时迁
+    avatar: pig/武056.png
+    default_gender: male
+    archetype: military
+    flavor: 能飞檐走壁、潜入高处，人称“鼓上蚤”，早年在江湖间做过偷盗营生。随杨雄、石秀经过祝家庄时因偷鸡被拿，引出攻庄风波；后来潜入东京盗走徐宁的雁翎甲，为梁山引来钩镰枪教头。聚义后负责走报机密，也常深入敌营放火传信。正面大军尚难越过的墙垣，往往挡不住他轻巧的脚步。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 38
+      intellect: 4
+      defense: 12
+      agility: 46
+  - key: hero_shuihu_0148
+    name: 石宝
+    avatar: monkey_wu_male10.png
+    default_gender: male
+    archetype: military
+    default_morality: 48
+    flavor: 江南圣公方腊麾下南离大将军、第一猛将，惯使一口能砍铜剁铁的劈风刀，更暗藏百发百中的流星锤。与梁山大军交锋期间，他单挑大刀关胜二十余合不落下风，更先后以刀锤连斩索超、邓飞、燕顺、鲍旭、马麟五员梁山好汉，终在乌龙岭势孤自刎，尽显铁血悍将风骨。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 54
+      intellect: 12
+      defense: 20
+      agility: 14
   purple:
   - key: hero_ilrock_04817
     name: 公孙胜
@@ -1189,3 +1908,82 @@ heroes:
       intellect: 54
       defense: 22
       agility: 14
+  - key: hero_shuihu_0146
+    name: 晁盖
+    avatar: monkey_wu_male8.png
+    default_gender: male
+    archetype: military
+    default_morality: 86
+    flavor: 郓城县东溪村保正，平生最爱刺枪使棒、结交天下好汉，因曾孤身夺回青石宝塔而得号“托塔天王”。他牵头与吴用、公孙胜、刘唐、阮氏三雄智取生辰纲，事发后投奔梁山，经林冲火并王伦推为寨主。他重义轻利、磊落豪爽，开启梁山聚义盛局，惜乎征讨曾头市时中箭身亡。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 48
+      intellect: 18
+      defense: 22
+      agility: 12
+  - key: hero_shuihu_0147
+    name: 史文恭
+    avatar: monkey_wu_male9.png
+    default_gender: male
+    archetype: military
+    default_morality: 36
+    flavor: 曾头市武术教师，枪马绝伦、箭术超群，骑乘千里名驹照夜玉狮子，堪称水浒马战顶峰人物之一。梁山两打曾头市时，他以毒箭射杀寨主晁盖，又在两军阵前仅二十余合便大败五虎将霹雳火秦明，令梁山群雄胆寒。直至卢俊义率军截杀，方才被擒伏诛。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 54
+      intellect: 12
+      defense: 18
+      agility: 16
+  - key: hero_shuihu_0149
+    name: 罗真人
+    avatar: pig/文034.png
+    default_gender: male
+    archetype: civil
+    default_morality: 88
+    flavor: 蓟州二仙山紫虚观世外高道，入云龙公孙胜的恩师，法力通玄、能知过去未来。李逵大闹紫虚观时，他袖手一挥便将铁牛送至千里之外以示惩戒；高唐州危局中，他传授公孙胜“五雷天罡正法”以破高廉妖术，更以八句谶言道尽宋江与梁山百八好汉一生宿命。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 8
+      intellect: 66
+      defense: 14
+      agility: 12
+  - key: hero_shuihu_0150
+    name: 方腊
+    avatar: pig/文035.png
+    default_gender: male
+    archetype: civil
+    default_morality: 38
+    flavor: 睦州清溪县出身，因不堪徽宗花石纲盘剥而揭竿而起，建号永乐，自称“圣公”，雄踞东南八州二十五县。他麾下石宝、邓元觉、厉天闰、司行方、庞万春等虎将云集，令奉诏南征的梁山一百单八将折损过半、元气大伤，是《水浒传》全书最具压迫感的对手。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 22
+      intellect: 50
+      defense: 18
+      agility: 10
+  - key: hero_ilrock_04836
+    name: 李逵
+    avatar: pig/武047.png
+    default_gender: male
+    archetype: military
+    flavor: 沂州出身，原做江州牢子，绰号“黑旋风”，又唤铁牛，使两柄板斧。结识宋江后极为敬服，江州劫法场时拼命冲杀，随后归入梁山，列步军头领。他性情直率，重情义却少顾后果，既会为母亲痛哭，也常因鲁莽误伤无辜。斧头挥起无人愿近，真正难约束的，却是那股一旦发作便不肯收住的急烈。出自《水浒传》。
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 55
+      intellect: 8
+      defense: 27
+      agility: 10

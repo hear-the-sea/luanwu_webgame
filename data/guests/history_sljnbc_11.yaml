@@ -14,20 +14,6 @@ heroes:
       intellect: 13
       defense: 29
       agility: 9
-  - key: hist_sljnbc_0539
-    name: 沙摩柯
-    avatar: monkey_wu_male16.png
-    default_gender: male
-    archetype: military
-    flavor: （生卒年不详）东汉末武陵五溪蛮首领。章武元年，刘备东征孙吴，遣马良联络五溪诸蛮，沙摩柯率部响应，随蜀军进至夷陵。猇亭兵败后，蜀军溃散，沙摩柯战死，吴军得其首级。其在《三国演义》中另有射杀甘宁的情节，属小说家言。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 49
-      intellect: 14
-      defense: 28
-      agility: 9
   - key: hist_sljnbc_0552
     name: 文丑
     avatar: monkey/其他随机角色/武047_男.png
@@ -42,48 +28,6 @@ heroes:
       intellect: 16
       defense: 26
       agility: 10
-  - key: hist_sljnbc_0563
-    name: 袁熙
-    avatar: monkey_wu_male1.png
-    default_gender: male
-    archetype: military
-    flavor: （？—207年）袁绍次子。袁绍平定河北后，以袁熙为幽州刺史，镇守北边。官渡之后袁氏内讧，袁谭与袁尚相攻，袁熙与袁尚据守幽州，后为曹操所败，北投乌桓。建安十二年，二人逃往辽东，被公孙康所杀，首级送往曹操。其妻甄氏在邺城陷落后改嫁曹丕。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 49
-      intellect: 13
-      defense: 26
-      agility: 12
-  - key: hist_sljnbc_0568
-    name: 杨奉
-    avatar: pig/武050.png
-    default_gender: male
-    archetype: military
-    flavor: （生卒年不详）杨奉起自白波军，后卷入献帝东归、关中争夺与河洛形势之中，一时护驾，一时拥兵，行止多变却并非无足轻重。汉末朝廷将倾未倾之际，正是这类人左右着皇权最后的残火。他身上既有草莽武人的粗砺，也有乱世弄潮者的机心，是东汉崩解过程里极典型的一张侧脸。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 47
-      intellect: 16
-      defense: 27
-      agility: 10
-  - key: hist_sljnbc_0586
-    name: 韩嵩
-    avatar: pig/文016.png
-    default_gender: male
-    archetype: civil
-    flavor: （生卒年不详）东汉末荆州士人，字德高，义阳人。韩嵩为刘表从事中郎，长于政务筹议，在荆襄士人中颇负时望。他曾奉使许都，曹操表为侍中、零陵太守。他回荆州后力劝刘表归附朝廷、遣子为质，触怒刘表而被囚。刘琮降曹后获释，入魏官至大鸿胪。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 13
-      intellect: 52
-      defense: 20
-      agility: 15
   - key: hist_sljnbc_0515
     name: 李傕
     avatar: duck_wu_male2.png
@@ -1317,3 +1261,59 @@ heroes:
       intellect: 54
       defense: 20
       agility: 11
+  - key: hist_sljnbc_0539
+    name: 沙摩柯
+    avatar: monkey_wu_male16.png
+    default_gender: male
+    archetype: military
+    flavor: （生卒年不详）东汉末武陵五溪蛮首领。章武元年，刘备东征孙吴，遣马良联络五溪诸蛮，沙摩柯率部响应，随蜀军进至夷陵。猇亭兵败后，蜀军溃散，沙摩柯战死，吴军得其首级。其在《三国演义》中另有射杀甘宁的情节，属小说家言。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 49
+      intellect: 14
+      defense: 28
+      agility: 9
+  - key: hist_sljnbc_0563
+    name: 袁熙
+    avatar: monkey_wu_male1.png
+    default_gender: male
+    archetype: military
+    flavor: （？—207年）袁绍次子。袁绍平定河北后，以袁熙为幽州刺史，镇守北边。官渡之后袁氏内讧，袁谭与袁尚相攻，袁熙与袁尚据守幽州，后为曹操所败，北投乌桓。建安十二年，二人逃往辽东，被公孙康所杀，首级送往曹操。其妻甄氏在邺城陷落后改嫁曹丕。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 49
+      intellect: 13
+      defense: 26
+      agility: 12
+  - key: hist_sljnbc_0568
+    name: 杨奉
+    avatar: pig/武050.png
+    default_gender: male
+    archetype: military
+    flavor: （生卒年不详）杨奉起自白波军，后卷入献帝东归、关中争夺与河洛形势之中，一时护驾，一时拥兵，行止多变却并非无足轻重。汉末朝廷将倾未倾之际，正是这类人左右着皇权最后的残火。他身上既有草莽武人的粗砺，也有乱世弄潮者的机心，是东汉崩解过程里极典型的一张侧脸。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 47
+      intellect: 16
+      defense: 27
+      agility: 10
+  - key: hist_sljnbc_0586
+    name: 韩嵩
+    avatar: pig/文016.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）东汉末荆州士人，字德高，义阳人。韩嵩为刘表从事中郎，长于政务筹议，在荆襄士人中颇负时望。他曾奉使许都，曹操表为侍中、零陵太守。他回荆州后力劝刘表归附朝廷、遣子为质，触怒刘表而被囚。刘琮降曹后获释，入魏官至大鸿胪。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 13
+      intellect: 52
+      defense: 20
+      agility: 15

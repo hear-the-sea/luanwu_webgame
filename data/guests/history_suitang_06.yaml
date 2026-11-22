@@ -1,5 +1,3 @@
-# 隋唐五代历史人物（隋朝补充、五代十国补充、唐代军政人物补充、唐代文化与学术补充）
-
 heroes:
   green:
   - key: hist_suitang_0109_zhuyougui
@@ -7,633 +5,688 @@ heroes:
     default_gender: male
     archetype: military
     flavor: （？—913年）后梁太祖朱温之子，封郢王。其母出身低微，朱友珪在诸子中不得宠信；朱温晚年属意养子朱友文，他遂于乾化二年发动宫变，弑父自立。在位不足一年，纵情享乐，赏罚失当。乾化三年，朱友贞联合禁军起兵，攻入开封，朱友珪见大势已去，命部将将自己杀死。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 40
       intellect: 17
       defense: 22
       agility: 21
-
   - key: hist_suitang_0110_zhuyouzhen
     name: 朱友贞
     default_gender: male
     archetype: civil
     flavor: （888年—923年）后梁末帝，朱温第四子，封均王。乾化三年，他联合禁军推翻弑父自立的朱友珪，在开封即位。在位期间与后唐长期争战，却猜忌宿将，宠信赵岩、张汉杰等人，朝政渐坏。龙德三年李存勖率军奇袭汴州，朱友贞见援军无望，命部将皇甫麟将自己杀死，后梁随即灭亡。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 17
       intellect: 41
       defense: 22
       agility: 20
-
   - key: hist_suitang_0111_wangyanzhang
     name: 王彦章
     default_gender: male
     archetype: military
     flavor: 后梁名将，郓州寿张人，早年从朱温征战，以勇猛著称，惯用两柄铁枪，人称“王铁枪”。他常言“豹死留皮，人死留名”。923年后唐袭取郓州，他奉命反攻未能成功，退守中都时兵败被俘。李存勖劝降，他拒绝，遂遇害。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 43
       intellect: 16
       defense: 22
       agility: 19
-
   - key: hist_suitang_0112_guochongtao
     name: 郭崇韬
     default_gender: male
     archetype: civil
     flavor: 后唐庄宗时期重臣，代州雁门人，任枢密使。923年力主奇袭汴州，辅佐李存勖灭后梁，以功封赵国公。后随魏王李继岌伐前蜀，七十余日平定两川。因与宦官、伶人结怨，926年遭进谗，刘皇后下教令，他在成都军中被杀。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 19
       intellect: 44
       defense: 20
       agility: 17
-
   - key: hist_suitang_0113_liconghou
     name: 李从厚
     default_gender: male
     archetype: civil
     flavor: 后唐闵帝，明宗李嗣源之子，933年即位，次年改元应顺。在位时重用朱弘昭、冯赟，试图调动藩镇，引发凤翔节度使李从珂以清君侧为名起兵。934年李从珂攻向洛阳，李从厚出逃至卫州，被废为鄂王后遇害，在位仅数月。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 17
       intellect: 42
       defense: 21
       agility: 20
-
   - key: hist_suitang_0114_licongke
     name: 李从珂
     default_gender: male
     archetype: military
     flavor: 后唐末帝，镇州人，本姓王，小字二十三，被明宗李嗣源收为养子。934年以凤翔节度使起兵，攻入洛阳夺取帝位。936年石敬瑭联合契丹反唐，后唐军屡败。937年契丹军逼近洛阳，李从珂登玄武楼自焚而死，后唐灭亡。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 41
       intellect: 19
       defense: 22
       agility: 18
-
   - key: hist_suitang_0115_shichonggui
     name: 石重贵
     default_gender: male
     archetype: civil
     flavor: 后晋出帝，石敬瑭之侄，942年即位。其叔石敬瑭靠契丹立国，石重贵不愿继续称臣，只称孙而不称臣，导致契丹连年南下，双方在河北多次交战。947年契丹军攻入开封，石重贵被俘，后押往北方安置，974年去世，后晋灭亡。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 18
       intellect: 43
       defense: 20
       agility: 19
-
   - key: hist_suitang_0116_liuchengyou
     name: 刘承祐
     default_gender: male
     archetype: civil
     flavor: 后汉隐帝，刘知远之子，948年即位。刘知远临终以杨邠、史弘肇、王章等辅政，刘承祐不满权臣掣肘，950年诛杀杨邠、史弘肇、王章，又杀害郭威家属，郭威被迫起兵。951年刘承祐兵败出逃，途中被杀，后汉灭亡。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 15
       intellect: 44
       defense: 20
       agility: 21
-
   - key: hist_suitang_0117_wangpu
     name: 王朴
     default_gender: male
     archetype: civil
     flavor: 后周大臣，东平人。周世宗时历任比部郎中、左谏议大夫，曾上《平边策》，主张先平南方、再图北汉与契丹，又曾知开封府，参与规划扩建开封城。他兼通天文、音律，曾考订雅乐、修订历法，后官至枢密副使，959年去世。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 18
       intellect: 45
       defense: 20
       agility: 17
-
   - key: hist_suitang_0118_fanzhi
     name: 范质
     default_gender: male
     archetype: civil
     flavor: 后周至北宋初宰相，大名宗城人，以博学强记、熟悉典章著称。后周太祖、世宗两朝为相，世宗临终时与王溥、魏仁浦同受顾命，辅佐幼主。960年陈桥兵变后，他率百官朝见赵匡胤，继续留任宰相，宋初封鲁国公，964年罢相，同年去世。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 15
       intellect: 44
       defense: 22
       agility: 19
-
   - key: hist_suitang_0119_wangpu_chancellr
     name: 王溥
     default_gender: male
     archetype: civil
     flavor: （919年—982年）后周至北宋初宰相，字齐物，并州祁人。后汉时进士第一，入后周后官至中书侍郎、平章事，世宗朝受顾命辅佐幼主。陈桥兵变后仍居相位，宋初进位司空，封祁国公。他熟悉典章制度，编纂《唐会要》《五代会要》，又监修后周实录，为后世保存了系统的唐五代典章制度资料。太平兴国七年去世。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 15
       intellect: 47
       defense: 20
       agility: 18
-
   - key: hist_suitang_0120_fuyanqing
     name: 符彦卿
     default_gender: male
     archetype: military
     flavor: 五代至北宋初将领，陈州宛丘人，后唐名将符存审之子。历仕后唐、后晋、后汉、后周及宋，后晋时在阳城之战率骑兵横击契丹军，迫其退走。两个女儿先后为后周世宗皇后，另一女嫁宋太宗，后周时封魏王，宋初加守太师，975年去世。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 40
       intellect: 19
       defense: 23
       agility: 18
-
   - key: hist_suitang_0121_lichongjin
     name: 李重进
     default_gender: male
     archetype: military
     flavor: 后周将领，郭威外甥。954年高平之战随周世宗迎击北汉与契丹联军，战后受到重用，统领禁军并镇守淮南。960年赵匡胤称帝，徙李重进为平卢节度使，李重进拒命，在扬州起兵反宋。宋太祖遣石守信等进讨，随后亲征，城破后自焚而死。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 41
       intellect: 18
       defense: 22
       agility: 19
-
   - key: hist_suitang_0122_hantong
     name: 韩通
     default_gender: male
     archetype: military
     flavor: 后周将领，太原人，任侍卫亲军马步军副都指挥使。周世宗时参与营建开封外城，又随军参加高平之战与淮南之役，以勤于职守著称。960年陈桥兵变后，韩通赶回准备抵抗，被宋将王彦升杀死，宋太祖即位后追赠其中书令。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 42
       intellect: 17
       defense: 23
       agility: 18
-
   - key: hist_suitang_0123_zhoudewei
     name: 周德威
     default_gender: male
     archetype: military
     flavor: 五代后唐名将，朔州马邑人。早年从李克用征战，以勇略著称，后任幽州卢龙节度使。910年柏乡之战，他主张诱敌出战，率军大败后梁军，扭转河北局势。918年胡柳陂之战中，周德威父子力战而死，是后唐建国前的重要将领。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 41
       intellect: 18
       defense: 22
       agility: 19
-
-  - key: hist_suitang_0124_licunxiao
-    name: 李存孝
-    default_gender: male
-    archetype: military
-    flavor: （？—894年）唐末李克用养子，本名安敬思，代州飞狐人，为“十三太保”之一。他骁勇善战，常为先锋，随李克用征讨黄巢及河北诸镇，屡立战功。后因与养兄弟李存信不和，据邢州反叛，乾宁元年城破被俘，被李克用处死。后世相传其武勇可与项羽并称，演义中更添夸饰。
-    growth_range: [3, 7]
-    attribute_weights:
-      force: 45
-      intellect: 14
-      defense: 20
-      agility: 21
-
   - key: hist_suitang_0125_zhangquanyi
     name: 张全义
     default_gender: male
     archetype: civil
     flavor: 唐末五代军政人物，濮州临濮人，原名张言，唐昭宗赐名全义。唐末起任河南尹，当时洛阳经战乱残破、人口稀少，他招抚流民、劝课农桑，前后三十余年，使城市逐渐恢复。后历仕后梁、后唐，受封魏王、齐王，926年去世。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 18
       intellect: 41
       defense: 22
       agility: 19
-
   - key: hist_suitang_0126_yangxingmi
     name: 杨行密
     default_gender: male
     archetype: military
     flavor: 唐末淮南节度使、吴王，庐州合肥人。起于庐州，892年击败孙儒，占据扬州，控制江淮地区。此后多次抵御朱温南下，又平定田頵、安仁义等部将叛乱，保境安民，为南吴政权奠定基础。902年受封吴王，905年去世，其子杨渥继位。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 39
       intellect: 20
       defense: 23
       agility: 18
-
   - key: hist_suitang_0127_yangwo
     name: 杨渥
     default_gender: male
     archetype: civil
     flavor: （886年—908年）五代吴国君主，杨行密长子。905年杨行密去世后，他继任淮南节度使、吴王，但年轻气盛，喜好游乐，疏远旧将，与功臣集团矛盾渐深。908年，牙将张颢、徐温发动兵变，将他杀害，改立其弟杨隆演。此后吴国大权逐渐落入徐温之手，为后来南唐取代吴国埋下伏笔。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 18
       intellect: 41
       defense: 22
       agility: 19
-
   - key: hist_suitang_0129_xuwen
     name: 徐温
     default_gender: male
     archetype: civil
     flavor: 南吴权臣，海州朐山人。908年与张颢合谋杀害杨渥，改立杨隆演，随后除掉张颢，独掌淮南军政。后官至大丞相、都督中外诸军事，先后拥立杨隆演、杨溥，受封齐国公。927年去世后，养子徐知诰继续掌权，最终建立南唐。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 20
       intellect: 40
       defense: 22
       agility: 18
-
   - key: hist_suitang_0130_gaojixing
     name: 高季兴
     default_gender: male
     archetype: civil
     flavor: 荆南政权建立者，陕州峡石人，原名高季昌，后避后唐讳改名季兴。早年随朱温征战，907年出任荆南节度使，据有江陵一带。因地狭兵弱，常截留途经荆南的诸国贡物，人称“高赖子”。924年受封南平王，929年去世，其子高从诲继位。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 18
       intellect: 42
       defense: 21
       agility: 19
-
   - key: hist_suitang_0131_gaoconghui
     name: 高从诲
     default_gender: male
     archetype: civil
     flavor: （891年—948年）五代荆南君主，高季兴之子。929年继位后，面对中原王朝更替频繁的局面，采取灵活的外交策略：先后向后唐、后晋、后汉称臣，同时与南汉、闽、楚等政权通好，以保持荆南的独立。他延续其父截留诸国过境贡物的做法，事后又常修书谢罪，时人讥为圆滑。乾祐元年去世，荆南在其治下得以延续。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 18
       intellect: 42
       defense: 21
       agility: 19
-
   - key: hist_suitang_0132_liuyan
     name: 刘龑
     default_gender: male
     archetype: civil
     flavor: （889年—942年）南汉开国皇帝，祖籍上蔡，原名刘岩，后改名刘陟、刘龑。其兄刘隐据有岭南，刘隐死后他继掌军政，917年在广州称帝，初国号大越，次年改称汉，史称南汉。在位期间沿用唐制，设置百官，招纳中原士人，又发展海外贸易，但晚年渐趋奢侈。大有十五年去世，庙号高祖。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 20
       intellect: 40
       defense: 22
       agility: 18
-
   - key: hist_suitang_0133_liusheng
     name: 刘晟
     default_gender: male
     archetype: civil
     flavor: （920年—958年）南汉第三位皇帝，刘龑之子。942年，其兄刘玢即位后荒淫无度，刘晟发动政变将其杀死，自立为帝。在位期间多次对外用兵，又猜忌宗室，诛杀兄弟多人，导致南汉内部元气受损。后期沉迷宴饮，政事委于宦官。乾和十六年去世，庙号中宗。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 18
       intellect: 42
       defense: 21
       agility: 19
-
   - key: hist_suitang_0134_liuchang
     name: 刘鋹
     default_gender: male
     archetype: civil
     flavor: 南汉末帝，原名刘继兴，刘晟之子，958年即位。在位时宠信宦官与女巫，政事多委于人。970年宋将潘美率军南征，贺州、韶州相继失守，次年到广州，刘鋹出降。南汉自刘龑称帝，至此历四主而亡。入宋后受封恩赦侯，980年去世。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 17
       intellect: 42
       defense: 21
       agility: 20
-
   - key: hist_suitang_0135_wangjian
     name: 王建
     default_gender: male
     archetype: military
     flavor: 前蜀开国皇帝，许州舞阳人，少时以屠牛、贩盐为业。唐末从军，后入蜀任西川节度使，逐步兼并东川等地，受封蜀王。907年朱温称帝后，王建也在成都称帝，国号蜀，史称前蜀，统治四川及周边地区。918年去世，其子王衍继位。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 38
       intellect: 20
       defense: 23
       agility: 19
-
   - key: hist_suitang_0137_mengzhixiang
     name: 孟知祥
     default_gender: male
     archetype: military
     flavor: 后蜀开国皇帝，邢州龙冈人，李克用侄女婿。925年后唐灭前蜀，孟知祥出任西川节度使，在蜀地积蓄军粮，后击败东川节度使董璋，兼并两川。933年受封蜀王，934年在成都称帝，国号蜀，史称后蜀，同年去世，其子孟昶继位。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 39
       intellect: 21
       defense: 22
       agility: 18
-
   - key: hist_suitang_0138_ouyangjong
     name: 欧阳炯
     default_gender: male
     archetype: civil
     flavor: 五代词人、官员，益州华阳人。先仕前蜀，后在后蜀官至门下侍郎、同平章事。940年为赵崇祚所编《花间集》作序，主张词应绮丽婉转。《花间集》录其词十七首，其《南乡子》等多写南方风物。入宋后任右散骑常侍，971年去世。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 13
       intellect: 49
       defense: 19
       agility: 19
-
   - key: hist_suitang_0139_sunguangxian
     name: 孙光宪
     default_gender: male
     archetype: civil
     flavor: 五代词人、史家，陵州贵平人。长期在荆南任职，由节度判官历仕高氏数主，官至检校秘书监。963年宋军南下时，他劝说高继冲归宋。入宋后曾任黄州刺史，著有笔记《北梦琐言》，其词多写南方风物，《花间集》录其词六十一首。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 14
       intellect: 47
       defense: 20
       agility: 19
-
   - key: hist_suitang_0140_hening
     name: 和凝
     default_gender: male
     archetype: civil
     flavor: 五代官员、词人，郓州须昌人。历仕后梁、后唐、后晋、后汉、后周五朝，后晋时官至中书侍郎、同平章事。因好作曲子词，时人称“曲子相公”，其词多写闺情。曾编《疑狱集》，汇集历代断狱案例；词作收入《花间集》，955年去世。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 13
       intellect: 48
       defense: 19
       agility: 20
-
   - key: hist_suitang_0141_maowenxi
     name: 毛文锡
     default_gender: male
     archetype: civil
     flavor: 五代词人，生卒年不详，约活动于前蜀、后蜀时期。前蜀时曾任翰林学士，以文才受知于王建。其词题材较广，多写宫廷宴乐与女子情态，也涉边塞征战，《花间集》录其词三十一首，是花间派的重要作者，入后蜀后仍有文名。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 13
       intellect: 48
       defense: 19
       agility: 20
-
   - key: hist_suitang_0142_guxiong
     name: 顾敻
     default_gender: male
     archetype: civil
     flavor: 五代词人，生卒年不详，曾任前蜀茂州刺史，此后事迹记载很少。其词多写闺情离思与春日景物，语言工丽，小令善用白描，《诉衷情》《荷叶杯》等较为知名。今存词作主要见于《花间集》，共五十五首，是花间词人中存词较多的一位。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 12
       intellect: 48
       defense: 20
       agility: 20
-
   - key: hist_suitang_0143_weichengban
     name: 魏承班
     default_gender: male
     archetype: civil
     flavor: 五代词人，许州人，生卒年不详，仕历记载很少。今存词十五首，全部收入《花间集》，多写闺情离思与宴饮场景，善以器物、香气等细节烘托情绪，语言绮丽，风格婉约柔靡。其创作活跃于前蜀时期，是花间词派中存词较少的作者之一。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 12
       intellect: 48
       defense: 19
       agility: 21
-
-  - key: hist_suitang_0144_zhangyichao
-    name: 张议潮
-    default_gender: male
-    archetype: military
-    flavor: （799年—872年）唐代沙州敦煌豪族，出身当地大族。安史之乱后河西陷于吐蕃，848年他率众起兵，逐走吐蕃守将，收复沙州、瓜州等地，并遣使向唐朝报捷。851年唐廷设置归义军，任其为节度使，统领河西十一州。晚年入朝长安，留居京师，咸通十三年去世。
-    growth_range: [3, 7]
-    attribute_weights:
-      force: 38
-      intellect: 21
-      defense: 23
-      agility: 18
-
   - key: hist_suitang_0145_liguangyan
     name: 李光颜
     default_gender: male
     archetype: military
     flavor: 唐朝将领，本名阿跌光颜，阿跌部人，与其兄李光进皆为名将。元和年间任忠武节度使，参与讨伐淮西吴元济，在郾城大破淮西军，牵制其主力，配合李愬袭取蔡州。后又参与征讨成德王廷凑，官至河东节度使，826年去世。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 41
       intellect: 19
       defense: 22
       agility: 18
-
   - key: hist_suitang_0146_lihuaiguang
     name: 李怀光
     default_gender: male
     archetype: military
     flavor: 唐朝将领，渤海靺鞨人，本姓茹，因功赐姓李，早年以军功升迁，官至朔方节度使。783年泾原兵变，他率军勤王，在奉天击败朱泚军，解除城围。后因德宗听信卢杞，拒绝其入朝请求，李怀光心存疑惧，据河中反唐，785年兵败自杀。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 42
       intellect: 18
       defense: 22
       agility: 18
-
   - key: hist_suitang_0147_zhuci
     name: 朱泚
     default_gender: male
     archetype: military
     flavor: （742年—784年）唐朝将领，幽州昌平人，曾任卢龙节度使。建中三年入朝，留居长安，其弟朱滔在河北叛乱使他受到猜忌。783年泾原兵变爆发，乱军攻入长安，拥立朱泚为帝，国号秦，后改称汉。次年唐军反攻，长安收复，他率残部西逃，途中被部下所杀，叛乱随之平定。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 40
       intellect: 19
       defense: 22
       agility: 19
-
   - key: hist_suitang_0148_zhutao
     name: 朱滔
     default_gender: male
     archetype: military
     flavor: 唐朝卢龙节度使，幽州昌平人，朱泚之弟。782年与田悦、王武俊、李纳等联合反唐，被推为盟主，自称冀王。后与王武俊交恶，联盟瓦解。783年朱泚在长安称帝，朱滔率军南下呼应，被李抱真、王武俊击败，退回幽州，785年病死。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 41
       intellect: 18
       defense: 23
       agility: 18
-
   - key: hist_suitang_0149_tianchengsi
     name: 田承嗣
     default_gender: male
     archetype: military
     flavor: （约704年—779年）唐朝中期藩镇首领，平州卢龙人。早年投安禄山麾下，安史之乱中为叛军前锋，后随史朝义败亡而降唐，受任魏博节度使。他据有魏、博、相、卫等州，招募骁勇组成牙兵，又自行任免官吏、征收赋税，开河朔三镇割据之端。大历十四年去世，其侄田悦继位。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 42
       intellect: 18
       defense: 23
       agility: 17
-
   - key: hist_suitang_0150_libaochen
     name: 李宝臣
     default_gender: male
     archetype: military
     flavor: 唐朝成德节度使，本名张忠志，范阳人，早年随安禄山起兵。安史之乱后期归唐，获赐姓名李宝臣，受任成德节度使，据有恒、赵等州。成德军治恒州，他与田承嗣、李正己等联合，形成河朔三镇割据局面。781年去世后，其子李惟岳求袭未果，河北再起战事。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 40
       intellect: 18
       defense: 23
       agility: 19
-
   - key: hist_suitang_0151_xuesong
     name: 薛嵩
     default_gender: male
     archetype: military
     flavor: 唐朝将领，绛州万泉人，名将薛仁贵之孙。安史之乱中随叛军守相州，后率相、卫、洺、邢四州归唐，仍统旧部，任昭义节度使，镇守相、卫等州，封平阳郡王。772年去世。后世小说中的薛刚形象，一般认为与其事迹有关。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 40
       intellect: 18
       defense: 23
       agility: 19
-
   - key: hist_suitang_0152_lizhengji
     name: 李正己
     default_gender: male
     archetype: military
     flavor: （733年—781年）唐朝藩镇首领，高句丽人，本名李怀玉。早年随侯希逸入平卢军，后趁侯希逸失众心，将其驱逐，自领淄青留后，唐代宗赐名正己。此后他逐步兼并邻近州县，据有淄、青、齐、密等十余州，自行任免官吏、截留赋税，成为山东一带实力最强的藩镇。建中二年去世，其子李纳继位。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 42
       intellect: 18
       defense: 23
       agility: 17
-
   - key: hist_suitang_0153_tianyue
     name: 田悦
     default_gender: male
     archetype: military
     flavor: 唐朝魏博节度使，田承嗣之侄。779年田承嗣死后，田悦继任魏博节度使，起初得到朝廷承认。781年与朱滔、王武俊、李纳联合起兵反唐，自称魏王，四镇同时称王，一度被朝廷军围困于魏州，后得朱滔、王武俊来援。784年被从弟田绪杀害。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 40
       intellect: 18
       defense: 23
       agility: 19
-
   - key: hist_suitang_0154_lina
     name: 李纳
     default_gender: male
     archetype: military
     flavor: 唐朝淄青平卢节度使，李正己之子。其父李正己趁乱据有淄青，781年死后，李纳继任，次年与田悦、朱滔等联合反唐，自称齐王。后与称帝的李希烈决裂，接受朝廷招抚，恢复藩镇地位，仍据有淄青等地。792年去世，其子李师古继位。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 40
       intellect: 19
       defense: 23
       agility: 18
-
   - key: hist_suitang_0155_liuji
     name: 刘济
     default_gender: male
     archetype: military
     flavor: 唐朝卢龙节度使，幽州人，其父刘怦在朱滔死后归唐，任幽州节度使。787年刘济继父镇守幽州，前后二十余年。元和年间奉诏出兵讨伐成德王承宗，攻取饶阳、束鹿等地，牵制成德军。810年在病中被次子刘总毒杀，刘总随后继任，刘氏三世据有幽州。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 40
       intellect: 18
       defense: 23
       agility: 19
-
   - key: hist_suitang_0156_lishidao
     name: 李师道
     default_gender: male
     archetype: military
     flavor: 唐朝淄青平卢节度使，李纳之子。806年兄李师古死后接掌淄青，后与淮西吴元济勾结，815年派刺客入长安，刺杀宰相武元衡、刺伤裴度，并焚毁河阴仓。819年唐军大举讨伐，部将刘悟倒戈，将其杀死，淄青割据至此结束。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 40
       intellect: 18
       defense: 23
       agility: 19
-
   - key: hist_suitang_0157_wuyuanji
     name: 吴元济
     default_gender: male
     archetype: military
     flavor: 唐朝后期淮西节度使吴少阳之子。814年吴少阳死，吴元济隐匿丧事、自行接管军务，据蔡州抗命。朝廷调集诸道兵力围攻，淮西战事延续三年。他曾向成德、淄青等镇求援，未能解围。817年李愬雪夜袭蔡州，将其生擒，押送长安后处死。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 40
       intellect: 18
       defense: 23
       agility: 19
-
   - key: hist_suitang_0158_tianhongzheng
     name: 田弘正
     default_gender: male
     archetype: military
     flavor: （764年—821年）唐朝魏博节度使，本名田兴，田承嗣从侄。812年田季安死后，魏博军士拥立他主持军务，他随即归顺朝廷，献上版籍，请朝廷派遣官吏、征收赋税，一改河朔割据旧例，受赐名弘正。后奉命移镇成德，长庆元年成德军乱，他与家属及部将多人一同遇害。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 40
       intellect: 19
       defense: 23
       agility: 18
-
   - key: hist_suitang_0159_yuanzai
     name: 元载
     default_gender: male
     archetype: civil
     flavor: 唐代宗时期宰相，凤翔岐山人。少孤家贫，苦读入仕，由度支郎中起家，以善于理财受知。代宗朝与皇帝合谋诛除宦官鱼朝恩，又与王缙同掌相权，一度总揽朝政。后因专权纳贿获罪，777年被赐死；抄没家产时，仅胡椒即达八百石。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 16
       intellect: 46
       defense: 20
       agility: 18
-
   - key: hist_suitang_0160_hanhuang
     name: 韩滉
     default_gender: male
     archetype: civil
     flavor: 唐代政治家、画家，京兆长安人，宰相韩休之子。安史之乱后掌管度支，后任浙江东西观察使，在镇期间修城练兵，783年泾原兵变时向朝廷输送粮帛。入朝后任宰相，封晋国公。擅画人物、田家风俗，传世《五牛图》为其名作。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 17
       intellect: 44
       defense: 21
       agility: 18
-
   - key: hist_suitang_0161_peiyanling
     name: 裴延龄
     default_gender: male
     archetype: civil
     flavor: 唐德宗时期官员，河东闻喜人。任户部侍郎、判度支，掌管财赋，以善于聚敛、迎合皇帝著称，德宗晚年对他颇为信任，后官至户部尚书。他曾与宰相陆贽争论财政事务，陆贽因此被贬为忠州别驾，其理财方式在当时颇受非议。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 15
       intellect: 46
       defense: 20
       agility: 19
-
   - key: hist_suitang_0162_jijiang
     name: 李绛
     default_gender: male
     archetype: civil
     flavor: 唐宪宗时期宰相，赵郡赞皇人。历任翰林学士、中书侍郎、同平章事，与李吉甫同朝为相，敢于直谏，主张抑制藩镇、整肃吏治，其奏议后人编为《李相国论事集》。后出镇兴元，任山南西道节度使，830年军中兵变时遇害，追赠司徒，谥贞。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 16
       intellect: 46
       defense: 20
       agility: 18
-
   - key: hist_suitang_0163_cuiqun
     name: 崔群
     default_gender: male
     archetype: civil
     flavor: 唐朝官员、宰相，贝州武城人，792年与韩愈同榜进士，二人终身友善，韩愈有《与崔群书》。宪宗朝任翰林学士、中书舍人，后官至中书侍郎、同平章事。因与皇甫镈不合，出为湖南观察使。为政重视选拔人才，曾任吏部侍郎掌铨选，832年去世。
-    growth_range: [3, 7]
+    growth_range:
+    - 3
+    - 7
     attribute_weights:
       force: 16
       intellect: 46
       defense: 20
+      agility: 18
+  blue:
+  - key: hist_suitang_0124_licunxiao
+    name: 李存孝
+    default_gender: male
+    archetype: military
+    flavor: （？—894年）唐末李克用养子，本名安敬思，代州飞狐人，为“十三太保”之一。他骁勇善战，常为先锋，随李克用征讨黄巢及河北诸镇，屡立战功。后因与养兄弟李存信不和，据邢州反叛，乾宁元年城破被俘，被李克用处死。后世相传其武勇可与项羽并称，演义中更添夸饰。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 45
+      intellect: 14
+      defense: 20
+      agility: 21
+  - key: hist_suitang_0144_zhangyichao
+    name: 张议潮
+    default_gender: male
+    archetype: military
+    flavor: （799年—872年）唐代沙州敦煌豪族，出身当地大族。安史之乱后河西陷于吐蕃，848年他率众起兵，逐走吐蕃守将，收复沙州、瓜州等地，并遣使向唐朝报捷。851年唐廷设置归义军，任其为节度使，统领河西十一州。晚年入朝长安，留居京师，咸通十三年去世。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 38
+      intellect: 21
+      defense: 23
       agility: 18

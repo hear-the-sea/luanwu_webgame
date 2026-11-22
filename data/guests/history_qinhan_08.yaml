@@ -589,20 +589,6 @@ heroes:
       intellect: 48
       defense: 22
       agility: 16
-  - key: hist_qinhan_0359
-    name: 李敢
-    avatar: pig_wu_male9.png
-    default_gender: male
-    archetype: military
-    flavor: （生年不详—前119年）西汉将领，李广之子。以校尉随霍去病出击匈奴左贤王，力战夺获鼓旗，因功赐爵关内侯，后任郎中令。其父李广因行军迷路自杀，李敢归咎于大将军卫青，将其击伤；卫青隐忍不报。霍去病与卫青为舅甥，怀恨在心，借甘泉宫狩猎之机射杀李敢，朝廷对外只称其被鹿撞死。李敢勇猛刚烈，终因旧怨而死。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 46
-      intellect: 14
-      defense: 28
-      agility: 12
   - key: hist_qinhan_0364
     name: 王邑
     avatar: monkey_wu_male7.png
@@ -1424,6 +1410,20 @@ heroes:
     flavor: 赵憙（字伯阳，生卒年不详—80年），南阳宛人，东汉初大臣。更始帝时曾为将，后归附刘秀，历任郡守、太尉、太傅，封节乡侯。他为人刚正，通晓经术，明帝时颇受礼遇；章帝即位后以旧臣辅政，建初五年去世，谥正侯。
     growth_range:
     - 3
+    - 7
+    attribute_weights:
+      force: 46
+      intellect: 14
+      defense: 28
+      agility: 12
+  - key: hist_qinhan_0359
+    name: 李敢
+    avatar: pig_wu_male9.png
+    default_gender: male
+    archetype: military
+    flavor: （生年不详—前119年）西汉将领，李广之子。以校尉随霍去病出击匈奴左贤王，力战夺获鼓旗，因功赐爵关内侯，后任郎中令。其父李广因行军迷路自杀，李敢归咎于大将军卫青，将其击伤；卫青隐忍不报。霍去病与卫青为舅甥，怀恨在心，借甘泉宫狩猎之机射杀李敢，朝廷对外只称其被鹿撞死。李敢勇猛刚烈，终因旧怨而死。
+    growth_range:
+    - 4
     - 7
     attribute_weights:
       force: 46

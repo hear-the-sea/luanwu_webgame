@@ -33,7 +33,7 @@ heroes:
     avatar: yao.png
     default_gender: male
     archetype: civil
-    flavor: "上古传说中的帝王，号陶唐氏。典籍中的他敬慎节俭、关心民生，命人观察天象与时令，帮助百姓安排农事。洪水肆虐之时，他听取诸臣意见，寻求治水之才；年事渐高，又不愿只凭血缘决定天下归属，转而考察舜的品行与才干，让其在实际政务中经受历练。尧舜禅让的故事由此流传，成为后世传贤任能的典范。比起显赫的宫室与武功，他更看重百姓能否安居、继承者能否任事，以一份慎重而宽厚的公心，留下圣王之名。"
+    flavor: 上古传说中的帝王，号陶唐氏。典籍中的他敬慎节俭、关心民生，命人观察天象与时令，帮助百姓安排农事。洪水肆虐之时，他听取诸臣意见，寻求治水之才；年事渐高，又不愿只凭血缘决定天下归属，转而考察舜的品行与才干，让其在实际政务中经受历练。尧舜禅让的故事由此流传，成为后世传贤任能的典范。比起显赫的宫室与武功，他更看重百姓能否安居、继承者能否任事，以一份慎重而宽厚的公心，留下圣王之名。
     growth_range:
     - 8
     - 14
@@ -61,7 +61,7 @@ heroes:
     avatar: monkey/orange/轩辕.png
     default_gender: male
     archetype: military
-    flavor: "中国上古传说中的黄帝，号轩辕氏，被奉为人文初祖之一。他与炎帝战于阪泉，又在涿鹿迎战蚩尤，联结诸部，成为众人共同尊奉的领袖。传说在他的时代，嫘祖养蚕织丝，仓颉造字，伶伦制乐，历法与器用也逐渐完备，先民由此开辟出更有秩序的生活。从战场上的征伐到衣食住行的创造，轩辕身边汇聚着诸多文明起源的故事。后世以炎黄追认共同祖先，又在陵庙与祭典中延续这份记忆，使他的名字始终与开创、凝聚和传承相连。"
+    flavor: 中国上古传说中的黄帝，号轩辕氏，被奉为人文初祖之一。他与炎帝战于阪泉，又在涿鹿迎战蚩尤，联结诸部，成为众人共同尊奉的领袖。传说在他的时代，嫘祖养蚕织丝，仓颉造字，伶伦制乐，历法与器用也逐渐完备，先民由此开辟出更有秩序的生活。从战场上的征伐到衣食住行的创造，轩辕身边汇聚着诸多文明起源的故事。后世以炎黄追认共同祖先，又在陵庙与祭典中延续这份记忆，使他的名字始终与开创、凝聚和传承相连。
     growth_range:
     - 8
     - 14
@@ -75,7 +75,7 @@ heroes:
     avatar: shun.png
     default_gender: male
     archetype: civil
-    flavor: "上古传说中的帝王，名重华。他出身平凡，虽遭家庭困厄，仍以勤劳、孝行与宽厚赢得声望，因而受到尧的考察与任用。参与治理之后，他选贤任能，安排禹治水、后稷掌农事、契主教化、皋陶掌刑法，使众人各展所长。承接尧位后，又继续举用人才，将治理天下的重任逐步交托给禹。艰难出身没有使他失去温厚，掌握权力也没有使他忘记任人以能。尧舜禹的故事代代相传，而舜始终以能自持、能容人、能识贤的形象，位列历代传颂的圣王之中。"
+    flavor: 上古传说中的帝王，名重华。他出身平凡，虽遭家庭困厄，仍以勤劳、孝行与宽厚赢得声望，因而受到尧的考察与任用。参与治理之后，他选贤任能，安排禹治水、后稷掌农事、契主教化、皋陶掌刑法，使众人各展所长。承接尧位后，又继续举用人才，将治理天下的重任逐步交托给禹。艰难出身没有使他失去温厚，掌握权力也没有使他忘记任人以能。尧舜禹的故事代代相传，而舜始终以能自持、能容人、能识贤的形象，位列历代传颂的圣王之中。
     growth_range:
     - 8
     - 14
@@ -310,6 +310,48 @@ heroes:
       intellect: 14
       defense: 24
       agility: 18
+  - key: hist_xianqin_0408
+    name: 姒启
+    avatar: monkey_wu_male7.png
+    default_gender: male
+    archetype: military
+    flavor: （生卒年不详）姒启，又称夏启，传统夏代世系中的夏王，大禹之子。古籍多把他继位视为禅让转向世袭的开端，又记载他讨伐不服的有扈氏，战于甘，并作《甘誓》申明军纪。另有他晚年耽于逸乐、诸子争立的说法。相关年代与细节主要来自后世追述，难以逐项考证，但启作为家天下开端的人物形象影响深远。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 18
+      defense: 24
+      agility: 18
+  - key: hist_xianqin_0415
+    name: 姒桀
+    avatar: monkey_wu_male16.png
+    default_gender: male
+    archetype: military
+    flavor: （？—约前1600年）姒桀，名履癸，传统夏代末王，后世称夏桀。史传称为政暴虐，曾囚商汤于夏台，又与妹喜、酒池等传说相连。商汤起兵后，在鸣条之战中击败夏军，夏朝由此灭亡，桀出奔南巢而死。亡国细节多属后世叙事，未必尽为同时代史实，但其作为失德之君的形象流传甚广。
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 44
+      intellect: 12
+      defense: 26
+      agility: 18
+  - key: hist_xianqin_0421
+    name: 姬弃
+    avatar: monkey_wen_male1.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）姬弃，传统称后稷，周族始祖与农耕文化的传说人物。相传其母姜嫄履巨人足迹而孕，生下他后弃置荒野，却有牛羊庇护、飞鸟覆翼，遂取名弃。他自幼喜好耕稼，善于辨土播种，帝尧举为农师，帝舜时受封于邰。周人尊其为始祖，其形象寄托了古人对农业起源的解释。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 12
+      intellect: 56
+      defense: 18
+      agility: 14
   green:
   - key: hist_xianqin_0400
     name: 姬林
@@ -409,20 +451,6 @@ heroes:
       intellect: 20
       defense: 24
       agility: 16
-  - key: hist_xianqin_0408
-    name: 姒启
-    avatar: monkey_wu_male7.png
-    default_gender: male
-    archetype: military
-    flavor: （生卒年不详）姒启，又称夏启，传统夏代世系中的夏王，大禹之子。古籍多把他继位视为禅让转向世袭的开端，又记载他讨伐不服的有扈氏，战于甘，并作《甘誓》申明军纪。另有他晚年耽于逸乐、诸子争立的说法。相关年代与细节主要来自后世追述，难以逐项考证，但启作为家天下开端的人物形象影响深远。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 40
-      intellect: 18
-      defense: 24
-      agility: 18
   - key: hist_xianqin_0409
     name: 姒相
     avatar: monkey_wu_male16.png
@@ -465,20 +493,6 @@ heroes:
       intellect: 16
       defense: 26
       agility: 18
-  - key: hist_xianqin_0415
-    name: 姒桀
-    avatar: monkey_wu_male16.png
-    default_gender: male
-    archetype: military
-    flavor: （？—约前1600年）姒桀，名履癸，传统夏代末王，后世称夏桀。史传称为政暴虐，曾囚商汤于夏台，又与妹喜、酒池等传说相连。商汤起兵后，在鸣条之战中击败夏军，夏朝由此灭亡，桀出奔南巢而死。亡国细节多属后世叙事，未必尽为同时代史实，但其作为失德之君的形象流传甚广。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 44
-      intellect: 12
-      defense: 26
-      agility: 18
   - key: hist_xianqin_0416
     name: 妹喜
     avatar: monkey/其他随机角色/文084_女.png
@@ -506,20 +520,6 @@ heroes:
       force: 10
       intellect: 56
       defense: 20
-      agility: 14
-  - key: hist_xianqin_0421
-    name: 姬弃
-    avatar: monkey_wen_male1.png
-    default_gender: male
-    archetype: civil
-    flavor: （生卒年不详）姬弃，传统称后稷，周族始祖与农耕文化的传说人物。相传其母姜嫄履巨人足迹而孕，生下他后弃置荒野，却有牛羊庇护、飞鸟覆翼，遂取名弃。他自幼喜好耕稼，善于辨土播种，帝尧举为农师，帝舜时受封于邰。周人尊其为始祖，其形象寄托了古人对农业起源的解释。
-    growth_range:
-    - 5
-    - 7
-    attribute_weights:
-      force: 12
-      intellect: 56
-      defense: 18
       agility: 14
   - key: hist_xianqin_0422
     name: 子契

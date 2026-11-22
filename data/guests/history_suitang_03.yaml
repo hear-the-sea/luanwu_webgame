@@ -126,34 +126,6 @@ heroes:
       intellect: 18
       defense: 28
       agility: 16
-  - key: hist_suitang_0095_lishu
-    name: 李诵
-    avatar: monkey/其他随机角色/文052_男.png
-    default_gender: male
-    archetype: civil
-    flavor: （761年—806年）唐顺宗，德宗长子，805年即位。即位后任用王叔文、王伾及柳宗元、刘禹锡等推行改革，罢宫市、抑宦官、削藩镇，史称“永贞革新”。因中风失音不能亲政，宦官俱文珍等联合藩镇逼迫其禅位于太子李纯，革新仅百余日即告失败，次年顺宗病逝。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 14
-      intellect: 46
-      defense: 24
-      agility: 16
-  - key: hist_suitang_0097_lizhan
-    name: 李湛
-    avatar: monkey_wen_male3.png
-    default_gender: male
-    archetype: civil
-    flavor: （809年—827年）唐敬宗，穆宗长子，824年即位，时年十六。在位期间不理朝政，喜好击球、夜猎与宴游，常至深夜方归，对宦官也多有戏侮。宝历二年夜猎还宫后，被宦官刘克明、苏佐明等杀害，年仅十八岁，是唐代又一位死于宦官之手的皇帝。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 14
-      intellect: 44
-      defense: 22
-      agility: 20
   - key: hist_suitang_0100_lipi
     name: 李漼
     avatar: monkey_wen_male3.png
@@ -168,20 +140,6 @@ heroes:
       intellect: 44
       defense: 24
       agility: 20
-  - key: hist_suitang_0103_lizhu
-    name: 李柷
-    avatar: monkey_wen_male3.png
-    default_gender: male
-    archetype: civil
-    flavor: （892年—908年）唐哀帝，昭宗第九子，904年在朱温挟持下即位，时年十三。在位期间朝政尽出朱温之意，天祐二年朱温大杀朝臣，白马驿之祸后唐室名存实亡。天祐四年被迫禅位于朱温，唐朝灭亡，他被降封济阴王，次年在曹州遇害，年仅十七岁。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 10
-      intellect: 44
-      defense: 24
-      agility: 22
   - key: hist_suitang_0104_tangjian
     name: 唐俭
     avatar: pig/文033.png
@@ -602,7 +560,6 @@ heroes:
       intellect: 50
       defense: 24
       agility: 12
-  purple:
   - key: hist_suitang_0106_qututong
     name: 屈突通
     avatar: monkey/隋唐与五代/屈突通.png
@@ -611,9 +568,52 @@ heroes:
     flavor: （557年-628年）隋末唐初名将，早年为隋守将，曾在关中与唐军对峙，展现顽强的守御能力。隋亡大势既定后，他转而归唐，并在新政治环境中继续从军效力，成为旧朝名将如何融入新朝的典型。屈突通的价值不只在战功，更在其立场转变背后的现实：在鼎革之际，忠于旧主与保全百姓、家族常难两全。史书对他有褒有贬，但其经历真实反映隋唐转折期将领的艰难选择——多数人只能在大势里寻找可活的路径。
     growth_range:
     - 6
-    - 11
+    - 9
     attribute_weights:
       force: 38
       intellect: 20
       defense: 30
       agility: 12
+  green:
+  - key: hist_suitang_0095_lishu
+    name: 李诵
+    avatar: monkey/其他随机角色/文052_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （761年—806年）唐顺宗，德宗长子，805年即位。即位后任用王叔文、王伾及柳宗元、刘禹锡等推行改革，罢宫市、抑宦官、削藩镇，史称“永贞革新”。因中风失音不能亲政，宦官俱文珍等联合藩镇逼迫其禅位于太子李纯，革新仅百余日即告失败，次年顺宗病逝。
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 14
+      intellect: 46
+      defense: 24
+      agility: 16
+  - key: hist_suitang_0097_lizhan
+    name: 李湛
+    avatar: monkey_wen_male3.png
+    default_gender: male
+    archetype: civil
+    flavor: （809年—827年）唐敬宗，穆宗长子，824年即位，时年十六。在位期间不理朝政，喜好击球、夜猎与宴游，常至深夜方归，对宦官也多有戏侮。宝历二年夜猎还宫后，被宦官刘克明、苏佐明等杀害，年仅十八岁，是唐代又一位死于宦官之手的皇帝。
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 14
+      intellect: 44
+      defense: 22
+      agility: 20
+  - key: hist_suitang_0103_lizhu
+    name: 李柷
+    avatar: monkey_wen_male3.png
+    default_gender: male
+    archetype: civil
+    flavor: （892年—908年）唐哀帝，昭宗第九子，904年在朱温挟持下即位，时年十三。在位期间朝政尽出朱温之意，天祐二年朱温大杀朝臣，白马驿之祸后唐室名存实亡。天祐四年被迫禅位于朱温，唐朝灭亡，他被降封济阴王，次年在曹州遇害，年仅十七岁。
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 10
+      intellect: 44
+      defense: 24
+      agility: 22

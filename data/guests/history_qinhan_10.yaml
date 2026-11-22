@@ -1,0 +1,703 @@
+heroes:
+  blue:
+  - key: hist_qinhan_0605
+    name: 程邈
+    avatar: pig/文033.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）秦代下杜人，原为县狱吏，因罪系于云阳狱中。在狱十余年间，他潜心将繁复难写的小篆化圆为方、化繁为简，系统整理出隶书三千字献于秦始皇。嬴政见之大喜，赦其罪并拜为御史，隶书由此广泛推行于官府文书，促成汉字古今演变的关键转折。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 52
+      defense: 22
+      agility: 16
+  - key: hist_qinhan_0606
+    name: 茅焦
+    avatar: monkey_wen_male2.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）秦代齐国人，以敢言直谏著称。秦王政平定嫪毐之乱后，将生母赵太后迁居雍城并下令敢谏者戮，先后处死二十七名谏臣。茅焦无惧鼎镬，毅然请见，直言车裂假父、迁母于雍将失天下人心、阻统一大业。嬴政闻之幡然醒悟，亲迎太后归咸阳，尊茅焦为上卿。
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 14
+      intellect: 48
+      defense: 22
+      agility: 16
+  - key: hist_qinhan_0607
+    name: 贯高
+    avatar: pig/文038.png
+    default_gender: male
+    archetype: civil
+    flavor: （？—前198年）西汉初年赵王张敖相国，原为张耳门客，性情刚烈重义。因愤刘邦过赵时踞坐慢骂张敖，贯高私下谋划于柏人行刺，事未成而发觉。遭逮入狱后，他忍受鞭笞烙铁酷刑始终独揽罪责、坚称张敖不知情。刘邦深感其忠义而赦免张敖与贯高，贯高遂自绝以报旧主。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 26
+      intellect: 40
+      defense: 22
+      agility: 12
+  - key: hist_qinhan_0608
+    name: 剧孟
+    avatar: pig/武053.png
+    default_gender: male
+    archetype: military
+    flavor: （生卒年不详）西汉前期洛阳著名游侠，行事承袭朱家遗风，重然诺、好济人急难，声望遍及关东江湖。吴楚七国之乱爆发时，太尉周亚夫统军东征至河南，闻剧孟未附叛军，欣喜直言“吴楚举大事而不求孟，吾知其无能为已”，足见其在民间之威望与号召力。
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 42
+      intellect: 20
+      defense: 18
+      agility: 20
+  - key: hist_qinhan_0609
+    name: 石奋
+    avatar: duck_wen_male2.png
+    default_gender: male
+    archetype: civil
+    flavor: （前219年—前124年）西汉前期名臣，河内温县人，自年少事汉高祖，历仕文、景、武三朝。石奋为人恭谨醇厚、教子极严，其本人与四子皆官至二千石，汉景帝因赐号“万石君”。石氏一门以孝友谦让、谨守礼法闻名天下，成为汉代清流家风的楷模。
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 10
+      intellect: 46
+      defense: 30
+      agility: 14
+  - key: hist_qinhan_0610
+    name: 毛苌
+    avatar: monkey/其他随机角色/文039_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）西汉中期经学家，赵国人，从毛亨受《诗》，汉武帝时为河间献王博士，世称“小毛公”，与毛亨并称“大小毛公”。他极力弘扬古文《毛诗》，博引典故阐发诗义，使《毛诗》得以在民间与学术界薪火相传，最终取代齐、鲁、韩三家诗而独行后世。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 8
+      intellect: 54
+      defense: 22
+      agility: 16
+  - key: hist_qinhan_0611
+    name: 戴圣
+    avatar: pig/文039.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）西汉宣帝时期礼学家，梁国睢阳人，字次君，曾任九江太守，世称“小戴”。他从后苍受礼学，与叔父戴德并称“大小戴”，曾参与石渠阁经学大议。戴圣删选整理先秦两汉礼学文献成《礼记》四十九篇，后世列为儒家核心经典，对中国礼制文化影响至深。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 8
+      intellect: 54
+      defense: 22
+      agility: 16
+  - key: hist_qinhan_0612
+    name: 疏广
+    avatar: monkey_wen_male4.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）西汉宣帝时期名臣，东海兰陵人，字仲翁，精研《春秋》，官至太子太傅。眼见父子叔侄并居高位，他深谙“知足不辱，知止不殆”之道，遂与任太子少傅的侄子疏受同日上疏乞骸骨。返乡后将皇室赐金悉数散赠乡里宗族，不留田宅以勉子孙自力，史称“二疏”。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 52
+      defense: 22
+      agility: 16
+  - key: hist_qinhan_0613
+    name: 韩延寿
+    avatar: pig/文032.png
+    default_gender: male
+    archetype: civil
+    flavor: （？—前57年）西汉宣帝时期著名循吏，燕人，字长公。历任淮阳太守、颍川太守、东郡太守及左冯翊，治政崇尚礼让教化，每至一地皆延请贤士、和睦宗族，令诉讼大减、百姓感服。后因与萧望之互劾，遭构陷僭越礼制而被弃市，百姓莫不为之涕泣。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 16
+      intellect: 48
+      defense: 20
+      agility: 16
+  - key: hist_qinhan_0614
+    name: 尹翁归
+    avatar: monkey/其他随机角色/文052_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （？—前62年）西汉宣帝时期名臣，河东平阳人，字子兄。他少习剑术又通晓文法，历任东海太守、右扶风，治郡恩威并济，对豪强奸猾严惩不贷，对良善百姓则温和体恤，境内夜不闭户、令行禁止。病逝于任上时家无余财，宣帝深为惋惜并特赐黄金百斤以奉祭祀。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 24
+      intellect: 44
+      defense: 18
+      agility: 14
+  - key: hist_qinhan_0615
+    name: 邳彤
+    avatar: monkey_wu_male5.png
+    default_gender: male
+    archetype: military
+    flavor: （？—30年）东汉开国名将，云台二十八将之一，信都人，字伟君。王郎僭称天子于邯郸时，河北诸郡多望风归附，唯独和戎太守邳彤坚定迎奉刘秀，并在军心动摇之际力谏不可弃河北南归，为刘秀稳住阵脚、反败为胜立下关键功勋。后随征河北、平定齐鲁，封灵寿侯。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 26
+      defense: 20
+      agility: 14
+  - key: hist_qinhan_0616
+    name: 卓茂
+    avatar: pig/文037.png
+    default_gender: male
+    archetype: civil
+    flavor: （前53年—28年）东汉初年太傅，南阳宛县人，字子康，位列云台三十二功臣之首。西汉末任密县令，以宽厚仁爱感化百姓，口无恶言、吏民不忍欺，王莽篡政后辞官归隐。汉光武帝即位之初，特以卓茂为循吏楷模，率先拜为太傅、封褒德侯，以示崇德尚仁之治。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 50
+      defense: 26
+      agility: 14
+  - key: hist_qinhan_0617
+    name: 郭伋
+    avatar: monkey_wen_male6.png
+    default_gender: male
+    archetype: civil
+    flavor: （前39年—47年）东汉初年名臣，扶风茂陵人，字细侯。历任渔阳太守、颍川太守及并州牧，平抑豪强、安抚流民，恩信著于边郡。他巡行西河美稷时，数百孩童骑竹马迎于道旁并约定归期；及至回程提前一日，郭伋宁愿露宿野亭也不愿失信于童子，“竹马之交”由此传世。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 18
+      intellect: 46
+      defense: 22
+      agility: 14
+  - key: hist_qinhan_0618
+    name: 宋弘
+    avatar: pig/文041.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）东汉初年名臣，京兆长安人，字仲子，光武帝时官至大司空，封宣平侯。他清正廉明、举贤推士，曾向光武帝举荐桓谭等硕学之士。光武帝欲将寡居的湖阳公主嫁与宋弘，宋弘直言“贫贱之交不可忘，糟糠之妻不下堂”，凛然拒婚，成就千古美谈。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 12
+      intellect: 50
+      defense: 24
+      agility: 14
+  - key: hist_qinhan_0619
+    name: 虞诩
+    avatar: pig_wu_male7.png
+    default_gender: male
+    archetype: military
+    flavor: （？—约137年）东汉中期名将兼直臣，陈国武平人，字升卿。任朝歌长时以奇计平定积年盗贼；出任武都太守，于陈仓崤谷遇数万羌军阻击，巧施“增灶示强”之计配合强弩伏击大破羌众，随后修筑通渠、垦田安边。晚年任司隶校尉、尚书仆射，弹劾权贵不避生死。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 38
+      intellect: 32
+      defense: 14
+      agility: 16
+  - key: hist_qinhan_0620
+    name: 李固
+    avatar: pig/文048.png
+    default_gender: male
+    archetype: civil
+    flavor: （94年—147年）东汉中期名臣，汉中南郑人，字子坚，官至太尉。顺、冲、质三帝之际，外戚梁冀专擅朝政、毒杀质帝，李固不顾安危力主择立年长有德之宗室为君，并与杜乔等坚决抵制梁冀贪暴。终遭梁冀构陷下狱遇害，临死遗书明志，为士林所痛惜，世称“李杜”。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 14
+      intellect: 50
+      defense: 22
+      agility: 14
+  - key: hist_qinhan_0601
+    name: 虞姬
+    avatar: monkey_wen_female2.png
+    default_gender: female
+    archetype: civil
+    flavor: （？—前202年）秦末楚汉之争时期项羽宠姬，史书称其名虞，常随项羽转战南北、形影不离。垓下之围时，汉军四面楚歌，项羽夜起饮酒慨唱《垓下歌》，虞姬和之起舞，不愿累及英雄而自刎殉情。其忠贞刚烈之风历经两千余年传颂，成为“霸王别姬”千古绝唱。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 14
+      intellect: 46
+      defense: 18
+      agility: 22
+  - key: hist_qinhan_0602
+    name: 落下闳
+    avatar: monkey/其他随机角色/文_男123.png
+    default_gender: male
+    archetype: civil
+    flavor: （约前140年—约前87年）西汉巴郡阆中人，中国古代著名天文学家，字长公。汉武帝改历之际，落下闳应诏入长安，与邓平、唐都等精测天象，创制《太初历》，首次确立以正月为岁首、将二十四节气纳入历法并推算日月食周期，同时改进浑仪，奠定后世两千年传统历法根基。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 8
+      intellect: 56
+      defense: 22
+      agility: 14
+  - key: hist_qinhan_0603
+    name: 耿寿昌
+    avatar: pig/文029.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）西汉宣帝时期大司农中丞，理财家、数学家兼天文学家，赐爵关内侯。他创设“常平仓”制度，丰年加价籴粮以利农、灾年减价粜粮以济民，被后世历代王朝沿用近两千年；又精于算学与浑象观测，曾与张苍一脉共同删补整理《九章算术》。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 54
+      defense: 22
+      agility: 14
+  - key: hist_qinhan_0604
+    name: 皇甫嵩
+    avatar: monkey/其他随机角色/武047_男.png
+    default_gender: male
+    archetype: military
+    flavor: （？—195年）东汉末年名将，字义真，安定朝那人。黄巾起义爆发后，他与朱儁分兵征讨，以火攻大破长社敌军，继而连战连捷平定颍川、陈留与冀州黄巾，又破王国于陈仓；其人爱恤士卒、恪守臣节，为汉末最具威望的统帅之一。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 42
+      intellect: 22
+      defense: 22
+      agility: 14
+  - key: hist_qinhan_0632
+    name: 戴德
+    avatar: monkey_wen_male1.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）西汉宣帝时期礼学家，梁国睢阳人，字延君，官至信都王太傅，世称“大戴”。他师从后苍研习礼学，将流传的古礼文献删繁就简，编纂为八十五篇，称《大戴礼记》，保存了《夏小正》等珍贵先秦古籍，与侄戴圣共开两汉礼学双璧。
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 8
+      intellect: 52
+      defense: 24
+      agility: 16
+  - key: hist_qinhan_0644
+    name: 梁鸿
+    avatar: pig/文050.png
+    default_gender: male
+    archetype: civil
+    flavor: （约26年—约104年）东汉前期高士、诗人，扶风平陵人，字伯鸾。少游太学，博通经典而不慕仕进，娶贤妇孟光隐居霸陵山中以耕织为业。东出关过洛阳时感叹宫室奢华、民生劳苦，作《五噫歌》触怒汉章帝，遂易名改姓南逃吴地，为人赁舂自食其力，高风亮节传于后世。
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 14
+      intellect: 48
+      defense: 22
+      agility: 16
+  - key: hist_qinhan_0649
+    name: 张奂
+    avatar: pig/武064.png
+    default_gender: male
+    archetype: military
+    flavor: （104年—181年）东汉名将兼经学家，敦煌渊泉人，字然明，与皇甫规、段颎并称“凉州三明”。他镇守并凉边疆，屡破南匈奴、乌桓与鲜卑，治边廉洁，曾拒收羌豪金马而威信大著。同时精研《尚书》，门徒千余，党锢之祸时力救名士，终因不附宦官遭排挤禁锢。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 38
+      intellect: 32
+      defense: 18
+      agility: 12
+  - key: hist_qinhan_0650
+    name: 段颎
+    avatar: pig/武065.png
+    default_gender: male
+    archetype: military
+    flavor: （？—179年）东汉名将，武威姑臧人，字纪明，“凉州三明”之一。自护羌校尉至破羌将军，转战西凉十余载，长途奔袭、昼夜兼程，平定东西羌之乱，史称其历战一百八十余场未尝败绩，封新丰县侯。然晚年依附权宦王甫，最终牵连下狱饮鸩自尽。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 46
+      intellect: 18
+      defense: 16
+      agility: 20
+  green:
+  - key: hist_qinhan_0621
+    name: 淳于越
+    avatar: pig/文010.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）秦朝博士，齐国人。前213年秦始皇在咸阳宫置酒宴饮，仆射周青臣颂扬废分封行郡县之功，淳于越当庭进谏，主张效法殷周旧制分封子弟功臣以作辅弼，直言“事不师古而能长久者，非所闻也”。此番争议直接引发丞相李斯上书推行焚书之令。
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 10
+      intellect: 48
+      defense: 24
+      agility: 18
+  - key: hist_qinhan_0622
+    name: 傅宽
+    avatar: pig/武055.png
+    default_gender: male
+    archetype: military
+    flavor: （？—前190年）西汉开国功臣，魏国人，初为魏五大夫骑将，后归附刘邦。从入关破秦、战楚军于敖仓与荥阳，复随韩信平定齐地，功封阳陵侯。汉高祖登基后，他镇守齐国兼任齐相国，又随周勃平定陈豨叛乱，一生忠谨善战，得以善终。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 20
+      defense: 22
+      agility: 16
+  - key: hist_qinhan_0623
+    name: 周緤
+    avatar: monkey_wu_male12.png
+    default_gender: male
+    archetype: military
+    flavor: （？—前175年）西汉开国功臣，沛县人。自沛公起兵即追随左右，常任参乘护卫，屡次于危难中保刘邦周全，封蒯成侯。陈豨反叛时刘邦欲亲征，周緤泣谏劝阻，足见忠悃；孝文帝刘恒即位后，尤敬其重厚谨直，位列功臣之上。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 38
+      intellect: 20
+      defense: 28
+      agility: 14
+  - key: hist_qinhan_0624
+    name: 陈贺
+    avatar: pig/武057.png
+    default_gender: male
+    archetype: military
+    flavor: （？—前180年）西汉开国名将，原为项羽部将，后归顺刘邦。随韩信平定会稽、浙江、湖阳等地，垓下决战中统率汉军右翼与韩信、孔聚合力击溃楚军主力。战后论功封费侯，封邑万户，为汉初重要开国功臣之一。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 44
+      intellect: 18
+      defense: 20
+      agility: 18
+  - key: hist_qinhan_0625
+    name: 任敖
+    avatar: pig_wen_male4.png
+    default_gender: male
+    archetype: civil
+    flavor: （？—前179年）西汉初年御史大夫，沛县人，早年为沛狱吏，素与刘邦交善。秦吏拘系吕雉并加凌辱时，任敖愤然击伤狱吏护之。后从刘邦起兵，守上党拒陈豨有功，封广阿侯。吕后称制时，感其旧恩拜为御史大夫，为政宽厚守法。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 22
+      intellect: 42
+      defense: 22
+      agility: 14
+  - key: hist_qinhan_0626
+    name: 孟舒
+    avatar: monkey/其他随机角色/武052_男.png
+    default_gender: male
+    archetype: military
+    flavor: （生卒年不详）西汉初年边将，原为赵王张敖郎中。汉高祖时出任云中太守十余年，爱惜士卒、深得军心，士卒皆愿为其死战。汉文帝初年因匈奴入寇受挫被免职，经田叔力陈其忠厚长者之风，文帝遂复拜孟舒为云中太守，以固北疆防务。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 26
+      defense: 24
+      agility: 14
+  - key: hist_qinhan_0627
+    name: 石庆
+    avatar: pig/文018.png
+    default_gender: male
+    archetype: civil
+    flavor: （？—前103年）西汉中期丞相，万石君石奋幼子。他谨承家风，为人敦厚慎行，任齐相时以醇谨感化齐地，百姓为其立石相祠；汉武帝元鼎年间代赵周为丞相，封牧丘侯。虽逢朝廷用兵酷吏当权、政事难挽，仍以清慎自守，在位九年得以善终。
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 10
+      intellect: 46
+      defense: 28
+      agility: 16
+  - key: hist_qinhan_0628
+    name: 枚皋
+    avatar: monkey/其他随机角色/文男.png
+    default_gender: male
+    archetype: civil
+    flavor: （前153年—？年）西汉中期辞赋家，淮阴人，字少孺，文学大家枚乘之子。年十七上书自荐，得汉武帝赏识拜为郎官，常随驾巡游封禅。其文思极其敏捷，受诏辄成，一生作赋百二十余篇，虽自谦文辞谐谑不及司马相如典雅，却以才捷闻于汉武文坛。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 8
+      intellect: 50
+      defense: 16
+      agility: 26
+  - key: hist_qinhan_0629
+    name: 公孙昆邪
+    avatar: pig/武058.png
+    default_gender: male
+    archetype: military
+    flavor: （生卒年不详）西汉前期名将，北地义渠人，陇西名将公孙贺之祖父。汉景帝时任陇西太守，吴楚七国之乱起，他以将军身份随周亚夫东征平叛，战功卓著，封平曲侯。后典属国、御边防匈奴，屡献奇谋，是景武之际关西军功集团的重要代表。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 44
+      intellect: 20
+      defense: 20
+      agility: 16
+  - key: hist_qinhan_0630
+    name: 郭昌
+    avatar: monkey_wu_male13.png
+    default_gender: male
+    archetype: military
+    flavor: （生卒年不详）西汉武帝时期边将，云中人，以骑射骁勇任校尉，屡随大将军卫青出塞击匈奴。元封年间奉命统巴蜀兵南征，平定滇西昆明部落，开置益州郡；其后拜拔胡将军，屯守朔方以备匈奴。南征北战，为汉武拓边立下汗马功劳。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 44
+      intellect: 16
+      defense: 20
+      agility: 20
+  - key: hist_qinhan_0631
+    name: 唐都
+    avatar: pig/文044.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）西汉武帝时期天文学家，精于星象分野，太史令司马谈曾师事受学。元封七年改定历法时，唐都与落下闰、邓平等奉诏共议，负责划分天部、测定二十八宿距度，最终促成《太初历》颁行天下，为中国古代天文学奠定了观测规范。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 8
+      intellect: 54
+      defense: 22
+      agility: 16
+  - key: hist_qinhan_0633
+    name: 夏侯胜
+    avatar: pig/文046.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）西汉中期经学家，东平人，字长公，创《尚书》大夏侯学，官至太子太傅。汉宣帝欲为武帝立庙乐，群臣皆顺旨附和，唯夏侯胜直言武帝穷兵黩武、民生凋敝不宜立乐，因而下狱。狱中仍授黄霸《尚书》，后获赦重用，以直节与经学垂名。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 10
+      intellect: 52
+      defense: 24
+      agility: 14
+  - key: hist_qinhan_0634
+    name: 韦贤
+    avatar: monkey/其他随机角色/文101_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （前148年—前61年）西汉宣帝时期丞相，鲁国邹县人，字长孺，精研《鲁诗》《礼》《尚书》，世称邹鲁大儒。七十余岁拜相封扶阳侯，为西汉以儒学致位宰相之先声，后致仕荣归。邹鲁民间因传谚语“遗子黄金满籝，不如一经”，成为重视经学教化的名言。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 8
+      intellect: 52
+      defense: 24
+      agility: 16
+  - key: hist_qinhan_0635
+    name: 疏受
+    avatar: pig/文042.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）西汉宣帝时期大臣，东海兰陵人，字公子，太子太傅疏广兄子。他好礼恭谨、应对敏慧，获宣帝赏识拜为太子少傅，与叔父同日辅佐太子。后赞同疏广急流勇退之议，叔侄同辞高官，朝野公卿设祖道于东都门外送行，车数百两，传为汉代仕宦佳话。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 10
+      intellect: 48
+      defense: 24
+      agility: 18
+  - key: hist_qinhan_0636
+    name: 盖宽饶
+    avatar: monkey_wen_male8.png
+    default_gender: male
+    archetype: civil
+    flavor: （？—前60年）西汉宣帝时期直臣，魏郡人，字次公，官至司隶校尉。他清廉自守、布衣蔬食，任卫司马时体恤士卒如子弟；执掌监察则刚直不阿、屡劾权贵。然性情过于峻急，上书引“五帝官天下，三王家天下”触怒宣帝，下吏之时拔佩刀自刭北阙下，世人多怜其忠直。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 18
+      intellect: 44
+      defense: 24
+      agility: 14
+  - key: hist_qinhan_0637
+    name: 师丹
+    avatar: pig/文049.png
+    default_gender: male
+    archetype: civil
+    flavor: （？—3年）西汉后期名臣，琅邪东武人，字仲公，成帝、哀帝朝历任太子太傅、大司马、大司空。面对西汉末年土地兼并剧烈、豪强蓄奴成风之弊，他首倡“限田限奴婢”之策，试图抑制兼并、挽救国势。虽因丁傅外戚与既得利益阻挠未能推行，仍开后世限田思潮先河。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 10
+      intellect: 52
+      defense: 22
+      agility: 16
+  - key: hist_qinhan_0638
+    name: 梅福
+    avatar: duck_wen_male3.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）西汉末期学者、隐士，九江寿春人，字子真，少通《尚书》《谷梁春秋》，任南昌尉。成帝朝王氏外戚专权，梅福多次上书痛陈外戚干政之患，皆不被采纳。王莽秉政前夕，他预见大乱将至，毅然弃妻子隐去，传言变姓名隐于吴市门卒，后世多慕其高蹈。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 12
+      intellect: 48
+      defense: 20
+      agility: 20
+  - key: hist_qinhan_0639
+    name: 任光
+    avatar: pig/武061.png
+    default_gender: male
+    archetype: military
+    flavor: （？—29年）东汉开国名将，云台二十八将之一，南阳宛县人，字伯卿。早年从刘秀破王寻、王邑于昆阳，拜信都太守。王郎称帝邯郸、刘秀兵败窘迫之际，任光开城迎纳，募精兵四千并发檄文声讨王郎，使刘秀得以重整旗鼓横扫河北，封阿陵侯。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 24
+      defense: 22
+      agility: 14
+  - key: hist_qinhan_0640
+    name: 马成
+    avatar: monkey_wu_male14.png
+    default_gender: male
+    archetype: military
+    flavor: （？—56年）东汉开国名将，云台二十八将之一，南阳棘阳人，字君迁。建武初年率军平定淮南李宪，后多次镇守北边，代杜茂修筑自西河至渭桥、河上至安邑、太原至井陉及中山至邺的障塞烽燧，凡千里，以坚壁清野与边防工程稳固东汉北部疆域，封全椒侯。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 38
+      intellect: 22
+      defense: 28
+      agility: 12
+  - key: hist_qinhan_0641
+    name: 陈俊
+    avatar: pig/武063.png
+    default_gender: male
+    archetype: military
+    flavor: （？—47年）东汉开国名将，云台二十八将之一，南阳西鄂人，字子昭。初随刘秀征河北，每战常率轻骑突阵破敌，击铜马、平五校、定泰山与琅邪，以骁勇机敏著称。任琅邪太守兼统青徐军务，恩威并用安抚海滨，使张步余部尽皆归服，封祝阿侯。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 44
+      intellect: 18
+      defense: 16
+      agility: 22
+  - key: hist_qinhan_0642
+    name: 杜茂
+    avatar: monkey/其他随机角色/武066_男_.png
+    default_gender: male
+    archetype: military
+    flavor: （？—43年）东汉开国名将，云台二十八将之一，南阳冠军人，字诸公。归附刘秀于河北，攻灭五校、平定沛郡。建武年间奉命率军北驻晋阳、广武，广修亭障、兴办边塞屯田以抵御匈奴与卢芳南侵，劳苦功高，封参蘧乡侯。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 18
+      defense: 28
+      agility: 14
+  - key: hist_qinhan_0643
+    name: 郭圣通
+    avatar: monkey_wen_female8.png
+    default_gender: female
+    archetype: civil
+    flavor: （？—52年）东汉光武帝刘秀第一任皇后，真定藁城人，出身河北豪族。刘秀经略河北时迎娶郭圣通，由此赢得真定王刘杨与河北大族支持，成为东汉建国的重要转折。建武二年立为皇后，后虽被废而改封中山王太后，仍深明大义、善处宗室，得以安享尊荣。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 10
+      intellect: 46
+      defense: 28
+      agility: 16
+  - key: hist_qinhan_0645
+    name: 孟光
+    avatar: monkey/其他随机角色/文065_女.png
+    default_gender: female
+    archetype: civil
+    flavor: （生卒年不详）东汉前期贤妇，右扶风平陵人，高士梁鸿之妻。她虽容貌粗黑却力大贤德、志趣高洁，三十而嫁梁鸿，甘愿弃去绫罗脂粉、荆钗布裙随夫隐居耕织。每当梁鸿劳作归来，孟光必备好饭食举案齐眉以示敬重，“举案齐眉”由此成为夫妻相敬的千古典范。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 18
+      intellect: 44
+      defense: 24
+      agility: 14
+  - key: hist_qinhan_0646
+    name: 崔瑗
+    avatar: monkey_wen_male10.png
+    default_gender: male
+    archetype: civil
+    flavor: （77年—142年）东汉中期文学家、书法家兼学者，涿郡安平人，字子玉，崔骃之子。少通天文历算与《京氏易》，官至济北相，政声清简爱民。他尤工草书，承杜度之法而启“草圣”张芝，并撰有《座右铭》百字流传千古，以“无道人之短，无说己之长”警世。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 10
+      intellect: 52
+      defense: 20
+      agility: 18
+  - key: hist_qinhan_0647
+    name: 赵晔
+    avatar: pig/文036.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）东汉前期史学家、经学家，会稽山阴人，字长君。少为县吏，后赴犍为资中师从杜抚专研《韩诗》二十年，学成归乡后潜心著述，不慕荣利，官仅至州从事。其所撰《吴越春秋》详记吴越兴亡始末，叙事生动、史料丰富，对后世史学与文学影响颇深。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 8
+      intellect: 52
+      defense: 22
+      agility: 18
+  - key: hist_qinhan_0648
+    name: 徐淑
+    avatar: monkey/其他随机角色/文-女.png
+    default_gender: female
+    archetype: civil
+    flavor: （生卒年不详）东汉中期才女、女诗人，陇西人，诗人秦嘉之妻。秦嘉赴洛阳上郡计簿时，徐淑因病归宁未能面别，夫妻遂以书信诗篇往还寄情。其《答秦嘉诗》与《又报嘉书》婉转真挚、文辞清丽，突破传统礼教束缚，在汉代五言诗与抒情散文史上独树一帜。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 8
+      intellect: 52
+      defense: 18
+      agility: 22

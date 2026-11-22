@@ -1,19 +1,19 @@
 heroes:
   purple:
-  - key: hist_suitang_0141_wangxianzhi
-    name: 王仙芝
-    avatar: monkey/隋唐与五代/王仙芝.png
+  - key: hist_suitang_0176_sudingfang
+    name: 苏定方
+    avatar: monkey_wu_male1.png
     default_gender: male
     archetype: military
-    flavor: （？—878年）唐末农民起义首领，濮州人，以贩私盐为业。乾符初年，他与尚君长等在长垣起兵，转战河南、淮南，自称天补平均大将军；黄巢随后响应，两支队伍一度合流。乾符三年，朝廷以官职招抚，王仙芝有意接受，因黄巢反对而中止，义军由此分裂。乾符五年，他在黄梅战败而死，余部多归黄巢。
+    flavor: （592年—667年）唐代将领，名烈，字定方，冀州武邑人。早年随李靖击破东突厥，曾率部夜袭阴山。显庆年间，他先后率军击灭西突厥、擒获阿史那贺鲁，又渡海攻灭百济、俘其国王义慈。官至左骁卫大将军，封邢国公。其用兵长于奔袭，为唐朝经略西域与东北的重要将领。
     growth_range:
-    - 6
+    - 7
     - 11
     attribute_weights:
-      force: 36
-      intellect: 18
-      defense: 28
-      agility: 18
+      force: 38
+      intellect: 20
+      defense: 32
+      agility: 10
   blue:
   - key: hist_suitang_0135_lijifu
     name: 李吉甫
@@ -197,20 +197,6 @@ heroes:
       intellect: 22
       defense: 32
       agility: 8
-  - key: hist_suitang_0176_sudingfang
-    name: 苏定方
-    avatar: monkey_wu_male1.png
-    default_gender: male
-    archetype: military
-    flavor: （592年—667年）唐代将领，名烈，字定方，冀州武邑人。早年随李靖击破东突厥，曾率部夜袭阴山。显庆年间，他先后率军击灭西突厥、擒获阿史那贺鲁，又渡海攻灭百济、俘其国王义慈。官至左骁卫大将军，封邢国公。其用兵长于奔袭，为唐朝经略西域与东北的重要将领。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 38
-      intellect: 20
-      defense: 32
-      agility: 10
   - key: hist_suitang_0177_liurengui
     name: 刘仁轨
     avatar: monkey_wu_male10.png
@@ -561,6 +547,20 @@ heroes:
       intellect: 28
       defense: 28
       agility: 12
+  - key: hist_suitang_0141_wangxianzhi
+    name: 王仙芝
+    avatar: monkey/隋唐与五代/王仙芝.png
+    default_gender: male
+    archetype: military
+    flavor: （？—878年）唐末农民起义首领，濮州人，以贩私盐为业。乾符初年，他与尚君长等在长垣起兵，转战河南、淮南，自称天补平均大将军；黄巢随后响应，两支队伍一度合流。乾符三年，朝廷以官职招抚，王仙芝有意接受，因黄巢反对而中止，义军由此分裂。乾符五年，他在黄梅战败而死，余部多归黄巢。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 36
+      intellect: 18
+      defense: 28
+      agility: 18
   green:
   - key: hist_suitang_0155_niuhong
     name: 牛弘

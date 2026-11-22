@@ -1,5 +1,3 @@
-# 金庸作品门客
-
 heroes:
   green:
   - key: hero_yin_zhiping
@@ -338,54 +336,6 @@ heroes:
       intellect: 40
       defense: 15
       agility: 25
-  - key: hero_jinyong_0161
-    name: 曲洋
-    avatar: monkey/其他随机角色/文039_男.png
-    archetype: civil
-    flavor: 日月神教长老，酷爱音律，擅长弹琴。他虽身在魔教，却不愿卷入江湖纷争，只愿寄情山水。他与衡山派刘正风因音乐结为知音，合奏《笑傲江湖曲》，不惜为此背叛师门，惨遭正邪两道围攻。最终两人在费彬的逼迫下，自断经脉而死，临终前将曲谱传给令狐冲。曲洋与刘正风的高山流水之谊，超越了门派与正邪的界限，是全书精神主旨的象征。出自金庸小说《笑傲江湖》
-    default_gender: male
-    default_morality: 44
-    recruitable: true
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 20
-      intellect: 40
-      defense: 15
-      agility: 25
-  - key: hero_jinyong_0162
-    name: 刘正风
-    avatar: monkey/其他随机角色/文039_男.png
-    archetype: civil
-    flavor: 衡山派高手，莫大先生的师弟。他厌倦了江湖的尔虞我诈，意欲金盆洗手，退出武林，专心钻研音律。然而，因为与魔教长老曲洋的知音关系，被五岳盟主左冷禅借机发难，惨遭灭门之祸。他宁死不肯出卖朋友，最终与曲洋双双殉难。刘正风的悲剧揭示了所谓正派人士的残忍与虚伪，也歌颂了士为知己者死的崇高情操。出自金庸小说《笑傲江湖》
-    default_gender: male
-    default_morality: 60
-    recruitable: true
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 20
-      intellect: 40
-      defense: 15
-      agility: 25
-  - key: hero_jinyong_0171
-    name: 胡青牛
-    avatar: pig/文040.png
-    archetype: civil
-    flavor: 明教神医，外号“蝶谷医仙”。他医术通神，却性情古怪，立誓非明教中人不救，因此又被称为“见死不救”。他与妻子王难姑是一对欢喜冤家，两人一毒一医，斗了一辈子法。他虽然规矩古怪，但在张无忌求医的过程中，也流露出了长辈的慈爱，将毕生医术倾囊相授。最终夫妇二人被金花婆婆杀害。胡青牛的医术为张无忌后来的奇遇打下了坚实的基础。出自金庸小说《倚天屠龙记》
-    default_gender: male
-    default_morality: 64
-    recruitable: true
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 10
-      intellect: 55
-      defense: 20
-      agility: 15
   - key: hero_jinyong_0172
     name: 王难姑
     avatar: monkey/其他随机角色/文059_女.png
@@ -434,22 +384,6 @@ heroes:
       intellect: 45
       defense: 20
       agility: 20
-  - key: hero_jinyong_0188
-    name: 喀丝丽
-    avatar: monkey_wen_female9.png
-    archetype: civil
-    flavor: 回部的清丽女子，像沙漠里难得的泉，干净得近乎不真实。她的温柔不是软弱，而是一种天性里的善；可正因太纯净，才更容易被命运利用与伤害。她站在风沙与权谋之间，像一朵白花，越美越脆，脆到一触便碎，却仍让人难忘。出自金庸小说《书剑恩仇录》
-    default_gender: female
-    default_morality: 74
-    recruitable: true
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 20
-      agility: 20
   - key: hero_jinyong_0195
     name: 纪晓芙
     avatar: monkey_wen_female3.png
@@ -473,22 +407,6 @@ heroes:
     flavor: 明教光明左使杨逍与峨眉派纪晓芙的女儿。她继承了母亲的温婉与父亲的傲气，名字“不悔”寓意着纪晓芙对那段惊世骇俗爱情的无怨无悔。童年时在张无忌的千里护送下历经艰险找到父亲，这段经历让她早熟且极有主见。长大后，她爱上了曾是母亲未婚夫、且身有残疾的武当殷梨亭。她不顾世俗眼光，决心照顾这个因母亲而痛苦半生的男人，以求代母赎罪，最终两人结为连理，生活幸福。杨不悔是一个敢爱敢恨、非常有主见的女子，她的选择为上一代的悲剧画上了一个温暖的句号。出自金庸小说《倚天屠龙记》
     default_gender: female
     default_morality: 60
-    recruitable: true
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 20
-      agility: 20
-  - key: hero_jinyong_0202
-    name: 完颜洪烈
-    avatar: pig/文034.png
-    archetype: civil
-    flavor: 金国六王爷，温文尔雅的外表下藏着吞并中原的野心。他善结交、善布局，把人心当棋盘，把天下当赌注。一段偏执的爱恋让他策划了牛家村惨案，从而导致郭、杨两家家破人亡。他在金王府中宠爱包惜弱十八年，对杨康也视为己出，这种极度的深情与其政治上的冷酷形成了鲜明对比。他招揽江湖奇才意图消灭抗金势力，是《射雕英雄传》中极具政治手腕的反派。最终在覆灭的王朝余烬中走向毁灭，证明了不义之举终难逃历史的审判。出自金庸小说《射雕英雄传》
-    default_gender: male
-    default_morality: 62
     recruitable: true
     growth_range:
     - 3
@@ -946,22 +864,6 @@ heroes:
       intellect: 40
       defense: 25
       agility: 15
-  - key: hero_jinyong_0316
-    name: 空闻
-    avatar: pig/武072.png
-    archetype: civil
-    flavor: 少林派方丈，也是四大神僧之首。他在江湖上享有极高的地位和声望，不仅佛法造诣精深，其武功修为也是深不可测。虽然在书中直接出手的机会并不多，但他城府极深、老谋深算，极擅长在复杂的武林纠纷中通过政治手腕来维护少林派的利益与领袖地位。在面对武当张翠山、以及后来的屠狮大会等关键历史节点时，他代表了名门正派那种既有着深厚底蕴、又不乏权力权衡的复杂面相。空闻大师的形象是金庸笔下那种由于身处高位而不得不变得圆滑且强势的领袖人物缩影。他的一生是在维持江湖秩序与守护寺门清誉之间博弈的过程，是武林政治格局中一个极其重要的支点。出自金庸小说《倚天屠龙记》
-    default_gender: male
-    default_morality: 50
-    recruitable: true
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 20
-      agility: 20
   - key: hero_jinyong_0324
     name: 丁敏君
     avatar: monkey/其他随机角色/文078_女.png
@@ -1378,22 +1280,6 @@ heroes:
       intellect: 45
       defense: 20
       agility: 20
-  - key: hero_ke_zhen_e
-    name: 柯镇恶
-    avatar: monkey/其他随机角色/武066_男_.png
-    archetype: military
-    flavor: 江南七怪之首，外号“飞天蝙蝠”。他双目失明，脾气暴躁，嘴硬心软，但有着极强的正义感和江湖道义。他为了赌约远赴大漠十八年，精心教导郭靖。虽然武功不算顶尖，但他的侠义精神令人钦佩。他一生嫉恶如仇，不畏强权，即便是面对五绝级别的高手，也敢于出言斥责或挥杖相向。柯镇恶是郭靖侠义精神的启蒙者，他用自己的一言一行，教会了郭靖什么是“有所不为，有所必为”。出自金庸小说《射雕英雄传》
-    default_gender: male
-    default_morality: 70
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 30
-      intellect: 10
-      defense: 35
-      agility: 25
   - key: hero_guo_polu
     name: 郭破虏
     avatar: pig/武032.png
@@ -3858,6 +3744,694 @@ heroes:
       intellect: 10
       defense: 25
       agility: 30
+  - key: hero_jinyong_0501
+    name: 梁子翁
+    avatar: pig/武005.png
+    archetype: military
+    flavor: 外号“参仙老怪”，长白山武林名宿，精于采补养参之术与阴毒点穴功夫。他为续命驻颜，耗费二十年心血以珍贵药材喂养一条大蝮蛇，不料蛇血反被误闯王府的郭靖吸干，由此结下死仇。他一生贪生怕死、狡诈狠辣，武功却颇具邪门奇效，终在华山绝顶因贪功失足坠崖而亡。出自金庸小说《射雕英雄传》
+    default_gender: male
+    default_morality: 25
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 32
+      intellect: 23
+      defense: 18
+      agility: 27
+  - key: hero_jinyong_0502
+    name: 南希仁
+    avatar: pig/武007.png
+    archetype: military
+    flavor: 江南七怪排行第四，外号“南山樵子”，本是砍柴樵夫出身。他平素寡言少语，常以只言片语切中要害，性情稳重刚毅、力大无穷，擅使一根沉重纯钢扁担与南山掌法。赴大漠教导郭靖十余载，倾囊相授毫不藏私，后在桃花岛中欧阳锋蛇毒，临终仍奋力写下线索揭露真凶，侠骨凛然。出自金庸小说《射雕英雄传》
+    default_gender: male
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 14
+      defense: 35
+      agility: 15
+  - key: hero_jinyong_0503
+    name: 张阿生
+    avatar: pig/武008.png
+    archetype: military
+    flavor: 江南七怪排行第五，外号“笑弥陀”，原为市井屠夫，体格魁梧、豪爽热诚。他擅使一柄尖利屠牛刀与刚猛硬功，暗恋七妹韩小莹多年却始终以礼相待。大漠荒山一役，为护韩小莹免遭“黑风双煞”毒手，他以血肉之躯硬抗陈玄风摧心掌，临终前终得佳人允婚，虽死犹荣。出自金庸小说《射雕英雄传》
+    default_gender: male
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 38
+      intellect: 12
+      defense: 36
+      agility: 14
+  - key: hero_jinyong_0504
+    name: 全金发
+    avatar: monkey_wen_male2.png
+    archetype: civil
+    flavor: 江南七怪排行第六，外号“闹市侠隐”，平日以街市商贩身份行走江湖，精明机智、算计细密。他兵器独树一帜，使一杆大秤杆，既能点穴又能借秤砣奇袭，招式刁钻灵动。虽出身市井却极重信义，随兄长远赴苦寒大漠履行十八年之约，最终在桃花岛惨遭杨康与欧阳锋毒手。出自金庸小说《射雕英雄传》
+    default_gender: male
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 22
+      intellect: 33
+      defense: 18
+      agility: 27
+  - key: hero_jinyong_0505
+    name: 黎生
+    avatar: pig/武009.png
+    archetype: military
+    flavor: 丐帮净衣派八袋弟子，为人刚直忠勇、豪气干云。因素行端方，曾蒙洪七公亲授降龙十八掌中的一招“神龙摆尾”，凭此绝技在江湖中颇具威名。岳阳楼前丐帮大乱之际，他识破杨康假冒帮主的奸计，宁折不弯、慷慨赴死，尽显丐帮忠义铁骨。出自金庸小说《射雕英雄传》
+    default_gender: male
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 38
+      intellect: 17
+      defense: 25
+      agility: 20
+  - key: hero_jinyong_0506
+    name: 马光佐
+    avatar: pig/武010.png
+    archetype: military
+    flavor: 西域回人悍将，身高体壮、力大无穷，生性却憨直质朴、好武成痴。他受忽必烈重金招揽为帐下武士，却全无阴险心机，与周伯通、杨过交手后心生敬服，反而暗中相助。重阳宫大战之际，他不忍见群雄围攻受伤的杨过，挺身仗义执言，是蒙古阵营中难得的赤诚汉子。出自金庸小说《神雕侠侣》
+    default_gender: male
+    default_morality: 65
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 10
+      defense: 36
+      agility: 12
+  - key: hero_jinyong_0507
+    name: 武敦儒
+    avatar: pig/武011.png
+    archetype: military
+    flavor: 武三通长子，人称“大武”，自幼拜郭靖、黄蓉为师。早年因痴恋郭芙而与胞弟武修文屡生龃龉，甚至险些在蒙古军营酿成大祸。经杨过点醒后豁然开朗，娶豪爽侠女耶律燕为妻，从此潜心修武，随师父镇守襄阳十六载，成长为独当一面的抗蒙义士。出自金庸小说《神雕侠侣》
+    default_gender: male
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 34
+      intellect: 18
+      defense: 28
+      agility: 20
+  - key: hero_jinyong_0508
+    name: 武修文
+    avatar: pig/武013.png
+    archetype: military
+    flavor: 武三通次子，人称“小武”，郭靖门下弟子。少年时性格浮躁，曾为讨好郭芙而与兄长反目，几经生死历练后幡然醒悟。他与金国遗孤完颜萍结为连理，夫妻同心协助郭靖守卫襄阳，擅长一阳指入门心法与全真剑法，逐渐洗去稚气，成为忠肝义胆的江湖少侠。出自金庸小说《神雕侠侣》
+    default_gender: male
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 32
+      intellect: 18
+      defense: 24
+      agility: 26
+  - key: hero_jinyong_0509
+    name: 完颜萍
+    avatar: monkey_wu_female2.png
+    archetype: military
+    flavor: 金国皇室后裔，容貌清丽、眉眼酷似小龙女。因家国覆灭、父母惨死，她孤身潜入蒙古行刺宰相耶律楚材，却屡遭耶律齐所阻。幸得杨过以侠义相助并开解心结，终放下仇恨，与武修文结为夫妻，后随众豪杰共守襄阳，外柔内刚、深明大义。出自金庸小说《神雕侠侣》
+    default_gender: female
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 29
+      intellect: 22
+      defense: 17
+      agility: 32
+  - key: hero_jinyong_0510
+    name: 耶律燕
+    avatar: monkey_wu_female3.png
+    archetype: military
+    flavor: 蒙古名相耶律楚材之女，耶律齐之妹。她生性豪爽明朗、不拘小节，兼有塞外女子的英气与名门闺秀的端方，虽出身辽金贵族后裔，却仰慕中原侠义之风。后来嫁予郭靖大弟子武敦儒，夫唱妇随奔走于襄阳前线，巾帼风采令人称道。出自金庸小说《神雕侠侣》
+    default_gender: female
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 31
+      intellect: 21
+      defense: 22
+      agility: 26
+  - key: hero_jinyong_0511
+    name: 樊一翁
+    avatar: pig/武014.png
+    archetype: military
+    flavor: 绝情谷主公孙止的大弟子，外号“长须鬼”，留着一把齐膝长须，使一根极沉重的精钢大杖。他虽因愚忠师父一度助纣为虐，在谷中与杨过数度激战，却本性未泯。后来目睹公孙止卑劣行径，又感念杨过多次手下留情，终幡然悔悟，成为杨过十六年江湖生涯中的忠实挚友。出自金庸小说《神雕侠侣》
+    default_gender: male
+    default_morality: 60
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 38
+      intellect: 14
+      defense: 30
+      agility: 18
+  - key: hero_jinyong_0512
+    name: 洪凌波
+    avatar: monkey_wu_female4.png
+    archetype: military
+    flavor: “赤练仙子”李莫愁的大弟子，自幼随师父行走江湖，身法轻灵，擅使拂尘与赤练神掌。虽在李莫愁淫威下不得不助师行恶，但内心仍存一丝良善，曾暗中维护小师妹陆无双。绝情谷一战中，李莫愁为脱困竟将她推入剧毒情花丛作垫脚石，她临死之际奋力抱住师父，终以悲剧收场。出自金庸小说《神雕侠侣》
+    default_gender: female
+    default_morality: 45
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 30
+      intellect: 20
+      defense: 16
+      agility: 34
+  - key: hero_jinyong_0513
+    name: 朱长龄
+    avatar: monkey_wen_male3.png
+    archetype: civil
+    flavor: 昆仑山红梅山庄庄主，外号“惊天一笔”，乃是大理名宿朱子柳的后人。他表面温文尔雅、好客重礼，实则城府极深、贪婪阴险。为套取谢逊与屠龙刀的下落，不惜自毁庄园设下连环苦肉计欺骗少年张无忌，最终在悬崖绝壁上机关算尽，反被困死于石洞之中。出自金庸小说《倚天屠龙记》
+    default_gender: male
+    default_morality: 20
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 24
+      intellect: 38
+      defense: 18
+      agility: 20
+  - key: hero_jinyong_0514
+    name: 武青婴
+    avatar: monkey_wen_female4.png
+    archetype: civil
+    flavor: 朱武连环庄武烈之女，与朱九真并称“雪岭双姝”，容貌姣好却心肠狠毒、娇纵善妒。她与父亲及朱家合谋演戏诱骗张无忌，欲夺屠龙刀秘辛，待计谋败露后更是毫不留情痛下杀手，将世家门阀子弟的虚伪冷酷暴露无遗。出自金庸小说《倚天屠龙记》
+    default_gender: female
+    default_morality: 25
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 22
+      intellect: 32
+      defense: 16
+      agility: 30
+  - key: hero_jinyong_0515
+    name: 武烈
+    avatar: pig/武015.png
+    archetype: military
+    flavor: 朱武连环庄庄主，南帝弟子武三通之后人，粗通一阳指法门。他虽承先祖威名，却全无侠义风范，与朱长龄狼狈为奸，为图谋屠龙刀不择手段。在昆仑山设局欺凌孤苦无依的张无忌，虽工于心计，终究在武林大潮中沦为笑柄。出自金庸小说《倚天屠龙记》
+    default_gender: male
+    default_morality: 25
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 34
+      intellect: 24
+      defense: 24
+      agility: 18
+  - key: hero_jinyong_0516
+    name: 阿碧
+    avatar: monkey_wen_female6.png
+    archetype: civil
+    flavor: 姑苏慕容氏婢女，居于太湖琴韵小筑，生得清雅温柔，一口吴侬软语令人如沐春风。她精通琴艺与江南风物，虽无绝世武功，却重情重义。当慕容复众叛亲离、复国梦碎而陷入疯癫时，唯有阿碧不离不弃，默默伴随左右照料余生，其痴情与忠贞令人动容。出自金庸小说《天龙八部》
+    default_gender: female
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 12
+      intellect: 42
+      defense: 20
+      agility: 26
+  - key: hero_jinyong_0517
+    name: 巴天石
+    avatar: pig/武016.png
+    archetype: military
+    flavor: 大理国三公之一的司空，身材瘦小却精明强干，轻功造诣冠绝大理，人称“轻功第一”。他办事沉稳周密，既能孤身万里奔袭传递军情，又能在强敌环伺下从容脱身。少室山与擂鼓山诸役中，他忠心护持段誉与大理皇室，堪称文武兼备的干练能臣。出自金庸小说《天龙八部》
+    default_gender: male
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 28
+      intellect: 22
+      defense: 14
+      agility: 36
+  - key: hero_jinyong_0518
+    name: 华赫艮
+    avatar: pig/文010.png
+    archetype: civil
+    flavor: 大理国三公之一的司徒，早年本是江湖中首屈一指的盗墓奇才，擅掘地道、通晓机关土木之术。受大理皇室知遇后改邪归正，竭尽所能辅佐段氏。万劫谷一役，正是他暗中开凿地道潜入石室，救出被困的段誉，奇谋巧技屡建奇功。出自金庸小说《天龙八部》
+    default_gender: male
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 22
+      intellect: 36
+      defense: 20
+      agility: 22
+  - key: hero_jinyong_0519
+    name: 摘星子
+    avatar: pig/武017.png
+    archetype: military
+    flavor: 星宿老怪丁春秋座下大弟子，在星宿派中武功最高、心机最深。他精于阴毒暗器、毒砂与三阴蜈蚣爪，为稳固大师兄之位不惜屡害同门，阿谀奉承之术更是登峰造极。然而机关算尽，最终在与阿紫争夺神木王鼎的恶斗中中了剧毒，惨死于阴谋之下。出自金庸小说《天龙八部》
+    default_gender: male
+    default_morality: 15
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 33
+      intellect: 25
+      defense: 15
+      agility: 27
+  - key: hero_jinyong_0520
+    name: 吴长风
+    avatar: pig/武021.png
+    archetype: military
+    flavor: 丐帮风字堂长老，使一柄威猛无比的鬼头大刀，练就一套势大力沉的奇门三才刀。他生性豪迈直爽、重情重义，杏子林叛乱时虽一度受全冠清蛊惑，却在明辨是非后力挺乔峰到底。纵使乔峰身世揭晓为契丹人，他仍敬其大仁大义，是丐帮中最具血性的铁血长老。出自金庸小说《天龙八部》
+    default_gender: male
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 15
+      defense: 28
+      agility: 17
+  - key: hero_jinyong_0521
+    name: 木高峰
+    avatar: pig/武023.png
+    archetype: military
+    flavor: 外号“塞北明驼”，形貌丑陋猥琐，背后生着一个大驼峰，常骑白驼横行江湖。他武功诡异阴毒，擅在驼背藏刀及使剧毒暗器。为抢夺林家《辟邪剑谱》，他掳走并百般折磨林震南夫妇，又屡次欺凌林平之，最终在林平之练成辟邪剑法后惨死剑下，恶有恶报。出自金庸小说《笑傲江湖》
+    default_gender: male
+    default_morality: 15
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 35
+      intellect: 23
+      defense: 18
+      agility: 24
+  - key: hero_jinyong_0522
+    name: 老头子
+    avatar: monkey_wen_male4.png
+    archetype: civil
+    flavor: 江湖奇人，与祖千秋合称“黄河老祖”，形貌怪异、行事乖张，却极重江湖信义。他为救身染奇疾的独女老不死，不惜四处搜寻珍稀药材与续命八丸，爱女之情溢于言表。与令狐冲相识后倾力相助，虽常与祖千秋斗嘴耍宝，大是大非前却毫不含糊。出自金庸小说《笑傲江湖》
+    default_gender: male
+    default_morality: 65
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 20
+      intellect: 38
+      defense: 20
+      agility: 22
+  - key: hero_jinyong_0523
+    name: 林震南
+    avatar: monkey_wen_male5.png
+    archetype: civil
+    flavor: 福州福威镖局总镖头，昔年威震天下的“远图公”林远图之孙、林平之之父。他虽仅得祖传辟邪剑法皮毛，武功平平，却深谙官场人情与镖局经营之道，将镖局生意做得遍及十省。终因怀璧其罪，招致青城派余沧海灭门之祸，临终托付令狐冲传言勿翻剑谱，尽显舐犊深情。出自金庸小说《笑傲江湖》
+    default_gender: male
+    default_morality: 70
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 18
+      intellect: 40
+      defense: 22
+      agility: 20
+  - key: hero_jinyong_0524
+    name: 桃干仙
+    avatar: pig/武026.png
+    archetype: military
+    flavor: 桃谷六仙排行第二，与桃根仙等五位兄弟形影不离。他生性滑稽执拗、极擅强词夺理，武功却奇高怪异，六兄弟合力撕人如裂帛，令正邪两道皆头疼不已。虽曾糊里糊涂往令狐冲体内灌注真气险些酿祸，却对令狐冲颇为喜爱，是笑傲江湖中最具喜剧色彩的怪杰之一。出自金庸小说《笑傲江湖》
+    default_gender: male
+    default_morality: 55
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 38
+      intellect: 12
+      defense: 26
+      agility: 24
+  - key: hero_jinyong_0525
+    name: 桑三娘
+    avatar: monkey_wu_female5.png
+    archetype: military
+    flavor: 日月神教长老，行事干练老辣，精于江湖暗探、乔装潜伏与轻功暗器。她在教中资历深厚，对圣姑任盈盈忠心耿耿，多次奉命打探五岳剑派虚实并暗中照应令狐冲。任我行重掌大权后，她始终保持清醒克制，后协助任盈盈平稳化解正邪纷争。出自金庸小说《笑傲江湖》
+    default_gender: female
+    default_morality: 55
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 30
+      intellect: 24
+      defense: 18
+      agility: 28
+  - key: hero_jinyong_0526
+    name: 绿竹翁
+    avatar: pig/文011.png
+    archetype: civil
+    flavor: 洛阳东城绿竹巷中的隐世高人，本是日月神教前辈长老，任盈盈尊称其为“竹姑父”。他平日以编织竹器为业，神态恬淡慈祥，实则内功深厚、音律造诣已臻化境。在绿竹巷中，他与圣姑隔帘传授令狐冲《清心普善咒》，不仅抚平其心中郁结，更牵起一段江湖佳缘。出自金庸小说《笑傲江湖》
+    default_gender: male
+    default_morality: 70
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 22
+      intellect: 40
+      defense: 20
+      agility: 18
+  - key: hero_jinyong_0527
+    name: 关安基
+    avatar: pig/武028.png
+    archetype: military
+    flavor: 天地会青木堂资深豪杰，外号“关夫子”，满脸忠义之相，平日以教书先生模样掩护身份。他对陈近南与反清复明大业赤胆忠心，在青木堂众兄弟中威望颇高。韦小宝接任青木堂香主后，他虽对小宝油滑性子颇有微词，仍顾全大局鼎力辅佐，忠直可敬。出自金庸小说《鹿鼎记》
+    default_gender: male
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 33
+      intellect: 23
+      defense: 26
+      agility: 18
+  - key: hero_jinyong_0528
+    name: 荣彩
+    avatar: pig/武030.png
+    archetype: military
+    flavor: 京城振远镖局总镖头，江湖中成名多年的老牌名宿，擅使大刀与铁布衫硬功。当年曾因误会受石梁温家利用，与袁承志产生冲突，待明了是非曲直后坦荡认错，豪爽义气尽显。后率领群豪相助袁承志共抗强敌，堪称江湖前辈楷模。出自金庸小说《碧血剑》
+    default_gender: male
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 16
+      defense: 32
+      agility: 16
+  - key: hero_jinyong_0529
+    name: 凤天南
+    avatar: pig/武032.png
+    archetype: military
+    flavor: 广东佛山镇大恶霸，外号“南霸天”，掌管五虎门，精于五虎棍法，在地方上勾结官府、横行无忌。因贪图钟阿四一家的菜地，竟逼得其家破人亡，激起少年胡斐滔天怒火。他虽狡猾多端、数次借机脱身，最终在京城掌门人大会上阴谋败露，死于汤沛剑下。出自金庸小说《飞狐外传》
+    default_gender: male
+    default_morality: 15
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 22
+      defense: 24
+      agility: 18
+  - key: hero_jinyong_0530
+    name: 马行空
+    avatar: pig/武046.png
+    archetype: military
+    flavor: 飞马镖局总镖头，外号“百胜神拳”，马春花之父。他闯荡江湖半生，拳法刚猛稳重，深谙走镖应酬之道，虽略显势利圆滑，却对独女宠爱有加。商家堡避雨一役中，为护爱女与镖局声誉卷入恩怨纷争，最终遭商老太纵火焚堡，惨烈身亡。出自金庸小说《飞狐外传》
+    default_gender: male
+    default_morality: 60
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 35
+      intellect: 20
+      defense: 27
+      agility: 18
+  - key: hero_jinyong_0531
+    name: 凌退思
+    avatar: pig/文014.png
+    archetype: civil
+    flavor: 荆州知府，凌霜华之父，本为两榜进士出身，却兼修阴毒武功，野心勃勃。为从丁典口中逼问《连城诀》大宝藏的秘密，他不惜将丁典下狱酷刑折磨，甚至亲手将痴情女儿活埋，并在女儿棺木上涂满剧毒金波旬花。其冷血无情、利欲熏心，堪称金庸笔下最骇人的伪君子。出自金庸小说《连城诀》
+    default_gender: male
+    default_morality: 15
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 22
+      intellect: 42
+      defense: 18
+      agility: 18
+  - key: hero_jinyong_0532
+    name: 封万里
+    avatar: pig/武047.png
+    archetype: military
+    flavor: 雪山派掌门白自在的首徒，外号“风火神龙”，剑法凌厉、本是雪山派最出色的二代传人。只因弟子石中玉闯下大祸嫁祸于他，致使他蒙受不白之冤，被暴怒的师父斩断一臂逐出师门。此后他流落江湖，忍辱负重，仍念及师门情分，悲情一生令人唏嘘。出自金庸小说《侠客行》
+    default_gender: male
+    default_morality: 70
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 38
+      intellect: 16
+      defense: 22
+      agility: 24
+  - key: hero_jinyong_0256
+    name: 水岱
+    avatar: pig/武032.png
+    archetype: military
+    flavor: 江南“落花流水”四大高手中的老四，绰号“冷月剑”。他不仅剑法超群，为人更是方正不阿，拥有真正的古之侠风。在雪谷之战中，他为了营救被血刀老祖掳走的女儿水笙，义无反顾地冲入绝境。在眼看同伴惨死、自己也身陷囹圄且不忍受辱的情况下，为了免除女儿受害的后顾之忧，他请求狄云将自己痛快了断。水岱是一位有骨气、重情义的悲剧英雄，他用自己的生命守护了侠义道的最后尊严，是《连城诀》那片阴暗、自私的江湖背景中，一抹令人肃然起敬的亮色。出自金庸小说《连城诀》
+    default_gender: male
+    default_morality: 66
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 35
+      intellect: 10
+      defense: 25
+      agility: 30
+  - key: hero_jinyong_0302
+    name: 陆天抒
+    avatar: pig/武056.png
+    archetype: military
+    flavor: 江南“落花流水”四大高手之首，绰号“仁义陆大刀”。他为人极其豪迈不羁，不仅武功刚猛、刀法无双，更是一位心怀大义、视富贵如浮云的真正大侠。在雪谷绝境中面对血刀老祖那阴邪至极的挑衅时，他表现出了老一代豪侠那种宁死不屈、视死如归的壮烈气概。他为了守护心中的正义和同伴的安危，哪怕身陷死地依然奋战到底，最终壮烈牺牲。陆天抒的一生完美诠释了什么是“侠之大者”，他是整部《连城诀》那充满了自私与贪欲的灰色世界中，唯一一道最纯粹、最耀眼的侠义之光。出自金庸小说《连城诀》
+    default_gender: male
+    default_morality: 95
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 5
+      defense: 30
+      agility: 25
+  - key: hero_jinyong_0303
+    name: 刘乘风
+    avatar: pig/武015.png
+    archetype: military
+    flavor: “落花流水”四侠之一，排行第三，绰号“柔云剑”。刘乘风剑法细腻圆润，处事沉稳冷静，在四侠中素有谦谦君子之名；水岱是他的义弟，二人同赴藏边雪谷追击血刀老祖，血刀老祖巧施诡计，使花铁干失手将他误杀。出自金庸小说《连城诀》
+    default_gender: male
+    default_morality: 70
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 35
+      intellect: 10
+      defense: 25
+      agility: 30
+  - key: hero_cheng_buyou
+    name: 成不忧
+    avatar: pig/武021.png
+    archetype: military
+    flavor: 华山派剑宗传人，为了争夺华山掌门之位而重出江湖。他代表了剑宗“剑气之争”中激进的一派，认为剑术至上，气功次之。他性格暴躁，行事鲁莽，在华山之上咄咄逼人，甚至出手重伤令狐冲。他的出现再次掀起了华山派内部的陈年旧怨。虽然他剑法不俗，但心胸狭窄，缺乏宗师风范，最终在令狐冲的独孤九剑下铩羽而归，成为了门派斗争中的一个过客。出自金庸小说《笑傲江湖》
+    default_gender: male
+    default_morality: 35
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 30
+      intellect: 20
+      defense: 20
+      agility: 30
+  - key: hero_jinyong_0538
+    name: 康广陵
+    avatar: pig/文016.png
+    archetype: civil
+    flavor: 逍遥派“聪辩先生”苏星河的大弟子，函谷八友之首，平生痴迷琴艺，号称“琴颠”。他将逍遥派绝妙内功融入七弦琴音之中，抚琴时既可陶冶性情，亦能以音律摄人心神。擂鼓山珍珑棋局一役，他率诸师弟赴约护师，虽性情孤僻痴狂，却尊师重道、雅士风骨盎然。出自金庸小说《天龙八部》
+    default_gender: male
+    default_morality: 70
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 22
+      intellect: 42
+      defense: 16
+      agility: 20
+  - key: hero_jinyong_0542
+    name: 澄观
+    avatar: pig/文021.png
+    archetype: civil
+    flavor: 少林寺般若堂首座，毕生痴迷武学典籍，于少林七十二绝技的招式法理无一不通，被誉为少林百年难遇的武学奇才。但他终日闭门钻研、极少与人实战，且性情天真迂腐，因辈分所限竟恭恭敬敬尊韦小宝为“师叔”，将深奥拳理倾囊相授，闹出无数趣事。出自金庸小说《鹿鼎记》
+    default_gender: male
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 25
+      intellect: 42
+      defense: 21
+      agility: 12
+  - key: hero_jinyong_0543
+    name: 桑结
+    avatar: pig/武055.png
+    archetype: military
+    flavor: 西藏密宗大喇嘛，武功极高、内力雄浑，精于密宗大手印与金刚降魔功，在番僧中威望显赫。他奉命携众喇嘛入京搅动风云，在少林寺与清凉寺数度与中原高手交锋，毫不落下风，却屡屡在机变百出的韦小宝手下吃瘪，既显豪横又颇具喜感。出自金庸小说《鹿鼎记》
+    default_gender: male
+    default_morality: 40
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 18
+      defense: 28
+      agility: 14
+  - key: hero_jinyong_0544
+    name: 温方达
+    avatar: pig/文028.png
+    archetype: civil
+    flavor: 石梁温家五老之首，城府极深、阴沉老辣，乃是温家堡实际主事之人。他与四位兄弟苦练“五行八卦阵”，联手之威连绝顶高手亦难破解。昔年正是他设计诱杀并暗算金蛇郎君夏雪宜，酿成两代血海深仇，最终在袁承志破阵之下难逃败局。出自金庸小说《碧血剑》
+    default_gender: male
+    default_morality: 20
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 24
+      intellect: 38
+      defense: 22
+      agility: 16
+  - key: hero_jinyong_0545
+    name: 梅剑和
+    avatar: pig/武056.png
+    archetype: military
+    flavor: 华山派掌门“神剑仙猿”穆人清座下二弟子，袁承志的二师兄。他为人端方沉稳、重情重义，尽得华山派剑术与混元功精髓，在江湖中声誉极佳。袁承志下山闯荡后，他屡次暗中相助并料理门派事务，是华山派中流砥柱般的名门高徒。出自金庸小说《碧血剑》
+    default_gender: male
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 22
+      defense: 22
+      agility: 20
+  - key: hero_jinyong_0546
+    name: 李沅芷
+    avatar: monkey_wu_female6.png
+    archetype: military
+    flavor: 浙江提督李可秀之女，武当名宿陆菲青的关门弟子，柔云剑术精妙绝伦。她生得秀美灵动、聪慧机敏，常女扮男装游历江湖，对红花会“金笛秀才”余鱼同一往情深。纵使余鱼同初期心系骆冰且屡加拒避，她仍痴心不改、屡次舍身相救，终以深情赢得良缘。出自金庸小说《书剑恩仇录》
+    default_gender: female
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 29
+      intellect: 26
+      defense: 15
+      agility: 30
+  - key: hero_jinyong_0548
+    name: 卓天雄
+    avatar: pig/武057.png
+    archetype: military
+    flavor: 清廷大内顶尖高手，奉旨追夺传说藏有天下无敌秘密的鸳鸯刀。他伪装成瞎子混迹江湖，武功诡异阴狠，擅使“抖手”暗器与阴柔掌力，以一人之力连败多名江湖名宿。直到萧中慧与袁冠南悟出“夫妻刀法”合璧迎敌，方才将这名阴鸷强敌彻底击溃。出自金庸小说《鸳鸯刀》
+    default_gender: male
+    default_morality: 20
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 22
+      defense: 16
+      agility: 26
   blue:
   - key: hero_duan_zhengchun
     name: 段正淳
@@ -4227,22 +4801,6 @@ heroes:
       intellect: 10
       defense: 25
       agility: 30
-  - key: hero_jinyong_0256
-    name: 水岱
-    avatar: pig/武032.png
-    archetype: military
-    flavor: 江南“落花流水”四大高手中的老四，绰号“冷月剑”。他不仅剑法超群，为人更是方正不阿，拥有真正的古之侠风。在雪谷之战中，他为了营救被血刀老祖掳走的女儿水笙，义无反顾地冲入绝境。在眼看同伴惨死、自己也身陷囹圄且不忍受辱的情况下，为了免除女儿受害的后顾之忧，他请求狄云将自己痛快了断。水岱是一位有骨气、重情义的悲剧英雄，他用自己的生命守护了侠义道的最后尊严，是《连城诀》那片阴暗、自私的江湖背景中，一抹令人肃然起敬的亮色。出自金庸小说《连城诀》
-    default_gender: male
-    default_morality: 66
-    recruitable: true
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 35
-      intellect: 10
-      defense: 25
-      agility: 30
   - key: hero_jinyong_0272
     name: 岳老三
     avatar: pig_wu_male4.png
@@ -4307,38 +4865,6 @@ heroes:
       intellect: 15
       defense: 30
       agility: 25
-  - key: hero_jinyong_0302
-    name: 陆天抒
-    avatar: pig/武056.png
-    archetype: military
-    flavor: 江南“落花流水”四大高手之首，绰号“仁义陆大刀”。他为人极其豪迈不羁，不仅武功刚猛、刀法无双，更是一位心怀大义、视富贵如浮云的真正大侠。在雪谷绝境中面对血刀老祖那阴邪至极的挑衅时，他表现出了老一代豪侠那种宁死不屈、视死如归的壮烈气概。他为了守护心中的正义和同伴的安危，哪怕身陷死地依然奋战到底，最终壮烈牺牲。陆天抒的一生完美诠释了什么是“侠之大者”，他是整部《连城诀》那充满了自私与贪欲的灰色世界中，唯一一道最纯粹、最耀眼的侠义之光。出自金庸小说《连城诀》
-    default_gender: male
-    default_morality: 95
-    recruitable: true
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 40
-      intellect: 5
-      defense: 30
-      agility: 25
-  - key: hero_jinyong_0303
-    name: 刘乘风
-    avatar: pig/武015.png
-    archetype: military
-    flavor: “落花流水”四侠之一，排行第三，绰号“柔云剑”。刘乘风剑法细腻圆润，处事沉稳冷静，在四侠中素有谦谦君子之名；水岱是他的义弟，二人同赴藏边雪谷追击血刀老祖，血刀老祖巧施诡计，使花铁干失手将他误杀。出自金庸小说《连城诀》
-    default_gender: male
-    default_morality: 70
-    recruitable: true
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 35
-      intellect: 10
-      defense: 25
-      agility: 30
   - key: hero_jinyong_0313
     name: 张翠山
     avatar: pig/武067.png
@@ -4515,22 +5041,6 @@ heroes:
       intellect: 10
       defense: 25
       agility: 30
-  - key: hero_yue_buqun
-    name: 岳不群
-    avatar: monkey_wu_male12.png
-    archetype: military
-    flavor: 华山派掌门，外号“君子剑”。外表谦虚文雅，满口仁义道德，实则心胸狭窄，阴险伪善。为了夺取武林盟主之位，他处心积虑，不惜利用女儿，陷害徒弟，甚至挥刀自宫修炼《辟邪剑谱》。他的伪装欺骗了整个武林，最终众叛亲离，身败名裂。岳不群是金庸笔下最成功的伪君子形象，深刻揭露了人性中对权力的贪婪与扭曲，是对所谓“名门正派”最辛辣的讽刺。出自金庸小说《笑傲江湖》
-    default_gender: male
-    default_morality: 20
-    recruitable: true
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 32
-      intellect: 25
-      defense: 18
-      agility: 25
   - key: hero_zuo_lengchan
     name: 左冷禅
     avatar: pig/武023.png
@@ -4547,22 +5057,6 @@ heroes:
       intellect: 15
       defense: 30
       agility: 20
-  - key: hero_zhao_min
-    name: 敏敏特穆尔
-    avatar: monkey_wen_female9.png
-    archetype: civil
-    flavor: 元朝邵敏郡主，名敏敏特穆尔（汉名赵敏），艳若玫瑰，智计无双。她虽为女儿身，却有男儿之志，统领群豪，意欲剿灭中原武林。在与张无忌的交锋中，她逐渐被对方的宽厚所打动，最终情根深种。为了爱情，她不惜背叛父兄，抛弃荣华富贵，甘愿随张无忌浪迹天涯。她的性格敢爱敢恨，行事果断，有着“虽千万人吾往矣”的勇气。她与周芷若的明争暗斗，是书中极其精彩的篇章。她最终赢得了张无忌的心，也赢得了属于自己的幸福。出自金庸小说《倚天屠龙记》
-    default_gender: female
-    default_morality: 60
-    recruitable: true
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 15
-      agility: 25
   - key: hero_chen_yonghua
     name: 陈永华
     avatar: pig/文016.png
@@ -4659,54 +5153,6 @@ heroes:
       intellect: 18
       defense: 20
       agility: 30
-  - key: hero_miao_renfeng
-    name: 苗人凤
-    avatar: pig/武011.png
-    archetype: military
-    flavor: 外号“金面佛”，号称“打遍天下无敌手”。他武功极高，为人沉默寡言，不苟言笑。他与胡一刀既是世仇，又是知己，两人的决战是武林中的一段传奇。因误中奸计，错杀了胡一刀，这件事成为了他一生的悔恨。他独自抚养女儿苗若兰，对胡斐既有杀父之仇的隔阂，又有长辈的关怀。苗人凤是一个悲剧性的英雄，他的强大掩盖不了内心的孤独与痛苦，他的一生都在为家族恩怨和江湖道义所累。出自金庸小说《雪山飞狐》
-    default_gender: male
-    default_morality: 80
-    recruitable: true
-    growth_range:
-    - 7
-    - 9
-    attribute_weights:
-      force: 35
-      intellect: 10
-      defense: 30
-      agility: 25
-  - key: hero_hu_yidao
-    name: 胡一刀
-    avatar: pig/武088.png
-    archetype: military
-    flavor: 辽东大侠，胡斐之父，外号“飞天狐狸”。他性格豪爽，侠肝义胆，虽出身草莽，却有着最为纯粹的英雄气概。他与苗人凤在雪山之巅激战多日，彼此惺惺相惜，结为生死之交。然而，他最终遭奸人田归农暗算，中毒身亡。胡一刀虽然出场短暂，但他的豪情壮志和人格魅力却贯穿了整部小说。他与夫人的生死相随，更是感人至深。他是金庸笔下最完美的侠客形象之一，代表了江湖中早已失落的古风与信义。出自金庸小说《雪山飞狐》
-    default_gender: male
-    default_morality: 85
-    recruitable: true
-    growth_range:
-    - 7
-    - 9
-    attribute_weights:
-      force: 40
-      intellect: 10
-      defense: 25
-      agility: 25
-  - key: hero_ren_woxing
-    name: 任我行
-    avatar: pig/武023.png
-    archetype: military
-    flavor: 日月神教前教主，任盈盈之父。他身材魁梧，霸气侧漏，自创“吸星大法”，令江湖人士闻风丧胆。他被东方不败囚禁于西湖湖底十二年，一朝脱困，便以雷霆手段重夺教主之位。他雄才大略，意欲一统江湖，却也因权力的膨胀而变得刚愎自用，听信谗言。任我行是枭雄的典型，他的狂妄与霸道成就了他的霸业，也埋下了覆灭的种子。他最终因年老体衰与内力反噬而暴毙，留下了未竟的野心与江湖的叹息。出自金庸小说《笑傲江湖》
-    default_gender: male
-    default_morality: 15
-    recruitable: true
-    growth_range:
-    - 7
-    - 9
-    attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
   - key: hero_xiang_wentian
     name: 向问天
     avatar: pig_wu_male7.png
@@ -4899,22 +5345,6 @@ heroes:
       intellect: 20
       defense: 25
       agility: 25
-  - key: hero_cheng_buyou
-    name: 成不忧
-    avatar: pig/武021.png
-    archetype: military
-    flavor: 华山派剑宗传人，为了争夺华山掌门之位而重出江湖。他代表了剑宗“剑气之争”中激进的一派，认为剑术至上，气功次之。他性格暴躁，行事鲁莽，在华山之上咄咄逼人，甚至出手重伤令狐冲。他的出现再次掀起了华山派内部的陈年旧怨。虽然他剑法不俗，但心胸狭窄，缺乏宗师风范，最终在令狐冲的独孤九剑下铩羽而归，成为了门派斗争中的一个过客。出自金庸小说《笑傲江湖》
-    default_gender: male
-    default_morality: 35
-    recruitable: true
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 30
-      intellect: 20
-      defense: 20
-      agility: 30
   - key: hero_feng_buping
     name: 封不平
     avatar: pig/武017.png
@@ -5747,6 +6177,326 @@ heroes:
       intellect: 10
       defense: 25
       agility: 30
+  - key: hero_jinyong_0533
+    name: 曲灵风
+    avatar: pig/武048.png
+    archetype: military
+    flavor: 东邪黄药师座下大弟子，天资聪颖、武功在桃花岛诸徒中居首，深得劈空掌与落英神剑掌真传。因陈玄风、梅超风盗经叛逃，他受无妄之灾被挑断脚筋逐出师门，隐居牛家村开设小酒馆。为博师父回心转意，他拖着残躯屡次夜闯大内盗取奇珍异宝，终与大内高手同归于尽，孤忠惨烈。出自金庸小说《射雕英雄传》
+    default_gender: male
+    default_morality: 70
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 36
+      intellect: 24
+      defense: 18
+      agility: 22
+  - key: hero_jinyong_0534
+    name: 达尔巴
+    avatar: pig/武049.png
+    archetype: military
+    flavor: 蒙古国师金轮法王的二弟子，出身藏边，天生神力，手使一根重逾百斤的黄金降魔杵，招式大开大阖、势不可挡。与狡诈阴险的师弟霍都截然不同，他生性憨厚质朴、重诺尊师。英雄大会上险些胜过点苍渔隐，后误认杨过为大师兄转世，对其敬重有加，实乃异域奇汉。出自金庸小说《神雕侠侣》
+    default_gender: male
+    default_morality: 60
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 44
+      intellect: 10
+      defense: 34
+      agility: 12
+  - key: hero_jinyong_0535
+    name: 尼摩星
+    avatar: pig/武050.png
+    archetype: military
+    flavor: 天竺武林绝顶高手，身材矮小黑瘦却内功奇高，精研天竺密宗“释迦掷象功”，兼擅剧毒铁蛇暗器。受忽必烈重金聘请入中原，自负武艺天下难逢敌手，行事阴狠刁钻。后在蒙古大营与杨过激战时遭断双腿，逃回中原伺机复仇，终在风陵渡口命丧杨过之手。出自金庸小说《神雕侠侣》
+    default_gender: male
+    default_morality: 25
+    recruitable: true
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 38
+      intellect: 18
+      defense: 18
+      agility: 26
+  - key: hero_jinyong_0536
+    name: 渡劫
+    avatar: pig/武051.png
+    archetype: military
+    flavor: 少林寺渡字辈三大高僧之一，与师兄渡厄、师弟渡难枯坐后山松树林三十余年，参禅练武心意相通。他手使一根柔中带刚的黑索，在“金刚伏魔圈”中与二位师兄弟互为犄角，攻守浑然一体，纵然张无忌携九阳神功与乾坤大挪移亦难以独力攻破，威震当世武林。出自金庸小说《倚天屠龙记》
+    default_gender: male
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 35
+      intellect: 20
+      defense: 30
+      agility: 15
+  - key: hero_jinyong_0537
+    name: 渡难
+    avatar: pig/武052.png
+    archetype: military
+    flavor: 少林寺“三渡”高僧之一，须眉皆白、神态威严，内功修为已臻化境。当年因少林遭阳顶天重创，他发誓不踏出后山一步，苦练金刚伏魔圈三十余载。一条长鞭挥舞如灵蛇出洞，劲力雄浑刚猛，在屠狮大会前力拒明教群雄，尽显少林千年古刹的深厚底蕴。出自金庸小说《倚天屠龙记》
+    default_gender: male
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 37
+      intellect: 18
+      defense: 31
+      agility: 14
+  - key: hero_jinyong_0539
+    name: 枯荣
+    avatar: pig/文018.png
+    archetype: civil
+    flavor: 大理天龙寺辈分最高的绝世高僧，数十年面壁枯禅，将“枯荣禅功”修至半枯半荣之奇境，一阳指亦达登峰造极。鸠摩智强闯天龙寺索要《六脉神剑经》时，他临危不乱，率领本因等五僧布成六脉剑阵迎敌，并毅然焚毁剑谱以绝祸端，禅心定力深不可测。出自金庸小说《天龙八部》
+    default_gender: male
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 26
+      intellect: 38
+      defense: 24
+      agility: 12
+  - key: hero_jinyong_0540
+    name: 玄悲
+    avatar: pig/武053.png
+    archetype: military
+    flavor: 少林寺玄字辈武功极高的高僧，法相庄严、佛法武学俱精，尤擅少林七十二绝技之一的“大韦陀杵”，招式刚猛堂皇。奉方丈玄慈之命前往大理查探往事，不料在陆凉州身戒寺遭慕容博偷袭，竟被对方以“以彼之道，还施彼身”的大韦陀杵震毙，由此掀起一场江湖惊天大案。出自金庸小说《天龙八部》
+    default_gender: male
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 38
+      intellect: 20
+      defense: 28
+      agility: 14
+  - key: hero_jinyong_0541
+    name: 玄寂
+    avatar: pig/武054.png
+    archetype: military
+    flavor: 少林寺达摩院首座，玄字辈高僧中武功数一数二的人物，精通霸道绝伦的“一拍两散掌”。他为人沉稳威严、执法严明，深得方丈玄慈倚重。无论是护持少林山门还是在少室山群雄大会上主持公道，皆展现出武林泰山北斗的气度与深厚功力。出自金庸小说《天龙八部》
+    default_gender: male
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 39
+      intellect: 19
+      defense: 28
+      agility: 14
+  - key: hero_jinyong_0547
+    name: 石万嗔
+    avatar: pig/文029.png
+    archetype: civil
+    flavor: 毒手药王无嗔大师的师弟，医毒双绝却心肠歹毒，毕生觊觎《药王神篇》绝学，人称“毒手神枭”。他与慕容景岳等叛徒合谋害师，又屡次以剧毒暗算程灵素与胡斐。虽机关算尽、毒术通神，最终仍败在程灵素临终布下的七心海棠绝杀之局中，落得双目失明、惨死毒下的结局。出自金庸小说《飞狐外传》
+    default_gender: male
+    default_morality: 15
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 20
+      intellect: 45
+      defense: 15
+      agility: 20
+  - key: hero_jinyong_0161
+    name: 曲洋
+    avatar: monkey/其他随机角色/文039_男.png
+    archetype: civil
+    flavor: 日月神教长老，酷爱音律，擅长弹琴。他虽身在魔教，却不愿卷入江湖纷争，只愿寄情山水。他与衡山派刘正风因音乐结为知音，合奏《笑傲江湖曲》，不惜为此背叛师门，惨遭正邪两道围攻。最终两人在费彬的逼迫下，自断经脉而死，临终前将曲谱传给令狐冲。曲洋与刘正风的高山流水之谊，超越了门派与正邪的界限，是全书精神主旨的象征。出自金庸小说《笑傲江湖》
+    default_gender: male
+    default_morality: 44
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 20
+      intellect: 40
+      defense: 15
+      agility: 25
+  - key: hero_jinyong_0162
+    name: 刘正风
+    avatar: monkey/其他随机角色/文039_男.png
+    archetype: civil
+    flavor: 衡山派高手，莫大先生的师弟。他厌倦了江湖的尔虞我诈，意欲金盆洗手，退出武林，专心钻研音律。然而，因为与魔教长老曲洋的知音关系，被五岳盟主左冷禅借机发难，惨遭灭门之祸。他宁死不肯出卖朋友，最终与曲洋双双殉难。刘正风的悲剧揭示了所谓正派人士的残忍与虚伪，也歌颂了士为知己者死的崇高情操。出自金庸小说《笑傲江湖》
+    default_gender: male
+    default_morality: 60
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 20
+      intellect: 40
+      defense: 15
+      agility: 25
+  - key: hero_jinyong_0171
+    name: 胡青牛
+    avatar: pig/文040.png
+    archetype: civil
+    flavor: 明教神医，外号“蝶谷医仙”。他医术通神，却性情古怪，立誓非明教中人不救，因此又被称为“见死不救”。他与妻子王难姑是一对欢喜冤家，两人一毒一医，斗了一辈子法。他虽然规矩古怪，但在张无忌求医的过程中，也流露出了长辈的慈爱，将毕生医术倾囊相授。最终夫妇二人被金花婆婆杀害。胡青牛的医术为张无忌后来的奇遇打下了坚实的基础。出自金庸小说《倚天屠龙记》
+    default_gender: male
+    default_morality: 64
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 55
+      defense: 20
+      agility: 15
+  - key: hero_jinyong_0188
+    name: 喀丝丽
+    avatar: monkey_wen_female9.png
+    archetype: civil
+    flavor: 回部的清丽女子，像沙漠里难得的泉，干净得近乎不真实。她的温柔不是软弱，而是一种天性里的善；可正因太纯净，才更容易被命运利用与伤害。她站在风沙与权谋之间，像一朵白花，越美越脆，脆到一触便碎，却仍让人难忘。出自金庸小说《书剑恩仇录》
+    default_gender: female
+    default_morality: 74
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 15
+      intellect: 45
+      defense: 20
+      agility: 20
+  - key: hero_jinyong_0202
+    name: 完颜洪烈
+    avatar: pig/文034.png
+    archetype: civil
+    flavor: 金国六王爷，温文尔雅的外表下藏着吞并中原的野心。他善结交、善布局，把人心当棋盘，把天下当赌注。一段偏执的爱恋让他策划了牛家村惨案，从而导致郭、杨两家家破人亡。他在金王府中宠爱包惜弱十八年，对杨康也视为己出，这种极度的深情与其政治上的冷酷形成了鲜明对比。他招揽江湖奇才意图消灭抗金势力，是《射雕英雄传》中极具政治手腕的反派。最终在覆灭的王朝余烬中走向毁灭，证明了不义之举终难逃历史的审判。出自金庸小说《射雕英雄传》
+    default_gender: male
+    default_morality: 62
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 15
+      intellect: 45
+      defense: 20
+      agility: 20
+  - key: hero_jinyong_0316
+    name: 空闻
+    avatar: pig/武072.png
+    archetype: civil
+    flavor: 少林派方丈，也是四大神僧之首。他在江湖上享有极高的地位和声望，不仅佛法造诣精深，其武功修为也是深不可测。虽然在书中直接出手的机会并不多，但他城府极深、老谋深算，极擅长在复杂的武林纠纷中通过政治手腕来维护少林派的利益与领袖地位。在面对武当张翠山、以及后来的屠狮大会等关键历史节点时，他代表了名门正派那种既有着深厚底蕴、又不乏权力权衡的复杂面相。空闻大师的形象是金庸笔下那种由于身处高位而不得不变得圆滑且强势的领袖人物缩影。他的一生是在维持江湖秩序与守护寺门清誉之间博弈的过程，是武林政治格局中一个极其重要的支点。出自金庸小说《倚天屠龙记》
+    default_gender: male
+    default_morality: 50
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 15
+      intellect: 45
+      defense: 20
+      agility: 20
+  - key: hero_ke_zhen_e
+    name: 柯镇恶
+    avatar: monkey/其他随机角色/武066_男_.png
+    archetype: military
+    flavor: 江南七怪之首，外号“飞天蝙蝠”。他双目失明，脾气暴躁，嘴硬心软，但有着极强的正义感和江湖道义。他为了赌约远赴大漠十八年，精心教导郭靖。虽然武功不算顶尖，但他的侠义精神令人钦佩。他一生嫉恶如仇，不畏强权，即便是面对五绝级别的高手，也敢于出言斥责或挥杖相向。柯镇恶是郭靖侠义精神的启蒙者，他用自己的一言一行，教会了郭靖什么是“有所不为，有所必为”。出自金庸小说《射雕英雄传》
+    default_gender: male
+    default_morality: 70
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 30
+      intellect: 10
+      defense: 35
+      agility: 25
+  - key: hero_ding_dian
+    name: 丁典
+    avatar: monkey/金庸/丁典.png
+    archetype: military
+    flavor: 荆州大侠，狄云的义兄。他本是豪爽英俊的武林奇才，因获得《神照经》而被戚长发等奸人算计。他与凌霜华的爱情是书中唯美的绝唱，为了能看恋人一眼，他甘愿在牢狱中受尽酷刑折磨，不愿越狱。他练成了盖世神功，却救不了被父亲活埋的爱人。丁典是一个情深义重的悲剧英雄，他的遭遇是对人性贪婪最无情的揭露。他临死前将神功与秘密传给狄云，将那份在黑暗中坚持的侠义火种传承了下去。出自金庸小说《连城诀》
+    default_gender: male
+    default_morality: 90
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 35
+      intellect: 15
+      defense: 30
+      agility: 20
+  - key: hero_jinyong_0215
+    name: 小昭
+    avatar: monkey/xiaozhao.png
+    archetype: civil
+    flavor: 小昭是紫衫龙王黛绮丝之女，聪慧细腻，身手轻灵。她隐去身份随侍张无忌，凭借通晓波斯文字之长，在密道中助他参悟乾坤大挪移心法。后来为保护母亲与同伴，她远赴波斯出任明教总教教主，把一腔情意留在中原。她善于察言观色、临机应变，温柔之下自有坚定心志。出自金庸小说《倚天屠龙记》
+    default_gender: female
+    default_morality: 60
+    recruitable: false
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 45
+      defense: 10
+      agility: 35
+  - key: hero_jinyong_0549
+    name: 渡厄
+    avatar: pig/武058.png
+    archetype: military
+    flavor: 少林寺“三渡”高僧之首，内功修为深不可测，乃是当世除张三丰外罕见的绝顶宗师。早年与明教教主阳顶天交手时失去一目，遂与渡劫、渡难枯坐后山三十余年，创出威震天下的“金刚伏魔圈”。其黑索神出鬼没、劲力绵绵不绝，纵使张无忌全力以赴亦难占上风，尽显百年高僧风范。出自金庸小说《倚天屠龙记》
+    default_gender: male
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 37
+      intellect: 22
+      defense: 29
+      agility: 12
+  - key: hero_jinyong_0550
+    name: 空见
+    avatar: monkey_wu_male10.png
+    archetype: military
+    flavor: 少林寺四大神僧之首，佛法精深、慈悲为怀，将少林绝艺“金刚不坏体神功”练至炉火纯青。为化解金毛狮王谢逊与成昆之间的血海深仇，他甘愿立约硬受谢逊十三拳七伤拳而不还手，终在第十三拳时因中谢逊奇计而含笑圆寂。他以身饲虎的大慈悲胸怀，最终感化谢逊放下屠刀，名垂武林。出自金庸小说《倚天屠龙记》
+    default_gender: male
+    default_morality: 95
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 36
+      intellect: 22
+      defense: 32
+      agility: 10
   purple:
   - key: hero_tianshan_tonglao
     name: 天山童姥
@@ -6196,22 +6946,6 @@ heroes:
       intellect: 15
       defense: 20
       agility: 35
-  - key: hero_zhang_sanfeng
-    name: 张君宝
-    avatar: monkey/金庸/张君宝.png
-    archetype: military
-    flavor: 张君宝（后号张三丰），武当派创始人，一代宗师。他从少林弃徒成长为武林泰斗，开创了内家武学的新天地。他百岁高龄仍保持着赤子之心，对弟子关怀备至，对正邪之分有着超然的见解。他所创的太极拳剑，以柔克刚，后发制人，蕴含着深刻的道家哲理。张君宝不仅武功盖世，其人格魅力更是令人折服。他在面对弟子张翠山自刎时的悲痛，以及对张无忌的疼爱，都展现了他充满人情味的一面。他是金庸笔下真正的得道高人，是武侠世界中的一座巍峨高山。出自金庸小说《倚天屠龙记》
-    default_gender: male
-    default_morality: 95
-    recruitable: true
-    growth_range:
-    - 7
-    - 12
-    attribute_weights:
-      force: 28
-      intellect: 20
-      defense: 32
-      agility: 20
   - key: hero_duan_yu
     name: 段誉
     avatar: monkey/金庸/段誉.png
@@ -6340,43 +7074,91 @@ heroes:
       intellect: 10
       defense: 20
       agility: 30
-  - key: hero_ding_dian
-    name: 丁典
-    avatar: monkey/金庸/丁典.png
+  - key: hero_yue_buqun
+    name: 岳不群
+    avatar: monkey_wu_male12.png
     archetype: military
-    flavor: 荆州大侠，狄云的义兄。他本是豪爽英俊的武林奇才，因获得《神照经》而被戚长发等奸人算计。他与凌霜华的爱情是书中唯美的绝唱，为了能看恋人一眼，他甘愿在牢狱中受尽酷刑折磨，不愿越狱。他练成了盖世神功，却救不了被父亲活埋的爱人。丁典是一个情深义重的悲剧英雄，他的遭遇是对人性贪婪最无情的揭露。他临死前将神功与秘密传给狄云，将那份在黑暗中坚持的侠义火种传承了下去。出自金庸小说《连城诀》
+    flavor: 华山派掌门，外号“君子剑”。外表谦虚文雅，满口仁义道德，实则心胸狭窄，阴险伪善。为了夺取武林盟主之位，他处心积虑，不惜利用女儿，陷害徒弟，甚至挥刀自宫修炼《辟邪剑谱》。他的伪装欺骗了整个武林，最终众叛亲离，身败名裂。岳不群是金庸笔下最成功的伪君子形象，深刻揭露了人性中对权力的贪婪与扭曲，是对所谓“名门正派”最辛辣的讽刺。出自金庸小说《笑傲江湖》
     default_gender: male
-    default_morality: 90
+    default_morality: 20
     recruitable: true
     growth_range:
-    - 8
+    - 7
+    - 11
+    attribute_weights:
+      force: 32
+      intellect: 25
+      defense: 18
+      agility: 25
+  - key: hero_zhao_min
+    name: 敏敏特穆尔
+    avatar: monkey_wen_female9.png
+    archetype: civil
+    flavor: 元朝邵敏郡主，名敏敏特穆尔（汉名赵敏），艳若玫瑰，智计无双。她虽为女儿身，却有男儿之志，统领群豪，意欲剿灭中原武林。在与张无忌的交锋中，她逐渐被对方的宽厚所打动，最终情根深种。为了爱情，她不惜背叛父兄，抛弃荣华富贵，甘愿随张无忌浪迹天涯。她的性格敢爱敢恨，行事果断，有着“虽千万人吾往矣”的勇气。她与周芷若的明争暗斗，是书中极其精彩的篇章。她最终赢得了张无忌的心，也赢得了属于自己的幸福。出自金庸小说《倚天屠龙记》
+    default_gender: female
+    default_morality: 60
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 15
+      intellect: 45
+      defense: 15
+      agility: 25
+  - key: hero_miao_renfeng
+    name: 苗人凤
+    avatar: pig/武011.png
+    archetype: military
+    flavor: 外号“金面佛”，号称“打遍天下无敌手”。他武功极高，为人沉默寡言，不苟言笑。他与胡一刀既是世仇，又是知己，两人的决战是武林中的一段传奇。因误中奸计，错杀了胡一刀，这件事成为了他一生的悔恨。他独自抚养女儿苗若兰，对胡斐既有杀父之仇的隔阂，又有长辈的关怀。苗人凤是一个悲剧性的英雄，他的强大掩盖不了内心的孤独与痛苦，他的一生都在为家族恩怨和江湖道义所累。出自金庸小说《雪山飞狐》
+    default_gender: male
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 7
     - 11
     attribute_weights:
       force: 35
-      intellect: 15
+      intellect: 10
       defense: 30
-      agility: 20
-  - key: hero_jinyong_0215
-    name: 小昭
-    avatar: monkey/xiaozhao.png
-    archetype: civil
-    flavor: 小昭是紫衫龙王黛绮丝之女，聪慧细腻，身手轻灵。她隐去身份随侍张无忌，凭借通晓波斯文字之长，在密道中助他参悟乾坤大挪移心法。后来为保护母亲与同伴，她远赴波斯出任明教总教教主，把一腔情意留在中原。她善于察言观色、临机应变，温柔之下自有坚定心志。出自金庸小说《倚天屠龙记》
-    default_gender: female
-    default_morality: 60
-    recruitable: false
+      agility: 25
+  - key: hero_hu_yidao
+    name: 胡一刀
+    avatar: pig/武088.png
+    archetype: military
+    flavor: 辽东大侠，胡斐之父，外号“飞天狐狸”。他性格豪爽，侠肝义胆，虽出身草莽，却有着最为纯粹的英雄气概。他与苗人凤在雪山之巅激战多日，彼此惺惺相惜，结为生死之交。然而，他最终遭奸人田归农暗算，中毒身亡。胡一刀虽然出场短暂，但他的豪情壮志和人格魅力却贯穿了整部小说。他与夫人的生死相随，更是感人至深。他是金庸笔下最完美的侠客形象之一，代表了江湖中早已失落的古风与信义。出自金庸小说《雪山飞狐》
+    default_gender: male
+    default_morality: 85
+    recruitable: true
     growth_range:
-    - 6
-    - 12
+    - 7
+    - 11
     attribute_weights:
-      force: 10
-      intellect: 45
-      defense: 10
-      agility: 35
+      force: 40
+      intellect: 10
+      defense: 25
+      agility: 25
+  - key: hero_ren_woxing
+    name: 任我行
+    avatar: pig/武023.png
+    archetype: military
+    flavor: 日月神教前教主，任盈盈之父。他身材魁梧，霸气侧漏，自创“吸星大法”，令江湖人士闻风丧胆。他被东方不败囚禁于西湖湖底十二年，一朝脱困，便以雷霆手段重夺教主之位。他雄才大略，意欲一统江湖，却也因权力的膨胀而变得刚愎自用，听信谗言。任我行是枭雄的典型，他的狂妄与霸道成就了他的霸业，也埋下了覆灭的种子。他最终因年老体衰与内力反噬而暴毙，留下了未竟的野心与江湖的叹息。出自金庸小说《笑傲江湖》
+    default_gender: male
+    default_morality: 15
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 40
+      intellect: 15
+      defense: 25
+      agility: 20
   orange:
   - key: hero_a_qing
     name: 阿青
     archetype: military
-    flavor: "出自金庸小说《越女剑》，是越国山野间一名率真的牧羊少女。她不谙世故，却在与白猿以竹棒交手的嬉戏中悟出高明剑术，寻常竹枝到了她手中，也能使持剑武士难以招架。吴国剑士当街伤羊，她出手还击，由此结识范蠡。受邀与越国剑士比试后，众人虽难学得她的招式，仍从所见剑影中得到启发。朝夕相处间，她渐渐倾心范蠡，却不知他的牵挂始终是西施。后来她独闯宫中守卫，竹棒直指西施，终于因眼前人的容貌而惊怔，收棒离去，只将未能说尽的情意留在身后。"
+    flavor: 出自金庸小说《越女剑》，是越国山野间一名率真的牧羊少女。她不谙世故，却在与白猿以竹棒交手的嬉戏中悟出高明剑术，寻常竹枝到了她手中，也能使持剑武士难以招架。吴国剑士当街伤羊，她出手还击，由此结识范蠡。受邀与越国剑士比试后，众人虽难学得她的招式，仍从所见剑影中得到启发。朝夕相处间，她渐渐倾心范蠡，却不知他的牵挂始终是西施。后来她独闯宫中守卫，竹棒直指西施，终于因眼前人的容貌而惊怔，收棒离去，只将未能说尽的情意留在身后。
     default_gender: female
     default_morality: 85
     recruitable: true
@@ -6393,7 +7175,7 @@ heroes:
     name: 石破天
     avatar: monkey/orange/石破天.png
     archetype: military
-    flavor: "出自金庸小说《侠客行》，自幼长于山野，不识文字，也不懂江湖中的人情算计。他因相貌酷似石中玉，被卷入长乐帮与雪山派的纠葛，在种种错认中承受误解，却始终待人诚恳，珍惜阿绣等人与自己的情谊。赴侠客岛后，众高手苦究石壁诗文，他却不受字义与注解束缚，从图形线条中体会行功之法，逐渐融会太玄经武学。面对机锋与谋略，他常显得笨拙，危难时却愿为别人挺身而出。即使身怀惊人本领，他仍不热衷争名夺利，只盼认清自己的身世，守住身边人的平安。"
+    flavor: 出自金庸小说《侠客行》，自幼长于山野，不识文字，也不懂江湖中的人情算计。他因相貌酷似石中玉，被卷入长乐帮与雪山派的纠葛，在种种错认中承受误解，却始终待人诚恳，珍惜阿绣等人与自己的情谊。赴侠客岛后，众高手苦究石壁诗文，他却不受字义与注解束缚，从图形线条中体会行功之法，逐渐融会太玄经武学。面对机锋与谋略，他常显得笨拙，危难时却愿为别人挺身而出。即使身怀惊人本领，他仍不热衷争名夺利，只盼认清自己的身世，守住身边人的平安。
     default_gender: male
     default_morality: 75
     recruitable: true
@@ -6409,7 +7191,7 @@ heroes:
     name: 扫地僧
     avatar: monkey/orange/扫地僧.png
     archetype: military
-    flavor: "出自金庸小说《天龙八部》，是少林藏经阁中一位不知姓名的老僧。平日持帚扫地，衣着朴素，举止迟缓，几乎无人留意。他熟悉佛门经义，也洞悉萧远山、慕容博多年偷学少林绝技留下的内伤，指出修习武功须以相应佛法化解戾气。藏经阁中群雄相争时，他以深厚修为制止冲突，又设法救治二人，使他们在生死之间放下复仇与复国执念。面对杀意与愤恨，他始终语气平和，不争名位，也不问胜负，只愿止息眼前的仇杀。其来历与师承无人知晓，藏经阁的落叶间仍只见一个持帚的身影。"
+    flavor: 出自金庸小说《天龙八部》，是少林藏经阁中一位不知姓名的老僧。平日持帚扫地，衣着朴素，举止迟缓，几乎无人留意。他熟悉佛门经义，也洞悉萧远山、慕容博多年偷学少林绝技留下的内伤，指出修习武功须以相应佛法化解戾气。藏经阁中群雄相争时，他以深厚修为制止冲突，又设法救治二人，使他们在生死之间放下复仇与复国执念。面对杀意与愤恨，他始终语气平和，不争名位，也不问胜负，只愿止息眼前的仇杀。其来历与师承无人知晓，藏经阁的落叶间仍只见一个持帚的身影。
     default_gender: male
     default_morality: 95
     recruitable: true
@@ -6425,7 +7207,7 @@ heroes:
     name: 独孤求败
     avatar: monkey/orange/独孤求败.png
     archetype: military
-    flavor: "出自金庸小说《神雕侠侣》，自号“剑魔”，是早已隐没于江湖的前辈剑客。他少年持利剑与群雄争锋，后来改用紫薇软剑，因误伤义士而将其弃去，再以玄铁重剑磨炼大巧不工的剑道。晚年他不再拘于兵器，草木竹石皆可为剑，仍不断求索更深的境界。纵横多年难逢敌手，他最终隐居深谷，与神雕为伴，将昔日所用之剑埋于山中。多年以后，断臂的杨过在神雕引领下寻到剑冢，从遗刻与重剑中获得启发，重新踏上修炼之路。剑客虽已不在，留于荒谷的剑意却仍能照亮后来者的前程。"
+    flavor: 出自金庸小说《神雕侠侣》，自号“剑魔”，是早已隐没于江湖的前辈剑客。他少年持利剑与群雄争锋，后来改用紫薇软剑，因误伤义士而将其弃去，再以玄铁重剑磨炼大巧不工的剑道。晚年他不再拘于兵器，草木竹石皆可为剑，仍不断求索更深的境界。纵横多年难逢敌手，他最终隐居深谷，与神雕为伴，将昔日所用之剑埋于山中。多年以后，断臂的杨过在神雕引领下寻到剑冢，从遗刻与重剑中获得启发，重新踏上修炼之路。剑客虽已不在，留于荒谷的剑意却仍能照亮后来者的前程。
     default_gender: male
     default_morality: 80
     recruitable: true
@@ -6436,4 +7218,20 @@ heroes:
       force: 45
       intellect: 15
       defense: 20
+      agility: 20
+  - key: hero_zhang_sanfeng
+    name: 张君宝
+    avatar: monkey/金庸/张君宝.png
+    archetype: military
+    flavor: 张君宝（后号张三丰），武当派创始人，一代宗师。他从少林弃徒成长为武林泰斗，开创了内家武学的新天地。他百岁高龄仍保持着赤子之心，对弟子关怀备至，对正邪之分有着超然的见解。他所创的太极拳剑，以柔克刚，后发制人，蕴含着深刻的道家哲理。张君宝不仅武功盖世，其人格魅力更是令人折服。他在面对弟子张翠山自刎时的悲痛，以及对张无忌的疼爱，都展现了他充满人情味的一面。他是金庸笔下真正的得道高人，是武侠世界中的一座巍峨高山。出自金庸小说《倚天屠龙记》
+    default_gender: male
+    default_morality: 95
+    recruitable: true
+    growth_range:
+    - 9
+    - 14
+    attribute_weights:
+      force: 28
+      intellect: 20
+      defense: 32
       agility: 20

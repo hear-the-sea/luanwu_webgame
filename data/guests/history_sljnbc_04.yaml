@@ -1,33 +1,5 @@
 heroes:
   blue:
-  - key: hist_sljnbc_0155
-    name: 曹植
-    avatar: pig/文011.png
-    default_gender: male
-    archetype: civil
-    flavor: （192年—232年12月27日）才高八斗，七步成诗。沛国谯县人，曹操第四子。他天资聪颖，十岁便能诵诗书，下笔成章。曹操曾有意立其为嗣，然他恃才放旷、任性使酒，在与曹丕的夺嫡之争中落败。曹丕即位后对其百般猜忌，令其七步成诗否则处死，他应声吟出"煮豆燃豆萁，豆在釜中泣。本是同根生，相煎何太急"，令曹丕惭愧不已。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 8
-      intellect: 64
-      defense: 18
-      agility: 10
-  - key: hist_sljnbc_0156
-    name: 曹丕
-    avatar: monkey_wen_male3.png
-    default_gender: male
-    archetype: civil
-    flavor: （187年—226年6月29日）魏文帝，篡汉开魏。沛国谯县人，曹操次子。他博学多才，善诗文骑射，在与曹植的夺嫡之争中凭借权谋胜出。曹操死后他继承魏王之位，旋即逼迫汉献帝禅让，建立曹魏政权，结束了汉朝四百年统治。在位期间他推行九品中正制，三次伐吴皆无功而返。他著《典论·论文》，开创中国文学批评之先河。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 8
-      intellect: 64
-      defense: 18
-      agility: 10
   - key: hist_sljnbc_0151
     name: 钟繇
     avatar: pig/文041.png
@@ -168,6 +140,20 @@ heroes:
       intellect: 40
       defense: 20
       agility: 20
+  - key: hist_sljnbc_0173
+    name: 侯景
+    avatar: duck_wu_male2.png
+    default_gender: male
+    archetype: military
+    flavor: （503年—552年）侯景，羯族，北魏末从尔朱荣起家，后依附高欢，镇守河南。高欢死后，他先降西魏，再投南梁，受封河南王。548年，侯景以清君侧为名在寿阳起兵，攻陷建康，梁武帝在台城忧愤而崩，他继而称帝。552年，王僧辩、陈霸先联军收复建康，侯景败逃，为部下所杀。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 34
+      intellect: 12
+      defense: 40
+      agility: 14
   green:
   - key: hist_sljnbc_0153
     name: 文聘
@@ -323,20 +309,6 @@ heroes:
       intellect: 15
       defense: 23
       agility: 22
-  - key: hist_sljnbc_0173
-    name: 侯景
-    avatar: duck_wu_male2.png
-    default_gender: male
-    archetype: military
-    flavor: （503年—552年）侯景，羯族，北魏末从尔朱荣起家，后依附高欢，镇守河南。高欢死后，他先降西魏，再投南梁，受封河南王。548年，侯景以清君侧为名在寿阳起兵，攻陷建康，梁武帝在台城忧愤而崩，他继而称帝。552年，王僧辩、陈霸先联军收复建康，侯景败逃，为部下所杀。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 34
-      intellect: 12
-      defense: 40
-      agility: 14
   - key: hist_sljnbc_0174
     name: 独孤信
     avatar: monkey/其他随机角色/武038_男.png
@@ -701,3 +673,32 @@ heroes:
       intellect: 40
       defense: 20
       agility: 20
+  purple:
+  - key: hist_sljnbc_0155
+    name: 曹植
+    avatar: pig/文011.png
+    default_gender: male
+    archetype: civil
+    flavor: （192年—232年12月27日）才高八斗，七步成诗。沛国谯县人，曹操第四子。他天资聪颖，十岁便能诵诗书，下笔成章。曹操曾有意立其为嗣，然他恃才放旷、任性使酒，在与曹丕的夺嫡之争中落败。曹丕即位后对其百般猜忌，令其七步成诗否则处死，他应声吟出"煮豆燃豆萁，豆在釜中泣。本是同根生，相煎何太急"，令曹丕惭愧不已。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 8
+      intellect: 64
+      defense: 18
+      agility: 10
+  - key: hist_sljnbc_0156
+    name: 曹丕
+    avatar: monkey_wen_male3.png
+    default_gender: male
+    archetype: civil
+    flavor: （187年—226年6月29日）魏文帝，篡汉开魏。沛国谯县人，曹操次子。他博学多才，善诗文骑射，在与曹植的夺嫡之争中凭借权谋胜出。曹操死后他继承魏王之位，旋即逼迫汉献帝禅让，建立曹魏政权，结束了汉朝四百年统治。在位期间他推行九品中正制，三次伐吴皆无功而返。他著《典论·论文》，开创中国文学批评之先河。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 8
+      intellect: 64
+      defense: 18
+      agility: 10

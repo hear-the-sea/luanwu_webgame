@@ -14,20 +14,6 @@ heroes:
       intellect: 54
       defense: 21
       agility: 11
-  - key: hist_songliaojinyuan_0576
-    name: 滕宗谅
-    avatar: pig/武076.png
-    default_gender: male
-    archetype: military
-    flavor: （991年—1047年）北宋官员，字子京，河南府人，与范仲淹同年进士。滕宗谅任庆州知州期间整修城防、招抚流民，后因公使钱案被贬知岳州，重修岳阳楼并请范仲淹作《岳阳楼记》；他晚年改知苏州，到任不久病逝。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 42
-      intellect: 13
-      defense: 26
-      agility: 19
   green:
   - key: hist_songliaojinyuan_0552
     name: 焦赞
@@ -1247,3 +1233,17 @@ heroes:
       intellect: 10
       defense: 27
       agility: 14
+  - key: hist_songliaojinyuan_0576
+    name: 滕宗谅
+    avatar: pig/武076.png
+    default_gender: male
+    archetype: military
+    flavor: （991年—1047年）北宋官员，字子京，河南府人，与范仲淹同年进士。滕宗谅任庆州知州期间整修城防、招抚流民，后因公使钱案被贬知岳州，重修岳阳楼并请范仲淹作《岳阳楼记》；他晚年改知苏州，到任不久病逝。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 13
+      defense: 26
+      agility: 19

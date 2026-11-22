@@ -14,34 +14,6 @@ heroes:
       intellect: 40
       defense: 20
       agility: 20
-  - key: hist_sljnbc_0240
-    name: 嵇康
-    avatar: monkey/其他随机角色/文039_男.png
-    default_gender: male
-    archetype: civil
-    flavor: （224年—263年）竹林七贤之首，广陵散绝。谯郡铚县人，曹操曾孙女婿，身长七尺八寸，风姿特秀。他与阮籍等人并称"竹林七贤"，常聚于竹林饮酒清谈、抚琴吟诗。他精通音律，善弹古琴，《广陵散》在他手下达到巅峰。他蔑视礼法，崇尚老庄，以"越名教而任自然"为人生信条。山涛举荐他出仕司马氏，他愤然写下《与山巨源绝交书》，与之断交。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 20
-      intellect: 40
-      defense: 20
-      agility: 20
-  - key: hist_sljnbc_0241
-    name: 顾恺之
-    avatar: monkey/其他随机角色/文_男.png
-    default_gender: male
-    archetype: civil
-    flavor: （约348年—409年）画圣之祖，三绝传世。晋陵无锡人，出身江南名门。他才华横溢却性情天真，时人称其"才绝、画绝、痴绝"。他擅长人物画，提出"以形写神""传神写照"的绑画理论，强调捕捉人物的精神气质，不拘泥于外形。他曾说画人物"四体妍媸本无关于妙处，传神写照正在阿堵中"，意指眼睛是传神的关键。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 20
-      intellect: 40
-      defense: 20
-      agility: 20
   - key: hist_sljnbc_0245
     name: 公孙瓒
     avatar: pig/武059.png
@@ -668,6 +640,35 @@ heroes:
     growth_range:
     - 4
     - 7
+    attribute_weights:
+      force: 20
+      intellect: 40
+      defense: 20
+      agility: 20
+  purple:
+  - key: hist_sljnbc_0240
+    name: 嵇康
+    avatar: monkey/其他随机角色/文039_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （224年—263年）竹林七贤之首，广陵散绝。谯郡铚县人，曹操曾孙女婿，身长七尺八寸，风姿特秀。他与阮籍等人并称"竹林七贤"，常聚于竹林饮酒清谈、抚琴吟诗。他精通音律，善弹古琴，《广陵散》在他手下达到巅峰。他蔑视礼法，崇尚老庄，以"越名教而任自然"为人生信条。山涛举荐他出仕司马氏，他愤然写下《与山巨源绝交书》，与之断交。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 20
+      intellect: 40
+      defense: 20
+      agility: 20
+  - key: hist_sljnbc_0241
+    name: 顾恺之
+    avatar: monkey/其他随机角色/文_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （约348年—409年）画圣之祖，三绝传世。晋陵无锡人，出身江南名门。他才华横溢却性情天真，时人称其"才绝、画绝、痴绝"。他擅长人物画，提出"以形写神""传神写照"的绑画理论，强调捕捉人物的精神气质，不拘泥于外形。他曾说画人物"四体妍媸本无关于妙处，传神写照正在阿堵中"，意指眼睛是传神的关键。
+    growth_range:
+    - 7
+    - 11
     attribute_weights:
       force: 20
       intellect: 40

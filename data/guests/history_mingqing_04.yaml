@@ -56,20 +56,6 @@ heroes:
       intellect: 58
       defense: 18
       agility: 12
-  - key: hist_mingqing_0146
-    name: 李香君
-    avatar: monkey_wen_female9.png
-    default_gender: female
-    archetype: civil
-    flavor: （1624年—1654年）明末秦淮歌妓，名香，秦淮八艳之一，与侯方域相恋。相传她拒绝阮大铖的拉拢，抗拒逼婚时以头撞柱，血染诗扇，杨龙友就血痕点染成桃花；孔尚任据此写成传奇《桃花扇》。侯方域《李姬传》记其事迹，晚年行踪已难详考。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 12
-      intellect: 58
-      defense: 18
-      agility: 12
   - key: hist_mingqing_0155
     name: 李光地
     avatar: pig/文028.png
@@ -244,34 +230,6 @@ heroes:
     default_gender: male
     archetype: civil
     flavor: （1601年—1667年）清初大臣，满洲赫舍里氏，康熙初年四辅政大臣之首。顺治朝他因不附多尔衮一度受挫，顺治帝亲政后复受重用。康熙即位后与鳌拜等同受顾命，晚年称病不预朝政，康熙六年上疏请皇帝亲政，不久病逝，谥文忠。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 12
-      intellect: 58
-      defense: 18
-      agility: 12
-  - key: hist_mingqing_0154
-    name: 施世纶
-    avatar: pig/文050.png
-    default_gender: male
-    archetype: civil
-    flavor: （1659年—1722年）清代官员，字文贤，号浔江，施琅之子，汉军镶黄旗人。历任泰州知州、扬州与江宁知府、顺天府尹、漕运总督等职，任内清理积案、开仓赈济、弹劾贪吏，以清廉刚正著称，民间称为“施青天”，卒于漕运总督任上。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 12
-      intellect: 58
-      defense: 18
-      agility: 12
-  - key: hist_mingqing_0148
-    name: 董小宛
-    avatar: monkey/其他随机角色/文064_女.png
-    default_gender: female
-    archetype: civil
-    flavor: （1624年—1651年）明末清初秦淮名妓，名白，字青莲，一字小宛，秦淮八艳之一。她与如皋才子冒襄相识后嫁入冒家，居水绘园，侍奉长辈、操持家务，并工诗善画。顺治八年病逝，年仅二十八岁，冒襄撰《影梅庵忆语》追述两人相处始末。
     growth_range:
     - 5
     - 9
@@ -695,6 +653,48 @@ heroes:
     flavor: （约1612年—1705年）蒙古族，科尔沁部人，清初孝庄文皇后的侍女，随其陪嫁入宫。她通晓满、蒙文字，曾教授幼年康熙帝满文，并相传参与厘定清朝冠服制度；晚年抚养皇十二子胤祹，年约九旬，卒后以嫔礼安葬。
     growth_range:
     - 4
+    - 7
+    attribute_weights:
+      force: 12
+      intellect: 58
+      defense: 18
+      agility: 12
+  - key: hist_mingqing_0146
+    name: 李香君
+    avatar: monkey_wen_female9.png
+    default_gender: female
+    archetype: civil
+    flavor: （1624年—1654年）明末秦淮歌妓，名香，秦淮八艳之一，与侯方域相恋。相传她拒绝阮大铖的拉拢，抗拒逼婚时以头撞柱，血染诗扇，杨龙友就血痕点染成桃花；孔尚任据此写成传奇《桃花扇》。侯方域《李姬传》记其事迹，晚年行踪已难详考。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 12
+      intellect: 58
+      defense: 18
+      agility: 12
+  - key: hist_mingqing_0154
+    name: 施世纶
+    avatar: pig/文050.png
+    default_gender: male
+    archetype: civil
+    flavor: （1659年—1722年）清代官员，字文贤，号浔江，施琅之子，汉军镶黄旗人。历任泰州知州、扬州与江宁知府、顺天府尹、漕运总督等职，任内清理积案、开仓赈济、弹劾贪吏，以清廉刚正著称，民间称为“施青天”，卒于漕运总督任上。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 12
+      intellect: 58
+      defense: 18
+      agility: 12
+  - key: hist_mingqing_0148
+    name: 董小宛
+    avatar: monkey/其他随机角色/文064_女.png
+    default_gender: female
+    archetype: civil
+    flavor: （1624年—1651年）明末清初秦淮名妓，名白，字青莲，一字小宛，秦淮八艳之一。她与如皋才子冒襄相识后嫁入冒家，居水绘园，侍奉长辈、操持家务，并工诗善画。顺治八年病逝，年仅二十八岁，冒襄撰《影梅庵忆语》追述两人相处始末。
+    growth_range:
+    - 3
     - 7
     attribute_weights:
       force: 12

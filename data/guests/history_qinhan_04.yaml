@@ -98,62 +98,48 @@ heroes:
       intellect: 14
       defense: 26
       agility: 12
-  - key: hist_qinhan_0159
-    name: 刘盈
-    avatar: monkey/秦汉/刘盈.png
+  - key: hist_qinhan_0190
+    name: 赵高
+    avatar: duck_wen_male1.png
     default_gender: male
     archetype: civil
-    flavor: （前210年—前188年）汉惠帝，刘邦次子。即位时国政多为吕后所握，他能施展的空间有限，因此史书常把他的形象写得温仁而无力。关于“人彘”惨剧，史载其见之震骇，这种震骇并非单纯的情感戏剧，而是对汉初宫廷权力运作的直观冲击：亲情、法度与威慑在同一瞬间被撕开。惠帝在位期间仍有一些制度调整被归到他名下，如对秦代严苛条文的松动与对丞相体系的倚重；这些措施未必都出自他个人意志，却确实推动汉初政治从战争动员转向休养生息。刘盈早逝，使他更像汉初“强力政治”阴影下的一位短命守成者。
+    flavor: （生年不详—前207年）秦朝宦官，赵国人，通晓狱法，秦时任中车府令，教胡亥律令。秦始皇死后，他与李斯合谋矫诏，立胡亥为二世，逼死扶苏、蒙恬。此后他诛戮大臣，诬杀李斯，把持朝政，“指鹿为马”即其权势之写照。二世三年，他弑杀胡亥，改立子婴；不久被子婴设计诛杀，夷三族。
     growth_range:
     - 6
+    - 10
+    attribute_weights:
+      force: 16
+      intellect: 46
+      defense: 22
+      agility: 16
+  - key: hist_qinhan_0192
+    name: 陈胜
+    avatar: monkey/其他随机角色/武044_男_.png
+    default_gender: male
+    archetype: military
+    flavor: （生年不详—前208年）秦末起义领袖，阳城人，字涉。秦二世元年，他与吴广率戍卒在大泽乡起义，喊出“王侯将相宁有种乎”，点燃反秦烽火。攻占陈县后，陈胜自立为王，号“张楚”，分遣部将略地，起义迅速蔓延。但内部号令不一，周文兵败，吴广被杀，章邯攻破陈县。陈胜退至下城父，被车夫庄贾杀害，起义由盛转衰。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 48
+      intellect: 14
+      defense: 26
+      agility: 12
+  - key: hist_qinhan_0195
+    name: 刘庄
+    avatar: monkey_wen_male3.png
+    default_gender: male
+    archetype: civil
+    flavor: （28年—75年）东汉明帝，光武帝刘秀第四子，母为阴丽华。即位后总揽权柄，严察吏治；又崇儒重学，亲临辟雍，命皇族子弟讲经。永平年间，他派窦固等出击北匈奴，取伊吾卢，并遣班超经营西域；又命王景治理黄河，河患稍息。相传佛教亦在此时传入，洛阳白马寺即建于其朝。吏治整肃、边事稳定，是东汉前期的治世。
+    growth_range:
+    - 7
     - 11
     attribute_weights:
       force: 16
       intellect: 46
       defense: 22
       agility: 16
-  - key: hist_qinhan_0187
-    name: 蒙毅
-    avatar: monkey/秦汉/蒙毅.png
-    default_gender: male
-    archetype: civil
-    flavor: （生年不详—前210年）秦臣蒙恬之弟，官至上卿，为秦始皇近臣，常陪侍巡行、参预机要。始皇三十七年巡游途中病逝于沙丘，赵高与胡亥、李斯密谋，矫诏立胡亥、逼死扶苏，并囚禁蒙毅。蒙毅被囚于代，后与蒙恬相继遇害。
-    growth_range:
-    - 6
-    - 12
-    attribute_weights:
-      force: 14
-      intellect: 50
-      defense: 22
-      agility: 14
-  - key: hist_qinhan_0149
-    name: 路博德
-    avatar: monkey/秦汉/路博德.png
-    default_gender: male
-    archetype: military
-    flavor: （生卒年不详）西汉将领，史载其在南越征讨中居重要位置，与楼船将军杨仆等分兵推进，最终促成岭南并入汉廷。南越战事并不只是打一场仗：海陆交通、粮运补给、地方豪强与旧官僚的去留，都决定能否在战后站稳脚跟。史书所写路博德“以招抚为主”等做法，提示他不仅靠武力，也靠对地方人心与利益结构的拿捏；能让对手放下抵抗，有时比杀伤更能节省成本。路博德的经历显出汉代对南方扩张是一套系统工程：军事只是开门，郡县化与行政接管才是长期胜负。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 48
-      intellect: 14
-      defense: 26
-      agility: 12
-  - key: hist_qinhan_0150
-    name: 郑吉
-    avatar: monkey/秦汉/郑吉.png
-    default_gender: male
-    archetype: military
-    flavor: （生年不详—前49年）西汉将领，史载为首任西域都护。郑吉的工作性质并不止于“打一仗”，更接近把远域纳入可治理空间：屯田、驻防、联络诸国、处理矛盾、保障通道，都需要长期投入与稳定的行政枢纽。设都护府与幕府的意义也不仅是名号，而是让汉廷在西域拥有持续发号施令与调度资源的抓手，从而把影响力从军事行动延伸到制度存在。郑吉并非只以武力取胜，他更像西域经营的“第一代管家”——既要懂军务，也要懂外交与地方政治，把复杂的多国网络纳入一个可运转的秩序框架。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 48
-      intellect: 14
-      defense: 26
-      agility: 12
   blue:
   - key: hist_qinhan_0174
     name: 灌夫
@@ -561,40 +547,12 @@ heroes:
       intellect: 46
       defense: 22
       agility: 16
-  - key: hist_qinhan_0190
-    name: 赵高
-    avatar: duck_wen_male1.png
-    default_gender: male
-    archetype: civil
-    flavor: （生年不详—前207年）秦朝宦官，赵国人，通晓狱法，秦时任中车府令，教胡亥律令。秦始皇死后，他与李斯合谋矫诏，立胡亥为二世，逼死扶苏、蒙恬。此后他诛戮大臣，诬杀李斯，把持朝政，“指鹿为马”即其权势之写照。二世三年，他弑杀胡亥，改立子婴；不久被子婴设计诛杀，夷三族。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 16
-      intellect: 46
-      defense: 22
-      agility: 16
   - key: hist_qinhan_0191
     name: 陈余
     avatar: monkey_wu_male10.png
     default_gender: male
     archetype: military
     flavor: （生年不详—前204年）秦末赵地将领，大梁人，好儒术，与张耳结为刎颈之交。陈胜起义后，二人共同拥立赵王，后因巨鹿之围中陈余拥兵不救，与张耳决裂。项羽分封时，陈余仅得三县，心怀不满，遂借齐兵击走张耳，复立赵歇，自任代王而留驻赵地。前204年，韩信破赵，陈余在泜水战败被杀。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 48
-      intellect: 14
-      defense: 26
-      agility: 12
-  - key: hist_qinhan_0192
-    name: 陈胜
-    avatar: monkey/其他随机角色/武044_男_.png
-    default_gender: male
-    archetype: military
-    flavor: （生年不详—前208年）秦末起义领袖，阳城人，字涉。秦二世元年，他与吴广率戍卒在大泽乡起义，喊出“王侯将相宁有种乎”，点燃反秦烽火。攻占陈县后，陈胜自立为王，号“张楚”，分遣部将略地，起义迅速蔓延。但内部号令不一，周文兵败，吴广被杀，章邯攻破陈县。陈胜退至下城父，被车夫庄贾杀害，起义由盛转衰。
     growth_range:
     - 5
     - 9
@@ -631,20 +589,6 @@ heroes:
       intellect: 14
       defense: 26
       agility: 12
-  - key: hist_qinhan_0195
-    name: 刘庄
-    avatar: monkey_wen_male3.png
-    default_gender: male
-    archetype: civil
-    flavor: （28年—75年）东汉明帝，光武帝刘秀第四子，母为阴丽华。即位后总揽权柄，严察吏治；又崇儒重学，亲临辟雍，命皇族子弟讲经。永平年间，他派窦固等出击北匈奴，取伊吾卢，并遣班超经营西域；又命王景治理黄河，河患稍息。相传佛教亦在此时传入，洛阳白马寺即建于其朝。吏治整肃、边事稳定，是东汉前期的治世。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 16
-      intellect: 46
-      defense: 22
-      agility: 16
   - key: hist_qinhan_0196
     name: 刘炟
     avatar: monkey_wen_male3.png
@@ -701,6 +645,62 @@ heroes:
       intellect: 46
       defense: 22
       agility: 16
+  - key: hist_qinhan_0159
+    name: 刘盈
+    avatar: monkey/秦汉/刘盈.png
+    default_gender: male
+    archetype: civil
+    flavor: （前210年—前188年）汉惠帝，刘邦次子。即位时国政多为吕后所握，他能施展的空间有限，因此史书常把他的形象写得温仁而无力。关于“人彘”惨剧，史载其见之震骇，这种震骇并非单纯的情感戏剧，而是对汉初宫廷权力运作的直观冲击：亲情、法度与威慑在同一瞬间被撕开。惠帝在位期间仍有一些制度调整被归到他名下，如对秦代严苛条文的松动与对丞相体系的倚重；这些措施未必都出自他个人意志，却确实推动汉初政治从战争动员转向休养生息。刘盈早逝，使他更像汉初“强力政治”阴影下的一位短命守成者。
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 16
+      intellect: 46
+      defense: 22
+      agility: 16
+  - key: hist_qinhan_0187
+    name: 蒙毅
+    avatar: monkey/秦汉/蒙毅.png
+    default_gender: male
+    archetype: civil
+    flavor: （生年不详—前210年）秦臣蒙恬之弟，官至上卿，为秦始皇近臣，常陪侍巡行、参预机要。始皇三十七年巡游途中病逝于沙丘，赵高与胡亥、李斯密谋，矫诏立胡亥、逼死扶苏，并囚禁蒙毅。蒙毅被囚于代，后与蒙恬相继遇害。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 14
+      intellect: 50
+      defense: 22
+      agility: 14
+  - key: hist_qinhan_0149
+    name: 路博德
+    avatar: monkey/秦汉/路博德.png
+    default_gender: male
+    archetype: military
+    flavor: （生卒年不详）西汉将领，史载其在南越征讨中居重要位置，与楼船将军杨仆等分兵推进，最终促成岭南并入汉廷。南越战事并不只是打一场仗：海陆交通、粮运补给、地方豪强与旧官僚的去留，都决定能否在战后站稳脚跟。史书所写路博德“以招抚为主”等做法，提示他不仅靠武力，也靠对地方人心与利益结构的拿捏；能让对手放下抵抗，有时比杀伤更能节省成本。路博德的经历显出汉代对南方扩张是一套系统工程：军事只是开门，郡县化与行政接管才是长期胜负。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 48
+      intellect: 14
+      defense: 26
+      agility: 12
+  - key: hist_qinhan_0150
+    name: 郑吉
+    avatar: monkey/秦汉/郑吉.png
+    default_gender: male
+    archetype: military
+    flavor: （生年不详—前49年）西汉将领，史载为首任西域都护。郑吉的工作性质并不止于“打一仗”，更接近把远域纳入可治理空间：屯田、驻防、联络诸国、处理矛盾、保障通道，都需要长期投入与稳定的行政枢纽。设都护府与幕府的意义也不仅是名号，而是让汉廷在西域拥有持续发号施令与调度资源的抓手，从而把影响力从军事行动延伸到制度存在。郑吉并非只以武力取胜，他更像西域经营的“第一代管家”——既要懂军务，也要懂外交与地方政治，把复杂的多国网络纳入一个可运转的秩序框架。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 48
+      intellect: 14
+      defense: 26
+      agility: 12
   green:
   - key: hist_qinhan_0179
     name: 班游

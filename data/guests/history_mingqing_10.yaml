@@ -1,0 +1,704 @@
+heroes:
+  purple:
+  - key: hist_mingqing_0501
+    name: 林则徐
+    avatar: pig/文050.png
+    default_gender: male
+    archetype: civil
+    flavor: （1785年—1850年）清代著名政治家、思想家，字元抚，福建侯官人。历任江苏巡抚、湖广总督，兴修水利、整顿吏治。道光十九年以钦差大臣赴粤禁烟，主持虎门销烟，沉重打击鸦片走私；同时组织编译西方书报《四洲志》，被誉为近代中国“开眼看世界第一人”。后虽遭贬戍伊犁，仍兴办坎儿井造福边疆。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 16
+      intellect: 52
+      defense: 20
+      agility: 12
+  - key: hist_mingqing_0502
+    name: 曾国藩
+    avatar: monkey_wen_male11.png
+    default_gender: male
+    archetype: civil
+    flavor: （1811年—1872年）晚清重臣、战略家与理学家，字伯涵，号涤生，湖南湘乡人。咸丰年间以在籍侍郎组建湘军，历经挫折而攻克安庆、天京，平定太平天国。战后倡导洋务运动，创办安庆内军械所、江南制造总局并派遣幼童留美。其修身治军之法与《曾国藩家书》影响深远。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 20
+      intellect: 50
+      defense: 20
+      agility: 10
+  - key: hist_mingqing_0503
+    name: 左宗棠
+    avatar: monkey_wu_male1.png
+    default_gender: male
+    archetype: military
+    flavor: （1812年—1885年）晚清军政重臣、民族英雄，字季高，湖南湘阴人。早年入幕佐军，后领楚军平定浙闽与陕甘，创办福州船政局、兰州制造局推动近代工业。光绪初年力排海防塞防之争，年过六旬抬棺西征，以“缓进急战”之策收复除伊犁外新疆全境，力保西北万里疆土。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 38
+      intellect: 28
+      defense: 22
+      agility: 12
+  - key: hist_mingqing_0504
+    name: 李鸿章
+    avatar: pig/文028.png
+    default_gender: male
+    archetype: civil
+    flavor: （1823年—1901年）晚清重臣，字少荃，安徽合肥人。同治初年组建淮军，历任直隶总督兼北洋大臣近三十年。作为洋务运动核心人物，他主持创办江南制造总局、轮船招商局、开平煤矿与北洋水师。晚年屡在国力积弱之际出面交涉外交、签署条约，一生功过交织，折射晚清变局。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 16
+      intellect: 52
+      defense: 18
+      agility: 14
+  - key: hist_mingqing_0505
+    name: 李善长
+    avatar: pig/文032.png
+    default_gender: male
+    archetype: civil
+    flavor: （1314年—1390年）明朝开国元勋、首任左丞相，字百室，濠州定远人。元末投奔朱元璋，常留守后方筹措军饷、安抚降附，朱元璋比之为汉初萧何。明朝建立后，他主持制定礼法、官制与盐铁钱法，封韩国公，位列开国功臣之首。晚年因胡惟庸案牵连，七十七岁全家遇害。
+    growth_range:
+    - 6
+    - 10
+    attribute_weights:
+      force: 12
+      intellect: 56
+      defense: 20
+      agility: 12
+  - key: hist_mingqing_0506
+    name: 魏忠贤
+    avatar: duck_wen_male1.png
+    default_gender: male
+    archetype: civil
+    flavor: （1568年—1627年）明末权宦，直隶肃宁人。天启年间依附明熹宗乳母客氏，执掌司礼监与东厂，勾结内外官僚形成“阉党”，大兴诏狱残害杨涟、左光斗等东林党人，权势熏天，各地谄媚者甚至为其广建生祠。崇祯帝即位后迅速清算阉党，魏忠贤于贬谪途中自缢身亡。
+    growth_range:
+    - 6
+    - 10
+    attribute_weights:
+      force: 14
+      intellect: 50
+      defense: 16
+      agility: 20
+  - key: hist_mingqing_0513
+    name: 梁启超
+    avatar: monkey/其他随机角色/文052_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （1873年—1929年）清末民初杰出思想家、学者与政治活动家，字卓如，号任公，广东新会人。师从康有为，公车上书后主编《时务报》，投身戊戌变法；流亡海外期间创办《新民丛报》，首倡“中华民族”与“新史学”。其政论文章笔锋常带感情，著述宏富，辑为《饮冰室合集》。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 10
+      intellect: 58
+      defense: 14
+      agility: 18
+  blue:
+  - key: hist_mingqing_0507
+    name: 张之洞
+    avatar: pig/文033.png
+    default_gender: male
+    archetype: civil
+    flavor: （1837年—1909年）晚清洋务重臣，字孝达，号香涛，直隶南皮人。历任两广、湖广总督，主政湖北近二十年，创办汉阳铁厂、湖北枪炮厂、自强学堂并编练新军，使武汉崛起为近代重镇。著《劝学篇》，倡导“中学为体，西学为用”，在晚清工业与教育转型中举足轻重。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 12
+      intellect: 56
+      defense: 20
+      agility: 12
+  - key: hist_mingqing_0508
+    name: 邓世昌
+    avatar: pig/武049.png
+    default_gender: male
+    archetype: military
+    flavor: （1849年—1894年）清末北洋水师名将，字正卿，广东番禺人。毕业于福州船政学堂，治军严明、精熟海战，任致远舰管带。1894年甲午黄海海战中，致远舰弹药将尽且舰身重创，他毅然下令开足马力撞向日舰吉野号，不幸中鱼雷沉没，坠海后拒不独生，与全舰官兵壮烈殉国。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 44
+      intellect: 20
+      defense: 20
+      agility: 16
+  - key: hist_mingqing_0509
+    name: 冯子材
+    avatar: monkey_wu_male10.png
+    default_gender: male
+    archetype: military
+    flavor: （1818年—1903年）清末抗法名将，字南干，号萃亭，广东钦州人。行伍出身，沉勇善战，历任广西提督。1885年中法战争危机时刻，他以近七旬高龄奉命出山，于镇南关前筑长墙御敌，并亲持长矛率子跃出壕沟肉搏冲锋，取得镇南关大捷并乘胜克复谅山，重创法军。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 44
+      intellect: 18
+      defense: 24
+      agility: 14
+  - key: hist_mingqing_0510
+    name: 刘铭传
+    avatar: pig/武050.png
+    default_gender: male
+    archetype: military
+    flavor: （1836年—1896年）清末淮军名将、台湾首任巡抚，字省三，安徽合肥人。早年随李鸿章转战东南与中原，中法战争爆发后奉命督办台湾军务，率军民于基隆、淡水顽强抗击法军登陆，保全台湾。战后主政台湾六年，筑铁路、架电报、建学堂、理赋税，开创台湾近代化基业。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 38
+      intellect: 26
+      defense: 22
+      agility: 14
+  - key: hist_mingqing_0511
+    name: 龚自珍
+    avatar: monkey_wen_male9.png
+    default_gender: male
+    archetype: civil
+    flavor: （1792年—1841年）清代著名思想家、文学家，字璱人，号定庵，浙江仁和人。嘉道年间目睹朝政僵化与边患渐生，著《明良论》《尊隐》等文猛烈抨击时弊，呼吁变法革新，并建议新疆建省。其《己亥杂诗》三百一十五首剑气箫心、瑰丽雄奇，开启近代中国思想启蒙先声。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 12
+      intellect: 54
+      defense: 14
+      agility: 20
+  - key: hist_mingqing_0512
+    name: 魏源
+    avatar: pig/文030.png
+    default_gender: male
+    archetype: civil
+    flavor: （1794年—1857年）清代思想家、史学家，字默深，湖南邵阳人。精通经世之学，曾协助贺长龄编《皇朝经世文编》，并参与漕运海运与淮北票盐改革。鸦片战争后受林则徐所托，在《四洲志》基础上广采中外史地文献，编成《海国图志》，提出“师夷长技以制夷”，震动中日思想界。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 12
+      intellect: 58
+      defense: 18
+      agility: 12
+  - key: hist_mingqing_0514
+    name: 严复
+    avatar: duck_wen_male2.png
+    default_gender: male
+    archetype: civil
+    flavor: （1854年—1921年）清末民初启蒙思想家、翻译家与教育家，字又陵，福建侯官人。早年毕业于福州船政学堂并留学英国海军学院，归国后任北洋水师学堂总办。甲午战后译介《天演论》《原富》《法意》等西学名著，以“物竞天择，适者生存”警醒国人，并确立“信、达、雅”译学准则。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 58
+      defense: 16
+      agility: 16
+  - key: hist_mingqing_0515
+    name: 洪昇
+    avatar: monkey_wen_male6.png
+    default_gender: male
+    archetype: civil
+    flavor: （1645年—1704年）清代著名戏曲家，字昉思，号稗畦，浙江钱塘人。一生坎坷不遇，历时十余年三易其稿，写成传奇巨著《长生殿》，以唐明皇与杨贵妃的爱情悲剧折射安史之乱的家国兴亡。全剧音律严密、词采华美，轰动京师，却因忌日演剧案获罪革籍，与孔尚任并称“南洪北孔”。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 54
+      defense: 16
+      agility: 20
+  - key: hist_mingqing_0516
+    name: 孔尚任
+    avatar: pig/文038.png
+    default_gender: male
+    archetype: civil
+    flavor: （1648年—1718年）清代著名戏曲家、诗人，字聘之，号东塘，山东曲阜人，孔子六十四代孙。康熙年间曾随治河官员驻留扬州、南京等地，遍访明季遗迹与遗老，历时十余载著成传奇《桃花扇》，借侯方域与李香君的离合悲欢书写南明兴亡之痛，结构严谨、情韵深沉，名列古典戏曲巅峰。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 54
+      defense: 18
+      agility: 18
+  - key: hist_mingqing_0517
+    name: 张岱
+    avatar: monkey/其他随机角色/文_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （1597年—1689年）明末清初杰出散文家、史学家，字宗子，号陶庵，浙江山阴人。前半生出身名门、精于园林茶戏与市井风雅，明亡后避居深山，布衣蔬食数十年，潜心撰写明史巨著《石匮书》；又以清隽灵动的笔调追忆往昔繁华，留下《陶庵梦忆》《西湖梦寻》，为明清小品散文绝唱。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 54
+      defense: 16
+      agility: 20
+  - key: hist_mingqing_0518
+    name: 傅山
+    avatar: pig/文040.png
+    default_gender: male
+    archetype: civil
+    flavor: （1607年—1684年）明末清初思想家、书画家与医学家，字青主，山西阳曲人。明亡后改着道装，誓不仕清，康熙年间被强征博学鸿词科仍称病卧床拒不入试。其学识渊博，提出书法“四宁四毋”之论，草书奇崛雄肆；行医济世著有《傅青主女科》，至今为中医妇科经典。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 14
+      intellect: 54
+      defense: 18
+      agility: 14
+  - key: hist_mingqing_0519
+    name: 于成龙
+    avatar: pig/文031.png
+    default_gender: male
+    archetype: civil
+    flavor: （1617年—1684年）清初著名廉吏，字北溟，山西永宁州人。四十五岁出任广西罗城知县，在荒僻边地披荆斩棘、劝农兴学，此后历任知府、巡抚至两江总督。一生居官粗衣蔬食、刚直不阿，屡破积案、惩治豪强，死后家无余财，康熙帝破格赞其为“天下廉吏第一”。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 16
+      intellect: 50
+      defense: 24
+      agility: 10
+  - key: hist_mingqing_0520
+    name: 多铎
+    avatar: pig/武051.png
+    default_gender: male
+    archetype: military
+    flavor: （1614年—1649年）清初宗室名将，爱新觉罗氏，努尔哈赤第十五子，封和硕豫亲王。自幼勇毅果决，随皇太极、多尔衮征战朝鲜、锦州与松锦战场。顺治元年入关后任定国大将军，先破李自成于潼关，旋挥师南下攻克扬州、南京，平定江南，战功冠绝诸王，年仅三十六岁因痘症病逝。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 46
+      intellect: 16
+      defense: 18
+      agility: 20
+  - key: hist_mingqing_0521
+    name: 年羹尧
+    avatar: monkey_wu_male3.png
+    default_gender: male
+    archetype: military
+    flavor: （1679年—1726年）清代康雍之际名将，字亮工，汉军镶黄旗人。进士出身却深谙兵事，康熙末年总督川陕，稳定西藏与西北边局；雍正初年任抚远大将军，率岳钟琪等迅速平定青海罗卜藏丹津叛乱，封一等公。后因功高震主、骄纵揽权，遭雍正帝削职定罪，终被赐死。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 26
+      defense: 18
+      agility: 16
+  - key: hist_mingqing_0522
+    name: 李成梁
+    avatar: pig_wu_male5.png
+    default_gender: male
+    archetype: military
+    flavor: （1526年—1615年）明朝后期辽东名将，字汝契，铁岭卫人，名将李如松之父。两度镇守辽东总兵近三十年，蓄养精锐家丁，采取主动出击方略，屡次大破蒙古察哈尔部与建州、海西女真，封宁远伯。晚年治边渐趋骄奢养寇，弃宽甸六堡，客观上纵容了努尔哈赤坐大。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 42
+      intellect: 22
+      defense: 20
+      agility: 16
+  - key: hist_mingqing_0523
+    name: 朱高炽
+    avatar: monkey_wen_male3.png
+    default_gender: male
+    archetype: civil
+    flavor: （1378年—1425年）明仁宗，明成祖朱棣长子。虽体胖不善骑射，却天性仁厚、长于政务，永乐年间多次监国理政二十载，稳固朝廷后方。即位后立即平反建文旧臣、停罢西洋宝船与采办苛政，重用“三杨”与夏元吉，虽在位不足一年，却奠定了“仁宣之治”的宽和基调。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 12
+      intellect: 54
+      defense: 22
+      agility: 12
+  - key: hist_mingqing_0524
+    name: 朱祁钰
+    avatar: pig_wen_male4.png
+    default_gender: male
+    archetype: civil
+    flavor: （1428年—1457年）明代宗，明宣宗次子，原封郕王。正统十四年土木之变明英宗被俘，危急关头他受命监国并即皇帝位，改元景泰，力排南迁之议，放手任用于谦取得北京保卫战大捷，挽救明室于倾覆。景泰八年病重之际，石亨等发动夺门之变复辟英宗，朱祁钰不久郁卒。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 16
+      intellect: 48
+      defense: 24
+      agility: 12
+  - key: hist_mingqing_0525
+    name: 胡惟庸
+    avatar: duck_wen_male3.png
+    default_gender: male
+    archetype: civil
+    flavor: （？—1380年）明初最后一任丞相，濠州定远人。早年追随朱元璋起兵，由李善长举荐入中书省，洪武六年升任左丞相。掌权七年间独断生杀、广植党羽，逐渐触动皇权忌讳。洪武十三年以“谋反”罪被诛，明太祖借机彻底废除延续千年的丞相制度，将大权收归皇帝亲掌。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 12
+      intellect: 52
+      defense: 16
+      agility: 20
+  - key: hist_mingqing_0534
+    name: 张煌言
+    avatar: monkey/其他随机角色/武037_男.png
+    default_gender: male
+    archetype: military
+    flavor: （1620年—1664年）南明抗清名臣、诗人，字玄著，号苍水，浙江鄞县人。清兵南下后于浙东起兵抗清，转战舟山、闽浙沿海近二十年，顺治十六年配合郑成功北伐长江，率偏师连克芜湖等二十余州县。大势已去后解散余部隐居悬岙岛，被俘不屈，在杭州从容就义，著有《奇零草》。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 34
+      intellect: 30
+      defense: 20
+      agility: 16
+  - key: hist_mingqing_0537
+    name: 范文程
+    avatar: pig/文034.png
+    default_gender: male
+    archetype: civil
+    flavor: （1597年—1666年）清初开国重臣，字宪斗，沈阳卫人，北宋名臣范仲淹后裔。早年归附努尔哈赤，历仕太祖、太宗、世祖、圣祖四朝，官至大学士。他力主优待汉人、礼贤下士，顺治元年献策多尔衮“以仁义定天下”，拟定安民诏令、恢复科举并草创清初典章制度，功莫大焉。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 12
+      intellect: 56
+      defense: 20
+      agility: 12
+  - key: hist_mingqing_0538
+    name: 代善
+    avatar: pig/武060.png
+    default_gender: male
+    archetype: military
+    flavor: （1583年—1648年）清初宗室名将，爱新觉罗氏，努尔哈赤次子，封和硕礼亲王，位列四大贝勒之首。早年随父征战乌拉、叶赫与萨尔浒之战，骁勇善战，统领正红、镶红两旗。努尔哈赤去世后率先推举皇太极继位，皇太极逝世后又力保顺治登基，顾全大局，深得清廷敬重。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 22
+      defense: 24
+      agility: 14
+  - key: hist_mingqing_0539
+    name: 靳辅
+    avatar: monkey_wen_male4.png
+    default_gender: male
+    archetype: civil
+    flavor: （1633年—1692年）清康熙朝著名治河大臣，字紫垣，汉军镶黄旗人。康熙十六年临危受命出任河道总督，面对黄河决口、漕运梗阻的困局，他虚心延揽布衣水利奇才陈潢入幕，历经十余年修筑缕堤、开凿中河，使黄淮归槽、漕运畅通，著有《治河方略》，获康熙帝深切赞誉。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 14
+      intellect: 52
+      defense: 22
+      agility: 12
+  - key: hist_mingqing_0541
+    name: 王铎
+    avatar: pig/文041.png
+    default_gender: male
+    archetype: civil
+    flavor: （1592年—1652年）明末清初书法大家，字觉斯，河南孟津人。明天启进士，历官礼部尚书，南明败亡后仕清，颇受气节之议。其书法成就却冠绝一时，兼取“二王”与米芾之长，行草纵逸奔放、涨墨奇肆，笔力如崩云裂石，与董其昌并称“南董北王”，对后世中日书坛影响极深。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 14
+      intellect: 50
+      defense: 14
+      agility: 22
+  - key: hist_mingqing_0542
+    name: 金圣叹
+    avatar: monkey_wen_male2.png
+    default_gender: male
+    archetype: civil
+    flavor: （1608年—1661年）明末清初杰出文学批评家，名采，字若采，长洲人。性情狂放孤傲，绝意科举仕途，独辟蹊径评点《离骚》《庄子》《史记》《杜诗》《水浒传》《西厢记》为“六才子书”，极大提升了通俗小说与戏曲的文学地位。顺治十八年因参与苏州“哭庙案”遭清廷腰斩。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 56
+      defense: 14
+      agility: 20
+  - key: hist_mingqing_0546
+    name: 胡林翼
+    avatar: pig_wen_male3.png
+    default_gender: male
+    archetype: civil
+    flavor: （1812年—1861年）晚清中兴名臣，字贶生，号润芝，湖南益阳人。咸丰年间任湖北巡抚，面对战乱残破的荆楚大地，他大刀阔斧整顿吏治、革除漕弊、广筹厘金，将湖北建成湘军最稳固的粮饷基地，又极善调和曾国藩与各路将帅关系。著有《读史兵略》，积劳早逝，朝野震悼。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 18
+      intellect: 52
+      defense: 18
+      agility: 12
+  - key: hist_mingqing_0548
+    name: 沈葆桢
+    avatar: monkey/其他随机角色/文049_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （1820年—1879年）晚清洋务名臣，字幼丹，福建侯官人，林则徐女婿。同治年间接替左宗棠总理福建船政，造兵舰、办船政学堂、派学生留学欧洲，奠定中国近代海军摇篮。1874年日军借牡丹社事件侵台，他以钦差大臣率军巡台，修筑炮台、开山抚番，逼退日军并促成台湾建省筹议。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 18
+      intellect: 50
+      defense: 20
+      agility: 12
+  - key: hist_mingqing_0549
+    name: 丁汝昌
+    avatar: monkey_wu_male16.png
+    default_gender: male
+    archetype: military
+    flavor: （1836年—1895年）清末北洋水师提督，字禹廷，安徽庐江人。原为淮军骑兵将领，光绪年间奉命赴英国接带铁甲舰，后主持北洋海军建设与操演。1894年甲午海战中负伤指挥舰队血战；次年威海卫保卫战中困守刘公岛，拒不投降日军，在弹尽援绝之际服毒自尽，以死报国。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 20
+      defense: 26
+      agility: 14
+  green:
+  - key: hist_mingqing_0526
+    name: 商辂
+    avatar: pig/文049.png
+    default_gender: male
+    archetype: civil
+    flavor: （1414年—1486年）明代名臣、内阁首辅，字弘载，浙江淳安人，明朝唯一连中解元、会元、状元“三元及第”者。历仕宣德、正统、景泰、成化四朝，为人平恕端方，成化年间力主为于谦平反昭雪，并上疏陈谏罢撤西厂、斥逐汪直，朝野称其有古大臣之风。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 12
+      intellect: 54
+      defense: 22
+      agility: 12
+  - key: hist_mingqing_0527
+    name: 杨一清
+    avatar: pig/文014.png
+    default_gender: male
+    archetype: civil
+    flavor: （1454年—1530年）明代政治家、军事家，字应宁，云南安宁人。弘治、正德年间督理陕西马政并总制三边军务，整修边墙、抵御蒙古，深谙西北边防。正德五年奉命平定安化王朱寘鐇之乱，归途中巧妙联合宦官张永扳倒权阉刘瑾。后两度出任内阁首辅，权变老练，时人比之姚崇。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 22
+      intellect: 48
+      defense: 18
+      agility: 12
+  - key: hist_mingqing_0528
+    name: 夏言
+    avatar: monkey_wen_male7.png
+    default_gender: male
+    archetype: civil
+    flavor: （1482年—1548年）明嘉靖朝内阁首辅，字公谨，江西贵溪人。早年任给事中以敢言清查皇庄闻名，因迎合嘉靖帝礼制改革骤升首辅。主政期间器宇轩昂、力主支持曾铣收复河套，然性格傲岸且轻视严嵩，终在河套之议中遭严嵩构陷，被嘉靖帝斩于西市。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 14
+      intellect: 52
+      defense: 18
+      agility: 16
+  - key: hist_mingqing_0529
+    name: 冯保
+    avatar: monkey/其他随机角色/文101_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （？—1583年）明万历初年司礼监掌印太监，字永亭，深州人。工书法、善弹琴，隆庆末年联合张居正逐走高拱，万历初年与张居正内外配合，全力支持考成法与一条鞭法等改革，并严加督导年幼的明神宗读书。张居正病逝后，神宗迅速清算冯保，抄没家产并将其贬谪南京病死。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 12
+      intellect: 52
+      defense: 18
+      agility: 18
+  - key: hist_mingqing_0530
+    name: 王骥
+    avatar: monkey/其他随机角色/武038_男.png
+    default_gender: male
+    archetype: military
+    flavor: （1378年—1460年）明正统朝名将、兵部尚书，字尚德，束鹿人。进士出身却精通军务，正统初年巡边甘肃大破阿台、朵儿只伯；随后三度受命总督云南军务，远征麓川思任发、思机发父子，深入西南险地立下战功，破格封靖远伯，开明代文臣以军功封爵之先河。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 28
+      defense: 22
+      agility: 14
+  - key: hist_mingqing_0531
+    name: 韩雍
+    avatar: pig/武059.png
+    default_gender: male
+    archetype: military
+    flavor: （1422年—1478年）明成化朝名将，字永熙，长洲人。正统进士，胆略过人。成化元年两广瑶民起义声势浩大，韩雍以赞理军务受命督师，力排众议直捣险峻的广西大藤峡，斩断藤蔓、连克山寨，平定两广之乱，设两广总督府以资镇抚。一生果敢刚毅，治军威令如山。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 24
+      defense: 20
+      agility: 16
+  - key: hist_mingqing_0532
+    name: 王越
+    avatar: monkey_wu_male8.png
+    default_gender: male
+    archetype: military
+    flavor: （1426年—1498年）明成化、弘治朝名将，字世昌，浚县人。进士出身，貌魁梧而多奇谋，长期镇守延绥、大同。成化九年奇袭红盐池焚毁蒙古营帐；成化十六年冒风雪千里奔袭威宁海，大破亦思马因，封威宁伯。既能跃马横戈，又工诗词散曲，是明代文武兼才的边将代表。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 38
+      intellect: 26
+      defense: 16
+      agility: 20
+  - key: hist_mingqing_0533
+    name: 刘綎
+    avatar: pig/武046.png
+    default_gender: male
+    archetype: military
+    flavor: （1558年—1619年）明末著名猛将，字省吾，南昌人，名将刘显之子。膂力绝伦，善使百二十斤镔铁大刀，军中号称“刘大刀”。一生南征北战，先后平定缅甸犯边、援朝抗倭、攻克播州杨应龙。万历四十七年萨尔浒之战中，他率东路军孤军深入，遭后金重兵合围，手刃数十人后壮烈战死。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 48
+      intellect: 14
+      defense: 22
+      agility: 16
+  - key: hist_mingqing_0535
+    name: 瞿式耜
+    avatar: pig/文011.png
+    default_gender: male
+    archetype: civil
+    flavor: （1590年—1651年）南明抗清重臣，字起田，号稼轩，江苏常熟人，师从钱谦益。顺治三年在肇庆拥立永历帝，受命留守桂林，面对清军多次大举围攻，他身先士卒、筹饷募兵，屡次击退清兵，保住西南半壁数载。顺治七年桂林城破，他端坐官署拒不逃亡，与张同敞一同从容殉国。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 18
+      intellect: 48
+      defense: 24
+      agility: 10
+  - key: hist_mingqing_0536
+    name: 郑芝龙
+    avatar: pig_wu_male8.png
+    default_gender: male
+    archetype: military
+    flavor: （1604年—1661年）明末东南海上霸主，字飞黄，福建南安人，郑成功之父。早年闯荡澳门、日本与台湾，组建庞大武装海商集团，击败荷兰东印度公司舰队，受明廷招安后几乎垄断东南沿海与东亚贸易。清军入闽后，他不顾郑成功苦劝降清，终被软禁京师并处死。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 28
+      defense: 16
+      agility: 20
+  - key: hist_mingqing_0540
+    name: 陈潢
+    avatar: monkey/其他随机角色/文_男123.png
+    default_gender: male
+    archetype: civil
+    flavor: （1637年—1688年）清初杰出水利专家，字天一，浙江钱塘人。早年科场失意，遂遍游北方山川实地勘测水文，精通河工算学。入河道总督靳辅幕府后，他创新提出“束水攻沙”测算与中河避黄之策，十余年亲历险工、成效斐然，却遭同僚弹劾革职，含冤病逝，遗著《河防述言》传世。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 12
+      intellect: 56
+      defense: 18
+      agility: 14
+  - key: hist_mingqing_0543
+    name: 谈允贤
+    avatar: monkey/其他随机角色/文059_女.png
+    default_gender: female
+    archetype: civil
+    flavor: （1461年—1556年）明代著名女医家，江苏无锡人，出身医学世家，自幼随祖母研习医药，精于诊脉与艾灸。她毕生专注女子经带胎产诸疾，打破礼教束缚为广大妇女排忧解难，五十岁时整理三十一例亲诊医案写成《女医杂言》，是中国古代极少数由女性亲撰并传世的临床医著。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 8
+      intellect: 56
+      defense: 20
+      agility: 16
+  - key: hist_mingqing_0544
+    name: 马守真
+    avatar: monkey_wen_female9.png
+    default_gender: female
+    archetype: civil
+    flavor: （1548年—1604年）明末金陵著名女画家、诗人，字湘兰，居秦淮河畔，位列“秦淮八艳”之一。她性情豪爽侠义，常济助落魄文人，善画兰竹，笔致清逸洒脱、独具韵致，作品远传日本；亦工诗词与南曲，著有《湘兰子集》《三生传》，与才子王穉登的半世情谊传为佳话。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 8
+      intellect: 52
+      defense: 16
+      agility: 24
+  - key: hist_mingqing_0545
+    name: 王贞仪
+    avatar: monkey_wen_female2.png
+    default_gender: female
+    archetype: civil
+    flavor: （1768年—1797年）清代杰出女天文学家、数学家与诗人，字德卿，安徽天长人。自幼随祖父遍读藏书，打破“女子无才便是德”的桎梏，以灯、镜、圆桌设计实验直观解释月食成因，撰写《月食解》《地圆论》《筹算易知》等科学论著，惜二十九岁病逝，留有《德风亭集》。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 8
+      intellect: 58
+      defense: 16
+      agility: 18
+  - key: hist_mingqing_0547
+    name: 彭玉麟
+    avatar: pig/武047.png
+    default_gender: male
+    archetype: military
+    flavor: （1816年—1890年）晚清名将、书画家，字雪琴，湖南衡阳人。早年协助曾国藩创建湘军水师，屡破太平军水营，立功无数却屡辞巡抚、总督高官，以刚正清廉闻名天下，号“雪帅”。中法战争时年近七旬仍赴广东督办海防力主抗战；平生最爱画梅，苍劲孤傲，自成一家。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 38
+      intellect: 26
+      defense: 20
+      agility: 16
+  - key: hist_mingqing_0550
+    name: 李善兰
+    avatar: pig/文039.png
+    default_gender: male
+    archetype: civil
+    flavor: （1811年—1882年）清末杰出数学家、天文学家与翻译家，字壬叔，浙江海宁人。早年钻研中国传统算学，独创“尖锥术”与李善兰恒等式；后在上海与伟烈亚力合译《几何原本》后九卷及《代微积拾级》《谈天》，首创代数、函数、微分、积分等中文术语，晚年执教京师同文馆，培育近代数理英才。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 8
+      intellect: 60
+      defense: 18
+      agility: 14

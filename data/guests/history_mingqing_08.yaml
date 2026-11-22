@@ -42,7 +42,6 @@ heroes:
       intellect: 58
       defense: 18
       agility: 12
-  blue:
   - key: hist_mingqing_0330
     name: 罗本
     avatar: duck_wen_male2.png
@@ -50,8 +49,8 @@ heroes:
     archetype: civil
     flavor: （约1330年—约1400年）名本，字贯中，相传号湖海散人，元末明初小说家，籍贯有太原、东平、钱塘等说。相传他曾入张士诚幕府，明初归隐著述。其名下《三国志通俗演义》以史书和民间话本为基础，整理敷演为章回体长篇，对后世历史演义影响深远，另有《隋唐志传》等传世。
     growth_range:
-    - 5
-    - 9
+    - 7
+    - 11
     attribute_weights:
       force: 12
       intellect: 58
@@ -64,13 +63,28 @@ heroes:
     archetype: civil
     flavor: （1601年—1645年）字宪之，号道邻，河南祥符人，明末大臣。崇祯进士，曾任南京兵部尚书；南明弘光朝任东阁大学士、礼部尚书，督师扬州。弘光元年清军南下围攻扬州，他组织军民守城；城破后被执，拒降遇害，遗体未能寻获，后人于梅花岭建衣冠冢祭祀。
     growth_range:
-    - 6
-    - 9
+    - 7
+    - 11
     attribute_weights:
       force: 20
       intellect: 30
       defense: 40
       agility: 10
+  - key: hist_mingqing_0331
+    name: 施彦端
+    avatar: pig/文016.png
+    default_gender: male
+    archetype: civil
+    flavor: “施彦端”常被说成施耐庵的原名或《水浒传》作者名之一，相传为元末明初人，籍贯有兴化、钱塘等说。但现存文献不足以确证其独立生平与作者身份。《水浒传》由长期流传的话本、戏曲与文人编纂增衍而成，署名问题至今仍有争议。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 12
+      intellect: 58
+      defense: 18
+      agility: 12
+  blue:
   - key: hist_mingqing_0333
     name: 杨慎
     avatar: monkey/其他随机角色/文049_男.png
@@ -484,20 +498,6 @@ heroes:
     default_gender: male
     archetype: civil
     flavor: （1686年—1774年）字主敬，号香树，浙江嘉兴人，清代官员、诗人。康熙六十年进士，历事康熙、雍正、乾隆三朝，官至刑部尚书。以诗受知于乾隆帝，晚年屡蒙优礼，卒谥文端，其诗和平典雅，著有《香树斋诗文集》。
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 12
-      intellect: 58
-      defense: 18
-      agility: 12
-  - key: hist_mingqing_0331
-    name: 施彦端
-    avatar: pig/文016.png
-    default_gender: male
-    archetype: civil
-    flavor: “施彦端”常被说成施耐庵的原名或《水浒传》作者名之一，相传为元末明初人，籍贯有兴化、钱塘等说。但现存文献不足以确证其独立生平与作者身份。《水浒传》由长期流传的话本、戏曲与文人编纂增衍而成，署名问题至今仍有争议。
     growth_range:
     - 4
     - 7

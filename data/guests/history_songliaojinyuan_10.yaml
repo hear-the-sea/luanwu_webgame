@@ -98,6 +98,20 @@ heroes:
       intellect: 58
       defense: 18
       agility: 12
+  - key: hist_songliaojinyuan_0470
+    name: 扩廓帖木儿
+    avatar: monkey_wu_male3.png
+    default_gender: male
+    archetype: military
+    flavor: 扩廓帖木儿（？—1375），本姓王，小字保保，察罕帖木儿外甥兼养子，元末将领。1362年接掌察罕所部，攻破益都，后与孛罗帖木儿及明军争战。元亡后辅佐北元，1372年在岭北之战大败明军，被朱元璋称为“奇男子”，1375年卒于漠北。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 42
+      intellect: 18
+      defense: 24
+      agility: 16
   green:
   - key: hist_songliaojinyuan_0459
     name: 鲜于枢
@@ -203,20 +217,6 @@ heroes:
     default_gender: male
     archetype: military
     flavor: 察罕帖木儿（？—1362），字廷瑞，乃蛮人，元末将领。至正年间组织地方义兵镇压红巾军，转战关陕、河南，收复汴梁等地，累官河南行省平章政事，成为元廷倚重的方镇。后围益都，为降将田丰、王士诚所刺杀；其甥兼养子扩廓帖木儿接掌其军。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 42
-      intellect: 18
-      defense: 24
-      agility: 16
-  - key: hist_songliaojinyuan_0470
-    name: 扩廓帖木儿
-    avatar: monkey_wu_male3.png
-    default_gender: male
-    archetype: military
-    flavor: 扩廓帖木儿（？—1375），本姓王，小字保保，察罕帖木儿外甥兼养子，元末将领。1362年接掌察罕所部，攻破益都，后与孛罗帖木儿及明军争战。元亡后辅佐北元，1372年在岭北之战大败明军，被朱元璋称为“奇男子”，1375年卒于漠北。
     growth_range:
     - 3
     - 7

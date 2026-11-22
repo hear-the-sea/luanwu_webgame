@@ -1,5 +1,3 @@
-# 黄易作品门客
-
 heroes:
   green:
   - key: hero_susu
@@ -44,22 +42,6 @@ heroes:
     recruitable: true
     growth_range:
     - 3
-    - 7
-    attribute_weights:
-      force: 10
-      intellect: 45
-      defense: 20
-      agility: 25
-  - key: hero_ji_yanran
-    name: 纪嫣然
-    avatar: monkey_wen_female10.png
-    archetype: civil
-    flavor: 纪嫣然才情出众，既有倾城之色，也有洞察时局的聪慧。她与项少龙相知相守，在战国乱世中不只以柔情相伴，更以胆识与谋略护住彼此。才女若只会吟诗，那是世人的误会；诗文之外，她还藏着一柄不肯低头的剑。出自黄易小说《寻秦记》。
-    default_gender: female
-    default_morality: 75
-    recruitable: true
-    growth_range:
-    - 4
     - 7
     attribute_weights:
       force: 10
@@ -114,38 +96,6 @@ heroes:
       intellect: 50
       defense: 15
       agility: 20
-  - key: hero_song_yuzhi
-    name: 宋玉致
-    avatar: monkey_wen_female2.png
-    archetype: civil
-    flavor: 宋玉致出身岭南宋阀，明丽而有主见，是寇仲心中难以割舍的牵挂。乱世之中，她并非只在后方等待，而是以自己的立场与坚韧守住家国和真情。能让少帅在江山与儿女情之间反复掂量，这分量自然不轻。出自黄易小说《大唐双龙传》。
-    default_gender: female
-    default_morality: 80
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 15
-      intellect: 35
-      defense: 20
-      agility: 30
-  - key: hero_shang_xiuxun
-    name: 商秀珣
-    avatar: monkey_wu_female.png
-    archetype: military
-    flavor: 商秀珣是飞马牧场场主，爽朗果决，既能驭马，也能驭住一方势力。她不以柔弱示人，面对乱世与情感都敢作敢当；徐子陵与她的相遇，少不了风波，也少不了真心。牧场账本和江湖刀光，她一样都不肯交给别人代管。出自黄易小说《大唐双龙传》。
-    default_gender: female
-    default_morality: 75
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 30
-      intellect: 20
-      defense: 20
-      agility: 30
   - key: hero_zhao_ya
     name: 赵雅
     avatar: monkey_wen_female10.png
@@ -162,23 +112,439 @@ heroes:
       intellect: 50
       defense: 15
       agility: 25
-  blue:
-  - key: hero_ba_fenghan
-    name: 跋锋寒
-    avatar: pig/武070.png
-    archetype: military
-    flavor: 跋锋寒来自草原，是纵横塞外的绝顶高手，豪迈不羁，尊重强者，也守自己的规矩。与寇仲、徐子陵相识后，他由对手成为惺惺相惜的朋友，立场可以相争，侠气却不必相让。草原的风教他快，江湖的交锋教他敬。出自黄易小说《大唐双龙传》。
+  - key: hero_huangyi_0101
+    name: 宋师道
+    avatar: monkey_wen_male2.png
+    archetype: civil
+    flavor: 宋师道是岭南宋阀大公子，温润如玉、气度从容，颇有世家风范。他既习家传刀法，又善理阀中庶务与商道交涉，遇事不疾不徐、进退有度。生平痴情于傅君婥，纵知立场悬殊仍以礼相待，乱世之中难得守住一份君子本心。出自黄易小说《大唐双龙传》。
     default_gender: male
-    default_morality: 70
+    default_morality: 82
     recruitable: true
     growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 22
+      intellect: 38
+      defense: 20
+      agility: 20
+  - key: hero_huangyi_0102
+    name: 荣凤祥
+    avatar: pig/文016.png
+    archetype: civil
+    flavor: 荣凤祥是东都洛阳名震商界的富商巨贾，表面上八面玲珑、广结达官贵人，暗地里却是魔门安插在中原的资深宿老。他精于财计商道与权谋斡旋，暗中操控洛阳帮派与黑市情报，笑脸背后藏着极深的算计与杀机。出自黄易小说《大唐双龙传》。
+    default_gender: male
+    default_morality: 24
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 18
+      intellect: 48
+      defense: 16
+      agility: 18
+  - key: hero_huangyi_0103
+    name: 辟守玄
+    avatar: pig/武007.png
+    archetype: military
+    flavor: 辟守玄是魔门真传道高手，昔年邪极宗四位成名宿老之一，身法诡异莫测、招式阴狠毒辣。他生性多疑好斗，与尤鸟倦等人既互相提防又屡屡勾结，为争夺邪帝舍利在中原掀起重重血雨，是白道豪杰极难防范的暗夜强敌。出自黄易小说《大唐双龙传》。
+    default_gender: male
+    default_morality: 20
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 34
+      intellect: 20
+      defense: 16
+      agility: 30
+  - key: hero_huangyi_0104
+    name: 芭黛儿
+    avatar: monkey_wen_female1.png
+    archetype: civil
+    flavor: 芭黛儿是来自西域的奇女子，容姿异域明艳，既有过人的胆识与外交手腕，又通晓西域秘术与江湖情报。她周旋于突厥、西域诸国与中原群雄之间，心思活络、进退自如，在错综复杂的丝路暗战中屡屡化险为夷。出自黄易小说《大唐双龙传》。
+    default_gender: female
+    default_morality: 55
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 14
+      intellect: 44
+      defense: 16
+      agility: 26
+  - key: hero_huangyi_0105
+    name: 单琬晶
+    avatar: monkey_wu_female4.png
+    archetype: military
+    flavor: 单琬晶是东溟派公主，单美仙爱女，自幼随母掌管海外兵械生意，养成骄傲果决的性子。她武艺承自东溟一脉，身法迅捷，出手狠辣不留余地；看似刁蛮难驯，实则重情重义，一旦认定了人，便肯顶着满城风雨相护到底。出自黄易小说《大唐双龙传》。
+    default_gender: female
+    default_morality: 68
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 32
+      intellect: 20
+      defense: 18
+      agility: 30
+  - key: hero_huangyi_0106
+    name: 董淑妮
+    avatar: monkey_wen_female4.png
+    archetype: civil
+    flavor: 董淑妮出身洛阳名门董家，生得娇艳明媚，自小惯看权贵风云，极善揣摩人心与权衡利害。她曾对寇仲心生爱慕，却又在家族利益与乱世浮沉间左右摇摆。美貌与机变是她的护身符，在刀光剑影的东都城里步步为营。出自黄易小说《大唐双龙传》。
+    default_gender: female
+    default_morality: 48
+    recruitable: true
+    growth_range:
+    - 3
     - 6
-    - 9
+    attribute_weights:
+      force: 10
+      intellect: 44
+      defense: 18
+      agility: 28
+  - key: hero_huangyi_0107
+    name: 宣永
+    avatar: pig/文011.png
+    archetype: civil
+    flavor: 宣永原为海沙帮与江南义军出身的奇才，后追随寇仲投身少帅军，成为帐下极受倚重的军师与水师统领。他精通江河舟师调度、兵法奇谋与后勤整编，性情沉稳干练，在少帅军转战南北的数场恶战中屡出妙计。出自黄易小说《大唐双龙传》。
+    default_gender: male
+    default_morality: 78
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 18
+      intellect: 48
+      defense: 18
+      agility: 16
+  - key: hero_huangyi_0108
+    name: 香玉山
+    avatar: monkey_wen_male4.png
+    archetype: civil
+    flavor: 香玉山是巴陵香家少主，外表风度翩翩、出手阔绰，实则心术不正、野心极盛。他暗中经营人口贩卖与黑道勾当，与魔门及各方势力暗通款曲，极擅借刀杀人与权钱交易，在梁都与双龙展开了一场险象环生的暗战。出自黄易小说《大唐双龙传》。
+    default_gender: male
+    default_morality: 18
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 16
+      intellect: 46
+      defense: 14
+      agility: 24
+  - key: hero_huangyi_0109
+    name: 尤鸟倦
+    avatar: pig/武015.png
+    archetype: military
+    flavor: 尤鸟倦人称“倒行逆施”，原为邪极宗高手，行事向来反其道而行，专挑世人意想不到的角度下毒手。他身法怪异、招式阴狠，常在江湖浑水中趁火打劫，既敢算计正道豪杰，也敢与魔门同道勾心斗角，是令各方头痛的枭雄。出自黄易小说《大唐双龙传》。
+    default_gender: male
+    default_morality: 22
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 34
+      intellect: 22
+      defense: 18
+      agility: 26
+  - key: hero_huangyi_0110
+    name: 边不负
+    avatar: pig/武017.png
+    archetype: military
+    flavor: 边不负是阴癸派长老、祝玉妍师弟，人称“隐形人”，极擅敛息潜行与环刃奇招。他生性阴毒好色、心胸狭隘，常借阴癸派威势在暗处设局陷害江湖正道。虽品行卑劣，一身魔门内功与突袭手段却颇为棘手，不可小觑。出自黄易小说《大唐双龙传》。
+    default_gender: male
+    default_morality: 18
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 32
+      intellect: 20
+      defense: 18
+      agility: 30
+  - key: hero_huangyi_0111
+    name: 金环真
+    avatar: monkey_wu_female3.png
+    archetype: military
+    flavor: 金环真是魔门邪极宗宿老之一，容貌冶艳却心肠毒辣，一对金环兵刃既可近身搏杀，又能远程袭敌。她长年隐匿江湖暗中蓄力，为争夺邪帝舍利重出中原，行事诡诈多变，连同门宿敌亦不敢轻易背对她的锋芒。出自黄易小说《大唐双龙传》。
+    default_gender: female
+    default_morality: 22
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 34
+      intellect: 20
+      defense: 16
+      agility: 30
+  - key: hero_huangyi_0112
+    name: 伏难陀
+    avatar: pig/武023.png
+    archetype: military
+    flavor: 伏难陀是来自天竺的瑜伽武学宗师，也是跋锋寒早年习武的授业恩师。他专精天竺古法内功与奇诡拳脚，周身筋骨柔韧异常，发力角度常出中原武者意料。其性情冷傲孤僻，唯武道至上，曾随突厥势力南下与中原高手争锋。出自黄易小说《大唐双龙传》。
+    default_gender: male
+    default_morality: 48
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 38
+      intellect: 16
+      defense: 24
+      agility: 22
+  - key: hero_huangyi_0113
+    name: 嘉祥
+    avatar: pig/文014.png
+    archetype: civil
+    flavor: 嘉祥是佛门四大圣僧之一，佛学造诣精深，禅功修为浑厚纯正，在天下白道武林中素享盛名。他随慈航静斋与净念禅院奔走于乱世之中，以佛门定力护持正道、平息魔门风波，既能辩法安人心，也能施展佛门绝学退敌。出自黄易小说《大唐双龙传》。
+    default_gender: male
+    default_morality: 88
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 22
+      intellect: 42
+      defense: 24
+      agility: 12
+  - key: hero_huangyi_0114
+    name: 任少名
+    avatar: pig/武026.png
+    archetype: military
+    flavor: 任少名是铁骑会帮主，雄踞竟陵一带，麾下精骑云集、号令严明。他出身世家又久历沙场，枪法与统兵之道俱有章法，一心欲趁隋末乱局逐鹿中原。虽在竟陵一役败于双龙与少帅军之手，其枭雄气概仍令对手不敢轻视。出自黄易小说《大唐双龙传》。
+    default_gender: male
+    default_morality: 45
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 24
+      defense: 24
+      agility: 16
+  - key: hero_huangyi_0115
+    name: 云玉真
+    avatar: monkey_wen_female5.png
+    archetype: civil
+    flavor: 云玉真是巨鲲帮帮主，容貌冶艳、八面玲珑，以一介女子之身掌管漕运大帮，手段颇为老辣。她初时周旋于宇文化及与双龙之间，处处权衡利益，后来在乱世大潮中看清人心向背，几番相助寇仲，显露出江湖奇女子的果敢。出自黄易小说《大唐双龙传》。
+    default_gender: female
+    default_morality: 55
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 16
+      intellect: 42
+      defense: 18
+      agility: 24
+  - key: hero_huangyi_0116
+    name: 虚夜月
+    avatar: monkey_wu_female5.png
+    archetype: military
+    flavor: 虚夜月是鬼王虚若无的掌上明珠，生性古灵精怪、爱憎分明，一身家传轻功与剑法灵巧多变。她初入江湖便与韩柏结下不解之缘，嘴上不饶人，心里却把情义看得极重。风雨来临时从不退缩，总能以笑声冲散几分江湖肃杀。出自黄易小说《覆雨翻云》。
+    default_gender: female
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 30
+      intellect: 20
+      defense: 16
+      agility: 34
+  - key: hero_huangyi_0119
+    name: 上官鹰
+    avatar: pig_wu_male1.png
+    archetype: military
+    flavor: 上官鹰是怒蛟帮少帮主，接掌庞大水帮基业后一心欲与浪翻云比肩，一度因心性猜忌险遭强敌离间。历经怒蛟岛血火劫难之后，他彻底看清江湖险恶与兄弟真情，挥兵御敌、重振帮威，展现出一方帮主应有的担当。出自黄易小说《覆雨翻云》。
+    default_gender: male
+    default_morality: 65
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 22
+      defense: 24
+      agility: 18
+  - key: hero_huangyi_0120
+    name: 寒碧翠
+    avatar: monkey_wu_female6.png
+    archetype: military
+    flavor: 寒碧翠是怒蛟帮女中豪杰，英姿飒爽、剑法犀利，在帮中素有威望。她倾心于戚长征，却不作寻常儿女态，每逢怒蛟岛遇险便提剑上阵、与诸兄弟并肩死战。江湖风浪再大，她都守着怒蛟旗帜与心中所爱，毫不动摇。出自黄易小说《覆雨翻云》。
+    default_gender: female
+    default_morality: 78
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 32
+      intellect: 18
+      defense: 22
+      agility: 28
+  - key: hero_huangyi_0121
+    name: 凌战天
+    avatar: pig_wu_male3.png
+    archetype: military
+    flavor: 凌战天是怒蛟帮副帮主，浪翻云与上官鹰的铁血兄弟，人称怒蛟岛的定海神针。他性格刚烈沉稳，练就一身铜皮铁骨般的硬功与重兵器绝技，驻守水寨御敌无数。只要凌战天立在城头，敌人便知想踏平怒蛟岛绝非易事。出自黄易小说《覆雨翻云》。
+    default_gender: male
+    default_morality: 82
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 16
+      defense: 34
+      agility: 14
+  - key: hero_huangyi_0122
+    name: 白芳华
+    avatar: monkey/其他随机角色/文065_女.png
+    archetype: civil
+    flavor: 白芳华出身江南名门，性情温婉娴静而极有韧性，琴书才情俱佳。她与风行烈相知相恋，即便面对魔师宫与各方势力的重重追杀，依旧不离不弃、沉静相守。乱世飘萍之中，她的聪慧与柔情是风行烈最温暖的归处。出自黄易小说《覆雨翻云》。
+    default_gender: female
+    default_morality: 84
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 10
+      intellect: 46
+      defense: 22
+      agility: 22
+  - key: hero_huangyi_0123
+    name: 善柔
+    avatar: monkey/其他随机角色/武083_女_.png
+    archetype: military
+    flavor: 善柔原为墨家门下，后沦为战国乱世中的顶尖女刺客，身手矫捷、剑法冷冽。她是项少龙初临战国时最先结识的江湖人，表面冷漠重利，骨子里却藏着侠女心肠。多次暗中救护项少龙脱险，爱意深藏剑锋之下而不言。出自黄易小说《寻秦记》。
+    default_gender: female
+    default_morality: 65
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 32
+      intellect: 18
+      defense: 14
+      agility: 36
+  - key: hero_huangyi_0124
+    name: 琴清
+    avatar: monkey_wen_female6.png
+    archetype: civil
+    flavor: 琴清是秦国少有的博学才女，曾任公子嬴政太傅，端庄清雅、见识卓绝。她虽为守节寡妇，却不拘礼教成见，与项少龙论史谈兵、心意相通。在咸阳暗潮汹涌的宫廷政局中，她以冷静与智慧助项少龙屡破危局。出自黄易小说《寻秦记》。
+    default_gender: female
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 8
+      intellect: 52
+      defense: 20
+      agility: 20
+  - key: hero_huangyi_0126
+    name: 陶方
+    avatar: pig/文018.png
+    archetype: civil
+    flavor: 陶方是乌家堡大总管，精明干练、阅历极深，上通列国商路，下管牧场家业。他慧眼识珠，最早看重项少龙的不凡本领，此后一路鼎力扶持，在赵、秦两国之间为其打点人脉、筹措银钱，是最令人放心的老成谋士。出自黄易小说《寻秦记》。
+    default_gender: male
+    default_morality: 78
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 14
+      intellect: 48
+      defense: 22
+      agility: 16
+  - key: hero_huangyi_0127
+    name: 高彦
+    avatar: monkey_wen_male5.png
+    archetype: civil
+    flavor: 高彦人称“大嘴巴”，是边荒集里消息最灵通的活地图，也是燕飞过命的生死兄弟。他平日插科打诨、嘴上没个把门，关键时刻却胆大心细，极擅刺探敌情与随机应变。边荒集风波迭起，少了他这张嘴与这颗脑袋便少了一半生机。出自黄易小说《边荒传说》。
+    default_gender: male
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 16
+      intellect: 42
+      defense: 16
+      agility: 26
+  - key: hero_huangyi_0128
+    name: 慕容战
+    avatar: pig/武030.png
+    archetype: military
+    flavor: 慕容战是边荒集声名赫赫的传奇猛将，出身鲜卑名族却洒脱不羁，与燕飞、刘裕结为莫逆之交。他使一口大刀刚猛无俦，沙场冲阵所向披靡，既能率领边荒义士血战强敌，也重江湖情义，是乱世中最痛快的铁血汉子。出自黄易小说《边荒传说》。
+    default_gender: male
+    default_morality: 76
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
     attribute_weights:
       force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
+      intellect: 16
+      defense: 26
+      agility: 18
+  - key: hero_huangyi_0132
+    name: 白清儿
+    avatar: monkey/其他随机角色/文078_女.png
+    archetype: civil
+    flavor: 白清儿是阴癸派年轻一代的娇艳妖女，婠婠师妹，修习天魔大法与魅惑秘术，最擅察言观色与暗处施毒计。她虽不及师姐那般深不可测，却同样心狠手辣、机变百出，在洛阳与关中屡次替魔门刺探机密、搅动风云。出自黄易小说《大唐双龙传》。
+    default_gender: female
+    default_morality: 24
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 22
+      intellect: 40
+      defense: 12
+      agility: 26
+  - key: hero_huangyi_0134
+    name: 江海流
+    avatar: monkey_wu_male5.png
+    archetype: military
+    flavor: 江海流是边荒集第一大帮边荒帮帮主，豪迈仗义、武功高绝，凭一双铁拳与过人威望在南北夹缝中撑起一片法外净土。他极重江湖道义，对燕飞与边荒群雄多有照拂，面对胡汉强敌来犯始终迎锋而立，是一方绿林巨擘。出自黄易小说《边荒传说》。
+    default_gender: male
+    default_morality: 78
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 38
+      intellect: 20
+      defense: 24
+      agility: 18
+  blue:
   - key: hero_teng_yi
     name: 滕翼
     avatar: pig/武011.png
@@ -259,22 +625,6 @@ heroes:
       intellect: 25
       defense: 15
       agility: 30
-  - key: hero_feng_xinglie
-    name: 风行烈
-    avatar: pig/武088.png
-    archetype: military
-    flavor: 风行烈是枪王厉若海门下的传人，性情磊落，枪法凌厉。师门风云与江湖血火磨出他的坚忍，却没有磨掉他的赤子之心；他行事干脆，认定的情义便不会轻易放手。这样的枪，刺出去是锋芒，收回来是分寸。出自黄易小说《覆雨翻云》。
-    default_gender: male
-    default_morality: 75
-    recruitable: true
-    growth_range:
-    - 6
-    - 9
-    attribute_weights:
-      force: 35
-      intellect: 15
-      defense: 25
-      agility: 25
   - key: hero_fan_liangji
     name: 范良极
     avatar: monkey_wen_male3.png
@@ -323,6 +673,310 @@ heroes:
       intellect: 28
       defense: 15
       agility: 22
+  - key: hero_huangyi_0129
+    name: 任青媞
+    avatar: monkey_wu_female2.png
+    archetype: military
+    flavor: 任青媞是天师道圣女、孙恩爱徒，冷艳孤高、武学天赋极高，深得天师道绝学真传。她奉师命统领教中精锐周旋南北，行事果决狠辣，与燕飞等人几番生死交锋，既展现出一代女高手的凌厉锋芒，亦暗藏难言情劫。出自黄易小说《边荒传说》。
+    default_gender: female
+    default_morality: 42
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 34
+      intellect: 22
+      defense: 16
+      agility: 28
+  - key: hero_huangyi_0130
+    name: 傅君婥
+    avatar: monkey_wu_female.png
+    archetype: military
+    flavor: 傅君婥是高句丽奕剑大师傅采林首徒，剑术超群、清艳绝伦。她奉师命潜入中原行刺杨广，机缘巧合下收留并照拂年少的寇仲与徐子陵，被双龙视若慈母。为护两兄弟免遭宇文化及毒手，她力战殉身，成为双龙一生难忘的羁绊。出自黄易小说《大唐双龙传》。
+    default_gender: female
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 36
+      intellect: 20
+      defense: 18
+      agility: 26
+  - key: hero_huangyi_0131
+    name: 解晖
+    avatar: pig/武048.png
+    archetype: military
+    flavor: 解晖是巴蜀独尊堡堡主，川中第一豪门领袖，威震西南武林数十载。他武功深沉霸道，更兼城府深厚、精于纵横权衡，坐镇蜀中静观隋末天下易主，既能以强横武力震慑魔门宵小，亦懂审时度势保全一族兴盛。出自黄易小说《大唐双龙传》。
+    default_gender: male
+    default_morality: 60
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 38
+      intellect: 24
+      defense: 24
+      agility: 14
+  - key: hero_huangyi_0133
+    name: 岳山
+    avatar: pig/武032.png
+    archetype: military
+    flavor: 岳山号称“霸刀”，乃隋唐之际威震江湖的一代刀道名宿，一手换日大法与霸刀绝学刚猛无俦。当年他曾与天刀宋缺一战惜败，此后远隐潜修，其留下的霸刀威名仍令魔门天君席应闻风色变，堪称刀中豪杰。出自黄易小说《大唐双龙传》。
+    default_gender: male
+    default_morality: 65
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 44
+      intellect: 16
+      defense: 24
+      agility: 16
+  - key: hero_huangyi_0135
+    name: 曲傲
+    avatar: monkey_wu_male4.png
+    archetype: military
+    flavor: 曲傲人称“铁勒飞鹰”，雄踞草原铁勒部，乃仅次于三大宗师的塞外绝顶高手。他一身长生诀觊觎之心与霸道掌法同样凌厉，曾亲率众徒南下中原与双龙及跋锋寒死斗。性情高傲狠辣，却也有草原霸主不肯低头的凶悍气势。出自黄易小说《大唐双龙传》。
+    default_gender: male
+    default_morality: 35
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 42
+      intellect: 16
+      defense: 24
+      agility: 18
+  - key: hero_huangyi_0136
+    name: 纪千千
+    avatar: monkey/其他随机角色/文084_女.png
+    archetype: civil
+    flavor: 纪千千是东晋建康城名动天下的第一才女与名妓，色艺双绝、气度高华，令谢安、燕飞等南北豪杰皆为之倾倒。她身处乱世漩涡，却能以从容与大义周旋于群雄之间，与燕飞生死相许，成为边荒烽火中最耀眼的一抹绝色。出自黄易小说《边荒传说》。
+    default_gender: female
+    default_morality: 84
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 8
+      intellect: 52
+      defense: 18
+      agility: 22
+  - key: hero_huangyi_0137
+    name: 柳摇枝
+    avatar: monkey_wu_male6.png
+    archetype: military
+    flavor: 柳摇枝是花间派当代传人，人称“花贼”，轻功身法冠绝当世，行事风流诡奇、亦正亦邪。他既继承了魔门花间一脉的绝顶武学，又偏偏不肯受庞斑与域外势力驱使，在明初江湖里来去如风，令敌友皆难测其深浅。出自黄易小说《覆雨翻云》。
+    default_gender: male
+    default_morality: 48
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 32
+      intellect: 22
+      defense: 12
+      agility: 34
+  - key: hero_huangyi_0138
+    name: 靳冰云
+    avatar: monkey_wu_female2.png
+    archetype: military
+    flavor: 靳冰云是慈航静斋高徒，清丽冷艳、剑心澄明。她奉师门之命化作庞斑剑下情劫，孤身入魔师宫侍奉左右，以无上定力与牺牲精神替天下正道争取二十年喘息之机。一剑在手既藏冰雪寒意，亦含大义柔情。出自黄易小说《覆雨翻云》。
+    default_gender: female
+    default_morality: 84
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 32
+      intellect: 26
+      defense: 16
+      agility: 26
+  - key: hero_huangyi_0139
+    name: 端木菱
+    avatar: monkey_wen_female7.png
+    archetype: civil
+    flavor: 端木菱是大周神都名门出身的奇女子，容貌清雅、聪慧过人，既擅琴棋智计，亦习得高明剑艺。她在武周权争与塞外暗潮交织的险局中与龙鹰相知同行，屡屡以敏锐洞察识破阴谋，堪称盛唐江湖难得的红颜智囊。出自黄易小说《日月当空》。
+    default_gender: female
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 20
+      intellect: 44
+      defense: 16
+      agility: 20
+  - key: hero_huangyi_0140
+    name: 里赤媚
+    avatar: pig/武046.png
+    archetype: military
+    flavor: 里赤媚是天命教教主，魔师庞斑座下第一大将，修炼天魅凝阴大法，身法如鬼魅难测。他纵横中原与塞外，杀人无声无息，曾数度逼得怒蛟帮与正道高手陷入绝境。虽甘居庞斑之下，其武学造诣已足以震慑当世武林。出自黄易小说《覆雨翻云》。
+    default_gender: male
+    default_morality: 22
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 38
+      intellect: 18
+      defense: 16
+      agility: 28
+  - key: hero_huangyi_0142
+    name: 程苍古
+    avatar: pig/武054.png
+    archetype: military
+    flavor: 程苍古是边荒集最负盛名的绝顶剑手，人称“边荒第一快剑”，剑势冷冽如秋霜，出手瞬息即分生死。他性情孤傲却极重诺言，与燕飞、慕容战并肩血战胡汉强敌，在边荒烽火中以一柄长剑刻下不朽侠名。出自黄易小说《边荒传说》。
+    default_gender: male
+    default_morality: 74
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 38
+      intellect: 16
+      defense: 16
+      agility: 30
+  - key: hero_huangyi_0143
+    name: 曹秋道
+    avatar: pig/武049.png
+    archetype: military
+    flavor: 曹秋道是战国末年齐国第一剑客、稷下学宫供奉，剑术出神入化，被公认为当世剑道宗师。他平素淡泊名利，唯痴迷于剑理极限，与项少龙一见如故、惺惺相惜。其剑势大巧不工、随心所欲，令七国武者无不仰望。出自黄易小说《寻秦记》。
+    default_gender: male
+    default_morality: 78
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 44
+      intellect: 20
+      defense: 18
+      agility: 18
+  - key: hero_ji_yanran
+    name: 纪嫣然
+    avatar: monkey_wen_female10.png
+    archetype: civil
+    flavor: 纪嫣然才情出众，既有倾城之色，也有洞察时局的聪慧。她与项少龙相知相守，在战国乱世中不只以柔情相伴，更以胆识与谋略护住彼此。才女若只会吟诗，那是世人的误会；诗文之外，她还藏着一柄不肯低头的剑。出自黄易小说《寻秦记》。
+    default_gender: female
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 45
+      defense: 20
+      agility: 25
+  - key: hero_song_yuzhi
+    name: 宋玉致
+    avatar: monkey_wen_female2.png
+    archetype: civil
+    flavor: 宋玉致出身岭南宋阀，明丽而有主见，是寇仲心中难以割舍的牵挂。乱世之中，她并非只在后方等待，而是以自己的立场与坚韧守住家国和真情。能让少帅在江山与儿女情之间反复掂量，这分量自然不轻。出自黄易小说《大唐双龙传》。
+    default_gender: female
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 15
+      intellect: 35
+      defense: 20
+      agility: 30
+  - key: hero_shang_xiuxun
+    name: 商秀珣
+    avatar: monkey_wu_female.png
+    archetype: military
+    flavor: 商秀珣是飞马牧场场主，爽朗果决，既能驭马，也能驭住一方势力。她不以柔弱示人，面对乱世与情感都敢作敢当；徐子陵与她的相遇，少不了风波，也少不了真心。牧场账本和江湖刀光，她一样都不肯交给别人代管。出自黄易小说《大唐双龙传》。
+    default_gender: female
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 30
+      intellect: 20
+      defense: 20
+      agility: 30
+  - key: hero_huangyi_0117
+    name: 虚若无
+    avatar: duck_wen_male1.png
+    archetype: civil
+    flavor: 虚若无人称“鬼王”，是朱元璋最为倚重的谋臣与心腹，长年居于鬼王府中运筹帷幄。他看似病弱文雅，实则深藏绝世武功与过人胆识，洞悉朝堂暗流与江湖格局。每逢大明倾危之际，总能以奇谋稳住大局，令魔师宫也忌惮三分。出自黄易小说《覆雨翻云》。
+    default_gender: male
+    default_morality: 72
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 22
+      intellect: 46
+      defense: 16
+      agility: 16
+  - key: hero_huangyi_0118
+    name: 单玉如
+    avatar: monkey/其他随机角色/文059_女.png
+    archetype: civil
+    flavor: 单玉如是媚宗宗主，天命教中的红粉军师，容色倾城而心肠狠辣。她精于魅惑之术与纵横捭阖的阴谋，常以温柔乡作陷阱，令无数江湖好手神魂颠倒、身败名裂。在庞斑南下中原的大局中，她是暗线布局里最毒的一枚棋子。出自黄易小说《覆雨翻云》。
+    default_gender: female
+    default_morality: 20
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 18
+      intellect: 46
+      defense: 12
+      agility: 24
+  - key: hero_huangyi_0125
+    name: 元宗
+    avatar: pig/武028.png
+    archetype: military
+    flavor: 元宗是战国末年墨家巨子，一身墨子剑法已臻化境，胸怀兼爱非攻之志。他因门派内变遭严平等人追杀，临危之际将墨子剑法与巨子令传付项少龙，托其匡扶侠义。虽未能亲见乱世止戈，其风骨与剑道却借后人传扬七国。出自黄易小说《寻秦记》。
+    default_gender: male
+    default_morality: 88
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 36
+      intellect: 26
+      defense: 22
+      agility: 16
+  - key: hero_huangyi_0148
+    name: 兰特
+    avatar: pig/武060.png
+    archetype: military
+    flavor: 兰特本是边陲默默无闻的少年，凭借过人悟性与不屈意志，历经血战磨砺终成纵横大陆的传奇大剑师。他手持神剑迎战巫帝与异族大军，以一己之力改写净土存亡之局，既有统帅千军的豪情，也有直指剑道极境的孤勇。出自黄易小说《大剑师传奇》。
+    default_gender: male
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 42
+      intellect: 20
+      defense: 20
+      agility: 18
   purple:
   - key: hero_zhu_yuzhen
     name: 祝玉妍
@@ -371,22 +1025,6 @@ heroes:
       force: 30
       intellect: 35
       defense: 15
-      agility: 20
-  - key: hero_chuan_ying
-    name: 传鹰
-    avatar: monkey/黄易/传鹰.png
-    archetype: military
-    flavor: 传鹰是《破碎虚空》的主角，南宋末年崛起于江湖的绝顶刀客。他因缘际会进入惊雁宫，参悟战神图录之秘，手持鹰刀纵横乱世。少年意气与绝世武学在他身上汇成一条求道之路，尽头不是称霸，而是破碎虚空、超越武道极境。他最终踏空而去，只留给江湖一个背影。出自黄易小说《破碎虚空》。
-    default_gender: male
-    default_morality: 75
-    recruitable: true
-    growth_range:
-    - 6
-    - 12
-    attribute_weights:
-      force: 35
-      intellect: 20
-      defense: 25
       agility: 20
   - key: hero_shi_zhixuan
     name: 石之轩
@@ -452,22 +1090,6 @@ heroes:
       intellect: 25
       defense: 20
       agility: 25
-  - key: hero_xiang_shaolong
-    name: 项少龙
-    avatar: monkey/黄易/项少龙.png
-    archetype: military
-    flavor: 项少龙本是现代特种部队成员，一场时空实验将他抛回战国末年。他凭训练有素的身手、后世见识与临机应变，在七国风云中步步求生，既卷入权谋厮杀，也结识红颜知己。他辅佐少年嬴政登上秦王之位，最终在功成之后选择远离庙堂。这场穿越不是换一处江湖，而是骤然接手战国乱局。出自黄易小说《寻秦记》。
-    default_gender: male
-    default_morality: 75
-    recruitable: true
-    growth_range:
-    - 7
-    - 11
-    attribute_weights:
-      force: 32
-      intellect: 28
-      defense: 20
-      agility: 20
   - key: hero_kou_zhong
     name: 寇仲
     avatar: monkey/黄易/寇仲.png
@@ -564,22 +1186,6 @@ heroes:
       intellect: 24
       defense: 18
       agility: 30
-  - key: hero_ling_donglai
-    name: 令东来
-    avatar: monkey/黄易/令东来.png
-    archetype: military
-    flavor: 令东来是黄易武侠中破碎虚空的传奇宗师，事迹多留在前辈高手的追述里。他不以称霸江湖为志，而是一心以武入道，追寻越过凡尘的终极境界；其留下的武学与行踪，都成了后世高手仰望的谜。出自黄易小说《破碎虚空》。
-    default_gender: male
-    default_morality: 75
-    recruitable: true
-    growth_range:
-    - 7
-    - 12
-    attribute_weights:
-      force: 50
-      intellect: 15
-      defense: 20
-      agility: 15
   - key: hero_pang_ban
     name: 庞斑
     avatar: monkey/黄易/庞斑.png
@@ -596,3 +1202,196 @@ heroes:
       intellect: 20
       defense: 25
       agility: 10
+  - key: hero_huangyi_0145
+    name: 厉工
+    avatar: monkey_wu_male8.png
+    archetype: military
+    flavor: 厉工号称“血手”，乃南宋末年威震武林的绝世魔道宗师，毕生痴迷武道极境，以血手印横行天下未逢抗手。他苦修紫血大法十载后挑战无上宗师令东来，终在十绝关前受其点化、勘破生死执念，是距离破碎虚空仅一步之遥的传奇人物。出自黄易小说《破碎虚空》。
+    default_gender: male
+    default_morality: 45
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 46
+      intellect: 20
+      defense: 20
+      agility: 14
+  - key: hero_huangyi_0146
+    name: 燕飞
+    avatar: monkey_wu_male10.png
+    archetype: military
+    flavor: 燕飞是边荒集走出的传奇剑客，手执蝶恋花神剑，生性洒脱重义，与刘裕、慕容战共抗南北强敌。他因缘际会融合丹劫奇功与天道感悟，在战火连天的东晋乱世里一路破境登峰，最终与孙恩决战后破碎虚空，留名武道青史。出自黄易小说《边荒传说》。
+    default_gender: male
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 40
+      intellect: 22
+      defense: 18
+      agility: 20
+  - key: hero_huangyi_0147
+    name: 向雨田
+    avatar: pig/武055.png
+    archetype: military
+    flavor: 向雨田号称“邪帝”，乃魔门数百年来最惊才绝艳的旷世奇才，唯二练成道心种魔大法极境之人。他早在东晋边荒时代便纵横天下，游戏红尘、不拘正邪，连魔门圣舍利亦由其亲手留存，是贯穿黄易多部奇书的神话级宗师。出自黄易小说《边荒传说》。
+    default_gender: male
+    default_morality: 50
+    recruitable: true
+    growth_range:
+    - 8
+    - 11
+    attribute_weights:
+      force: 42
+      intellect: 24
+      defense: 18
+      agility: 16
+  - key: hero_huangyi_0149
+    name: 龙鹰
+    avatar: monkey_wu_male12.png
+    archetype: military
+    flavor: 龙鹰是邪帝向雨田隔代传人，身负道心种魔大法，在大周盛唐交错的风云里潇洒入世。他机变百出、风流不羁，既敢与武周权贵周旋，也能以魔种真气抗衡塞外强敌，在庙堂暗战与江湖剑影间闯出一条唯我独尊的奇路。出自黄易小说《日月当空》。
+    default_gender: male
+    default_morality: 62
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 36
+      intellect: 26
+      defense: 16
+      agility: 22
+  - key: hero_huangyi_0150
+    name: 风过庭
+    avatar: pig/武065.png
+    archetype: military
+    flavor: 风过庭是净土大陆声名最盛的绝顶大剑师，亦是引领兰特踏上剑道巅峰的恩师与明灯。他剑术通神、兵法超群，面对巫帝大军压境以一己之力撑起人类防线，其超然气度与绝世剑意成为整片大陆敬仰的丰碑。出自黄易小说《大剑师传奇》。
+    default_gender: male
+    default_morality: 88
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 44
+      intellect: 24
+      defense: 18
+      agility: 14
+  - key: hero_ba_fenghan
+    name: 跋锋寒
+    avatar: pig/武070.png
+    archetype: military
+    flavor: 跋锋寒来自草原，是纵横塞外的绝顶高手，豪迈不羁，尊重强者，也守自己的规矩。与寇仲、徐子陵相识后，他由对手成为惺惺相惜的朋友，立场可以相争，侠气却不必相让。草原的风教他快，江湖的交锋教他敬。出自黄易小说《大唐双龙传》。
+    default_gender: male
+    default_morality: 70
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 40
+      intellect: 15
+      defense: 25
+      agility: 20
+  - key: hero_feng_xinglie
+    name: 风行烈
+    avatar: pig/武088.png
+    archetype: military
+    flavor: 风行烈是枪王厉若海门下的传人，性情磊落，枪法凌厉。师门风云与江湖血火磨出他的坚忍，却没有磨掉他的赤子之心；他行事干脆，认定的情义便不会轻易放手。这样的枪，刺出去是锋芒，收回来是分寸。出自黄易小说《覆雨翻云》。
+    default_gender: male
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 35
+      intellect: 15
+      defense: 25
+      agility: 25
+  - key: hero_huangyi_0141
+    name: 鹰缘
+    avatar: pig/文028.png
+    archetype: civil
+    flavor: 鹰缘是布达拉宫一代活佛，德高望重、佛法精深，更身怀高深莫测的密宗奇功。他早已看破世间名利与正邪纷争，静观天下气运流转，曾以禅机与佛理点化秦梦瑶与韩柏，助其勘破武道心障，是超然物外的得道高僧。出自黄易小说《覆雨翻云》。
+    default_gender: male
+    default_morality: 90
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 24
+      intellect: 46
+      defense: 20
+      agility: 10
+  - key: hero_huangyi_0144
+    name: 八师巴
+    avatar: pig_wu_male4.png
+    archetype: military
+    flavor: 八师巴是蒙古密宗第一大宗师，修成变天击地大法，精神修为与武道境界皆已逼近天人之限。他深谋远虑、气度恢弘，为阻中原武道崛起亲赴惊雁宫外与传鹰决战。那一役超越了凡俗胜负，成为破碎虚空一脉的千古绝唱。出自黄易小说《破碎虚空》。
+    default_gender: male
+    default_morality: 55
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 40
+      intellect: 24
+      defense: 22
+      agility: 14
+  orange:
+  - key: hero_chuan_ying
+    name: 传鹰
+    avatar: monkey/黄易/传鹰.png
+    archetype: military
+    flavor: 传鹰是《破碎虚空》的主角，南宋末年崛起于江湖的绝顶刀客。他因缘际会进入惊雁宫，参悟战神图录之秘，手持鹰刀纵横乱世。少年意气与绝世武学在他身上汇成一条求道之路，尽头不是称霸，而是破碎虚空、超越武道极境。他最终踏空而去，只留给江湖一个背影。出自黄易小说《破碎虚空》。
+    default_gender: male
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 9
+    - 14
+    attribute_weights:
+      force: 35
+      intellect: 20
+      defense: 25
+      agility: 20
+  - key: hero_xiang_shaolong
+    name: 项少龙
+    avatar: monkey/黄易/项少龙.png
+    archetype: military
+    flavor: 项少龙本是现代特种部队成员，一场时空实验将他抛回战国末年。他凭训练有素的身手、后世见识与临机应变，在七国风云中步步求生，既卷入权谋厮杀，也结识红颜知己。他辅佐少年嬴政登上秦王之位，最终在功成之后选择远离庙堂。这场穿越不是换一处江湖，而是骤然接手战国乱局。出自黄易小说《寻秦记》。
+    default_gender: male
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 8
+    - 14
+    attribute_weights:
+      force: 32
+      intellect: 28
+      defense: 20
+      agility: 20
+  - key: hero_ling_donglai
+    name: 令东来
+    avatar: monkey/黄易/令东来.png
+    archetype: military
+    flavor: 令东来是黄易武侠中破碎虚空的传奇宗师，事迹多留在前辈高手的追述里。他不以称霸江湖为志，而是一心以武入道，追寻越过凡尘的终极境界；其留下的武学与行踪，都成了后世高手仰望的谜。出自黄易小说《破碎虚空》。
+    default_gender: male
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 9
+    - 14
+    attribute_weights:
+      force: 50
+      intellect: 15
+      defense: 20
+      agility: 15

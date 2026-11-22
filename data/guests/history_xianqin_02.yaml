@@ -168,34 +168,6 @@ heroes:
       intellect: 14
       defense: 24
       agility: 18
-  - key: hist_xianqin_0070
-    name: 荆轲
-    avatar: pig/武050.png
-    default_gender: male
-    archetype: military
-    flavor: （?—前227年）战国末卫国游侠，好读书击剑，人称荆卿。荆轲受燕太子丹礼遇，携樊於期首级与督亢地图入秦，地图中暗藏匕首，欲劫持秦王政。易水送别时，高渐离击筑，留下“风萧萧兮易水寒”之句。图穷匕见后行刺未成，他被秦王侍卫所杀。其行事勇决而谋略不足，后世对其评价褒贬不一。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 44
-      intellect: 14
-      defense: 22
-      agility: 20
-  - key: hist_xianqin_0071
-    name: 妇好
-    avatar: monkey/其他随机角色/武083_女_.png
-    default_gender: female
-    archetype: military
-    flavor: （?—约前1200年）商王武丁的王后，庙号“辛”，甲骨文中多次出现她的名字。妇好曾率军征伐土方、羌方、巴方等方国，相传与武丁配合伏击巴方，是现存较早的伏击战记载；她还主持祭祀与占卜，参与商王室事务。1976年殷墟妇好墓被发现，出土大量青铜器、玉器，为研究商代社会提供了重要实物。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 42
-      intellect: 16
-      defense: 24
-      agility: 18
   - key: hist_xianqin_0072
     name: 蹇叔
     avatar: pig/文033.png
@@ -280,20 +252,6 @@ heroes:
       intellect: 16
       defense: 26
       agility: 18
-  - key: hist_xianqin_0078
-    name: 李悝
-    avatar: pig/文048.png
-    default_gender: male
-    archetype: civil
-    flavor: （前455年—前395年）战国魏国大臣，法家代表人物，一说即李克。魏文侯任其为相，李悝推行“尽地力之教”，鼓励精耕细作，又行“平籴法”，以官仓购销平抑粮价；他编定《法经》六篇，并主张食有劳而禄有功，冲击世卿世禄。其变法使魏国富强，商鞅后来入秦，相传也曾参考《法经》。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 10
-      intellect: 58
-      defense: 18
-      agility: 14
   - key: hist_xianqin_0079
     name: 西门豹
     avatar: pig/文031.png
@@ -673,3 +631,45 @@ heroes:
       intellect: 20
       defense: 24
       agility: 16
+  - key: hist_xianqin_0070
+    name: 荆轲
+    avatar: pig/武050.png
+    default_gender: male
+    archetype: military
+    flavor: （?—前227年）战国末卫国游侠，好读书击剑，人称荆卿。荆轲受燕太子丹礼遇，携樊於期首级与督亢地图入秦，地图中暗藏匕首，欲劫持秦王政。易水送别时，高渐离击筑，留下“风萧萧兮易水寒”之句。图穷匕见后行刺未成，他被秦王侍卫所杀。其行事勇决而谋略不足，后世对其评价褒贬不一。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 44
+      intellect: 14
+      defense: 22
+      agility: 20
+  - key: hist_xianqin_0071
+    name: 妇好
+    avatar: monkey/其他随机角色/武083_女_.png
+    default_gender: female
+    archetype: military
+    flavor: （?—约前1200年）商王武丁的王后，庙号“辛”，甲骨文中多次出现她的名字。妇好曾率军征伐土方、羌方、巴方等方国，相传与武丁配合伏击巴方，是现存较早的伏击战记载；她还主持祭祀与占卜，参与商王室事务。1976年殷墟妇好墓被发现，出土大量青铜器、玉器，为研究商代社会提供了重要实物。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 42
+      intellect: 16
+      defense: 24
+      agility: 18
+  - key: hist_xianqin_0078
+    name: 李悝
+    avatar: pig/文048.png
+    default_gender: male
+    archetype: civil
+    flavor: （前455年—前395年）战国魏国大臣，法家代表人物，一说即李克。魏文侯任其为相，李悝推行“尽地力之教”，鼓励精耕细作，又行“平籴法”，以官仓购销平抑粮价；他编定《法经》六篇，并主张食有劳而禄有功，冲击世卿世禄。其变法使魏国富强，商鞅后来入秦，相传也曾参考《法经》。
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 10
+      intellect: 58
+      defense: 18
+      agility: 14

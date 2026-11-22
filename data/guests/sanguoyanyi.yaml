@@ -1,5 +1,3 @@
-# 三国演义门客
-
 heroes:
   purple:
   - key: hist_sljnbc_0589_purple
@@ -26,6 +24,22 @@ heroes:
       intellect: 15
       defense: 25
       agility: 20
+  - key: hero_sgyy_0118
+    name: 南华老仙
+    archetype: civil
+    default_gender: male
+    default_morality: 70
+    recruitable: true
+    avatar: monkey_wen_male10.png
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 10
+      intellect: 54
+      defense: 16
+      agility: 20
+    flavor: 三国演义开篇现身的神秘高人，碧眼童颜、手执藜杖，于山中遇采药不第的张角，授其天书《太平要术》三卷，叮嘱其代天宣化、普救世人，并警诫切勿萌生异心，否则必获恶报。一卷天书掀起黄巾狂潮，揭开东汉末年群雄逐鹿的乱世序幕。出自《三国演义》。
   blue:
   - key: hist_sljnbc_0589_blue
     name: 邢道荣
@@ -51,6 +65,214 @@ heroes:
       intellect: 15
       defense: 25
       agility: 20
+  - key: hero_sgyy_0105
+    name: 鲍三娘
+    archetype: military
+    default_gender: female
+    default_morality: 82
+    recruitable: true
+    avatar: monkey_wu_female4.png
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 38
+      intellect: 18
+      defense: 18
+      agility: 26
+    flavor: 鲍家庄鲍员外三女，自幼习武，容貌俊俏却剑法凌厉，素有侠名。因比武招亲折服于关索的英姿与武艺，结为伉俪，随夫效力蜀汉。南征北伐之际常与关索并肩守隘、协同作战，夫妻同心护卫蜀境，是三国演义传说中颇具人气的女将。出自《三国演义》。
+  - key: hero_sgyy_0106
+    name: 木鹿大王
+    archetype: civil
+    default_gender: male
+    default_morality: 45
+    recruitable: true
+    avatar: monkey_wen_male5.png
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 22
+      intellect: 40
+      defense: 18
+      agility: 20
+    flavor: 南蛮八纳洞洞主，骑白象、摇铜铃，精通道法异术，能呼风唤雾、驱使虎豹豺狼毒蛇猛兽冲阵。受孟获之请出战，一举以群兽大破蜀军前锋，令诸将惊骇不已。后被诸葛亮以喷火巨兽木雕破去妖术，大王亦战死乱军之中，奇诡莫测。出自《三国演义》。
+  - key: hero_sgyy_0107
+    name: 朵思大王
+    archetype: civil
+    default_gender: male
+    default_morality: 48
+    recruitable: true
+    avatar: monkey_wen_male6.png
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 18
+      intellect: 44
+      defense: 20
+      agility: 18
+    flavor: 秃龙洞洞主，南蛮中最富心计的智囊型酋长，深谙瘴疠山川地利，凭借哑泉、灭泉、黑泉、柔泉四口毒泉阻挡蜀军去路，险些令诸葛亮大军寸步难行。后因万安隐者指点蜀军解毒破局，秃龙洞失守，朵思大王力战阵亡，其巧借天险之谋令人印象深刻。出自《三国演义》。
+  - key: hero_sgyy_0112
+    name: 乔国老
+    archetype: civil
+    default_gender: male
+    default_morality: 85
+    recruitable: true
+    avatar: monkey_wen_male7.png
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 10
+      intellect: 48
+      defense: 22
+      agility: 20
+    flavor: 东吴元老重臣，江东大乔、小乔之父，德高望重、洞悉世情。周瑜设美人计诱刘备过江招亲时，乔国老深明孙刘联盟利害，先将婚讯禀报吴国太，又力赞刘备人中龙凤，一手促成甘露寺相亲，令周瑜弄假成真、赔了夫人又折兵，尽显老成谋国之智。出自《三国演义》。
+  - key: hero_sgyy_0113
+    name: 吴国太
+    archetype: civil
+    default_gender: female
+    default_morality: 82
+    recruitable: true
+    avatar: monkey_wen_female4.png
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 48
+      defense: 24
+      agility: 18
+    flavor: 孙坚次妻、孙尚香生母，在东吴宗室中威望极高，眼光独到且果决护短。甘露寺相亲时怒斥孙权、周瑜以亲妹为饵，当场看中刘备气度并力主完婚，更斥退埋伏刀斧手护女婿周全。既有慈母心肠，又具决断家国大事的威仪。出自《三国演义》。
+  - key: hero_sgyy_0114
+    name: 糜夫人
+    archetype: civil
+    default_gender: female
+    default_morality: 92
+    recruitable: true
+    avatar: monkey_wen_female5.png
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 10
+      intellect: 42
+      defense: 28
+      agility: 20
+    flavor: 东海糜竺之妹、刘备夫人，性情贞烈而深明大义。当阳长坂坡乱军之中，她身负重伤仍死死护住幼主阿斗，待赵云单骑寻至，为免拖累大将突围，将阿斗托付赵云后毅然投枯井自尽，成全了赵子龙七进七出的千古壮举，节烈动天。出自《三国演义》。
+  - key: hero_sgyy_0115
+    name: 甘夫人
+    archetype: civil
+    default_gender: female
+    default_morality: 90
+    recruitable: true
+    avatar: monkey_wen_female6.png
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 10
+      intellect: 44
+      defense: 26
+      agility: 20
+    flavor: 刘备正室夫人、刘禅生母，温婉贤淑、仪态端庄。早年随刘备颠沛流离于徐州、荆州之间，几经战乱而从未失节，深得关羽、张飞与赵云敬重。长坂坡一役在赵云护送下平安突围，一生辅佐刘备操持内宅，以仁德贤惠垂范蜀汉。出自《三国演义》。
+  - key: hero_sgyy_0116
+    name: 黄承彦
+    archetype: civil
+    default_gender: male
+    default_morality: 86
+    recruitable: true
+    avatar: monkey_wen_male8.png
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 50
+      defense: 20
+      agility: 20
+    flavor: 沔南名士，诸葛亮岳父，生性高洁爽朗、深通奇门遁甲与山水隐逸之趣。刘备二顾茅庐时，曾于大雪桥头遇其骑驴吟诗，误认作卧龙先生。夷陵之战后，陆逊误入诸葛亮所布石兵八阵，正是黄承彦奉女婿旧嘱现身引路脱险，风度超然物外。出自《三国演义》。
+  - key: hero_sgyy_0117
+    name: 紫虚上人
+    archetype: civil
+    default_gender: male
+    default_morality: 75
+    recruitable: true
+    avatar: monkey_wen_male9.png
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 52
+      defense: 18
+      agility: 20
+    flavor: 锦屏山隐世高道，能知人生死贵贱、洞察天机气数。益州战事将起时，刘璋部将刘璝、张任等人登门求问吉凶，上人仅赠八句谶语，便精准道破“左龙右凤，飞入西川；雏凤坠地，卧龙升天”，预言庞统落凤坡之劫与蜀汉兴势，玄妙难测。出自《三国演义》。
+  - key: hero_sgyy_0101
+    name: 周仓
+    archetype: military
+    default_gender: male
+    default_morality: 88
+    recruitable: true
+    avatar: pig/武007.png
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 44
+      intellect: 14
+      defense: 24
+      agility: 18
+    flavor: 关羽麾下贴身扛刀护卫，原为黄巾旧部，生得黑面虬髯、两臂有千斤之力，且精于水性。卧牛山落草时仰慕关羽威名，毅然散尽山寨追随左右，手扛八十二斤青龙偃月刀健步如飞。水淹七军时曾潜入江中生擒庞德，后闻关羽父子麦城遇害，拔剑自刎殉主，忠义千秋。出自《三国演义》。
+  - key: hero_sgyy_0102
+    name: 兀突骨
+    archetype: military
+    default_gender: male
+    default_morality: 45
+    recruitable: true
+    avatar: pig/武008.png
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 46
+      intellect: 8
+      defense: 34
+      agility: 12
+    flavor: 乌戈国国王，身长丈二、不食五谷，浑身鳞甲覆盖、刀枪难伤，统领三万所向披靡的藤甲兵。应孟获之邀出兵相助，藤甲军渡江不沉、刀箭不入，令蜀汉大军屡吃败仗。终因轻敌冒进，中了诸葛亮盘蛇谷火攻之计，连同藤甲兵葬身火海，是南蛮篇中最具压迫感的悍王。出自《三国演义》。
+  - key: hero_sgyy_0103
+    name: 祝融夫人
+    archetype: military
+    default_gender: female
+    default_morality: 65
+    recruitable: true
+    avatar: monkey_wu_female.png
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 16
+      defense: 18
+      agility: 26
+    flavor: 南蛮王孟获之妻，自称火神祝融氏后裔，恩怨分明、武艺高强，善使丈八长标与背插五口飞刀，百发百中。见孟获屡败，她亲自披挂上阵，阵前生擒张嶷、马忠两员蜀将，威震蜀营，堪称全书唯一真正上阵厮杀擒将的女中豪杰，后随孟获心悦诚服归降蜀汉。出自《三国演义》。
+  - key: hero_sgyy_0104
+    name: 关索
+    archetype: military
+    default_gender: male
+    default_morality: 85
+    recruitable: true
+    avatar: pig/武009.png
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 42
+      intellect: 18
+      defense: 18
+      agility: 22
+    flavor: 关羽第三子，人称花关索，少年英俊、武艺超群，继承关家刀法与枪术之精妙。荆州失守后流落民间习武，及至诸葛亮南征孟获时赶赴大营认祖归宗，奉命充当前部先锋，逢山开路、屡破蛮兵，深得诸葛亮赏识，延续了关氏一门的忠勇威名。出自《三国演义》。
   green:
   - key: hist_sljnbc_0589
     name: 邢道荣
@@ -82,3 +304,579 @@ heroes:
       intellect: 15
       defense: 25
       agility: 20
+  - key: hero_sgyy_0121
+    name: 裴元绍
+    archetype: military
+    default_gender: male
+    default_morality: 68
+    recruitable: true
+    avatar: pig/武017.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 14
+      defense: 24
+      agility: 20
+    flavor: 黄巾军旧将，与周仓同在卧牛山落草为寇，为人豪爽直率、重江湖义气。关羽千里走单骑途经山寨时，他与周仓慕名归附，自愿留守山寨等候接应。不料后来不知来者是常山赵云，贸然下山夺马，一合便死于赵云枪下，结局令人唏嘘。出自《三国演义》。
+  - key: hero_sgyy_0122
+    name: 胡班
+    archetype: civil
+    default_gender: male
+    default_morality: 84
+    recruitable: true
+    avatar: monkey_wen_male11.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 16
+      intellect: 44
+      defense: 20
+      agility: 20
+    flavor: 荥阳太守王植麾下从事，为人忠厚重义，其父胡华曾款待关羽并托付家书。王植密谋夜烧馆驿暗害关羽时，胡班见关羽天人姿容，又读父书大惊，遂冒死密报关羽并暗开城门放行，助关羽平安渡险。后入荆州投奔关羽，得保举入蜀为官。出自《三国演义》。
+  - key: hero_sgyy_0123
+    name: 普净
+    archetype: civil
+    default_gender: male
+    default_morality: 92
+    recruitable: true
+    avatar: duck_wen_male1.png
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 12
+      intellect: 48
+      defense: 22
+      agility: 18
+    flavor: 汜水关镇国寺长老，河东解良人，与关羽为同乡。关羽过五关途经镇国寺时，卞喜于壁衣后暗伏刀斧手谋害，普净以举刀示意暗中点破杀机，救关羽一命。后来关羽麦城遇难、英魂游荡玉泉山，亦是普净以佛法一言点化，使其皈依护法。出自《三国演义》。
+  - key: hero_sgyy_0124
+    name: 夏侯恩
+    archetype: military
+    default_gender: male
+    default_morality: 50
+    recruitable: true
+    avatar: pig/武021.png
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 38
+      intellect: 16
+      defense: 22
+      agility: 24
+    flavor: 曹操贴身背剑之将，深得曹操信任，负责掌管削铁如泥的绝世名剑“青釭剑”。长坂坡之战时，他自恃勇力脱离中军抢掠百姓财物，偏巧撞上怀抱幼主突围的赵云，未及拔剑便被一枪挑落马下，连人带剑成全了赵子龙的神兵传奇。出自《三国演义》。
+  - key: hero_sgyy_0125
+    name: 带来洞主
+    archetype: civil
+    default_gender: male
+    default_morality: 52
+    recruitable: true
+    avatar: duck_wen_male2.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 22
+      intellect: 40
+      defense: 18
+      agility: 20
+    flavor: 祝融夫人之弟、孟获内弟，八番九十三甸的谋主，善于联络南蛮各洞豪强。孟获屡战屡败之际，正是他先后荐引木鹿大王、乌戈国兀突骨等强援，并策划诈降之计试图反袭蜀营，虽屡遭诸葛亮识破，仍是孟获身旁最卖力的智囊亲信。出自《三国演义》。
+  - key: hero_sgyy_0126
+    name: 孟优
+    archetype: military
+    default_gender: male
+    default_morality: 48
+    recruitable: true
+    avatar: pig/武023.png
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 42
+      intellect: 12
+      defense: 28
+      agility: 18
+    flavor: 南蛮王孟获之弟，性情粗豪贪杯，虽有蛮力却少谋略。曾奉兄命假意携金珠赴蜀营献降，妄图里应外合夜袭诸葛亮，不料被蜀军美酒麻药灌翻，反而连累孟获一并被擒。屡败之后随兄归服蜀汉，成为南中安定的见证者。出自《三国演义》。
+  - key: hero_sgyy_0127
+    name: 金环三结
+    archetype: military
+    default_gender: male
+    default_morality: 50
+    recruitable: true
+    avatar: pig/武026.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 44
+      intellect: 12
+      defense: 26
+      agility: 18
+    flavor: 孟获麾下第一洞元帅，身材魁梧、性情暴躁，受命领五万蛮兵据守中路迎击蜀军。他自恃蛮军悍勇，扎营疏于防备，夜半遭赵云率精骑劫营，仓促披挂上马迎战，只一合便被赵云刺死于阵前，拉开七擒孟获战事的序幕。出自《三国演义》。
+  - key: hero_sgyy_0128
+    name: 董荼那
+    archetype: military
+    default_gender: male
+    default_morality: 58
+    recruitable: true
+    avatar: pig/武028.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 16
+      defense: 24
+      agility: 18
+    flavor: 孟获麾下第二洞元帅，手使铁骨朵，统领五万蛮兵镇守左路。初战被张嶷、魏延生擒，感念诸葛亮不杀之恩获释归洞。后因不愿再与恩人交兵，遭孟获重责一百大棍，遂在部众怂恿下缚孟获献降，最终反被脱逃的孟获杀害，命运曲折。出自《三国演义》。
+  - key: hero_sgyy_0129
+    name: 阿会喃
+    archetype: military
+    default_gender: male
+    default_morality: 58
+    recruitable: true
+    avatar: pig/武030.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 14
+      defense: 24
+      agility: 20
+    flavor: 孟获麾下第三洞元帅，与董荼那齐名，奉命领五万蛮兵驻守右路。遭蜀军夜袭生擒后，得诸葛亮以礼相待并放归故洞，从此心怀感戴，不忍再举刀兵。后随董荼那反戈擒献孟获，终因孟获复得放归而遭报复遇害。出自《三国演义》。
+  - key: hero_sgyy_0130
+    name: 忙牙长
+    archetype: military
+    default_gender: male
+    default_morality: 48
+    recruitable: true
+    avatar: pig/武032.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 45
+      intellect: 11
+      defense: 26
+      agility: 18
+    flavor: 孟获麾下副将，骑黄骠马、手使一口截头大刀，冲杀凶猛。初阵便以蛮力击退蜀将王平，助孟获大振声威。然在泸水之畔再战时，撞上久经沙场的马岱，交马仅一回合便被斩落马下，是南蛮阵营中颇具代表性的猛撞型战将。出自《三国演义》。
+  - key: hero_sgyy_0131
+    name: 孔秀
+    archetype: military
+    default_gender: male
+    default_morality: 52
+    recruitable: true
+    avatar: pig/武046.png
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 40
+      intellect: 16
+      defense: 26
+      agility: 18
+    flavor: 东岭关守将，为人死守军令、一丝不苟。关羽护送二嫂辞曹寻兄行至东岭关，因无丞相通关文凭，孔秀坚持不放，并要求留下家眷为质。双方一言不合提枪交锋，一合便丧命于青龙偃月刀下，成为“过五关斩六将”的第一位守关将领。出自《三国演义》。
+  - key: hero_sgyy_0132
+    name: 韩福
+    archetype: military
+    default_gender: male
+    default_morality: 42
+    recruitable: true
+    avatar: pig/武047.png
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 36
+      intellect: 24
+      defense: 22
+      agility: 18
+    flavor: 洛阳太守，听闻关羽斩孔秀而来，自知力战难敌，遂与牙将孟坦定计：由孟坦诱敌，自己于关门暗放冷箭。虽然一箭射中关羽左臂，却反而激起关羽怒气，未及逃入关内便连头带肩被斩为两段，计毒而胆怯。出自《三国演义》。
+  - key: hero_sgyy_0133
+    name: 孟坦
+    archetype: military
+    default_gender: male
+    default_morality: 45
+    recruitable: true
+    avatar: pig/武048.png
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 40
+      intellect: 16
+      defense: 22
+      agility: 22
+    flavor: 洛阳太守韩福麾下牙将，手使双刀，略有机变。为拦截关羽，他主动献出诈败诱敌之计，出阵与关羽交手不到三合便拨马佯逃，企图将关羽引入暗箭射程，怎料赤兔马快如闪电，瞬息追及，一刀将其挥为两段。出自《三国演义》。
+  - key: hero_sgyy_0134
+    name: 卞喜
+    archetype: military
+    default_gender: male
+    default_morality: 30
+    recruitable: true
+    avatar: pig/武049.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 18
+      defense: 22
+      agility: 18
+    flavor: 汜水关守将，原为黄巾军余党，归降曹操后镇守要隘，善使流星锤。闻关羽将至，他表面殷勤邀至镇国寺赴宴，暗中却埋伏二百刀斧手企图摔杯为号。阴谋被普净长老识破点醒后，卞喜挥锤偷袭不成，反被关羽一刀劈成两截。出自《三国演义》。
+  - key: hero_sgyy_0135
+    name: 王植
+    archetype: civil
+    default_gender: male
+    default_morality: 28
+    recruitable: true
+    avatar: duck_wen_male3.png
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 18
+      intellect: 42
+      defense: 22
+      agility: 18
+    flavor: 荥阳太守，洛阳太守韩福的亲家，为人阴险狡诈。得知关羽斩杀亲家后，他假意笑脸相迎，将关羽一行安顿在馆驿之中，暗令从事胡班夜半纵火焚杀。计谋走漏后，王植亲自领兵追杀，被关羽回马一刀拦腰斩断。出自《三国演义》。
+  - key: hero_sgyy_0136
+    name: 秦琪
+    archetype: military
+    default_gender: male
+    default_morality: 46
+    recruitable: true
+    avatar: pig/武050.png
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 42
+      intellect: 14
+      defense: 24
+      agility: 20
+    flavor: 夏侯惇部将、蔡阳外甥，奉命把守黄河渡口，年轻气盛、不知天高地厚。关羽行至渡口索船北渡，秦琪仗着舅父与主将权势厉声拦阻，口出狂言“你只杀得无名下将”，结果拍马挺刀上前，一合便被关羽斩落马下，成为五关第六将。出自《三国演义》。
+  - key: hero_sgyy_0137
+    name: 韩瑛
+    archetype: military
+    default_gender: male
+    default_morality: 52
+    recruitable: true
+    avatar: pig/武051.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 43
+      intellect: 13
+      defense: 24
+      agility: 20
+    flavor: 西凉大将韩德长子，自幼随父习练武艺，弓马娴熟、勇悍好胜。凤鸣山前两军对阵，见蜀军先锋乃是白发老将赵云，韩瑛自告奋勇打头阵建功，拍马挺枪直取赵云，不料仅战三合便被赵云一枪刺死于马下。出自《三国演义》。
+  - key: hero_sgyy_0138
+    name: 韩瑶
+    archetype: military
+    default_gender: male
+    default_morality: 52
+    recruitable: true
+    avatar: pig/武052.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 14
+      defense: 24
+      agility: 20
+    flavor: 西凉大将韩德次子，手使一口大刀，骁勇刚烈。凤鸣山阵前目睹长兄韩瑛惨死赵云枪下，他悲愤交加，大喝一声纵马舞刀直扑赵云报仇，奋力招架仍不敌老将神威，终在乱战中被赵云生擒活捉，令西凉军士气大挫。出自《三国演义》。
+  - key: hero_sgyy_0139
+    name: 韩琼
+    archetype: military
+    default_gender: male
+    default_morality: 52
+    recruitable: true
+    avatar: pig/武053.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 38
+      intellect: 16
+      defense: 18
+      agility: 28
+    flavor: 西凉大将韩德三子，善使方天画戟，更兼一手连珠好箭。凤鸣山之战见二兄危急，与四弟韩琪齐出夹攻赵云；见近战难胜，他退后张弓连放三箭，却尽被赵云以枪拨落，反被赵云回身一箭射中面门落马而亡。出自《三国演义》。
+  - key: hero_sgyy_0140
+    name: 韩琪
+    archetype: military
+    default_gender: male
+    default_morality: 52
+    recruitable: true
+    avatar: pig/武054.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 14
+      defense: 22
+      agility: 22
+    flavor: 西凉大将韩德四子，手使日月双刀，身手矫健、锐气十足。凤鸣山阵前随三兄韩琼夹攻赵云，双刀上下翻飞颇有章法，终因武艺与老将相去甚远，战不数合便被赵云一枪刺落马下，连同父兄酿成西凉韩家满门悲剧。出自《三国演义》。
+  - key: hero_sgyy_0141
+    name: 程武
+    archetype: civil
+    default_gender: male
+    default_morality: 58
+    recruitable: true
+    avatar: pig_wen_male1.png
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 14
+      intellect: 48
+      defense: 20
+      agility: 18
+    flavor: 曹魏名谋士程昱之子，随驸马夏侯楙镇守西凉充当参军，颇得乃父机变之智。凤鸣山魏军初败后，程武冷静献出“诱敌深入、伏兵合围”之策，竟一度将常山赵子龙困于重围之中，险些建下奇功，若非诸葛亮料敌在先遣兵接应，蜀军几乎折损大将。出自《三国演义》。
+  - key: hero_sgyy_0142
+    name: 崔谅
+    archetype: civil
+    default_gender: male
+    default_morality: 50
+    recruitable: true
+    avatar: pig_wen_male2.png
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 18
+      intellect: 42
+      defense: 22
+      agility: 18
+    flavor: 曹魏安定太守，诸葛亮首次北伐连克南安之际，被蜀军设计骗出城池，势穷之下表面归降，实则暗藏反心，欲赴南安城中与杨陵里应外合反袭蜀军。怎料一切尽在诸葛亮算中，刚露破绽便被张苞一枪刺死。出自《三国演义》。
+  - key: hero_sgyy_0143
+    name: 杨陵
+    archetype: military
+    default_gender: male
+    default_morality: 48
+    recruitable: true
+    avatar: pig/武055.png
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 38
+      intellect: 22
+      defense: 24
+      agility: 16
+    flavor: 曹魏南安太守，与安定太守崔谅互为掎角镇守陇右。诸葛亮首次北伐时，假扮魏将裴绪诱骗其与崔谅合谋赚取蜀营，结果将计就计反被蜀军突袭城池，杨陵在乱军中为关兴所斩，南安随之归入蜀汉囊中。出自《三国演义》。
+  - key: hero_sgyy_0144
+    name: 雅丹
+    archetype: civil
+    default_gender: male
+    default_morality: 46
+    recruitable: true
+    avatar: pig_wen_male3.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 14
+      intellect: 46
+      defense: 22
+      agility: 18
+    flavor: 西羌国丞相，深得国王彻里吉倚重，奉命与元帅越吉率十五万羌兵助曹魏击蜀。他虽略通权谋外交，却低估了诸葛亮的用兵奇变，雪夜铁车阵大败后身陷重围被擒。感念诸葛亮厚礼放归、宣示仁义，雅丹率残部北返，从此西羌不复犯境。出自《三国演义》。
+  - key: hero_sgyy_0145
+    name: 蔡中
+    archetype: military
+    default_gender: male
+    default_morality: 35
+    recruitable: true
+    avatar: pig/武056.png
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 38
+      intellect: 22
+      defense: 20
+      agility: 20
+    flavor: 荆州水军都督蔡瑁族弟，赤壁大战前夕与兄长蔡和奉曹操密令，假借报仇之名渡江诈降东吴刺探军情。周瑜将计就计，当着二人之面演出“苦肉计”杖责黄盖，反借他们向曹操传递假情报，火烧赤壁之夜蔡中亦被甘宁斩于军中。出自《三国演义》。
+  - key: hero_sgyy_0146
+    name: 蔡和
+    archetype: military
+    default_gender: male
+    default_morality: 35
+    recruitable: true
+    avatar: pig/武057.png
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 38
+      intellect: 22
+      defense: 20
+      agility: 20
+    flavor: 蔡瑁族弟、蔡中之兄，与弟同受曹操派遣潜入江东诈降。二人自以为演得天衣无缝，实则早被周瑜一眼看穿，不仅成为周瑜向曹操传递黄盖诈降书的绝佳传声筒，出征祭旗之际更被周瑜当场拿下，斩首祭奠东吴大旗。出自《三国演义》。
+  - key: hero_sgyy_0147
+    name: 管亥
+    avatar: pig/武080.png
+    archetype: military
+    flavor: 青州黄巾军骁将，身长力大，使一口大刀，统率数万黄巾余众围困北海太守孔融，阵前连斩北海悍将宗宝。后太史慈单骑突围请来刘备援军，管亥在阵前与关羽大战数十合，终不敌青龙偃月刀而殒命沙场。出自《三国演义》。
+    default_gender: male
+    default_morality: 35
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 44
+      intellect: 12
+      defense: 26
+      agility: 18
+  - key: hero_sgyy_0148
+    name: 鲍隆
+    archetype: military
+    default_gender: male
+    default_morality: 48
+    recruitable: true
+    avatar: pig/武059.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 14
+      defense: 22
+      agility: 22
+    flavor: 桂阳太守赵范麾下管军校尉，岭南猎户出身，膂力过人、箭法精准，曾单人射杀双虎。赵云攻取桂阳后，鲍隆与同僚陈应密谋诈降刺杀赵云，反被机敏过人的赵云当场灌醉识破，连同陈应一并伏诛，空有一身射虎本领。出自《三国演义》。
+  - key: hero_sgyy_0149
+    name: 陈应
+    archetype: military
+    default_gender: male
+    default_morality: 48
+    recruitable: true
+    avatar: pig/武060.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 14
+      defense: 20
+      agility: 26
+    flavor: 桂阳太守赵范麾下管军校尉，原为桂阳猎户，善使一柄飞叉，身手敏捷。赵云兵临桂阳城下时，他主动出阵迎战，斗不过四五合便败阵逃走，回身掷出飞叉暗算反被赵云接住掷回生擒。放归后与鲍隆合谋诈降行刺，终遭赵云斩杀。出自《三国演义》。
+  - key: hero_sgyy_0150
+    name: 巩志
+    archetype: civil
+    default_gender: male
+    default_morality: 74
+    recruitable: true
+    avatar: pig_wen_male4.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 14
+      intellect: 46
+      defense: 22
+      agility: 18
+    flavor: 武陵太守金旋麾下从事，深明大义、洞察时局。张飞率军攻打武陵时，巩志苦劝金旋顺应天时归降仁主刘备，反遭刚愎自用的金旋喝骂欲斩。待金旋兵败狼狈逃回城下，巩志当机立断于城头一箭射杀金旋，献城归降刘备，保全了武陵全城军民，获任武陵太守。出自《三国演义》。
+  - key: hero_sgyy_0108
+    name: 武安国
+    archetype: military
+    default_gender: male
+    default_morality: 75
+    recruitable: true
+    avatar: pig/武010.png
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 46
+      intellect: 12
+      defense: 26
+      agility: 16
+    flavor: 北海太守孔融部下骁将，手使一根五十斤铁锤，膂力惊人、胆气豪壮。十八路诸侯讨董卓、会战虎牢关时，众将慑于吕布威势无人敢前，唯有他挺锤出战，与吕布激斗十余回合，虽被方天画戟砍断手腕仍死战不退，为联军争得一时锐气。出自《三国演义》。
+  - key: hero_sgyy_0109
+    name: 韩德
+    archetype: military
+    default_gender: male
+    default_morality: 55
+    recruitable: true
+    avatar: pig/武011.png
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 44
+      intellect: 14
+      defense: 24
+      agility: 18
+    flavor: 西凉大将，手使开山大斧，武艺娴熟，麾下有四子韩瑛、韩瑶、韩琼、韩琪皆精骑射，统领八万西羌兵助曹魏抗蜀。凤鸣山前初逢年迈的赵云，他轻敌率四子轮番围攻，不料连折四子，自己亦在悲愤交加中死于赵云枪下，成全了常山赵子龙力斩五将的晚年绝唱。出自《三国演义》。
+  - key: hero_sgyy_0110
+    name: 彻里吉
+    archetype: military
+    default_gender: male
+    default_morality: 45
+    recruitable: true
+    avatar: pig/武013.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 20
+      defense: 22
+      agility: 18
+    flavor: 西羌国王，雄踞塞外，手握十五万精锐羌兵与铁车重阵。诸葛亮首次北伐时，曹真遣使重金求援，彻里吉遣丞相雅丹、元帅越吉率铁车兵犯境，一度大败关兴、张苞。后被诸葛亮雪夜设陷坑破阵，羌军溃败，彻里吉亦不敢再轻窥汉疆。出自《三国演义》。
+  - key: hero_sgyy_0111
+    name: 越吉
+    archetype: military
+    default_gender: male
+    default_morality: 48
+    recruitable: true
+    avatar: pig/武014.png
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 44
+      intellect: 14
+      defense: 24
+      agility: 18
+    flavor: 西羌元帅，手使铁锤，背挂宝雕弓，统领铁车精兵横行西陲。奉彻里吉之命助魏伐蜀，凭借铁车连环推进之势连挫蜀军锐气，关兴、张苞合战亦难占便宜。终因雪夜追击误入诸葛亮所设陷马坑，被关兴斩于乱军之中，是北伐初期极具威胁的塞外悍将。出自《三国演义》。
+  - key: hero_sgyy_0119
+    name: 鄂焕
+    archetype: military
+    default_gender: male
+    default_morality: 68
+    recruitable: true
+    avatar: pig/武015.png
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 46
+      intellect: 12
+      defense: 26
+      agility: 16
+    flavor: 越巂太守高定麾下头号猛将，身长九尺、面貌丑恶，手使一杆方天画戟，有万夫不当之勇。诸葛亮南征时，鄂焕阵前力斗魏延、张翼、王平三将而不怯，终因中埋伏被擒。感念诸葛亮宽仁放归之恩，他反戈劝降高定、斩杀叛首雍闿，归顺蜀汉。出自《三国演义》。
+  - key: hero_sgyy_0120
+    name: 杨锋
+    archetype: military
+    default_gender: male
+    default_morality: 76
+    recruitable: true
+    avatar: pig/武016.png
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 26
+      defense: 20
+      agility: 18
+    flavor: 南蛮银冶洞洞主，性情豪爽且知恩图报，麾下有三万精兵。因旧日家族曾受诸葛亮大恩，当孟获前来借兵抗蜀时，他将计就计设宴款待，命女将舞刀助兴之际一举擒获孟获、孟优及带来洞主，亲自带兵押赴蜀营献功，成为平定南蛮的奇功功臣。出自《三国演义》。

@@ -84,20 +84,6 @@ heroes:
       intellect: 58
       defense: 18
       agility: 12
-  - key: hist_mingqing_0294
-    name: 曹寅
-    avatar: pig/文033.png
-    default_gender: male
-    archetype: civil
-    flavor: （1658年—1712年）字子清，号荔轩、楝亭，满洲正白旗包衣，清代官员、文学家，曹雪芹祖父。他长期出任江宁织造，兼理两淮盐政，康熙帝南巡时曾四次在织造府接驾。康熙四十四年奉命在扬州主持刊刻《全唐诗》，另著有《楝亭集》，并撰戏曲《续琵琶》，康熙五十一年在任上病逝。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 12
-      intellect: 58
-      defense: 18
-      agility: 12
   - key: hist_mingqing_0282
     name: 沈复
     avatar: pig/文029.png
@@ -695,6 +681,20 @@ heroes:
     flavor: （1646年—1708年）字次耕，号稼堂，江苏吴江人，清初学者，顾炎武弟子。其兄潘柽章因庄氏明史案遇难，潘耒少遭家难，后受业于顾炎武。康熙十八年应博学鸿词，授翰林院检讨，参与纂修《明史》。兼治经史、音韵与历算，著《类音》《遂初堂集》。
     growth_range:
     - 4
+    - 7
+    attribute_weights:
+      force: 12
+      intellect: 58
+      defense: 18
+      agility: 12
+  - key: hist_mingqing_0294
+    name: 曹寅
+    avatar: pig/文033.png
+    default_gender: male
+    archetype: civil
+    flavor: （1658年—1712年）字子清，号荔轩、楝亭，满洲正白旗包衣，清代官员、文学家，曹雪芹祖父。他长期出任江宁织造，兼理两淮盐政，康熙帝南巡时曾四次在织造府接驾。康熙四十四年奉命在扬州主持刊刻《全唐诗》，另著有《楝亭集》，并撰戏曲《续琵琶》，康熙五十一年在任上病逝。
+    growth_range:
+    - 3
     - 7
     attribute_weights:
       force: 12

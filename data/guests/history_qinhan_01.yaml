@@ -19,7 +19,7 @@ heroes:
     avatar: monkey/orange/刘彻.png
     default_gender: male
     archetype: military
-    flavor: "（前156年—前87年）汉武帝，西汉第七位皇帝。少年即位，锐意进取，推行推恩令以削弱诸侯，重用儒生，扩充选官途径，改革币制，实施盐铁官营，将财赋与权力收归中央。对外任用卫青、霍去病反击匈奴，派张骞出使西域，打开河西交通，拓展汉朝与远方的联系。长年征战使帝国疆域大为扩展，也带来沉重的财政与民力负担；晚年巫蛊之祸更使宫廷蒙受巨创。其后颁下轮台诏，否决新增屯田之议，转而强调安定民生。刘彻胸怀开拓天下的雄图，敢于破旧立新，也在暮年尝尽盛业背后的艰难。"
+    flavor: （前156年—前87年）汉武帝，西汉第七位皇帝。少年即位，锐意进取，推行推恩令以削弱诸侯，重用儒生，扩充选官途径，改革币制，实施盐铁官营，将财赋与权力收归中央。对外任用卫青、霍去病反击匈奴，派张骞出使西域，打开河西交通，拓展汉朝与远方的联系。长年征战使帝国疆域大为扩展，也带来沉重的财政与民力负担；晚年巫蛊之祸更使宫廷蒙受巨创。其后颁下轮台诏，否决新增屯田之议，转而强调安定民生。刘彻胸怀开拓天下的雄图，敢于破旧立新，也在暮年尝尽盛业背后的艰难。
     growth_range:
     - 8
     - 14
@@ -47,7 +47,7 @@ heroes:
     avatar: monkey/orange/项羽.png
     default_gender: male
     archetype: military
-    flavor: "（前232年—前202年）下相人，楚将项燕之后，号西楚霸王。秦末随项梁起兵，巨鹿之战破釜沉舟，击溃秦军，以勇猛与决断取得诸侯军中的主导地位。入关后分封诸侯，自立霸王，却未能稳住人心与盟约，终于与刘邦展开漫长争夺。彭城一战虽大败汉军，仍难弥补粮运与后方经营的劣势。楚汉相持数年，战事终至垓下，四面楚歌之中，他悲歌诀别，率残骑突围，最终自刎乌江。项羽骄矜而勇烈，宁折不屈；那股拔山扛鼎的豪气，与英雄末路的悲凉，一同留在后世的诗文与传说里。"
+    flavor: （前232年—前202年）下相人，楚将项燕之后，号西楚霸王。秦末随项梁起兵，巨鹿之战破釜沉舟，击溃秦军，以勇猛与决断取得诸侯军中的主导地位。入关后分封诸侯，自立霸王，却未能稳住人心与盟约，终于与刘邦展开漫长争夺。彭城一战虽大败汉军，仍难弥补粮运与后方经营的劣势。楚汉相持数年，战事终至垓下，四面楚歌之中，他悲歌诀别，率残骑突围，最终自刎乌江。项羽骄矜而勇烈，宁折不屈；那股拔山扛鼎的豪气，与英雄末路的悲凉，一同留在后世的诗文与传说里。
     growth_range:
     - 8
     - 14
@@ -56,6 +56,20 @@ heroes:
       intellect: 8
       defense: 26
       agility: 12
+  - key: hist_qinhan_0022
+    name: 韩信
+    avatar: hanxin.png
+    default_gender: male
+    archetype: military
+    flavor: （约前231年—前196年）兵仙，汉初三杰之一。他早年受胯下之辱，后投奔项羽不被重用，转投刘邦。萧何月下追韩信，力荐其为大将军。他制定"还定三秦"之策，明修栈道，暗度陈仓。东进灭魏、破代、下赵、降燕、伐齐，潍水之战全歼龙且二十万楚军。垓下之战，他统帅六十万大军围歼项羽。他的军事指挥艺术达到巅峰，背水一战、拔帜易帜、四面楚歌等战例皆为兵家经典。功成后被封楚王，后贬淮阴侯，终因吕后猜忌，被诱杀于长乐宫钟室。
+    growth_range:
+    - 9
+    - 14
+    attribute_weights:
+      force: 46
+      intellect: 16
+      defense: 22
+      agility: 16
   purple:
   - key: hist_qinhan_0005
     name: 吕雉
@@ -197,20 +211,6 @@ heroes:
       intellect: 14
       defense: 26
       agility: 16
-  - key: hist_qinhan_0015
-    name: 司马迁
-    avatar: monkey/秦汉/司马迁.png
-    default_gender: male
-    archetype: civil
-    flavor: （约前145年—约前86年）西汉史学家、文学家，被尊为"史圣"。他生于龙门，承袭父职任太史令。因替李陵败降之事辩护，触怒武帝，受腐刑之辱。他忍辱负重，发愤著书，历时十余年，终于完成《史记》。全书一百三十篇，五十二万余字，记载了从黄帝到汉武帝太初年间三千年的历史。他首创纪传体通史体裁，不仅如实记录历史，更在字里行间寄托了"究天人之际，通古今之变，成一家之言"的宏大理想。
-    growth_range:
-    - 6
-    - 12
-    attribute_weights:
-      force: 8
-      intellect: 62
-      defense: 18
-      agility: 12
   - key: hist_qinhan_0016
     name: 檀石槐
     avatar: monkey/秦汉/檀石槐.png
@@ -295,20 +295,6 @@ heroes:
       intellect: 10
       defense: 24
       agility: 18
-  - key: hist_qinhan_0022
-    name: 韩信
-    avatar: hanxin.png
-    default_gender: male
-    archetype: military
-    flavor: （约前231年—前196年）兵仙，汉初三杰之一。他早年受胯下之辱，后投奔项羽不被重用，转投刘邦。萧何月下追韩信，力荐其为大将军。他制定"还定三秦"之策，明修栈道，暗度陈仓。东进灭魏、破代、下赵、降燕、伐齐，潍水之战全歼龙且二十万楚军。垓下之战，他统帅六十万大军围歼项羽。他的军事指挥艺术达到巅峰，背水一战、拔帜易帜、四面楚歌等战例皆为兵家经典。功成后被封楚王，后贬淮阴侯，终因吕后猜忌，被诱杀于长乐宫钟室。
-    growth_range:
-    - 7
-    - 12
-    attribute_weights:
-      force: 46
-      intellect: 16
-      defense: 22
-      agility: 16
   - key: hist_qinhan_0026
     name: 叔孙通
     avatar: monkey/秦汉/叔孙通.png
@@ -444,6 +430,76 @@ heroes:
     growth_range:
     - 7
     - 12
+    attribute_weights:
+      force: 8
+      intellect: 62
+      defense: 18
+      agility: 12
+  - key: hist_qinhan_0040
+    name: 桑弘羊
+    avatar: pig/文029.png
+    default_gender: male
+    archetype: civil
+    flavor: （前152年—前80年）西汉财政官员，洛阳人，精于计算。武帝时他历任治粟都尉、大司农、御史大夫，主持盐铁官营、均输平准等事务，为对匈奴战争筹措财赋。昭帝时，他在盐铁会议上与贤良文学辩论，后因卷入燕王刘旦、上官桀的谋反事，被霍光处死。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 10
+      intellect: 58
+      defense: 20
+      agility: 12
+  - key: hist_qinhan_0043
+    name: 刘启
+    avatar: monkey_wen_male3.png
+    default_gender: male
+    archetype: civil
+    flavor: （前188年—前141年）西汉景帝，汉文帝之子。即位后采纳晁错削藩之议，引发吴楚七国之乱；他任用周亚夫等将领平定叛军，随后收夺诸侯王的行政权，使王国势力受到抑制。其在位期间延续文帝的节俭政策，减轻赋役，与文帝之治并称“文景之治”。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 16
+      intellect: 50
+      defense: 22
+      agility: 12
+  - key: hist_qinhan_0044
+    name: 王充
+    avatar: monkey/其他随机角色/文037_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （27年—约97年）东汉思想家，字仲任，会稽上虞人。他出身寒微，曾入太学，后任郡县小吏，因与上司不合而去职。王充一生著述，以《论衡》最为知名，书中用日常经验与逻辑辨析鬼神、灾异和谶纬之说，主张重实据、反虚妄。
+    growth_range:
+    - 6
+    - 11
+    attribute_weights:
+      force: 8
+      intellect: 62
+      defense: 18
+      agility: 12
+  - key: hist_qinhan_0048
+    name: 窦宪
+    avatar: pig/武050.png
+    default_gender: male
+    archetype: military
+    flavor: （生年不详—92年）东汉外戚、将领，窦皇后之兄。和帝永元元年，他率军与南匈奴等合击北匈奴，深入漠北，登燕然山刻石记功，随军的班固作铭。窦宪由此权倾朝野，永元四年，和帝与宦官郑众定计，收夺其兵权，窦宪被迫自杀。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 44
+      intellect: 12
+      defense: 28
+      agility: 16
+  - key: hist_qinhan_0015
+    name: 司马迁
+    avatar: monkey/秦汉/司马迁.png
+    default_gender: male
+    archetype: civil
+    flavor: （约前145年—约前86年）西汉史学家、文学家，被尊为"史圣"。他生于龙门，承袭父职任太史令。因替李陵败降之事辩护，触怒武帝，受腐刑之辱。他忍辱负重，发愤著书，历时十余年，终于完成《史记》。全书一百三十篇，五十二万余字，记载了从黄帝到汉武帝太初年间三千年的历史。他首创纪传体通史体裁，不仅如实记录历史，更在字里行间寄托了"究天人之际，通古今之变，成一家之言"的宏大理想。
+    growth_range:
+    - 7
+    - 11
     attribute_weights:
       force: 8
       intellect: 62
@@ -604,48 +660,6 @@ heroes:
       intellect: 56
       defense: 22
       agility: 12
-  - key: hist_qinhan_0040
-    name: 桑弘羊
-    avatar: pig/文029.png
-    default_gender: male
-    archetype: civil
-    flavor: （前152年—前80年）西汉财政官员，洛阳人，精于计算。武帝时他历任治粟都尉、大司农、御史大夫，主持盐铁官营、均输平准等事务，为对匈奴战争筹措财赋。昭帝时，他在盐铁会议上与贤良文学辩论，后因卷入燕王刘旦、上官桀的谋反事，被霍光处死。
-    growth_range:
-    - 5
-    - 10
-    attribute_weights:
-      force: 10
-      intellect: 58
-      defense: 20
-      agility: 12
-  - key: hist_qinhan_0043
-    name: 刘启
-    avatar: monkey_wen_male3.png
-    default_gender: male
-    archetype: civil
-    flavor: （前188年—前141年）西汉景帝，汉文帝之子。即位后采纳晁错削藩之议，引发吴楚七国之乱；他任用周亚夫等将领平定叛军，随后收夺诸侯王的行政权，使王国势力受到抑制。其在位期间延续文帝的节俭政策，减轻赋役，与文帝之治并称“文景之治”。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 16
-      intellect: 50
-      defense: 22
-      agility: 12
-  - key: hist_qinhan_0044
-    name: 王充
-    avatar: monkey/其他随机角色/文037_男.png
-    default_gender: male
-    archetype: civil
-    flavor: （27年—约97年）东汉思想家，字仲任，会稽上虞人。他出身寒微，曾入太学，后任郡县小吏，因与上司不合而去职。王充一生著述，以《论衡》最为知名，书中用日常经验与逻辑辨析鬼神、灾异和谶纬之说，主张重实据、反虚妄。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 8
-      intellect: 62
-      defense: 18
-      agility: 12
   - key: hist_qinhan_0047
     name: 窦婴
     avatar: monkey_wen_male9.png
@@ -660,20 +674,6 @@ heroes:
       intellect: 50
       defense: 22
       agility: 14
-  - key: hist_qinhan_0048
-    name: 窦宪
-    avatar: pig/武050.png
-    default_gender: male
-    archetype: military
-    flavor: （生年不详—92年）东汉外戚、将领，窦皇后之兄。和帝永元元年，他率军与南匈奴等合击北匈奴，深入漠北，登燕然山刻石记功，随军的班固作铭。窦宪由此权倾朝野，永元四年，和帝与宦官郑众定计，收夺其兵权，窦宪被迫自杀。
-    growth_range:
-    - 6
-    - 9
-    attribute_weights:
-      force: 44
-      intellect: 12
-      defense: 28
-      agility: 16
   - key: hist_qinhan_0049
     name: 窦融
     avatar: pig/文042.png

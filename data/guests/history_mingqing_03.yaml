@@ -322,20 +322,6 @@ heroes:
       intellect: 58
       defense: 18
       agility: 12
-  - key: hist_mingqing_0105
-    name: 徐弘祖
-    avatar: monkey_wen_male1.png
-    default_gender: male
-    archetype: civil
-    flavor: （1587年—1641年）明代旅行家、地理学家，名弘祖，字振之，号霞客，南直隶江阴人。徐弘祖自万历三十五年起多次出游，历时三十余年，考察江河、山脉与洞穴，足迹遍及东南、西南各地，对喀斯特地貌和长江上源有细致记录；他将沿途见闻写入日记，后人整理为《徐霞客游记》。崇祯十四年病逝于家中。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 12
-      intellect: 58
-      defense: 18
-      agility: 12
   - key: hist_mingqing_0077
     name: 耿炳文
     avatar: pig/武010.png
@@ -682,6 +668,21 @@ heroes:
     growth_range:
     - 4
     - 7
+    attribute_weights:
+      force: 12
+      intellect: 58
+      defense: 18
+      agility: 12
+  purple:
+  - key: hist_mingqing_0105
+    name: 徐弘祖
+    avatar: monkey_wen_male1.png
+    default_gender: male
+    archetype: civil
+    flavor: （1587年—1641年）明代旅行家、地理学家，名弘祖，字振之，号霞客，南直隶江阴人。徐弘祖自万历三十五年起多次出游，历时三十余年，考察江河、山脉与洞穴，足迹遍及东南、西南各地，对喀斯特地貌和长江上源有细致记录；他将沿途见闻写入日记，后人整理为《徐霞客游记》。崇祯十四年病逝于家中。
+    growth_range:
+    - 7
+    - 11
     attribute_weights:
       force: 12
       intellect: 58

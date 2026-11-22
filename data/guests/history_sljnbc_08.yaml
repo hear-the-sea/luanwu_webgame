@@ -126,20 +126,6 @@ heroes:
       intellect: 64
       defense: 18
       agility: 10
-  - key: hist_sljnbc_0392
-    name: 花木兰
-    avatar: monkey/其他随机角色/武083_女_.png
-    default_gender: female
-    archetype: military
-    flavor: （传说人物）中国古代女英雄，事迹主要见于南北朝时期的《木兰辞》。诗中写她代父从军，征战多年而不改女儿身份；凯旋后她拒绝官爵，只愿回乡与家人团聚。关于木兰的历史原型，传世文献没有形成一致结论；游戏中的她，属于源自《木兰辞》的文学传说形象。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 23
-      agility: 22
   - key: hist_sljnbc_0394
     name: 王粲
     avatar: monkey/其他随机角色/文101_男.png
@@ -654,6 +640,21 @@ heroes:
     growth_range:
     - 3
     - 7
+    attribute_weights:
+      force: 40
+      intellect: 15
+      defense: 23
+      agility: 22
+  purple:
+  - key: hist_sljnbc_0392
+    name: 花木兰
+    avatar: monkey/其他随机角色/武083_女_.png
+    default_gender: female
+    archetype: military
+    flavor: （传说人物）中国古代女英雄，事迹主要见于南北朝时期的《木兰辞》。诗中写她代父从军，征战多年而不改女儿身份；凯旋后她拒绝官爵，只愿回乡与家人团聚。关于木兰的历史原型，传世文献没有形成一致结论；游戏中的她，属于源自《木兰辞》的文学传说形象。
+    growth_range:
+    - 7
+    - 11
     attribute_weights:
       force: 40
       intellect: 15

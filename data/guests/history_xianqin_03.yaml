@@ -504,6 +504,34 @@ heroes:
       intellect: 54
       defense: 20
       agility: 18
+  - key: hist_xianqin_0144
+    name: 先轸
+    avatar: monkey/先秦与神话/先轸.png
+    default_gender: male
+    archetype: military
+    flavor: （?—前627年）春秋晋国大夫，城濮之战时担任中军将。晋楚交战，他调度栾枝、胥臣等部，先击溃楚军右翼，再以上军、下军与中军合击楚左师，大败楚师，奠定晋文公的霸业。"退避三舍"之谋出自狐偃，决战的部署则由先轸主持。此后他在崤之战中全歼秦军，俘获秦军三帅。晋襄公听信文嬴放归俘虏，先轸怒而失礼，事后自悔，在伐狄之战中脱去头盔冲阵而死。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 44
+      intellect: 14
+      defense: 24
+      agility: 18
+  - key: hist_xianqin_0145
+    name: 狐偃
+    avatar: monkey/先秦与神话/狐偃.png
+    default_gender: male
+    archetype: civil
+    flavor: （?—前629年）晋文公舅父，霸业功臣。他字子犯，是晋文公重耳的舅父，也是流亡十九年中最重要的谋主。他足智多谋、敢于决断，在关键时刻总能为重耳指明方向。重耳在齐国贪恋安逸不愿离去，他与齐姜设计将重耳灌醉后强行带走。城濮之战前，面对强大的楚军，他献出"退避三舍"之计，既报答了楚国当年收留之恩，又在战略上以退为进。战场上他指挥若定，协助先轸大破楚军。晋文公称霸后，他位居首功。人称他为"夏日之日"——光芒四射、锋芒毕露，与赵衰的"冬日"形成对照。狐偃的智谋与果敢，是晋国霸业的重要支柱，也是春秋时期顶级谋士的典范。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 14
+      intellect: 54
+      defense: 20
+      agility: 12
   purple:
   - key: hist_xianqin_0135
     name: 比干
@@ -631,34 +659,6 @@ heroes:
       intellect: 58
       defense: 20
       agility: 14
-  - key: hist_xianqin_0144
-    name: 先轸
-    avatar: monkey/先秦与神话/先轸.png
-    default_gender: male
-    archetype: military
-    flavor: （?—前627年）春秋晋国大夫，城濮之战时担任中军将。晋楚交战，他调度栾枝、胥臣等部，先击溃楚军右翼，再以上军、下军与中军合击楚左师，大败楚师，奠定晋文公的霸业。"退避三舍"之谋出自狐偃，决战的部署则由先轸主持。此后他在崤之战中全歼秦军，俘获秦军三帅。晋襄公听信文嬴放归俘虏，先轸怒而失礼，事后自悔，在伐狄之战中脱去头盔冲阵而死。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 44
-      intellect: 14
-      defense: 24
-      agility: 18
-  - key: hist_xianqin_0145
-    name: 狐偃
-    avatar: monkey/先秦与神话/狐偃.png
-    default_gender: male
-    archetype: civil
-    flavor: （?—前629年）晋文公舅父，霸业功臣。他字子犯，是晋文公重耳的舅父，也是流亡十九年中最重要的谋主。他足智多谋、敢于决断，在关键时刻总能为重耳指明方向。重耳在齐国贪恋安逸不愿离去，他与齐姜设计将重耳灌醉后强行带走。城濮之战前，面对强大的楚军，他献出"退避三舍"之计，既报答了楚国当年收留之恩，又在战略上以退为进。战场上他指挥若定，协助先轸大破楚军。晋文公称霸后，他位居首功。人称他为"夏日之日"——光芒四射、锋芒毕露，与赵衰的"冬日"形成对照。狐偃的智谋与果敢，是晋国霸业的重要支柱，也是春秋时期顶级谋士的典范。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 14
-      intellect: 54
-      defense: 20
-      agility: 12
   - key: hist_xianqin_0146
     name: 专诸
     avatar: monkey/先秦与神话/专诸.png

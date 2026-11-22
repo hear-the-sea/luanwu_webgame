@@ -1,5 +1,3 @@
-# ilrock 人物资料补充（2026-10-02）；身份对照见 reports/guest_expansion_ilrock_20261002.json
-
 heroes:
   green:
   - key: hero_ilrock_03155
@@ -77,6 +75,21 @@ heroes:
       intellect: 54
       defense: 14
       agility: 24
+  - key: hero_ilrock_03384
+    name: 顾人玉
+    avatar: pig_wu_male4.png
+    default_gender: male
+    archetype: military
+    flavor: 玉面神拳顾人玉是古龙小说《绝代双骄》中温厚的年轻侠客，身怀顾家武学，却少有争强逞狠的脾气。他与慕容家有亲缘往来，常被朋友打趣为顾小妹，听到嘲弄也不急着翻脸。遇上火爆直率的张菁，他更能耐心相待，在一场场江湖风波中逐渐与她相知。真正需要出手时，那副腼腆模样下的拳头却毫不软弱。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 50
+      intellect: 6
+      defense: 28
+      agility: 16
   blue:
   - key: hero_ilrock_03154
     name: 百晓生
@@ -258,18 +271,3 @@ heroes:
       intellect: 60
       defense: 20
       agility: 12
-  - key: hero_ilrock_03384
-    name: 顾人玉
-    avatar: pig_wu_male4.png
-    default_gender: male
-    archetype: military
-    flavor: 玉面神拳顾人玉是古龙小说《绝代双骄》中温厚的年轻侠客，身怀顾家武学，却少有争强逞狠的脾气。他与慕容家有亲缘往来，常被朋友打趣为顾小妹，听到嘲弄也不急着翻脸。遇上火爆直率的张菁，他更能耐心相待，在一场场江湖风波中逐渐与她相知。真正需要出手时，那副腼腆模样下的拳头却毫不软弱。
-    recruitable: true
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 50
-      intellect: 6
-      defense: 28
-      agility: 16

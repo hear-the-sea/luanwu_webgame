@@ -70,90 +70,6 @@ heroes:
       intellect: 50
       defense: 20
       agility: 18
-  - key: hist_suitang_0067_anlushan
-    name: 安禄山
-    avatar: monkey_wu_male7.png
-    default_gender: male
-    archetype: military
-    flavor: （703年—757年）唐玄宗时期节度使，出身营州杂胡，因善逢迎得宠，兼领范阳、平卢、河东三镇。天宝十四载以讨杨国忠为名起兵，攻占洛阳、长安，自称大燕皇帝。其叛乱持续八年，成为唐朝由盛转衰的转折点；后因眼疾失明，被儿子安庆绪杀害。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 40
-      intellect: 18
-      defense: 30
-      agility: 12
-  - key: hist_suitang_0069_zhangxun
-    name: 张巡
-    avatar: pig_wu_male3.png
-    default_gender: male
-    archetype: military
-    flavor: （708年—757年）唐代将领，安史之乱中与许远共守睢阳。在内无粮草、外无援兵的情况下坚守数月，牵制大量叛军，使江淮财赋之地得以保全。城破后张巡被叛军杀害。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 36
-      intellect: 20
-      defense: 34
-      agility: 10
-  - key: hist_suitang_0070_liuzongyuan
-    name: 柳宗元
-    avatar: pig/文011.png
-    default_gender: male
-    archetype: civil
-    flavor: （773年—819年）唐代文学家、官员，河东解人。参与王叔文主持的永贞革新，失败后被贬永州司马，后改任柳州刺史。在永州写下《永州八记》等山水游记，在柳州兴修水利、释放奴婢、兴办教育。其散文与韩愈并称“韩柳”，为唐宋八大家之一，卒于柳州任上。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 12
-      intellect: 52
-      defense: 22
-      agility: 14
-  - key: hist_suitang_0071_lishangyin
-    name: 李商隐
-    avatar: pig/文042.png
-    default_gender: male
-    archetype: civil
-    flavor: （813年—858年）晚唐诗人，字义山，怀州河内人。进士及第后长期辗转于各镇幕府，因卷入牛李党争而仕途失意。其诗构思缜密、辞采华美，尤擅七律与无题诗，有《李义山诗集》传世，与杜牧并称“小李杜”。今存诗作中不少篇章寄托身世之感，风格深情绵邈。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 10
-      intellect: 54
-      defense: 20
-      agility: 16
-  - key: hist_suitang_0072_dumu
-    name: 杜牧
-    avatar: pig/文030.png
-    default_gender: male
-    archetype: civil
-    flavor: （803年—852年）晚唐诗人、官员，字牧之，京兆万年人。进士及第后历任黄州、池州、睦州刺史，官至中书舍人。其咏史绝句借古讽今、议论精警，《阿房宫赋》亦为名篇，著有《樊川文集》，与李商隐并称“小李杜”。他关心军政实务，曾注《孙子》，诗风俊爽豪健。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 14
-      intellect: 50
-      defense: 22
-      agility: 14
-  - key: hist_suitang_0073_liugongquan
-    name: 柳公权
-    avatar: monkey/其他随机角色/文_男.png
-    default_gender: male
-    archetype: civil
-    flavor: （778年—865年）唐代书法家、官员，字诚悬，京兆华原人。楷书骨力遒劲，与颜真卿并称“颜筋柳骨”，自成“柳体”。历仕穆宗至懿宗数朝，官至太子少师；相传穆宗问笔法，他以“用笔在心，心正则笔正”作答，传为笔谏。传世碑刻有《玄秘塔碑》《神策军碑》。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 12
-      intellect: 50
-      defense: 24
-      agility: 14
   - key: hist_suitang_0074_huaisu
     name: 怀素
     avatar: pig/武072.png
@@ -209,20 +125,6 @@ heroes:
       force: 40
       intellect: 18
       defense: 30
-      agility: 12
-  - key: hist_suitang_0078_licunxu
-    name: 李存勖
-    avatar: pig_wu_male3.png
-    default_gender: male
-    archetype: military
-    flavor: （885年—926年）后唐庄宗，李克用之子。继承晋王位后，在柏乡等战役中大败后梁，于同光元年攻灭后梁、建立后唐，一度控制北方大部分地区。即位后宠信伶人、疏于政事，导致内乱，兴教门之变中死于乱兵。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 40
-      intellect: 20
-      defense: 28
       agility: 12
   - key: hist_suitang_0079_fengdao
     name: 冯道
@@ -547,3 +449,101 @@ heroes:
       intellect: 22
       defense: 32
       agility: 6
+  - key: hist_suitang_0067_anlushan
+    name: 安禄山
+    avatar: monkey_wu_male7.png
+    default_gender: male
+    archetype: military
+    flavor: （703年—757年）唐玄宗时期节度使，出身营州杂胡，因善逢迎得宠，兼领范阳、平卢、河东三镇。天宝十四载以讨杨国忠为名起兵，攻占洛阳、长安，自称大燕皇帝。其叛乱持续八年，成为唐朝由盛转衰的转折点；后因眼疾失明，被儿子安庆绪杀害。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 40
+      intellect: 18
+      defense: 30
+      agility: 12
+  - key: hist_suitang_0069_zhangxun
+    name: 张巡
+    avatar: pig_wu_male3.png
+    default_gender: male
+    archetype: military
+    flavor: （708年—757年）唐代将领，安史之乱中与许远共守睢阳。在内无粮草、外无援兵的情况下坚守数月，牵制大量叛军，使江淮财赋之地得以保全。城破后张巡被叛军杀害。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 36
+      intellect: 20
+      defense: 34
+      agility: 10
+  - key: hist_suitang_0070_liuzongyuan
+    name: 柳宗元
+    avatar: pig/文011.png
+    default_gender: male
+    archetype: civil
+    flavor: （773年—819年）唐代文学家、官员，河东解人。参与王叔文主持的永贞革新，失败后被贬永州司马，后改任柳州刺史。在永州写下《永州八记》等山水游记，在柳州兴修水利、释放奴婢、兴办教育。其散文与韩愈并称“韩柳”，为唐宋八大家之一，卒于柳州任上。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 12
+      intellect: 52
+      defense: 22
+      agility: 14
+  - key: hist_suitang_0071_lishangyin
+    name: 李商隐
+    avatar: pig/文042.png
+    default_gender: male
+    archetype: civil
+    flavor: （813年—858年）晚唐诗人，字义山，怀州河内人。进士及第后长期辗转于各镇幕府，因卷入牛李党争而仕途失意。其诗构思缜密、辞采华美，尤擅七律与无题诗，有《李义山诗集》传世，与杜牧并称“小李杜”。今存诗作中不少篇章寄托身世之感，风格深情绵邈。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 10
+      intellect: 54
+      defense: 20
+      agility: 16
+  - key: hist_suitang_0072_dumu
+    name: 杜牧
+    avatar: pig/文030.png
+    default_gender: male
+    archetype: civil
+    flavor: （803年—852年）晚唐诗人、官员，字牧之，京兆万年人。进士及第后历任黄州、池州、睦州刺史，官至中书舍人。其咏史绝句借古讽今、议论精警，《阿房宫赋》亦为名篇，著有《樊川文集》，与李商隐并称“小李杜”。他关心军政实务，曾注《孙子》，诗风俊爽豪健。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 14
+      intellect: 50
+      defense: 22
+      agility: 14
+  - key: hist_suitang_0073_liugongquan
+    name: 柳公权
+    avatar: monkey/其他随机角色/文_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （778年—865年）唐代书法家、官员，字诚悬，京兆华原人。楷书骨力遒劲，与颜真卿并称“颜筋柳骨”，自成“柳体”。历仕穆宗至懿宗数朝，官至太子少师；相传穆宗问笔法，他以“用笔在心，心正则笔正”作答，传为笔谏。传世碑刻有《玄秘塔碑》《神策军碑》。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 12
+      intellect: 50
+      defense: 24
+      agility: 14
+  - key: hist_suitang_0078_licunxu
+    name: 李存勖
+    avatar: pig_wu_male3.png
+    default_gender: male
+    archetype: military
+    flavor: （885年—926年）后唐庄宗，李克用之子。继承晋王位后，在柏乡等战役中大败后梁，于同光元年攻灭后梁、建立后唐，一度控制北方大部分地区。即位后宠信伶人、疏于政事，导致内乱，兴教门之变中死于乱兵。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 40
+      intellect: 20
+      defense: 28
+      agility: 12

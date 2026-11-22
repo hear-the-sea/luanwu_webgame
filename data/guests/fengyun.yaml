@@ -1,5 +1,3 @@
-# ilrock 人物资料补充（2026-10-02）；身份对照见 reports/guest_expansion_ilrock_20261002.json
-
 heroes:
   green:
   - key: hero_ilrock_04594
@@ -107,22 +105,487 @@ heroes:
       intellect: 6
       defense: 20
       agility: 28
-  blue:
-  - key: hero_ilrock_04578
-    name: 断浪
-    avatar: monkey/其他随机角色/武064_男_.png
-    default_gender: male
+  - key: hero_fengyun_0124
+    name: 释武尊
+    avatar: pig/武077.png
     archetype: military
-    flavor: 南麟剑首断帅之子，在马荣成漫画《风云》中与聂风一同进入天下会。聂风被雄霸收为弟子，断浪却屡受冷落，久积的不甘令两人的道路渐渐分开。他携火麟剑、施蚀日剑法，辗转依附各方强者，也不断寻找扬名夺权的机会。后来夺得龙元之力，昔日受轻视的少年终于强大得令人畏惧，杀机更一步步逼向曾经的朋友。
+    flavor: 少林出身的得道高僧，因感念旧恩而担任无双城护法，一手如来神掌刚猛宏大、震慑江湖。天下会大举进犯无双城之际，他为护城中无辜与独孤一方，明知敌众我寡仍坦然迎战步惊云。虽最终血洒长街、壮烈圆寂，其慈悲胸怀与铮铮铁骨却令冷酷的步惊云亦深感敬重。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 90
     recruitable: true
     growth_range:
-    - 5
-    - 9
+    - 4
+    - 7
     attribute_weights:
-      force: 52
+      force: 40
+      intellect: 16
+      defense: 32
+      agility: 12
+  - key: hero_fengyun_0125
+    name: 傲天
+    avatar: pig/武078.png
+    archetype: military
+    flavor: 拜剑山庄少庄主，自幼肩负重振山庄与铸成绝世好剑的重任，因而养成高傲急躁的脾气。他承袭拜剑山庄家传剑法，对绝世好剑势在必得，却在剑祭大典上与步惊云、断浪、剑贪等强敌狭路相逢。面对实力远超自己的风云群雄，他的骄矜与野心终在血火中化为泡影。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 40
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 14
+      defense: 22
+      agility: 24
+  - key: hero_fengyun_0126
+    name: 傲夫人
+    avatar: monkey_wen_female5.png
+    archetype: civil
+    flavor: 拜剑山庄女主人、傲天之母，在庄主身亡后独自撑起衰落的名门基业。为寻觅奇人完成绝世好剑的最后铸造，她不惜忍辱负重、周旋于剑魔与各方势力之间，心机深沉而意志坚韧。纵然手段冷酷、不择手段，其一生所求不过是光复拜剑山庄的昔日荣光。出自马荣成漫画《风云》
+    default_gender: female
+    default_morality: 42
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 16
+      intellect: 46
+      defense: 20
+      agility: 18
+  - key: hero_fengyun_0127
+    name: 剑魔
+    avatar: pig/武079.png
+    archetype: military
+    flavor: 痴恋傲夫人多年的绝世怪客，隐身拜剑山庄幕后，一手断脉剑气阴狠毒辣、专破对手经脉。他性格狂暴乖戾，为讨傲夫人欢心不惜屠戮异己、夺取名剑，在拜剑山庄一役中重创诸多高手。然而一片痴情终究错付，狂傲半生却落得悲凉下场。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 22
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 46
+      intellect: 12
+      defense: 20
+      agility: 22
+  - key: hero_fengyun_0128
+    name: 剑贪
+    avatar: pig/武081.png
+    archetype: military
+    flavor: 痴迷收集天下名剑的江湖怪客，为夺绝世好剑而闯入拜剑山庄，与步惊云、断浪展开连番恶斗。他剑法刁钻迅疾，虽性情贪婪狂放、不拘礼法，却对神兵利器有着近乎纯粹的狂热。屡经强敌挫败之后，他反而在败绩中看清自身极限，留下几分落拓江湖客的奇特风采。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 45
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 12
+      defense: 18
+      agility: 30
+  - key: hero_fengyun_0129
+    name: 剑贫
+    avatar: pig/武082.png
+    archetype: military
+    flavor: 无名昔年挚友，与剑贪恰成鲜明对比，安贫乐道、淡泊名利，隐居乡野过着清苦却自在的日子。他虽衣衫褴褛、不显山露水，实则剑意通玄，对剑道真谛有着极高领悟。在无名遭逢困厄之际，他曾出手相助并点醒后辈，尽显世外隐士的澄明心境。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 82
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 26
+      defense: 18
+      agility: 20
+  - key: hero_fengyun_0130
+    name: 明月
+    avatar: monkey_wu_female4.png
+    archetype: military
+    flavor: 无双城明家后人，容貌清丽绝俗，与聂风一见倾心、情深意笃。二人合练明家绝学“倾城之恋”，以真情催动惊世剑威，令雄霸与无双城皆为之震动。无奈夹在家族使命与敌对帮派之间，她终为护聂风而坠落悬崖，成为聂风心中永远难以愈合的白月光。出自马荣成漫画《风云》
+    default_gender: female
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 30
+      intellect: 22
+      defense: 16
+      agility: 32
+  - key: hero_fengyun_0131
+    name: 姥姥
+    avatar: monkey_wen_female6.png
+    archetype: civil
+    flavor: 无双城明家掌舵人，明月的长辈，一生背负光复明家、制约独孤氏的宿命。她老谋深算、工于心计，将无双剑与倾城之恋视为重振家族的最后筹码，甚至不惜利用明月的感情去对付聂风。然而机关算尽终究难敌江湖大势，唯余明家往昔的沧桑回响。出自马荣成漫画《风云》
+    default_gender: female
+    default_morality: 45
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 20
+      intellect: 46
+      defense: 18
+      agility: 16
+  - key: hero_fengyun_0132
+    name: 独孤梦
+    avatar: monkey_wu_female5.png
+    archetype: military
+    flavor: 假独孤一方之女，自幼在无双城长大，虽出身显赫却毫无骄纵之气，生性纯真善良。她在无双城变故后流落江湖，得遇聂风并对其暗生情愫，亦曾习得家传剑法以求自保。面对父辈恩怨与残酷江湖，她始终守着一颗赤诚温柔的心，令人怜惜。出自马荣成漫画《风云》
+    default_gender: female
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 28
+      intellect: 20
+      defense: 20
+      agility: 32
+  - key: hero_fengyun_0133
+    name: 童皇
+    avatar: pig/武083.png
+    archetype: military
+    flavor: 天池十二煞之首，容貌如稚童却已活过数十载，性格残忍怪诞、喜怒无常。他修炼童心真经，更擅以天池纸人操控人心，曾率十二煞受雄霸雇佣狙杀风云，令天下会与武林正道大吃苦头。看似天真顽劣的笑声背后，隐藏着令人毛骨悚然的森冷杀意。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 18
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 38
+      intellect: 24
+      defense: 16
+      agility: 22
+  - key: hero_fengyun_0134
+    name: 戏宝
+    avatar: pig/文041.png
+    archetype: civil
+    flavor: 天池十二煞之一，终日身着戏服、以伶人装扮示人，实则是心狠手辣的顶级杀手。他精于幻术、身法与声东击西之计，常在戏谑唱腔间令对手心神失守，继而痛下杀手。虽武力不如绝顶强者，却凭诡异莫测的招数在十二煞中占有一席之地。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 25
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 20
+      intellect: 38
+      defense: 14
+      agility: 28
+  - key: hero_fengyun_0135
+    name: 纸探花
+    avatar: pig/文042.png
+    archetype: civil
+    flavor: 天池十二煞中风度最似文士的杀手，折纸为兵、以巧破力，谈笑间便能以薄纸割喉夺命。他外表儒雅从容，实则冷血无情，极擅洞察战局与配合同伴设伏，是童皇麾下颇为倚重的智谋杀手。折纸翻飞之处，往往暗藏步步杀机。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 24
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 22
+      intellect: 40
+      defense: 14
+      agility: 24
+  - key: hero_fengyun_0136
+    name: 食为仙
+    avatar: pig/武084.png
+    archetype: military
+    flavor: 天池十二煞之一，体格魁梧如山，嗜食如命且力大无穷，连坚硬铁石亦能嚼碎吞咽。他在战场上横冲直撞、皮糙肉厚，常以蛮横无比的巨力压制对手，令寻常武者难以招架。虽头脑简单、只知口腹之欲，却是不折不扣的凶悍肉盾杀手。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 26
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 44
       intellect: 8
+      defense: 38
+      agility: 10
+  - key: hero_fengyun_0137
+    name: 手舞
+    avatar: pig/武085.png
+    archetype: military
+    flavor: 天池十二煞成员，双掌功夫凌厉诡变，常与同伴足蹈联手出击，拳掌交错密不透风。他行事唯命是从，虽单打独斗不及风云等绝顶高手，但在十二煞合击阵势中却如尖刀利刃，曾给天下会旧部带来极大麻烦。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 28
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 38
+      intellect: 12
+      defense: 22
+      agility: 28
+  - key: hero_fengyun_0138
+    name: 鬼影
+    avatar: pig/武086.png
+    archetype: military
+    flavor: 天池十二煞中最擅潜行与暗杀的高手，身法飘忽如幽灵，能在暗夜之中无声无息逼近目标。他极少正面硬拼，专挑敌人破绽与薄弱之处一击毙命，曾奉命刺探与袭杀中原多位名宿，是令人防不胜防的暗夜幽影。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 22
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 34
+      intellect: 16
+      defense: 12
+      agility: 38
+  - key: hero_fengyun_0139
+    name: 凤舞
+    avatar: monkey_wu_female6.png
+    archetype: military
+    flavor: 天池十二煞中唯一的女性杀手，容貌妖艳、身手曼妙，善使凌厉暗器与诡异轻功。她曾在天池一脉听命于童皇，后在动荡江湖中历经生死，见识风云侠义后亦曾显露几分未泯的善念与柔情。刀光扇影之间，尽显江湖奇女子的冷艳与无奈。出自马荣成漫画《风云》
+    default_gender: female
+    default_morality: 42
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 32
+      intellect: 18
+      defense: 16
+      agility: 34
+  - key: hero_fengyun_0141
+    name: 铁神
+    avatar: pig/文043.png
+    archetype: civil
+    flavor: 铁门门主，怀空与怀灭之父，江湖公认的铸兵宗师，一生潜心锻造神兵与机关巧艺。他为人宽厚仁爱，极力约束门下以德御兵，却遭胞弟铁狂屠背叛囚禁、饱受折磨。临终之际他将铁门精神托付给怀空，其匠心与仁德长留人间。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 84
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 22
+      intellect: 44
+      defense: 22
+      agility: 12
+  - key: hero_fengyun_0142
+    name: 白伶
+    avatar: monkey_wen_female7.png
+    archetype: civil
+    flavor: 怀空挚爱，容貌清秀、心地纯善，在铁门遭逢大难后始终默默陪伴怀空左右。她虽不通高深武艺，却以无畏的柔情温暖了满身伤痕的少年，甚至甘愿为救怀空而身陷险境。其痴情坚贞，是铁血江湖中一缕清冽而悲伤的微光。出自马荣成漫画《风云》
+    default_gender: female
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 10
+      intellect: 44
+      defense: 24
+      agility: 22
+  - key: hero_fengyun_0143
+    name: 紫凝
+    avatar: monkey_wen_female8.png
+    archetype: civil
+    flavor: 步惊云失忆化名卓山期间结识的发妻，渔村出身，温柔贤淑、勤劳质朴。她用寻常人家的柴米烟火，抚平了不哭死神半生的孤寂与戾气，更为他生下儿子步天。虽不幸惨死于江湖仇杀之中，那段短暂的平凡岁月却成为步惊云一生最珍视的温暖记忆。出自马荣成漫画《风云》
+    default_gender: female
+    default_morality: 88
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 10
+      intellect: 42
+      defense: 28
+      agility: 20
+  - key: hero_fengyun_0144
+    name: 小武
+    avatar: pig/武089.png
+    archetype: military
+    flavor: 风云第三部脱颖而出的少年奇才，机缘巧合下习得十强武者遗留的玄武真功，功力进境一日千里。他生性淳朴重义，与步天、易风并肩成长，面对大魔神与连城志等强敌毫不畏惧，屡建奇功。其天赋与赤子之心，象征着中原武林生生不息的新生希望。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 84
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 16
+      defense: 22
+      agility: 22
+  - key: hero_fengyun_0145
+    name: 赤雪
+    avatar: monkey/其他随机角色/武083_女_.png
+    archetype: military
+    flavor: 赤家后人，容貌明艳、性格刚烈重情，自幼习得赤家火劲武学。她与易风在乱世江湖中相识相恋，纵使屡遭阴谋离间与生死考验，仍始终坚定地站在所爱之人身旁。她敢爱敢恨、挥剑无悔，是风云第三部最具光彩的巾帼红颜之一。出自马荣成漫画《风云》
+    default_gender: female
+    default_morality: 78
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 34
+      intellect: 18
+      defense: 18
+      agility: 30
+  - key: hero_fengyun_0148
+    name: 无悲
+    avatar: pig/武091.png
+    archetype: military
+    flavor: 东瀛武林成名高手，隐剑流中的忠义名宿，性情沉稳刚毅、不苟言笑。他武功扎实浑厚，一生严守武士道义与门派规矩，面对东瀛内乱与连城志的铁血扩张，始终坚守原则而不随波逐流，是东瀛阵营中少有的正气硬汉。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 72
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 16
+      defense: 26
+      agility: 18
+  - key: hero_fengyun_0149
+    name: 雪缘
+    avatar: monkey_wen_female9.png
+    archetype: civil
+    flavor: 连城志之妻，东瀛名门女子，性情温婉善良、外柔内刚。她深爱丈夫，即便眼见连城志一步步堕入权欲与仇恨的深渊，仍苦心劝谏、试图以柔情唤回他的良知。在刀剑无情的乱世权谋里，她以一己柔弱之躯守护着最后一丝人性微光，命运令人扼腕。出自马荣成漫画《风云》
+    default_gender: female
+    default_morality: 82
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 10
+      intellect: 44
+      defense: 24
+      agility: 22
+  - key: hero_fengyun_0150
+    name: 步渊亭
+    avatar: pig/文045.png
+    archetype: civil
+    flavor: 步惊云生父，性情孤傲执着、精于铸剑之术，因早年遭逢变故与江湖恩怨而常年漂泊在外。他虽未能陪伴儿子成长，却将一身桀骜不驯的傲骨与执念深深烙印在步惊云血脉之中。父子二人一生聚少离多，他的落拓身影始终是步惊云身世之谜的起点。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 58
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 22
+      intellect: 42
+      defense: 20
+      agility: 16
+  - key: hero_fengyun_0112
+    name: 绝天
+    avatar: monkey_wu_male9.png
+    archetype: military
+    flavor: 绝无神与颜盈之子，绝心同父异母的弟弟，自幼受父亲偏爱，养成狂傲暴戾的性情。他尽得绝无神杀拳与不灭金身真传，年纪轻轻便功力惊人，随父入侵中原时更是目空一切。然而野心勃勃的兄长绝心暗中忌惮，无神绝宫的权位之争最终将他卷入残酷的骨肉相残之中。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 25
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 46
+      intellect: 10
+      defense: 28
+      agility: 16
+  - key: hero_fengyun_0113
+    name: 步天
+    avatar: monkey_wu_male10.png
+    archetype: military
+    flavor: 步惊云与紫凝之子，生性温和善良，起初并不愿涉足刀光剑影的江湖。经历家变与乱世洗礼后，他继承父亲惊云道衣钵与排云掌法，渐渐成长为独当一面的中原侠士。他既有步惊云的坚毅果敢，又多了几分母亲的仁厚温润，在风云第三部的群雄混战中竭力守护苍生。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 18
+      defense: 24
+      agility: 18
+  - key: hero_fengyun_0117
+    name: 蓝武
+    avatar: pig/文039.png
+    archetype: civil
+    flavor: 蓝月宗少主，原与易风结为好友，却因家门覆灭与权欲膨胀而性情大变。他深谙借力打力与离间之术，不惜投靠圣王、嫁祸他人以谋取武林大权。虽自身根基不及风云，却凭狠辣手腕、狡诈心机与多变奇功步步攀升，成为年轻一代中最危险也最难缠的野心家。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 25
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 24
+      intellect: 44
+      defense: 14
+      agility: 18
+  - key: hero_fengyun_0118
+    name: 剑岳
+    avatar: pig/武073.png
+    archetype: military
+    flavor: 来自神秘剑界的绝顶剑客，一生唯剑是从，修成霸烈无匹的剑界绝学。踏入中原后，他四处寻访天下顶尖剑手决斗，与步惊云、无名等宗师连番交锋，剑气纵横难觅敌手。其人性情孤傲冷酷，视世俗情义为剑道累赘，唯独对真正能与自己一战的强者抱持几分敬意。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 45
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 48
+      intellect: 12
+      defense: 18
+      agility: 22
+  - key: hero_fengyun_0119
+    name: 赤绝
+    avatar: pig/武074.png
+    archetype: military
+    flavor: 赤家先祖，绝世魔功赤火神功的创始人，因功法酷烈霸道、杀性极重而被后人视为绝代魔头。他曾以一身焚天裂地的赤火真气横扫武林，留下的功法与魔念数百年后再度掀起腥风血雨，更成就了连城志的滔天魔威。其狂烈孤绝的武道执念，令人闻之色变。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 20
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 50
+      intellect: 12
+      defense: 22
+      agility: 16
+  - key: hero_fengyun_0121
+    name: 冰皇
+    avatar: pig/武075.png
+    archetype: military
+    flavor: 天门顶级高手之一，与神母骆仙齐名，修习至阴至寒的玄冰绝学，举手投足皆可令天地凝霜。他性情孤高冷傲，对帝释天忠心不二，奉命截杀叛离天门的怀空与中原群雄时毫不手软。其寒气功力霸道绝伦，是天门威慑武林的一张凌厉王牌。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 30
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 44
+      intellect: 16
       defense: 22
       agility: 18
+  blue:
   - key: hero_ilrock_04579
     name: 破军
     avatar: pig/武017.png
@@ -138,21 +601,6 @@ heroes:
       intellect: 6
       defense: 24
       agility: 14
-  - key: hero_ilrock_04580
-    name: 绝之介
-    avatar: monkey/其他随机角色/武066_男_.png
-    default_gender: male
-    archetype: military
-    flavor: 改名绝无神后，绝之介统领东瀛无神绝宫，是马荣成漫画《风云》中入侵中原的枭雄。他以不灭金身抵御刀剑，以杀拳击倒强敌，率鬼叉罗渡海而来，囚禁武林各派高手，并觊觎中原皇位。颜盈、绝心、绝天都与他的权势相牵，宫中也潜伏着各自的欲望。风云等人迎向无神绝宫时，他的铁腕统治随之遭到猛烈反击。
-    recruitable: true
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 44
-      intellect: 6
-      defense: 38
-      agility: 12
   - key: hero_ilrock_04581
     name: 第二梦
     avatar: monkey/其他随机角色/武083_女_.png
@@ -348,6 +796,246 @@ heroes:
       intellect: 10
       defense: 22
       agility: 20
+  - key: hero_fengyun_0108
+    name: 怀空
+    avatar: monkey_wu_male7.png
+    archetype: military
+    flavor: 铁门少主，怀灭之弟，性情纯良坚毅，手持绝世凶兵天罪却始终心怀仁义。铁门遭铁狂屠覆灭后，他背负血海深仇闯荡江湖，炼成炼铁手与天罪绝招，更在屠龙之役与帝释天死战不退。虽命途多舛、屡失至亲，他始终未堕魔道，以一腔赤子热血赢得步惊云与江湖群雄敬重。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 86
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 42
+      intellect: 14
+      defense: 26
+      agility: 18
+  - key: hero_fengyun_0109
+    name: 怀灭
+    avatar: monkey_wu_male8.png
+    archetype: military
+    flavor: 铁门大公子，怀空兄长，武学天资极高，却因急于变强而一度误入歧途、投效天门。他修习破空元手与天门绝技，出手狠辣凌厉，与弟弟怀空爱恨交织。直至看清帝释天的冷酷真面目，他终在生死关头醒悟，甘愿以残躯为弟铺路，展现出铁汉深藏心底的浓烈手足情深。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 55
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 46
+      intellect: 14
+      defense: 22
+      agility: 18
+  - key: hero_fengyun_0110
+    name: 神将
+    avatar: pig/武071.png
+    archetype: military
+    flavor: 搜神宫长生不死神麾下头号大将，身负灭世魔身，铜皮铁骨、力大无穷，更兼雷霆掌劲无坚不摧。他忠心耿耿、傲气凌人，奉命横扫中原各大门派，曾与风云激战而不落下风。纵然性情狂傲冷峻，临阵之时却堂堂正正、绝不畏死，颇具一代绝世战将的霸烈气象。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 38
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 44
+      intellect: 12
+      defense: 34
+      agility: 10
+  - key: hero_fengyun_0111
+    name: 长生不死神
+    avatar: pig/武072.png
+    archetype: military
+    flavor: 搜神宫之主，原为步氏神族后人，凭移天神诀保住青春不老，更兼修摩诃无量与灭世魔身，威压一方。他野心勃勃、冷酷无情，妄图夺取神龙之力与中原霸权，视手下与强敌皆为蝼蚁。其功力高绝诡异，一度令中原群雄束手无策，是风云第二部极富压迫感的霸主。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 22
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 44
+      intellect: 22
+      defense: 22
+      agility: 12
+  - key: hero_fengyun_0114
+    name: 易风
+    avatar: monkey_wu_male11.png
+    archetype: military
+    flavor: 聂风与第二梦之子，因自幼流落市井而养成机智狡黠、玩世不恭的性情，与父亲的仁厚截然不同。他身负疯血与绝世凶刀大邪王，处事亦正亦邪、善用奇谋，常令敌手防不胜防。虽然嘴硬心冷、屡屡顶撞长辈，每逢亲友与中原大难临头，却总能挺身而出，显露侠者本色。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 60
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 38
+      intellect: 22
+      defense: 14
+      agility: 26
+  - key: hero_fengyun_0115
+    name: 神锋
+    avatar: monkey_wu_male14.png
+    archetype: military
+    flavor: 断浪之子，幼年被东瀛刀客皇影收为义子，取名神锋。他虽流淌着断浪的血脉，却在皇影的言传身教下养成刚直重义、磊落坦荡的品格，兼修断家蚀日剑法与皇影刀意。重返中原后，他拒绝走上生父的邪路，与易风、步天并肩抗敌，以手中兵刃证明命运可由己定。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 82
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 42
+      intellect: 16
+      defense: 20
+      agility: 22
+  - key: hero_fengyun_0116
+    name: 圣王
+    avatar: pig/文038.png
+    archetype: civil
+    flavor: 创立无天绝境的神秘枭雄，不仅手握绝世邪刀大邪王，更深谙权谋算计与人心弱点。他以仁君自居，实则冷酷残忍，暗中操纵蓝武、绝心等人挑起武林动乱，企图一统天下。其智计深沉难测、武功高深莫测，纵使面对风云亦能从容周旋，是极具压迫感的智谋型霸主。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 22
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 30
+      intellect: 42
+      defense: 16
+      agility: 12
+  - key: hero_fengyun_0120
+    name: 骆仙
+    avatar: monkey_wen_female4.png
+    archetype: civil
+    flavor: 天门神母，帝释天座下最受倚重的心腹爱徒，容貌绝美、气质冷艳。她不仅习得天门上乘寒冰奇功，更精于揣摩人心、统筹天门大小事务，曾奉命以柔情与计谋笼络步惊云与江湖群雄。外表冷若冰霜，内心却对主上怀着复杂的情感与忠诚，是天门中最具手腕的幕后女强人。出自马荣成漫画《风云》
+    default_gender: female
+    default_morality: 35
+    recruitable: true
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 22
+      intellect: 44
+      defense: 14
+      agility: 20
+  - key: hero_fengyun_0122
+    name: 大当家
+    avatar: pig/文040.png
+    archetype: civil
+    flavor: 笑三笑次子，本名笑傲世，与兄长大魔神同负旷世奇才，却更长于运筹帷幄与幕后布局。他自创万道森罗，能窥破天下武学破绽，暗中创立隐秘势力操控江湖格局，与父亲及兄长展开长达数代的智武博弈。其城府之深、眼光之毒，令风云亦数度陷入被动。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 30
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 28
+      intellect: 46
+      defense: 14
+      agility: 12
+  - key: hero_fengyun_0123
+    name: 铁狂屠
+    avatar: pig/武076.png
+    archetype: military
+    flavor: 铁门叛徒，铁神之弟，嫉妒兄长执掌门派而心生怨毒，竟勾结外敌覆灭铁门并囚禁兄长。他兼具绝顶铸造天赋与强横武功，耗时多年打造出刀枪不入的天劫战甲，凭此横行江湖、大开杀戒。其性格偏执狂傲，最终在与怀空的生死对决中自食恶果。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 18
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 42
+      intellect: 18
+      defense: 30
+      agility: 10
+  - key: hero_fengyun_0140
+    name: 剑皇
+    avatar: pig/武087.png
+    archetype: military
+    flavor: 隐居山野的剑道前辈，与第二刀皇素有渊源，因惜才而将毕生剑学倾囊传授给第二梦。他性格孤傲执拗，对剑道极度专注，纵使年迈归隐，一身森然剑意仍不减当年。其所授剑法与刀皇刀意交织，成就了第二梦独具一格的武学根基。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 68
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 44
+      intellect: 16
+      defense: 18
+      agility: 22
+  - key: hero_fengyun_0146
+    name: 蓝月圣主
+    avatar: pig/文044.png
+    archetype: civil
+    flavor: 蓝月宗之主，蓝武之父，统御一方神秘大派，深谙权术韬略与奇门功法。他一心壮大宗门势力，在中原武林风云变幻之际多方下注、纵横捭阖，却终究在更高层级的枭雄博弈中折戟沉沙。其精明老辣与野心，深刻影响了儿子蓝武日后的行事作风。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 35
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 24
+      intellect: 44
+      defense: 18
+      agility: 14
+  - key: hero_fengyun_0147
+    name: 隼人天隐
+    avatar: pig/武090.png
+    archetype: military
+    flavor: 东瀛隐剑流门主，剑术深湛沉雄，在东瀛武林享有极高声望。他胸怀宏图大志，既重武道修为亦具统帅气度，早年曾栽培连城志，后却因门徒野心失控而陷入生死困局。其一身隐剑流剑法凌厉稳重，颇具东瀛一代名宿的凛然风采。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 55
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 42
+      intellect: 20
+      defense: 20
+      agility: 18
+  - key: hero_fengyun_0105
+    name: 大魔神
+    avatar: pig/武069.png
+    archetype: military
+    flavor: 笑三笑长子，本名笑惊天，自幼目睹世态炎凉而心生魔念，执意以铁血与毁灭重塑天下。他身负混天四绝与万道森罗之威，功力骇世惊俗，连步惊云与聂风联手亦难轻易撼动。其霸道冷酷、唯我独尊，将千秋大劫推向顶峰，是中原武林所面临过的最可怖的绝代魔主之一。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 16
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 48
+      intellect: 20
+      defense: 22
+      agility: 10
+  - key: hero_fengyun_0107
+    name: 剑圣龙儿
+    avatar: monkey_wu_male6.png
+    archetype: military
+    flavor: 继承老剑圣独孤剑衣钵的新一代剑圣，自幼天资卓绝，获传圣灵剑法并最终突破先人桎梏，领悟出毁天灭地的六灭剑廿三。他曾因年轻气盛受权谋利用，历经江湖血火与步惊云点化后终明剑道真谛，毅然挺身守护中原苍生，令剑圣之名再度响彻武林。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 78
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 44
+      intellect: 16
+      defense: 16
+      agility: 24
   purple:
   - key: hero_ilrock_04574
     name: 聂风
@@ -409,13 +1097,107 @@ heroes:
       intellect: 6
       defense: 24
       agility: 14
+  - key: hero_fengyun_0102
+    name: 笑三笑
+    avatar: pig/文037.png
+    archetype: civil
+    flavor: 身负龙龟之血、活过四千年的武林传奇奇人，自创混天四绝，洞悉天机气运。他一生以阻止千秋大劫为己任，暗中点拨聂风、步惊云等后世英豪，却也因两个儿子大魔神与大当家走上歧途而背负沉重枷锁。其功力深不可测、智计通天，是凌驾于正邪纷争之上的旷世高人。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 78
+    recruitable: true
+    growth_range:
+    - 8
+    - 11
+    attribute_weights:
+      force: 32
+      intellect: 38
+      defense: 18
+      agility: 12
+  - key: hero_fengyun_0103
+    name: 慕应雄
+    avatar: monkey_wu_male3.png
+    archetype: military
+    flavor: 无名义兄，自幼与无名情同手足，同修莫名剑法，剑道天资丝毫不逊于武林神话。他为成全义弟而远避江湖，独守剑宗遗风，更以无上剑意炼就无天剑境，是英雄剑真正的宿命之主之一。平日孤傲冷峻，唯对剑道与义弟怀抱极深执念，一剑出鞘足令天下剑客俯首。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 72
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 46
+      intellect: 18
+      defense: 18
+      agility: 18
+  - key: hero_fengyun_0104
+    name: 皇影
+    avatar: monkey_wu_male4.png
+    archetype: military
+    flavor: 东瀛第一刀客，手持绝世神兵惊寂刀，自创黄金刀气与七式刀意，威震海内外。他孤身渡海入中原挑战风云与无名，只为追求刀道极境，却在刀光剑影间与中原豪杰惺惺相惜。他重诺守信、义薄云天，收养神锋如亲生，面对帝释天等邪恶枭雄亦敢横刀直面，尽显一代刀皇风范。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 76
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 48
+      intellect: 14
+      defense: 22
+      agility: 16
+  - key: hero_fengyun_0106
+    name: 连城志
+    avatar: monkey_wu_male5.png
+    archetype: military
+    flavor: 东瀛隐剑流出身、实为东瀛皇室血脉，早年饱受欺凌而暗藏滔天野心。他历经无天炼狱磨砺，融合赤火神功与无情刀法，更得东瀛大军与魔魁之力加持，一步步登顶东瀛霸主之位。他性格偏执狠毒却极善隐忍布局，率军进犯中原，成为风云晚年最凶险的终极强敌。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 18
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 44
+      intellect: 22
+      defense: 20
+      agility: 14
+  - key: hero_ilrock_04578
+    name: 断浪
+    avatar: monkey/其他随机角色/武064_男_.png
+    default_gender: male
+    archetype: military
+    flavor: 南麟剑首断帅之子，在马荣成漫画《风云》中与聂风一同进入天下会。聂风被雄霸收为弟子，断浪却屡受冷落，久积的不甘令两人的道路渐渐分开。他携火麟剑、施蚀日剑法，辗转依附各方强者，也不断寻找扬名夺权的机会。后来夺得龙元之力，昔日受轻视的少年终于强大得令人畏惧，杀机更一步步逼向曾经的朋友。
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 52
+      intellect: 8
+      defense: 22
+      agility: 18
+  - key: hero_ilrock_04580
+    name: 绝之介
+    avatar: monkey/其他随机角色/武066_男_.png
+    default_gender: male
+    archetype: military
+    flavor: 改名绝无神后，绝之介统领东瀛无神绝宫，是马荣成漫画《风云》中入侵中原的枭雄。他以不灭金身抵御刀剑，以杀拳击倒强敌，率鬼叉罗渡海而来，囚禁武林各派高手，并觊觎中原皇位。颜盈、绝心、绝天都与他的权势相牵，宫中也潜伏着各自的欲望。风云等人迎向无神绝宫时，他的铁腕统治随之遭到猛烈反击。
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 44
+      intellect: 6
+      defense: 38
+      agility: 12
   orange:
   - key: hero_ilrock_04576
     name: 韦英雄
     avatar: monkey/orange/韦英雄（无名）.png
     default_gender: male
     archetype: military
-    flavor: "出自马荣成漫画《风云》，本名韦英雄，被慕家收养后名慕英名，后来以“无名”之名行走江湖。他早年以精深剑术震慑各派，赢得“武林神话”的声誉，却在历经亲人离散与妻子亡故后渐渐淡看声名，隐居中华阁。平日的他沉静寡言，待人克制，心中始终留着对故人的牵挂。剑晨承其教诲，风云也曾受到他的指点；每逢强敌为祸、武林生变，他又会离开隐居之所，挺身应对危局。纵然厌倦了江湖争斗，他仍放不下守护他人的责任，在一场场风波中为后辈留下转机。"
+    flavor: 出自马荣成漫画《风云》，本名韦英雄，被慕家收养后名慕英名，后来以“无名”之名行走江湖。他早年以精深剑术震慑各派，赢得“武林神话”的声誉，却在历经亲人离散与妻子亡故后渐渐淡看声名，隐居中华阁。平日的他沉静寡言，待人克制，心中始终留着对故人的牵挂。剑晨承其教诲，风云也曾受到他的指点；每逢强敌为祸、武林生变，他又会离开隐居之所，挺身应对危局。纵然厌倦了江湖争斗，他仍放不下守护他人的责任，在一场场风波中为后辈留下转机。
     recruitable: true
     growth_range:
     - 8
@@ -425,3 +1207,19 @@ heroes:
       intellect: 25
       defense: 12
       agility: 15
+  - key: hero_fengyun_0101
+    name: 帝释天
+    avatar: monkey_wu_male2.png
+    archetype: military
+    flavor: 本名徐福，秦代方士出身，服食凤凰真血后长生不老两千年，暗中建立天门、游戏人间。他以漫长岁月遍学天下各派绝技，自创圣心诀，既能冰封万里亦可起死回生，更策划七武屠龙以夺龙元。其城府如海、傲视苍生，视中原武林豪杰如棋子，终因狂妄自大而引来群雄反噬。出自马荣成漫画《风云》
+    default_gender: male
+    default_morality: 18
+    recruitable: true
+    growth_range:
+    - 9
+    - 14
+    attribute_weights:
+      force: 42
+      intellect: 26
+      defense: 18
+      agility: 14

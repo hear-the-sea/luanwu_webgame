@@ -168,34 +168,6 @@ heroes:
       intellect: 14
       defense: 26
       agility: 22
-  - key: hist_xianqin_0285
-    name: 周市
-    avatar: pig/武046.png
-    default_gender: male
-    archetype: military
-    flavor: （？—前208年）秦末魏国将领，魏国贵族后裔。陈胜起兵后，他奉命北上略地，攻取魏地，随后迎立魏咎为魏王，自己担任魏相，主持魏国军政。秦将章邯进攻魏国时，周市率军抵抗，兵败身亡；魏咎也在临济城破后自焚，魏国再度覆亡。他在秦末群雄并起之际重建魏国，虽未能长久，却是魏地反秦势力的重要组织者。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 38
-      intellect: 18
-      defense: 26
-      agility: 18
-  - key: hist_xianqin_0286
-    name: 魏咎
-    avatar: monkey_wen_male5.png
-    default_gender: male
-    archetype: military
-    flavor: （？—前208年）秦末魏王，魏国王室后裔。陈胜起兵后，魏地被周市攻取，魏咎被拥立为魏王，据守临济。秦将章邯率军围攻临济时，他向齐、楚义军求援，但援军作战失利，城池告破。为免城中百姓再遭战火，魏咎选择自焚而死。他在乱世中被推上王位，结局反映出秦末复国势力在强秦军事压力下的艰难处境。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 36
-      intellect: 18
-      defense: 26
-      agility: 20
   green:
   - key: hist_xianqin_0250
     name: 颠颉
@@ -435,3 +407,31 @@ heroes:
       intellect: 54
       defense: 22
       agility: 14
+  - key: hist_xianqin_0285
+    name: 周市
+    avatar: pig/武046.png
+    default_gender: male
+    archetype: military
+    flavor: （？—前208年）秦末魏国将领，魏国贵族后裔。陈胜起兵后，他奉命北上略地，攻取魏地，随后迎立魏咎为魏王，自己担任魏相，主持魏国军政。秦将章邯进攻魏国时，周市率军抵抗，兵败身亡；魏咎也在临济城破后自焚，魏国再度覆亡。他在秦末群雄并起之际重建魏国，虽未能长久，却是魏地反秦势力的重要组织者。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 38
+      intellect: 18
+      defense: 26
+      agility: 18
+  - key: hist_xianqin_0286
+    name: 魏咎
+    avatar: monkey_wen_male5.png
+    default_gender: male
+    archetype: military
+    flavor: （？—前208年）秦末魏王，魏国王室后裔。陈胜起兵后，魏地被周市攻取，魏咎被拥立为魏王，据守临济。秦将章邯率军围攻临济时，他向齐、楚义军求援，但援军作战失利，城池告破。为免城中百姓再遭战火，魏咎选择自焚而死。他在乱世中被推上王位，结局反映出秦末复国势力在强秦军事压力下的艰难处境。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 18
+      defense: 26
+      agility: 20

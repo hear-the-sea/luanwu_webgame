@@ -1,0 +1,703 @@
+heroes:
+  blue:
+  - key: hist_xianqin_0605
+    name: 子兹甫
+    avatar: pig/武046.png
+    default_gender: male
+    archetype: military
+    flavor: （？—前637年）春秋时期宋国国君，即宋襄公，被部分史家列入“春秋五霸”。齐桓公卒后，他一度助齐平乱并图谋称霸，然在鹿上、盂地之盟受挫于楚。前638年泓水之战中，他拘泥于古礼“不鼓不成列”，错失战机而大败受伤，次年伤重而逝。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 36
+      intellect: 26
+      defense: 24
+      agility: 14
+  - key: hist_xianqin_0606
+    name: 斗谷于菟
+    avatar: duck_wen_male1.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）春秋时期楚国名臣，字子文，若敖氏之后。楚成王时任令尹，执政期间克己奉公、举贤任能，三度为相无喜色、三度罢官无愠色，更主动献出家财以助国用，留下“毁家纾难”的佳话。他为楚国积蓄国力、稳固内政作出重要贡献，深受孔子称许。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 12
+      intellect: 50
+      defense: 24
+      agility: 14
+  - key: hist_xianqin_0607
+    name: 伯嚭
+    avatar: pig_wen_male1.png
+    default_gender: male
+    archetype: civil
+    flavor: （？—前473年）春秋末期吴国太宰，原为楚国名臣伯州犁之孙，因家族蒙难奔吴，得伍子胥举荐而受吴王阖闾重用。吴王夫差在位时，伯嚭贪图越国贿赂，屡次进谗排挤伍子胥并促成放归勾践，致吴国由盛转衰。越灭吴后，勾践以不忠之罪将其处死。
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 10
+      intellect: 46
+      defense: 18
+      agility: 26
+  - key: hist_xianqin_0608
+    name: 申公巫臣
+    avatar: monkey_wen_male3.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）春秋时期楚国申公，本名屈巫，字子灵。因与令尹子重、司马子反结怨并携夏姬奔晋，其宗族在楚遭屠戮。巫臣遂向晋景公献联吴制楚之策，亲赴吴国教吴人乘战车、习射御阵法，使吴国迅速崛起并连年疲楚，深刻改变了春秋后期的列国格局。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 22
+      intellect: 44
+      defense: 14
+      agility: 20
+  - key: hist_xianqin_0609
+    name: 成得臣
+    avatar: pig_wu_male2.png
+    default_gender: male
+    archetype: military
+    flavor: （？—前632年）春秋时期楚国令尹、名将，字子玉，受子文举荐执掌军政。他性情刚烈、治军严明，在城濮之战中率楚军主力追击晋师，因轻敌中晋文公退避三舍之计而大败。战后退至连谷，羞于见楚成王与国人，遂引咎自刎以谢败军之责。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 46
+      intellect: 18
+      defense: 20
+      agility: 16
+  - key: hist_xianqin_0610
+    name: 尹吉甫
+    avatar: monkey/其他随机角色/武037_男.png
+    default_gender: male
+    archetype: military
+    flavor: （前852年—前775年）西周宣王时期重臣、名将兼诗人，兮氏，名甲，字伯吉父。他奉命率军北伐猃狁，追击至太原而大获全胜，稳定西周北疆，辅佐宣王成就中兴。同时文采斐然，传为《诗经》中《六月》《崧高》《烝民》等名篇作者，文武兼资。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 38
+      intellect: 32
+      defense: 16
+      agility: 14
+  - key: hist_xianqin_0611
+    name: 匡章
+    avatar: pig/武048.png
+    default_gender: male
+    archetype: military
+    flavor: （生卒年不详）战国时期齐国名将，字子章。齐威王、齐宣王与齐湣王三朝皆倚为柱石，曾率齐军抵御秦军、五十日攻破燕国都城，又于垂沙之战统齐韩魏联军大破楚军斩杀唐昧，再率三国联军攻破秦函谷关。其用兵果决善战，且因恪守孝道为孟子所称道。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 44
+      intellect: 24
+      defense: 16
+      agility: 16
+  - key: hist_xianqin_0612
+    name: 庞煖
+    avatar: monkey_wu_male4.png
+    default_gender: male
+    archetype: military
+    flavor: （生卒年不详）战国末期赵国名将兼纵横家，早年曾师从鹖冠子。前242年率赵军大破燕师、擒杀燕将剧辛，威震北方；次年合纵赵、楚、魏、韩、燕五国联军伐秦，一度攻至蕞地，成为山东六国最后一次大规模合纵攻秦的统帅，其军事与策论皆为一时之杰。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 28
+      defense: 16
+      agility: 16
+  - key: hist_xianqin_0613
+    name: 王龁
+    avatar: pig_wu_male4.png
+    default_gender: male
+    archetype: military
+    flavor: （？—前244年）战国末期秦国名将，历仕秦昭襄王、孝文王、庄襄王与秦王政四朝。长平之战中先任主将攻拔上党，后改任副将配合白起合围歼灭赵军主力；此后又统军围攻邯郸、击破魏韩联军、攻取上党诸城，一生征战沙场，是秦国东扩的核心将领之一。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 45
+      intellect: 20
+      defense: 21
+      agility: 14
+  - key: hist_xianqin_0614
+    name: 桓齮
+    avatar: monkey_wu_male6.png
+    default_gender: male
+    archetype: military
+    flavor: （生卒年不详）战国末期秦国名将。前236年与王翦、杨端和分道伐赵，连克邺、安阳等城；前234年统军攻赵平阳，斩杀赵将扈辄，歼敌十万，战功显赫。次年进军宜安时遭赵将李牧伏击大败，此后去向史载不详，但其早年攻城略地之功在秦灭六国进程中颇为显赫。
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 46
+      intellect: 16
+      defense: 16
+      agility: 22
+  - key: hist_xianqin_0615
+    name: 禽滑厘
+    avatar: monkey/其他随机角色/武047_男.png
+    default_gender: male
+    archetype: military
+    flavor: （生卒年不详）战国初期墨家大弟子，字慎子，曾学于子夏，后倾心归附墨翟，追随三年而尽得其学。他尤为精通守城器械与防御工事，当公输般为楚国造云梯谋攻宋国时，禽滑厘率三百墨家弟子持守圉之器登宋城待敌，终令楚王罢兵，是墨家实践“非攻”的中坚。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 34
+      intellect: 30
+      defense: 26
+      agility: 10
+  - key: hist_xianqin_0616
+    name: 告不害
+    avatar: pig/文014.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）战国中期思想家，世称告子，曾游学于儒墨之间。他与孟轲展开著名的“人性之辩”，提出“生之谓性”“食色，性也”以及“性无善无不善”的见解，以湍水决东决西喻人性可塑，虽遭孟子反驳，其朴素自然人性论仍在中国哲学史上占有重要地位。
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 10
+      intellect: 52
+      defense: 20
+      agility: 18
+  - key: hist_xianqin_0617
+    name: 计然
+    avatar: monkey/其他随机角色/文041_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）春秋末期思想家与理财家，姓辛字文子，博学多才而隐居不仕，范蠡曾拜其为师。他提出“平粜”“积著之理”等经济思想，主张丰年收储、灾年平价售粮，顺应时节旱则资舟、水则资车。越王勾践采纳其策七中之五，遂使越国富强而灭吴。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 54
+      defense: 20
+      agility: 16
+  - key: hist_xianqin_0618
+    name: 医缓
+    avatar: pig/文021.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）春秋时期秦国名医。前581年晋景公病重，遣使求医于秦，秦桓公派医缓前往诊治。医缓尚未抵晋，便已洞悉病势；抵后切脉诊断，直言疾已居肓之上、膏之下，攻之不可、达之不及、药不至焉，遂辞归，留下“病入膏肓”的千古医案与典故。
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 8
+      intellect: 54
+      defense: 22
+      agility: 16
+  - key: hist_xianqin_0619
+    name: 苏代
+    avatar: monkey_wen_male5.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）战国中期纵横家，苏秦之弟，活跃于燕、齐、赵、秦诸国之间。他善察列国虚实与君王心理，曾助燕昭王行反间削弱齐国，又以“鹬蚌相争，渔翁得利”的寓言劝止赵惠文王伐燕，化解两国干戈，其游说之术与机变智谋不逊其兄。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 50
+      defense: 14
+      agility: 26
+  - key: hist_xianqin_0620
+    name: 君王后
+    avatar: monkey_wen_female1.png
+    default_gender: female
+    archetype: civil
+    flavor: （？—前249年）战国后期齐襄王之后，太史敫之女。齐襄王流亡莒地时她慧眼识人私相扶持，襄王复位后立为王后。襄王卒后，其子齐王建年幼，君王后临朝佐政四十余年，谨事秦而睦邻邦，曾一锤击碎秦始皇所赐玉连环以解难，使齐国在战国末世得以偏安。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 12
+      intellect: 50
+      defense: 22
+      agility: 16
+  - key: hist_xianqin_0601
+    name: 宫之奇
+    avatar: monkey/其他随机角色/文049_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）春秋时期虞国名臣。晋献公以垂棘之璧、屈产之乘向虞国借道伐虢时，他极力劝谏虞公，提出“辅车相依，唇亡齿寒”的著名论断，力陈虢亡则虞必随亡。虞公贪利不听，宫之奇遂率族人离虞，同年冬晋灭虢后果然顺道灭虞，其远见卓识留名青史。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 12
+      intellect: 50
+      defense: 22
+      agility: 16
+  - key: hist_xianqin_0602
+    name: 王孙满
+    avatar: monkey/其他随机角色/文052_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （约前635年—前586年后）春秋时期周王室大夫，周襄王之孙。秦军东袭郑国途经洛邑时，他年幼即洞察秦师无礼必败；后楚庄王陈兵周疆问九鼎轻重，他从容对以“在德不在鼎”，以辞令捍卫周室尊严，留下“问鼎中原”的千古典故。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 12
+      intellect: 50
+      defense: 22
+      agility: 16
+  - key: hist_xianqin_0603
+    name: 烛之武
+    avatar: monkey/其他随机角色/文037_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）春秋时期郑国大夫，以辩才与外交智谋著称。前630年晋秦联军围郑，危急之际年迈的烛之武夜缒出城面见秦穆公，洞悉晋秦利害矛盾，陈说亡郑只益于晋而无利于秦，成功说服秦军退兵并留将戍守郑国，化亡国之危于无形。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 8
+      intellect: 56
+      defense: 16
+      agility: 20
+  - key: hist_xianqin_0604
+    name: 庄蹻
+    avatar: monkey_wu_male1.png
+    default_gender: male
+    archetype: military
+    flavor: （生卒年不详）战国时期楚国名将，楚庄王后裔。楚威王或楚顷襄王时，他奉命率军溯沅水西征，平定巴、黔中以西之地，直抵滇池一带，开辟疆土数千里。后因秦军夺取楚国黔中郡而归路断绝，遂率众变服从俗、留居当地建立滇国，开启西南边疆与中原文化交融的新篇。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 44
+      intellect: 22
+      defense: 18
+      agility: 16
+  - key: hist_xianqin_0638
+    name: 许穆夫人
+    avatar: monkey/其他随机角色/文059_女.png
+    default_gender: female
+    archetype: civil
+    flavor: （约前690年—？年）春秋前期卫国公主，姬姓，嫁于许穆公为夫人，是中国文学史上第一位留名青史的女诗人。前660年狄人攻破卫国、卫懿公战死，她不顾许国大夫阻拦，毅然驰马归国吊唁并四处求援，途作《诗经·鄘风·载驰》，满怀忧国救亡之志。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 14
+      intellect: 48
+      defense: 18
+      agility: 20
+  green:
+  - key: hist_xianqin_0621
+    name: 子至
+    avatar: pig/文028.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）商朝君主，即商太宗太甲，商汤之孙。继位之初不遵祖法、暴虐失德，被贤相伊尹放逐于桐宫闭门思过。太甲在桐宫三年深自悔悟、修德行仁，伊尹遂迎其复位执政。复位后他勤政爱民，诸侯归附，开创商朝首次中兴，庙号太宗。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 18
+      intellect: 42
+      defense: 24
+      agility: 16
+  - key: hist_xianqin_0622
+    name: 伊陟
+    avatar: duck_wen_male3.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）商朝贤相，名臣伊尹之子，辅佐商王太戊执政。相传朝堂生祥桑谷、一暮大拱，太戊心生畏惧，伊陟进言“妖不胜德”，劝王反思政事、修德安民。太戊从其言，祥桑遂枯，商道复兴，诸侯重归朝贡，史称中宗之治。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 12
+      intellect: 48
+      defense: 24
+      agility: 16
+  - key: hist_xianqin_0623
+    name: 胶鬲
+    avatar: monkey_wen_male7.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）商朝末期贤臣，原隐居于鱼盐市井之间，后得周文王举荐仕商，为商纣王所任用。周武王兴师伐商时，胶鬲奉命往探周军进兵日期，武王不顾大雨疾行如期而至以保全其信。孟子曾将胶鬲与傅说、百里奚并列，赞其出身微贱而堪大任。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 16
+      intellect: 44
+      defense: 22
+      agility: 18
+  - key: hist_xianqin_0624
+    name: 方叔
+    avatar: pig/武052.png
+    default_gender: male
+    archetype: military
+    flavor: （生卒年不详）西周宣王时期资深名将。荆蛮蠢动犯边时，年事已高的方叔受命挂帅，统率战车三千乘南征，军容严整、旗鼓相望，以威势震慑荆蛮而使其归服。《诗经·小雅·采芑》盛赞其“方叔元老，克壮其犹”，是宣王中兴的重要柱石。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 22
+      defense: 24
+      agility: 12
+  - key: hist_xianqin_0625
+    name: 仲山甫
+    avatar: pig/文031.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）西周宣王时期贤相，樊国国君，封樊侯。他辅佐周宣王治理朝政、奉命城齐，处事刚柔并济、不畏强御也不欺鳏寡；曾切谏宣王不可废长立幼干涉鲁国君位，亦劝谏不宜料民于太原。《诗经·大雅·烝民》专为颂其德业而作。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 14
+      intellect: 48
+      defense: 24
+      agility: 14
+  - key: hist_xianqin_0626
+    name: 宁戚
+    avatar: monkey/其他随机角色/文049_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）春秋前期卫国人，家贫为商，赶车至齐国东门外，在车下喂牛时叩击牛角而歌《南山粲》，抒发怀才不遇之志。齐桓公夜出迎客闻其歌声，识为奇才，遂破格拜为大司田，掌管齐国农政与垦殖，与管仲、鲍叔牙、隰朋等共成齐国霸业。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 16
+      intellect: 46
+      defense: 20
+      agility: 18
+  - key: hist_xianqin_0627
+    name: 隰朋
+    avatar: pig/文035.png
+    default_gender: male
+    archetype: civil
+    flavor: （？—前645年）春秋前期齐国名臣，齐庄公曾孙。他为人敦厚谦逊，居高位而不忘民瘼，辅佐齐桓公与管仲理政外交，曾出使秦晋调停国事。管仲病重时，桓公问以后事，管仲力荐隰朋可掌国政；然隰朋在管仲卒后不久亦病逝，齐国霸业遂渐衰微。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 12
+      intellect: 48
+      defense: 22
+      agility: 18
+  - key: hist_xianqin_0628
+    name: 田完
+    avatar: monkey_wen_male8.png
+    default_gender: male
+    archetype: civil
+    flavor: （前706年—？年）春秋前期陈厉公之子，字敬仲，因陈国内乱出奔齐国。齐桓公敬其贤能，欲授以卿位，田完谦辞不受，仅任工正之职，在齐国改氏为田。其后代田氏在齐国休养生息、深得民心，数世之后终成“田氏代齐”之局，田完被尊为田齐始祖。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 14
+      intellect: 46
+      defense: 22
+      agility: 18
+  - key: hist_xianqin_0629
+    name: 弦高
+    avatar: pig_wen_male2.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）春秋时期郑国商人。前627年秦穆公派孟明视等千里奔袭郑国，弦高贩牛赴周途经滑地偶遇秦军。他临危不乱，一面以四张熟牛皮与十二头肥牛假托郑君之命犒劳秦师，一面派人星夜驰报郑国备战。秦军以为郑国已有防备，遂灭滑而返，郑国赖以保全。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 16
+      intellect: 44
+      defense: 16
+      agility: 24
+  - key: hist_xianqin_0630
+    name: 狐毛
+    avatar: pig/武054.png
+    default_gender: male
+    archetype: military
+    flavor: （？—前629年）春秋时期晋国将领，狐突长子、狐偃之兄。重耳流亡十九年间，狐毛与弟狐偃始终追随左右，同甘共苦。晋文公即位后作三军，拜狐毛为上军主将。前632年城濮之战中，他设二旆诱敌败楚右军，为晋国称霸中原立下战功。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 24
+      defense: 20
+      agility: 16
+  - key: hist_xianqin_0631
+    name: 胥臣
+    avatar: monkey_wu_male9.png
+    default_gender: male
+    archetype: military
+    flavor: （？—前622年）春秋时期晋国重臣、名将，字季子，食邑于臼，称臼季。重耳流亡时常随侍筹谋，文公复位后任下军佐。城濮之战中，他以虎皮蒙马出奇制胜，一举击溃楚国右翼陈蔡联军；后出使路过冀地，见郤缺夫妇相敬如宾，力荐于朝，传为荐贤佳话。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 38
+      intellect: 28
+      defense: 16
+      agility: 18
+  - key: hist_xianqin_0632
+    name: 郤缺
+    avatar: pig/文036.png
+    default_gender: male
+    archetype: civil
+    flavor: （？—前597年）春秋时期晋国正卿，谥成，称郤成子，早年隐居冀地耕作。胥臣过冀见其妻馌之、夫妻相敬如宾，深赞其德而举荐于晋文公。郤缺仕晋后在箕之战擒获白狄国君，又以怀柔安抚归还卫国侵地，劝谏晋灵公以德服诸侯，后世以“相敬如宾”称颂其风。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 22
+      intellect: 44
+      defense: 20
+      agility: 14
+  - key: hist_xianqin_0633
+    name: 荀林父
+    avatar: pig_wu_male6.png
+    default_gender: male
+    archetype: military
+    flavor: （？—前593年）春秋时期晋国正卿，中行氏始祖，谥桓，称中行桓子。前597年邲之战中任中军主帅救郑，因部将先縠擅自渡河致全军大败，归国后自请受戮，得晋景公宽赦。此后他痛定思痛，率军大破赤狄、灭潞氏，以赫赫战功雪耻并巩固晋国北境。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 26
+      defense: 20
+      agility: 14
+  - key: hist_xianqin_0634
+    name: 解扬
+    avatar: monkey/其他随机角色/文061_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）春秋时期晋国大夫，字子虎。前594年楚庄王围宋数月，宋国危急，晋景公遣解扬赴宋传令坚守待援。途中解扬被郑国擒献楚军，楚庄王重赂胁迫其劝宋投降。解扬登楼车大呼晋军将至，宁死不辱君命，楚庄王敬其忠信，终释之归晋。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 18
+      intellect: 42
+      defense: 26
+      agility: 14
+  - key: hist_xianqin_0635
+    name: 屈完
+    avatar: pig/文040.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）春秋时期楚国大夫，楚武王之子屈瑕后裔。前656年齐桓公率八国联军伐楚，兵临召陵。楚成王遣屈完出使齐营交涉，面对齐军炫耀武力，屈完从容回应“君若以德绥诸侯，谁敢不服；君若以力，楚国方城以为城，汉水以为池，虽众无所用之”，终促成召陵之盟。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 14
+      intellect: 48
+      defense: 20
+      agility: 18
+  - key: hist_xianqin_0636
+    name: 樊姬
+    avatar: monkey_wen_female3.png
+    default_gender: female
+    archetype: civil
+    flavor: （生卒年不详）春秋时期楚庄王夫人，以贤明善谏闻于史。庄王即位初期沉溺田猎，樊姬拒食禽兽之肉以婉劝，使庄王改过勤政；又针对令尹虞丘子未能广荐贤才一事直言剖析，促使虞丘子举荐孙叔敖为相。楚庄王终成春秋霸主，史家多归功于樊姬内助。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 10
+      intellect: 48
+      defense: 24
+      agility: 18
+  - key: hist_xianqin_0637
+    name: 庄姜
+    avatar: monkey_wen_female4.png
+    default_gender: female
+    archetype: civil
+    flavor: （生卒年不详）春秋前期齐国公主，齐庄公之女，嫁于卫庄公为夫人。《诗经·卫风·硕人》以“手如柔荑，肤如凝脂”“巧笑倩兮，美目盼兮”赞其绝世容姿。然卫庄公薄情宠妾，庄姜贤德端庄却终生未育，相传《燕燕》《绿衣》等诗篇皆出其手，寄托深沉哀怨。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 8
+      intellect: 50
+      defense: 22
+      agility: 20
+  - key: hist_xianqin_0639
+    name: 邓曼
+    avatar: monkey_wen_female6.png
+    default_gender: female
+    archetype: civil
+    flavor: （生卒年不详）春秋前期楚武王夫人，邓国公主，楚文王生母。她深通兵机与治国之道，当莫敖屈瑕伐罗志得意满时，邓曼敏锐预言其必因轻敌而败；后来楚武王伐随前心悸，她又以天命禄尽宽慰并明辨大势，其远见卓识屡见《左传》称道。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 10
+      intellect: 52
+      defense: 20
+      agility: 18
+  - key: hist_xianqin_0640
+    name: 泄庸
+    avatar: pig/文043.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）春秋末期越国大夫，与范蠡、文种、皋如等并称越国重臣。勾践战败入吴为臣及归国图强期间，泄庸协助筹划内政外交，安抚百姓、训练士卒，并参与灭吴之役的军政调度。吴亡后，他继续佐越称霸江淮，是越国复国大业的重要功臣。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 18
+      intellect: 44
+      defense: 20
+      agility: 18
+  - key: hist_xianqin_0641
+    name: 翟璜
+    avatar: monkey_wen_male10.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）战国初期魏国大臣，为魏文侯股肱之臣。他胸怀公心、善于识才，先后向魏文侯举荐乐羊攻灭中山、西门豹治理邺地、吴起镇守西河、李悝主持变法、屈侯鲋辅佐太子，魏国由此率先称雄战国。虽一度因魏成子拜相而心有不平，闻李克剖析后便坦然服膺。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 12
+      intellect: 48
+      defense: 22
+      agility: 18
+  - key: hist_xianqin_0642
+    name: 孟胜
+    avatar: pig/武056.png
+    default_gender: male
+    archetype: military
+    flavor: （？—前381年）战国初期墨家巨子，与楚国阳城君交善并受托守卫阳城封邑。楚悼王卒后，阳城君因卷入吴起之乱出奔，楚王发兵收邑。孟胜认为受人之托当以死全义，临终遣弟子传巨子之位于田襄子，随后率弟子一百八十余人殉城赴死，彰显墨者重义轻生之风。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 22
+      defense: 28
+      agility: 10
+  - key: hist_xianqin_0643
+    name: 腹䵍
+    avatar: pig/文045.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）战国中期墨家巨子，居于秦国。其独子在秦杀人，秦惠文王念及腹䵍年老无子，特命官吏免其死罪。腹䵍辞谢王命，直言“墨者之法，杀人者死，伤人者刑，此所以禁杀伤人也”，坚持大义灭亲处死其子，以严守法纪、公而忘私传颂于世。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 20
+      intellect: 42
+      defense: 26
+      agility: 12
+  - key: hist_xianqin_0644
+    name: 尸佼
+    avatar: monkey/其他随机角色/文_男.png
+    default_gender: male
+    archetype: civil
+    flavor: （约前390年—约前330年）战国中期思想家，晋国人，曾为商鞅门客并参与谋划秦国变法。商鞅获罪车裂后，尸佼逃亡入蜀，潜心著书立说，撰成《尸子》二十篇。其学说兼采儒、墨、名、法诸家之长，尤以“上下四方曰宇，往古来今曰宙”的宇宙观闻名后世。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 10
+      intellect: 50
+      defense: 22
+      agility: 18
+  - key: hist_xianqin_0645
+    name: 公孙丑
+    avatar: pig/文046.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）战国中期齐国人，孟轲的重要弟子。他长期追随孟子游说列国，屡次就管仲晏子功业、浩然之气、不动心及仁政王道等核心议题向孟子请益，其问答记录构成《孟子·公孙丑》上下篇。孟子晚年退居著述时，公孙丑参与整理编纂，功在儒学传承。
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 12
+      intellect: 48
+      defense: 24
+      agility: 16
+  - key: hist_xianqin_0646
+    name: 景差
+    avatar: monkey_wen_male11.png
+    default_gender: male
+    archetype: civil
+    flavor: （约前290年—约前223年）战国末期楚国辞赋家，楚国公族景氏之后，与屈原、宋玉、唐勒并称楚辞大家。他好辞而以赋见称，风格承袭屈原而偏于清雅婉约，相传《楚辞·大招》出其手笔。虽未能如屈原般力挽国运，却为楚辞流派的延续留下了珍贵篇章。
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 8
+      intellect: 52
+      defense: 18
+      agility: 22
+  - key: hist_xianqin_0647
+    name: 蔡泽
+    avatar: pig_wen_male3.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）战国末期燕国游说家。他早年游历诸侯不得志，西入秦国后巧言激怒应侯范雎，进而以商鞅、吴起、文种功成不退遭祸为例，劝说范雎急流勇退。范雎深以为然，遂举荐蔡泽代为秦相。蔡泽为相数月即主动辞印，封纲成君，终得善终。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 10
+      intellect: 50
+      defense: 16
+      agility: 24
+  - key: hist_xianqin_0648
+    name: 虞卿
+    avatar: monkey/其他随机角色/文男213.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）战国末期赵国上卿、纵横家兼学者。初以游说赵孝成王受重用，长平之战后力主联齐楚抗秦、反对割六城贿秦。后因好友魏齐遭秦追索，虞卿毅然解去相印随其亡命大梁，困窘之际发愤著书，撰成《虞氏春秋》八篇，为司马迁所推重。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 14
+      intellect: 48
+      defense: 18
+      agility: 20
+  - key: hist_xianqin_0649
+    name: 司马尚
+    avatar: monkey_wu_male11.png
+    default_gender: male
+    archetype: military
+    flavor: （生卒年不详）战国末期赵国名将。秦将王翦大举伐赵时，司马尚与李牧并肩领军抗秦，依托险要屡挫秦军锋芒，使秦师相持年余而不得进。秦国遂重金贿赂赵宠臣郭开行反间计，赵王迁中计诛杀李牧并罢免司马尚，赵军由此崩溃，邯郸旋即陷落。
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 44
+      intellect: 22
+      defense: 20
+      agility: 14
+  - key: hist_xianqin_0650
+    name: 王孙贾
+    avatar: pig/武062.png
+    default_gender: male
+    archetype: military
+    flavor: （生卒年不详）战国后期齐国少年，原为齐湣王侍从。前284年燕将乐毅破齐，楚将淖齿趁机杀害齐湣王专擅莒城。王孙贾受母亲激勉，袒露右臂走入市井振臂高呼，率领四百余名齐国义士突袭诛杀淖齿，为齐襄王即位与田单复国扫清了内患。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 18
+      defense: 16
+      agility: 24

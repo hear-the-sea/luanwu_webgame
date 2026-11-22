@@ -1,5 +1,3 @@
-# ilrock 人物资料补充（2026-10-02）；身份对照见 reports/guest_expansion_ilrock_20261002.json
-
 heroes:
   blue:
   - key: hero_ilrock_04234
@@ -122,6 +120,342 @@ heroes:
       intellect: 8
       defense: 24
       agility: 18
+  - key: hero_kunlun_0126
+    name: 梁思禽
+    avatar: pig/文011.png
+    default_gender: male
+    archetype: civil
+    default_morality: 58
+    flavor: 西昆仑梁萧与花晓霜之后人，兼具盖世武功与经天纬地之才。他只身重返中土，以奇谋神武助推元朝覆亡，后力推“抑儒术、限皇权”之大计却惨遭挫败，遂抱恨远走西域。临终前将周流六虚功一分为八，创立西城八部并留八幅祖师画像，令后世江湖风云激荡二百年。出自凤歌小说《沧海》。
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 24
+      intellect: 50
+      defense: 14
+      agility: 12
+  - key: hero_kunlun_0127
+    name: 乐之扬
+    avatar: pig/武046.png
+    default_gender: male
+    archetype: military
+    default_morality: 84
+    flavor: 原为秦淮河畔的卖唱少年，身世坎坷却善良淳朴、重情重义。洪武末年，他阴差阳错卷入皇室夺嫡与东西两派的纷争，历经无数生死历练。他以音律悟武道，由人籁、地籁直达天籁之境，将武学从招式桎梏中彻底解脱，终成一代奇侠。出自凤歌小说《灵飞经》。
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 44
+      intellect: 20
+      defense: 14
+      agility: 22
+  - key: hero_kunlun_0128
+    name: 阿雪
+    avatar: monkey_wu_female4.png
+    default_gender: female
+    archetype: military
+    default_morality: 86
+    flavor: 韩凝紫门下弟子，容貌清秀，性情淳朴善良，略显憨直却对梁萧一往情深、矢志不渝。梁萧辗转元军与宋廷之间备受非议时，唯有她不问是非毁誉、始终相随左右。后来在反元护卫南宋幼皇的惨烈血战中，她以命相护、香消玉殒，成为梁萧一生难以释怀的痛。出自凤歌小说《昆仑》。
+    recruitable: true
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 40
+      intellect: 12
+      defense: 22
+      agility: 26
+  - key: hero_kunlun_0129
+    name: 风怜
+    avatar: monkey_wu_female5.png
+    default_gender: female
+    archetype: military
+    default_morality: 76
+    flavor: 精绝族铸剑宗师欧龙子之孙女、铁哲之女。祖父与父亲为铸绝世神兵“天罚剑”双双殉难后，她携剑千里寻得梁萧并拜入其门下。她心思澄澈而坚韧，不仅承袭师父精妙剑术，更在乱世中暗生情愫，日后亦与花镜圆结下绵延半生的恩怨纠葛。出自凤歌小说《昆仑》。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 44
+      intellect: 14
+      defense: 16
+      agility: 26
+  - key: hero_kunlun_0130
+    name: 韩凝紫
+    avatar: monkey_wu_female6.png
+    default_gender: female
+    archetype: military
+    default_morality: 52
+    flavor: 风姿绰约的江湖奇女子，柳莺莺的师叔、阿雪的师父。她容貌美艳、风情万种，身手诡魅高强，偏生情路坎坷、历经沧桑。在宋末元初各方势力倾轧的乱世里，她游走于正邪与朝野之间，行事亦正亦邪、极难捉摸，却对门下晚辈自有护短之情。出自凤歌小说《昆仑》。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 42
+      intellect: 18
+      defense: 14
+      agility: 26
+  - key: hero_kunlun_0131
+    name: 云万程
+    avatar: pig/武047.png
+    default_gender: male
+    archetype: military
+    default_morality: 85
+    flavor: 襄樊神鹰门门主，云殊之父，南武林德高望重的名宿。宋末国难当头之际，他广发武林帖召开百丈坪群英盟，欲聚天下义士共抗元军。不料遭黑水宗师萧千绝突袭，双目被夺、门派重创。纵然面对绝世强敌力不从心，他那腔抗元报国的热血却从未冷却。出自凤歌小说《昆仑》。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 48
+      intellect: 14
+      defense: 24
+      agility: 14
+  - key: hero_kunlun_0132
+    name: 欧龙子
+    avatar: pig/文014.png
+    default_gender: male
+    archetype: civil
+    default_morality: 72
+    flavor: 精绝族一代铸剑宗师，风怜之祖父，机关与冶铸之术冠绝当世。他性情孤高傲岸，一生追求铸兵极境，与儿子铁哲呕心沥血打造出无坚不摧的神兵“天罚剑”，终为成全神兵使命以身殉炉。其铸就的天罚剑随梁萧纵横天下，威震宋元武林。出自凤歌小说《昆仑》。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 16
+      intellect: 60
+      defense: 16
+      agility: 8
+  - key: hero_kunlun_0133
+    name: 花镜圆
+    avatar: pig/武048.png
+    default_gender: male
+    archetype: military
+    default_morality: 56
+    flavor: 天机宫传人，花清渊与凌霜君之子、花晓霜之弟。自幼天资卓绝，却因机缘错失拜梁萧为师的机会，后因练功误入歧途致经脉受创、历尽苦楚。但他终凭坚韧心志与天机宫绝学脱胎换骨，跻身中原顶尖高手之列，与风怜之间更有一段复杂难解的半生情仇。出自凤歌小说《昆仑》。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 44
+      intellect: 22
+      defense: 16
+      agility: 18
+  - key: hero_kunlun_0134
+    name: 沈舟虚
+    avatar: pig/文016.png
+    default_gender: male
+    archetype: civil
+    default_morality: 50
+    flavor: 西城八部之天部之主，号称“天算”，乃西城第一谋主、万归藏的股肱心腹，亦是陆渐生父。他智计冠绝当世，通晓天算机变与人心权谋，凡所布局往往环环相扣、算无遗策。纵然身处西城与东岛的血雨腥风之中，仍能以谈笑风生之态执掌乾坤。出自凤歌小说《沧海》。
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 16
+      intellect: 62
+      defense: 12
+      agility: 10
+  - key: hero_kunlun_0135
+    name: 鱼和尚
+    avatar: pig/武049.png
+    default_gender: male
+    archetype: military
+    default_morality: 88
+    flavor: 禅宗金刚门单脉独传的绝世高僧，修成威猛无匹的“大金刚神力”。少年陆渐身负“黑天劫”绝症、陷身绝境之时，正是他不惜舍身出手，以浑厚佛门内力替陆渐强行压制黑天劫，并倾囊传授金刚门武学精要，乃陆渐一生最为敬重的恩师。出自凤歌小说《沧海》。
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 52
+      intellect: 10
+      defense: 30
+      agility: 8
+  - key: hero_kunlun_0136
+    name: 叶梵
+    avatar: pig/武050.png
+    default_gender: male
+    archetype: military
+    default_morality: 48
+    flavor: 东岛五尊之一，五尊之中武功最为强横的人物，号称“不漏海眼”。他内功精纯霸道，出手势不可挡，性格却骄狂自负、目空一切。在东岛三十六岛群雄之间威慑力极强，面对西城八部高手亦毫无惧色，是东岛对外征战的一柄利刃。出自凤歌小说《沧海》。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 52
+      intellect: 10
+      defense: 20
+      agility: 18
+  - key: hero_kunlun_0137
+    name: 狄希
+    avatar: pig/武051.png
+    default_gender: male
+    archetype: military
+    default_morality: 44
+    flavor: 东岛五尊之一，绰号“九变龙王”，精于诡奇莫测的“龙遁”身法，来去如电、变幻无方。他心思深沉老辣，深谙海疆权谋与制衡之术，既与东岛诸尊明争暗斗，又在与西城八部的交锋中屡施奇招，是极难对付的一代枭雄。出自凤歌小说《沧海》。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 42
+      intellect: 16
+      defense: 14
+      agility: 28
+  - key: hero_kunlun_0138
+    name: 赢万城
+    avatar: pig/武052.png
+    default_gender: male
+    archetype: military
+    default_morality: 54
+    flavor: 东岛五尊之一，绰号“龟镜”，江湖人私下常戏称其为“赢老龟”。他精修护体神功与卸力法门，防御之稳固堪称东岛一绝，临敌往往以静制动、后发制人。老谋深算的性情使他在东岛权力更迭与海外风云中始终屹立不倒。出自凤歌小说《沧海》。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 14
+      defense: 36
+      agility: 10
+  - key: hero_kunlun_0139
+    name: 施妙妙
+    avatar: monkey/其他随机角色/武083_女_.png
+    default_gender: female
+    archetype: military
+    default_morality: 56
+    flavor: 东岛五尊之一，千鳞流尊主，绰号“银鲤”。她身姿矫捷、容貌灵动，执掌千鳞流精妙绝技，水中与陆上身法皆如游鱼般滑溜莫测，招式连绵迅疾。在东岛与西城争夺祖师画像的风波里，她既展现了巾帼宗师的锋芒，也流露出女子独有的细腻机敏。出自凤歌小说《沧海》。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 14
+      defense: 16
+      agility: 30
+  - key: hero_kunlun_0140
+    name: 姚晴
+    avatar: monkey_wu_female.png
+    default_gender: female
+    archetype: military
+    default_morality: 78
+    flavor: 性情泼辣直爽、敢爱敢恨的江湖奇女子，武艺不俗且胆识过人。她与憨厚坚毅的陆渐相识于微末风波之中，虽常口角争执，却在一次次生死患难里结下刻骨深情。面对东岛西城的滔天巨浪与身世纠葛，她始终不离不弃，尽显侠女本色。出自凤歌小说《沧海》。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 42
+      intellect: 16
+      defense: 18
+      agility: 24
+  - key: hero_kunlun_0141
+    name: 宁凝
+    avatar: monkey_wu_female2.png
+    default_gender: female
+    archetype: military
+    default_morality: 80
+    flavor: 西城火部之主宁不空之女，后继任西城火部之主。她容貌清丽，外柔内刚，身怀炽烈火部奇功却怀有一颗温润仁善之心。对陆渐一往情深、甘愿默默守候，在西城与东岛的对立以及命运捉弄之间坚守大义，其深情与结局令无数读者动容。出自凤歌小说《沧海》。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 44
+      intellect: 16
+      defense: 20
+      agility: 20
+  - key: hero_kunlun_0142
+    name: 左飞卿
+    avatar: pig/武053.png
+    default_gender: male
+    archetype: military
+    default_morality: 50
+    flavor: 西城八部之风部之主，江湖人称“风君侯”。他修习周流六虚功中的风部神功，身法飘逸如风、攻势迅疾难测，乃西城四大攻击部门的核心战力之一。气度潇洒中透着森然杀机，在西城图谋天下与追索祖师画像之战中声威赫赫。出自凤歌小说《沧海》。
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 44
+      intellect: 14
+      defense: 14
+      agility: 28
+  - key: hero_kunlun_0143
+    name: 席应真
+    avatar: pig/文018.png
+    default_gender: male
+    archetype: civil
+    default_morality: 68
+    flavor: 洪武末年行踪缥缈的传奇高人，深通奇门数术、兵法韬略与玄门武学，洞悉天下大势。在朝堂夺嫡与东西两派暗流涌动的危局中，他多次于关键时刻点拨并庇护乐之扬，举手投足间尽显世外宗师的深沉气度与高远眼光。出自凤歌小说《灵飞经》。
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 18
+      intellect: 60
+      defense: 12
+      agility: 10
+  - key: hero_kunlun_0144
+    name: 柳莺莺
+    avatar: monkey_wu_female3.png
+    default_gender: female
+    archetype: military
+    default_morality: 58
+    flavor: 韩凝紫之师侄，容貌倾城，性格泼辣骄纵、聪明独立，亦正亦邪，是梁萧年少时的初恋挚爱。她敢爱敢恨，武艺凌厉超群，曾与梁萧共历风雨；后来为成全梁萧与花晓霜而黯然远去，在天山创立“天山十二禽”，成为江湖中令人敬畏的一代女豪杰。出自凤歌小说《昆仑》。
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 44
+      intellect: 18
+      defense: 14
+      agility: 24
+  - key: hero_kunlun_0145
+    name: 楚仙流
+    avatar: pig/武054.png
+    default_gender: male
+    archetype: military
+    default_morality: 82
+    flavor: 天香山庄庄主，江南剑术泰斗，江湖尊称“天下第二剑”。他气度仙风道骨，淡泊名利，视剑道为养生怡情之途，昔年曾与公羊羽论剑两日仅输半招。剑招清逸绝伦、举重若轻，乃宋末武林剑术流派中罕见的绝代宗师。出自凤歌小说《昆仑》。
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 48
+      intellect: 14
+      defense: 16
+      agility: 22
+  - key: hero_kunlun_0146
+    name: 贺陀罗
+    avatar: pig/武055.png
+    default_gender: male
+    archetype: military
+    default_morality: 35
+    flavor: 银衫白发的西域密宗绝顶高手，兼修西域密宗奇功与中原顶尖武学，招式诡异狠辣，深不可测。他心思缜密、野心勃勃，在宋末元初的乱世棋局里与云殊、梁萧等人展开错综复杂的势力交锋，是足以令中原群雄变色的西域巨擘。出自凤歌小说《昆仑》。
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 48
+      intellect: 20
+      defense: 18
+      agility: 14
   purple:
   - key: hero_ilrock_04230
     name: 梁萧
@@ -183,3 +517,468 @@ heroes:
       intellect: 6
       defense: 28
       agility: 10
+  - key: hero_kunlun_0147
+    name: 陆渐
+    avatar: pig/武056.png
+    default_gender: male
+    archetype: military
+    default_morality: 88
+    flavor: 出身山野的淳朴少年，性情敦厚坚毅、大智若愚。早年饱经劫难、流落东瀛，被迫修习《黑天书》而受“黑天劫”折磨；幸得鱼和尚传授大金刚神力，历经万险融会东西武学，揭开与谷缜的身世之谜，终以绝世修为破除东岛与西城的浩劫。出自凤歌小说《沧海》。
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 50
+      intellect: 14
+      defense: 24
+      agility: 12
+  - key: hero_kunlun_0148
+    name: 谷缜
+    avatar: pig/武057.png
+    default_gender: male
+    archetype: military
+    default_morality: 66
+    flavor: 东岛岛主谷神通之子，飞扬跳脱、风流倜傥，智计百出而略带几分邪气。他既精于奇门武学与剑道，又通晓商道权谋，与同母异父的兄弟陆渐在东岛、西城与抗倭风云中几度并肩又几度碰撞，凭过人才智屡破惊天棋局。出自凤歌小说《沧海》。
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 40
+      intellect: 28
+      defense: 12
+      agility: 20
+  - key: hero_kunlun_0149
+    name: 谷神通
+    avatar: pig/武058.png
+    default_gender: male
+    archetype: military
+    default_morality: 60
+    flavor: 东岛之王，当代绝代宗师，谷缜之父。他武功深不可测，气度豪迈霸烈，收服东海三十六岛数千岛众，令沉寂已久的东岛重振声威，一人足以威慑西城八部。其胸襟与铁血手腕交织，堪称海上武林的一代霸主。出自凤歌小说《沧海》。
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 52
+      intellect: 16
+      defense: 20
+      agility: 12
+  - key: hero_kunlun_0150
+    name: 万归藏
+    avatar: pig/武059.png
+    default_gender: male
+    archetype: military
+    default_morality: 30
+    flavor: 西城之主，雄才大略、武功盖世的绝代枭雄。他将西城《黑天书》与周流六虚等诸家绝学融会贯通，修为臻至化境，一心欲集齐八幅祖师画像、一统天下武林。虽手段酷烈、与东岛及正道为敌，其惊世才情与霸主气概仍令人震慑。出自凤歌小说《沧海》。
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 48
+      intellect: 24
+      defense: 18
+      agility: 10
+  green:
+  - key: hero_kunlun_0101
+    name: 花慕容
+    avatar: monkey_wu_female.png
+    default_gender: female
+    archetype: military
+    default_morality: 72
+    flavor: 天机宫花家晚辈，性格直爽泼辣，面冷心热，擅使穿花蝶影手，身法轻盈灵动。她与公羊羽高徒云殊结为夫妻，在宋元战火与天机宫风波之间，既守着家门情分，也背负着夫妻立场与江湖恩怨的拉扯。面对梁萧与云殊渐行渐远的对立，她常在冷言背后藏着难言的关切。出自凤歌小说《昆仑》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 16
+      defense: 16
+      agility: 28
+  - key: hero_kunlun_0102
+    name: 凌霜君
+    avatar: monkey_wen_female1.png
+    default_gender: female
+    archetype: civil
+    default_morality: 82
+    flavor: 天机宫宫主花清渊之妻、花晓霜与花镜圆之母。她温婉端庄、内敛持重，深谙医药与待人接物之道，在天机宫上下颇受敬重。面对婆母花无媸的严厉与丈夫夹在两代恩怨间的为难，她总以柔和气度居中调停；待战火与劫难逼近家门，这份看似柔弱的母爱亦显出坚韧担当。出自凤歌小说《昆仑》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 8
+      intellect: 56
+      defense: 22
+      agility: 14
+  - key: hero_kunlun_0103
+    name: 铁哲
+    avatar: pig/文010.png
+    default_gender: male
+    archetype: civil
+    default_morality: 75
+    flavor: 精绝族铸剑名家，铸剑宗师欧龙子之子、风怜的父亲。他承袭父辈绝艺，精于冶炼、机括与神兵锻造，与父亲欧龙子耗尽心血联手铸成绝世神兵“天罚剑”。乱世之中，他为守住族中技艺与神兵使命历尽艰辛，最终与父亲一道将性命托付于炉火与剑锋之间。出自凤歌小说《昆仑》。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 18
+      intellect: 52
+      defense: 20
+      agility: 10
+  - key: hero_kunlun_0104
+    name: 萧冷
+    avatar: pig/武005.png
+    default_gender: male
+    archetype: military
+    default_morality: 48
+    flavor: 黑水宗师萧千绝一脉的传人，承袭黑水门冷厉凌厉的武学路数，招式狠辣迅捷，性情孤傲寡言。在宋元交兵的乱世江湖里，他凭借一身深厚功力行走西域与中原之间，行事不拘正邪常理，既敬畏师门威严，又在刀光剑影里自有孤高清冷的锋芒。出自凤歌小说《昆仑》。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 46
+      intellect: 10
+      defense: 20
+      agility: 24
+  - key: hero_kunlun_0105
+    name: 胡老一
+    avatar: pig/武007.png
+    default_gender: male
+    archetype: military
+    default_morality: 55
+    flavor: 中条五宝之首，性情滑稽怪诞，最爱与四个兄弟斗嘴抬杠，常把寻常道理绕进令人啼笑皆非的死胡同。五人常被装在袋中出场，给肃杀的宋末江湖添出不少荒诞笑料。天机宫危难之际，萧千绝临终前将五宝收入门下，这位爱耍贫嘴的老江湖也有了名震天下的师承。出自凤歌小说《昆仑》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 44
+      intellect: 12
+      defense: 24
+      agility: 20
+  - key: hero_kunlun_0106
+    name: 胡老十
+    avatar: pig/武008.png
+    default_gender: male
+    archetype: military
+    default_morality: 55
+    flavor: 中条五宝之一，与胡老一等兄弟形影不离，说话颠三倒四却偏爱较真，常常一句话引出五人连番争辩。虽举止荒唐，但身手古怪难测，五兄弟合力更能缠住不少江湖好手。后来得黑水宗师萧千绝临终收为弟子，憨直与机变兼备，在江湖留下奇闻。出自凤歌小说《昆仑》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 42
+      intellect: 10
+      defense: 24
+      agility: 24
+  - key: hero_kunlun_0107
+    name: 胡老百
+    avatar: pig/武009.png
+    default_gender: male
+    archetype: military
+    default_morality: 55
+    flavor: 中条五宝中的老三，思维清奇、最喜拆兄弟的台，纵然身陷布袋或险境也不忘争论乌龟与熊的古怪问题。他虽看似浑噩顽劣，心底却不失江湖人的直爽热肠；随兄弟一同拜入萧千绝门下后，更凭古怪合击之术在乱世江湖中自成一格。出自凤歌小说《昆仑》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 40
+      intellect: 12
+      defense: 26
+      agility: 22
+  - key: hero_kunlun_0108
+    name: 胡老千
+    avatar: pig/武010.png
+    default_gender: male
+    archetype: military
+    default_morality: 55
+    flavor: 中条五宝中的老四，性情跳脱、言辞刁钻，总能在兄弟争执不休时再添一把火。他惯于和其余四宝联手戏弄强敌，出招毫无章法却屡屡出人意料。天机宫一战见证萧千绝的绝代风采并蒙其收徒后，这段奇缘成为五兄弟行走江湖最得意的谈资。出自凤歌小说《昆仑》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 40
+      intellect: 14
+      defense: 20
+      agility: 26
+  - key: hero_kunlun_0109
+    name: 胡老万
+    avatar: pig/武011.png
+    default_gender: male
+    archetype: military
+    default_morality: 55
+    flavor: 中条五宝中的老五，名字排到“万”字却仍是兄弟里最爱拌嘴的小弟。他与胡老一等四人同进同退，既能在危局里插科打诨化解紧张气氛，也敢在关键时刻挺身出力。自得萧千绝临终收为入室弟子后，五宝的荒诞身影在江湖传说中愈发鲜明。出自凤歌小说《昆仑》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 42
+      intellect: 10
+      defense: 22
+      agility: 26
+  - key: hero_kunlun_0110
+    name: 宁不空
+    avatar: pig/武013.png
+    default_gender: male
+    archetype: military
+    default_morality: 52
+    flavor: 西城八部之火部之主，宁凝之父，修习周流六虚功中的火部神功，掌力炽烈刚猛，威震西域与中土。身为西城四大攻击部门的首领之一，他既有武林高手的傲骨与霸气，也有护持女儿与门下弟子的深沉父爱，在西城风波与八图之争中举足轻重。出自凤歌小说《沧海》。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 50
+      intellect: 12
+      defense: 22
+      agility: 16
+  - key: hero_kunlun_0111
+    name: 阴九重
+    avatar: pig/武014.png
+    default_gender: male
+    archetype: military
+    default_morality: 38
+    flavor: 西城八部之水部之主，执掌水部奇功，内力阴寒绵密、连绵不绝，是西城四大攻击部门中的强横人物。他心思深沉，行事冷酷果断，在西城与东岛的百年对峙以及祖师画像争夺战中屡屡出手，以阴柔莫测的掌劲令对手防不胜防。出自凤歌小说《沧海》。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 46
+      intellect: 16
+      defense: 20
+      agility: 18
+  - key: hero_kunlun_0112
+    name: 仙碧
+    avatar: monkey_wen_female2.png
+    default_gender: female
+    archetype: civil
+    default_morality: 65
+    flavor: 西城八部之地部传人，承袭地母一脉精深医理与催生草木之术。她容颜清雅、心思缜密，既熟谙药石救人之法，也深知西城八部内部的微妙制衡。在东岛与西城烽烟四起、八图现世的动荡岁月中，她以沉稳智谋与济世医术维系着地部传承。出自凤歌小说《沧海》。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 10
+      intellect: 56
+      defense: 20
+      agility: 14
+  - key: hero_kunlun_0113
+    name: 温黛
+    avatar: monkey_wen_female3.png
+    default_gender: female
+    archetype: civil
+    default_morality: 70
+    flavor: 西城地部前辈，与西城高手虞照结为夫妻。她性情温润而有主见，通晓医理与地部秘传，在波诡云谲的西城权力漩涡里始终守着一份难得的清澈与情义。面对门派纷争与宿命劫难，她与虞照相濡以沫，成为冷峻江湖中一抹暖色。出自凤歌小说《沧海》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 12
+      intellect: 52
+      defense: 22
+      agility: 14
+  - key: hero_kunlun_0114
+    name: 虞照
+    avatar: pig/武015.png
+    default_gender: male
+    archetype: military
+    default_morality: 68
+    flavor: 西城八部中的重要高手，与温黛结为伉俪。他修习西城精妙武学，临阵沉毅果敢，出手雷厉风行，在西城诸多派系纠葛里仍保有几分侠者本心。无论是面对东岛强敌还是城内暗流，他都愿以手中兵刃护住挚爱与心中道义。出自凤歌小说《沧海》。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 46
+      intellect: 14
+      defense: 22
+      agility: 18
+  - key: hero_kunlun_0115
+    name: 明夷
+    avatar: pig/武016.png
+    default_gender: male
+    archetype: military
+    default_morality: 62
+    flavor: 东岛高层尊主之一，久居海外武林圣地，习得梁萧一脉流传下来的精深武功。他行事老成持重，不似同侪那般张扬跋扈，在东岛三十六岛群雄争雄、西城步步紧逼的局势下，始终沉着应对，以稳健功力和深厚阅历镇守东岛门户。出自凤歌小说《沧海》。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 44
+      intellect: 18
+      defense: 24
+      agility: 14
+  - key: hero_kunlun_0116
+    name: 白湘瑶
+    avatar: monkey_wen_female4.png
+    default_gender: female
+    archetype: civil
+    default_morality: 76
+    flavor: 出身名门的冰雪佳人，气质清雅脱俗，才情与识见皆高人一等。她因命运牵绊卷入东岛与西城的深沉恩怨，亦与陆渐、谷缜二人的离奇身世有着千丝万缕的关联。身处乱世风波之中，她外柔内刚，以隐忍与深情默默承受着世事沧桑。出自凤歌小说《沧海》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 10
+      intellect: 54
+      defense: 20
+      agility: 16
+  - key: hero_kunlun_0117
+    name: 窦通
+    avatar: pig/武021.png
+    default_gender: male
+    archetype: military
+    default_morality: 78
+    flavor: 江湖豪侠，生性直爽坦荡，重情重义，拳脚兵器皆颇具威势。在明代中叶倭患频仍、东岛与西城暗战迭起的年代，他与陆渐、谷缜等年轻侠士结下深厚交情，屡次在危急关头拔刀相助，投身抗倭与江湖历险，尽显草莽英雄的赤胆豪情。出自凤歌小说《沧海》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 48
+      intellect: 10
+      defense: 26
+      agility: 16
+  - key: hero_kunlun_0118
+    name: 朱微
+    avatar: monkey_wen_female5.png
+    default_gender: female
+    archetype: civil
+    default_morality: 72
+    flavor: 洪武末年卷入皇室夺嫡风波的奇女子，聪慧灵动，见识不凡，眉宇间兼具贵气与侠情。她与秦淮卖唱少年乐之扬机缘相识，由此将他带入波澜壮阔的朝堂与江湖棋局。面对靖难前夜的诡谲暗流与门派倾轧，她敢于直面命运，与乐之扬羁绊深重。出自凤歌小说《灵飞经》。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 10
+      intellect: 58
+      defense: 16
+      agility: 16
+  - key: hero_kunlun_0119
+    name: 叶灵苏
+    avatar: monkey_wu_female2.png
+    default_gender: female
+    archetype: military
+    default_morality: 74
+    flavor: 性情坚韧、情感真挚的江湖侠女，自幼历经西城盐帮与各大门派的恩怨纷争，练就一身干练迅捷的武艺。她外刚内柔，重诺守信，与乐之扬在风波迭起的乱世中相知相伴，纵使身陷多方势力夹缝，也始终不改赤诚初心。出自凤歌小说《灵飞经》。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 14
+      defense: 18
+      agility: 26
+  - key: hero_kunlun_0120
+    name: 水怜影
+    avatar: monkey_wu_female3.png
+    default_gender: female
+    archetype: military
+    default_morality: 58
+    flavor: 行事机敏果决的江湖女子，擅于潜行应变与周旋各方势力之间。她曾与乐之扬一同混入崇明岛，在东岛、西城与朝廷势力的多方博弈中屡次化险为夷。清冷外表下藏着细腻心思，轻功与剑法皆灵动诡谲，令人难以捉摸。出自凤歌小说《灵飞经》。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 38
+      intellect: 18
+      defense: 14
+      agility: 30
+  - key: hero_kunlun_0121
+    name: 云虚
+    avatar: pig/武023.png
+    default_gender: male
+    archetype: military
+    default_morality: 66
+    flavor: 洪武末年的东岛岛王，承袭东岛一脉绝世武学，修为深湛、威望素著。然而他因故远走海外，致使东岛群龙无首、内忧外患接踵而至，间接引动了东岛与西城新一轮江湖大变局。其行踪与抉择，始终牵动着整座东岛的兴衰。出自凤歌小说《灵飞经》。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 46
+      intellect: 16
+      defense: 22
+      agility: 16
+  - key: hero_kunlun_0122
+    name: 冲大师
+    avatar: pig/武026.png
+    default_gender: male
+    archetype: military
+    default_morality: 78
+    flavor: 东岛德高望重的佛门高僧，内功浑厚刚猛，心怀慈悲而又通晓大局。在岛王云虚远走、东岛局势动荡之际，他力挽狂澜，苦心扶持释王孙等后辈传人以稳住东岛根基。纵然外敌环伺、内斗不休，他仍以坚毅定力守护着东岛一脉香火。出自凤歌小说《灵飞经》。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 44
+      intellect: 18
+      defense: 28
+      agility: 10
+  - key: hero_kunlun_0123
+    name: 释王孙
+    avatar: pig/武028.png
+    default_gender: male
+    archetype: military
+    default_morality: 70
+    flavor: 东岛年轻一代的核心传人，深得冲大师器重与悉心栽培。他天资聪颖，勤修东岛高深武学，肩负着重振东岛声威的重任。在明初朝堂夺嫡与东西两派博弈的风浪中，他由青涩后辈逐步历经锤炼，展现出不负师门期许的胆识与气魄。出自凤歌小说《灵飞经》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 44
+      intellect: 14
+      defense: 20
+      agility: 22
+  - key: hero_kunlun_0124
+    name: 江小流
+    avatar: pig/武030.png
+    default_gender: male
+    archetype: military
+    default_morality: 76
+    flavor: 与乐之扬境遇相仿的少年侠士，性情率真热诚、机灵肯干。二人结伴同行后，一同被卷入东岛与西城的惊涛骇浪之中。虽出身平凡、武功初成，但他凭着一股不服输的少年意气与对朋友的肝胆相照，在生死历练里迅速成长。出自凤歌小说《灵飞经》。
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 12
+      defense: 20
+      agility: 26
+  - key: hero_kunlun_0125
+    name: 楚空山
+    avatar: pig/武032.png
+    default_gender: male
+    archetype: military
+    default_morality: 80
+    flavor: 洪武末年风流不羁的江湖游侠，生平最重信守义，言笑洒脱而剑气凌云。他不慕权贵，不拘礼法，行走江南与海疆之间，常在危难关头扶危济困。面对朝堂与武林的双重暗流，他始终坚守心中侠道，令人油然而生敬意。出自凤歌小说《灵飞经》。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 45
+      intellect: 13
+      defense: 18
+      agility: 24

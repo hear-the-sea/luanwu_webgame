@@ -1,55 +1,5 @@
-# 温瑞安作品门客
-
 heroes:
   green:
-  - key: hero_tang_fang
-    name: 唐方
-    avatar: monkey/其他随机角色/文064_女.png
-    archetype: civil
-    flavor: 唐门大小姐，机智聪慧，在萧秋水落难时多次出手相助。她深爱着萧秋水，为了他甘愿背叛自己的家族。她是《神州奇侠》系列中最重要的女性角色之一，以其坚韧和智慧，成为萧秋水闯荡江湖最可靠的伴侣。她既能以毒器应敌，也能以柔情稳住人心，真正做到柔中有刚。出自温瑞安小说《神州奇侠》
-    default_gender: female
-    default_morality: 75
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 15
-      intellect: 40
-      defense: 20
-      agility: 25
-  - key: hero_xi_honglei
-    name: 息红泪
-    avatar: monkey_wen_female10.png
-    archetype: civil
-    flavor: 息红泪红衣如焰，心却极柔。她与戚少商情深相许，在乱世中守着一份不肯放手的温暖。美貌与勇气并存，她为爱敢赴刀山火海，也为义气不惜舍身。她的泪，是逆水寒里最凄美的江湖注脚。她以柔韧扛住风雪，也以决绝守住誓言。出自温瑞安小说《逆水寒》
-    default_gender: female
-    default_morality: 75
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 15
-      intellect: 35
-      defense: 20
-      agility: 30
-  - key: hero_gu_xichao
-    name: 顾惜朝
-    avatar: pig/武080.png
-    archetype: military
-    flavor: 惊才绝艳却出身寒微的文武全才。他极度渴望证明自己，不惜背信弃义，出卖连云寨大当家戚少商，导致其家破人亡。他一生为权势奔走，风光过，也落魄过，是《逆水寒》中塑造最成功的反派角色，一个让人又爱又恨的悲剧人物。他把聪明才智用在算计上，终被野心反噬。出自温瑞安小说《逆水寒》
-    default_gender: male
-    default_morality: 30
-    recruitable: true
-    growth_range:
-    - 5
-    - 7
-    attribute_weights:
-      force: 35
-      intellect: 20
-      defense: 20
-      agility: 25
   - key: hero_fang_xiezhen
     name: 方邪真
     avatar: pig/武013.png
@@ -82,54 +32,6 @@ heroes:
       intellect: 30
       defense: 15
       agility: 30
-  - key: hero_shen_huchan
-    name: 沈虎禅
-    avatar: pig_wu_male7.png
-    archetype: military
-    flavor: 沈虎禅孤傲如峰，刀剑皆冷。行走四大名捕世界，他不轻易与人结盟，却在正邪之间留下深重痕迹。武功高强，气度凌厉，像一头伏虎，静时沉默，动则致命。他的存在让江湖更添一层肃杀。其行事风格冷峻克制，令人不敢轻慢。出自温瑞安小说《四大名捕》
-    default_gender: male
-    default_morality: 55
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 40
-      intellect: 15
-      defense: 25
-      agility: 20
-  - key: hero_ling_luoshi
-    name: 凌落石
-    avatar: monkey/其他随机角色/武052_男.png
-    archetype: military
-    flavor: 凌落石轻功绝顶，身形如鬼魅。江湖人见其影不见其人，行事洒脱却心机莫测。与四大名捕多有交集，他时而相助，时而试探，身份始终成谜。风中过处，只留一串难解的笑声。他善于以虚实惑敌，出手往往先声夺人。出自温瑞安小说《四大名捕》
-    default_gender: male
-    default_morality: 55
-    recruitable: true
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 30
-      intellect: 15
-      defense: 20
-      agility: 35
-  - key: hero_chu_xiangyu
-    name: 楚相玉
-    avatar: monkey/其他随机角色/文037_男.png
-    archetype: civil
-    flavor: 楚相玉气质沉稳，行事谨慎。与萧秋水并肩闯荡，他擅长谋划，也敢在危局中拔剑相救。武功不张扬，却处处见功力。江湖风雨里，他像一块磨石，默默打磨着神州奇侠的锋芒。他少有豪言壮语，却以行动守信。出自温瑞安小说《神州奇侠》
-    default_gender: male
-    default_morality: 75
-    recruitable: true
-    growth_range:
-    - 4
-    - 7
-    attribute_weights:
-      force: 25
-      intellect: 35
-      defense: 20
-      agility: 20
   - key: hero_han_qingzhi
     name: 韩庆之
     avatar: pig/武009.png
@@ -162,11 +64,475 @@ heroes:
       intellect: 50
       defense: 15
       agility: 20
-  - key: hero_li_buyi
-    name: 李布衣
-    avatar: pig/武011.png
+  - key: hero_wenruian_0101
+    name: 花代珍
+    avatar: monkey_wu_female3.png
+    archetype: military
+    flavor: 花代珍出身关东豪门，人称“震关东”一脉传人，性情爽烈直率，武艺刚健凌厉。她倾心于冷血，不避险阻相随左右，既有女子细腻柔情，又有江湖豪杰拔剑相助的果敢。面对京城暗流与强敌围堵，她始终以赤诚与热血相守。出自温瑞安小说《四大名捕》。
+    default_gender: female
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 34
+      intellect: 18
+      defense: 20
+      agility: 28
+  - key: hero_wenruian_0102
+    name: 安世耿
+    avatar: duck_wen_male2.png
     archetype: civil
-    flavor: 李布衣与米苍穹并肩，行事低调却侠义深藏。武功扎实，心性稳重，常在暗处破局解难。布衣之名，象征他不依权势，只信天理。风雨江湖中，他是最可靠的同路人。他少言寡语，却在关键处出手如雷。出自温瑞安小说《布衣神相》
+    flavor: 安世耿人称“财神爷”，富可敌国、交游遍布朝野，表面温文儒雅，实则野心勃勃、心狠手辣。他在汴京暗中豢养死士与奇人异士，以重金与阴谋编织庞大黑网，屡次与诸葛正我及四大名捕隔空斗智，是极难缠的幕后枭雄。出自温瑞安小说《四大名捕》。
+    default_gender: male
+    default_morality: 18
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 16
+      intellect: 50
+      defense: 16
+      agility: 18
+  - key: hero_wenruian_0103
+    name: 唐仇
+    avatar: pig/武005.png
+    archetype: military
+    flavor: 唐仇是蜀中唐门叛逆奇才，虽失一臂却练就更胜常人的暗器与毒功，出手诡谲狠辣、防不胜防。他心中积郁深重怨恨，行事偏执疯狂，曾以一己之力搅动京师风云、逼得四大名捕疲于应对，是江湖中令人胆寒的绝命刺客。出自温瑞安小说《四大名捕》。
+    default_gender: male
+    default_morality: 22
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 32
+      intellect: 22
+      defense: 12
+      agility: 34
+  - key: hero_wenruian_0104
+    name: 凌小刀
+    avatar: monkey_wu_male1.png
+    archetype: military
+    flavor: 凌小刀是凌落石之子，少年成名、锋芒毕露，一手快刀凌厉狠绝，颇有乃父遗风。他周旋于京师江湖的恩怨漩涡之中，既背负家门声名，也难逃朝堂与帮派的算计；刀出如电，胜负常在瞬息之间决出。出自温瑞安小说《四大名捕》。
+    default_gender: male
+    default_morality: 48
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 34
+      intellect: 16
+      defense: 18
+      agility: 32
+  - key: hero_wenruian_0105
+    name: 蓝天锤
+    avatar: pig/武008.png
+    archetype: military
+    flavor: 蓝天锤是江湖中凶名赫赫的悍将，天生神力，一对重锤挥舞起来势若雷霆，寻常兵器一碰即折。他性格暴烈桀骜，曾奉权贵之命截杀神侯府中人，与铁手硬撼数合而不落下风，是绿林黑道中难得的硬点子。出自温瑞安小说《四大名捕》。
+    default_gender: male
+    default_morality: 30
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 10
+      defense: 34
+      agility: 14
+  - key: hero_wenruian_0106
+    name: 叶梦色
+    avatar: monkey_wen_female2.png
+    archetype: civil
+    flavor: 叶梦色出身飞鱼山庄，容貌秀丽、性情灵动，颇通江湖掌故与医理机巧。她在风波诡谲的武林争斗中与李布衣、赖药儿等人结伴同行，虽常为情所困，关键时刻却能沉着机变，以柔克刚化解不少险局。出自温瑞安小说《布衣神相》。
+    default_gender: female
+    default_morality: 76
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 12
+      intellect: 44
+      defense: 18
+      agility: 26
+  - key: hero_wenruian_0107
+    name: 朱小腰
+    avatar: monkey_wen_female3.png
+    archetype: civil
+    flavor: 朱小腰是汴京名动天下的第一名伶，舞姿翩若惊鸿，一颦一笑皆牵动权贵与江湖客心弦。她虽身陷风尘，却极有骨气与眼光，在京城血雨腥风里暗助王小石与侠义之士，柔弱肩头扛着不输须眉的侠心。出自温瑞安小说《说英雄谁是英雄》。
+    default_gender: female
+    default_morality: 78
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 10
+      intellect: 42
+      defense: 16
+      agility: 32
+  - key: hero_wenruian_0108
+    name: 任劳
+    avatar: pig/武010.png
+    archetype: military
+    flavor: 任劳是金风细雨楼元老级护法，与任怨并称“任劳任怨”，常年护卫在苏梦枕左右。他沉默寡言、武功沉稳扎实，不争名利也不惧生死，无论风雨楼盛极一时还是强敌环伺，皆以一腔孤忠血战到底。出自温瑞安小说《说英雄谁是英雄》。
+    default_gender: male
+    default_morality: 78
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 16
+      defense: 30
+      agility: 18
+  - key: hero_wenruian_0109
+    name: 任怨
+    avatar: pig/武016.png
+    archetype: military
+    flavor: 任怨与任劳同为金风细雨楼铁杆死忠，二人联手配合无间，在京城帮派恶战中屡立奇功。他性情刚毅执着，只认苏梦枕之命与楼中义气，面对六分半堂与叛徒围杀从无半步退缩，堪称江湖义士典范。出自温瑞安小说《说英雄谁是英雄》。
+    default_gender: male
+    default_morality: 78
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 34
+      intellect: 16
+      defense: 28
+      agility: 22
+  - key: hero_wenruian_0110
+    name: 花无错
+    avatar: pig/文010.png
+    archetype: civil
+    flavor: 花无错是金风细雨楼德高望重的元老，阅历老辣、处事周全，深谙京城帮派生存之道。他既能为苏梦枕筹划楼中庶务与人脉调停，也能在危难关头拔剑守楼，是风雨楼内不可多得的老成持重之才。出自温瑞安小说《说英雄谁是英雄》。
+    default_gender: male
+    default_morality: 74
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 18
+      intellect: 44
+      defense: 22
+      agility: 16
+  - key: hero_wenruian_0111
+    name: 雷滚
+    avatar: pig_wu_male2.png
+    archetype: military
+    flavor: 雷滚是六分半堂核心堂主，雷损族弟，生性霸道凶悍，一身刚猛拳掌功夫在京城黑道声名显赫。他为帮派扩张不择手段，行事狠辣果决，每逢与金风细雨楼火并必冲锋在前，是六分半堂最锋利的战刀之一。出自温瑞安小说《说英雄谁是英雄》。
+    default_gender: male
+    default_morality: 38
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 16
+      defense: 26
+      agility: 18
+  - key: hero_wenruian_0112
+    name: 雷动天
+    avatar: monkey_wu_male2.png
+    archetype: military
+    flavor: 雷动天乃六分半堂名震京师的悍将，脾气火爆如雷，出手大开大合、声势惊人。他对雷家忠心不二，最恨背后阴谋算计，宁可堂堂正正以血肉相搏。虽常因性急吃亏，其悍勇之气却令对手不敢轻视。出自温瑞安小说《说英雄谁是英雄》。
+    default_gender: male
+    default_morality: 52
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 12
+      defense: 28
+      agility: 18
+  - key: hero_wenruian_0113
+    name: 颜鹤发
+    avatar: pig/文029.png
+    archetype: civil
+    flavor: 颜鹤发是迷天七圣盟二圣主，鹤发童颜却心机如海，人称老谋深算的一代枭雄。在关七失踪之后，他与诸圣主维系迷天盟庞大势力，既藏高绝刀法，更擅纵横捭阖与暗中布局，令汴京群雄无不戒备。出自温瑞安小说《说英雄谁是英雄》。
+    default_gender: male
+    default_morality: 28
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 24
+      intellect: 44
+      defense: 16
+      agility: 16
+  - key: hero_wenruian_0114
+    name: 刘独峰
+    avatar: monkey/其他随机角色/武080_男_青衣捕快.png
+    archetype: military
+    flavor: 刘独峰是六扇门声名最盛的名捕，人称“天下第一捕快”，铁面无私、追凶千里不休。他武功刚猛精准，办案只认法度与公理，即便面对金风细雨楼或当朝权贵也敢亮刀拿人，是一柄悬在江湖头顶的冷铁戒尺。出自温瑞安小说《说英雄谁是英雄》。
+    default_gender: male
+    default_morality: 82
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 22
+      defense: 22
+      agility: 20
+  - key: hero_wenruian_0115
+    name: 赫连春水
+    avatar: monkey_wu_male3.png
+    archetype: military
+    flavor: 赫连春水人称“小侯爷”，出身显贵却全无纨绔习气，风流洒脱、剑法俊逸。他痴情于息红泪，虽未得芳心却毫无怨怼，反在戚少商遭满城通缉之际挺身相助，千里护送共闯死关，尽显真名士的侠骨豪情。出自温瑞安小说《逆水寒》。
+    default_gender: male
+    default_morality: 84
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 32
+      intellect: 22
+      defense: 18
+      agility: 28
+  - key: hero_wenruian_0116
+    name: 傅晚晴
+    avatar: monkey_wen_female4.png
+    archetype: civil
+    flavor: 傅晚晴是权相傅宗书之女、顾惜朝之妻，温婉端庄、深明大义。她真心爱慕顾惜朝的才华，纵然知晓夫君为求功名不惜手染鲜血，仍苦苦劝解、不离不弃。身处权谋与血海之间，她的柔情是顾惜朝心中最后一点微光。出自温瑞安小说《逆水寒》。
+    default_gender: female
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 8
+      intellect: 48
+      defense: 22
+      agility: 22
+  - key: hero_wenruian_0117
+    name: 阮明正
+    avatar: pig/武047.png
+    archetype: military
+    flavor: 阮明正是连云寨二当家，戚少商的结义兄弟，为人豪爽热诚、重情重义。他与众兄弟把连云寨经营得铁板一块，刀法刚猛实用，却因轻信顾惜朝而遭背叛惨死，其忠义壮烈成为戚少商千里复仇的沉重誓言。出自温瑞安小说《逆水寒》。
+    default_gender: male
+    default_morality: 84
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 16
+      defense: 28
+      agility: 20
+  - key: hero_wenruian_0118
+    name: 高风亮
+    avatar: pig/武050.png
+    archetype: military
+    flavor: 高风亮是江湖中颇有侠名的好汉，与息红泪、戚少商交情深厚。他为人仗义疏财、敢作敢当，在戚少商落魄逃亡、天下追杀之际不顾身家性命出手收留并掩护突围，一身硬朗拳脚与义气令人动容。出自温瑞安小说《逆水寒》。
+    default_gender: male
+    default_morality: 82
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 34
+      intellect: 18
+      defense: 26
+      agility: 22
+  - key: hero_wenruian_0119
+    name: 孙慧珊
+    avatar: monkey_wen_female5.png
+    archetype: civil
+    flavor: 孙慧珊是浣花剑派掌门萧西楼之妻、萧秋水之母，出身武林世家，端庄温厚而极有风骨。当权力帮大举围攻萧家之际，她临危不乱、以家国侠义勉励幼子，面对强敌胁迫从容赴死，展现出巾帼不让须眉的气节。出自温瑞安小说《神州奇侠》。
+    default_gender: female
+    default_morality: 88
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 16
+      intellect: 44
+      defense: 24
+      agility: 16
+  - key: hero_wenruian_0120
+    name: 萧易人
+    avatar: monkey_wen_male7.png
+    archetype: civil
+    flavor: 萧易人是浣花剑派少掌门、萧秋水长兄，自幼稳重老成，一心扛起复兴萧家的重担。他剑法工整、心思缜密，在家族惨遭灭门之后忍辱负重、四处奔走联络同道，虽有时过于拘泥门户成见，终不失侠门长兄担当。出自温瑞安小说《神州奇侠》。
+    default_gender: male
+    default_morality: 72
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 24
+      intellect: 38
+      defense: 20
+      agility: 18
+  - key: hero_wenruian_0121
+    name: 萧开雁
+    avatar: monkey_wen_male8.png
+    archetype: civil
+    flavor: 萧开雁是萧西楼次子、萧秋水二兄，外表温雅谦和，内心却城府极深、妒贤嫉能。他暗藏野心与算计，在浣花剑派覆灭与江湖争雄中屡次翻云覆雨，将家族情分与江湖道义皆当作向上攀爬的筹码。出自温瑞安小说《神州奇侠》。
+    default_gender: male
+    default_morality: 22
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 20
+      intellect: 46
+      defense: 14
+      agility: 20
+  - key: hero_wenruian_0122
+    name: 屈寒山
+    avatar: pig/武051.png
+    archetype: military
+    flavor: 屈寒山表面是名满江湖的仁义大侠，暗地里却是权力帮安插在白道的高级暗桩“剑王”。他剑法狠辣阴毒，最擅伪装忠厚博取信任，在萧秋水落难之际屡施冷箭，是江湖人心险恶的最佳写照。出自温瑞安小说《神州奇侠》。
+    default_gender: male
+    default_morality: 18
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 26
+      defense: 18
+      agility: 20
+  - key: hero_wenruian_0123
+    name: 康出渔
+    avatar: pig/武052.png
+    archetype: military
+    flavor: 康出渔是权力帮八大天王之一，人称“水王”，精通奇门兵刃与水战伏击之术。他心思缜密、手段果辣，深得李沉舟信任，在围剿浣花剑派与追杀萧秋水的战役中屡次设下死局，是权力帮中极难对付的干将。出自温瑞安小说《神州奇侠》。
+    default_gender: male
+    default_morality: 30
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 34
+      intellect: 24
+      defense: 20
+      agility: 22
+  - key: hero_wenruian_0124
+    name: 宋明珠
+    avatar: monkey_wu_female4.png
+    archetype: military
+    flavor: 宋明珠是权力帮八大天王中的女将，容貌冶艳、轻功绝佳，善使暗器与诡秘剑招。她行事乖张狠辣，对帮主李沉舟极为敬畏，奉命在江湖各处清剿异己，笑语嫣然间往往已置对手于死地。出自温瑞安小说《神州奇侠》。
+    default_gender: female
+    default_morality: 28
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 30
+      intellect: 20
+      defense: 14
+      agility: 36
+  - key: hero_wenruian_0125
+    name: 左丘超然
+    avatar: monkey_wu_male5.png
+    archetype: military
+    flavor: 左丘超然是“神州结义”成员之一，与萧秋水意气相投、结为生死之交。他出身名门却全无傲气，剑法清俊凌厉，在萧家遭劫、神州陆沉之际挺身赴险，以少年一腔热血践履结义誓言。出自温瑞安小说《神州奇侠》。
+    default_gender: male
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 34
+      intellect: 20
+      defense: 20
+      agility: 26
+  - key: hero_wenruian_0126
+    name: 邓玉函
+    avatar: pig/武053.png
+    archetype: military
+    flavor: 邓玉函同为“神州结义”英杰，性情豪爽率真、重义轻生，是萧秋水早年闯荡江湖最信赖的伙伴之一。他武艺扎实、临阵敢拼，面对权力帮高手环伺从不畏惧，用性命守护了少年义士的尊严。出自温瑞安小说《神州奇侠》。
+    default_gender: male
+    default_morality: 84
+    recruitable: true
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 16
+      defense: 24
+      agility: 24
+  - key: hero_wenruian_0127
+    name: 柳焚余
+    avatar: pig_wu_male5.png
+    archetype: military
+    flavor: 柳焚余原为点苍派高徒，后因情怨叛出师门，沦为黑道闻风丧胆的顶尖杀手。他冷峻孤傲、剑法狠快绝伦，看似杀伐无情，内心深处却始终守着一段刻骨痴恋，最终在正邪纠葛中以悲壮结局谢幕。出自温瑞安小说《布衣神相》。
+    default_gender: male
+    default_morality: 45
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 38
+      intellect: 16
+      defense: 14
+      agility: 32
+  - key: hero_wenruian_0128
+    name: 卫悲回
+    avatar: pig/武056.png
+    archetype: military
+    flavor: 卫悲回是江湖中声名震天的绝顶刀客，一生孤傲冷峻，唯以刀道问鼎为念。他与沈边儿、方振眉并世争锋，出刀如雪落寒江、迅疾无匹，不屑依附任何权贵帮派，在血河风云里留下独步天下的刀客背影。出自温瑞安小说《血河车》。
+    default_gender: male
+    default_morality: 60
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 16
+      defense: 18
+      agility: 26
+  - key: hero_wenruian_0142
+    name: 唐宝牛
+    avatar: pig/武059.png
+    archetype: military
+    flavor: 唐宝牛出身蜀中唐门，却最厌家族阴谋诡计，性情豪迈耿直、痴情专一。他与方恨少结为生死兄弟，一身刚猛内功与暗器手法兼备，闯荡京城时快意恩仇、不惧权贵，是温氏江湖中极富热血的少年豪杰。出自温瑞安小说《说英雄谁是英雄》。
+    default_gender: male
+    default_morality: 78
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 16
+      defense: 26
+      agility: 22
+  - key: hero_wenruian_0143
+    name: 方恨少
+    avatar: monkey_wu_male11.png
+    archetype: military
+    flavor: 方恨少是江湖中意气风发的少年侠客，唐宝牛的过命兄弟，机敏多智又极重义气。他虽无显赫家世，却凭一身俊逸武艺与过人胆识在京城风云里屡破强敌，笑傲江湖的爽朗气概令人一见难忘。出自温瑞安小说《说英雄谁是英雄》。
     default_gender: male
     default_morality: 80
     recruitable: true
@@ -174,10 +540,26 @@ heroes:
     - 4
     - 7
     attribute_weights:
-      force: 20
-      intellect: 40
-      defense: 25
-      agility: 15
+      force: 32
+      intellect: 24
+      defense: 18
+      agility: 26
+  - key: hero_wenruian_0144
+    name: 沈边儿
+    avatar: pig/武061.png
+    archetype: military
+    flavor: 沈边儿是血河派传人，身负诡异莫测的血河神功，性格孤傲冷冽、行事独来独往。他背负师门秘辛行走江湖，与卫悲回、方振眉等绝世高手数度交锋，刀光血影之间既有凌厉杀气，亦藏未泯侠心。出自温瑞安小说《血河车》。
+    default_gender: male
+    default_morality: 55
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 18
+      defense: 20
+      agility: 22
   blue:
   - key: hero_liu_suifeng
     name: 柳随风
@@ -227,29 +609,253 @@ heroes:
       intellect: 55
       defense: 20
       agility: 15
-  - key: hero_wuqing
-    name: 无情
-    avatar: pig/文050.png
+  - key: hero_wenruian_0130
+    name: 杨无邪
+    avatar: monkey_wen_male9.png
     archetype: civil
-    flavor: 四大名捕之首无情，腿残坐轮椅却暗器天下第一。他智计无双，破案无数，是诸葛正我最得意的弟子。他身残志坚，以惊人毅力克服残疾带来的不便。他的暗器从轮椅中发出，百发百中，敌人往往还未反应便已命丧黄泉。温瑞安笔下最有魅力的角色，以残缺之躯书写完美传奇。他冷静而克制，常以理智压住情感。出自温瑞安小说《四大名捕》
+    flavor: 杨无邪是金风细雨楼大总管，苏梦枕最为倚重的左膀右臂。他性情冷峻克制、智谋深沉，上可统筹全楼情报与谋略，下可镇压内乱、应对强敌，一生忠心守护金风细雨楼基业，堪称京城江湖第一大管家。出自温瑞安小说《说英雄谁是英雄》。
     default_gender: male
-    default_morality: 85
+    default_morality: 72
     recruitable: true
     growth_range:
     - 5
-    - 10
+    - 9
     attribute_weights:
-      force: 15
-      intellect: 45
-      defense: 10
-      agility: 30
-  - key: hero_tieshou
-    name: 铁手
-    avatar: pig/武014.png
+      force: 22
+      intellect: 48
+      defense: 16
+      agility: 14
+  - key: hero_wenruian_0131
+    name: 温柔
+    avatar: monkey_wu_female5.png
     archetype: military
-    flavor: 四大名捕之一铁手，铁掌无敌刚正不阿。他武功高强，一双铁手可碎金裂石。他性格耿直，是非分明，是四大名捕中最正派的人物。他办案从不徇私，铁面无私令宵小闻风丧胆。温瑞安笔下最正直的角色之一，以钢铁意志守护公正与正义。他宁折不弯，常替百姓出头。出自温瑞安小说《四大名捕》
+    flavor: 温柔是洛阳温家大小姐、温晚之女，生性刁蛮任性、爱惹是非，却怀着一颗赤诚火热的侠女心肠。她倾心于王小石，一路相随闯荡京城险局，嘴上从不饶人，真遇强敌却敢提剑挡在心上人身前，是说英雄世界最明艳的亮色。出自温瑞安小说《说英雄谁是英雄》。
+    default_gender: female
+    default_morality: 78
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 30
+      intellect: 20
+      defense: 18
+      agility: 32
+  - key: hero_wenruian_0132
+    name: 雷纯
+    avatar: monkey_wen_female6.png
+    archetype: civil
+    flavor: 雷纯是六分半堂总堂主雷损之女，貌美如莲、清冷沉静，原与苏梦枕情意暗许，却因江湖血仇与家破之变彻底蜕变。她接掌六分半堂后手腕铁血、智计百出，在爱恨交织的京城霸业中活成一朵带刺的绝世寒梅。出自温瑞安小说《说英雄谁是英雄》。
+    default_gender: female
+    default_morality: 50
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 18
+      intellect: 48
+      defense: 14
+      agility: 20
+  - key: hero_wenruian_0133
+    name: 朱侠武
+    avatar: pig/武057.png
+    archetype: military
+    flavor: 朱侠武人称“朱大天王”、“天下第七”，乃迷天七圣盟核心巨头，野心勃勃且武功高绝。他修习高深奇功，行事阴狠霸道，在京师江湖与朝堂之间翻手为云、覆手为雨，曾数度将王小石、苏梦枕等人逼入死地。出自温瑞安小说《说英雄谁是英雄》。
+    default_gender: male
+    default_morality: 20
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 24
+      defense: 20
+      agility: 16
+  - key: hero_wenruian_0134
+    name: 萧西楼
+    avatar: monkey_wu_male7.png
+    archetype: military
+    flavor: 萧西楼是蜀中浣花剑派掌门、萧秋水之父，正气凛然、剑法精微，素为白道武林敬重。面对权力帮大军压境与朝廷奸佞构陷，他宁折不弯、誓死守护英雄令与侠义底线，其风骨深深烙印在萧秋水一生之中。出自温瑞安小说《神州奇侠》。
     default_gender: male
     default_morality: 90
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 36
+      intellect: 24
+      defense: 24
+      agility: 16
+  - key: hero_wenruian_0135
+    name: 赵师容
+    avatar: monkey_wen_female8.png
+    archetype: civil
+    flavor: 赵师容是权力帮帮主李沉舟之妻，容色绝伦、才智过人，更身负极高武学修为。她既是权力帮运筹帷幄的幕后女主人，也是李沉舟一生唯一软肋与知己；帮派倾覆之际与夫君生死相许，堪称江湖第一奇女子。出自温瑞安小说《神州奇侠》。
+    default_gender: female
+    default_morality: 55
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 26
+      intellect: 42
+      defense: 14
+      agility: 18
+  - key: hero_wenruian_0136
+    name: 唐十五
+    avatar: pig/武058.png
+    archetype: military
+    flavor: 唐十五是蜀中唐门数百年难遇的绝世奇才，唐方之兄，暗器手法与毒术造诣皆已登峰造极。他性格孤高乖僻、亦正亦邪，行事全凭一己好恶，却深爱胞妹唐方；一双巧手翻飞间足以令当世顶尖高手饮恨当场。出自温瑞安小说《神州奇侠》。
+    default_gender: male
+    default_morality: 48
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 34
+      intellect: 24
+      defense: 12
+      agility: 30
+  - key: hero_wenruian_0137
+    name: 叶哀禅
+    avatar: monkey_wu_male9.png
+    archetype: military
+    flavor: 叶哀禅是自在门韦青青青大弟子、诸葛正我与元十三限大师兄，四大名捕尊称其为大伯。他平日隐居世外、淡泊如水，一身剑法却已臻出神入化之境，一剑挥出可破天下绝阵，是神侯府背后最沉稳的定海神针。出自温瑞安小说《四大名捕》。
+    default_gender: male
+    default_morality: 88
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 22
+      defense: 20
+      agility: 18
+  - key: hero_wenruian_0138
+    name: 天衣居士
+    avatar: pig/文033.png
+    archetype: civil
+    flavor: 天衣居士本名许笑一，乃王小石之师，洞悉天下大势与人心幽微，被誉为江湖第一智者与奇人。他看似隐于市井山林、不问世事，实则一言可定江湖兴衰，所传挽留剑法与处世之道更成就了王小石的侠者襟怀。出自温瑞安小说《说英雄谁是英雄》。
+    default_gender: male
+    default_morality: 82
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 22
+      intellect: 52
+      defense: 14
+      agility: 12
+  - key: hero_wenruian_0139
+    name: 赖药儿
+    avatar: monkey_wen_male10.png
+    archetype: civil
+    flavor: 赖药儿号称“医神医死人”，医术通玄、风度翩翩，却因家族早衰奇症饱受折磨。他与李布衣亦敌亦友、惺惺相惜，既能妙手回春救人于垂危，也能以银针毒理克敌制胜，在短暂而绚烂的一生里写下凄美传奇。出自温瑞安小说《布衣神相》。
+    default_gender: male
+    default_morality: 65
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 20
+      intellect: 48
+      defense: 12
+      agility: 20
+  - key: hero_wenruian_0140
+    name: 沈绛红
+    avatar: monkey_wu_female6.png
+    archetype: military
+    flavor: 沈绛红是飞鱼山庄大小姐，容姿明艳、侠骨柔肠，剑法轻快凌厉。她不满江湖正邪倾轧，毅然与李布衣、赖药儿并肩对抗魔道阴谋，面对强敌毫不退缩，是《布衣神相》中最具英气与担当的江湖奇女子。出自温瑞安小说《布衣神相》。
+    default_gender: female
+    default_morality: 82
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 32
+      intellect: 20
+      defense: 18
+      agility: 30
+  - key: hero_wenruian_0141
+    name: 傅宗书
+    avatar: pig/文035.png
+    archetype: civil
+    flavor: 傅宗书是权倾朝野的当朝丞相、顾惜朝岳父，表面威严端方，实则狼子野心、勾结外敌与黑道势力。他以朝堂权柄遥控江湖厮杀，一手炮制连云寨血案与千里追杀，将无数英雄豪杰玩弄于股掌之间。出自温瑞安小说《逆水寒》。
+    default_gender: male
+    default_morality: 15
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 12
+      intellect: 54
+      defense: 18
+      agility: 16
+  - key: hero_tang_fang
+    name: 唐方
+    avatar: monkey/其他随机角色/文064_女.png
+    archetype: civil
+    flavor: 唐门大小姐，机智聪慧，在萧秋水落难时多次出手相助。她深爱着萧秋水，为了他甘愿背叛自己的家族。她是《神州奇侠》系列中最重要的女性角色之一，以其坚韧和智慧，成为萧秋水闯荡江湖最可靠的伴侣。她既能以毒器应敌，也能以柔情稳住人心，真正做到柔中有刚。出自温瑞安小说《神州奇侠》
+    default_gender: female
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 15
+      intellect: 40
+      defense: 20
+      agility: 25
+  - key: hero_xi_honglei
+    name: 息红泪
+    avatar: monkey_wen_female10.png
+    archetype: civil
+    flavor: 息红泪红衣如焰，心却极柔。她与戚少商情深相许，在乱世中守着一份不肯放手的温暖。美貌与勇气并存，她为爱敢赴刀山火海，也为义气不惜舍身。她的泪，是逆水寒里最凄美的江湖注脚。她以柔韧扛住风雪，也以决绝守住誓言。出自温瑞安小说《逆水寒》
+    default_gender: female
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 15
+      intellect: 35
+      defense: 20
+      agility: 30
+  - key: hero_gu_xichao
+    name: 顾惜朝
+    avatar: pig/武080.png
+    archetype: military
+    flavor: 惊才绝艳却出身寒微的文武全才。他极度渴望证明自己，不惜背信弃义，出卖连云寨大当家戚少商，导致其家破人亡。他一生为权势奔走，风光过，也落魄过，是《逆水寒》中塑造最成功的反派角色，一个让人又爱又恨的悲剧人物。他把聪明才智用在算计上，终被野心反噬。出自温瑞安小说《逆水寒》
+    default_gender: male
+    default_morality: 30
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 35
+      intellect: 20
+      defense: 20
+      agility: 25
+  - key: hero_shen_huchan
+    name: 沈虎禅
+    avatar: pig_wu_male7.png
+    archetype: military
+    flavor: 沈虎禅孤傲如峰，刀剑皆冷。行走四大名捕世界，他不轻易与人结盟，却在正邪之间留下深重痕迹。武功高强，气度凌厉，像一头伏虎，静时沉默，动则致命。他的存在让江湖更添一层肃杀。其行事风格冷峻克制，令人不敢轻慢。出自温瑞安小说《四大名捕》
+    default_gender: male
+    default_morality: 55
     recruitable: true
     growth_range:
     - 6
@@ -257,13 +863,29 @@ heroes:
     attribute_weights:
       force: 40
       intellect: 15
-      defense: 30
-      agility: 15
-  - key: hero_zhuiming
-    name: 追命
-    avatar: pig/武014.png
+      defense: 25
+      agility: 20
+  - key: hero_ling_luoshi
+    name: 凌落石
+    avatar: monkey/其他随机角色/武052_男.png
     archetype: military
-    flavor: 四大名捕之一追命，轻功天下第一追踪无敌。他性格洒脱不羁，行事风格独特。他能追踪任何人到任何地方，凶手在他面前无处可逃。他看似玩世不恭，实则内心炽热，对朋友忠诚不二。温瑞安笔下最潇洒的角色之一，以无敌追踪术震慑江湖宵小。他酒量惊人，常在笑谈中破局。出自温瑞安小说《四大名捕》
+    flavor: 凌落石轻功绝顶，身形如鬼魅。江湖人见其影不见其人，行事洒脱却心机莫测。与四大名捕多有交集，他时而相助，时而试探，身份始终成谜。风中过处，只留一串难解的笑声。他善于以虚实惑敌，出手往往先声夺人。出自温瑞安小说《四大名捕》
+    default_gender: male
+    default_morality: 55
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 30
+      intellect: 15
+      defense: 20
+      agility: 35
+  - key: hero_chu_xiangyu
+    name: 楚相玉
+    avatar: monkey/其他随机角色/文037_男.png
+    archetype: civil
+    flavor: 楚相玉气质沉稳，行事谨慎。与萧秋水并肩闯荡，他擅长谋划，也敢在危局中拔剑相救。武功不张扬，却处处见功力。江湖风雨里，他像一块磨石，默默打磨着神州奇侠的锋芒。他少有豪言壮语，却以行动守信。出自温瑞安小说《神州奇侠》
     default_gender: male
     default_morality: 75
     recruitable: true
@@ -272,25 +894,25 @@ heroes:
     - 9
     attribute_weights:
       force: 25
-      intellect: 15
-      defense: 15
-      agility: 45
-  - key: hero_lengxue
-    name: 冷血
-    avatar: pig/武014.png
-    archetype: military
-    flavor: 四大名捕之一冷血，剑法超群冷静沉着。他性格冷漠却内心火热，是四大名捕中最神秘的人物。他的剑法凌厉无匹，出剑必取人性命。他寡言少语，却在关键时刻总能一剑定乾坤。温瑞安笔下最冷峻的角色，以冰冷外表包裹炽热之心。他行事简洁，情义却从不缺席。出自温瑞安小说《四大名捕》
+      intellect: 35
+      defense: 20
+      agility: 20
+  - key: hero_li_buyi
+    name: 李布衣
+    avatar: pig/武011.png
+    archetype: civil
+    flavor: 李布衣与米苍穹并肩，行事低调却侠义深藏。武功扎实，心性稳重，常在暗处破局解难。布衣之名，象征他不依权势，只信天理。风雨江湖中，他是最可靠的同路人。他少言寡语，却在关键处出手如雷。出自温瑞安小说《布衣神相》
     default_gender: male
-    default_morality: 70
+    default_morality: 80
     recruitable: true
     growth_range:
     - 6
     - 9
     attribute_weights:
-      force: 35
-      intellect: 15
-      defense: 15
-      agility: 35
+      force: 20
+      intellect: 40
+      defense: 25
+      agility: 15
   purple:
   - key: hero_qi_shaoshang
     name: 戚少商
@@ -404,3 +1026,179 @@ heroes:
       intellect: 40
       defense: 10
       agility: 15
+  - key: hero_wenruian_0145
+    name: 关七
+    avatar: pig/武062.png
+    archetype: military
+    flavor: 关七是迷天七圣盟大圣主，号称“战神”，一手破体无形剑气横绝天下，几乎无人可挡其锋。他因痴情与武道入魔而时疯时醒，狂傲不羁、喜怒无常，曾单枪匹马力战京城群雄与诸葛正我，是温氏武侠最震撼人心的武道神话。出自温瑞安小说《说英雄谁是英雄》。
+    default_gender: male
+    default_morality: 48
+    recruitable: true
+    growth_range:
+    - 8
+    - 11
+    attribute_weights:
+      force: 48
+      intellect: 14
+      defense: 20
+      agility: 18
+  - key: hero_wenruian_0146
+    name: 元十三限
+    avatar: pig_wu_male6.png
+    archetype: military
+    flavor: 元十三限是诸葛正我同门师弟，自在门绝世奇才，精研山字经武学与天下无双的“伤心小箭”。他一生执念于超越师兄，因妒成恨投身权贵蔡京门下，以惊天武功与阴沉心计布局京师，是神侯府最致命的宿敌。出自温瑞安小说《四大名捕》。
+    default_gender: male
+    default_morality: 22
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 40
+      intellect: 26
+      defense: 14
+      agility: 20
+  - key: hero_wenruian_0147
+    name: 李沉舟
+    avatar: monkey_wu_male13.png
+    archetype: military
+    flavor: 李沉舟号称“君临天下”，乃权力帮帮主，一双铁拳打遍天下无敌手，霸气威仪震慑整个江湖。他心怀雄图伟略，看似狠辣无情，实则胸有家国大义与铁血担当，与萧秋水亦敌亦友，是一代无可复制的枭雄霸主。出自温瑞安小说《神州奇侠》。
+    default_gender: male
+    default_morality: 52
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 46
+      intellect: 20
+      defense: 22
+      agility: 12
+  - key: hero_wenruian_0148
+    name: 燕狂徒
+    avatar: pig/武066.png
+    archetype: military
+    flavor: 燕狂徒是神州武林第一狂人，昔年一手创立权力帮，自创先天无相神功，纵横天下未逢敌手。他狂放傲世、不敬天地神佛，却心怀抗金护国之志，孤身挑战天下群雄仍豪气干云，是武林中令人仰望的绝世传奇。出自温瑞安小说《神州奇侠》。
+    default_gender: male
+    default_morality: 58
+    recruitable: true
+    growth_range:
+    - 8
+    - 11
+    attribute_weights:
+      force: 48
+      intellect: 16
+      defense: 22
+      agility: 14
+  - key: hero_wenruian_0149
+    name: 方振眉
+    avatar: monkey_wu_male14.png
+    archetype: military
+    flavor: 方振眉人称“白衣方振眉”，乃萧秋水隔代传人，一袭白衣胜雪、侠骨仁心。他武功已臻化境，却从不恃强凌弱，行走江湖以化解干戈、扶危济困为己任，既有绝顶宗师的从容气度，也有温润如玉的君子之风。出自温瑞安小说《白衣方振眉》。
+    default_gender: male
+    default_morality: 90
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 40
+      intellect: 24
+      defense: 18
+      agility: 18
+  - key: hero_wenruian_0150
+    name: 韦青青青
+    avatar: pig/武068.png
+    archetype: military
+    flavor: 韦青青青乃自在门一代掌门，懒残大师、叶哀禅、诸葛正我与元十三限四位绝顶高手的授业恩师。他行踪飘忽、性情潇洒不羁，武学修为早已深不可测，被尊为当世武林泰斗，寥寥数语便足以点破江湖迷局。出自温瑞安小说《四大名捕》。
+    default_gender: male
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 8
+    - 11
+    attribute_weights:
+      force: 44
+      intellect: 26
+      defense: 16
+      agility: 14
+  - key: hero_wuqing
+    name: 无情
+    avatar: pig/文050.png
+    archetype: civil
+    flavor: 四大名捕之首无情，腿残坐轮椅却暗器天下第一。他智计无双，破案无数，是诸葛正我最得意的弟子。他身残志坚，以惊人毅力克服残疾带来的不便。他的暗器从轮椅中发出，百发百中，敌人往往还未反应便已命丧黄泉。温瑞安笔下最有魅力的角色，以残缺之躯书写完美传奇。他冷静而克制，常以理智压住情感。出自温瑞安小说《四大名捕》
+    default_gender: male
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 15
+      intellect: 45
+      defense: 10
+      agility: 30
+  - key: hero_tieshou
+    name: 铁手
+    avatar: pig/武014.png
+    archetype: military
+    flavor: 四大名捕之一铁手，铁掌无敌刚正不阿。他武功高强，一双铁手可碎金裂石。他性格耿直，是非分明，是四大名捕中最正派的人物。他办案从不徇私，铁面无私令宵小闻风丧胆。温瑞安笔下最正直的角色之一，以钢铁意志守护公正与正义。他宁折不弯，常替百姓出头。出自温瑞安小说《四大名捕》
+    default_gender: male
+    default_morality: 90
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 40
+      intellect: 15
+      defense: 30
+      agility: 15
+  - key: hero_zhuiming
+    name: 追命
+    avatar: pig/武014.png
+    archetype: military
+    flavor: 四大名捕之一追命，轻功天下第一追踪无敌。他性格洒脱不羁，行事风格独特。他能追踪任何人到任何地方，凶手在他面前无处可逃。他看似玩世不恭，实则内心炽热，对朋友忠诚不二。温瑞安笔下最潇洒的角色之一，以无敌追踪术震慑江湖宵小。他酒量惊人，常在笑谈中破局。出自温瑞安小说《四大名捕》
+    default_gender: male
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 25
+      intellect: 15
+      defense: 15
+      agility: 45
+  - key: hero_lengxue
+    name: 冷血
+    avatar: pig/武014.png
+    archetype: military
+    flavor: 四大名捕之一冷血，剑法超群冷静沉着。他性格冷漠却内心火热，是四大名捕中最神秘的人物。他的剑法凌厉无匹，出剑必取人性命。他寡言少语，却在关键时刻总能一剑定乾坤。温瑞安笔下最冷峻的角色，以冰冷外表包裹炽热之心。他行事简洁，情义却从不缺席。出自温瑞安小说《四大名捕》
+    default_gender: male
+    default_morality: 70
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 35
+      intellect: 15
+      defense: 15
+      agility: 35
+  - key: hero_wenruian_0129
+    name: 狄飞惊
+    avatar: pig/文030.png
+    archetype: civil
+    flavor: 狄飞惊人称“低首神龙”，乃六分半堂大堂主，因颈骨奇疾终生低首，却比任何人都看得清江湖风云。他精于大弃子擒拿手与深不可测的权谋算计，在雷损身死后力挽狂澜稳住六分半堂，是苏梦枕一生最敬畏的对手。出自温瑞安小说《说英雄谁是英雄》。
+    default_gender: male
+    default_morality: 55
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 32
+      intellect: 44
+      defense: 12
+      agility: 12

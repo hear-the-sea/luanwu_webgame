@@ -1,19 +1,5 @@
 heroes:
   purple:
-  - key: hist_xianqin_0150
-    name: 项燕
-    avatar: monkey/先秦与神话/项燕.png
-    default_gender: male
-    archetype: military
-    flavor: （?—前223年）楚国名将，抗秦之魂。他是楚国末期最杰出的将领，也是西楚霸王项羽的祖父。秦将李信率二十万大军伐楚，年轻气盛，轻敌冒进。项燕老谋深算，诱敌深入，伏击秦军，大败李信，斩杀七都尉，这是战国后期楚军对秦军最辉煌的胜利。秦始皇震怒，起用老将王翦，发兵六十万再伐。项燕拼死抵抗，终因力量悬殊，兵败身死（一说自刎殉国）。楚国灭亡之际，民间流传"楚虽三户，亡秦必楚"的预言。十余年后，他的孙子项羽在巨鹿之战破釜沉舟，推翻暴秦，预言成真。项燕虽败，其精神不灭。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 42
-      intellect: 16
-      defense: 24
-      agility: 18
   - key: hist_xianqin_0153
     name: 褒姒
     avatar: monkey/先秦与神话/褒姒.png
@@ -98,7 +84,6 @@ heroes:
       intellect: 12
       defense: 24
       agility: 20
-  blue:
   - key: hist_xianqin_0167
     name: 邹衍
     avatar: pig/文030.png
@@ -106,13 +91,14 @@ heroes:
     archetype: civil
     flavor: （约前324年—约前250年）战国齐国稷下学者，阴阳家的代表人物。邹衍以“五德终始”解说王朝更替，认为历代兴亡都对应土、木、金、火、水五德的转移；他又提出“大九州”说，推测中国之外另有广袤地域。齐、燕两国君主都曾礼遇他，晚年入燕讲学。其学说为后世改制与正统论提供了思想框架，影响深远而争议并存。
     growth_range:
-    - 5
-    - 9
+    - 6
+    - 11
     attribute_weights:
       force: 8
       intellect: 58
       defense: 20
       agility: 14
+  blue:
   - key: hist_xianqin_0169
     name: 田忌
     avatar: pig/武046.png
@@ -589,6 +575,20 @@ heroes:
       intellect: 54
       defense: 20
       agility: 14
+  - key: hist_xianqin_0150
+    name: 项燕
+    avatar: monkey/先秦与神话/项燕.png
+    default_gender: male
+    archetype: military
+    flavor: （?—前223年）楚国名将，抗秦之魂。他是楚国末期最杰出的将领，也是西楚霸王项羽的祖父。秦将李信率二十万大军伐楚，年轻气盛，轻敌冒进。项燕老谋深算，诱敌深入，伏击秦军，大败李信，斩杀七都尉，这是战国后期楚军对秦军最辉煌的胜利。秦始皇震怒，起用老将王翦，发兵六十万再伐。项燕拼死抵抗，终因力量悬殊，兵败身死（一说自刎殉国）。楚国灭亡之际，民间流传"楚虽三户，亡秦必楚"的预言。十余年后，他的孙子项羽在巨鹿之战破釜沉舟，推翻暴秦，预言成真。项燕虽败，其精神不灭。
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 42
+      intellect: 16
+      defense: 24
+      agility: 18
   green:
   - key: hist_xianqin_0155
     name: 太颠

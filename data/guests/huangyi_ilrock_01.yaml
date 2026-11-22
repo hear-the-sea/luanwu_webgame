@@ -1,5 +1,3 @@
-# ilrock 人物资料补充（2026-10-02）；身份对照见 reports/guest_expansion_ilrock_20261002.json
-
 heroes:
   blue:
   - key: hero_ilrock_03867
@@ -137,36 +135,6 @@ heroes:
       intellect: 60
       defense: 20
       agility: 12
-  - key: hero_ilrock_03974
-    name: 傅君瑜
-    avatar: monkey_wu_female6.png
-    default_gender: female
-    archetype: military
-    flavor: 傅采林门下的第二位女弟子，傅君婥的师妹，见于黄易小说《大唐双龙传》。傅君瑜身负奕剑之术来到中原，既要追索师姐之事，也带着高丽师门的立场与责任。初与双龙相遇，她清冷严厉，对两人的言行多有戒备；与跋锋寒的相处，又显出难以轻易割舍的情意。中原行路间，师门恩怨与个人感情时常同时逼近剑锋。
-    recruitable: true
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 46
-      intellect: 6
-      defense: 20
-      agility: 28
-  - key: hero_ilrock_03975
-    name: 傅君嫱
-    avatar: monkey/其他随机角色/武083_女_.png
-    default_gender: female
-    archetype: military
-    flavor: 高丽奕剑大师傅采林的第三位女弟子，在黄易小说《大唐双龙传》中与两位师姐同承奕剑之学。傅君嫱年纪较轻，性情活泼，自信于师门剑术，来到中原后对江湖人物并不轻易服气。她关注傅君婥身后的恩怨，也与寇仲、徐子陵所牵连的纷争相遇。伶俐言语常先于剑锋到来，认真交手时，却仍有名师门下的精妙章法。
-    recruitable: true
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 46
-      intellect: 6
-      defense: 20
-      agility: 28
   - key: hero_ilrock_03962
     name: 雷九指
     avatar: monkey/其他随机角色/文101_男.png
@@ -242,6 +210,36 @@ heroes:
       intellect: 60
       defense: 18
       agility: 14
+  - key: hero_ilrock_03865
+    name: 梵清惠
+    avatar: monkey/黄易/梵清惠.png
+    default_gender: female
+    archetype: military
+    flavor: 执掌慈航静斋的梵清惠，是黄易小说《大唐双龙传》中师妃暄的师父。她以门派声望与自身修为影响武林，又派弟子入世，为动荡天下寻觅可托付的明主。年轻时与宋缺互有情意，最终却因所持立场不同各走一途。岭南的天刀仍记着旧人，静斋的掌门则继续面对群雄；昔日牵挂与今日抉择，在重逢时都难以轻轻揭过。
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 48
+      intellect: 8
+      defense: 24
+      agility: 20
+  - key: hero_ilrock_03993
+    name: 赤尊信
+    avatar: monkey/黄易/赤尊信.png
+    default_gender: male
+    archetype: military
+    flavor: 盗霸赤尊信创立尊信门，遍习各路兵器，是黄易小说《覆雨翻云》中曾经威压一方的豪雄。他与怒蛟帮交锋，也在庞斑崛起后遭遇难以抗衡的强敌。落入困境时，他与韩柏相遇，将道心种魔的传承寄托在这个年轻人身上，以生命完成惊人的授功。昔日首领不再能亲手迎战，留下的魔种却伴韩柏走入了新的武林风暴。
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 52
+      intellect: 6
+      defense: 26
+      agility: 16
   purple:
   - key: hero_ilrock_03860
     name: 宋缺
@@ -258,21 +256,6 @@ heroes:
       intellect: 6
       defense: 24
       agility: 16
-  - key: hero_ilrock_03865
-    name: 梵清惠
-    avatar: monkey/黄易/梵清惠.png
-    default_gender: female
-    archetype: military
-    flavor: 执掌慈航静斋的梵清惠，是黄易小说《大唐双龙传》中师妃暄的师父。她以门派声望与自身修为影响武林，又派弟子入世，为动荡天下寻觅可托付的明主。年轻时与宋缺互有情意，最终却因所持立场不同各走一途。岭南的天刀仍记着旧人，静斋的掌门则继续面对群雄；昔日牵挂与今日抉择，在重逢时都难以轻轻揭过。
-    recruitable: true
-    growth_range:
-    - 7
-    - 12
-    attribute_weights:
-      force: 48
-      intellect: 8
-      defense: 24
-      agility: 20
   - key: hero_ilrock_03868
     name: 鲁妙子
     avatar: monkey/黄易/鲁妙子.png
@@ -303,21 +286,6 @@ heroes:
       intellect: 8
       defense: 28
       agility: 14
-  - key: hero_ilrock_03993
-    name: 赤尊信
-    avatar: monkey/黄易/赤尊信.png
-    default_gender: male
-    archetype: military
-    flavor: 盗霸赤尊信创立尊信门，遍习各路兵器，是黄易小说《覆雨翻云》中曾经威压一方的豪雄。他与怒蛟帮交锋，也在庞斑崛起后遭遇难以抗衡的强敌。落入困境时，他与韩柏相遇，将道心种魔的传承寄托在这个年轻人身上，以生命完成惊人的授功。昔日首领不再能亲手迎战，留下的魔种却伴韩柏走入了新的武林风暴。
-    recruitable: true
-    growth_range:
-    - 7
-    - 12
-    attribute_weights:
-      force: 52
-      intellect: 6
-      defense: 26
-      agility: 16
   - key: hero_ilrock_04003
     name: 言静庵
     avatar: monkey/黄易/言静庵.png
@@ -333,3 +301,34 @@ heroes:
       intellect: 8
       defense: 24
       agility: 20
+  green:
+  - key: hero_ilrock_03974
+    name: 傅君瑜
+    avatar: monkey_wu_female6.png
+    default_gender: female
+    archetype: military
+    flavor: 傅采林门下的第二位女弟子，傅君婥的师妹，见于黄易小说《大唐双龙传》。傅君瑜身负奕剑之术来到中原，既要追索师姐之事，也带着高丽师门的立场与责任。初与双龙相遇，她清冷严厉，对两人的言行多有戒备；与跋锋寒的相处，又显出难以轻易割舍的情意。中原行路间，师门恩怨与个人感情时常同时逼近剑锋。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 46
+      intellect: 6
+      defense: 20
+      agility: 28
+  - key: hero_ilrock_03975
+    name: 傅君嫱
+    avatar: monkey/其他随机角色/武083_女_.png
+    default_gender: female
+    archetype: military
+    flavor: 高丽奕剑大师傅采林的第三位女弟子，在黄易小说《大唐双龙传》中与两位师姐同承奕剑之学。傅君嫱年纪较轻，性情活泼，自信于师门剑术，来到中原后对江湖人物并不轻易服气。她关注傅君婥身后的恩怨，也与寇仲、徐子陵所牵连的纷争相遇。伶俐言语常先于剑锋到来，认真交手时，却仍有名师门下的精妙章法。
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 46
+      intellect: 6
+      defense: 20
+      agility: 28

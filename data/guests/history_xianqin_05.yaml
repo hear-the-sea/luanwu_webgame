@@ -1,33 +1,5 @@
 heroes:
   purple:
-  - key: hist_xianqin_0222
-    name: 干将
-    avatar: monkey/先秦与神话/干将.png
-    default_gender: male
-    archetype: military
-    flavor: （生卒年不详）相传为春秋时楚国的铸剑师，与妻莫邪齐名。据《搜神记》等书记载，楚王命他铸剑，三年铸成雌雄二剑；干将藏起雄剑，只献雌剑，被楚王所杀。其子赤（一作赤比）长大后依母亲指点取出雄剑，在山中遇客，托其复仇，客斩楚王头，三人之头同葬，后世称为"三王墓"。《吴越春秋》则记他为吴王阖闾铸剑，情节不同。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 40
-      intellect: 16
-      defense: 26
-      agility: 18
-  - key: hist_xianqin_0223
-    name: 莫邪
-    avatar: monkey/先秦与神话/莫邪.png
-    default_gender: female
-    archetype: civil
-    flavor: （生卒年不详）投身炉中，成就神剑。她是铸剑师干将的妻子，美丽贤淑、深明大义。当丈夫为吴王铸剑屡铸不成时，她毅然投身熔炉，以血肉之躯祭炼神兵。传说她投炉之时，火焰由红转青，铁汁如泉涌出，神剑终于铸成。干将为纪念爱妻，将雌剑命名为"莫邪"。她的牺牲不仅成就了绝世神兵，更成为中国古代工匠精神与夫妻深情的象征。后世将"干将莫邪"并称，既指这对神剑，也颂扬这段可歌可泣的爱情。莫邪之名，因铸剑传奇而永垂不朽。
-    growth_range:
-    - 6
-    - 11
-    attribute_weights:
-      force: 10
-      intellect: 54
-      defense: 18
-      agility: 18
   - key: hist_xianqin_0224
     name: 欧冶子
     avatar: monkey_wu_male7.png
@@ -42,6 +14,34 @@ heroes:
       intellect: 18
       defense: 24
       agility: 18
+  - key: hist_xianqin_0213
+    name: 嬴稷
+    avatar: monkey_wen_male5.png
+    default_gender: male
+    archetype: military
+    flavor: （前325年—前251年）战国秦昭襄王，秦惠文王之子，在位五十六年。嬴稷早年由宣太后与魏冉辅政，后来采纳范雎之策亲政，任用白起在伊阙、长平等战中大破诸侯军队；晚年因邯郸之围与白起生隙，将其赐死，不久死于咸阳。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 38
+      intellect: 22
+      defense: 24
+      agility: 16
+  - key: hist_xianqin_0214
+    name: 嬴渠梁
+    avatar: monkey_wu_male3.png
+    default_gender: male
+    archetype: military
+    flavor: （前381年—前338年）战国秦孝公，秦献公之子。嬴渠梁即位后发布求贤令，任用卫鞅主持变法，推行县制、奖励军功、开垦田地，并将都城迁至咸阳；秦国由此富强。孝公死后，卫鞅失去支持，被继位的惠文王处死，但其变法得以延续。
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 38
+      intellect: 22
+      defense: 24
+      agility: 16
   blue:
   - key: hist_xianqin_0226
     name: 庖丁
@@ -85,34 +85,6 @@ heroes:
       intellect: 20
       defense: 24
       agility: 18
-  - key: hist_xianqin_0213
-    name: 嬴稷
-    avatar: monkey_wen_male5.png
-    default_gender: male
-    archetype: military
-    flavor: （前325年—前251年）战国秦昭襄王，秦惠文王之子，在位五十六年。嬴稷早年由宣太后与魏冉辅政，后来采纳范雎之策亲政，任用白起在伊阙、长平等战中大破诸侯军队；晚年因邯郸之围与白起生隙，将其赐死，不久死于咸阳。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 38
-      intellect: 22
-      defense: 24
-      agility: 16
-  - key: hist_xianqin_0214
-    name: 嬴渠梁
-    avatar: monkey_wu_male3.png
-    default_gender: male
-    archetype: military
-    flavor: （前381年—前338年）战国秦孝公，秦献公之子。嬴渠梁即位后发布求贤令，任用卫鞅主持变法，推行县制、奖励军功、开垦田地，并将都城迁至咸阳；秦国由此富强。孝公死后，卫鞅失去支持，被继位的惠文王处死，但其变法得以延续。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 38
-      intellect: 22
-      defense: 24
-      agility: 16
   - key: hist_xianqin_0202
     name: 田因齐
     avatar: monkey_wen_male5.png
@@ -337,6 +309,48 @@ heroes:
       intellect: 58
       defense: 18
       agility: 16
+  - key: hist_xianqin_0222
+    name: 干将
+    avatar: monkey/先秦与神话/干将.png
+    default_gender: male
+    archetype: military
+    flavor: （生卒年不详）相传为春秋时楚国的铸剑师，与妻莫邪齐名。据《搜神记》等书记载，楚王命他铸剑，三年铸成雌雄二剑；干将藏起雄剑，只献雌剑，被楚王所杀。其子赤（一作赤比）长大后依母亲指点取出雄剑，在山中遇客，托其复仇，客斩楚王头，三人之头同葬，后世称为"三王墓"。《吴越春秋》则记他为吴王阖闾铸剑，情节不同。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 16
+      defense: 26
+      agility: 18
+  - key: hist_xianqin_0223
+    name: 莫邪
+    avatar: monkey/先秦与神话/莫邪.png
+    default_gender: female
+    archetype: civil
+    flavor: （生卒年不详）投身炉中，成就神剑。她是铸剑师干将的妻子，美丽贤淑、深明大义。当丈夫为吴王铸剑屡铸不成时，她毅然投身熔炉，以血肉之躯祭炼神兵。传说她投炉之时，火焰由红转青，铁汁如泉涌出，神剑终于铸成。干将为纪念爱妻，将雌剑命名为"莫邪"。她的牺牲不仅成就了绝世神兵，更成为中国古代工匠精神与夫妻深情的象征。后世将"干将莫邪"并称，既指这对神剑，也颂扬这段可歌可泣的爱情。莫邪之名，因铸剑传奇而永垂不朽。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 54
+      defense: 18
+      agility: 18
+  - key: hist_xianqin_0220
+    name: 白圭
+    avatar: pig/文035.png
+    default_gender: male
+    archetype: civil
+    flavor: （生卒年不详）白圭，周人，《史记·货殖列传》称其活动于魏文侯之时，后世推为“治生之祖”。他主张“人弃我取，人取我与”，观察年景丰歉与市场供需，谷贱时收进、价贵时售出；又强调节制嗜欲、与僮仆同甘苦，捕捉时机如猛兽鸷鸟之发。他曾自比伊尹、吕尚之谋与孙吴用兵、商鞅行法。与治水人物白圭是否一人，文献有异说。
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 10
+      intellect: 56
+      defense: 18
+      agility: 16
   green:
   - key: hist_xianqin_0205
     name: 姬戎人
@@ -408,20 +422,6 @@ heroes:
       intellect: 14
       defense: 26
       agility: 22
-  - key: hist_xianqin_0220
-    name: 白圭
-    avatar: pig/文035.png
-    default_gender: male
-    archetype: civil
-    flavor: （生卒年不详）白圭，周人，《史记·货殖列传》称其活动于魏文侯之时，后世推为“治生之祖”。他主张“人弃我取，人取我与”，观察年景丰歉与市场供需，谷贱时收进、价贵时售出；又强调节制嗜欲、与僮仆同甘苦，捕捉时机如猛兽鸷鸟之发。他曾自比伊尹、吕尚之谋与孙吴用兵、商鞅行法。与治水人物白圭是否一人，文献有异说。
-    growth_range:
-    - 3
-    - 7
-    attribute_weights:
-      force: 10
-      intellect: 56
-      defense: 18
-      agility: 16
   - key: hist_xianqin_0221
     name: 卓氏
     avatar: monkey/其他随机角色/文064_女.png

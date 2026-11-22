@@ -266,20 +266,6 @@ heroes:
       intellect: 14
       defense: 28
       agility: 12
-  - key: hist_qinhan_0266
-    name: 雍齿
-    avatar: pig_wu_male5.png
-    default_gender: male
-    archetype: military
-    flavor: （生年不详—前189年）汉初将领，沛县人，与刘邦同乡。秦末他随刘邦起兵，奉命守丰邑，却接受魏将周市招诱而叛汉，使刘邦久攻丰邑不下。此后雍齿复归刘邦，随军征战有功。汉朝建立后，诸将因争功而心有不安，张良建议刘邦先封雍齿为什方侯，以示不念旧怨，众心遂定。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 46
-      intellect: 14
-      defense: 28
-      agility: 12
   - key: hist_qinhan_0276
     name: 刘肥
     avatar: monkey_wen_male3.png
@@ -687,3 +673,17 @@ heroes:
       intellect: 48
       defense: 22
       agility: 16
+  - key: hist_qinhan_0266
+    name: 雍齿
+    avatar: pig_wu_male5.png
+    default_gender: male
+    archetype: military
+    flavor: （生年不详—前189年）汉初将领，沛县人，与刘邦同乡。秦末他随刘邦起兵，奉命守丰邑，却接受魏将周市招诱而叛汉，使刘邦久攻丰邑不下。此后雍齿复归刘邦，随军征战有功。汉朝建立后，诸将因争功而心有不安，张良建议刘邦先封雍齿为什方侯，以示不念旧怨，众心遂定。
+    growth_range:
+    - 3
+    - 7
+    attribute_weights:
+      force: 46
+      intellect: 14
+      defense: 28
+      agility: 12

@@ -1,5 +1,3 @@
-# 梁羽生作品门客
-
 heroes:
   green:
   - key: hero_chu_zhaonan
@@ -11,29 +9,13 @@ heroes:
     default_morality: 20
     recruitable: true
     growth_range:
-    - 5
+    - 4
     - 7
     attribute_weights:
       force: 35
       intellect: 15
       defense: 30
       agility: 20
-  - key: hero_fei_hongjin
-    name: 飞红巾
-    avatar: monkey_wu_female6.png
-    archetype: military
-    flavor: 飞红巾以红巾蒙面，来去如风。她快意恩仇，轻功凌厉，常在乱世中劫富济贫。与唐晓澜、吕四娘并肩，她展现巾帼不让须眉的胆魄。红巾一掠，江湖便多一分热血与传说。她行事直截了当，最恨欺压百姓之辈。出自梁羽生小说《江湖三女侠》
-    default_gender: female
-    default_morality: 75
-    recruitable: true
-    growth_range:
-    - 5
-    - 7
-    attribute_weights:
-      force: 25
-      intellect: 20
-      defense: 15
-      agility: 40
   - key: hero_tan_yuchong
     name: 檀羽冲
     avatar: pig/武009.png
@@ -43,7 +25,7 @@ heroes:
     default_morality: 75
     recruitable: true
     growth_range:
-    - 5
+    - 4
     - 7
     attribute_weights:
       force: 30
@@ -59,7 +41,7 @@ heroes:
     default_morality: 70
     recruitable: true
     growth_range:
-    - 5
+    - 4
     - 7
     attribute_weights:
       force: 15
@@ -75,7 +57,7 @@ heroes:
     default_morality: 80
     recruitable: true
     growth_range:
-    - 5
+    - 4
     - 7
     attribute_weights:
       force: 40
@@ -91,7 +73,7 @@ heroes:
     default_morality: 75
     recruitable: true
     growth_range:
-    - 5
+    - 4
     - 7
     attribute_weights:
       force: 20
@@ -107,7 +89,7 @@ heroes:
     default_morality: 80
     recruitable: true
     growth_range:
-    - 5
+    - 4
     - 7
     attribute_weights:
       force: 30
@@ -123,7 +105,7 @@ heroes:
     default_morality: 80
     recruitable: true
     growth_range:
-    - 5
+    - 4
     - 7
     attribute_weights:
       force: 40
@@ -139,7 +121,7 @@ heroes:
     default_morality: 60
     recruitable: true
     growth_range:
-    - 5
+    - 4
     - 7
     attribute_weights:
       force: 35
@@ -155,7 +137,7 @@ heroes:
     default_morality: 45
     recruitable: true
     growth_range:
-    - 5
+    - 4
     - 7
     attribute_weights:
       force: 10
@@ -171,45 +153,477 @@ heroes:
     default_morality: 80
     recruitable: true
     growth_range:
-    - 5
+    - 4
     - 7
     attribute_weights:
       force: 30
       intellect: 20
       defense: 20
       agility: 30
-  - key: hero_hongxian_nv
-    name: 红线女
-    avatar: monkey_wen_female3.png
+  - key: hero_liangyshen_0122
+    name: 江南
+    avatar: pig/文028.png
     archetype: civil
-    flavor: 红线女身手轻灵，来去无踪。她以盗取金合名动江湖，却不为贪财，只为惩奸扶弱。侠心与机智并存，使她在乱世中自成一道风景。她的传说像一缕红线，穿过世俗与传奇。她来如风去无影，却总留下公道与传颂。出自梁羽生小说《女帝奇英传》
+    flavor: 丐帮核心长老，相貌平凡却满腹机智、言辞风趣，素有江湖百晓生之誉。他武功虽不及绝顶宗师，却凭过人胆识、深厚人脉与奇巧计谋，在冰川、中原与东海多次助唐经天、金世遗化险为夷。江湖之中论消息灵通与随机应变，无人能出其右，是天山一脉最可靠的智囊与开心果。出自梁羽生小说《云海玉弓缘》
+    default_gender: male
+    default_morality: 82
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 16
+      intellect: 44
+      defense: 16
+      agility: 24
+  - key: hero_liangyshen_0123
+    name: 邹绛霞
+    avatar: monkey_wu_female4.png
+    archetype: military
+    flavor: 江南之妻，出身武林世家，性情爽朗大方，剑法扎实凌厉。她不以貌取人，慧眼识得江南的机智与侠义，二人结为欢喜冤家，同闯大江南北。每逢强敌压境，她常持剑护在夫君身前，进退有度、巾帼豪气十足，是正道群雄公认的贤内助与女中豪杰。出自梁羽生小说《云海玉弓缘》
     default_gender: female
-    default_morality: 75
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 32
+      intellect: 20
+      defense: 22
+      agility: 26
+  - key: hero_liangyshen_0124
+    name: 李沁梅
+    avatar: monkey_wu_female5.png
+    archetype: military
+    flavor: 唐晓澜外甥女，自幼受天山派熏陶，天真烂漫、热情赤诚。她初入江湖便对离经叛道的金世遗怀抱仰慕，屡次在正邪误会中挺身替他辩护。虽武功尚在成长之中，却胜在轻功灵动、心无城府，最终与钟展终成眷属，为波谲云诡的玉弓风云添上一抹清澈明快的亮色。出自梁羽生小说《云海玉弓缘》
+    default_gender: female
+    default_morality: 84
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 28
+      intellect: 20
+      defense: 18
+      agility: 34
+  - key: hero_liangyshen_0125
+    name: 钟展
+    avatar: pig/武056.png
+    archetype: military
+    flavor: 邙山派大弟子，吕四娘门下得力传人，为人端方正直、重情守诺。他奉师命行走江湖，面对孟神通等魔头毫不退缩，虽在感情上曾因曹锦儿与李沁梅陷入两难，却始终严守侠义本分。其邙山剑法中正平和、根基扎实，是正道年轻一辈的中坚力量。出自梁羽生小说《云海玉弓缘》
+    default_gender: male
+    default_morality: 82
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 34
+      intellect: 22
+      defense: 24
+      agility: 20
+  - key: hero_liangyshen_0126
+    name: 姬晓风
+    avatar: pig/文029.png
+    archetype: civil
+    flavor: 江湖人称“天下第一神偷”，轻功独步武林，善使易容与奇门巧计，却只盗贪官污吏与恶霸豪强。他与金世遗不打不相识，屡次在危急关头盗取密信、搅乱孟神通与西门牧野的阴谋。看似玩世不恭、游戏人间，实则心怀侠义底线，是清代江湖中极具魅力的奇人异士。出自梁羽生小说《云海玉弓缘》
+    default_gender: male
+    default_morality: 70
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 18
+      intellect: 36
+      defense: 10
+      agility: 36
+  - key: hero_liangyshen_0127
+    name: 曹锦儿
+    avatar: monkey_wu_female6.png
+    archetype: military
+    flavor: 孟神通义女，原被义父安排接近正道刺探军情，却在与钟展相识后真心倾慕，不惜违逆魔头以身相护。她虽出身邪派、武功带几分阴柔诡谲，本心却善良柔韧，为报恩情与成全所爱甘愿付出一切。其身世凄苦而情意真挚，令人叹惋不已。出自梁羽生小说《云海玉弓缘》
+    default_gender: female
+    default_morality: 65
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 28
+      intellect: 22
+      defense: 20
+      agility: 30
+  - key: hero_liangyshen_0128
+    name: 西门牧野
+    avatar: pig/武057.png
+    archetype: military
+    flavor: 北五省绿林总瓢把子，武功高强、野心炽盛，为独霸绿林而与孟神通暗中勾结，试图吞并中原各派。他掌力刚猛霸道，手下爪牙众多，在江湖中横行霸道多年。面对金世遗与正道联军，他机关算尽却终究不敌大势，是江湖黑道中最具代表性的枭雄人物。出自梁羽生小说《云海玉弓缘》
+    default_gender: male
+    default_morality: 25
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 18
+      defense: 26
+      agility: 16
+  - key: hero_liangyshen_0129
+    name: 唐努珠穆
+    avatar: pig/文030.png
+    archetype: civil
+    flavor: 尼泊尔王室俊彦，丰神俊朗、通晓礼乐兵书，亦习得西域上乘武艺。他倾慕冰川天女桂冰娥，不惜万里追随至中原，与唐经天展开一番风度翩翩的君子之争。纵然情场失意，他仍能克己守礼、顾全邦交大局，展现了域外贵胄难得的气度与涵养。出自梁羽生小说《冰川天女传》
+    default_gender: male
+    default_morality: 72
     recruitable: true
     growth_range:
     - 3
     - 7
     attribute_weights:
-      force: 15
-      intellect: 35
-      defense: 10
-      agility: 40
-  - key: hero_nie_yinniang
-    name: 聂隐娘
-    avatar: monkey_wu_female6.png
+      force: 22
+      intellect: 38
+      defense: 20
+      agility: 20
+  - key: hero_liangyshen_0130
+    name: 毒龙尊者
+    avatar: pig/武058.png
     archetype: military
-    flavor: 聂隐娘行踪如影，剑影如电。她是传奇刺客，出手只在一念之间，生死随之。心性冷静却不失侠义，常以一剑解决江湖难局。她的名字是唐代传说中的冷光，也是武侠世界最锋利的孤刃。她行事独来独往，却始终守着心中底线。出自梁羽生小说《女帝奇英传》
+    flavor: 隐居海外蛇岛的绝世怪侠，金世遗的授业恩师。他早年遭正道迫害，性情愤世嫉俗，潜心钻研毒功与内家奇学，终成一代奇人。虽嘴上痛恨世人，却将孤苦无依的金世遗抚养成人并倾囊相授，临终前更嘱托徒儿莫为仇恨蒙蔽本心，实乃外冷内热的悲情高人。出自梁羽生小说《冰川天女传》
+    default_gender: male
+    default_morality: 55
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 24
+      defense: 18
+      agility: 16
+  - key: hero_liangyshen_0131
+    name: 铁珊瑚
+    avatar: monkey/其他随机角色/武083_女_.png
+    archetype: military
+    flavor: 陕西名侠铁飞龙之女，生性娇憨明媚、嫉恶如仇，手持双刀穿梭大漠关山。她因敬仰岳鸣珂的侠名而暗生情愫，屡次在官兵与魔教围攻中挺身相助，毫不畏惧强权。她爱得热烈坦荡，最终为护心上人与大义而香消玉殒，其赤诚壮烈令岳鸣珂抱憾终生。出自梁羽生小说《白发魔女传》
     default_gender: female
+    default_morality: 82
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 32
+      intellect: 16
+      defense: 18
+      agility: 34
+  - key: hero_liangyshen_0132
+    name: 铁飞龙
+    avatar: pig/武059.png
+    archetype: military
+    flavor: 陕西武林名宿，铁珊瑚之父，号称“铁掌飞龙”，素以仗义疏财、急公好义闻名西北。他深恨明末阉党与朝廷奸佞，多次掩护抗敌义士与绿林好汉，与练霓裳亦有不浅交情。一身刚猛铁掌与大刀功夫极具威势，虽年岁已长，临阵搏杀仍不减当年虎威。出自梁羽生小说《白发魔女传》
+    default_gender: male
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 38
+      intellect: 16
+      defense: 30
+      agility: 16
+  - key: hero_liangyshen_0133
+    name: 红花鬼母
+    avatar: monkey_wu_female.png
+    archetype: military
+    flavor: 西域武林赫赫有名的邪派女魔头，金独异之妻，擅长毒沙暗器与阴狠鞭法，行踪诡秘。她性情乖僻狠辣，为夺秘宝与报私怨，在明末江湖掀起连番血案，曾令武当与绿林群雄大感棘手。虽最终败于正道侠客剑下，其凶名仍在江湖流传许久。出自梁羽生小说《白发魔女传》
+    default_gender: female
+    default_morality: 22
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 18
+      defense: 18
+      agility: 28
+  - key: hero_liangyshen_0134
+    name: 金独异
+    avatar: pig/武060.png
+    archetype: military
+    flavor: 红花鬼母之夫，投靠东厂阉党与后金势力的武林大魔头，身负绝顶阴毒掌力与暗器功夫。他心狠手辣、贪婪无厌，不仅残害忠良，更屡次设局暗算卓一航与练霓裳。其武功路数狠辣刁钻，是明末正邪交锋中最令人切齿的鹰犬高手之一。出自梁羽生小说《白发魔女传》
+    default_gender: male
+    default_morality: 18
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 38
+      intellect: 20
+      defense: 22
+      agility: 20
+  - key: hero_liangyshen_0135
+    name: 耿绍南
+    avatar: pig/武061.png
+    archetype: military
+    flavor: 武当派年轻弟子，卓一航师弟，容貌俊秀却心胸狭隘、工于心计。他因嫉妒卓一航继任掌门之位，屡次在门派内挑拨是非，甚至勾结外敌陷害同门，直接加剧了武当与练霓裳的决裂。虽习得武当上乘剑法，却因私欲熏心而自毁前程。出自梁羽生小说《白发魔女传》
+    default_gender: male
+    default_morality: 25
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 32
+      intellect: 24
+      defense: 20
+      agility: 24
+  - key: hero_liangyshen_0136
+    name: 白敏
+    avatar: pig/文031.png
+    archetype: civil
+    flavor: 武当派门下弟子，卓一航师弟，为人忠厚老实、明辨是非。在武当群老苛责卓一航、耿绍南暗中作祟之际，他始终站在公道一边，尽力维护师兄与门派清誉。他虽不以锐利锋芒著称，却精熟道家经义与稳健剑理，在门派动荡之时默默守住武当的仁义根基。出自梁羽生小说《白发魔女传》
+    default_gender: male
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 22
+      intellect: 36
+      defense: 24
+      agility: 18
+  - key: hero_liangyshen_0137
+    name: 多格多
+    avatar: pig/文032.png
+    archetype: civil
+    flavor: 清初手握重兵的亲王，生性多疑残忍，极擅权谋统御与分化瓦解江湖义士。他坐镇京师，网罗楚昭南等叛徒与大内高手，对天山七剑及反清志士展开残酷围剿。虽自身武艺不算绝顶，却凭雄厚兵权与阴险算计成为七剑反清路上最难缠的朝廷大敌。出自梁羽生小说《七剑下天山》
+    default_gender: male
+    default_morality: 20
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 18
+      intellect: 46
+      defense: 22
+      agility: 14
+  - key: hero_liangyshen_0138
+    name: 刘精一
+    avatar: pig/武062.png
+    archetype: military
+    flavor: 天地会抗清义士，刘郁芳之父，为人刚直豪迈，深得绿林豪杰敬重。清军入关后，他在山东与关外秘密联络义军，筹集粮饷、掩护志士，屡次与清廷鹰犬浴血周旋。他刀法沉雄老辣，教女有方，即便身陷绝境仍誓死不降，尽显乱世义士的铮铮铁骨。出自梁羽生小说《七剑下天山》
+    default_gender: male
+    default_morality: 86
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 20
+      defense: 28
+      agility: 16
+  - key: hero_liangyshen_0139
+    name: 武元英
+    avatar: pig/武063.png
+    archetype: military
+    flavor: 天山七剑之一武琼瑶之兄，自幼随父习武，刀剑双绝，胸怀反清大志。他与妹妹一同投身抗清义举，在战场上身先士卒、不避锋镝，常与凌未风、韩志邦并肩破敌。为人沉毅果敢，护妹心切，是义军阵中深受信赖的悍将与侠客。出自梁羽生小说《七剑下天山》
+    default_gender: male
+    default_morality: 82
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 38
+      intellect: 16
+      defense: 26
+      agility: 20
+  - key: hero_liangyshen_0140
+    name: 张风府
+    avatar: pig/文033.png
+    archetype: civil
+    flavor: 张士诚之后、张丹枫之父，隐居塞外多年，背负复兴先祖基业的沉重遗愿。他熟读兵书典籍，智谋深沉，一生苦心谋划宝藏与复国大计，却在国难当头时终于为儿子的大义所感。其隐忍与执念交织的半生，深刻折射出明代改朝换代之际遗民的悲壮命运。出自梁羽生小说《萍踪侠影录》
+    default_gender: male
     default_morality: 65
     recruitable: true
     growth_range:
     - 4
     - 7
     attribute_weights:
-      force: 25
+      force: 20
+      intellect: 46
+      defense: 20
+      agility: 14
+  - key: hero_liangyshen_0141
+    name: 周山民
+    avatar: pig/武064.png
+    archetype: military
+    flavor: 绿林中赫赫有名的侠盗好汉，性情豪爽粗犷，最敬重张丹枫的侠名与气度。他武功刚猛实用，擅使重兵器与近身搏杀，在京师与边关屡次率领弟兄协助张丹枫抗击瓦剌奸细与锦衣卫。平日大碗喝酒、快意江湖，遇事则一诺千金，绝不负朋友重托。出自梁羽生小说《萍踪侠影录》
+    default_gender: male
+    default_morality: 78
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 40
+      intellect: 14
+      defense: 30
+      agility: 16
+  - key: hero_liangyshen_0142
+    name: 澹台镜明
+    avatar: monkey_wu_female2.png
+    archetype: military
+    flavor: 武林名宿澹台灭明之女，性情娇俏率真，剑法轻巧灵动，与云蕾情同姐妹。她爱憎分明、敢作敢为，曾因倾慕张丹枫而闹出不少趣事，后在江湖历练中逐渐成熟，与周山民结为良缘。危难之际她亦能挺身挥剑，展现了武林世家女儿的胆识与真性情。出自梁羽生小说《萍踪侠影录》
+    default_gender: female
+    default_morality: 78
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 30
       intellect: 20
-      defense: 10
-      agility: 45
+      defense: 18
+      agility: 32
+  - key: hero_liangyshen_0143
+    name: 毕道凡
+    avatar: pig/文034.png
+    archetype: civil
+    flavor: 江湖人称“潮音和尚”的师兄，亦是云蕾的授业恩师，精于医卜星象与上乘剑法。他看破红尘名利，常以云游道人姿态现身乱局，暗中点拨张丹枫与云蕾化解世仇。他处事超然物外却心怀慈悲，既有世外高人的通透智慧，又有深藏不露的武学修为。出自梁羽生小说《萍踪侠影录》
+    default_gender: male
+    default_morality: 82
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 26
+      intellect: 42
+      defense: 16
+      agility: 16
+  - key: hero_liangyshen_0144
+    name: 石英
+    avatar: pig/武066.png
+    archetype: military
+    flavor: 明代江湖中德高望重的关东大侠，剑法老辣沉雄，素以扶危济困闻名。他与张丹枫志同道合，在瓦剌铁骑南犯、京师危急之际，慨然联络群雄驰援边关。其人沉稳刚毅、不畏权贵，纵然年迈犹能横刀跃马，堪称草莽中一身正气的楷模。出自梁羽生小说《萍踪侠影录》
+    default_gender: male
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 38
+      intellect: 18
+      defense: 28
+      agility: 16
+  - key: hero_liangyshen_0145
+    name: 铁镜心
+    avatar: pig/文035.png
+    archetype: civil
+    flavor: 出身江南书香与武学兼修之门，才华横溢、温润如玉，与于承珠青梅竹马终成眷属。他虽武功略逊于绝顶剑客，却精于谋略与文墨，能以沉静头脑剖析朝堂与江湖的错综局势。面对奸佞陷害与强敌挑衅，他始终儒雅从容、不失气节，是难得的文侠典范。出自梁羽生小说《散花女侠》
+    default_gender: male
+    default_morality: 82
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 22
+      intellect: 44
+      defense: 18
+      agility: 16
+  - key: hero_liangyshen_0146
+    name: 叶成林
+    avatar: pig/武067.png
+    archetype: military
+    flavor: 忠义之后，天资聪颖、武功不俗，早年因倾慕于承珠而默默追随左右。虽知于承珠心有所属，他却不生怨妒，反而在边关烽火中舍命相护，以坦荡君子之风成全所爱。其剑法刚健凌厉，为人重情重义、深明大义，是乱世江湖中令人敬佩的痴情侠客。出自梁羽生小说《散花女侠》
+    default_gender: male
+    default_morality: 84
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 36
+      intellect: 20
+      defense: 22
+      agility: 22
+  - key: hero_liangyshen_0147
+    name: 王燕羽
+    avatar: monkey_wu_female3.png
+    archetype: military
+    flavor: 王龙客之妹，身处安禄山叛军阵营却本性良善、明辨大义。她剑法轻灵秀美，曾受兄长之命周旋于大唐义士之间，却在目睹铁摩勒与段珪璋的忠烈气节后幡然醒悟，暗中屡次相助正道脱险。她在兄妹亲情与天下大义间饱受煎熬，最终选择站在正义一方。出自梁羽生小说《大唐游侠传》
+    default_gender: female
+    default_morality: 72
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 30
+      intellect: 24
+      defense: 18
+      agility: 28
+  - key: hero_liangyshen_0148
+    name: 王龙客
+    avatar: pig/文036.png
+    archetype: civil
+    flavor: 安禄山麾下头号军师兼高手，出身名门却甘为叛军鹰犬，精通兵法谋略与点穴奇功。他狡诈多智、心狠手辣，屡次设下毒计陷害段珪璋与大唐忠良，在长安与洛阳之间兴风作浪。其文武兼备而又阴险难测，是盛唐群侠最难对付的智谋型反派。出自梁羽生小说《大唐游侠传》
+    default_gender: male
+    default_morality: 20
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 24
+      intellect: 44
+      defense: 16
+      agility: 16
+  - key: hero_liangyshen_0149
+    name: 韩芷芬
+    avatar: monkey_wen_female2.png
+    archetype: civil
+    flavor: 绿林好汉韩湛之女，容貌秀美、温婉贤淑，因铁摩勒仗义搭救而倾心相许。她虽不擅刚猛厮杀，却深明事理、巧于持家与筹谋，在战乱流离中始终不离不弃地扶持身旁侠士。其柔顺外表下藏着坚毅心肠，是乱世烽烟中一抹温暖动人的红颜。出自梁羽生小说《大唐游侠传》
+    default_gender: female
+    default_morality: 78
+    recruitable: true
+    growth_range:
+    - 3
+    - 6
+    attribute_weights:
+      force: 14
+      intellect: 42
+      defense: 22
+      agility: 22
+  - key: hero_liangyshen_0150
+    name: 尉迟炯
+    avatar: pig/武068.png
+    archetype: military
+    flavor: 清廷大内顶尖高手，出身西域武学世家，内功深厚、掌剑双绝，奉朝廷密旨统领众多爪牙围剿江湖义士。他性情阴鸷骄傲，视中原侠客如草芥，在京师与江海天、金逐流等人展开连番恶战。虽最终败亡于正道群侠之手，其强横武力曾令六合帮与天山后人如临大敌。出自梁羽生小说《侠骨丹心》
+    default_gender: male
+    default_morality: 22
+    recruitable: true
+    growth_range:
+    - 4
+    - 7
+    attribute_weights:
+      force: 42
+      intellect: 18
+      defense: 24
+      agility: 16
   blue:
   - key: hero_shangguan_tianye
     name: 上官天野
@@ -291,22 +705,6 @@ heroes:
       intellect: 25
       defense: 25
       agility: 20
-  - key: hero_lv_siniang
-    name: 吕四娘
-    avatar: monkey_wu_female.png
-    archetype: military
-    flavor: 江湖三女侠之一吕四娘，武功绝顶性格冷傲。她是梁羽生笔下神秘女侠，传说曾刺杀雍正皇帝。她的故事充满传奇色彩，至今仍为人津津乐道。她独来独往，行事干脆，是乱世里最清冷的一柄剑。出自梁羽生小说《江湖三女侠》
-    default_gender: female
-    default_morality: 70
-    recruitable: true
-    growth_range:
-    - 6
-    - 9
-    attribute_weights:
-      force: 35
-      intellect: 20
-      defense: 15
-      agility: 30
   - key: hero_ling_weifeng
     name: 凌未风
     avatar: pig_wu_male7.png
@@ -355,38 +753,6 @@ heroes:
       intellect: 20
       defense: 20
       agility: 30
-  - key: hero_li_shengnan
-    name: 厉胜男
-    avatar: monkey_wu_female5.png
-    archetype: military
-    flavor: 厉胜男是《云海玉弓缘》中的女主角，厉家后人，性情偏激而执拗。她为追寻乔北溟遗学、了结家族旧怨闯荡江湖，对金世遗一往情深，却始终得不到同等回应。她修炼修罗阴煞功，行事狠辣；与唐晓澜比试时施展天魔解体大法，身受重伤，最终在成婚当日死在金世遗怀中。出自梁羽生小说《云海玉弓缘》
-    default_gender: female
-    default_morality: 60
-    recruitable: true
-    growth_range:
-    - 6
-    - 9
-    attribute_weights:
-      force: 30
-      intellect: 15
-      defense: 20
-      agility: 35
-  - key: hero_huo_tiandu
-    name: 霍天都
-    avatar: monkey_wu_male13.png
-    archetype: military
-    flavor: 七剑出天山，他是执剑之首。天山派武学集大成者，一代宗师风范无双。他率领七剑下天山反清复明，剑气纵横，侠义盖世。他开创的天山剑法传承百年，培养的英才遍布武林。他不仅是武学宗师，更是民族大义的扛鼎之人。梁羽生以他为笔，书写了一曲慷慨激昂的家国壮歌。开山立派，名垂青史，此之谓也。出自梁羽生小说《七剑下天山》
-    default_gender: male
-    default_morality: 90
-    recruitable: true
-    growth_range:
-    - 6
-    - 9
-    attribute_weights:
-      force: 35
-      intellect: 25
-      defense: 20
-      agility: 20
   - key: hero_yang_yuncong
     name: 杨云骢
     avatar: monkey_wu_male12.png
@@ -483,6 +849,358 @@ heroes:
       intellect: 15
       defense: 35
       agility: 15
+  - key: hero_liangyshen_0106
+    name: 冯瑛
+    avatar: monkey_wu_female4.png
+    archetype: military
+    flavor: 江湖三女侠之一，冯琳孪生姐姐，拜师易兰珠门下，得天山剑法真传。她性情温婉沉静、处事顾全大局，与唐晓澜结为伉俪后共同执掌天山派，于康雍年间周旋于朝廷与绿林之间。面对清廷鹰犬与邪派强敌，她剑势绵密沉稳，既有大家闺秀的端庄气度，又不失一代女宗师的凛然风骨。出自梁羽生小说《江湖三女侠》
+    default_gender: female
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 32
+      intellect: 26
+      defense: 20
+      agility: 22
+  - key: hero_liangyshen_0107
+    name: 冯琳
+    avatar: monkey_wu_female5.png
+    archetype: military
+    flavor: 江湖三女侠之一，冯瑛孪生妹妹，早年被魔头掳去抚养，养成泼辣直爽、嫉恶如仇的烈性脾气。回归正道后，她剑法凌厉奇诡，专打江湖败类与朝廷爪牙，行事向来风风火火、快意恩仇。她与李治并肩闯荡江湖，敢爱敢恨、豪气干云，是康熙朝武林中最耀眼也最难驯服的一朵铿锵玫瑰。出自梁羽生小说《江湖三女侠》
+    default_gender: female
+    default_morality: 78
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 34
+      intellect: 16
+      defense: 18
+      agility: 32
+  - key: hero_liangyshen_0108
+    name: 于承珠
+    avatar: monkey_wu_female6.png
+    archetype: military
+    flavor: 忠臣于谦之女，经张丹枫与云蕾悉心调教，尽得双剑合璧与散花天女掌精髓，被江湖誉为“散花女侠”。她自幼背负家国血仇，却胸怀大义而不溺于私怨，在瓦剌与大明边关数次力挽危局。她机智灵动、侠骨柔肠，既能独当一面抗击群邪，又在情海波折中坚守本心，尽显名门之后风范。出自梁羽生小说《散花女侠》
+    default_gender: female
+    default_morality: 86
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 30
+      intellect: 24
+      defense: 16
+      agility: 30
+  - key: hero_liangyshen_0109
+    name: 桂华生
+    avatar: pig/武048.png
+    archetype: military
+    flavor: 桂仲明与冒浣莲之子，桂冰娥之父，幼年家逢剧变后远走西域，凭超凡悟性融会天山剑法与域外奇功，自成冰川一脉剑宗。他性情孤高清绝，因早年情伤而隐居雪域冰宫，却在关键时刻屡次指点后辈、震慑群邪。其玄铁剑法寒气逼人，人虽在天涯之外，威名仍令中原武林深深敬畏。出自梁羽生小说《冰川天女传》
+    default_gender: male
+    default_morality: 80
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 22
+      defense: 20
+      agility: 18
+  - key: hero_liangyshen_0110
+    name: 江海天
+    avatar: pig/武049.png
+    archetype: military
+    flavor: 金世遗大弟子，出身农家却天资淳厚，得师父倾囊相授正邪合一的绝世武功，后来成为天山新派的武林盟主。他为人忠厚笃实、重信守诺，在《冰河洗剑录》中一路护送谷中莲、挫败萨福鼎与邪派阴谋，终以仁德与实力赢得天下群雄共尊。他既无金世遗早年的乖戾，却继承了师门最炽热的侠义肝胆。出自梁羽生小说《冰河洗剑录》
+    default_gender: male
+    default_morality: 88
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 38
+      intellect: 20
+      defense: 24
+      agility: 18
+  - key: hero_liangyshen_0111
+    name: 谷中莲
+    avatar: monkey/其他随机角色/武083_女_.png
+    archetype: military
+    flavor: 谷之华义女，自幼随师长修习邙山派剑法，容貌清丽、性情明慧坚韧。她与江海天在颠沛流离的江湖险局中相知相守，面对权贵逼迫与强敌环伺从不低头，多次以巧智与剑术化险为夷。婚后她辅佐江海天主持武林正义，成为一代女中豪杰，其沉着果决颇具师母谷之华的遗风。出自梁羽生小说《冰河洗剑录》
+    default_gender: female
+    default_morality: 84
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 30
+      intellect: 24
+      defense: 20
+      agility: 26
+  - key: hero_liangyshen_0112
+    name: 厉南星
+    avatar: pig/武050.png
+    archetype: military
+    flavor: 厉胜男侄孙，背负魔教遗孤之名闯荡江湖，自小练就诡异凌厉的天魔剑法与修罗阴煞功。他初因身世受正道猜忌，性情孤傲冷峻，却在结识金逐流与史红英后逐渐敞开心扉，最终站在正义一边抗击奸佞。他重情重义、宁折不弯，以一身正邪莫辨的绝世剑法洗刷家族旧污，成为一代奇侠。出自梁羽生小说《侠骨丹心》
+    default_gender: male
+    default_morality: 72
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 38
+      intellect: 16
+      defense: 16
+      agility: 30
+  - key: hero_liangyshen_0113
+    name: 史红英
+    avatar: monkey_wu_female.png
+    archetype: military
+    flavor: 六合帮老帮主史白都之妹，虽生于显赫帮派却最厌权谋倾轧，剑法精妙、胆识过人。她与金逐流不打不相识，二人同闯京师龙潭虎穴，揭破清廷鹰犬与叛徒的连环诡计。她外柔内刚、是非分明，关键时刻敢于大义灭亲，既守住了六合帮的侠义底色，也赢得金逐流的一生挚爱。出自梁羽生小说《侠骨丹心》
+    default_gender: female
+    default_morality: 82
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 32
+      intellect: 22
+      defense: 20
+      agility: 26
+  - key: hero_liangyshen_0114
+    name: 陈天宇
+    avatar: pig/武051.png
+    archetype: military
+    flavor: 陈玄机后人，出身武林世家，剑法沉稳凌厉，为人谦和重义。他曾痴恋冰川天女桂冰娥，却在得知唐经天与她两情相悦后坦然成全，毫无怨怼嫉恨，反而在危难之际屡次舍身相助。其磊落胸怀与君子风度，与他那柄纵横雪域与中原的青锋同样光彩照人，深得正道前辈推崇。出自梁羽生小说《冰川天女传》
+    default_gender: male
+    default_morality: 86
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 34
+      intellect: 22
+      defense: 24
+      agility: 20
+  - key: hero_liangyshen_0115
+    name: 段珪璋
+    avatar: pig/武052.png
+    archetype: military
+    flavor: 大唐开元天宝年间的绝顶义侠，与南霁云结为生死之交，武功深不可测，尤擅大金刚掌与剑法。安史之乱爆发前夕，他识破安禄山反谋，孤身周旋于朝野与江湖之间，为护送军情与解救义兄不惜血战群魔。其忠肝义胆与舍生取义的壮烈气节，撑起了盛唐江湖最雄浑的一脊风骨。出自梁羽生小说《大唐游侠传》
+    default_gender: male
+    default_morality: 90
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 40
+      intellect: 22
+      defense: 22
+      agility: 16
+  - key: hero_liangyshen_0116
+    name: 夏凌霜
+    avatar: monkey_wu_female2.png
+    archetype: military
+    flavor: 段珪璋之妻窦线娘的同门师妹，容貌清雅，剑法轻灵迅疾，兼具智计与胆魄。安史之乱中，她与铁摩勒、空空儿等人并肩护唐，多次潜入敌营探查军情、营救义士。面对战火纷飞与身世波折，她始终从容镇定，以柔肩担起家国重任，与铁摩勒的一段深情更是乱世中难得的暖色。出自梁羽生小说《大唐游侠传》
+    default_gender: female
+    default_morality: 82
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 28
+      intellect: 24
+      defense: 16
+      agility: 32
+  - key: hero_liangyshen_0117
+    name: 空空儿
+    avatar: pig/武053.png
+    archetype: military
+    flavor: 盛唐武林第一奇侠，轻功与暗器天下无双，剑术更是出神入化，来去无影如鬼魅。他行事不拘常规、亦正亦邪，早年与师弟精精儿各事其主，却始终守着心底的家国大义。安史之乱时，他暗中相助郭子仪与大唐游侠，屡破敌酋阴谋，以一己之力震慑藩镇群雄，留下一段神龙见首不见尾的传奇。出自梁羽生小说《大唐游侠传》
+    default_gender: male
+    default_morality: 68
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 34
+      intellect: 20
+      defense: 12
+      agility: 34
+  - key: hero_liangyshen_0118
+    name: 精精儿
+    avatar: pig/武054.png
+    archetype: military
+    flavor: 空空儿同门师弟，武功与师兄伯仲之间，精于暗杀、轻功与绝命剑法，身形如电、招招夺命。他为安禄山与史思明阵营效力，屡次与段珪璋、铁摩勒等大唐义士生死相搏，成为唐军心腹大患。虽立场站在反派一边，其武道造诣之深、出手之果决，仍令正道群雄不敢有丝毫轻视。出自梁羽生小说《大唐游侠传》
+    default_gender: male
+    default_morality: 30
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 36
+      intellect: 16
+      defense: 14
+      agility: 34
+  - key: hero_liangyshen_0119
+    name: 冒浣莲
+    avatar: monkey_wen_female1.png
+    archetype: civil
+    flavor: 明末名士冒辟疆之女，才情卓绝、熟谙诗书兵法，虽非绝顶武者却深得傅青主与天山诸侠器重。她随七剑奔走大漠与中原，运筹帷幄、化解无数险局，又以温润智慧抚平桂仲明的心灵创伤。乱世烽烟之中，她以一介才女之身周旋群雄，成为天山七剑不可或缺的智囊与精神支柱。出自梁羽生小说《七剑下天山》
+    default_gender: female
+    default_morality: 85
+    recruitable: true
+    growth_range:
+    - 5
+    - 8
+    attribute_weights:
+      force: 12
+      intellect: 48
+      defense: 20
+      agility: 20
+  - key: hero_liangyshen_0120
+    name: 段克邪
+    avatar: pig/武055.png
+    archetype: military
+    flavor: 段珪璋之子，自幼得名师真传，剑法凌厉洒脱，更有一身孤傲不屈的侠气。他在安史之乱后的残唐乱世中单骑独行，与史思明之女史若梅因龙凤宝钗结缘，跨越敌我阵营与家仇国恨。面对藩镇割据与江湖阴谋，他凭手中长剑斩破迷雾，既有父辈的忠义血性，又多几分少年游侠的率真果敢。出自梁羽生小说《龙凤宝钗缘》
+    default_gender: male
+    default_morality: 84
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 38
+      intellect: 18
+      defense: 18
+      agility: 26
+  - key: hero_liangyshen_0121
+    name: 史若梅
+    avatar: monkey_wu_female3.png
+    archetype: military
+    flavor: 史思明之女，虽生于叛军显贵之家，却明辨是非、厌恶杀戮，化名“红线”闯荡江湖。她剑法精纯、身手矫健，与段克邪在刀光剑影中相识相恋，最终毅然背离父兄野心，投身平定战乱的正义阵营。她敢于向命运与出身抗争，既有女侠的凛然英气，又不失儿女柔情，令人动容。出自梁羽生小说《龙凤宝钗缘》
+    default_gender: female
+    default_morality: 78
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 30
+      intellect: 24
+      defense: 16
+      agility: 30
+  - key: hero_fei_hongjin
+    name: 飞红巾
+    avatar: monkey_wu_female6.png
+    archetype: military
+    flavor: 飞红巾以红巾蒙面，来去如风。她快意恩仇，轻功凌厉，常在乱世中劫富济贫。与唐晓澜、吕四娘并肩，她展现巾帼不让须眉的胆魄。红巾一掠，江湖便多一分热血与传说。她行事直截了当，最恨欺压百姓之辈。出自梁羽生小说《江湖三女侠》
+    default_gender: female
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 25
+      intellect: 20
+      defense: 15
+      agility: 40
+  - key: hero_hongxian_nv
+    name: 红线女
+    avatar: monkey_wen_female3.png
+    archetype: civil
+    flavor: 红线女身手轻灵，来去无踪。她以盗取金合名动江湖，却不为贪财，只为惩奸扶弱。侠心与机智并存，使她在乱世中自成一道风景。她的传说像一缕红线，穿过世俗与传奇。她来如风去无影，却总留下公道与传颂。出自梁羽生小说《女帝奇英传》
+    default_gender: female
+    default_morality: 75
+    recruitable: true
+    growth_range:
+    - 5
+    - 9
+    attribute_weights:
+      force: 15
+      intellect: 35
+      defense: 10
+      agility: 40
+  - key: hero_nie_yinniang
+    name: 聂隐娘
+    avatar: monkey_wu_female6.png
+    archetype: military
+    flavor: 聂隐娘行踪如影，剑影如电。她是传奇刺客，出手只在一念之间，生死随之。心性冷静却不失侠义，常以一剑解决江湖难局。她的名字是唐代传说中的冷光，也是武侠世界最锋利的孤刃。她行事独来独往，却始终守着心中底线。出自梁羽生小说《女帝奇英传》
+    default_gender: female
+    default_morality: 65
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 25
+      intellect: 20
+      defense: 10
+      agility: 45
+  - key: hero_liangyshen_0101
+    name: 唐经天
+    avatar: monkey_wu_male1.png
+    archetype: military
+    flavor: 天山派掌门唐晓澜与冯瑛之子，自幼承袭天山剑法与深厚内功，文武兼修，气度儒雅。他远赴冰川结识桂冰娥，屡次在正邪纷争与清廷围剿中力挽狂澜，既能以大须弥剑式克敌制胜，又以宽厚胸襟化解江湖怨怼。在天山一脉承前启后之际，他以仁侠风范稳住武林大局，堪称一代宗师。出自梁羽生小说《冰川天女传》
+    default_gender: male
+    default_morality: 88
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 36
+      intellect: 26
+      defense: 20
+      agility: 18
+  - key: hero_liangyshen_0102
+    name: 桂冰娥
+    avatar: monkey_wu_female2.png
+    archetype: military
+    flavor: 桂华生与华玉之女，隐居尼泊尔雪山冰宫，世人尊称“冰川天女”。她承袭家传玄铁剑法与冰川剑术，身法清灵飘逸，冰魄寒光弹更是独步江湖。她虽生于绝域冰峰、气质清冷如雪，却心怀济世慈悲，与唐经天携手奔走中原与西域，平息武林劫难，谱写出一段皎洁如冰峰明月的侠侣传奇。出自梁羽生小说《冰川天女传》
+    default_gender: female
+    default_morality: 86
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 32
+      intellect: 24
+      defense: 16
+      agility: 28
+  - key: hero_liangyshen_0105
+    name: 凌云凤
+    avatar: monkey_wu_female3.png
+    archetype: military
+    flavor: 霍天都之妻，性情刚烈豪迈，不甘困守深山而投身抗击外敌的烽火之中。她与霍天都各执其志、分道扬镳，却在实战中将天山剑法淬炼出凌厉诡奇的反手剑绝技，成为天山派武学另一重要源流。她孤身奔走关外，扶助义士、惩奸除恶，以一柄长剑写就巾帼不让须眉的豪情壮志。出自梁羽生小说《散花女侠》
+    default_gender: female
+    default_morality: 82
+    recruitable: true
+    growth_range:
+    - 6
+    - 9
+    attribute_weights:
+      force: 36
+      intellect: 18
+      defense: 18
+      agility: 28
   purple:
   - key: hero_jin_shiyi
     name: 金世遗
@@ -548,3 +1266,83 @@ heroes:
       intellect: 20
       defense: 15
       agility: 35
+  - key: hero_liangyshen_0103
+    name: 乔北溟
+    avatar: pig/武046.png
+    archetype: military
+    flavor: 明末武林三百年难遇的绝世奇才，因败于张丹枫而远走海外，潜心数十年自创修罗阴煞功与大须弥剑式，留下的秘笈日后掀起数代江湖腥风血雨。他性情狂傲孤僻，视正道礼法如无物，却对武学造诣有着近乎偏执的追求，其独门绝学深刻影响了金世遗、孟神通、厉胜男等后世绝顶高手。出自梁羽生小说《云海玉弓缘》
+    default_gender: male
+    default_morality: 35
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 44
+      intellect: 22
+      defense: 18
+      agility: 16
+  - key: hero_liangyshen_0104
+    name: 孟神通
+    avatar: pig/武047.png
+    archetype: military
+    flavor: 苦心孤诣追寻乔北溟秘笈数十年的魔道巨擘，将修罗阴煞功练至第八重绝境，掌力阴毒霸烈，令中原正道闻风丧胆。他野心勃勃、城府极深，为称霸武林不惜父女反目、广布暗棋，纵使面对唐晓澜与金世遗联手亦敢傲然迎战。其枭雄气概与狠辣手腕，是清代武林最令人忌惮的强敌。出自梁羽生小说《云海玉弓缘》
+    default_gender: male
+    default_morality: 22
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 42
+      intellect: 24
+      defense: 20
+      agility: 14
+  - key: hero_lv_siniang
+    name: 吕四娘
+    avatar: monkey_wu_female.png
+    archetype: military
+    flavor: 江湖三女侠之一吕四娘，武功绝顶性格冷傲。她是梁羽生笔下神秘女侠，传说曾刺杀雍正皇帝。她的故事充满传奇色彩，至今仍为人津津乐道。她独来独往，行事干脆，是乱世里最清冷的一柄剑。出自梁羽生小说《江湖三女侠》
+    default_gender: female
+    default_morality: 70
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 35
+      intellect: 20
+      defense: 15
+      agility: 30
+  - key: hero_li_shengnan
+    name: 厉胜男
+    avatar: monkey_wu_female5.png
+    archetype: military
+    flavor: 厉胜男是《云海玉弓缘》中的女主角，厉家后人，性情偏激而执拗。她为追寻乔北溟遗学、了结家族旧怨闯荡江湖，对金世遗一往情深，却始终得不到同等回应。她修炼修罗阴煞功，行事狠辣；与唐晓澜比试时施展天魔解体大法，身受重伤，最终在成婚当日死在金世遗怀中。出自梁羽生小说《云海玉弓缘》
+    default_gender: female
+    default_morality: 60
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 30
+      intellect: 15
+      defense: 20
+      agility: 35
+  - key: hero_huo_tiandu
+    name: 霍天都
+    avatar: monkey_wu_male13.png
+    archetype: military
+    flavor: 七剑出天山，他是执剑之首。天山派武学集大成者，一代宗师风范无双。他率领七剑下天山反清复明，剑气纵横，侠义盖世。他开创的天山剑法传承百年，培养的英才遍布武林。他不仅是武学宗师，更是民族大义的扛鼎之人。梁羽生以他为笔，书写了一曲慷慨激昂的家国壮歌。开山立派，名垂青史，此之谓也。出自梁羽生小说《七剑下天山》
+    default_gender: male
+    default_morality: 90
+    recruitable: true
+    growth_range:
+    - 7
+    - 11
+    attribute_weights:
+      force: 35
+      intellect: 25
+      defense: 20
+      agility: 20

@@ -140,20 +140,6 @@ heroes:
       intellect: 48
       defense: 22
       agility: 16
-  - key: hist_qinhan_0204
-    name: 项庄
-    avatar: pig/武010.png
-    default_gender: male
-    archetype: military
-    flavor: （生卒年不详）项羽的族弟，秦末随项羽征战。鸿门宴上，范增示意他借舞剑之机刺杀刘邦；项伯起身与之对舞，以身体遮护刘邦，项庄终未得手。此后樊哙带剑闯入帐中，宴席局势逆转。项羽败亡后，项庄下落不见于史书记载。
-    growth_range:
-    - 5
-    - 9
-    attribute_weights:
-      force: 46
-      intellect: 14
-      defense: 28
-      agility: 12
   - key: hist_qinhan_0208
     name: 吴芮
     avatar: duck_wen_male2.png
@@ -667,6 +653,20 @@ heroes:
     flavor: 周文（又作周章，生卒年不详—前208年），秦末陈县人，曾事奉春申君，又曾在项燕军中任职，自称熟习兵法。陈胜称王后授予他将军印，命其西击秦廷；他沿途收编兵众，抵达函谷关时已有战车千乘、士卒数十万，直抵戏水，震动关中。秦廷赦免骊山刑徒交章邯统率反击，周文连战失利，退至渑池后自杀。
     growth_range:
     - 3
+    - 7
+    attribute_weights:
+      force: 46
+      intellect: 14
+      defense: 28
+      agility: 12
+  - key: hist_qinhan_0204
+    name: 项庄
+    avatar: pig/武010.png
+    default_gender: male
+    archetype: military
+    flavor: （生卒年不详）项羽的族弟，秦末随项羽征战。鸿门宴上，范增示意他借舞剑之机刺杀刘邦；项伯起身与之对舞，以身体遮护刘邦，项庄终未得手。此后樊哙带剑闯入帐中，宴席局势逆转。项羽败亡后，项庄下落不见于史书记载。
+    growth_range:
+    - 4
     - 7
     attribute_weights:
       force: 46
