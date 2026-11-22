@@ -133,12 +133,37 @@ def _resolve_guest_gear_items(guest: Guest) -> list[Any]:
     override_gear_items = getattr(guest, "_override_gear_items", None)
     if isinstance(override_gear_items, (list, tuple)):
         return list(override_gear_items)
-    if not isinstance(guest, Guest) or getattr(guest, "pk", None) is None:
+    if isinstance(guest, Guest) and getattr(guest, "pk", None) is not None:
+        prefetched = getattr(guest, "_prefetched_objects_cache", None) or {}
+        if "gear_items" in prefetched:
+            return list(guest.gear_items.all())
+        return list(guest.gear_items.select_related("template"))
+    guest_pk = getattr(guest, "pk", None)
+    if (
+        getattr(guest, "is_battle_snapshot_proxy", False) is True
+        and isinstance(guest_pk, int)
+        and not isinstance(guest_pk, bool)
+        and guest_pk > 0
+    ):
+        from guests.models import GearItem
+
+        try:
+            return list(GearItem.objects.filter(guest_id=guest.pk).select_related("template"))
+        except DatabaseError:
+            return []
+    return []
+
+
+def resolve_guest_set_combat_effects(guest: Any) -> list[dict[str, Any]]:
+    import copy
+
+    precomputed = getattr(guest, "_set_combat_effects", None)
+    if isinstance(precomputed, list):
+        return copy.deepcopy(precomputed)
+    gear_items = _resolve_guest_gear_items(guest)
+    if not gear_items:
         return []
-    prefetched = getattr(guest, "_prefetched_objects_cache", None) or {}
-    if "gear_items" in prefetched:
-        return list(guest.gear_items.all())
-    return list(guest.gear_items.select_related("template"))
+    return compute_set_combat_effects(gear_items)
 
 
 def serialize_skills(guest: Guest, override_skill_keys: Optional[List[str]] = None) -> List[dict]:
@@ -158,16 +183,14 @@ def serialize_skills(guest: Guest, override_skill_keys: Optional[List[str]] = No
     override_data = _serialize_override_skills(guest, normalized_override_keys)
     if override_data is not None:
         base_skills = override_data
-    elif getattr(guest, "pk", None) is not None:
+    elif getattr(guest, "pk", None) is not None and isinstance(guest, Guest):
         base_skills = _serialize_guest_model_skills(guest)
     else:
         base_skills = _serialize_guest_template_skills(guest)
 
-    gear_items = _resolve_guest_gear_items(guest)
-    if gear_items:
-        set_passives = compute_set_combat_effects(gear_items)
-        if set_passives:
-            return [*base_skills, *set_passives]
+    set_passives = resolve_guest_set_combat_effects(guest)
+    if set_passives:
+        return [*base_skills, *set_passives]
     return base_skills
 
 

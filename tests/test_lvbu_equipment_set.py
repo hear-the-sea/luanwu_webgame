@@ -513,6 +513,27 @@ def test_lvbu_set_melee_force_counter_mechanics_ranged_block_defense_and_single_
     assert counter_logs
     assert sim_result.winner == "defender"
 
+    # 任务/掠夺快照（BattleGuestSnapshotProxy）与竞技场快照（ArenaGuestSnapshotProxy）均须保留吕布套反击被动。
+    from gameplay.services.arena.snapshots import ArenaGuestSnapshotProxy, build_entry_guest_snapshot
+    from gameplay.services.battle_snapshots import BattleGuestSnapshotProxy, build_guest_battle_snapshot
+
+    live_lvbu_guest = _equipped_guest(warrior_tpl, force=420, intellect=100)
+    battle_snap = build_guest_battle_snapshot(live_lvbu_guest, include_identity=True)
+    arena_snap = build_entry_guest_snapshot(live_lvbu_guest)
+    assert "set_combat_effects" in battle_snap
+    assert "set_combat_effects" in arena_snap
+
+    for proxy in (
+        BattleGuestSnapshotProxy(battle_snap, include_guest_identity=True),
+        BattleGuestSnapshotProxy(
+            {k: v for k, v in battle_snap.items() if k != "set_combat_effects"},
+            include_guest_identity=True,
+        ),
+        ArenaGuestSnapshotProxy(arena_snap),
+    ):
+        proxy_combatant = build_guest_combatants([proxy], "defender")[0]
+        assert any(s.get("key") == "set_bonus:lvbu_set:4" for s in proxy_combatant.skills)
+
 
 @pytest.mark.django_db
 def test_0276_lvbu_equipment_set_migration_syncs_items_affixes_and_chests_idempotently(settings, tmp_path):

@@ -67,6 +67,7 @@ HARDCAP = 0.75
 # - 15x普通攻击倍率配合2x技能额外伤害倍率，区分普通攻击与技能爆发
 # - 防御软上限保持高防御收益递减，避免防御属性失去价值
 GUEST_VS_GUEST_DAMAGE_MULTIPLIER = 15.0
+V11_GUEST_VS_GUEST_DAMAGE_MULTIPLIER = 13.0
 
 # 门客对门客的技能额外伤害倍率
 # 普通攻击与技能额外伤害分开结算：15N + 2B

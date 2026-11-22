@@ -97,7 +97,7 @@ def test_normal_reselects_even_when_burst_target_survives():
     assert event["damage"] == 200
     assert first.hp == 9800
     assert normal_segment(event)["target"] == "乙"
-    assert second.hp == 8500
+    assert second.hp == 8700
     assert rng.skill_choices == 1
     assert actor.has_acted_this_round
 
@@ -109,8 +109,8 @@ def test_reselection_can_choose_same_target_without_duplicating_base_damage():
     event = attack(actor, [enemy])
 
     assert event["damage"] == 200
-    assert normal_segment(event)["damage"] == 1500
-    assert enemy.hp == 8300
+    assert normal_segment(event)["damage"] == 1300
+    assert enemy.hp == 8500
 
 
 def test_untriggered_skill_only_performs_one_normal_attack():
@@ -121,9 +121,9 @@ def test_untriggered_skill_only_performs_one_normal_attack():
 
     assert event["attack_phase"] == "normal"
     assert event["skills"] == []
-    assert event["damage"] == 1500
+    assert event["damage"] == 1300
     assert not event.get("additional_attacks")
-    assert enemy.hp == 8500
+    assert enemy.hp == 8700
 
 
 def test_multitarget_skill_deals_pure_bonus_then_one_normal_attack():
@@ -136,7 +136,7 @@ def test_multitarget_skill_deals_pure_bonus_then_one_normal_attack():
     assert [hit["attack_phase"] for hit in burst_hits] == ["burst"] * 3
     assert [hit["damage"] for hit in burst_hits] == [200] * 3
     assert normal_segment(event)["target"] == "乙"
-    assert [enemy.hp for enemy in enemies] == [9800, 8300, 9800]
+    assert [enemy.hp for enemy in enemies] == [9800, 8500, 9800]
 
 
 def test_burst_kill_reselects_from_surviving_enemies():
@@ -148,7 +148,7 @@ def test_burst_kill_reselects_from_surviving_enemies():
     assert event["target_defeated"]
     assert first.hp == 0
     assert normal_segment(event)["target"] == "乙"
-    assert second.hp == 8500
+    assert second.hp == 8700
 
 
 def test_burst_wiping_out_opponents_does_not_attack_again():
@@ -187,7 +187,7 @@ def test_missed_burst_still_performs_reselected_normal_attack(monkeypatch):
     assert event["damage"] == 0
     assert first.hp == 10000
     assert normal_segment(event)["target"] == "乙"
-    assert second.hp == 8500
+    assert second.hp == 8700
 
 
 def test_zero_damage_control_applies_status_without_counter_or_hit_taken():
@@ -237,8 +237,8 @@ def test_permanent_and_pending_true_damage_only_apply_in_normal_segment():
     event = attack(actor, [enemy])
 
     assert event["damage"] == 200
-    assert normal_segment(event)["damage"] == 1800
-    assert enemy.hp == 8000
+    assert normal_segment(event)["damage"] == 1600
+    assert enemy.hp == 8200
     assert "_pending_extra_target_true_damage" not in actor.battle_state
 
 
@@ -267,7 +267,7 @@ def test_each_actual_hit_triggers_defender_hit_taken_passive():
 
     assert event["target_hp_after"] == 4800
     assert normal_segment(event)["target_hp_before"] == 5800
-    assert enemy.hp == 5300
+    assert enemy.hp == 5500
 
 
 def test_skill_specific_lowest_hp_targeting_is_not_inherited_by_normal_attack():
@@ -293,10 +293,10 @@ def test_pending_true_damage_selects_extra_target_after_normal_reselection():
 
     normal = normal_segment(event)
     assert event["damage"] == 200
-    assert normal["damage"] == 1500
+    assert normal["damage"] == 1300
     assert normal["additional_targets"][0]["target"] == "甲"
     assert normal["additional_targets"][0]["damage"] == 200
-    assert [first.hp, second.hp] == [9600, 8500]
+    assert [first.hp, second.hp] == [9600, 8700]
 
 
 def test_flow_runs_action_before_and_end_only_once_for_burst_and_normal():
@@ -314,7 +314,7 @@ def test_flow_runs_action_before_and_end_only_once_for_burst_and_normal():
     assert actor.hp == 299
 
 
-@pytest.mark.parametrize("damage_multiplier,expected_burst", [(2.0, 3400), (3.0, 6600)])
+@pytest.mark.parametrize("damage_multiplier,expected_burst", [(2.0, 3000), (3.0, 5800)])
 def test_skill_multiplier_increment_includes_extra_base_only_in_burst(damage_multiplier, expected_burst):
     actor = unit("门客", "attacker", skills=[burst_skill(damage_multiplier=damage_multiplier)])
     enemy = unit(hp=100000, max_hp=100000)
@@ -322,4 +322,4 @@ def test_skill_multiplier_increment_includes_extra_base_only_in_burst(damage_mul
     event = attack(actor, [enemy])
 
     assert event["damage"] == expected_burst
-    assert normal_segment(event)["damage"] == 1500
+    assert normal_segment(event)["damage"] == 1300

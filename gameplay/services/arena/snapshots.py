@@ -3,6 +3,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 from typing import Any
 
+from battle.combatants_pkg.guest_builder import resolve_guest_set_combat_effects
 from core.exceptions import InvalidBattleSnapshotError
 from guests.avatar import has_guest_avatar_override, resolve_guest_avatar_url
 from guests.guest_combat_stats import has_custom_guest_low_loyalty_penalty, resolve_guest_combat_stats
@@ -111,6 +112,16 @@ def normalize_entry_guest_snapshot(snapshot: Any) -> dict[str, Any]:
         if not isinstance(raw_avatar_url, str) or not raw_avatar_url.strip():
             raise _invalid_snapshot("avatar_url", raw_avatar_url)
         normalized["avatar_url"] = raw_avatar_url.strip()
+    if "set_combat_effects" in snapshot:
+        raw_effects = snapshot["set_combat_effects"]
+        if not isinstance(raw_effects, list) or any(
+            not isinstance(entry, dict)
+            or not isinstance(entry.get("key"), str)
+            or not isinstance(entry.get("passive_config"), dict)
+            for entry in raw_effects
+        ):
+            raise _invalid_snapshot("set_combat_effects", raw_effects)
+        normalized["set_combat_effects"] = [dict(entry) for entry in raw_effects]
     return normalized
 
 
@@ -145,6 +156,7 @@ class ArenaGuestSnapshotProxy:
         self.defense = snapshot["defense"]
         self.max_hp = snapshot["max_hp"]
         self._override_skills = snapshot["skill_keys"]
+        self._set_combat_effects = snapshot.get("set_combat_effects")
         self.avatar_url = snapshot.get("avatar_url", "")
 
     @property
@@ -193,6 +205,9 @@ def build_entry_guest_snapshot(guest) -> dict[str, Any]:
         "current_hp": current_hp,
         "skill_keys": serialize_guest_skill_keys(guest),
     }
+    set_combat_effects = resolve_guest_set_combat_effects(guest)
+    if set_combat_effects:
+        payload["set_combat_effects"] = set_combat_effects
     if has_custom_guest_low_loyalty_penalty(guest):
         payload["low_loyalty_penalty"] = True
     if has_guest_avatar_override(guest):

@@ -258,8 +258,8 @@ skills:
     damage_formula:
       base: 321
       ally:
-        force: 0.72
-        intellect: 7.23
+        force: 0.5
+        intellect: 4.8
         agility: 0.2
       enemy:
         defense: 0.35
@@ -287,8 +287,8 @@ skills:
     damage_formula:
       base: 517
       ally:
-        force: 0.37
-        intellect: 3.35
+        force: 0.25
+        intellect: 2.25
       enemy:
         defense: 0.2
         intellect: 0.1
@@ -304,7 +304,7 @@ skills:
     kind: active
     damage_formula:
       ally:
-        force: 1.9
+        force: 1.45
         intellect: 0.15
         agility: 0.2
       enemy:
@@ -323,8 +323,8 @@ skills:
     damage_formula:
       base: 379
       ally:
-        force: 0.18
-        intellect: 2.84
+        force: 0.13
+        intellect: 1.9
         luck: 0.2
       enemy:
         defense: 0.05
@@ -342,8 +342,8 @@ skills:
     damage_formula:
       base: 648
       ally:
-        force: 0.19
-        intellect: 3.7
+        force: 0.13
+        intellect: 2.4
         luck: 0.4
       enemy:
         defense: 0.15
@@ -361,9 +361,9 @@ skills:
     damage_formula:
       base: 397
       ally:
-        force: 0.49
-        intellect: 4.87
-        agility: 0.5
+        force: 0.34
+        intellect: 3.3
+        agility: 0.45
       enemy:
         defense: 0.3
         intellect: 0.15
@@ -382,9 +382,9 @@ skills:
     damage_formula:
       base: 331
       ally:
-        force: 0.31
-        intellect: 5.41
-        luck: 0.6
+        force: 0.22
+        intellect: 3.8
+        luck: 0.55
       enemy:
         defense: 0.25
         intellect: 0.15
@@ -401,9 +401,9 @@ skills:
     damage_formula:
       base: 434
       ally:
-        force: 0.24
-        intellect: 6.31
-        luck: 0.4
+        force: 0.16
+        intellect: 4.3
+        luck: 0.36
       enemy:
         defense: 0.1
         intellect: 0.2
@@ -418,11 +418,11 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 1307
+      base: 750
       ally:
-        force: 0.56
-        intellect: 8.47
-        agility: 0.4
+        force: 0.38
+        intellect: 5.6
+        agility: 0.36
       enemy:
         defense: 0.25
         intellect: 0.15
@@ -438,11 +438,11 @@ skills:
     base_probability: 0.8
     kind: active
     damage_formula:
-      base: 1567
+      base: 900
       ally:
-        force: 0.94
-        intellect: 10.15
-        agility: 0.8
+        force: 0.63
+        intellect: 6.6
+        agility: 0.7
       enemy:
         defense: 0.35
         intellect: 0.2
@@ -458,11 +458,11 @@ skills:
     base_probability: 0.8
     kind: active
     damage_formula:
-      base: 1604
+      base: 900
       ally:
-        force: 0.38
-        intellect: 9.7
-        luck: 1
+        force: 0.25
+        intellect: 6.3
+        luck: 0.9
       enemy:
         defense: 0.2
         intellect: 0.25
@@ -478,11 +478,11 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 2576
+      base: 1200
       ally:
-        force: 0.82
-        intellect: 11.87
-        luck: 0.8
+        force: 0.55
+        intellect: 7.6
+        luck: 0.7
       enemy:
         defense: 0.1
         intellect: 0.25
@@ -498,11 +498,11 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 2710
+      base: 1350
       ally:
-        force: 1.37
-        intellect: 15.22
-        agility: 0.9
+        force: 0.9
+        intellect: 9.5
+        agility: 0.8
       enemy:
         defense: 0.35
         intellect: 0.25
@@ -518,10 +518,10 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 2333
+      base: 1200
       ally_min:
         stats: [force, intellect]
-        coefficient: 25.2
+        coefficient: 20.0
       enemy:
         defense: 0.3
     required_level: 80
@@ -653,11 +653,11 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 2596
+      base: 1200
       ally:
-        force: 11.96
-        agility: 0.8
-        luck: 0.4
+        force: 7.6
+        agility: 0.7
+        luck: 0.36
       enemy:
         defense: 0.3
         agility: 0.25
@@ -673,11 +673,11 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 2458
+      base: 1250
       ally:
-        force: 13.96
-        agility: 1
-        luck: 0.5
+        force: 9.0
+        agility: 0.9
+        luck: 0.45
       enemy:
         defense: 0.35
         agility: 0.3
@@ -694,11 +694,11 @@ skills:
     base_probability: 0.78
     kind: active
     damage_formula:
-      base: 2066
+      base: 950
       ally:
-        force: 2.97
-        agility: 5.04
-        luck: 0.6
+        force: 1.9
+        agility: 3.6
+        luck: 0.55
       enemy:
         defense: 0.2
         agility: 0.25
@@ -714,11 +714,11 @@ skills:
     base_probability: 0.72
     kind: active
     damage_formula:
-      base: 795
+      base: 550
       ally:
-        force: 1.72
-        agility: 3.2
-        luck: 0.6
+        force: 1.1
+        agility: 2.35
+        luck: 0.55
       enemy:
         defense: 0.5
         agility: 0.2
@@ -734,11 +734,11 @@ skills:
     base_probability: 0.75
     kind: active
     damage_formula:
-      base: 1381
+      base: 800
       ally:
-        force: 4.47
-        agility: 4.3
-        luck: 0.4
+        force: 2.9
+        agility: 3.15
+        luck: 0.36
       enemy:
         defense: 0.3
         agility: 0.15
@@ -754,12 +754,12 @@ skills:
     base_power: 260
     base_probability: 0.8
     damage_formula:
-      base: 743
+      base: 550
       ally:
-        force: 5.89
-        intellect: 0.36
-        agility: 0.2
-        luck: 0.2
+        force: 4.0
+        intellect: 0.22
+        agility: 0.18
+        luck: 0.18
       enemy:
         defense: 0.3
         intellect: 0.2

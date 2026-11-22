@@ -61,11 +61,11 @@ class GuestConfig:
     BONUS_TROOP_CAPACITY: int = 50  # 满级额外带兵
     TROOP_CAPACITY_LEVEL_THRESHOLD: int = 70  # 获得额外带兵的等级门槛
 
-    # 战斗属性权重
-    CIVIL_FORCE_WEIGHT: float = 0.5  # 文官武力权重
-    CIVIL_INTELLECT_WEIGHT: float = 0.5  # 文官智力权重
-    MILITARY_FORCE_WEIGHT: float = 0.7  # 武将武力权重
-    MILITARY_INTELLECT_WEIGHT: float = 0.3  # 武将智力权重
+    # 战斗属性权重（全门客统一 0.85 武力 + 0.15 智力，配合版本 11 的 13x PvP 普攻倍率拉开武/文普攻差距）
+    CIVIL_FORCE_WEIGHT: float = 0.85  # 文官武力权重
+    CIVIL_INTELLECT_WEIGHT: float = 0.15  # 文官智力权重
+    MILITARY_FORCE_WEIGHT: float = 0.85  # 武将武力权重
+    MILITARY_INTELLECT_WEIGHT: float = 0.15  # 武将智力权重
     AGILITY_TO_ARENA_POWER_WEIGHT: float = 1.0  # 敏捷对竞技场阵容战力的 1:1 权重
 
     # 重伤恢复阈值

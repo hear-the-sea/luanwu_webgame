@@ -136,7 +136,7 @@ def test_combat_power_points_matches_guest_power_at_full_health():
         archetype="military",
     )
     assert combat_power_points(
-        attack=164,
+        attack=182,
         defense=150,
         defense_stat=150,
         force=200,

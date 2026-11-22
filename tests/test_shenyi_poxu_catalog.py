@@ -25,8 +25,8 @@ def test_shenyi_poxu_config_has_balanced_single_target_formula_and_learning_gate
     assert row["required_level"] == 80
     assert row["required_force"] == row["required_intellect"] == 400
     assert row["damage_formula"] == {
-        "base": 2333,
-        "ally_min": {"stats": ["force", "intellect"], "coefficient": 25.2},
+        "base": 1200,
+        "ally_min": {"stats": ["force", "intellect"], "coefficient": 20.0},
         "enemy": {"defense": 0.3},
     }
 

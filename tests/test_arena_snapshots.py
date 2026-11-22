@@ -20,6 +20,7 @@ def _make_mock_guest():
     guest.defense_stat = 66
     guest.agility = 55
     guest.luck = 44
+    guest.troop_capacity = 0
     guest.max_hp = 1000
     guest.current_hp = 1200
     guest.stat_block.return_value = {"attack": 123, "defense": 98, "hp": 900}
@@ -44,8 +45,9 @@ def test_build_entry_guest_snapshot_clamps_hp_and_serializes_skill_keys():
         "defense_stat": 66,
         "agility": 55,
         "luck": 44,
+        "troop_capacity": 0,
         "attack": 123,
-        "attack_attribute_component": 84,
+        "attack_attribute_component": 86,
         "defense": 98,
         "max_hp": 900,
         "current_hp": 900,

@@ -52,9 +52,15 @@ _PVP_DEFENSE_CONSTANT = 600.0
 _PVE_DEFENSE_CONSTANT = 200.0
 _DEFENSE_SOFTCAP_THRESHOLD = 0.50
 _DEFENSE_HARDCAP = 0.75
-_PVP_NORMAL_ATTACK_MULTIPLIER = 15.0
+_PVP_NORMAL_ATTACK_MULTIPLIER = 13.0
 _PVP_SKILL_BONUS_MULTIPLIER = 2.0
 _PVE_SKILL_BONUS_MULTIPLIER = 3.0
+_INTELLECT_SKILL_DR_CONSTANT = 860.0
+_INTELLECT_SKILL_DR_HARDCAP = 0.45
+_INTELLECT_STATUS_RESIST_CONSTANT = 1600.0
+_INTELLECT_STATUS_RESIST_HARDCAP = 0.30
+_PVP_SKILL_DAMAGE_SHARE = 0.48
+_PVP_STATUS_RESIST_EHP_SHARE = 0.25
 _MIN_SKILL_TRIGGER_CHANCE = 0.05
 _MAX_SKILL_TRIGGER_CHANCE = 0.95
 
@@ -489,6 +495,16 @@ def _compute_guest_combat_power_hp(
     current_hp = max(0, min(full_hp, int(resolved_hp)))
     dr = defense_damage_reduction(defense, scenario=scenario)
     ehp = float(full_hp) / max(1.0 - _DEFENSE_HARDCAP, 1.0 - dr)
+    if scenario == "pvp" and intellect > 0:
+        skill_dr = min(
+            _INTELLECT_SKILL_DR_HARDCAP,
+            float(intellect) / (float(intellect) + _INTELLECT_SKILL_DR_CONSTANT),
+        )
+        status_resist = min(
+            _INTELLECT_STATUS_RESIST_HARDCAP,
+            float(intellect) / (float(intellect) + _INTELLECT_STATUS_RESIST_CONSTANT),
+        )
+        ehp /= max(0.5, 1.0 - _PVP_SKILL_DAMAGE_SHARE * skill_dr - _PVP_STATUS_RESIST_EHP_SHARE * status_resist)
 
     normal_dpr = max(1.0, float(attack) * _PVP_NORMAL_ATTACK_MULTIPLIER)
     if skill_keys is not None:

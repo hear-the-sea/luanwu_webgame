@@ -43,6 +43,7 @@ from .constants import (
     TROOP_COUNTERS,
     TROOP_VS_CITY_DEFENSE_DAMAGE_MULTIPLIER,
     TROOP_VS_GUEST_DEFENSE_CONSTANT,
+    V11_GUEST_VS_GUEST_DAMAGE_MULTIPLIER,
     V11_PREEMPTIVE_DAMAGE_REDUCTION,
 )
 from .target_selection import is_ranged_attack
@@ -153,10 +154,17 @@ def _calculate_base_damage(
     attack_value: float,
     damage_reduction: float,
     attack_multiplier: float,
+    *,
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
 ) -> float:
     base_damage = attack_value * attack_multiplier * (1 - damage_reduction)
     if actor.kind == "guest" and target.kind == "guest":
-        base_damage *= GUEST_VS_GUEST_DAMAGE_MULTIPLIER
+        pvp_mult = (
+            V11_GUEST_VS_GUEST_DAMAGE_MULTIPLIER
+            if battle_engine_version in STAT_BALANCE_V11_ENGINE_VERSIONS
+            else GUEST_VS_GUEST_DAMAGE_MULTIPLIER
+        )
+        base_damage *= pvp_mult
     if actor.kind == "guest" and target.kind == "city_defense":
         base_damage *= GUEST_VS_CITY_DEFENSE_DAMAGE_MULTIPLIER
     return base_damage
@@ -500,7 +508,14 @@ def calculate_attack_damage(
     damage_reduction = _calculate_damage_reduction(actor, target, defense_value)
 
     attack_multiplier = rng.uniform(DAMAGE_VARIANCE_MIN, DAMAGE_VARIANCE_MAX)
-    base_damage = _calculate_base_damage(actor, target, attack_value, damage_reduction, attack_multiplier)
+    base_damage = _calculate_base_damage(
+        actor,
+        target,
+        attack_value,
+        damage_reduction,
+        attack_multiplier,
+        battle_engine_version=battle_engine_version,
+    )
     base_damage_without_crit = base_damage
 
     crit_chance = BASE_CRIT_CHANCE

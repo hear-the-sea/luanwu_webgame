@@ -434,7 +434,7 @@ def test_guest_vs_guest_normal_attack_uses_fifteen_times_multiplier():
     target = make_unit(kind="guest", side="defender", defense=300)
     rng = FixedRng()
 
-    result = calculate_attack_damage(actor, target, skills=[], rng=rng, round_priority=0)
+    result = calculate_attack_damage(actor, target, skills=[], rng=rng, round_priority=0, battle_engine_version="10")
 
     reduction = target.defense / (target.defense + 600)
     base_damage = actor.attack * (1 - reduction)
@@ -449,7 +449,9 @@ def test_guest_vs_guest_skill_damage_uses_independent_skill_multiplier():
     skill = {"name": "Flat Bonus", "damage_formula": {"base": 2000}}
     rng = FixedRng()
 
-    result = calculate_attack_damage(actor, target, skills=[skill], rng=rng, round_priority=0)
+    result = calculate_attack_damage(
+        actor, target, skills=[skill], rng=rng, round_priority=0, battle_engine_version="10"
+    )
 
     reduction = target.defense / (target.defense + 600)
     base_damage = actor.attack * (1 - reduction)

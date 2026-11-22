@@ -7,6 +7,7 @@ from typing import Any
 
 from django.utils import timezone
 
+from battle.combatants_pkg.guest_builder import resolve_guest_set_combat_effects
 from battle.combatants_pkg.troop_device_bonuses import (
     ALLOWED_STATS,
     ALLOWED_TROOP_CLASSES,
@@ -110,6 +111,24 @@ def _resolve_snapshot_template_key(snapshot: dict[str, Any]) -> str:
     if not isinstance(raw_key, str) or not raw_key.strip():
         raise _invalid_guest_snapshot("template_key")
     return raw_key.strip()
+
+
+def _normalize_snapshot_set_combat_effects(snapshot: dict[str, Any]) -> list[dict[str, Any]] | None:
+    if "set_combat_effects" not in snapshot:
+        return None
+    raw_effects = snapshot.get("set_combat_effects")
+    if not isinstance(raw_effects, list):
+        raise _invalid_guest_snapshot("set_combat_effects")
+    normalized: list[dict[str, Any]] = []
+    for entry in raw_effects:
+        if (
+            not isinstance(entry, dict)
+            or not isinstance(entry.get("key"), str)
+            or not isinstance(entry.get("passive_config"), dict)
+        ):
+            raise _invalid_guest_snapshot("set_combat_effects")
+        normalized.append(dict(entry))
+    return normalized
 
 
 def _normalize_snapshot_skill_keys(snapshot: dict[str, Any]) -> list[str]:
@@ -332,6 +351,7 @@ class BattleGuestSnapshotProxy:
             raise _invalid_guest_snapshot("troop_device_bonus_sources")
         self.manor = None
         self._override_skills = _normalize_snapshot_skill_keys(snapshot)
+        self._set_combat_effects = _normalize_snapshot_set_combat_effects(snapshot)
         raw_avatar_url = snapshot.get("avatar_url")
         if raw_avatar_url is None:
             self.avatar_url = ""
@@ -398,6 +418,9 @@ def build_guest_battle_snapshot(
         "troop_device_bonus_sources": list(troop_device_bonus_sources),
         "skill_keys": _serialize_guest_skill_keys(guest),
     }
+    set_combat_effects = resolve_guest_set_combat_effects(guest)
+    if set_combat_effects:
+        payload["set_combat_effects"] = set_combat_effects
     archetype = getattr(guest, "archetype", "")
     if isinstance(archetype, str) and archetype.strip():
         payload["archetype"] = archetype.strip()
