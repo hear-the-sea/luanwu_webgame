@@ -126,13 +126,14 @@ def calculate_guest_arena_power(
     luck: int = 0,
     troop_capacity: int = 0,
     attack_bonus: int = 0,
+    skill_keys: Sequence[str] | None = None,
     formula_version: int = 1,
 ) -> int:
     """计算真人快照与 V2 发展预测共用的单门客竞技强度。
 
     Version 1 is the historical ``attack + defense + max_hp/10 + agility``
-    proxy.  Version 2 uses the canonical ``equipment_value`` weights and
-    includes luck, troop capacity and attack bonuses.
+    proxy.  Version 2 uses the canonical ``equipment_value`` physics model and
+    includes luck, attack bonuses, and optional equipped skill_keys.
     """
     version = int(formula_version)
     if version == 2:
@@ -153,6 +154,7 @@ def calculate_guest_arena_power(
                 luck=luck,
                 troop_capacity=troop_capacity,
                 attack_bonus=attack_bonus,
+                skill_keys=skill_keys,
                 # Arena lineups do not field troops; capacity is a latent
                 # recruitment stat and is represented by troop_total in the
                 # composite strength score instead.

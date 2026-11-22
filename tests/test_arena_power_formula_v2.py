@@ -147,3 +147,93 @@ def test_combat_power_points_matches_guest_power_at_full_health():
         agility=100,
         luck=80,
     ) == round(guest_power(**guest_kwargs) / POWER_POINTS_PER_HP)
+
+
+def test_defense_bonus_only_adds_mitigation_without_phantom_hp():
+    from core.game_data.equipment_value import weights_for
+
+    base_kwargs = dict(
+        force=200,
+        intellect=80,
+        defense=150,
+        defense_stat=150,
+        agility=100,
+        luck=80,
+        hp_bonus=1500,
+        base_hp=1000,
+        level=45,
+        archetype="military",
+    )
+    base = guest_power(**base_kwargs)
+    with_def_bonus = guest_power(**{**base_kwargs, "defense": 160})
+    with_def_stat = guest_power(**{**base_kwargs, "defense": 160, "defense_stat": 160})
+
+    # Pure defense_bonus improves mitigation (EHP) without granting 30 HP/pt,
+    # so defense_stat must strictly outperform defense_bonus.
+    assert with_def_bonus > base
+    assert with_def_stat > with_def_bonus
+    for stage in ("early", "mid", "late"):
+        w = weights_for(archetype="military", stage=stage)
+        assert round(w.defense - w.defense_mitigation, 6) == 30.0
+
+
+def test_effective_luck_is_concave_capped_at_300_and_zero_without_skills():
+    from core.game_data.equipment_value import effective_luck
+
+    gain_low = effective_luck(100) - effective_luck(50)
+    gain_mid = effective_luck(180) - effective_luck(130)
+    gain_high = effective_luck(280) - effective_luck(230)
+    assert gain_low > gain_mid > gain_high > 0
+    assert effective_luck(300) == effective_luck(450)
+    assert effective_luck(200, active_skill_count=0) == 0.0
+
+
+def test_civil_intellect_outweighs_force_and_model_is_strictly_monotonic_across_levels():
+    base = dict(
+        force=100,
+        intellect=250,
+        defense=140,
+        defense_stat=140,
+        agility=150,
+        luck=80,
+        hp_bonus=1200,
+        base_hp=700,
+        level=45,
+        archetype="civil",
+        troop_capacity=200,
+        attack_bonus=10,
+    )
+    p0 = guest_power(**base)
+    p_int = guest_power(**{**base, "intellect": 270})
+    p_for = guest_power(**{**base, "force": 120})
+    assert (p_int - p0) > (p_for - p0)
+
+    # Strictly monotonic across former stage boundaries (lv15->16, lv55->56)
+    prev = guest_power(**{**base, "level": 1})
+    for lv in (14, 15, 16, 45, 55, 56, 80, 100):
+        cur = guest_power(**{**base, "level": lv})
+        assert cur > prev
+        prev = cur
+
+
+def test_snapshot_power_v2_evaluates_actual_skill_keys_and_zero_skill_luck():
+    # Empty skill_keys explicitly means 0 equipped skills -> luck has no trigger benefit
+    no_skill_low_luck = snapshot_power(_snapshot(luck=50, skill_keys=[]), formula_version=2)
+    no_skill_high_luck = snapshot_power(_snapshot(luck=250, skill_keys=[]), formula_version=2)
+    assert no_skill_low_luck == no_skill_high_luck
+
+    # Equipping real active skills raises power substantially over 0 skills,
+    # and stronger skills outperform weaker ones.
+    weak_skill = snapshot_power(_snapshot(luck=120, skill_keys=["thunder_control"]), formula_version=2)
+    strong_skill = snapshot_power(
+        _snapshot(luck=120, skill_keys=["prison_break_blade", "city_felling_strike"]),
+        formula_version=2,
+    )
+    assert strong_skill > weak_skill > no_skill_high_luck
+
+    # Adding a passive skill grants an additional multiplier bonus
+    with_passive = snapshot_power(
+        _snapshot(luck=120, skill_keys=["prison_break_blade", "city_felling_strike", "iron_wall_heart"]),
+        formula_version=2,
+    )
+    assert with_passive > strong_skill

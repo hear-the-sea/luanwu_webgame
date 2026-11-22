@@ -112,6 +112,8 @@ def _snapshot_power_v2(snapshot: dict, *, hp: int | None = None) -> int:
         attribute_attack = int(
             force * (0.7 if archetype == "military" else 0.5) + intellect * (0.3 if archetype == "military" else 0.5)
         )
+    raw_skill_keys = snapshot.get("skill_keys")
+    skill_keys = raw_skill_keys if isinstance(raw_skill_keys, (list, tuple)) else None
     return combat_power_points(
         attack=normalized_attack,
         defense=normalized_defense,
@@ -125,6 +127,7 @@ def _snapshot_power_v2(snapshot: dict, *, hp: int | None = None) -> int:
         attack_attribute_component=attribute_attack,
         agility=max(0, int(agility)),
         luck=max(0, int(snapshot.get("luck") or 0)),
+        skill_keys=skill_keys,
     )
 
 
