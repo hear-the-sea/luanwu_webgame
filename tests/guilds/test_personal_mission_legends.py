@@ -45,7 +45,7 @@ def test_folk_legends_reference_existing_skills_and_match_importer_and_migration
             assert {key: imported[key] for key in expected} == expected
             assert imported["recruitable"] is False
     for key, mission in MISSIONS.items():
-        expected = {**rules.MISSION_DEFAULTS[key], "name": names.MISSION_NAMES[key]}
+        expected = {**rules.MISSION_DEFAULTS[key], "name": names.MISSION_NAMES[key], "base_travel_time": 2400}
         assert {field: value for field, value in mission.items() if field != "key"} == expected
         assert mission["guest_only"] and mission["mission_card_daily_limit"] == 0
         for enemy in mission["enemy_guests"]:

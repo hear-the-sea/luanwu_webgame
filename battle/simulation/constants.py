@@ -115,7 +115,7 @@ GUEST_VS_TROOP_DEFENSE_CONSTANT = 50
 # 门客技能打护院的额外伤害倍率（普攻屠戮倍率独立计算）
 # 仅放大技能增量，不对整次技能伤害再次乘算；历史版本保持 2 倍。
 GUEST_SKILL_VS_TROOP_MULTIPLIER = 3.0
-V11_GUEST_SKILL_VS_TROOP_MULTIPLIER = 1.8
+V11_GUEST_SKILL_VS_TROOP_MULTIPLIER = 1.4
 LEGACY_GUEST_SKILL_VS_TROOP_MULTIPLIER = 2.0
 
 # ============ 城防伤害倍率 ============

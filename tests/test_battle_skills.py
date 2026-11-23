@@ -182,7 +182,7 @@ def test_minimum_formula_uses_unit_defense_and_target_specific_skill_multiplier(
     }
     defense = 2.5 if kind == "troop" else 10000
     result = calculate_attack_damage(actor, target, skills=[skill], rng=FixedRng(), round_priority=0)
-    skill_multiplier = 1.8 if kind == "troop" else 2
+    skill_multiplier = 1.4 if kind == "troop" else 2
     assert result.damage == int((5000 + 15 * 400 - 0.3 * defense) * skill_multiplier)
 
 

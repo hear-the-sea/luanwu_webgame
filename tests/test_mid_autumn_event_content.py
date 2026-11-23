@@ -68,7 +68,7 @@ def test_mid_autumn_mission_contract():
     assert mission["difficulty"] == "intermediate"
     assert mission["available_weekdays"] == [2, 4, 6, 7]
     assert mission["daily_limit"] == 3
-    assert mission["base_travel_time"] == 1800
+    assert mission["base_travel_time"] == 2400
     assert mission["battle_type"] == "task1"
     assert [guest["key"] for guest in mission["enemy_guests"]] == [
         "myth_moon_jade_rabbit",

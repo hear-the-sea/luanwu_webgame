@@ -111,7 +111,7 @@ missions:
     assert mission.drop_table == {}
     assert mission.probability_drop_table == {}
     assert mission.display_order == 1000
-    assert mission.base_travel_time == 1800
+    assert mission.base_travel_time == 2400
     assert mission.daily_limit == 3
     assert mission.mission_card_daily_limit == 5
 
@@ -527,7 +527,7 @@ def test_default_mission_templates_import_zhuolu_zhongyuan():
     assert mission.name == "逐鹿中原"
     assert mission.difficulty == "advanced"
     assert mission.daily_limit == 1
-    assert mission.base_travel_time == 1800
+    assert mission.base_travel_time == 2400
     assert mission.enemy_guests == [
         "task_zhuolu_chiyou",
         "task_zhuolu_fengbo",

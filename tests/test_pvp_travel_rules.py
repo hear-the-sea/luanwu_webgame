@@ -17,11 +17,11 @@ from gameplay.services.pvp_runtime.travel import (
 @pytest.mark.parametrize(
     ("average_agility", "expected_factor"),
     [
-        (60, 1.20),
+        (0, 1.20),
         (160, 1.00),
-        (310, 0.70),
+        (600, 0.45),
         (-9999, 1.20),
-        (9999, 0.70),
+        (9999, 0.45),
     ],
 )
 def test_agility_factor_uses_160_baseline_and_two_percent_per_ten_points(average_agility, expected_factor):
@@ -56,7 +56,7 @@ def test_travel_has_no_final_time_cap():
     with override_settings(GAME_TIME_MULTIPLIER=1):
         estimate = calculate_pvp_travel_time(
             route_seconds=100_000,
-            guests=[SimpleNamespace(agility=60)],
+            guests=[SimpleNamespace(agility=0)],
             troop_loadout={"guards": 2_000_000},
         )
 

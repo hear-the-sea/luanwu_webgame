@@ -140,7 +140,7 @@ class Command(BaseCommand):
                 "probability_drop_table": probability_drop_table,
                 "available_weekdays": _normalize_available_weekdays(entry.get("available_weekdays")),
                 "display_order": safe_positive_int(entry.get("display_order"), 1000),
-                "base_travel_time": safe_positive_int(entry.get("base_travel_time"), 1800),
+                "base_travel_time": safe_positive_int(entry.get("base_travel_time"), 2400),
                 "daily_limit": safe_positive_int(entry.get("daily_limit"), 3),
                 "mission_card_daily_limit": safe_non_negative_int(entry.get("mission_card_daily_limit"), 5),
             }

@@ -43,8 +43,8 @@ def test_raid_travel_time_counts_all_troop_types_equally_without_speed_bonus(dja
         {"fast_horse": 200},
     )
 
-    assert baseline == 2220
-    assert with_scout == 2280
+    assert baseline == 2100
+    assert with_scout == 2160
     assert with_fast_troop == with_scout
 
 
@@ -76,7 +76,7 @@ def test_raid_travel_time_has_no_final_cap_and_bounds_agility_factor(django_user
     ) * PVPConstants.RAID_CROSS_REGION_MULTIPLIER
 
     assert neutral == math.ceil(cross_region_route / 60) * 60
-    assert high_agility == math.ceil(cross_region_route * 0.7 / 60) * 60
+    assert high_agility == math.ceil(cross_region_route * 0.45 / 60) * 60
     assert low_agility == math.ceil(cross_region_route * 1.2 / 60) * 60
     assert neutral > 8 * 60 * 60
 

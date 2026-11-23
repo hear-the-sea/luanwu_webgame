@@ -63,13 +63,16 @@ def test_calculate_travel_time_uses_average_agility_with_fifty_percent_cap(monke
         lambda seconds, minimum=1: max(minimum, int(seconds)),
     )
     slow_guest = type("_Guest", (), {"agility": 100})()
+    max_guest = type("_Guest", (), {"agility": 600})()
     fast_guest = type("_Guest", (), {"agility": 9999})()
 
     moderate = calculate_travel_time(1800, guests=[slow_guest], troop_loadout={}, troop_templates={})
+    at_six_hundred = calculate_travel_time(1800, guests=[max_guest], troop_loadout={}, troop_templates={})
     capped = calculate_travel_time(1800, guests=[fast_guest], troop_loadout={}, troop_templates={})
 
-    assert moderate == 1620
-    assert capped == 900
+    assert moderate == 1605
+    assert at_six_hundred == 630
+    assert capped == 630
 
 
 def test_calculate_travel_time_ignores_troop_speed_bonus(monkeypatch):

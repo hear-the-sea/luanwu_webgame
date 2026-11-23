@@ -2,8 +2,8 @@
   "use strict";
 
   const AGILITY_BASELINE = 160;
-  const AGILITY_FACTOR_DIVISOR = 500;
-  const AGILITY_FACTOR_MIN = 0.7;
+  const AGILITY_FACTOR_DIVISOR = 800;
+  const AGILITY_FACTOR_MIN = 0.45;
   const AGILITY_FACTOR_MAX = 1.2;
   const TROOPS_PER_SIZE_POINT = 200;
   const SIZE_FACTOR_BONUS = 0.5;

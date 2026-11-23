@@ -236,7 +236,8 @@ def normalize_mission_loadout(raw: Dict[str, int] | None, troop_templates: Dict[
 
 
 # 旅行时间计算常量
-MISSION_AGILITY_REDUCTION_CAP = 0.50  # 门客平均敏捷最多减少50%任务行军时间
+MISSION_AGILITY_REDUCTION_CAP = 0.65  # 门客平均敏捷最多减少65%任务行军时间
+MISSION_MAX_AGILITY_FOR_REDUCTION = 600.0  # 满缩减所需平均敏捷
 MIN_TRAVEL_TIME = 10  # 最小旅行时间（秒）
 
 
@@ -257,8 +258,8 @@ def calculate_travel_time(base_time: int, guests, troop_loadout: Dict[str, int],
     计算任务旅行时间，考虑门客平均敏捷加成。
 
     计算规则：
-    - 平均敏捷每10点减少1%时间
-    - 敏捷最多减少50%时间
+    - 平均敏捷在 0 至 600 区间内按比例缩减时间
+    - 敏捷最多减少65%时间
     - 兵种配置仅参与载荷校验，不影响任务时长
     - 最少旅行时间为10秒
 
@@ -286,7 +287,10 @@ def calculate_travel_time(base_time: int, guests, troop_loadout: Dict[str, int],
     guest_count = len(guests)
     if guest_count > 0:
         avg_agility = sum(getattr(guest, "agility", 0) for guest in guests) / guest_count
-        agility_reduction = min(MISSION_AGILITY_REDUCTION_CAP, avg_agility / 1000)
+        agility_reduction = min(
+            MISSION_AGILITY_REDUCTION_CAP,
+            max(0.0, avg_agility) * MISSION_AGILITY_REDUCTION_CAP / MISSION_MAX_AGILITY_FOR_REDUCTION,
+        )
         final_time = int(base_time * (1 - agility_reduction))
     final_time = max(MIN_TRAVEL_TIME, final_time)
 

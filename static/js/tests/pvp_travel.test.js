@@ -3,12 +3,12 @@ const assert = require("node:assert/strict");
 
 const pvpTravel = require("../pvp-travel.js");
 
-test("agility uses 160 baseline with two percent per ten points and bounded factors", () => {
-  assert.equal(pvpTravel.calculateAgilityFactor(60), 1.2);
+test("agility uses 160 baseline with 600 max cap and bounded factors", () => {
+  assert.equal(pvpTravel.calculateAgilityFactor(0), 1.2);
   assert.equal(pvpTravel.calculateAgilityFactor(160), 1);
-  assert.equal(pvpTravel.calculateAgilityFactor(310), 0.7);
+  assert.equal(pvpTravel.calculateAgilityFactor(600), 0.45);
   assert.equal(pvpTravel.calculateAgilityFactor(-9999), 1.2);
-  assert.equal(pvpTravel.calculateAgilityFactor(9999), 0.7);
+  assert.equal(pvpTravel.calculateAgilityFactor(9999), 0.45);
 });
 
 test("size modifier is continuous and treats every troop as one person", () => {
