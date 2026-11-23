@@ -29,6 +29,7 @@ MISSIONS = {
 
 
 def test_folk_legends_reference_existing_skills_and_match_importer_and_migration():
+    boss_hp_rebalance = import_module("gameplay.migrations.0280_boss_hp_rebalance")
     skills = {row["key"] for row in yaml.safe_load((DATA / "guest_skills.yaml").read_text())["skills"]}
     heroes = yaml.safe_load((DATA / "guests/folk_legends.yaml").read_text())["heroes"]
     assert set(MISSIONS) == set(PERSONAL_GUILD_MISSION_KEYS) == set(rules.MISSION_DEFAULTS)
@@ -39,6 +40,8 @@ def test_folk_legends_reference_existing_skills_and_match_importer_and_migration
                 **rules.ENEMY_DEFAULTS[entry["key"]],
                 **profile_alignment.GUEST_DEFAULT_OVERRIDES.get(entry["key"], {}),
             }
+            if entry["key"] in boss_hp_rebalance.BOSS_BASE_HP_UPDATES:
+                expected["base_hp"] = boss_hp_rebalance.BOSS_BASE_HP_UPDATES[entry["key"]][1]
             assert {key: imported[key] for key in expected} == expected
             assert imported["recruitable"] is False
     for key, mission in MISSIONS.items():

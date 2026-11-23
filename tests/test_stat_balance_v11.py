@@ -131,7 +131,7 @@ def test_v11_preemptive_damage_and_status_chance_are_scaled_with_intellect_resis
     main_force = _make_guest(name="主力门客", side="attacker", attack=300, priority=0)
     target = _make_guest(name="目标门客", side="defender", defense=200, intellect=400)
 
-    # 门客 PvP 普攻倍率：版本 10 为 15x，版本 11 为 13x；先攻伤害：版本 10 为 0.8，版本 11 为 0.7
+    # 门客 PvP 普攻倍率：版本 10 为 15x (K=600)，版本 11 为 13x (K=900)；先攻伤害：版本 10 为 0.8，版本 11 为 0.7
     normal_v10 = calculate_attack_damage(
         main_force, target, [], _FixedRng(0.9), round_priority=0, battle_engine_version="10"
     )
@@ -144,7 +144,11 @@ def test_v11_preemptive_damage_and_status_chance_are_scaled_with_intellect_resis
     preempt_v11 = calculate_attack_damage(
         vanguard, target, [], _FixedRng(0.9), round_priority=-1, battle_engine_version="11"
     )
-    assert normal_v11.damage == pytest.approx(normal_v10.damage * (13.0 / 15.0), abs=2)
+    v10_mitigation = 1.0 - 200.0 / (200.0 + 600.0)
+    v11_mitigation = 1.0 - 200.0 / (200.0 + 900.0)
+    assert normal_v11.damage == pytest.approx(
+        normal_v10.damage * (13.0 / 15.0) * (v11_mitigation / v10_mitigation), abs=2
+    )
     assert preempt_v10.damage == pytest.approx(normal_v10.damage * 0.8, abs=2)
     assert preempt_v11.damage == pytest.approx(normal_v11.damage * 0.7, abs=2)
 

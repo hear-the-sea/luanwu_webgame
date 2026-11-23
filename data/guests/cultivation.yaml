@@ -86,7 +86,7 @@ heroes:
       defense: 155
       agility: 75
       luck: 70
-      base_hp: 100000
+      base_hp: 80000
   - key: task_cultivation_mind_guard
     name: 明心护法
     archetype: civil
@@ -103,7 +103,7 @@ heroes:
       defense: 100
       agility: 100
       luck: 100
-      base_hp: 100000
+      base_hp: 80000
   - key: task_cultivation_demon_guard
     name: 伏魔护法
     archetype: military
@@ -120,4 +120,4 @@ heroes:
       defense: 95
       agility: 155
       luck: 80
-      base_hp: 90000
+      base_hp: 72000

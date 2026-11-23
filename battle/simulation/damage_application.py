@@ -301,7 +301,9 @@ def _apply_counter_with_effect(
         from .damage_calculation import _calculate_damage_reduction, _calculate_defense_value
 
         defense_value = _calculate_defense_value(target, actor, effective_defense_value)
-        damage_reduction = _calculate_damage_reduction(target, actor, defense_value)
+        damage_reduction = _calculate_damage_reduction(
+            target, actor, defense_value, battle_engine_version=battle_engine_version
+        )
         counter_damage *= 1.0 - damage_reduction
 
     return _apply_unit_damage(actor, counter_damage, troop_unit_hp_fn), str(chosen["name"] or "")

@@ -534,7 +534,7 @@ class Command(BaseCommand):
         now = timezone.now()
         resumed_guests: list[Guest] = []
         for guest in guest_qs:
-            level_hp = compute_guest_level_hp_bonus(guest.level)
+            level_hp = compute_guest_level_hp_bonus(guest.level, archetype=template.archetype)
             old_max_hp = (
                 max(
                     hp_floor,

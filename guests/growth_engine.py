@@ -78,6 +78,31 @@ def _build_weighted_choices(weights: dict[str, int]) -> list[str]:
     return choices
 
 
+def allocate_growth_for_profile(
+    *,
+    rarity: str,
+    archetype: str,
+    growth_range: list | None,
+    attribute_weights: dict | None,
+    levels: int = 1,
+    rng: random.Random | None = None,
+) -> GrowthAllocation:
+    """按给定稀有度、文武定位、成长区间与权重分配升级成长点数。"""
+    if rng is None:
+        rng = random.Random()
+
+    min_growth, max_growth = _resolve_growth_range(rarity, growth_range)
+    weights = _resolve_weights(archetype, attribute_weights)
+    choices = _build_weighted_choices(weights)
+
+    allocation: GrowthAllocation = {key: 0 for key in GROWTH_KEYS}
+    for _ in range(max(0, int(levels))):
+        points_this_level = rng.randint(min_growth, max_growth)
+        for _ in range(points_this_level):
+            allocation[rng.choice(choices)] += 1
+    return allocation
+
+
 def allocate_level_up_attributes(
     guest: "Guest",
     levels: int = 1,
@@ -89,24 +114,21 @@ def allocate_level_up_attributes(
     template = guest.template
     from guests.services.custom_guest import is_custom_guest, resolve_custom_growth_range, resolve_custom_growth_weights
 
-    min_growth, max_growth = (
-        resolve_custom_growth_range(guest)
-        if is_custom_guest(guest)
-        else _resolve_growth_range(guest.rarity, template.growth_range)
-    )
-    weights = (
-        resolve_custom_growth_weights(guest)
-        if is_custom_guest(guest)
-        else _resolve_weights(guest.archetype, template.attribute_weights)
-    )
-    choices = _build_weighted_choices(weights)
+    if is_custom_guest(guest):
+        growth_range = list(resolve_custom_growth_range(guest))
+        attribute_weights = resolve_custom_growth_weights(guest)
+    else:
+        growth_range = template.growth_range
+        attribute_weights = template.attribute_weights
 
-    allocation: GrowthAllocation = {key: 0 for key in GROWTH_KEYS}
-    for _ in range(levels):
-        points_this_level = rng.randint(min_growth, max_growth)
-        for _ in range(points_this_level):
-            allocation[rng.choice(choices)] += 1
-    return allocation
+    return allocate_growth_for_profile(
+        rarity=guest.rarity,
+        archetype=guest.archetype,
+        growth_range=growth_range,
+        attribute_weights=attribute_weights,
+        levels=levels,
+        rng=rng,
+    )
 
 
 def normalize_growth_allocation(allocation: object) -> GrowthAllocation:
@@ -136,6 +158,35 @@ def get_expected_growth(
     return {attr: (total_points * weight) / total_weight for attr, weight in weights.items()}
 
 
+def resolve_non_growth_attribute_and_luck_bonuses(guest: "Guest") -> tuple[GrowthAllocation, int]:
+    """返回不能当作升级成长的四维直加与装备/套装提供的运势加成。"""
+    bonuses: GrowthAllocation = {key: 0 for key in GROWTH_KEYS}
+    prefetched = getattr(guest, "_prefetched_objects_cache", None) or {}
+    gear_items = (
+        list(guest.gear_items.all())
+        if "gear_items" in prefetched
+        else list(guest.gear_items.select_related("template"))
+    )
+    gear_luck = 0
+    for gear in gear_items:
+        extra_stats = normalize_extra_stats(gear.template.extra_stats)
+        for key in GROWTH_KEYS:
+            bonuses[key] += int(extra_stats.get(key, 0) or 0)
+        gear_luck += int(extra_stats.get("luck", 0) or 0)
+
+    # Set bonuses for force/intellect/defense/agility are written directly to
+    # guest attributes and must not be counted as level growth.
+    set_bonus = compute_set_bonus(gear_items)
+    for key in GROWTH_KEYS:
+        bonuses[key] += int(set_bonus.get(key, 0) or 0)
+    gear_luck += int(set_bonus.get("luck", 0) or 0)
+
+    if guest.super_disguise_applied:
+        bonuses["force"] += SUPER_GUEST_DISGUISE_FORCE_BONUS
+        bonuses["agility"] += SUPER_GUEST_DISGUISE_AGILITY_BONUS
+    return bonuses, gear_luck
+
+
 def _resolve_non_growth_attribute_bonuses(guest: "Guest") -> GrowthAllocation:
     """Return direct attribute bonuses that must not be treated as growth.
 
@@ -144,22 +195,7 @@ def _resolve_non_growth_attribute_bonuses(guest: "Guest") -> GrowthAllocation:
     those values explicitly; otherwise a wash can either report a false
     over-cap total or erase the bonuses while rewriting the base stats.
     """
-    bonuses: GrowthAllocation = {key: 0 for key in GROWTH_KEYS}
-    gear_items = list(guest.gear_items.select_related("template"))
-    for gear in gear_items:
-        extra_stats = normalize_extra_stats(gear.template.extra_stats)
-        for key in GROWTH_KEYS:
-            bonuses[key] += int(extra_stats.get(key, 0) or 0)
-
-    # Set bonuses for force/intellect/defense/agility are written directly to
-    # guest attributes and must not be counted as level growth.
-    set_bonus = compute_set_bonus(gear_items)
-    for key in GROWTH_KEYS:
-        bonuses[key] += int(set_bonus.get(key, 0) or 0)
-
-    if guest.super_disguise_applied:
-        bonuses["force"] += SUPER_GUEST_DISGUISE_FORCE_BONUS
-        bonuses["agility"] += SUPER_GUEST_DISGUISE_AGILITY_BONUS
+    bonuses, _gear_luck = resolve_non_growth_attribute_and_luck_bonuses(guest)
     return bonuses
 
 

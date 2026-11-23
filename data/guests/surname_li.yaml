@@ -52,4 +52,4 @@ heroes:
         defense: 310
         agility: 180
         luck: 100
-        base_hp: 300000
+        base_hp: 240000

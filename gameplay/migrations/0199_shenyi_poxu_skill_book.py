@@ -17,8 +17,8 @@ SKILL_DEFAULTS = {
     "status_probability": 0.0,
     "status_duration": 1,
     "damage_formula": {
-        "base": 1200,
-        "ally_min": {"stats": ["force", "intellect"], "coefficient": 20.0},
+        "base": 1295,
+        "ally_min": {"stats": ["force", "intellect"], "coefficient": 21.6},
         "enemy": {"defense": 0.3},
     },
     "passive_config": {},

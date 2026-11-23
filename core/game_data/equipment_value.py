@@ -48,13 +48,13 @@ LUCK_HARD_CAP = 300.0
 
 # Real combat constants mirrored from battle/simulation/constants.py to avoid
 # importing battle/Django models inside core.game_data.
-_PVP_DEFENSE_CONSTANT = 600.0
-_PVE_DEFENSE_CONSTANT = 200.0
+_PVP_DEFENSE_CONSTANT = 900.0
+_PVE_DEFENSE_CONSTANT = 300.0
 _DEFENSE_SOFTCAP_THRESHOLD = 0.50
 _DEFENSE_HARDCAP = 0.75
 _PVP_NORMAL_ATTACK_MULTIPLIER = 13.0
 _PVP_SKILL_BONUS_MULTIPLIER = 2.0
-_PVE_SKILL_BONUS_MULTIPLIER = 3.0
+_PVE_SKILL_BONUS_MULTIPLIER = 2.5
 _INTELLECT_SKILL_DR_CONSTANT = 860.0
 _INTELLECT_SKILL_DR_HARDCAP = 0.45
 _INTELLECT_STATUS_RESIST_CONSTANT = 1600.0
@@ -596,9 +596,16 @@ def guest_power(
 
     defense_for_hp = max(0, int(defense if defense_stat is None else defense_stat))
     defense_to_hp = int(GUEST.DEFENSE_TO_HP_MULTIPLIER)
-    max_hp = max(int(GUEST.MIN_HP_FLOOR), int(base_hp) + int(hp_bonus) + defense_for_hp * defense_to_hp) + max(
-        0, int(level) - 1
-    ) * int(GUEST.LEVEL_HP_GAIN)
+    if normalized_archetype == "civil":
+        level_hp_gain = int(GUEST.CIVIL_LEVEL_HP_GAIN)
+    elif normalized_archetype == "military":
+        level_hp_gain = int(GUEST.MILITARY_LEVEL_HP_GAIN)
+    else:
+        level_hp_gain = int(GUEST.LEVEL_HP_GAIN)
+    max_hp = (
+        max(int(GUEST.MIN_HP_FLOOR), int(base_hp) + int(hp_bonus) + defense_for_hp * defense_to_hp)
+        + max(0, int(level) - 1) * level_hp_gain
+    )
 
     combat_hp_units = _compute_guest_combat_power_hp(
         attack=total_attack,

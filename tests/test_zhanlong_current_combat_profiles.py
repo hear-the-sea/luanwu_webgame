@@ -21,6 +21,7 @@ bridge_rules = import_module("gameplay.migrations.0233_bridge_zhangfei_fury")
 assault_rules = import_module("gameplay.migrations.0234_zhaoyun_dragon_assault")
 progression_rules = import_module("gameplay.migrations.0240_zhanlong_progressive_difficulty")
 copy_rules = import_module("gameplay.migrations.0242_player_facing_mission_item_copy")
+boss_hp_rebalance = import_module("gameplay.migrations.0280_boss_hp_rebalance")
 DATA = Path(__file__).resolve().parents[1] / "data"
 STAT_FIELDS = {
     "force": "base_attack",
@@ -59,12 +60,17 @@ def test_final_migration_profiles_match_all_four_missions_and_ten_guest_template
                 final = {**defaults, **rules.GUEST_UPDATES.get(hero["key"], {})}
                 final.update(bridge_rules.GUEST_UPDATES.get(hero["key"], {}))
                 final.update(progression_rules.GUEST_UPDATES.get(hero["key"], {}))
+                if hero["key"] in boss_hp_rebalance.BOSS_BASE_HP_UPDATES:
+                    final["base_hp"] = boss_hp_rebalance.BOSS_BASE_HP_UPDATES[hero["key"]][1]
                 assert {stat: final[field] for stat, field in STAT_FIELDS.items()} == hero["custom_stats"]
     final_updates = {key: dict(value) for key, value in rules.GUEST_UPDATES.items()}
     for key, updates in bridge_rules.GUEST_UPDATES.items():
         final_updates.setdefault(key, {}).update(updates)
     for key, updates in progression_rules.GUEST_UPDATES.items():
         final_updates.setdefault(key, {}).update(updates)
+    for key, (_old_hp, new_hp) in boss_hp_rebalance.BOSS_BASE_HP_UPDATES.items():
+        if key in all_defaults:
+            final_updates.setdefault(key, {})["base_hp"] = new_hp
     final_updates = {
         key: {field: value for field, value in updates.items() if all_defaults[key][field] != value}
         for key, updates in final_updates.items()

@@ -175,7 +175,7 @@ def calculate_guest_arena_power(
     max_hp = max(
         int(GUEST.MIN_HP_FLOOR),
         max(0, int(base_hp)) + max(0, int(hp_bonus)) + normalized_defense * int(GUEST.DEFENSE_TO_HP_MULTIPLIER),
-    ) + compute_guest_level_hp_bonus(level)
+    ) + compute_guest_level_hp_bonus(level, archetype=archetype)
     agility_power = int(normalized_agility * GUEST.AGILITY_TO_ARENA_POWER_WEIGHT)
     return max(1, attack) + max(1, normalized_defense) + max(0, agility_power) + max_hp // 10
 

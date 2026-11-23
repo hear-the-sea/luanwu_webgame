@@ -5,17 +5,27 @@ from typing import Any
 from core.config import GUEST
 
 
-def compute_guest_level_hp_bonus(level: int) -> int:
-    """所有稀有度从 1 级起统一计算固定生命成长。"""
-    return max(0, int(level or 1) - 1) * int(GUEST.LEVEL_HP_GAIN)
+def resolve_guest_level_hp_gain(archetype: str = "") -> int:
+    """按门客文/武类型解析每级固定生命成长（武门客 70，文门客 50）。"""
+    normalized = str(archetype or "").strip()
+    if normalized == "civil":
+        return int(GUEST.CIVIL_LEVEL_HP_GAIN)
+    if normalized == "military":
+        return int(GUEST.MILITARY_LEVEL_HP_GAIN)
+    return int(GUEST.LEVEL_HP_GAIN)
+
+
+def compute_guest_level_hp_bonus(level: int, archetype: str = "") -> int:
+    """所有稀有度从 1 级起按文/武类型计算固定生命成长。"""
+    return max(0, int(level or 1) - 1) * resolve_guest_level_hp_gain(archetype)
 
 
 def compute_guest_max_hp(guest: Any) -> int:
-    base_hp = int(getattr(getattr(guest, "template", None), "base_hp", 0) or 0) + int(
-        getattr(guest, "hp_bonus", 0) or 0
-    )
+    template = getattr(guest, "template", None)
+    base_hp = int(getattr(template, "base_hp", 0) or 0) + int(getattr(guest, "hp_bonus", 0) or 0)
     defense_hp = int(getattr(guest, "defense_stat", 0) or 0) * int(GUEST.DEFENSE_TO_HP_MULTIPLIER)
-    level_hp = compute_guest_level_hp_bonus(getattr(guest, "level", 1))
+    archetype = str(getattr(guest, "archetype", "") or getattr(template, "archetype", "") or "")
+    level_hp = compute_guest_level_hp_bonus(getattr(guest, "level", 1), archetype=archetype)
     return int(max(int(GUEST.MIN_HP_FLOOR), base_hp + defense_hp)) + level_hp
 
 

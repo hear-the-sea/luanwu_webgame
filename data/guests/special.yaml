@@ -76,7 +76,7 @@ heroes:
         defense: 128
         agility: 72
         luck: 36
-        base_hp: 19600
+        base_hp: 15680
     - key: task_orchard_wraith
       name: 孤魂野鬼
       avatar: monkey/任务/孤魂野鬼.png
@@ -329,7 +329,7 @@ heroes:
         defense: 146
         agility: 132
         luck: 78
-        base_hp: 12060
+        base_hp: 9650
       skills:
         - flower_rain
     - key: task_heaven_cave_sentinel
@@ -346,7 +346,7 @@ heroes:
         defense: 176
         agility: 118
         luck: 70
-        base_hp: 150000
+        base_hp: 120000
     - key: guild_wulinzhai_zhai_zhu
       name: 乌鳞寨寨主
       archetype: military
@@ -362,7 +362,7 @@ heroes:
         defense: 176
         agility: 142
         luck: 76
-        base_hp: 24800
+        base_hp: 19840
     - key: guild_wulinzhai_junshi
       name: 乌鳞寨军师
       archetype: civil
@@ -691,7 +691,7 @@ heroes:
         defense: 51
         agility: 42
         luck: 169
-        base_hp: 80000
+        base_hp: 64000
     - key: task_simian_chuge_pengyue_boss
       name: 彭越·垓下
       avatar: monkey/秦汉/彭越.png
@@ -707,7 +707,7 @@ heroes:
         defense: 51
         agility: 42
         luck: 162
-        base_hp: 80000
+        base_hp: 64000
     - key: task_simian_chuge_yingbu_boss
       name: 英布·垓下
       avatar: monkey/秦汉/英布.png
@@ -723,7 +723,7 @@ heroes:
         defense: 51
         agility: 42
         luck: 162
-        base_hp: 80000
+        base_hp: 64000
   red:
     - key: task_barbarian_vanguard
       name: 蛮族先锋统领
@@ -1241,7 +1241,7 @@ heroes:
         defense: 202
         agility: 142
         luck: 220
-        base_hp: 100000
+        base_hp: 80000
     - key: task_guandu_yuanshao
       name: 袁绍
       flavor: "四世三公之后，坐拥河北四州之众。袁绍挟盛大军势压向官渡，粮甲充足，锋芒正盛，对面曹军却已面临粮道危急的困局。乌巢渐成整场交锋的关键，而他所倚仗的河北军势，也将迎来决定胜负的考验。"

@@ -57,7 +57,7 @@ def test_surname_li_content_matches_snapshot_and_current_balance_overrides():
                     "attribute_weights": {"force": 10, "intellect": 45, "defense": 20, "agility": 25},
                 },
                 "hero_heishan_laoyao": {"growth_range": [6, 12]},
-                "task_surname_li_elai": {"base_hp": 300000},
+                "task_surname_li_elai": {"base_hp": 240000},
             }
             snapshot = {**rules.GUEST_DEFAULTS[entry["key"]], **overrides.get(entry["key"], {})}
             for field in ("name", "archetype", "recruitable", "default_gender", "flavor"):
@@ -163,6 +163,7 @@ def test_forward_balance_migrations_match_yaml_and_preserve_player_data(surname_
         getattr(import_module(f"gameplay.migrations.{module_name}"), function_name)(apps, schema_editor)
     for _ in range(2):
         balance_rules.sync_current_mission_balance(apps, schema_editor)
+        import_module("gameplay.migrations.0280_boss_hp_rebalance").apply_boss_hp_rebalance(apps, schema_editor)
 
     mission = MissionTemplate.objects.get(key="surname_legend_li")
     mission_yaml = next(row for row in _yaml("mission_templates.yaml")["missions"] if row["key"] == mission.key)

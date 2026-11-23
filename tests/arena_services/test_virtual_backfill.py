@@ -95,7 +95,7 @@ def _create_bot_profile(
             custom_name=f"{username}-门客-{index}",
             level=30,
             # 这组补位用例对照固定战力的历史快照，保持合成阵容原有生命预算。
-            hp_bonus=-compute_guest_level_hp_bonus(30),
+            hp_bonus=-compute_guest_level_hp_bonus(30, archetype=template.archetype),
             force=force,
             intellect=intellect,
             defense_stat=defense,
@@ -437,9 +437,9 @@ def test_bot_lineup_evaluation_distinguishes_ready_and_closest_below():
     )
 
     assert ready_result.is_ready is True
-    assert ready_result.selected_power == 600
+    assert ready_result.selected_power == 650
     assert weak_result.is_ready is False
-    assert weak_result.selected_power == 500
+    assert weak_result.selected_power == 550
 
 
 @pytest.mark.django_db

@@ -221,6 +221,7 @@ def test_enemy_migration_creates_independent_profiles_and_real_avatar_files(sett
 def test_enemy_yaml_reimport_preserves_independent_profiles():
     from guests.management.commands.load_guest_templates import Command
 
+    boss_hp_rebalance = import_module("gameplay.migrations.0280_boss_hp_rebalance")
     command = Command()
     payload = yaml.safe_load((DATA / "guests/cultivation.yaml").read_text())
     for rarity, rows in payload["heroes"].items():
@@ -229,6 +230,8 @@ def test_enemy_yaml_reimport_preserves_independent_profiles():
             defaults = command._template_defaults(built)
             expected = deepcopy(enemy_rules.ENEMY_DEFAULTS[row["key"]])
             expected.update(alignment_rules.ENEMY_STAT_UPDATES[row["key"]])
+            if row["key"] in boss_hp_rebalance.BOSS_BASE_HP_UPDATES:
+                expected["base_hp"] = boss_hp_rebalance.BOSS_BASE_HP_UPDATES[row["key"]][1]
             for field, value in expected.items():
                 if field != "avatar":
                     assert defaults[field] == value

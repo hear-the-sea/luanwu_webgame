@@ -182,7 +182,7 @@ def test_minimum_formula_uses_unit_defense_and_target_specific_skill_multiplier(
     }
     defense = 2.5 if kind == "troop" else 10000
     result = calculate_attack_damage(actor, target, skills=[skill], rng=FixedRng(), round_priority=0)
-    skill_multiplier = 3 if kind == "troop" else 2
+    skill_multiplier = 2.5 if kind == "troop" else 2
     assert result.damage == int((5000 + 15 * 400 - 0.3 * defense) * skill_multiplier)
 
 
@@ -421,7 +421,9 @@ def test_guest_vs_troop_skill_damage_uses_three_times_skill_multiplier():
     skill = {"name": "Flat Bonus", "damage_formula": {"base": 2000}}
     rng = FixedRng()
 
-    result = calculate_attack_damage(actor, target, skills=[skill], rng=rng, round_priority=0)
+    result = calculate_attack_damage(
+        actor, target, skills=[skill], rng=rng, round_priority=0, battle_engine_version="10"
+    )
 
     reduction = target.unit_defense / (target.unit_defense + 50)
     base_damage = actor.attack * (1 - reduction)

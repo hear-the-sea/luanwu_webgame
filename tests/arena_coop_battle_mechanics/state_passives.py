@@ -33,17 +33,17 @@ def test_configure_arena_coop_enemy_guest_applies_fixed_final_hp():
     assert configure_arena_coop_enemy_guest(yang) is True
     assert configure_arena_coop_enemy_guest(wei) is True
 
-    assert boss.current_hp == 220000
+    assert boss.current_hp == 176000
     assert boss.force == 1339
     assert boss.intellect == 950
     assert boss.defense_stat == 670
     assert boss.hp_bonus > 0
-    assert yang.current_hp == 165000
+    assert yang.current_hp == 132000
     assert yang.force == 979
     assert yang.intellect == 720
     assert yang.defense_stat == 536
     assert yang.hp_bonus > 0
-    assert wei.current_hp == 165000
+    assert wei.current_hp == 132000
     assert wei.force == 906
     assert wei.intellect == 530
     assert wei.defense_stat == 484

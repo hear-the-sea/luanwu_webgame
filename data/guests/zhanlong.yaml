@@ -15,7 +15,7 @@ heroes:
         defense: 470
         agility: 160
         luck: 135
-        base_hp: 650000
+        base_hp: 520000
     - key: task_zhanlong_caochun
       name: 曹纯
       archetype: military
@@ -30,7 +30,7 @@ heroes:
         defense: 300
         agility: 360
         luck: 120
-        base_hp: 800000
+        base_hp: 640000
   orange:
     - key: task_zhanlong_zhangfei_bridge
       name: 张飞
@@ -46,7 +46,7 @@ heroes:
         defense: 480
         agility: 400
         luck: 160
-        base_hp: 850000
+        base_hp: 680000
     - key: task_zhanlong_guanyu
       name: 关羽
       archetype: military
@@ -61,7 +61,7 @@ heroes:
         defense: 380
         agility: 290
         luck: 130
-        base_hp: 250000
+        base_hp: 200000
     - key: task_zhanlong_zhangfei
       name: 张飞
       archetype: military
@@ -76,7 +76,7 @@ heroes:
         defense: 355
         agility: 220
         luck: 120
-        base_hp: 180000
+        base_hp: 144000
     - key: task_zhanlong_zhaoyun
       name: 赵云
       archetype: military
@@ -91,7 +91,7 @@ heroes:
         defense: 400
         agility: 350
         luck: 150
-        base_hp: 280000
+        base_hp: 224000
     - key: task_zhanlong_machao
       name: 马超
       archetype: military
@@ -106,7 +106,7 @@ heroes:
         defense: 310
         agility: 440
         luck: 125
-        base_hp: 160000
+        base_hp: 128000
     - key: task_zhanlong_huangzhong
       name: 黄忠
       archetype: military
@@ -121,4 +121,4 @@ heroes:
         defense: 300
         agility: 315
         luck: 140
-        base_hp: 100000
+        base_hp: 80000

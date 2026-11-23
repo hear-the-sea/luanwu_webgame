@@ -30,7 +30,7 @@ ARENA_COOP_ENEMY_FINAL_STATS: dict[str, dict[str, int]] = {
         "defense_stat": 670,
         "agility": 300,
         "luck": 160,
-        "final_hp": 220000,
+        "final_hp": 176000,
     },
     ARENA_COOP_YANG_XIAO_TEMPLATE_KEY: {
         "level": 85,
@@ -39,7 +39,7 @@ ARENA_COOP_ENEMY_FINAL_STATS: dict[str, dict[str, int]] = {
         "defense_stat": 536,
         "agility": 240,
         "luck": 115,
-        "final_hp": 165000,
+        "final_hp": 132000,
     },
     ARENA_COOP_WEI_YIXIAO_TEMPLATE_KEY: {
         "level": 85,
@@ -48,7 +48,7 @@ ARENA_COOP_ENEMY_FINAL_STATS: dict[str, dict[str, int]] = {
         "defense_stat": 484,
         "agility": 310,
         "luck": 130,
-        "final_hp": 165000,
+        "final_hp": 132000,
     },
     ARENA_COOP_FIVE_FLAGS_FRONT_TEMPLATE_KEY: {
         "level": 85,
@@ -57,7 +57,7 @@ ARENA_COOP_ENEMY_FINAL_STATS: dict[str, dict[str, int]] = {
         "defense_stat": 440,
         "agility": 190,
         "luck": 100,
-        "final_hp": 120000,
+        "final_hp": 96000,
     },
     ARENA_COOP_FIVE_FLAGS_REAR_TEMPLATE_KEY: {
         "level": 85,
@@ -66,7 +66,7 @@ ARENA_COOP_ENEMY_FINAL_STATS: dict[str, dict[str, int]] = {
         "defense_stat": 440,
         "agility": 200,
         "luck": 100,
-        "final_hp": 120000,
+        "final_hp": 96000,
     },
 }
 
@@ -114,7 +114,10 @@ def configure_arena_coop_enemy_guest(guest: Any) -> bool:
         final_hp
         - base_hp
         - defense_stat * int(GUEST.DEFENSE_TO_HP_MULTIPLIER)
-        - compute_guest_level_hp_bonus(guest.level),
+        - compute_guest_level_hp_bonus(
+            guest.level,
+            archetype=str(getattr(guest, "archetype", "") or getattr(template, "archetype", "") or ""),
+        ),
     )
     setattr(guest, "hp_bonus", hp_bonus)
     setattr(guest, "current_hp", final_hp)

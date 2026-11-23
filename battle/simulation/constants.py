@@ -49,11 +49,13 @@ DEFAULT_DEFENSE_CONSTANT = 120
 # - 防御收益从+1.2回合提升到+2.2回合，装备有意义
 # - 配合15x普通攻击倍率，维持门客对门客的基础伤害
 GUEST_VS_GUEST_DEFENSE_CONSTANT = 600
+V11_GUEST_VS_GUEST_DEFENSE_CONSTANT = 900.0
 
 # 小兵对门客防御常数（软上限公式的基础常数）
 # 公式：base = defense / (defense + 200)，超过50%后收益减半，上限75%
 # 效果：低防御有效，高防御收益递减，装备提升不会导致极端减伤
 TROOP_VS_GUEST_DEFENSE_CONSTANT = 200
+V11_TROOP_VS_GUEST_DEFENSE_CONSTANT = 300.0
 
 # 软上限阈值：超过此值后，额外减伤收益减半
 SOFTCAP_THRESHOLD = 0.50
@@ -113,6 +115,7 @@ GUEST_VS_TROOP_DEFENSE_CONSTANT = 50
 # 门客技能打护院的额外伤害倍率（普攻屠戮倍率独立计算）
 # 仅放大技能增量，不对整次技能伤害再次乘算；历史版本保持 2 倍。
 GUEST_SKILL_VS_TROOP_MULTIPLIER = 3.0
+V11_GUEST_SKILL_VS_TROOP_MULTIPLIER = 2.5
 LEGACY_GUEST_SKILL_VS_TROOP_MULTIPLIER = 2.0
 
 # ============ 城防伤害倍率 ============

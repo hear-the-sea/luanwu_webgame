@@ -18,13 +18,19 @@ def guest_max_hp_expression() -> CombinedExpression:
         + Cast(F("defense_stat"), BigIntegerField()) * GUEST.DEFENSE_TO_HP_MULTIPLIER,
         output_field=BigIntegerField(),
     )
+    level_hp_gain = Case(
+        When(template__archetype="civil", then=Value(GUEST.CIVIL_LEVEL_HP_GAIN)),
+        When(template__archetype="military", then=Value(GUEST.MILITARY_LEVEL_HP_GAIN)),
+        default=Value(GUEST.LEVEL_HP_GAIN),
+        output_field=BigIntegerField(),
+    )
     level_hp = (
         Greatest(
             Cast(F("level"), BigIntegerField()) - Value(1),
             Value(0),
             output_field=BigIntegerField(),
         )
-        * GUEST.LEVEL_HP_GAIN
+        * level_hp_gain
     )
     return base_hp + level_hp
 

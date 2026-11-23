@@ -35,7 +35,7 @@ class TestEquipmentHealthManagement(TestCase):
         )
 
         # 创建测试门客（10级）
-        # 10级生命：1000 + 180 × 30 + 9 × 60 = 6,940
+        # 10级武门客生命：1000 + 180 × 40 + 9 × 70 = 8,830
         self.guest = Guest.objects.create(
             template=self.template,
             manor=self.manor,
@@ -43,7 +43,7 @@ class TestEquipmentHealthManagement(TestCase):
             force=200,
             intellect=150,
             defense_stat=180,
-            current_hp=6940,  # 当前满血，包含等级生命
+            current_hp=8830,  # 当前满血，包含等级生命
         )
 
         # 创建物品模板（用于背包同步）
@@ -79,34 +79,34 @@ class TestEquipmentHealthManagement(TestCase):
         # 添加到背包（模拟装备来源）
         self.InventoryItem.objects.create(manor=self.manor, template=self.item_template, quantity=1)
 
-        # 装备前的最大生命值包含 9 次升级增加的 540 生命。
+        # 装备前的最大生命值包含 9 次升级增加的 630 生命。
         max_hp_before = self.guest.max_hp
-        self.assertEqual(max_hp_before, 6940)
-        self.assertEqual(self.guest.current_hp, 6940)
+        self.assertEqual(max_hp_before, 8830)
+        self.assertEqual(self.guest.current_hp, 8830)
 
         # 2. 装备道具（额外+200 HP）
         gear = equip_guest(gear, self.guest)
         self.guest.refresh_from_db()
 
-        # 装备后的最大生命值：6,940 + 200 = 7,140
+        # 装备后的最大生命值：8,830 + 200 = 9,030
         max_hp_equipped = self.guest.max_hp
-        self.assertEqual(max_hp_equipped, 7140)
+        self.assertEqual(max_hp_equipped, 9030)
 
-        # 假设门客受伤，当前生命值为7,040
-        self.guest.current_hp = 7040
+        # 假设门客受伤，当前生命值为8,930
+        self.guest.current_hp = 8930
         self.guest.save(update_fields=["current_hp"])
 
         # 3. 卸下装备
         unequip_guest_item(gear, self.guest)
         self.guest.refresh_from_db()
 
-        # 卸下后的最大生命值：6,940
+        # 卸下后的最大生命值：8,830
         max_hp_after = self.guest.max_hp
-        self.assertEqual(max_hp_after, 6940)
+        self.assertEqual(max_hp_after, 8830)
 
         # 当前生命值应该被调整为不超过最大生命值
         self.assertLessEqual(self.guest.current_hp, max_hp_after)
-        self.assertEqual(self.guest.current_hp, 6940)
+        self.assertEqual(self.guest.current_hp, 8830)
 
     def test_unequip_does_not_change_current_hp_if_below_max(self):
         """测试：卸下装备时，如果当前生命值低于新的最大生命值，则不改变"""
@@ -364,7 +364,7 @@ class TestEquipmentTroopCapacity(TestCase):
         self.assertEqual(self.guest.gear_set_bonus["defense"], 30)
         self.assertEqual(self.guest.defense_stat, 222)
         self.assertEqual(self.guest.defense_bonus, 0)
-        self.assertEqual(self.guest.max_hp, 8200)
+        self.assertEqual(self.guest.max_hp, 10510)
         self.assertEqual(collect_unmet_skill_requirements(self.guest, skill), [])
 
         self.guest.current_hp = self.guest.max_hp
@@ -373,8 +373,8 @@ class TestEquipmentTroopCapacity(TestCase):
         self.guest.refresh_from_db()
         self.assertEqual(self.guest.defense_stat, 185)
         self.assertEqual(self.guest.defense_bonus, 0)
-        self.assertEqual(self.guest.max_hp, 7090)
-        self.assertEqual(self.guest.current_hp, 7090)
+        self.assertEqual(self.guest.max_hp, 9030)
+        self.assertEqual(self.guest.current_hp, 9030)
         self.assertIn("防御需 ≥ 220（当前 185）", collect_unmet_skill_requirements(self.guest, skill))
 
 

@@ -43,8 +43,11 @@ from .constants import (
     TROOP_COUNTERS,
     TROOP_VS_CITY_DEFENSE_DAMAGE_MULTIPLIER,
     TROOP_VS_GUEST_DEFENSE_CONSTANT,
+    V11_GUEST_SKILL_VS_TROOP_MULTIPLIER,
     V11_GUEST_VS_GUEST_DAMAGE_MULTIPLIER,
+    V11_GUEST_VS_GUEST_DEFENSE_CONSTANT,
     V11_PREEMPTIVE_DAMAGE_REDUCTION,
+    V11_TROOP_VS_GUEST_DEFENSE_CONSTANT,
 )
 from .target_selection import is_ranged_attack
 from .types import AttackSkill, _DamageCalculation
@@ -133,15 +136,22 @@ def _apply_softcap(base_reduction: float) -> float:
     return base_reduction
 
 
-def _calculate_damage_reduction(actor: "Combatant", target: "Combatant", defense_value: float) -> float:
+def _calculate_damage_reduction(
+    actor: "Combatant",
+    target: "Combatant",
+    defense_value: float,
+    *,
+    battle_engine_version: str = CURRENT_BATTLE_ENGINE_VERSION,
+) -> float:
     pair = (actor.kind, target.kind)
     if pair == ("guest", "troop"):
         base_reduction = defense_value / (defense_value + GUEST_VS_TROOP_DEFENSE_CONSTANT)
         return min(base_reduction, HARDCAP)
 
+    use_v11 = battle_engine_version in STAT_BALANCE_V11_ENGINE_VERSIONS
     constants = {
-        ("guest", "guest"): GUEST_VS_GUEST_DEFENSE_CONSTANT,
-        ("troop", "guest"): TROOP_VS_GUEST_DEFENSE_CONSTANT,
+        ("guest", "guest"): V11_GUEST_VS_GUEST_DEFENSE_CONSTANT if use_v11 else GUEST_VS_GUEST_DEFENSE_CONSTANT,
+        ("troop", "guest"): V11_TROOP_VS_GUEST_DEFENSE_CONSTANT if use_v11 else TROOP_VS_GUEST_DEFENSE_CONSTANT,
     }
     defense_constant = constants.get(pair, DEFAULT_DEFENSE_CONSTANT)
     base_reduction = defense_value / (defense_value + defense_constant)
@@ -287,6 +297,14 @@ def _apply_slaughter_multiplier(
     return damage * slaughter_mult
 
 
+def _guest_skill_vs_troop_multiplier(battle_engine_version: str) -> float:
+    if battle_engine_version in STAT_BALANCE_V11_ENGINE_VERSIONS:
+        return V11_GUEST_SKILL_VS_TROOP_MULTIPLIER
+    if battle_engine_version in GUEST_TROOP_BALANCE_ENGINE_VERSIONS:
+        return GUEST_SKILL_VS_TROOP_MULTIPLIER
+    return LEGACY_GUEST_SKILL_VS_TROOP_MULTIPLIER
+
+
 def _apply_guest_vs_troop_split_scaling(
     actor: "Combatant",
     target: "Combatant",
@@ -301,11 +319,7 @@ def _apply_guest_vs_troop_split_scaling(
         return total_damage
 
     skill_damage = total_damage - base_damage
-    skill_multiplier = (
-        GUEST_SKILL_VS_TROOP_MULTIPLIER
-        if battle_engine_version in GUEST_TROOP_BALANCE_ENGINE_VERSIONS
-        else LEGACY_GUEST_SKILL_VS_TROOP_MULTIPLIER
-    )
+    skill_multiplier = _guest_skill_vs_troop_multiplier(battle_engine_version)
     return base_damage * slaughter_mult + skill_damage * skill_multiplier
 
 
@@ -505,7 +519,9 @@ def calculate_attack_damage(
         battle_engine_version=battle_engine_version,
     )
     attack_value = _apply_troop_counter_bonus(actor, target, attack_value)
-    damage_reduction = _calculate_damage_reduction(actor, target, defense_value)
+    damage_reduction = _calculate_damage_reduction(
+        actor, target, defense_value, battle_engine_version=battle_engine_version
+    )
 
     attack_multiplier = rng.uniform(DAMAGE_VARIANCE_MIN, DAMAGE_VARIANCE_MAX)
     base_damage = _calculate_base_damage(
@@ -565,12 +581,13 @@ def calculate_attack_damage(
     )
 
     skill_dr = _intellect_skill_damage_reduction(target, battle_engine_version)
+    troop_skill_mult = _guest_skill_vs_troop_multiplier(battle_engine_version)
     noncritical_burst_damage = None
     if damage_component == "burst":
         # 倍率和斩杀造成的额外伤害也属于技能增量，不能把普攻基础重复计入。
         damage = max(0.0, total_damage_value - base_damage_value)
         if target.kind == "troop":
-            damage *= GUEST_SKILL_VS_TROOP_MULTIPLIER
+            damage *= troop_skill_mult
         elif target.kind == "guest":
             damage *= GUEST_SKILL_VS_GUEST_MULTIPLIER * (1.0 - skill_dr)
         if battle_engine_version in GUEST_ACTION_CONSISTENCY_ENGINE_VERSIONS and is_crit:
@@ -587,7 +604,7 @@ def calculate_attack_damage(
             )
             noncritical_burst_damage = max(0.0, total_damage_value - base_damage_value - crit_increment)
             if target.kind == "troop":
-                noncritical_burst_damage *= GUEST_SKILL_VS_TROOP_MULTIPLIER
+                noncritical_burst_damage *= troop_skill_mult
             elif target.kind == "guest":
                 noncritical_burst_damage *= GUEST_SKILL_VS_GUEST_MULTIPLIER * (1.0 - skill_dr)
     elif actor.kind == "guest" and target.kind == "troop":

@@ -122,7 +122,7 @@ def test_snapshot_power_v2_current_hp_only_scales_the_hp_component():
 
 
 def test_combat_power_points_matches_guest_power_at_full_health():
-    max_hp = max(200, 1000 + 1500 + 150 * 30) + (40 - 1) * 60
+    max_hp = max(200, 1000 + 1500 + 150 * 40) + (40 - 1) * 70
     guest_kwargs = dict(
         force=200,
         intellect=80,
@@ -174,7 +174,7 @@ def test_defense_bonus_only_adds_mitigation_without_phantom_hp():
     assert with_def_stat > with_def_bonus
     for stage in ("early", "mid", "late"):
         w = weights_for(archetype="military", stage=stage)
-        assert round(w.defense - w.defense_mitigation, 6) == 30.0
+        assert round(w.defense - w.defense_mitigation, 6) == 40.0
 
 
 def test_effective_luck_is_concave_capped_at_300_and_zero_without_skills():

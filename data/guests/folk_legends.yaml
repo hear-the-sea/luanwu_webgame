@@ -15,7 +15,7 @@ heroes:
         defense: 95
         agility: 150
         luck: 85
-        base_hp: 80000
+        base_hp: 64000
     - key: task_legend_deer_attendant
       name: 鹿童
       archetype: military
@@ -30,7 +30,7 @@ heroes:
         defense: 175
         agility: 95
         luck: 70
-        base_hp: 62000
+        base_hp: 49600
     - key: task_legend_crab_general
       name: 蟹将
       archetype: military
@@ -45,7 +45,7 @@ heroes:
         defense: 220
         agility: 100
         luck: 70
-        base_hp: 128000
+        base_hp: 102400
     - key: task_legend_shrimp_vanguard
       name: 虾兵先锋
       archetype: military
@@ -60,7 +60,7 @@ heroes:
         defense: 140
         agility: 230
         luck: 85
-        base_hp: 122000
+        base_hp: 97600
   orange:
     - key: task_legend_east_sea_dragon
       name: 东海龙王
@@ -76,7 +76,7 @@ heroes:
         defense: 190
         agility: 160
         luck: 100
-        base_hp: 300000
+        base_hp: 240000
     - key: task_legend_meishan_guard
       name: 梅山守将
       archetype: military
@@ -91,7 +91,7 @@ heroes:
         defense: 260
         agility: 140
         luck: 85
-        base_hp: 360000
+        base_hp: 288000
     - key: task_legend_celestial_hound
       name: 哮天犬
       archetype: military
@@ -106,7 +106,7 @@ heroes:
         defense: 170
         agility: 280
         luck: 100
-        base_hp: 280000
+        base_hp: 224000
     - key: task_legend_erlang_shen
       name: 二郎神
       archetype: civil
@@ -121,4 +121,4 @@ heroes:
         defense: 230
         agility: 230
         luck: 115
-        base_hp: 400000
+        base_hp: 320000

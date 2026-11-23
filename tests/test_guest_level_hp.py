@@ -20,23 +20,45 @@ from tests.test_bulk_guest_healing import _medicine
 
 
 @pytest.mark.parametrize("rarity", GuestRarity.values)
-@pytest.mark.parametrize("level,bonus", [(1, 0), (2, 60), (50, 2940), (100, 5940)])
-def test_every_rarity_receives_the_same_fixed_level_hp(rarity, level, bonus):
-    guest = Guest(template=GuestTemplate(rarity=rarity, base_hp=1000), level=level, defense_stat=100, hp_bonus=125)
-    assert guest.max_hp == 4125 + bonus
+@pytest.mark.parametrize(
+    "archetype,level,bonus",
+    [
+        ("military", 1, 0),
+        ("military", 2, 70),
+        ("military", 50, 3430),
+        ("military", 100, 6930),
+        ("civil", 1, 0),
+        ("civil", 2, 50),
+        ("civil", 50, 2450),
+        ("civil", 100, 4950),
+    ],
+)
+def test_every_rarity_receives_the_same_fixed_level_hp(rarity, archetype, level, bonus):
+    guest = Guest(
+        template=GuestTemplate(rarity=rarity, archetype=archetype, base_hp=1000),
+        level=level,
+        defense_stat=100,
+        hp_bonus=125,
+    )
+    assert guest.max_hp == 5125 + bonus
     assert guest.stat_block()["hp"] == guest.max_hp
     assert resolve_guest_combat_stats(guest).max_hp == guest.max_hp
 
 
 @pytest.mark.parametrize("level", [1, 2, 100])
 def test_level_hp_is_added_on_top_of_the_minimum_hp_floor(level):
-    guest = Guest(template=GuestTemplate(base_hp=100), level=level, defense_stat=0, hp_bonus=-500)
-    assert guest.max_hp == 200 + (level - 1) * 60
+    guest = Guest(template=GuestTemplate(base_hp=100, archetype="military"), level=level, defense_stat=0, hp_bonus=-500)
+    assert guest.max_hp == 200 + (level - 1) * 70
 
 
 @pytest.mark.parametrize("levels", [1, 5, 99])
 def test_training_adds_fixed_hp_in_addition_to_existing_defense_growth(levels):
-    guest = Guest(template=GuestTemplate(rarity="blue", base_hp=1000), level=1, defense_stat=100, hp_bonus=125)
+    guest = Guest(
+        template=GuestTemplate(rarity="blue", archetype="military", base_hp=1000),
+        level=1,
+        defense_stat=100,
+        hp_bonus=125,
+    )
     old_max_hp = guest.max_hp
     apply_training_completion(
         guest,
@@ -44,7 +66,7 @@ def test_training_adds_fixed_hp_in_addition_to_existing_defense_growth(levels):
         allocate_level_up_attributes_func=lambda *_: {"force": 0, "intellect": 0, "defense": levels, "agility": 0},
     )
     assert guest.level == 1 + levels
-    assert guest.max_hp == old_max_hp + levels * (60 + 30)
+    assert guest.max_hp == old_max_hp + levels * (70 + 40)
     assert guest.hp_bonus == 125
     assert guest.current_hp == guest.max_hp
 
@@ -52,12 +74,20 @@ def test_training_adds_fixed_hp_in_addition_to_existing_defense_growth(levels):
 @pytest.mark.django_db
 def test_sql_hp_expression_matches_current_guests_including_floor_and_signed_bonuses(manor_with_user):
     manor, _ = manor_with_user
-    template = GuestTemplate.objects.create(key="level_hp_sql", name="等级生命", base_hp=1000)
-    for level in (0, 1, 2, 50, 100):
-        for hp_bonus in (-6000, 125):
-            Guest.objects.create(manor=manor, template=template, level=level, hp_bonus=hp_bonus)
+    for archetype in ("military", "civil"):
+        template = GuestTemplate.objects.create(
+            key=f"level_hp_sql_{archetype}",
+            name=f"等级生命_{archetype}",
+            archetype=archetype,
+            base_hp=1000,
+        )
+        for level in (0, 1, 2, 50, 100):
+            for hp_bonus in (-6000, 125):
+                Guest.objects.create(manor=manor, template=template, level=level, hp_bonus=hp_bonus)
     for guest in (
-        Guest.objects.filter(template=template).select_related("template").annotate(sql_hp=guest_max_hp_expression())
+        Guest.objects.filter(template__key__startswith="level_hp_sql_")
+        .select_related("template")
+        .annotate(sql_hp=guest_max_hp_expression())
     ):
         assert guest.sql_hp == guest.max_hp
 
@@ -93,7 +123,7 @@ def test_existing_guest_level_hp_reaches_the_real_battle_builder(manor_with_user
     template = GuestTemplate.objects.create(key="level_hp_battle", name="等级战斗", base_hp=1000)
     guest = Guest.objects.create(manor=manor, template=template, level=100, defense_stat=100)
     fighter = build_guest_combatants([guest], "attacker")[0]
-    assert fighter.max_hp == fighter.hp == 9940
+    assert fighter.max_hp == fighter.hp == 10940
 
 
 @pytest.mark.django_db
@@ -107,8 +137,8 @@ def test_template_base_hp_sync_keeps_level_hp_and_existing_health_ratio(manor_wi
     Command()._sync_existing_guest_current_hp_for_template_base_hp(template=template, previous_base_hp=1200)
     full.refresh_from_db()
     half.refresh_from_db()
-    assert full.current_hp == full.max_hp == 6340
-    assert half.current_hp == 3170
+    assert full.current_hp == full.max_hp == 7140
+    assert half.current_hp == 3570
 
 
 @pytest.mark.django_db
@@ -159,3 +189,51 @@ def test_defense_hp_multiplier_migration_preserves_health_ratio(manor_with_user)
     for guest, hp in zip(guests, (7940, 3970, 0)):
         guest.refresh_from_db()
         assert guest.current_hp == hp
+
+
+@pytest.mark.django_db
+def test_archetype_level_hp_gain_migration_preserves_health_ratio(manor_with_user):
+    manor, _ = manor_with_user
+    mil_template = GuestTemplate.objects.create(
+        key="archetype_hp_mil",
+        name="武门客等级生命迁移",
+        archetype="military",
+        base_hp=1000,
+    )
+    civ_template = GuestTemplate.objects.create(
+        key="archetype_hp_civ",
+        name="文门客等级生命迁移",
+        archetype="civil",
+        base_hp=1000,
+    )
+    mil_full = Guest.objects.create(manor=manor, template=mil_template, level=50, defense_stat=80)
+    mil_half = Guest.objects.create(manor=manor, template=mil_template, level=50, defense_stat=80)
+    civ_full = Guest.objects.create(manor=manor, template=civ_template, level=50, defense_stat=80)
+    civ_zero = Guest.objects.create(manor=manor, template=civ_template, level=50, defense_stat=80)
+    # 迁移前 50 级（+49*60=2940）且 80 防（+2400）+ 1000 = 6340
+    Guest.objects.filter(pk=mil_full.pk).update(current_hp=6340)
+    Guest.objects.filter(pk=mil_half.pk).update(current_hp=3170)
+    Guest.objects.filter(pk=civ_full.pk).update(current_hp=6340)
+    Guest.objects.filter(pk=civ_zero.pk).update(current_hp=0, status=GuestStatus.INJURED)
+
+    migration = importlib.import_module("guests.migrations.0101_archetype_level_hp_gain")
+    editor = SimpleNamespace(connection=connection)
+
+    migration.apply_archetype_level_hp_gain(apps, editor)
+    mil_full.refresh_from_db()
+    mil_half.refresh_from_db()
+    civ_full.refresh_from_db()
+    civ_zero.refresh_from_db()
+    # 武门客 50 级：1000 + 80*40 + 49*70 = 7630；文门客 50 级：1000 + 80*40 + 49*50 = 6650
+    assert mil_full.current_hp == mil_full.max_hp == 7630
+    assert mil_half.current_hp == 3815
+    assert civ_full.current_hp == civ_full.max_hp == 6650
+    assert civ_zero.current_hp == 0
+
+    migration.revert_archetype_level_hp_gain(apps, editor)
+    mil_full.refresh_from_db()
+    mil_half.refresh_from_db()
+    civ_full.refresh_from_db()
+    assert mil_full.current_hp == 6340
+    assert mil_half.current_hp == 3170
+    assert civ_full.current_hp == 6340

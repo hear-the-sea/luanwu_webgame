@@ -64,7 +64,12 @@ def test_guest_arena_power_includes_level_hp_growth(base_hp: int, defense: int) 
         "archetype": "military",
         "base_hp": base_hp,
     }
-    assert calculate_guest_arena_power(**common, level=11) - calculate_guest_arena_power(**common, level=1) == 60
+    assert calculate_guest_arena_power(**common, level=11) - calculate_guest_arena_power(**common, level=1) == 70
+    civil_common = {**common, "archetype": "civil"}
+    assert (
+        calculate_guest_arena_power(**civil_common, level=11) - calculate_guest_arena_power(**civil_common, level=1)
+        == 50
+    )
 
 
 @pytest.mark.django_db
