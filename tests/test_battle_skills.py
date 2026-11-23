@@ -182,7 +182,7 @@ def test_minimum_formula_uses_unit_defense_and_target_specific_skill_multiplier(
     }
     defense = 2.5 if kind == "troop" else 10000
     result = calculate_attack_damage(actor, target, skills=[skill], rng=FixedRng(), round_priority=0)
-    skill_multiplier = 2.5 if kind == "troop" else 2
+    skill_multiplier = 1.8 if kind == "troop" else 2
     assert result.damage == int((5000 + 15 * 400 - 0.3 * defense) * skill_multiplier)
 
 
@@ -395,7 +395,7 @@ def test_guest_vs_troop_normal_attack_uses_slaughter_multiplier():
     target = make_unit(kind="troop", side="defender", unit_defense=10, troop_strength=200, unit_hp=10)
     rng = FixedRng()
 
-    result = calculate_attack_damage(actor, target, skills=[], rng=rng, round_priority=0)
+    result = calculate_attack_damage(actor, target, skills=[], rng=rng, round_priority=0, battle_engine_version="10")
 
     reduction = target.unit_defense / (target.unit_defense + 50)
     base_damage = actor.attack * (1 - reduction)
@@ -408,7 +408,7 @@ def test_guest_vs_troop_damage_keeps_fractional_unit_defense_until_damage_roundi
     target = make_unit(kind="troop", side="defender", unit_defense=2.5, troop_strength=200, unit_hp=10)
     rng = FixedRng()
 
-    result = calculate_attack_damage(actor, target, skills=[], rng=rng, round_priority=0)
+    result = calculate_attack_damage(actor, target, skills=[], rng=rng, round_priority=0, battle_engine_version="10")
 
     reduction = target.unit_defense / (target.unit_defense + 50)
     base_damage = actor.attack * (1 - reduction)

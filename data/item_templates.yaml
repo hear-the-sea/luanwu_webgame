@@ -11830,7 +11830,7 @@ items:
         - item_key: lvbu_guest_scroll
           weight: 1
       - label: super_guest_disguise_card
-        chance: 0.01
+        chance: 0.1
         min_quantity: 1
         max_quantity: 1
         choices:
@@ -15140,7 +15140,7 @@ items:
         - item_key: lvbu_guest_scroll
           weight: 1
       - label: super_guest_disguise_card
-        chance: 0.01
+        chance: 0.1
         min_quantity: 1
         max_quantity: 1
         choices:

@@ -178,7 +178,7 @@ def test_last_guard_can_only_screen_until_defeated_during_split_attacks():
         ("4", 15, 2),
         ("5", 20, 3),
         ("10", 20, 3),
-        ("11", 20, 2.5),
+        ("11", 15, 1.8),
     ],
 )
 @pytest.mark.parametrize(

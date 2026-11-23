@@ -6,13 +6,18 @@ from typing import Any
 from core.exceptions import GameError
 from core.utils import require_positive_int
 
-from .random_context import CURRENT_BATTLE_ENGINE_VERSION, GUEST_TROOP_BALANCE_ENGINE_VERSIONS
+from .random_context import (
+    CURRENT_BATTLE_ENGINE_VERSION,
+    GUEST_TROOP_BALANCE_ENGINE_VERSIONS,
+    STAT_BALANCE_V11_ENGINE_VERSIONS,
+)
 
 # ============ 战斗数值常量 ============
 
 # 门客对小兵的屠戮倍率
 # 设计理由：让门客对小兵有压倒性优势，配合单兵防御系统保持合理战斗节奏
 SLAUGHTER_MULTIPLIER = 20
+V11_SLAUGHTER_MULTIPLIER = 15
 LEGACY_SLAUGHTER_MULTIPLIER = 15
 
 # 小兵对门客的攻击除数
@@ -131,6 +136,8 @@ def calculate_slaughter_multiplier(
         return 1.0
 
     # 固定倍率，配合单兵防御系统提供合理的击杀速度
+    if battle_engine_version in STAT_BALANCE_V11_ENGINE_VERSIONS:
+        return V11_SLAUGHTER_MULTIPLIER
     if battle_engine_version in GUEST_TROOP_BALANCE_ENGINE_VERSIONS:
         return SLAUGHTER_MULTIPLIER
     return LEGACY_SLAUGHTER_MULTIPLIER

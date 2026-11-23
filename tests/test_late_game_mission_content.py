@@ -148,7 +148,7 @@ def test_baimenlou_drops_the_super_guest_disguise_card():
     mission = _missions()["baimenlou_mingyun_jueze"]
     disguise_card = _items()["super_guest_disguise_card"]
 
-    assert_random_group(mission_reward_payload(mission), 0.01, 1, {"super_guest_disguise_card": 1})
+    assert_random_group(mission_reward_payload(mission), 0.1, 1, {"super_guest_disguise_card": 1})
     assert disguise_card["effect_type"] == "tool"
     assert disguise_card["rarity"] == "orange"
     assert disguise_card["is_usable"] is True
